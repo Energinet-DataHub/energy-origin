@@ -1,27 +1,9 @@
 name: "Build"
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
   workflow_dispatch:
     branches:
       - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
       
 jobs:
   build:
@@ -41,10 +23,13 @@ jobs:
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1.9.0
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 6.0.1
 
     - name: Restore
       run: dotnet restore
+      
+    - name: Linting
+      run: dotnet format --verify-no-changes -v diag
 
     - name: Build
       run: dotnet build --configuration Release --no-restore
