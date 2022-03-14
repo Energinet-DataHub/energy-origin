@@ -22,9 +22,9 @@ namespace DataSync.API.Controllers
 
         [HttpGet]
         [Route("Fries")]
-        public string GetFries()
+        public string GetFries(int numberOfFries)
         {
-            return "Fries";
+            return numberOfFries + " fries";
         }
     }
 }
