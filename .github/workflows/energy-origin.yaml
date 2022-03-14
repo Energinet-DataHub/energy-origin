@@ -26,13 +26,17 @@ jobs:
         dotnet-version: 6.0.101
 
     - name: Restore
+      working-directory: ./services/API
       run: dotnet restore
       
     - name: Linting
+      working-directory: ./services/API
       run: dotnet format --verify-no-changes -v diag
 
     - name: Build
+      working-directory: ./services/API
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
+      working-directory: ./services/API
       run: dotnet test
