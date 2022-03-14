@@ -6,12 +6,12 @@ namespace DataSync.API.Controllers
     [Route("[controller]")]
     public class HelloWorldController : ControllerBase
     {
-        private readonly ILogger<HelloWorldController> _logger;
+        //private readonly ILogger<HelloWorldController> _logger;
 
-        public HelloWorldController(ILogger<HelloWorldController> logger)
-        {
-            _logger = logger;
-        }
+        //public HelloWorldController(ILogger<HelloWorldController> logger)
+        //{
+        //    _logger = logger;
+        //}
 
         [HttpGet]
         [Route("Pasta")]
