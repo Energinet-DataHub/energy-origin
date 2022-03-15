@@ -1,0 +1,17 @@
+---
+fullnameOverride: "eo-data-sync"
+
+eo-base-helm-chart:
+  fullnameOverride: "eo-data-sync"
+
+  deployments:
+    api:
+      replicaCount: 3
+      probes: true
+      image:
+        repository: ghcr.io/energinet-datahub/eo-data-sync
+        tag: 0.1.0
+  service:
+    deployment: api
+    type: ClusterIP
+    port: 80
