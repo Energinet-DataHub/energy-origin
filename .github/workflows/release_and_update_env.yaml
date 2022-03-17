@@ -69,14 +69,14 @@ jobs:
         id: get_semver
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: chart/Chart.yaml
+          yaml_file: domains/data-sync/chart/Chart.yaml
           yaml_path: version
 
       - name: Get container version
         id: get_api_container_version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: chart/values.yaml
+          yaml_file: domains/data-sync/chart/values.yaml
           yaml_path: eo-base-helm-chart.deployments.api.image.tag
 
   build_container_and_release_chart:
