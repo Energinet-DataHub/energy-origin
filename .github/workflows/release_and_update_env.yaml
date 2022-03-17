@@ -60,7 +60,8 @@ jobs:
             "deployment_name": "api",
             "dockerfile": "domains/data-sync/services/DataSync.API/API/Dockerfile",
             "image_name": "eo-data-sync",
-            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}"
+            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
+            "context": "domains/data-sync/services/DataSync.API/"
           }
         ]
     steps:
@@ -81,7 +82,7 @@ jobs:
   build_container_and_release_chart:
     name: Build containers
     needs: [dotnet_validate, define_build]
-    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
+    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@optional-context
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
       chart_folder: chart
