@@ -58,7 +58,7 @@ jobs:
         [
           { 
             "deployment_name": "api",
-            "dockerfile": "services/API/API/Dockerfile",
+            "dockerfile": "domains/data-sync/services/DataSync.API/API/Dockerfile",
             "image_name": "eo-data-sync",
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}"
           }

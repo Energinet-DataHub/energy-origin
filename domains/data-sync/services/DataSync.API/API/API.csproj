@@ -7,7 +7,6 @@
     <UserSecretsId>2195193b-b7e0-4623-be63-76eeebb6afa7</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <OutputType>Exe</OutputType>
-    <DockerfileRunArguments>-p 8080:5000</DockerfileRunArguments>
   </PropertyGroup>
 
   <ItemGroup>
