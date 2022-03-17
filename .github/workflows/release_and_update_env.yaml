@@ -12,7 +12,11 @@ on:
 concurrency: 
   group: ${{ github.ref }}
   cancel-in-progress: false
-      
+
+defaults:
+  run:
+    working-directory: ./domains/data-sync/services/DataSync.API
+
 jobs:
   dotnet_validate:
     name: Dotnet validate 
@@ -34,19 +38,15 @@ jobs:
         dotnet-version: 6.0.101
 
     - name: Restore
-      working-directory: ./services/API
       run: dotnet restore
       
     - name: Linting
-      working-directory: ./services/API
       run: dotnet format --verify-no-changes -v diag
 
     - name: Build
-      working-directory: ./services/API
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      working-directory: ./services/API
       run: dotnet test
 
   define_build:
@@ -58,9 +58,10 @@ jobs:
         [
           { 
             "deployment_name": "api",
-            "dockerfile": "services/API/API/Dockerfile",
+            "dockerfile": "domains/data-sync/services/DataSync.API/API/Dockerfile",
             "image_name": "eo-data-sync",
-            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}"
+            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
+            "context": "domains/data-sync/services/DataSync.API/"
           }
         ]
     steps:
@@ -81,10 +82,10 @@ jobs:
   build_container_and_release_chart:
     name: Build containers
     needs: [dotnet_validate, define_build]
-    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
+    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@optional-context
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
-      chart_folder: chart
+      chart_folder: domains/data-sync/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
     secrets:
