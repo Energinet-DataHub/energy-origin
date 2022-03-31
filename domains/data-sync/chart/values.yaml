@@ -11,6 +11,8 @@ eo-base-helm-chart:
       image:
         repository: ghcr.io/energinet-datahub/eo-data-sync
         tag: 0.2.0
+      imagePullSecrets:
+        - name: container-registry-pullsecret
   service:
     deployment: api
     type: ClusterIP
