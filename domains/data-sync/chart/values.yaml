@@ -7,10 +7,10 @@ eo-base-helm-chart:
   deployments:
     api:
       replicaCount: 3
-      probes: true
+      probes: false
       image:
         repository: ghcr.io/energinet-datahub/eo-data-sync
-        tag: 0.1.2
+        tag: 0.2.0
   service:
     deployment: api
     type: ClusterIP
