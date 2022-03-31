@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       chart_version: ${{ steps.get_semver.outputs.semver }}
-      containers: []
+      containers: >-
+        []
     steps:
       - name: Get chart version
         id: get_semver
