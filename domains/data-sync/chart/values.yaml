@@ -10,7 +10,7 @@ eo-base-helm-chart:
       probes: false
       image:
         repository: ghcr.io/energinet-datahub/eo-data-sync
-        tag: 0.2.2
+        tag: 0.2.3
       imagePullSecrets:
         - name: container-registry-pullsecret
   service:
