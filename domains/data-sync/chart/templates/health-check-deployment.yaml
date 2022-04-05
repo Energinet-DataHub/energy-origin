@@ -28,7 +28,7 @@ spec:
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           env:
             - name: DATAHUB2ENDPOINT
-              value: {{ required "datahub.health_check.endpoint is required" .Values.datahub.health_check.endpoint }}
+              value: {{ required "datahub.health_check.endpoint is required" .Values.datahub.health_check.endpoint | quote }}
             - name: SLEEPINTERVAL
               value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval | quote}}
           volumeMounts:
