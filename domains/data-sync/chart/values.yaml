@@ -17,3 +17,8 @@ eo-base-helm-chart:
     deployment: api
     type: ClusterIP
     port: 80
+
+datahub:
+  health_check:
+    enabled: true
+    endpoint: https://google.com
