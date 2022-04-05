@@ -5,7 +5,7 @@ metadata:
 data:
     run-me.sh: |-
             while true; do
-                curl -v -X OPTIONS --fail $DATAHUB2ENDPOINT
+                curl -v -X HEAD --fail $DATAHUB2ENDPOINT
                 date
                 sleep 30
             done
