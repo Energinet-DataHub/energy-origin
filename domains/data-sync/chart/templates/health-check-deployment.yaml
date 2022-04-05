@@ -30,7 +30,7 @@ spec:
             - name: DATAHUB2ENDPOINT
               value: {{ required "datahub.health_check.endpoint is required" .Values.datahub.health_check.endpoint }}
             - name: SLEEPINTERVAL
-              value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval }}
+              value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval | quote}}
           volumeMounts:
             - name: health-check-script-volume
               mountPath: "/tmp/health-script"
