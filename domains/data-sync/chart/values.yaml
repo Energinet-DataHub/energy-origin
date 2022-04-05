@@ -17,3 +17,13 @@ eo-base-helm-chart:
     deployment: api
     type: ClusterIP
     port: 80
+
+datahub:
+  health_check:
+    enabled: false
+
+    # Endpoint to call
+    endpoint: https://example.com
+
+    # Time to wait in seconds between requests
+    sleep_interval: 3600
