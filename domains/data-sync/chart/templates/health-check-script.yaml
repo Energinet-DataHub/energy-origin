@@ -7,5 +7,5 @@ data:
             while true; do
                 curl -v -X HEAD --fail $DATAHUB2ENDPOINT
                 date
-                sleep 30
+                sleep $SLEEPINTERVAL
             done
