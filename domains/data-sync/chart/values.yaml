@@ -20,6 +20,10 @@ eo-base-helm-chart:
 
 datahub:
   health_check:
-    enabled: true
-    endpoint: https://google.com
+    enabled: false
+
+    # Endpoint to call
+    endpoint: https://example.com
+
+    # Time to wait in seconds between requests
     sleep_interval: 3600
