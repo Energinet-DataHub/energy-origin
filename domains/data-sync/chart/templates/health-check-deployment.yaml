@@ -22,8 +22,11 @@ spec:
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           livenessProbe:
             exec:
-                command: |-
-                  grep -q 200 /tmp/healthy
+                command:
+                  - grep
+                  - -q
+                  - "200"
+                  - /tmp/healthy
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 200
