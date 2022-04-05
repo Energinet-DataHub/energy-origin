@@ -22,4 +22,4 @@ datahub:
   health_check:
     enabled: true
     endpoint: https://google.com
-    sleep_interval: 15
+    sleep_interval: 3600
