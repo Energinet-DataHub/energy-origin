@@ -1,0 +1,45 @@
+{{- if .Values.datahub -}}
+{{- if .Values.datahub.health_check -}}
+{{- if not .Values.datahub.health_check.enabled -}}
+  {{- fail "You must set a datahub.health_check.enabled variable" -}}
+{{- end -}}
+
+{{ if .Values.datahub.health_check.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-check-deployment
+  labels:
+    app: health-check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: health-check
+  template:
+    metadata:
+      labels:
+        app: health-check
+    spec:
+      containers:
+        - name: health-check
+          image: curlimages/curl:7.82.0
+          command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
+          env:
+            - name: DATAHUB2ENDPOINT
+              value: {{ required "datahub.health_check.endpoint is required" .Values.datahub.health_check.endpoint }}
+            - name: SLEEPINTERVAL
+              value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval }}
+          volumeMounts:
+            - name: health-check-script-volume
+              mountPath: "/tmp/health-script"
+              readOnly: true
+      volumes:
+        - name: health-check-script-volume
+          configMap:
+            name: health-check-script
+            defaultMode: 0744
+{{ end }}
+{{- end -}}
+{{- end -}}
