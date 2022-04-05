@@ -1,6 +1,9 @@
+# CUSTOM
+**/Chart.lock
 
-# Created by https://www.toptal.com/developers/gitignore/api/csharp,python,visualstudio,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=csharp,python,visualstudio,visualstudiocode
+
+# Created by https://www.toptal.com/developers/gitignore/api/python,csharp,visualstudio,visualstudiocode,helm
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,csharp,visualstudio,visualstudiocode,helm
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -400,6 +403,10 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+### Helm ###
+# Chart dependencies
+**/charts/*.tgz
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 *.py[cod]
@@ -748,4 +755,4 @@ cython_debug/
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/csharp,python,visualstudio,visualstudiocode
+# End of https://www.toptal.com/developers/gitignore/api/python,csharp,visualstudio,visualstudiocode,helm
