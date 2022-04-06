@@ -20,16 +20,6 @@ spec:
         - name: health-check
           image: curlimages/curl:7.82.0
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
-        #   livenessProbe:
-        #     exec:
-        #         command:
-        #           - grep
-        #           - -q
-        #           - "200"
-        #           - /tmp/healthy
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            failureThreshold: 200
           env:
             - name: SLEEPINTERVAL
               value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval | quote}}
