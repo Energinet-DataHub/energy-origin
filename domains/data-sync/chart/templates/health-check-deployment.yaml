@@ -20,13 +20,13 @@ spec:
         - name: health-check
           image: curlimages/curl:7.82.0
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
-          readinessProbe:
-            exec:
-                command:
-                  - grep
-                  - -q
-                  - "200"
-                  - /tmp/healthy
+        #   livenessProbe:
+        #     exec:
+        #         command:
+        #           - grep
+        #           - -q
+        #           - "200"
+        #           - /tmp/healthy
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 200

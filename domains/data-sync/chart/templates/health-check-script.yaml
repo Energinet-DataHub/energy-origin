@@ -5,6 +5,7 @@ metadata:
 data:
     run-me.sh: |-
             while true; do
-                curl -s -X HEAD --write-out %{http_code} --fail $DATAHUB2ENDPOINT > /tmp/healthy
+                curl --head --fail $DATAHUB2ENDPOINT
+                date
                 sleep $SLEEPINTERVAL
             done
