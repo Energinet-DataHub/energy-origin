@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: health-check-script
+data:
+    run-me.sh: |-
+            while true; do
+                curl -S --head --fail $DATAHUB2ENDPOINT
+                date
+                sleep $SLEEPINTERVAL
+            done
