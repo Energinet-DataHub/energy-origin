@@ -1,0 +1,50 @@
+{{ if (((.Values.datahub).health_check).enabled) }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-check-deployment
+  labels:
+    app: health-check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: health-check
+  template:
+    metadata:
+      labels:
+        app: health-check
+    spec:
+      containers:
+        - name: health-check
+          image: curlimages/curl:7.82.0
+          command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
+          readinessProbe:
+            exec:
+                command:
+                  - grep
+                  - -q
+                  - "200"
+                  - /tmp/healthy
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 200
+          env:
+            - name: SLEEPINTERVAL
+              value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval | quote}}
+            - name: DATAHUB2ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                    name: datahub2-endpoint-secret
+                    key: endpoint
+          volumeMounts:
+            - name: health-check-script-volume
+              mountPath: "/tmp/health-script"
+              readOnly: true
+      volumes:
+        - name: health-check-script-volume
+          configMap:
+            name: health-check-script
+            defaultMode: 0744
+{{ end }}
