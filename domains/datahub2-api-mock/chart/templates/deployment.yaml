@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datahub2-api-mock-deployment
+  labels:
+    app: datahub2-api-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: datahub2-api-mock
+  template:
+    metadata:
+      labels:
+        app: datahub2-api-mock
+    spec:
+      containers:
+        - name: datahub2-api-mock
+          image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:0.0.1 # skal nok stå i values filen
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+      imagePullSecrets:
+        - name: container-registry-pullsecret
