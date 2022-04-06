@@ -20,7 +20,7 @@ spec:
         - name: health-check
           image: curlimages/curl:7.82.0
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
-          livenessProbe:
+          readinessProbe:
             exec:
                 command:
                   - grep
