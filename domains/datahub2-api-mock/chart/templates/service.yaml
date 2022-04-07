@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: datahub2-api-mock-service
+spec:
+  type: ClusterIP
+  selector:
+    component: datahub2-api-mock-deployment
+  ports:
+  - name: datahub2-api-mock-service
+    protocol: TCP
+    port: 80
+    targetPort: 8080
