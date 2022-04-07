@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: datahub2-api-mock
-          image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:0.0.1 # skal nok stå i values filen
+          image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:{{ .Values.imageTag }}
           ports:
             - containerPort: 8080
           livenessProbe:

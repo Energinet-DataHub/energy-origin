@@ -9,5 +9,5 @@ spec:
   ports:
   - name: datahub2-api-mock-service
     protocol: TCP
-    port: 80 # TODO gætter lige her
+    port: 80
     targetPort: 8080
