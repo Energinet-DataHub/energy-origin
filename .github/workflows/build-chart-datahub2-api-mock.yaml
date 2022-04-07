@@ -1,7 +1,9 @@
-name: Build chart data sync
+name: Build chart datahub2 api mock
 
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+      - domains/datahub2-api-mock/**
   push:
     branches:
       - main
@@ -27,13 +29,6 @@ jobs:
         with:
           yaml_file: domains/datahub2-api-mock/chart/Chart.yaml
           yaml_path: version
-
-      - name: Get container version
-        id: get_api_container_version
-        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
-        with:
-          yaml_file: domains/datahub2-api-mock/chart/values.yaml
-          yaml_path: imageTag
 
   build_container_and_release_chart:
     name: Build containers

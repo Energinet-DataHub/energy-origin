@@ -1,7 +1,9 @@
 name: Build chart data sync
 
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+      - domains/datahub2-api-mock/**
   push:
     branches:
       - main

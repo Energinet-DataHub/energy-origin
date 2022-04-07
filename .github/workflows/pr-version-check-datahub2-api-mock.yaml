@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Helm chart version Check
+name: Helm chart version Check - datahub2 api mock
 on:
   pull_request:
     branches: [ main ]
