@@ -1,6 +1,6 @@
 apiVersion: v2
-name: datahub2-api-mock
+name: eo-datahub2-api-mock
 description: Serves statically mocked api responses for DataHub2.
 
 type: application
-version: 0.0.1
+version: 0.0.2
