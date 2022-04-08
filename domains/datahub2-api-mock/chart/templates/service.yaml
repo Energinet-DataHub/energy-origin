@@ -5,7 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    component: eo-datahub2-api-mock-deployment
+    app: api-mock
   ports:
   - name: http
     protocol: TCP
