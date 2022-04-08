@@ -7,7 +7,6 @@ spec:
   selector:
     component: eo-datahub2-api-mock-deployment
   ports:
-  - name: eo-datahub2-api-mock-service
+  - name: http
     protocol: TCP
     port: 80
-    targetPort: 8080

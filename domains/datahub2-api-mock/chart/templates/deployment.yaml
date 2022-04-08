@@ -18,14 +18,14 @@ spec:
         - name: datahub2-api-mock
           image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:{{ .Values.imageTag }}
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 80
           readinessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 80
       imagePullSecrets:
         - name: container-registry-pullsecret
