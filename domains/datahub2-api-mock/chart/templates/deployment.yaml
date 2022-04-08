@@ -4,15 +4,18 @@ metadata:
   name: eo-datahub2-api-mock-deployment
   labels:
     app: eo-datahub2-api-mock
+    energinet.dk/name: api-mock
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: eo-datahub2-api-mock
+      energinet.dk/name: api-mock
   template:
     metadata:
       labels:
         app: eo-datahub2-api-mock
+        energinet.dk/name: api-mock
     spec:
       containers:
         - name: datahub2-api-mock
