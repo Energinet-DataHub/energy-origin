@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: eo-datahub2-api-mock-deployment
   labels:
-    app: eo-datahub2-api-mock
+    app: api-mock
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: eo-datahub2-api-mock
+      app: api-mock
   template:
     metadata:
       labels:
-        app: eo-datahub2-api-mock
+        app: api-mock
     spec:
       containers:
         - name: datahub2-api-mock
