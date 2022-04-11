@@ -1,3 +1,4 @@
+{{ if .Values.enable }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,3 +30,4 @@ spec:
               port: 8080
       imagePullSecrets:
         - name: container-registry-pullsecret
+{{ end }}
