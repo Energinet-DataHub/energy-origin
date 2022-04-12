@@ -1,4 +1,5 @@
-{{ if .Values.enable }}
+{{ if (.Values.datahub2_api_mock).enabled }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +18,7 @@ spec:
     spec:
       containers:
         - name: datahub2-api-mock
-          image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:{{ .Values.imageTag }}
+          image: ghcr.io/energinet-datahub/eo-datahub2-api-mock:{{ .Values.datahub2_api_mock.imageTag }}
           ports:
             - containerPort: 8080
           livenessProbe:
