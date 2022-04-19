@@ -45,7 +45,7 @@ Business requirements:
 - **OpenSource**: the platform must be OpenSource and a community created around it.
 This will enabled a shared benefit over time.
 
-- **Avoid vendor lock-in**: The platform should not be limited by proprietary third-party 
+- **Avoid vendor lock-in**: The platform should not be limited by proprietary third-party
 software to avoid vendor lock in.
 
 - **Cloud Agnostic**: The platform should be able to run on any cloud or on-premise to not
@@ -96,3 +96,34 @@ All code must be sufficiently tested by unit and integrations tests,
 so that the developers feel safe when deploying without any gates to production.
 
 All manual tests will be regarded as tech-dept.
+
+---
+
+## Architecture overview
+
+The diagrams below are documented based on [arc42](https://docs.arc42.org/section-5/)
+
+### High Level context diagram
+
+Context diagram, high level overview of the system that will be part of the danish deployment.
+
+The blue is the platform itself.
+Green are systems that has been integrated to.
+Yellow are expected future integrations.
+
+![Overview of the different systems integrating](diagrams/context.drawio.png)
+
+## EnergyOrigin internals
+
+This view explores how the different components that the platform is build from
+integrates with each other.
+
+![exploded view o EnergiOrigin](diagrams/level1.drawio.png)
+
+## Domains
+
+Below is a list of the domains and a reference to their documentation.
+
+*TODO: document missing domains.*
+
+- [Measurement](domains/measurements.md)

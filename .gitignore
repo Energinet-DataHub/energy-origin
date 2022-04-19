@@ -306,6 +306,8 @@ node_modules/
 *.dsw
 *.dsp
 
+*.DS_Store
+
 # Visual Studio 6 technical files
 
 # Visual Studio LightSwitch build output
