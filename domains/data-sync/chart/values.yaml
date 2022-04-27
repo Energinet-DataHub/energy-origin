@@ -13,6 +13,12 @@ eo-base-helm-chart:
         tag: 0.2.3
       imagePullSecrets:
         - name: container-registry-pullsecret
+
+  envSecrets:
+    DATAHUB2ENDPOINT:
+      secretName: datahub2-api-endpoint-secret
+      key: endpoint
+
   service:
     deployment: api
     type: ClusterIP
