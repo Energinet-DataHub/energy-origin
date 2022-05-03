@@ -24,7 +24,14 @@ jobs:
     outputs:
       chart_version: ${{ steps.get_semver.outputs.semver }}
       containers: >-
-        []
+        [
+          { 
+            "deployment_name": "api", 
+            "dockerfile": "Dockerfile", 
+            "image_name": "eo-emissions-api", 
+            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}" 
+          }
+        ]
     steps:
       - name: Get chart version
         id: get_semver
