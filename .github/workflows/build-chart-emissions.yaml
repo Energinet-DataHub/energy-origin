@@ -30,7 +30,7 @@ jobs:
             "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile", 
             "image_name": "eo-emissions-api", 
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
-            "context": "domain/emissions/Emissions.API/"
+            "context": "domains/emissions/Emissions.API/"
           }
         ]
     steps:
