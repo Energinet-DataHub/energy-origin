@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
-ENV DATAHUB2ENDPOINT="http://host.docker.internal:8080/xxxxxx"
+ENV DATASYNCENDPOINT="http://host.docker.internal:8080/xxxxxx"
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
