@@ -73,3 +73,4 @@ jobs:
       chart_version: ${{ needs.build_container_and_release_chart.outputs.chart_version }}
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+
