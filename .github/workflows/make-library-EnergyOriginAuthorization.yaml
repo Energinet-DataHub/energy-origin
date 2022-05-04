@@ -1,4 +1,4 @@
-name: CI-EnergyOriginAuthorization
+name: CI - EnergyOriginAuthorization
 
 on:
   pull_request:
@@ -10,49 +10,51 @@ on:
     paths:
       - libraries/dotnet/EnergyOriginAuthorization/**
 
+defaults:
+  run:
+    working-directory: ./libraries/dotnet/EnergyOriginAuthorization
+
 jobs:
   build:
-
-    env:
-      BUILD_CONFIG: 'Release'
-      SOLUTION: 'EnergyOriginAuthorization.sln'
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: fail
-      run: exit 1
-
     - uses: actions/checkout@v3
 
-    - name: Get Build Version
-      run: |
-        Import-Module .\build\GetBuildVersion.psm1
-        Write-Host $Env:GITHUB_REF
-        $version = GetBuildVersion -VersionString $Env:GITHUB_REF
-        echo "BUILD_VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-      shell: pwsh
-
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1.0.5
-
-    - name: Restore dependencies
-      run: nuget restore $SOLUTION
+    - name: Get version
+      id: get_version
+      uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+      with:
+        yaml_file: version.yaml
+        yaml_path: version
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1.9.0
       with:
         dotnet-version: 6.0.101
 
+    - name: Setup sources
+      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ github.token }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+    - name: Restore
+      run: dotnet restore
+
     - name: Linting
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Build
-      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG -p:Version=$BUILD_VERSION --no-restore
-
     - name: Run tests
-      run: dotnet test /p:Configuration=$env:BUILD_CONFIG --no-restore --no-build --verbosity normal
+      run: dotnet test --no-restore --verbosity normal
+
+    - name: Pack library
+      run: dotnet pack --configuration Release /p:Version=${{ steps.get_version.output.result }}
+
+    - name: List files
+      run: find .
+
+    - name: fail
+      if: startsWith(github.ref, 'refs/heads/main')
+      run: exit 1
 
     - name: Publish
       if: startsWith(github.ref, 'refs/heads/main')
-      run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
+      run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ github.token }} --source github
