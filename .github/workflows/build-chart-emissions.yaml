@@ -48,12 +48,13 @@ jobs:
   build_container_and_release_chart:
     name: Build containers
     needs: [define_build]
-    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
+    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@feature/451-include-domain
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
       chart_folder: domains/emissions/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
+      include_image_name: true
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
