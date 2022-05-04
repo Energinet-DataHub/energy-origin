@@ -21,6 +21,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Debug - cwd
+      run: pwd
+
     - name: Get version
       id: get_version
       uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
@@ -42,13 +45,15 @@ jobs:
     - name: Linting
       run: dotnet format --verify-no-changes -v diag
 
+      # add devcontainer for local debug
+
     - name: Run tests
       run: dotnet test --no-restore --verbosity normal
 
     - name: Pack library
       run: dotnet pack --configuration Release /p:Version=${{ steps.get_version.output.result }}
 
-    - name: List files
+    - name: Debug - List files
       run: find .
 
     - name: fail
