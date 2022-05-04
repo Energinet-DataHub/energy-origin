@@ -4,14 +4,11 @@ on:
   pull_request:
     paths:
       - domains/emissions/**
-      - .github/workflows/build-chart-emissions.yaml
-      - .github/workflows/pr-version-check-emissions.yaml
   push:
     branches:
       - main
     paths:
       - domains/emissions/**
-      - .github/workflows/build-chart-emissions.yaml
 
 concurrency:
   group: ${{ github.ref }}
