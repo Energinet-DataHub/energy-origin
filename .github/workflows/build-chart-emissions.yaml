@@ -1,14 +1,14 @@
-name: Build chart data sync
+name: Build chart emissions
 
 on:
   pull_request:
     paths:
-      - domains/data-sync/**
+      - domains/emissions/**
   push:
     branches:
       - main
     paths:
-      - domains/data-sync/**
+      - domains/emissions/**
 
 concurrency:
   group: ${{ github.ref }}
@@ -21,14 +21,29 @@ jobs:
     outputs:
       chart_version: ${{ steps.get_semver.outputs.semver }}
       containers: >-
-        []
+        [
+          { 
+            "deployment_name": "api", 
+            "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile", 
+            "image_name": "eo-emissions", 
+            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
+            "context": "domains/emissions/Emissions.API/"
+          }
+        ]
     steps:
       - name: Get chart version
         id: get_semver
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/data-sync/chart/Chart.yaml
+          yaml_file: domains/emissions/chart/Chart.yaml
           yaml_path: version
+      
+      - name: Get container version
+        id: get_api_container_version
+        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        with:
+          yaml_file: domains/emissions/chart/values.yaml
+          yaml_path: eo-base-helm-chart.deployments.api.image.tag
 
   build_container_and_release_chart:
     name: Build containers
@@ -36,9 +51,10 @@ jobs:
     uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
-      chart_folder: domains/data-sync/chart
+      chart_folder: domains/emissions/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
+      include_image_name: true
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
