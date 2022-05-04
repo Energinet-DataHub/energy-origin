@@ -1,6 +1,6 @@
 apiVersion: v2
 name: eo-emissions
-description: A chart containing emissions relating to data sync
+description: A chart containing emissions relating to emissions
 
 type: application
 version: 0.0.1

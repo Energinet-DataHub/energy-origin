@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Helm chart version Check - data sync
+name: Helm chart version Check - emissions
 on:
   pull_request:
     branches: [ main ]
