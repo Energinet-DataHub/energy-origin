@@ -5,6 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
+    <PackageId>EnergyOriginAuthorization</PackageId>
+    <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
+    <Authors>Team Fenris</Authors>
+    <Company>Energinet DataHub A/S</Company>
+    <PackageDescription>This library allows for authorization handling using attributes.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
