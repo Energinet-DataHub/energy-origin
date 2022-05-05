@@ -7,7 +7,7 @@ ENV DATASYNCENDPOINT="http://host.docker.internal:8080/xxxxxx"
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 RUN dotnet nuget add source --name github "https://nuget.pkg.github.com/energy-origin/index.json"
-RUN dotnet add API package EnergyOriginAuthorization --version 1.0.1
+RUN dotnet add PROJECT package EnergyOriginAuthorization --version 1.0.1
 COPY ["API/API.csproj", "API/"]
 RUN dotnet restore "API/API.csproj"
 COPY . .
