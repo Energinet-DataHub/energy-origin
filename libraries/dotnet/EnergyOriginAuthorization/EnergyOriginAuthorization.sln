@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOriginAuthorization", "EnergyOriginAuthorization\EnergyOriginAuthorization.csproj", "{C98BB5F6-B4FA-4FFB-91AC-D76EF0576590}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOriginAuthorization.Tests", "EnergyOriginAuthorization.Tests\EnergyOriginAuthorization.Tests.csproj", "{C1EACB14-E5E5-4C15-A3D2-E07CD645DDBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C98BB5F6-B4FA-4FFB-91AC-D76EF0576590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C98BB5F6-B4FA-4FFB-91AC-D76EF0576590}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C98BB5F6-B4FA-4FFB-91AC-D76EF0576590}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C98BB5F6-B4FA-4FFB-91AC-D76EF0576590}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1EACB14-E5E5-4C15-A3D2-E07CD645DDBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1EACB14-E5E5-4C15-A3D2-E07CD645DDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1EACB14-E5E5-4C15-A3D2-E07CD645DDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1EACB14-E5E5-4C15-A3D2-E07CD645DDBC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D049AE9-800F-4391-B1DD-588B263947CF}
+	EndGlobalSection
+EndGlobal
