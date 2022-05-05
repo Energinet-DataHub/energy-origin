@@ -1,10 +1,12 @@
 ﻿using API.Helpers;
+using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorization.Authorize]
     public class HealthController : Controller
     {
         [HttpGet]
