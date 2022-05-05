@@ -7,7 +7,7 @@
     <UserSecretsId>2195193b-b7e0-4623-be63-76eeebb6afa7</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <OutputType>Exe</OutputType>
-    <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin/domains/emissions</RepositoryUrl>
     <Authors>Team Fenris</Authors>
     <Company>Energinet DataHub A/S</Company>
   </PropertyGroup>
