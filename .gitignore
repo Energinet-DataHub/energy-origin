@@ -2,8 +2,9 @@
 **/Chart.lock
 
 
-# Created by https://www.toptal.com/developers/gitignore/api/python,csharp,visualstudio,visualstudiocode,helm
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,csharp,visualstudio,visualstudiocode,helm
+
+# Created by https://www.toptal.com/developers/gitignore/api/helm,csharp,python,visualstudio,visualstudiocode,macos,windows,linux
+# Edit at https://www.toptal.com/developers/gitignore?templates=helm,csharp,python,visualstudio,visualstudiocode,macos,windows,linux
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -407,6 +408,53 @@ FodyWeavers.xsd
 # Chart dependencies
 **/charts/*.tgz
 
+### Linux ###
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### macOS Patch ###
+# iCloud generated files
+*.icloud
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 *.py[cod]
@@ -509,7 +557,15 @@ ipython_config.py
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
 #poetry.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/#use-with-ide
+.pdm.toml
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 
 # Celery stuff
@@ -573,6 +629,30 @@ cython_debug/
 .ionide
 
 # Support for Project snippet scope
+.vscode/*.code-snippets
+
+# Ignore code-workspaces
+
+### Windows ###
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+
+# Windows shortcuts
+*.lnk
 
 ### VisualStudio ###
 
@@ -755,4 +835,4 @@ cython_debug/
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/python,csharp,visualstudio,visualstudiocode,helm
+# End of https://www.toptal.com/developers/gitignore/api/helm,csharp,python,visualstudio,visualstudiocode,macos,windows,linux
