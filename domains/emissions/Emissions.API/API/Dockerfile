@@ -10,7 +10,7 @@ COPY ["API/API.csproj", "API/"]
 RUN dotnet restore "API/API.csproj"
 COPY . .
 WORKDIR "/src/API"
-RUN dotnet nuget add source --name github "https://nuget.pkg.github.com/energy-origin/index.json"
+RUN dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/energy-origin/index.json"
 RUN dotnet add API package EnergyOriginAuthorization --version 1.0.1
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
