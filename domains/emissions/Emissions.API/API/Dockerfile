@@ -10,6 +10,7 @@ COPY ["API/API.csproj", "API/"]
 RUN dotnet restore "API/API.csproj"
 COPY . .
 WORKDIR "/src/API"
+RUN dotnet add Emissions package EnergyOriginAuthorization --version 1.0.1
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
 FROM build AS publish
