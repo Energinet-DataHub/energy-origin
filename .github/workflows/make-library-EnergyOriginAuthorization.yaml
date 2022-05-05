@@ -21,14 +21,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Debug - cwd
-      run: pwd
-
     - name: Get version
       id: get_version
       uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
       with:
-        yaml_file: version.yaml
+        yaml_file: ./libraries/dotnet/EnergyOriginAuthorization/version.yaml
         yaml_path: version
 
     - name: Setup .NET
@@ -42,24 +39,15 @@ jobs:
     - name: Restore
       run: dotnet restore
 
-    - name: Linting
+    - name: Lint
       run: dotnet format --verify-no-changes -v diag
 
-      # add devcontainer for local debug
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal *.Tests
 
-    - name: Run tests
-      run: dotnet test --no-restore --verbosity normal
-
-    - name: Pack library
-      run: dotnet pack --configuration Release /p:Version=${{ steps.get_version.output.result }}
-
-    - name: Debug - List files
-      run: find .
-
-    - name: fail
-      if: startsWith(github.ref, 'refs/heads/main')
-      run: exit 1
+    - name: Pack
+      run: dotnet pack --output build --configuration Release --no-restore -p:Version=${{ steps.get_version.output.result }} EnergyOriginAuthorization
 
     - name: Publish
       if: startsWith(github.ref, 'refs/heads/main')
-      run: dotnet nuget push bin/Release/*.nupkg --api-key ${{ github.token }} --source github
+      run: dotnet nuget push build/*.nupkg --api-key ${{ github.token }} --source github
