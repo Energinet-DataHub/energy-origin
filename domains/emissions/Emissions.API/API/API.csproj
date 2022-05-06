@@ -7,9 +7,6 @@
     <UserSecretsId>2195193b-b7e0-4623-be63-76eeebb6afa7</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <OutputType>Exe</OutputType>
-    <RestoreAdditionalProjectSources>
-      https://nuget.pkg.github.com/Energinet-DataHub/index.json
-    </RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,11 +19,7 @@
     <PackageReference Include="System.ServiceModel.Http" Version="4.8.*" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.*" />
     <PackageReference Include="System.ServiceModel.Security" Version="4.8.*" />
-    <PackageReference Include="EnergyOriginAuthorization" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Connected Services\" />
+    <PackageReference Include="EnergyOriginAuthorization" Version="1.0.3" />
   </ItemGroup>
 
 </Project>
