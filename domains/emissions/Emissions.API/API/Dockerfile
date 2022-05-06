@@ -7,7 +7,6 @@ ENV DATASYNCENDPOINT="http://host.docker.internal:8080/xxxxxx"
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["API/API.csproj", "API/"]
-RUN dotnet nuget add source --username ${{ github.actor }} --password ${{ github.token }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Energinet-DataHub/index.json"
 RUN dotnet restore "API/API.csproj"
 COPY . .
 WORKDIR "/src/API"
