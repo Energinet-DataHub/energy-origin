@@ -22,10 +22,10 @@ jobs:
       chart_version: ${{ steps.get_semver.outputs.semver }}
       containers: >-
         [
-          { 
-            "deployment_name": "api", 
-            "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile", 
-            "image_name": "eo-emissions", 
+          {
+            "deployment_name": "api",
+            "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile",
+            "image_name": "eo-emissions",
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
             "context": "domains/emissions/Emissions.API/"
           }
@@ -37,7 +37,7 @@ jobs:
         with:
           yaml_file: domains/emissions/chart/Chart.yaml
           yaml_path: version
-      
+
       - name: Get container version
         id: get_api_container_version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
