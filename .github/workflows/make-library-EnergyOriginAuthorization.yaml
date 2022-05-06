@@ -33,9 +33,6 @@ jobs:
       with:
         dotnet-version: 6.0.101
 
-    - name: Setup sources
-      run: dotnet nuget add source --username ${{ github.actor }} --password ${{ github.token }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-
     - name: Restore
       run: dotnet restore
 
@@ -50,4 +47,4 @@ jobs:
 
     - name: Publish
       if: startsWith(github.ref, 'refs/heads/main')
-      run: dotnet nuget push build/*.nupkg --api-key ${{ github.token }} --source github
+      run: dotnet nuget push build/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }}
