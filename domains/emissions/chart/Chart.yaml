@@ -1,6 +1,6 @@
 apiVersion: v2
 name: eo-emissions
-description: A chart containing emissions relating to emissions
+description: A chart containing the emissions domain.
 
 type: application
 version: 0.0.1
