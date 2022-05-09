@@ -1,0 +1,11 @@
+apiVersion: v2
+name: eo-emissions
+description: A chart containing the emissions domain.
+
+type: application
+version: 0.0.1
+
+dependencies:
+  - name: eo-base-helm-chart
+    version: "v0.6.0"
+    repository: "https://energinet-datahub.github.io/helm-charts/"
