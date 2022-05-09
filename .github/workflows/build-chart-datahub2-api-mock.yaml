@@ -4,14 +4,11 @@ on:
   pull_request:
     paths:
       - domains/datahub2-api-mock/**
-      - .github/workflows/build-chart-datahub2-api-mock.yaml
-      - .github/workflows/pr-version-check-datahub2-api-mock.yaml
   push:
     branches:
       - main
     paths:
       - domains/datahub2-api-mock/**
-      - .github/workflows/build-chart-datahub2-api-mock.yaml
 
 concurrency:
   group: ${{ github.ref }}
@@ -42,6 +39,7 @@ jobs:
       chart_folder: domains/datahub2-api-mock/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
+      include_image_name: true
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
