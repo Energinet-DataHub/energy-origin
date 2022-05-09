@@ -1,7 +1,5 @@
 ﻿using API.Helpers;
-using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 
 namespace API.Controllers
