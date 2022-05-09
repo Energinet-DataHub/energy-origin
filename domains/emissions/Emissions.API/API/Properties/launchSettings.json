@@ -14,8 +14,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DATASYNCENDPOINT": "http://localhost:8080/xxxxx"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:8081",
       "dotnetRunMessages": true
@@ -25,8 +24,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DATASYNCENDPOINT": "http://localhost:8080/xxxxx"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Docker": {
