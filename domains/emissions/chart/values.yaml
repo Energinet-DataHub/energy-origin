@@ -15,3 +15,19 @@ eo-base-helm-chart:
     deployment: api
     type: ClusterIP
     port: 80
+
+  ingress:
+    hosts: []
+    paths:
+      - /api/emissions
+    servicePort: 80
+    middlewares:
+      - name: eo-emissions-service
+        namespace:
+      - name: emissions-stripprefix
+
+  middleware:
+    stripPrefix:
+      name: emissions-stripprefix
+      prefixes:
+        - /api/emissions
