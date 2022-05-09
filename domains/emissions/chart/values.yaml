@@ -33,4 +33,4 @@ eo-base-helm-chart:
         - /api/emissions
 
   env:
-    DATASYNCENDPOINT: {{ .Values.emissions.endpoint }}
+    DATASYNCENDPOINT: {{ (.Values.emissions).endpoint }}
