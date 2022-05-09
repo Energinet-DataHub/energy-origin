@@ -9,9 +9,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddScoped<xxxxx>(client => new xxxxxClient(Configuration.GetDataSyncEndpoint()));
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
