@@ -1,0 +1,50 @@
+name: CI - EnergyOriginAuthorization
+
+on:
+  pull_request:
+    paths:
+      - libraries/dotnet/EnergyOriginAuthorization/**
+  push:
+    branches:
+      - main
+    paths:
+      - libraries/dotnet/EnergyOriginAuthorization/**
+
+defaults:
+  run:
+    working-directory: ./libraries/dotnet/EnergyOriginAuthorization
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Get version
+      id: get_version
+      uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+      with:
+        yaml_file: ./libraries/dotnet/EnergyOriginAuthorization/version.yaml
+        yaml_path: version
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: 6.0.101
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Lint
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal *.Tests
+
+    - name: Pack
+      run: dotnet pack --output build --configuration Release --no-restore -p:Version=${{ steps.get_version.outputs.result }} EnergyOriginAuthorization
+
+    - name: Publish
+      if: startsWith(github.ref, 'refs/heads/main')
+      run: dotnet nuget push build/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
