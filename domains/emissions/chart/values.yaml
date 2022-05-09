@@ -31,3 +31,6 @@ eo-base-helm-chart:
       name: emissions-stripprefix
       prefixes:
         - /api/emissions
+
+  env:
+    DATASYNCENDPOINT: {{ .Values.emissions.endpoint }}
