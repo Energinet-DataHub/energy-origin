@@ -3,21 +3,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: health-check-deployment
+  name: emissions-health-check-deployment
   labels:
-    app: health-check
+    app: emissions-health-check
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: health-check
+      app: emissions-health-check
   template:
     metadata:
       labels:
-        app: health-check
+        app: emissions-health-check
     spec:
       containers:
-        - name: health-check
+        - name: emissions-health-check
           image: curlimages/curl:7.82.0
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           env:
@@ -26,12 +26,12 @@ spec:
             - name: DATASYNCENDPOINT
               value: {{ required "emissions.health_check.endpoint is required" .Values.emissions.health_check.endpoint | quote}}
           volumeMounts:
-            - name: health-check-script-volume
+            - name: emissions-health-check-script-volume
               mountPath: "/tmp/health-script"
               readOnly: true
       volumes:
-        - name: health-check-script-volume
+        - name: emissions-health-check-script-volume
           configMap:
-            name: health-check-script
+            name: emissions-health-check-script
             defaultMode: 0744
 {{ end }}
