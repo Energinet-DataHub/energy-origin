@@ -1,27 +1,32 @@
-﻿using API.Helpers;
-using EnergyOriginAuthorization;
+﻿using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     [Authorization.Authorize]
-    public class HealthController : Controller
+    public class HealthController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult GetStatus()
+        private readonly ILogger<HealthController> _logger;
+        private readonly HealthCheckService _healthCheckService;
+        public HealthController(ILogger<HealthController> logger,
+            HealthCheckService healthCheckService)
         {
-            try
-            {
-                Configuration.GetDataSyncEndpoint();
-                return StatusCode(200);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            _healthCheckService = healthCheckService;
+            _logger = logger;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var report = await _healthCheckService.CheckHealthAsync();
+
+            return report.Status == HealthStatus.Healthy ? Ok(report) :
+                StatusCode((int)System.Net.HttpStatusCode.ServiceUnavailable, report);
         }
     }
 }
+
