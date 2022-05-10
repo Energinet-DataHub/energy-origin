@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Version Check - EnergyOriginAuthorization
-on:
-  pull_request:
-    branches: [ main ]
-    paths:
-      - libraries/dotnet/EnergyOriginAuthorization/**
-jobs:
-  check_version:
-    name: Check version
-    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
-    with:
-      yaml_file: libraries/dotnet/EnergyOriginAuthorization/version.yaml
-      yaml_path: version
+# name: Version Check - EnergyOriginAuthorization
+# on:
+#   pull_request:
+#     branches: [ main ]
+#     paths:
+#       - libraries/dotnet/EnergyOriginAuthorization/**
+# jobs:
+#   check_version:
+#     name: Check version
+#     uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+#     with:
+#       yaml_file: libraries/dotnet/EnergyOriginAuthorization/version.yaml
+#       yaml_path: version
