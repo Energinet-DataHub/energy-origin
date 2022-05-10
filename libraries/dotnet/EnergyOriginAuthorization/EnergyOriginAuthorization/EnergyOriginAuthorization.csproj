@@ -10,6 +10,7 @@
     <Authors>Team Fenris</Authors>
     <Company>Energinet DataHub A/S</Company>
     <PackageDescription>This library allows for authorization handling using attributes.</PackageDescription>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
