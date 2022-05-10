@@ -1,9 +1,9 @@
-name: Check Licenses - emissions
+name: Check Licenses - EnergyOriginAuthorization
 on:
   pull_request:
     branches: [ main ]
     paths:
-      - domains/emissions/**
+      - libraries/dotnet/EnergyOriginAuthorization/**
 jobs:
   check-licenses:
     runs-on: ubuntu-latest
@@ -14,4 +14,4 @@ jobs:
     - name: Check license
       uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@main
       with:
-        project-folder: domains/emissions/Emissions.API/API
+        project-folder: libraries/dotnet/EnergyOriginAuthorization/EnergyOriginAuthorization
