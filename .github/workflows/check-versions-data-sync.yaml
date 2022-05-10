@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Helm chart version Check - datahub2 api mock
+name: Version Check - data sync
 on:
   pull_request:
     branches: [ main ]
     paths:
-      - domains/datahub2-api-mock/**
+      - domains/data-sync/**
 jobs:
   helm_check_version:
     name: Helm chart check version
     uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
     with:
-      yaml_file: domains/datahub2-api-mock/chart/Chart.yaml
+      yaml_file: domains/data-sync/chart/Chart.yaml
       yaml_path: version
