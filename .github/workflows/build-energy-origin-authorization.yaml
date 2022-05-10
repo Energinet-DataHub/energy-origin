@@ -1,9 +1,9 @@
 name: Build - EnergyOriginAuthorization
 
 on:
-  # pull_request:
-  #   paths:
-  #     - libraries/dotnet/EnergyOriginAuthorization/**
+  pull_request:
+    paths:
+      - libraries/dotnet/EnergyOriginAuthorization/**
   push:
     branches:
       - main
