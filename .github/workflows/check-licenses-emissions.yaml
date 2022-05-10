@@ -1,6 +1,5 @@
 name: Check Licenses - emissions
 on:
-  workflow_dispatch: {}
   pull_request:
     branches: [ main ]
     paths:
