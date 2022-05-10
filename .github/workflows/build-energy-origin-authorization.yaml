@@ -1,4 +1,4 @@
-name: CI - EnergyOriginAuthorization
+name: Build - EnergyOriginAuthorization
 
 on:
   pull_request:
