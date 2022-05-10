@@ -1,4 +1,4 @@
-name: Build chart datahub2 api mock
+name: Build - datahub2 api mock
 
 on:
   pull_request:

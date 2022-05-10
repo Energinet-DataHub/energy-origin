@@ -12,23 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Helm chart version Check - emissions
+name: Version Check - datahub2 api mock
 on:
   pull_request:
     branches: [ main ]
     paths:
-      - domains/emissions/**
+      - domains/datahub2-api-mock/**
 jobs:
   helm_check_version:
     name: Helm chart check version
     uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
     with:
-      yaml_file: domains/emissions/chart/Chart.yaml
+      yaml_file: domains/datahub2-api-mock/chart/Chart.yaml
       yaml_path: version
-
-  api_check_version:
-    name: API check version
-    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
-    with:
-      yaml_file: domains/emissions/chart/values.yaml
-      yaml_path: eo-base-helm-chart.deployments.api.image.tag
