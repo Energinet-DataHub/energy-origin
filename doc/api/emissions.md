@@ -28,14 +28,21 @@ GET /api/emissions
         {
             "dateFrom": 1514826000, 
             "dateTo": 1514864000,  
-            "emissions": {
-                "co2": 1241245534.213
+            "total": {
+                "co2": 1241245534.213   // g
+            },
+            "relative": {
+                "co2": 1234.213   // g/kWh
             }
         }
     ]
 }
 ```
 
+sum-agg is Sum for each "bucket" in the aggregation level selected.
+
+total values are in grams = sum-agg(comsumption * eds)
+relative is in grams/kwh = total / sum-agg(consumption)
 
 ## Internal call structure
 
