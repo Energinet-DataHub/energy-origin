@@ -118,7 +118,7 @@ Yellow are expected future integrations.
 This view explores how the different components that the platform is build from
 integrates with each other.
 
-![exploded view o EnergiOrigin](diagrams/level1.drawio.png)
+![Exploded view of EnergyOrigin](diagrams/level1.drawio.png)
 
 ## Domains
 
