@@ -9,7 +9,7 @@
 ## Context and Problem Statement
 
 When developing and operating a system or platform,
-one has to consider how one intends to handle ones Continuous Delivery
+one has to consider how one intends to handle Continuous Delivery
 and configuration of the environment.
 
 ---
