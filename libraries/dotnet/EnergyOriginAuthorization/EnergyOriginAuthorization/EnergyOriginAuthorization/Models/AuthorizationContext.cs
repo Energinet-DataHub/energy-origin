@@ -6,10 +6,12 @@ namespace EnergyOriginAuthorization
     {
         public string Actor { get; }
         public string Subject { get; }
-        public AuthorizationContext(string subject, string actor)
+        public string Token { get; }
+        public AuthorizationContext(string subject, string actor, string token)
         {
             Actor = actor;
             Subject = subject;
+            Token = token;
         }
 
         public static AuthorizationContext? decode(string token)
@@ -32,7 +34,7 @@ namespace EnergyOriginAuthorization
 
                 if (!string.IsNullOrWhiteSpace(actor) && !string.IsNullOrWhiteSpace(subject) && requiredScopes.All(it => scopes.Contains(it)))
                 {
-                    return new AuthorizationContext(subject, actor);
+                    return new AuthorizationContext(subject, actor, token);
                 }
 
                 return null;
