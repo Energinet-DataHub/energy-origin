@@ -105,7 +105,7 @@ The diagrams below are documented based on [arc42](https://docs.arc42.org/sectio
 
 ### High Level context diagram
 
-Context diagram, high level overview of the system that will be part of the danish deployment.
+Context diagram, high level overview of the system that will be part of the Danish deployment.
 
 The blue is the platform itself.
 Green are systems that has been integrated to.
