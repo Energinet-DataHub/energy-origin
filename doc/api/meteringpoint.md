@@ -4,11 +4,9 @@
 ## Get meteringpoints
 
 
-
-
 ### Request
 
-```
+```text
 GET /api/meteringpoints
 ```
 

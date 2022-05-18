@@ -6,7 +6,7 @@ The emissions api should take three query parameters
 
 ## Request
 
-```json
+```text
 POST /relations
 
 {
@@ -51,7 +51,7 @@ sequenceDiagram
 
 ## Request
 
-```json
+```text
 GET /meteringpoints
 ```
 
@@ -77,7 +77,7 @@ none
 
 ## Request
 
-```json
+```text
 GET /measurements
     ?meteringpoint=123;456;789
     &dateFrom=1514826000

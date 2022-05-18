@@ -38,7 +38,7 @@ Callback from the OIDC provider.
 
 ### Request
 
-```
+```text
 GET /api/auth/oidc/login/callback
     ?state=...
 ```
@@ -67,7 +67,7 @@ if the user cancels or flow fails.
 
 ### Request
 
-```
+```text
 POST /api/auth/invalidate
 ```
 
@@ -89,7 +89,7 @@ Used to logout the current user, includes back-channel logout to OIDC provider.
 
 ### Request
 
-```
+```text
 POST /api/auth/logout
 ```
 
@@ -113,7 +113,7 @@ Gets the user profile for the current user.
 
 ### Request
 
-```
+```text
 GET /api/auth/profile
 ```
 
@@ -141,7 +141,7 @@ Gets context of the authorized user.
 
 ### Request
 
-```
+```text
 GET /api/auth/context
 ```
 
@@ -192,7 +192,7 @@ An endpoint to marks a user as having accepted terms and conditions.
 
 ### Request
 
-```
+```text
 POST /api/auth/terms/accept
 ```
 

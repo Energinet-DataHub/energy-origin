@@ -7,7 +7,7 @@ The emissions api should take three query parameters
 
 ## Request
 
-```
+```text
 GET /api/emissions
         ?dateFrom=1514826000
         &dateTo=1514864000
