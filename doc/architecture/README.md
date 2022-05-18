@@ -105,7 +105,7 @@ The diagrams below are documented based on [arc42](https://docs.arc42.org/sectio
 
 ### High Level context diagram
 
-Context diagram, high level overview of the system that will be part of the danish deployment.
+Context diagram, high level overview of the system that will be part of the Danish deployment.
 
 The blue is the platform itself.
 Green are systems that has been integrated to.
@@ -118,7 +118,7 @@ Yellow are expected future integrations.
 This view explores how the different components that the platform is build from
 integrates with each other.
 
-![exploded view o EnergiOrigin](diagrams/level1.drawio.png)
+![Exploded view of EnergyOrigin](diagrams/level1.drawio.png)
 
 ## Domains
 

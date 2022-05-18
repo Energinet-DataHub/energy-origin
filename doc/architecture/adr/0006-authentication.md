@@ -14,7 +14,7 @@ How should authentication on the platform happen.
 
 ## Decision Outcome
 
-**OAuth2 and OIDC** are a well established standard, and will be used.
+**OAuth2 and OIDC** are well established standards and will be used.
 
 ## Rationale
 
