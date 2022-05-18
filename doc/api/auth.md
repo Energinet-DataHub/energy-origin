@@ -164,13 +164,63 @@ GET /api/auth/context
 
 ## Terms
 
-TODO
+An endpoint which returns the terms and conditions.
+
+### Request
+
+```
+GET /api/auth/terms
+```
+
+### Parameters
+
+\-
+
+### Response
+
+```json
+{
+    "headline": "Privacy Policy",
+    "terms": "<h1>Hello</h1>",
+    "version": "1"
+}
+```
 
 ## Accept Terms
 
-TODO
+An endpoint to marks a user as having accepted terms and conditions.
 
+### Request
+
+```
+POST /api/auth/terms/accept
+```
+
+### Parameters
+
+\-
+
+### Body
+
+```json
+{
+    "state": {...},
+    "accepted": true,
+    "version": "1"
+}
+```
+
+### Response
+
+```json
+{
+    "next_url": "https://example.com"
+}
+```
 
 ## Forward auth
 
-todo
+ForwardAuth endpoint for Træfik.
+
+https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/
+
