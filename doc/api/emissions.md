@@ -174,13 +174,13 @@ sequenceDiagram
     participant ds as DataSync Domain
     participant eds as EnergiDataService
 
-    spa->>+ em: GET /api/sources ?from:DateTime  &to: DateTime
+    spa->>+ em: GET /api/sources ?dateFrom:DateTime  &dateTo: DateTime
     
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<MeteringPointDTO>
     
     loop For each mp
-      em ->>+ ds: GET /measurements  ?from:DateTime  &to: DateTime  &meteringpoint=
+      em ->>+ ds: GET /measurements  ?dateFrom:DateTime  &dateTo: DateTime  &meteringpoint=
         
       ds --)- em: List< MeasurementDTO>
     end
