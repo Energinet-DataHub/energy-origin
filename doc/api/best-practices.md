@@ -2,7 +2,7 @@
 
 ## Query Parameter Naming
 
-### Date **from** and **to**
+### Date from and to
 
 On APIs best practice is to use the parameter names ***dateFrom*** and ***dateTo***
 each parameter shall take its parameter as a **UNIX timestamp** in **UTC**.

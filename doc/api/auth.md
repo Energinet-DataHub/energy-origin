@@ -109,7 +109,7 @@ POST /api/auth/logout
 
 Gets the user profile for the current user.
 
-***NOTICE*** to be superseded by [#context]
+***NOTICE*** to be superseded by [Context](#context)
 
 ### Request
 

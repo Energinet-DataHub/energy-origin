@@ -34,16 +34,16 @@ The goal of the architecture is to:
 - **Platform**: create an extendable platform where individual domains are
 loosely coupled, to enable domains to be added, replaced or removed.
 
-- **Isolated Domains**: the platform isolate groups of services into domains,
-each domain can have larger responsibility than a single service
-**no changed** required to other domains.
+- **Isolated Domains**: the platform isolates groups of services into domains,
+each domain can have a larger responsibility than a single service.
+**No changes** required to other domains.
 
 ### System Business Requirements and Constraints
 
 Business requirements:
 
 - **OpenSource**: the platform must be OpenSource and a community created around it.
-This will enabled a shared benefit over time.
+This will enable a shared benefit over time.
 
 - **Avoid vendor lock-in**: The platform should not be limited by proprietary third-party
 software to avoid vendor lock in.
@@ -95,7 +95,7 @@ This removes the need for inter domain calls to pull and migrate data from other
 All code must be sufficiently tested by unit and integrations tests,
 so that the developers feel safe when deploying without any gates to production.
 
-All manual tests will be regarded as tech-dept.
+All manual tests will be regarded as tech-debt.
 
 ---
 

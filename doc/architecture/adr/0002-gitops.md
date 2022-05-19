@@ -35,27 +35,27 @@ this ensures that the processes are reproducible and repeatable.
 
 In GitOps **all** infrastructure and deployments are defined in a Git repository.
 
-Storing all of this in a Git repository enabled full **transparency and traceability**
-in what state the platform is in.
+Storing all of this in a Git repository enables full **transparency and traceability**
+about the state of the platform.
 
-In GitOps a **Operator** is used to keep the environment in sync with the repository.
+In GitOps an **Operator** is used to keep the environment in sync with the repository.
 This operator continually monitors both the environment *(running state)* and the
 git repository *(wanted state)*, if the states drift from each other, the operator
 will correct the *running state* towards the *wanted state*.
 
-This removed the possibility to perform changes into the environment without
+This removes the possibility to perform changes in the environment without
 changing the repository.
 
-This in turn changes the old behavior in many Operation teams,
-*perform change -> document change* where the last part not always happens,
-to *document change in git* and the system automatically updated the *running state*
+This in turn changes the old behavior in many Operation teams from
+*perform change -> document change* where the last part does not always happen,
+to *document change in git* and the system automatically updates the *running state*
 to the *wanted state*
 
 ![image](../images/common_gitops_pipeline.png)
 
 ### Positive Consequences
 
-* All changes to the environment are document in a permanent history in a Git repository.
+* All changes to the environment are documented as permanent history in a Git repository.
 * Changes to the environment can be gated behind pull-requests to ensure the team or other
 parties agree with the changes.
 * No direct access to the environment for developers or operations.

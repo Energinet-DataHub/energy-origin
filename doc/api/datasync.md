@@ -57,7 +57,7 @@ GET /meteringpoints
 
 ## Parameters
 
-none
+\-
 
 ## Response
 
