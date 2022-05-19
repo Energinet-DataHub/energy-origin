@@ -23,7 +23,7 @@ As part of the Green transition in the energy sector Granular Certificates are
 becoming a central part of the puzzle to solve the ever growing need to be able
 to document the green and/or renewable aspect of energy.
 
-The changes in how energy is handled and consumed is changed in a increasing
+The changes in how energy is handled and consumed is changing in an increasing
 manner, so a platform that can handle these challenges are needed to enable the
 green transition.
 
