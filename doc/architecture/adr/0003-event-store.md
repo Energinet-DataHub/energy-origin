@@ -16,7 +16,7 @@ when they are added, without having to create migration scripts between services
 ## Decision Outcome
 
 The platform will use **Event sourcing** to store data in the form of events in a shared
-event store, and each domain will be build using a [**CQRS**](https://martinfowler.com/bliki/CQRS.html) (Command Query Responsibility Segregation) pattern.
+event store, and each domain will be built using the [**CQRS**](https://martinfowler.com/bliki/CQRS.html) (Command Query Responsibility Segregation) pattern.
 
 ---
 
