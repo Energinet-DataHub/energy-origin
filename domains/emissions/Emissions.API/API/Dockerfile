@@ -17,5 +17,5 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK CMD curl --fail http://localhost:5000/health || exit 1  
+HEALTHCHECK CMD curl --fail http://localhost:5000/health || exit 1
 ENTRYPOINT ["dotnet", "API.dll"]

@@ -1,67 +1,33 @@
-name: CI/CD
+name: Build - emissions
 
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+      - domains/emissions/**
   push:
     branches:
       - main
-  workflow_dispatch:
-    branches:
-      - main
-  
-concurrency: 
+    paths:
+      - domains/emissions/**
+
+concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: ./domains/data-sync/services/DataSync.API
-
 jobs:
-  dotnet_validate:
-    name: Dotnet validate 
-    runs-on: ubuntu-latest
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-      DOTNET_NOLOGO: true
-      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: false
-      DOTNET_MULTILEVEL_LOOKUP: 0
-
-    steps:
-    - uses: actions/checkout@v2
-      
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v1.9.0
-      with:
-        dotnet-version: 6.0.101
-
-    - name: Restore
-      run: dotnet restore
-      
-    - name: Linting
-      run: dotnet format --verify-no-changes -v diag
-
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-
-    - name: Test
-      run: dotnet test
-
   define_build:
-    name: Define build matrix 
+    name: Define build matrix
     runs-on: ubuntu-latest
     outputs:
       chart_version: ${{ steps.get_semver.outputs.semver }}
       containers: >-
         [
-          { 
+          {
             "deployment_name": "api",
-            "dockerfile": "domains/data-sync/services/DataSync.API/API/Dockerfile",
-            "image_name": "eo-data-sync",
+            "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile",
+            "image_name": "eo-emissions",
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
-            "context": "domains/data-sync/services/DataSync.API/"
+            "context": "domains/emissions/Emissions.API/"
           }
         ]
     steps:
@@ -69,27 +35,28 @@ jobs:
         id: get_semver
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/data-sync/chart/Chart.yaml
+          yaml_file: domains/emissions/chart/Chart.yaml
           yaml_path: version
 
       - name: Get container version
         id: get_api_container_version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/data-sync/chart/values.yaml
+          yaml_file: domains/emissions/chart/values.yaml
           yaml_path: eo-base-helm-chart.deployments.api.image.tag
 
   build_container_and_release_chart:
     name: Build containers
-    needs: [dotnet_validate, define_build]
+    needs: [define_build]
     uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
-      chart_folder: domains/data-sync/chart
+      chart_folder: domains/emissions/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
+      include_image_name: true
     secrets:
-      RELEASE_CHART_TOKEN: ${{ secrets.RELEASE_CHART_TOKEN }}
+      deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
   update_environment:
     name: Update env
@@ -105,4 +72,4 @@ jobs:
       chart_name: ${{ needs.build_container_and_release_chart.outputs.chart_name }}
       chart_version: ${{ needs.build_container_and_release_chart.outputs.chart_version }}
     secrets:
-      UPDATE_ENV_TOKEN: ${{ secrets.UPDATE_ENV_TOKEN }}
+      deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}

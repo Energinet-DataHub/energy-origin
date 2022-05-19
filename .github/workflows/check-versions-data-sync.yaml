@@ -1,0 +1,13 @@
+name: Version Check - data sync
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - domains/data-sync/**
+jobs:
+  helm_check_version:
+    name: Helm chart check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: domains/data-sync/chart/Chart.yaml
+      yaml_path: version

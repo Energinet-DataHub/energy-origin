@@ -1,0 +1,13 @@
+name: Version Check - EnergyOriginAuthorization
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - libraries/dotnet/EnergyOriginAuthorization/**
+jobs:
+  check_version:
+    name: Check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: libraries/dotnet/EnergyOriginAuthorization/version.yaml
+      yaml_path: version

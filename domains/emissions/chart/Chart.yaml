@@ -1,9 +1,9 @@
 apiVersion: v2
-name: eo-data-sync
-description: A chart containing the sync domain
+name: eo-emissions
+description: A chart containing the emissions domain.
 
 type: application
-version: 0.2.5
+version: 0.0.1
 
 dependencies:
   - name: eo-base-helm-chart
