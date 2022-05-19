@@ -31,8 +31,8 @@ green transition.
 
 The goal of the architecture is to:
 
-- **Platform**: create a extendable platform where individual domains are
-loosely coupled to enabled domains to be added, replaced or removed with
+- **Platform**: create an extendable platform where individual domains are
+loosely coupled, to enable domains to be added, replaced or removed.
 
 - **Isolated Domains**: the platform isolate groups of services into domains,
 each domain can have larger responsibility than a single service
