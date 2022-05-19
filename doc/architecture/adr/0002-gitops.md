@@ -63,4 +63,4 @@ parties agree with the changes.
 
 ### Negative Consequences
 
-* Configuration of environment up until the operator is running requires to be push-based.
+* Configuration of the environment up until the operator is running is required to be push-based.
