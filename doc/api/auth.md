@@ -188,7 +188,7 @@ GET /api/auth/terms
 
 ## Accept Terms
 
-An endpoint to marks a user as having accepted terms and conditions.
+An endpoint to mark a user as having accepted terms and conditions.
 
 ### Request
 
