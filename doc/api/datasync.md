@@ -30,7 +30,7 @@ POST /relations
 }
 ```
 
-## Create relations for company
+## Internal call structure
 
 ```mermaid
 sequenceDiagram
