@@ -24,12 +24,12 @@ becoming a central part of the puzzle to solve the ever growing need to be able
 to document the green and/or renewable aspect of energy.
 
 The changes in how energy is handled and consumed is changing in an increasing
-manner, so a platform that can handle these challenges are needed to enable the
+manner, so a platform that can handle these challenges is needed to enable the
 green transition.
 
 ### Architectural Goals and Constraints
 
-The goal of the architecture is to:
+The goals of the architecture are:
 
 - **Platform**: create an extendable platform where individual domains are
 loosely coupled, to enable domains to be added, replaced or removed.
@@ -115,7 +115,7 @@ Yellow are expected future integrations.
 
 ## EnergyOrigin internals
 
-This view explores how the different components that the platform is build from
+This view explores how the different components that the platform is built from
 integrates with each other.
 
 ![Exploded view of EnergyOrigin](diagrams/level1.drawio.png)

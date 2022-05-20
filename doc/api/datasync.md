@@ -1,7 +1,5 @@
 # Data Sync Domain
 
-The emissions api should take three query parameters
-
 # Create relations
 
 ## Request

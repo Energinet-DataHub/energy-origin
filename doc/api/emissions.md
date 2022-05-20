@@ -100,11 +100,11 @@ sequenceDiagram
 
     spa->>+ em: GET /api/emissions  ?dateFrom:DateTime  &dateTo: DateTime
     
-    em->>+ ds: GET /meteringpoint
+    em->>+ ds: GET /meteringpoints
     ds--)- em: List<MeteringPointDTO>
     
     loop For each mp
-      em ->>+ ds: GET /meteringpoint/{gsrn}/measurements  ?datefrom:DateTime  &dateTo: DateTime 
+      em ->>+ ds: GET /meteringpoints/{gsrn}/measurements  ?datefrom:DateTime  &dateTo: DateTime 
         
       ds --)- em: List< MeasurementDTO>
     end

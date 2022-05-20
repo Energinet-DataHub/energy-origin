@@ -29,6 +29,6 @@ An event in the event store should always be an object in past sense: eg:
 UserCreated not CreateUser.
 
 When a new domain is created it can build its state in a query model optimized to
-the usecase from the event store.
+its usecase from the event store.
 
-Each domain can build and optimized datastore or precalculate results needed.
+Each domain can build an optimized datastore or precalculate results needed.
