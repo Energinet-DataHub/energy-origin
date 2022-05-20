@@ -40,7 +40,7 @@ sequenceDiagram
     participant datasync as DataSync Domain
 
     spa->>+auth: login
-        auth ->>+ datasync: POST: /relation  {tin=12345678}
+        auth ->>+ datasync: POST: /relations  {tin=12345678}
         datasync -->>- auth: Success
     auth-->>-spa: jwt / opaque token (cookie)
 
