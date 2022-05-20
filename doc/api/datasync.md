@@ -63,7 +63,7 @@ GET /meteringpoints
 {
     "meteringpoints": [
         {
-            "meteringPointId": 57131300000000001
+            "gsrn": 57131300000000001
         }
     ]
 }
@@ -77,14 +77,14 @@ GET /meteringpoints
 
 ```text
 GET /measurements
-    ?meteringpoint=123;456;789
+    ?gsrn=123;456;789
     &dateFrom=1514826000
     &dateTo=1514864000
 ```
 
 ## Parameters
 
-- meteringpoint: 18 digit integer id(GSRN) of a meteringpoint, multiple can be seperated with ;
+- gsrn: 18 digit integer id(GSRN) of a meteringpoint, multiple can be seperated with ;
 - dateFrom: [UNIX timestamp](best-practices.md#date-from-and-to)
 - dateTo: [UNIX timestamp](best-practices.md#date-from-and-to)
 
@@ -95,7 +95,7 @@ GET /measurements
 {
     "measurements": [
         {
-            "meteringPointId": 57131300000000001,
+            "gsrn": 57131300000000001,
             "dateFrom": 1514826000,
             "dateTo": 1514864000,
             "quantity": 1865880,

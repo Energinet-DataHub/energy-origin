@@ -104,7 +104,7 @@ sequenceDiagram
     ds--)- em: List<MeteringPointDTO>
     
     loop For each mp
-      em ->>+ ds: GET /meteringpoints/{gsrn}/measurements  ?datefrom:DateTime  &dateTo: DateTime 
+      em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
         
       ds --)- em: List< MeasurementDTO>
     end
@@ -180,7 +180,7 @@ sequenceDiagram
     ds--)- em: List<MeteringPointDTO>
     
     loop For each mp
-      em ->>+ ds: GET /measurements  ?dateFrom:DateTime  &dateTo: DateTime  &meteringpoint=
+      em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
         
       ds --)- em: List< MeasurementDTO>
     end
