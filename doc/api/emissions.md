@@ -39,10 +39,10 @@ GET /api/emissions
 }
 ```
 
-sum-agg is Sum for each "bucket" in the aggregation level selected.
+sumAgg is Sum for each "bucket" in the aggregation level selected.
 
-total values are in grams = sum-agg(comsumption * eds)
-relative is in grams/kwh = total / sum-agg(consumption)
+total values are in grams = sumAgg(comsumption * eds)
+relative is in grams/kwh = total / sumAgg(consumption)
 
 ### Example calculation
 
