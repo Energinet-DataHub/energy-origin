@@ -86,7 +86,7 @@ GET /measurements
 
 ## Parameters
 
-- meteringpoint: 17 digit integer id of a meteringpoint, multiple can be seperated with ;
+- meteringpoint: 18 digit integer id(GSRN) of a meteringpoint, multiple can be seperated with ;
 - dateFrom: [UNIX timestamp](best-practices.md#date-from-and-to)
 - dateTo: [UNIX timestamp](best-practices.md#date-from-and-to)
 
