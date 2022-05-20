@@ -22,7 +22,7 @@ event store, and each domain will be built using the [**CQRS**](https://martinfo
 
 ## Rationale
 
-Storing the events in a central shared store removes the criticality in each domain
+Storing the events in a centrally shared store removes the criticality in each domain
 on how to store and migrate data.
 
 An event in the event store should always be an object in past sense: eg:
