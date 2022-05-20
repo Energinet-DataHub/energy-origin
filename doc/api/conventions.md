@@ -1,4 +1,4 @@
-# Best Practices
+# Conventions
 
 ## Query Parameter Naming
 
