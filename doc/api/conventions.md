@@ -18,12 +18,11 @@ Is a enum to define the aggregation level for the response.
 
 Possible values:
 
-- 15MIN
+- QUARTERHOUR
 - HOUR
 - DAY
 - WEEK
 - MONTH
-- QUARTER
 - YEAR
 - ACTUAL
 - TOTAL
