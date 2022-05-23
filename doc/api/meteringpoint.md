@@ -12,9 +12,7 @@ GET /api/meteringpoints
 
 ### Parameters
 
-- dateFrom: [UNIX timestamp](best-practices.md#date-from-and-to)
-- dateTo: [UNIX timestamp](best-practices.md#date-from-and-to)
-- aggregation: [aggregation ENUM](best-practices.md#aggregation)
+\-
 
 ### Response
 
