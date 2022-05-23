@@ -14,7 +14,9 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATASYNCENDPOINT": "http://localhost:8080/",
+        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/"
       },
       "applicationUrl": "http://localhost:8081",
       "dotnetRunMessages": true
@@ -24,7 +26,9 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATASYNCENDPOINT": "http://localhost:8080/",
+        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/"
       }
     },
     "Docker": {
