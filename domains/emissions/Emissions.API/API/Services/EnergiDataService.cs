@@ -29,11 +29,11 @@ public class EnergiDataService : IEnergiDataService
         return null;
     }
 
-    public async Task<EmissionsResponse> GetEmissions(DateTime dateFrom, DateTime dateTo, string priceArea)
+    public async Task<EmissionsResponse> GetEmissions(DateTime dateFrom, DateTime dateTo)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo, priceArea));
+            return await _httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
         }
         catch (JsonException)
         {
@@ -47,10 +47,10 @@ public class EnergiDataService : IEnergiDataService
         return null;
     }
 
-    string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo, string priceArea)
+    string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
-            $"datastore_search_sql?sql=SELECT \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"PriceArea\" = '{priceArea}' AND \"HourUTC\" >= '{dateFrom.ToShortDateString()}' AND \"HourUTC\" <= '{dateTo.ToShortDateString()}' ";
+            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom.ToShortDateString()}' AND \"HourUTC\" <= '{dateTo.ToShortDateString()}' ";
     }
 
     string GetDeclarationProductionQuery(DateTime dateTime, DateTime dateFrom, Aggregation aggregation)

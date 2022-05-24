@@ -40,7 +40,7 @@ public class EmissionsController : AuthorizationController
     
     [HttpGet]
     [Route("emissions")]
-    public async Task<IEnumerable<GetEmissionsResponse>> GetEmissions(
+    public async Task<Emissions> GetEmissions(
         [Required] long dateFrom, 
         [Required] long dateTo, 
         Aggregation aggregation = Aggregation.Actual)

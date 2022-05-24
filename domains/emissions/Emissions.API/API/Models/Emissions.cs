@@ -1,11 +1,31 @@
-﻿namespace API.Models
+﻿using System.Text.Json.Serialization;
+
+namespace API.Models;
+
+public class Emissions
 {
-    public class Emissions
-    {
-        public long MeteringPointId { get; set; }
-        public long dateFrom { get; set; }
-        public long dateTo { get; set; }
-        public int Quantity { get; set; }
-        public int Quality { get; set; }
-    }
+    [JsonPropertyName("dateFrom")]
+    public long DateFrom { get; set; }
+    [JsonPropertyName("dateTo")]
+    public long DateTo { get; set; }
+    [JsonPropertyName("total")]
+    public Total Total { get; set; }
+    [JsonPropertyName("relative")]
+    public Relative Relative { get; set; }
+    
+    
+}
+
+public class Total
+{
+    [JsonPropertyName("co2")]
+    public float CO2 { get; set; } //g
+  
+}
+
+public class Relative
+{
+    [JsonPropertyName("co2")]
+    public float CO2 { get; set; } //g/kWh
+  
 }

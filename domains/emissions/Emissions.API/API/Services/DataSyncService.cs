@@ -32,7 +32,7 @@ public class DataSyncService : IDataSyncService
         return null;
     }
 
-    public async Task<IEnumerable<long>> GetListOfMeteringPoints(AuthorizationContext authorizationContext)
+    public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext authorizationContext)
     {
   
         var uri = new Uri($"GetByTin/{authorizationContext.Subject}");
@@ -42,7 +42,7 @@ public class DataSyncService : IDataSyncService
             var meteringPoints = await _httpClient.GetFromJsonAsync<List<MeteringPoint>>(uri);
             if (meteringPoints != null)
             {
-                return meteringPoints.Select(_ => _.Gsrn);
+                return meteringPoints;
             }
         }
         catch (Exception e)

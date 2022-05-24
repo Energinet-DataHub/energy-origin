@@ -6,4 +6,7 @@ public class MeteringPoint
 {
     [JsonPropertyName("gsrn")]
     public long Gsrn { get; set; }
+    
+    [JsonPropertyName("biddingZone")]
+    public string GridArea { get; set; }
 }
