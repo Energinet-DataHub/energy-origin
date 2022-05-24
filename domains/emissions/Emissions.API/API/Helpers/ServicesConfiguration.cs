@@ -15,5 +15,7 @@ public static class ServicesConfiguration
             client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
         });
         services.AddTransient<ISourceDeclarationService, SourceDeclarationService>();
+        
+        services.AddTransient<IEmissionsService, EmissionsService>();
     }
 }
