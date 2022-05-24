@@ -5,10 +5,12 @@ namespace API.Services;
 
 public class EnergiDataService : IEnergiDataService
 {
+    private readonly ILogger _logger;
     readonly HttpClient _httpClient;
     
-    public EnergiDataService(HttpClient httpClient)
+    public EnergiDataService(ILogger logger, HttpClient httpClient)
     {
+        _logger = logger;
         _httpClient = httpClient;
     }
     public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo, Aggregation aggregation)

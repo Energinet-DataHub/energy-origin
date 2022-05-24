@@ -21,16 +21,6 @@
       "applicationUrl": "http://localhost:8081",
       "dotnetRunMessages": true
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DATASYNCENDPOINT": "http://localhost:8080/",
-        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/"
-      }
-    },
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,

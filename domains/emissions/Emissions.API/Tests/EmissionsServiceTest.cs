@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using API.Models;
 using API.Services;
 using AutoFixture;
+using EnergyOriginAuthorization;
 using Moq;
 using Moq.Protected;
+using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace Tests;
@@ -23,13 +25,15 @@ public class EmissionsServiceTest
     }
 
     [Fact]
-    public async void GetEmissions()
+    public async void OneDayPeriod_GetEmissions_EmissionRecordsReturned()
     {
-        var edsMock = SetupHttpClient();
+        var result = new Fixture().Create<EmissionsResponse>();
+        
+        var edsMock = SetupHttpClient(JsonSerializer.Serialize(result));
         
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var sut = new EnergiDataService(edsMock);
+        var sut = new EnergiDataService(TODO, edsMock);
 
         var res = await sut.GetEmissions(dateFrom, dateTo);
         
@@ -37,9 +41,34 @@ public class EmissionsServiceTest
         Assert.NotEmpty(res.Result.EmissionRecords);
     }
 
-    private HttpClient SetupHttpClient()
+    [Fact]
+    public async void ConsumptionAndEmission_CalculateTotalEmission_TotalEmission()
     {
-        var result = new Fixture().Create<EmissionsResponse>();
+        var dateFrom = new DateTime(2021, 1, 1);
+        var dateTo = new DateTime(2021, 1, 2);
+        var emissions = CreateEmissions(dateFrom, dateTo);
+        var meteringPoints = CreateMeteringPoints();
+        var measurements = CreateMeasurements(dateFrom, dateTo);
+        var context = new Mock<AuthorizationContext>();
+
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When("meteringPoints*").Respond("text/json", JsonSerializer.Serialize(meteringPoints));
+        mockHttp.When("measurements*").Respond("text/json", JsonSerializer.Serialize(measurements));
+        mockHttp.When("emissions*").Respond("text/json", JsonSerializer.Serialize(emissions));
+
+        var edsHttpClientMock = new HttpClient(mockHttp);
+        var dataSyncHttpClientMock = new HttpClient(mockHttp);
+        var edsService = new EnergiDataService(null, edsHttpClientMock);
+        var dataSyncService = new DataSyncService(null, dataSyncHttpClientMock);
+        
+        var sut = new EmissionsService(dataSyncService, edsService);
+
+        var emissionsResult = sut.GetEmissions(context.Object, ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(), ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds() , Aggregation.Hour);
+    }
+
+    private HttpClient SetupHttpClient(string serialize)
+    {
+        
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         handlerMock
             .Protected()
@@ -53,7 +82,7 @@ public class EmissionsServiceTest
             .ReturnsAsync(new HttpResponseMessage()
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(JsonSerializer.Serialize(result)),
+                Content = new StringContent(serialize),
             }).Verifiable();
         
         

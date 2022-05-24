@@ -1,7 +1,5 @@
-using System.Collections;
 using API.Models;
 using EnergyOriginAuthorization;
-using Microsoft.VisualBasic;
 
 namespace API.Services;
 

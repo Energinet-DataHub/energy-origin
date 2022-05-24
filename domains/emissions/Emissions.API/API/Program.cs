@@ -15,7 +15,7 @@ builder.Services.AddCustomServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (Configuration.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
