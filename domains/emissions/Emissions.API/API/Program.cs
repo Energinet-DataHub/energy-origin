@@ -1,5 +1,8 @@
 using System.Text.Json.Serialization;
 using API.Helpers;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
 

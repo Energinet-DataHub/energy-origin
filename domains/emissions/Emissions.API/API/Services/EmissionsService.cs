@@ -38,7 +38,7 @@ public class EmissionsService : IEmissionsService
 
     }
 
-    private Emissions CalculateTotalEmission(List<EmissionRecord> emissions,
+    internal virtual Emissions CalculateTotalEmission(List<EmissionRecord> emissions,
         List<Tuple<MeteringPoint, IEnumerable<Measurement>>> measurements, long dateFrom, long dateTo)
     {
         float totalEmission = 0;
