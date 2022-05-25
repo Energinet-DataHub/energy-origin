@@ -23,7 +23,7 @@ public class CalculateEmissionsTest
 
         var sut = new EmissionsCalculator();
 
-        var result = sut.CalculateTotalEmission(emissions, timeSeries, DateTimeUtil.ToUnixTime(dateFrom),
+        var result = sut.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
             DateTimeUtil.ToUnixTime(dateTo));
 
         Assert.NotNull(result);

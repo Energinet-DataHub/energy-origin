@@ -15,5 +15,7 @@ public enum Aggregation
     [Description("Quarter")]
     Quarter,
     [Description("Actual")]
-    Actual
+    Actual,
+    [Description("Total")]
+    Total
 }

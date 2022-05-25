@@ -1,14 +1,10 @@
 namespace API.Helpers;
 
-public class DateTimeUtil
+public static class DateTimeUtil
 {
-    public static DateTime ToUtcDateTime(long unixDateTimeSeconds)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(unixDateTimeSeconds).UtcDateTime;
-    }
+    public static DateTime ToUtcDateTime(this long unixDateTimeSeconds) => 
+        DateTimeOffset.FromUnixTimeSeconds(unixDateTimeSeconds).UtcDateTime;
 
-    public static long ToUnixTime(DateTime dateTime)
-    {
-        return ((DateTimeOffset)DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)).ToUnixTimeSeconds();
-    }
+    public static long ToUnixTime(this DateTime dateTime) => 
+        ((DateTimeOffset)DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)).ToUnixTimeSeconds();
 }

@@ -12,7 +12,7 @@ namespace DataSync.API.Controllers
 {
 [ApiController]
 [Route("[controller]")]
-//[Authorize]
+[Authorize]
 public class EmissionsController : AuthorizationController
 {
     private readonly ILogger _logger;
@@ -40,10 +40,10 @@ public class EmissionsController : AuthorizationController
     
     [HttpGet]
     [Route("emissions")]
-    public async Task<Emissions> GetEmissions(
+    public async Task<IEnumerable<Emissions>> GetEmissions(
         [Required] long dateFrom, 
         [Required] long dateTo, 
-        Aggregation aggregation = Aggregation.Actual)
+        Aggregation aggregation = Aggregation.Total)
     {
         
         // Validation

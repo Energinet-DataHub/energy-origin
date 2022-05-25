@@ -17,7 +17,7 @@ public class EmissionsService : IEmissionsService
         _emissionsCalculator = emissionsCalculator;
     }
 
-    public async Task<Emissions> GetTotalEmissions(AuthorizationContext authorizationContext,
+    public async Task<IEnumerable<Emissions>> GetTotalEmissions(AuthorizationContext authorizationContext,
         long dateFrom, long dateTo, Aggregation aggregation)
     {
         //Get list of metering points
@@ -30,7 +30,7 @@ public class EmissionsService : IEmissionsService
         var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
 
         //Calculate total emission
-        return _emissionsCalculator.CalculateTotalEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo);
+        return _emissionsCalculator.CalculateEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext authorizationContext, long dateFrom, long dateTo,
