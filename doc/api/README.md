@@ -2,7 +2,7 @@
 
 This folder will contain documentation for working with the APIs and developing the APIs.
 
-- [Best Practices](best-practices.md)
+- [Conventions](conventions.md)
 
 ## PUBLIC
 
