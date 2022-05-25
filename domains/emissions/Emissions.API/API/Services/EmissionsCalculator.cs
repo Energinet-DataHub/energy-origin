@@ -58,7 +58,90 @@ class EmissionsCalculator : IEmissionsCalculator
             }
         }
 
-        var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Date);
+        //var test = true;
+        //if (test == true)
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Day);
+        //}
+        //if (test == false)
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Year);
+        //}
+
+        //if (aggregation == Aggregation.Hour)
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Hour);
+        //}
+        IEnumerable<IGrouping<string, Emission>> groupedEmissions;
+
+        // var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Year);
+
+
+        switch (aggregation)
+        {
+            case Aggregation.Year:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Year.ToString());
+                break;
+
+            case Aggregation.Month:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString("yyyy/MM"));
+                break;
+
+            case Aggregation.Day:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString("yyyy/MM/dd"));
+                break;
+
+            case Aggregation.Hour:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString("yyyy/MM/dd/HH"));
+                break;
+
+            case Aggregation.Quarter:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString("yyyy/MM/dd/HH/mm"));  // We need to make this for each quarter
+                break;
+
+            case Aggregation.Actual:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString("yyyy/MM/dd/HH"));
+                break;
+
+            case Aggregation.Total:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date);
+                break;
+
+            default:
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.ToString());
+                break;
+        }
+
+        //if (aggregation.Equals(Aggregation.Year))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Year);
+        //}
+        //else if (aggregation.Equals(Aggregation.Month))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Month);
+        //}
+        //else if (aggregation.Equals(Aggregation.Day))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Day);
+        //}
+        //else if (aggregation.Equals(Aggregation.Hour))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Hour);
+        //}
+        //else if (aggregation.Equals(Aggregation.Quarter))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.Q);
+        //}
+        //else if (aggregation.Equals(Aggregation.Actual))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date.);
+        //}
+        //else if (aggregation.Equals(Aggregation.Total))
+        //{
+        //    var groupedEmissions = listOfEmissions.GroupBy(_ => _.Date);
+        //}
+
+
 
         float totalForBucket = 0;
         var bucketEmissions = new List<Emissions>();
@@ -77,8 +160,8 @@ class EmissionsCalculator : IEmissionsCalculator
 
         return bucketEmissions;
     }
-    
-   
+
+
 }
 
 internal class Emission
@@ -86,3 +169,4 @@ internal class Emission
     public DateTime Date { get; set; }
     public float CO2 { get; set; }
 } 
+

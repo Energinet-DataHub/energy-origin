@@ -20,11 +20,12 @@ public class CalculateEmissionsTest
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
         var timeSeries = _dateSetFactory.CreateTimeSeries();
         var emissions = _dateSetFactory.CreateEmissions();
+     
 
         var sut = new EmissionsCalculator();
 
         var result = sut.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
-            DateTimeUtil.ToUnixTime(dateTo));
+            DateTimeUtil.ToUnixTime(dateTo), aggregation);
 
         Assert.NotNull(result);
     }
