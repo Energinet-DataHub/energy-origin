@@ -10,7 +10,7 @@ class EmissionsCalculator : IEmissionsCalculator
     {
         float totalEmission = 0;
         uint totalConsumption = 0;
-        float relative = 0;
+        float relativeCO2 = 0;
         
         foreach (var measurement in measurements)
         {
@@ -18,7 +18,8 @@ class EmissionsCalculator : IEmissionsCalculator
             totalConsumption += (uint)timeSeries.Sum(_ => _.Quantity);
             foreach (var emission in emissions)
             {
-                var co2 = emission.CO2PerkWh * (timeSeries.First(_ => emission.GridArea ==  measurement.MeteringPoint.GridArea && DateTimeUtil.ToUtcDateTime(_.DateFrom) == emission.HourUTC).Quantity / 1000);
+                var co2 = (emission.CO2PerkWh * timeSeries.First(_ => emission.GridArea ==  measurement.MeteringPoint.GridArea && DateTimeUtil.ToUtcDateTime(_.DateFrom) == emission.HourUTC).Quantity)/1000;
+                relativeCO2 = 
                 totalEmission += co2;
             }
         }
@@ -29,7 +30,7 @@ class EmissionsCalculator : IEmissionsCalculator
             DateFrom = dateFrom,
             DateTo = dateTo,
             Total = new Total {CO2 = totalEmission},
-            Relative = new Relative {CO2 = relative},
+            Relative = new Relative {CO2 = relativeCO2},
         };
     }
 }
