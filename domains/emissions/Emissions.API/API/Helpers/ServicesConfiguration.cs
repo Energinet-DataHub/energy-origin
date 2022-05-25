@@ -17,5 +17,6 @@ public static class ServicesConfiguration
         services.AddTransient<ISourceDeclarationService, SourceDeclarationService>();
         
         services.AddTransient<IEmissionsService, EmissionsService>();
+        services.AddTransient<IEmissionsCalculator, EmissionsCalculator>();
     }
 }

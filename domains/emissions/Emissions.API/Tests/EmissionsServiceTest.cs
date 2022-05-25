@@ -12,79 +12,58 @@ using AutoFixture;
 using EnergyOriginAuthorization;
 using Moq;
 using Moq.Protected;
-using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace Tests;
 
 public class EmissionsServiceTest
 {
+    readonly DateSetFactory _dateSetFactory = new();
+    
     [Fact]
-    public async void a()
-    {
-        var dataSyncMock = new Mock<IDataSyncService>();
-       // dataSyncMock.Setup(x => x.GetListOfMeteringPoints().ReturnsAsync());
-    }
-
-    [Fact]
-    public async void OneDayPeriod_GetEmissions_EmissionRecordsReturned()
+    public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
     {
         var result = new Fixture().Create<EmissionsResponse>();
-        
+
         var edsMock = SetupHttpClient(JsonSerializer.Serialize(result));
-        
+
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var sut = new EnergiDataService(TODO, edsMock);
+        var sut = new EnergiDataService(null, edsMock);
 
         var res = await sut.GetEmissions(dateFrom, dateTo);
-        
+
         Assert.NotNull(res);
         Assert.NotEmpty(res.Result.EmissionRecords);
     }
 
     [Fact]
-    public async void ConsumptionAndEmission_CalculateTotalEmission_TotalEmission()
+    public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
     {
-
-        //var emissions = CreateEmissions(dateFrom, dateTo);
-        //var meteringPoints = CreateMeteringPoints();
-        //var measurements = CreateMeasurements(dateFrom, dateTo);
-        //var context = new Mock<AuthorizationContext>();
-
-        //var mockHttp = new MockHttpMessageHandler();
-        //mockHttp.When("meteringPoints*").Respond("text/json", JsonSerializer.Serialize(meteringPoints));
-        //mockHttp.When("measurements*").Respond("text/json", JsonSerializer.Serialize(measurements));
-        //mockHttp.When("emissions*").Respond("text/json", JsonSerializer.Serialize(emissions));
-
-        //var edsHttpClientMock = new HttpClient(mockHttp);
-        //var dataSyncHttpClientMock = new HttpClient(mockHttp);
-        //var edsService = new EnergiDataService(null, edsHttpClientMock);
-        //var dataSyncService = new DataSyncService(null, dataSyncHttpClientMock);
-
         //Arrange
+        var context = new AuthorizationContext("subject", "actor", "token");
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var meteringPoints = new List<MeteringPoint>();
+        var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
+        var measurements = _dateSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
-        mockDataSyncService.Setup(a => a.GetListOfMeteringPoints(It.IsAny<AuthorizationContext>()))
-            .Returns(Task.FromResult(meteringPoints.AsEnumerable()));
 
-        var mockEdsService = new Mock<IEnergiDataService>();
-        //var sut = new EmissionsService(mockDataSyncService.Object, mockEdsService.Object);
-        var mockSut = new Mock<EmissionsService>();
-        mockSut.Setup(a => a.GetEmissions(It.IsAny<AuthorizationContext>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<Aggregation>()))
-            .CallBase();
-        mockSut.Setup(a => a.CalculateTotalEmission(It.IsAny<List<EmissionRecord>>(), It.IsAny<List<Tuple<MeteringPoint, IEnumerable<Measurement>>>>(), It.IsAny<long>(), It.IsAny<long>()));
+        mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<long>(),
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Aggregation>()))
+            .Returns(Task.FromResult(measurements.AsEnumerable()));
 
+        var sut = new EmissionsService(mockDataSyncService.Object, null, null);
         //Act
 
+        var timeseries = await sut.GetTimeSeries(context,
+            ((DateTimeOffset) DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
+            ((DateTimeOffset) DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(), Aggregation.Hour,
+            meteringPoints);
         //Assert
 
-
-
-        var emissionsResult = sut.GetEmissions(context.Object, ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(), ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds() , Aggregation.Hour);
+        Assert.NotEmpty(timeseries);
+        Assert.Equal(measurements.Count, timeseries.First().Measurements.Count());
     }
 
     private HttpClient SetupHttpClient(string serialize)

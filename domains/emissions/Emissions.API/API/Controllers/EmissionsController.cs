@@ -48,6 +48,6 @@ public class EmissionsController : AuthorizationController
         
         // Validation
 
-        return await _emissionsService.GetEmissions(Context ,dateFrom, dateTo, aggregation);
+        return await _emissionsService.GetTotalEmissions(Context ,dateFrom, dateTo, aggregation);
     }
 }

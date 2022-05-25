@@ -5,6 +5,6 @@ namespace API.Services;
 
 public interface IEmissionsService
 {
-    Task<Emissions> GetEmissions(AuthorizationContext authorizationContext, long dateFrom,
+    Task<Emissions> GetTotalEmissions(AuthorizationContext authorizationContext, long dateFrom,
         long dateTo, Aggregation aggregation);
 }

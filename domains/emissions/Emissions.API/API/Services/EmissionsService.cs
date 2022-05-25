@@ -1,3 +1,4 @@
+using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
 
@@ -7,63 +8,46 @@ public class EmissionsService : IEmissionsService
 {
     readonly IDataSyncService _dataSyncService;
     private readonly IEnergiDataService _energiDataService;
+    private readonly IEmissionsCalculator _emissionsCalculator;
 
-    public EmissionsService(IDataSyncService dataSyncService, IEnergiDataService energiDataService)
+    public EmissionsService(IDataSyncService dataSyncService, IEnergiDataService energiDataService, IEmissionsCalculator emissionsCalculator)
     {
         _dataSyncService = dataSyncService;
         _energiDataService = energiDataService;
+        _emissionsCalculator = emissionsCalculator;
     }
 
-    public async Task<Emissions> GetEmissions(AuthorizationContext authorizationContext,
+    public async Task<Emissions> GetTotalEmissions(AuthorizationContext authorizationContext,
         long dateFrom, long dateTo, Aggregation aggregation)
     {
         //Get list of metering points
         var meteringPoints = await _dataSyncService.GetListOfMeteringPoints(authorizationContext);
         
         //Get emissions in date range 
-        var emissions = await _energiDataService.GetEmissions(DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime, DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime);
+        var emissions = await _energiDataService.GetEmissions(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
 
         //Get metering point time series
-        List<Tuple<MeteringPoint, IEnumerable<Measurement>>> measurements = new List<Tuple<MeteringPoint, IEnumerable<Measurement>>>();
+        var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
+
+        //Calculate total emission
+        return _emissionsCalculator.CalculateTotalEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo);
+    }
+
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext authorizationContext, long dateFrom, long dateTo,
+        Aggregation aggregation, IEnumerable<MeteringPoint> meteringPoints)
+    {
+        List<TimeSeries> timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
         {
-            var timeSeries = await _dataSyncService.GetMeasurements(authorizationContext, meteringPoint.Gsrn,
+            var measurements = await _dataSyncService.GetMeasurements(authorizationContext, meteringPoint.Gsrn,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime, aggregation);
-            
-            measurements.Add(new Tuple<MeteringPoint, IEnumerable<Measurement>>(meteringPoint, timeSeries));
+
+            timeSeries.Add(new TimeSeries { Measurements = measurements, MeteringPoint = meteringPoint});
         }
 
-        return CalculateTotalEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo);
-
+        return timeSeries;
     }
 
-    internal virtual Emissions CalculateTotalEmission(List<EmissionRecord> emissions,
-        List<Tuple<MeteringPoint, IEnumerable<Measurement>>> measurements, long dateFrom, long dateTo)
-    {
-        float totalEmission = 0;
-        uint totalConsumption = 0;
-        float relative = 0;
-        
-        foreach (var measurementEntry in measurements)
-        {
-            var timeSeries = measurementEntry.Item2;
-            totalConsumption += (uint)timeSeries.Sum(_ => _.Quantity);
-            foreach (var emission in emissions)
-            {
-                var co2 = emission.CO2PerkWh * (timeSeries.First(_ => emission.GridArea ==  measurementEntry.Item1.GridArea && DateTimeOffset.FromUnixTimeSeconds(_.DateFrom) == emission.HourUTC).Quantity / 1000);
-                totalEmission += co2;
-            }
-             
-        }
-
-        relative = totalEmission / totalConsumption;
-        return new Emissions
-        {
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            Total = new Total {CO2 = totalEmission},
-            Relative = new Relative {CO2 = relative},
-        };
-    }
+    
 }

@@ -13,6 +13,7 @@ builder.Services.AddControllers().AddJsonOptions(options => {  options.JsonSeria
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient();
 builder.Services.AddCustomServices();
 
 var app = builder.Build();

@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using API.Models;
 using EnergyOriginAuthorization;
 
@@ -47,7 +46,7 @@ public class DataSyncService : IDataSyncService
         }
         catch (Exception e)
         {
-            throw;
+            _logger.LogError(e, null);
         }
 
         return null;
