@@ -16,9 +16,9 @@ GET /api/emissions
 
 ## Parameters
 
-- dateFrom: [UNIX timestamp](best-practices.md#date-from-and-to)
-- dateTo: [UNIX timestamp](best-practices.md#date-from-and-to)
-- aggregation: [aggregation ENUM](best-practices.md#aggregation)
+- dateFrom: [UNIX timestamp](conventions.md#date-from-and-to)
+- dateTo: [UNIX timestamp](conventions.md#date-from-and-to)
+- aggregation: [aggregation ENUM](conventions.md#aggregation)
 
 ## Response
 
@@ -48,43 +48,43 @@ relative is in grams/kwh = total / sumAgg(consumption)
 
 **Values from EDS**
 
-| Hour | PriceZone | CO2 g/kwh | NOx g/kwh |
-|------|-----------|-----------|-----------|
-| 1    | DK1       | 124       | 12        |
-| 2    | DK1       | 234       | 15        |
-| 3    | DK1       | 85        | 2         |
-| 4    | DK1       | 120       | 8         |
+| Hour             | PriceZone | CO2 g/kwh | NOx g/kwh |
+|------------------|-----------|-----------|-----------|
+| 2021-01-01T22:00 | DK1       | 124       | 12        |
+| 2021-01-01T23:00 | DK1       | 234       | 15        |
+| 2021-01-02T00:00 | DK1       | 85        | 2         |
+| 2021-01-02T01:00 | DK1       | 120       | 8         |
 
 **Values from DataSync**
-| Hour | PriceZone | Consumption wh |
-|------|-----------|----------------|
-| 1    | DK1       | 1234           |
-| 2    | DK1       | 242            |
-| 3    | DK1       | 654            |
-| 4    | DK1       | 1800           |
+| Hour             | PriceZone | Consumption wh |
+|------------------|-----------|----------------|
+| 2021-01-01T22:00 | DK1       | 1234           |
+| 2021-01-01T23:00 | DK1       | 242            |
+| 2021-01-02T00:00 | DK1       | 654            |
+| 2021-01-02T01:00 | DK1       | 1800           |
 
-**aggregationSize = 2**
+**Working table total**
 
-**Woring table total**
+| Hour             | CO2 g   | NOx g  |
+|------------------|---------|--------|
+| 2021-01-01T22:00 | 153,016 | 14,808 |
+| 2021-01-01T23:00 | 56,628  | 3,63   |
+| 2021-01-02T00:00 | 55,59   | 1,308  |
+| 2021-01-02T01:00 | 216     | 14,4   |
 
-| Hour | CO2 g   | NOx g  |
-|------|---------|--------|
-| 1    | 153,016 | 14,808 |
-| 2    | 56,628  | 3,63   |
-| 3    | 55,59   | 1,308  |
-| 4    | 216     | 14,4   |
+**aggregationSize = DAY**
 
 **Total for bucket**
-| Bucket | CO2 g   | NOx g  |
-|--------|---------|--------|
-| 1+2    | 209,644 | 18,438 |
-| 3+4    | 271,59  | 15,708 |
+| Bucket     | CO2 g   | NOx g  |
+|------------|---------|--------|
+| 2021-01-01 | 209,644 | 18,438 |
+| 2021-01-02 | 271,59  | 15,708 |
 
 **Relative for bucket**
-| Bucket | CO2 g/kwh  | NOx g/kwh  |
-|--------|------------|------------|
-| 1+2    | 142,03523  | 12,4918699 |
-| 3+4    | 110,672372 | 6,400978   |
+| Bucket     | CO2 g/kwh  | NOx g/kwh  |
+|------------|------------|------------|
+| 2021-01-01 | 142,03523  | 12,4918699 |
+| 2021-01-02 | 110,672372 | 6,400978   |
 
 
 ## Internal call structure
@@ -133,9 +133,9 @@ GET /api/sources
 
 ## Parameters
 
-- dateFrom: [UNIX timestamp](best-practices.md#date-from-and-to)
-- dateTo: [UNIX timestamp](best-practices.md#date-from-and-to)
-- aggregation: [aggregation ENUM](best-practices.md#aggregation)
+- dateFrom: [UNIX timestamp](conventions.md#date-from-and-to)
+- dateTo: [UNIX timestamp](conventions.md#date-from-and-to)
+- aggregation: [aggregation ENUM](conventions.md#aggregation)
 
 ## Response
 
