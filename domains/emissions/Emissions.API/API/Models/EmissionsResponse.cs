@@ -4,7 +4,6 @@ namespace API.Models;
 
 public class EmissionsResponse
 {
-    [JsonPropertyName("result")]
     public EmissionsResult Result { get; set; }
 }
 

@@ -15,15 +15,15 @@ namespace DataSync.API.Controllers
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
-    private readonly ILogger _logger;
-    private readonly ISourceDeclarationService _sourceDeclarationService;
-    private readonly IEmissionsService _emissionsService;
+    readonly ILogger logger;
+    readonly ISourceDeclarationService sourceDeclarationService;
+    readonly IEmissionsService emissionsService;
 
     public EmissionsController(ILogger logger, ISourceDeclarationService sourceDeclarationService, IEmissionsService emissionsService)
     {
-        _logger = logger;
-        _sourceDeclarationService = sourceDeclarationService;
-        _emissionsService = emissionsService;
+        this.logger = logger;
+        this.sourceDeclarationService = sourceDeclarationService;
+        this.emissionsService = emissionsService;
     }
 
     [HttpGet]
@@ -35,7 +35,7 @@ public class EmissionsController : AuthorizationController
     {
         // Validation
 
-        return await _sourceDeclarationService.GetSourceDeclaration(dateFrom, dateTo, aggregation);
+        return await sourceDeclarationService.GetSourceDeclaration(dateFrom, dateTo, aggregation);
     }
     
     [HttpGet]
@@ -48,6 +48,6 @@ public class EmissionsController : AuthorizationController
         
         // Validation
 
-        return await _emissionsService.GetTotalEmissions(Context ,dateFrom, dateTo, aggregation);
+        return await emissionsService.GetTotalEmissions(Context ,dateFrom, dateTo, aggregation);
     }
 }

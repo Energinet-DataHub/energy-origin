@@ -5,27 +5,27 @@ namespace API.Services;
 
 public class EnergiDataService : IEnergiDataService
 {
-    private readonly ILogger _logger;
-    readonly HttpClient _httpClient;
+    readonly ILogger logger;
+    readonly HttpClient httpClient;
     
     public EnergiDataService(ILogger logger, HttpClient httpClient)
     {
-        _logger = logger;
-        _httpClient = httpClient;
+        this.logger = logger;
+        this.httpClient = httpClient;
     }
     public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo, Aggregation aggregation)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<DeclarationProduction>(GetDeclarationProductionQuery(dateFrom, dataTo, aggregation));
+            return await httpClient.GetFromJsonAsync<DeclarationProduction>(GetDeclarationProductionQuery(dateFrom, dataTo, aggregation));
         }
-        catch (JsonException)
+        catch (JsonException e)
         {
-
+            logger.LogError(e, null);
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException e)
         {
-            
+            logger.LogError(e, null);
         }
 
         return null;
@@ -35,15 +35,15 @@ public class EnergiDataService : IEnergiDataService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
+            return await httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
         }
-        catch (JsonException)
+        catch (JsonException e)
         {
-
+            logger.LogError(e, null);
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException e)
         {
-            
+            logger.LogError(e, null);
         }
 
         return null;

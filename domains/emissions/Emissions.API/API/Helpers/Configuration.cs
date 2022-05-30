@@ -2,8 +2,8 @@
 {
     public static class Configuration
     {
-        private const string DataSyncEndpoint = "DATASYNCENDPOINT";
-        private const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
+        const string DataSyncEndpoint = "DATASYNCENDPOINT";
+        const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
 
         public static string GetDataSyncEndpoint()
         {

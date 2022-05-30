@@ -6,13 +6,13 @@ namespace API.Services;
 
 public class DataSyncService : IDataSyncService
 {
-    readonly ILogger _logger;
-    readonly HttpClient _httpClient;
+    readonly ILogger logger;
+    readonly HttpClient httpClient;
 
     public DataSyncService(ILogger logger, HttpClient httpClient)
     {
-        _logger = logger;
-        _httpClient = httpClient;
+        this.logger = logger;
+        this.httpClient = httpClient;
     }
 
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext authorizationContext, long gsrn, DateTime dateFrom,
@@ -21,12 +21,12 @@ public class DataSyncService : IDataSyncService
         var url = new Uri($"measurements?gsrn={gsrn}&dateFrom={dateFrom}&dateTo={dateTo}&aggregation={aggregation}");
         try
         {
-            _httpClient.AddAuthorizationToken(authorizationContext);
-            return await _httpClient.GetFromJsonAsync<List<Measurement>>(url);
+            httpClient.AddAuthorizationToken(authorizationContext);
+            return await httpClient.GetFromJsonAsync<List<Measurement>>(url);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, null);
+            logger.LogError(e, null);
         }
         return null;
     }
@@ -35,10 +35,10 @@ public class DataSyncService : IDataSyncService
     {
   
         var uri = new Uri($"GetByTin/{authorizationContext.Subject}");
-        _httpClient.AddAuthorizationToken(authorizationContext);
+        httpClient.AddAuthorizationToken(authorizationContext);
         try
         {
-            var meteringPoints = await _httpClient.GetFromJsonAsync<List<MeteringPoint>>(uri);
+            var meteringPoints = await httpClient.GetFromJsonAsync<List<MeteringPoint>>(uri);
             if (meteringPoints != null)
             {
                 return meteringPoints;
@@ -46,7 +46,7 @@ public class DataSyncService : IDataSyncService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, null);
+            logger.LogError(e, null);
         }
 
         return null;

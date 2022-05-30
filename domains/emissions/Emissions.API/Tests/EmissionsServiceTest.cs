@@ -24,8 +24,9 @@ public class EmissionsServiceTest
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
     {
         var result = new Fixture().Create<EmissionsResponse>();
-
-        var edsMock = SetupHttpClient(JsonSerializer.Serialize(result));
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var serialize = JsonSerializer.Serialize(result, options);
+        var edsMock = SetupHttpClient(serialize);
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
@@ -66,7 +67,7 @@ public class EmissionsServiceTest
         Assert.Equal(measurements.Count, timeseries.First().Measurements.Count());
     }
 
-    private HttpClient SetupHttpClient(string serialize)
+    HttpClient SetupHttpClient(string serialize)
     {
         
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
