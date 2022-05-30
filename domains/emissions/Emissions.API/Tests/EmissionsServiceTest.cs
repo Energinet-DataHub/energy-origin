@@ -20,11 +20,12 @@ namespace Tests;
 [UnitTest]
 public sealed class EmissionsServiceTest
 {
-    readonly DataSetFactory _dateSetFactory = new();
+    readonly DataSetFactory dataSetFactory = new();
     
     [Fact]
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
     {
+        // Arrange
         var result = new Fixture().Create<EmissionsResponse>();
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var serialize = JsonSerializer.Serialize(result, options);
@@ -34,8 +35,10 @@ public sealed class EmissionsServiceTest
         var dateTo = new DateTime(2021, 1, 2);
         var sut = new EnergiDataService(null, edsMock);
 
+        // Act
         var res = await sut.GetEmissionsPerHour(dateFrom, dateTo);
 
+        // Assert
         Assert.NotNull(res);
         Assert.NotEmpty(res.Result.EmissionRecords);
     }
@@ -48,7 +51,7 @@ public sealed class EmissionsServiceTest
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
-        var measurements = _dateSetFactory.CreateMeasurements();
+        var measurements = dataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
 
@@ -59,14 +62,15 @@ public sealed class EmissionsServiceTest
         var sut = new EmissionsService(mockDataSyncService.Object, null, null);
         //Act
 
-        var timeseries = await sut.GetTimeSeries(context,
+        var timeSeries = (await sut.GetTimeSeries(context,
             ((DateTimeOffset) DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
             ((DateTimeOffset) DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(), Aggregation.Hour,
-            meteringPoints);
+            meteringPoints)).ToArray();
         //Assert
 
-        Assert.NotEmpty(timeseries);
-        Assert.Equal(measurements.Count, timeseries.First().Measurements.Count());
+        Assert.NotNull(timeSeries);
+        Assert.NotEmpty(timeSeries);
+        Assert.Equal(measurements.Count, timeSeries.First().Measurements.Count());
     }
 
     HttpClient SetupHttpClient(string serialize)

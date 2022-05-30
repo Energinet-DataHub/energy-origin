@@ -23,6 +23,7 @@ public sealed class CalculateEmissionsTest
     [InlineData(Aggregation.Year)]
     public void EmissionsAndMeasurements_CalculateTotalEmission_TotalAnRelativeEmission(Aggregation aggregation)
     {
+        // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
         var timeSeries = dataSetFactory.CreateTimeSeries();
@@ -31,11 +32,13 @@ public sealed class CalculateEmissionsTest
 
         var sut = new EmissionsCalculator();
 
+        // Act
         var result = sut.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
-            dateTo.ToUnixTime(), aggregation);
+            dateTo.ToUnixTime(), aggregation).ToArray();
 
+        // Assert
         Assert.NotNull(result);
-        var emissionsEnumerable = GetExpectedEmissions(aggregation, dateFrom, dateTo);
+        var emissionsEnumerable = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
         Assert.Equal(emissionsEnumerable.Select(_ => _.Total.Co2), result.Select(_ => _.Total.Co2));
         Assert.Equal(emissionsEnumerable.Select(_ => _.Relative.Co2), result.Select(_ => _.Relative.Co2));
         Assert.Equal(emissionsEnumerable.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
@@ -49,7 +52,7 @@ public sealed class CalculateEmissionsTest
             case Aggregation.Total:
                 return new List<Emissions>()
                 {
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.ToUnixTime(),
                         DateTo = dateTo.ToUnixTime(),
@@ -61,28 +64,28 @@ public sealed class CalculateEmissionsTest
             case Aggregation.Hour:
                 return new List<Emissions>()
                 {
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.ToUnixTime(),
                         DateTo = dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
                         Relative = new Relative{Co2 = 124f},
                         Total = new Total() {Co2 =  153.016f }
                     },
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.AddHours(1).ToUnixTime(),
                         DateTo = dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
                         Relative = new Relative{Co2 = 234f},
                         Total = new Total() {Co2 =  56.628f }
                     },
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.AddHours(2).ToUnixTime(),
                         DateTo = dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
                         Relative = new Relative{Co2 =85f},
                         Total = new Total() {Co2 =  55.59f }
                     },
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.AddHours(3).ToUnixTime(),
                         DateTo = dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
@@ -93,14 +96,14 @@ public sealed class CalculateEmissionsTest
             case Aggregation.Day:
                 return new List<Emissions>()
                 {
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.ToUnixTime(),
                         DateTo = dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
                         Relative = new Relative { Co2 = 142.03523f },
                         Total = new Total() { Co2 = 209.644f }
                     },
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.AddHours(2).ToUnixTime(),
                         DateTo = dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
@@ -112,7 +115,7 @@ public sealed class CalculateEmissionsTest
             case Aggregation.Year:
                 return new List<Emissions>()
                 {
-                    new Emissions
+                    new()
                     {
                         DateFrom = dateFrom.ToUnixTime(),
                         DateTo = dateTo.ToUnixTime(),
