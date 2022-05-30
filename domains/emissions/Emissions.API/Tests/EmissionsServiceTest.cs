@@ -31,7 +31,7 @@ public class EmissionsServiceTest
         var dateTo = new DateTime(2021, 1, 2);
         var sut = new EnergiDataService(null, edsMock);
 
-        var res = await sut.GetEmissions(dateFrom, dateTo);
+        var res = await sut.GetEmissionsPerHour(dateFrom, dateTo);
 
         Assert.NotNull(res);
         Assert.NotEmpty(res.Result.EmissionRecords);

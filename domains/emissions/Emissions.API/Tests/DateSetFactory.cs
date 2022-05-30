@@ -13,26 +13,26 @@ public class DateSetFactory
         {
             new Measurement
             {
-                DateFrom = new DateTime(2021, 1, 1, 22, 0, 0).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 1, 22,59,59).ToUnixTime(),
+                DateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+                DateTo = new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
                 Quantity = 1234
             },
             new Measurement
             {
-                DateFrom = new DateTime(2021, 1, 1, 23,0,0).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 1, 23,59,59).ToUnixTime(),
+                DateFrom = new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                DateTo = new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
                 Quantity = 242
             },
             new Measurement
             {
-                DateFrom = new DateTime(2021, 1, 2, 0,0,0).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 2, 0,59,59).ToUnixTime(),
+                DateFrom = new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                DateTo = new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
                 Quantity = 654
             },
             new Measurement
             {
-                DateFrom = new DateTime(2021, 1, 2, 1,0,0).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 2, 1,59,59).ToUnixTime(),
+                DateFrom = new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                DateTo = new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
                 Quantity = 1800
             }
         };

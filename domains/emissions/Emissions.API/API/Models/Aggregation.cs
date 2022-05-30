@@ -12,8 +12,8 @@ public enum Aggregation
     Day,
     [Description("Hour")]
     Hour,
-    [Description("Quarter")]
-    Quarter,
+    [Description("QuarterHour")]
+    QuarterHour,
     [Description("Actual")]
     Actual,
     [Description("Total")]

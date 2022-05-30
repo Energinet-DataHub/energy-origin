@@ -24,13 +24,13 @@ public class EmissionsService : IEmissionsService
         var meteringPoints = await _dataSyncService.GetListOfMeteringPoints(authorizationContext);
         
         //Get emissions in date range 
-        var emissions = await _energiDataService.GetEmissions(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
+        var emissions = await _energiDataService.GetEmissionsPerHour(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
 
         //Get metering point time series
         var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
 
         //Calculate total emission
-        return _emissionsCalculator.CalculateEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo);
+        return _emissionsCalculator.CalculateEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext authorizationContext, long dateFrom, long dateTo,

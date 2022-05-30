@@ -31,7 +31,7 @@ public class EnergiDataService : IEnergiDataService
         return null;
     }
 
-    public async Task<EmissionsResponse> GetEmissions(DateTime dateFrom, DateTime dateTo)
+    public async Task<EmissionsResponse> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo)
     {
         try
         {

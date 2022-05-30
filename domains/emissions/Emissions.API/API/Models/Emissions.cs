@@ -12,20 +12,18 @@ public class Emissions
     public Total Total { get; set; }
     [JsonPropertyName("relative")]
     public Relative Relative { get; set; }
-    
-    
 }
 
 public class Total
 {
     [JsonPropertyName("co2")]
-    public float CO2 { get; set; } //g
+    public float Co2 { get; set; } //g
   
 }
 
 public class Relative
 {
     [JsonPropertyName("co2")]
-    public float CO2 { get; set; } //g/kWh
+    public float Co2 { get; set; } //g/kWh
   
 }
