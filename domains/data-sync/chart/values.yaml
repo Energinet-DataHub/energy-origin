@@ -14,7 +14,7 @@ eo-base-helm-chart:
       imagePullSecrets:
         - name: container-registry-pullsecret
 
-  envSecrets:git a
+  envSecrets:
     DATAHUB2ENDPOINT:
       secretName: datahub2-api-endpoint-secret
       key: endpoint
