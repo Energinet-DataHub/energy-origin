@@ -10,11 +10,11 @@ eo-base-helm-chart:
       probes: false
       image:
         repository: ghcr.io/energinet-datahub/eo-data-sync
-        tag: 0.2.11
+        tag: 0.2.12-pr.7-15369da
       imagePullSecrets:
         - name: container-registry-pullsecret
 
-  envSecrets:
+  envSecrets:git a
     DATAHUB2ENDPOINT:
       secretName: datahub2-api-endpoint-secret
       key: endpoint
