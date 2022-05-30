@@ -13,12 +13,14 @@ using EnergyOriginAuthorization;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using Xunit.Categories;
 
 namespace Tests;
 
-public class EmissionsServiceTest
+[UnitTest]
+public sealed class EmissionsServiceTest
 {
-    readonly DateSetFactory _dateSetFactory = new();
+    readonly DataSetFactory _dateSetFactory = new();
     
     [Fact]
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()

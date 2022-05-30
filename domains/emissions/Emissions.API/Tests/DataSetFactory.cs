@@ -5,7 +5,7 @@ using API.Models;
 
 namespace Tests;
 
-public class DateSetFactory
+public class DataSetFactory
 {
     public List<Measurement> CreateMeasurements()
     {

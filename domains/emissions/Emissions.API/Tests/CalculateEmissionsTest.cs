@@ -5,12 +5,14 @@ using API.Helpers;
 using API.Models;
 using API.Services;
 using Xunit;
+using Xunit.Categories;
 
 namespace Tests;
 
-public class CalculateEmissionsTest
+[UnitTest]
+public sealed class CalculateEmissionsTest
 {
-    readonly DateSetFactory dateSetFactory = new();
+    readonly DataSetFactory dataSetFactory = new();
     
     [Theory]
     [InlineData(Aggregation.Total)]
@@ -23,8 +25,8 @@ public class CalculateEmissionsTest
     {
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = dateSetFactory.CreateTimeSeries();
-        var emissions = dateSetFactory.CreateEmissions();
+        var timeSeries = dataSetFactory.CreateTimeSeries();
+        var emissions = dataSetFactory.CreateEmissions();
      
 
         var sut = new EmissionsCalculator();
@@ -51,8 +53,8 @@ public class CalculateEmissionsTest
                     {
                         DateFrom = dateFrom.ToUnixTime(),
                         DateTo = dateTo.ToUnixTime(),
-                        Relative = new Relative{Co2 = 122.4514f},
-                        Total = new Total() {Co2 =  481.234f }
+                        Relative = new Relative{ Co2 = 122.4514f },
+                        Total = new Total() { Co2 =  481.234f }
                     }
                 };
             case Aggregation.Actual:
