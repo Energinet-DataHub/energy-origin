@@ -33,8 +33,8 @@ public class DataSyncService : IDataSyncService
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext authorizationContext)
     {
-  
-        var uri = new Uri($"GetByTin/{authorizationContext.Subject}");
+
+        var uri = new Uri($"meteringpoints");
         httpClient.AddAuthorizationToken(authorizationContext);
         try
         {
