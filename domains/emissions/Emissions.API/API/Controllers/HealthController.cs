@@ -8,6 +8,14 @@ namespace API.Controllers
     [Route("[controller]")]
     public class HealthController : Controller
     {
+        readonly ILogger<HealthController> logger;
+
+
+        public HealthController(ILogger<HealthController> logger)
+        {
+            this.logger = logger;
+        }
+        
         [HttpGet]
         public IActionResult GetStatus()
         {
@@ -18,7 +26,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                logger.LogError(ex, null);
                 return StatusCode(500, ex.Message);
             }
         }
