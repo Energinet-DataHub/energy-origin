@@ -22,7 +22,7 @@ eo-base-helm-chart:
       - /api/emissions
     servicePort: 80
     middlewares:
-      - name: eo-emissions-service
+      - name: eo-auth-service
         namespace:
       - name: emissions-stripprefix
 
@@ -30,7 +30,7 @@ eo-base-helm-chart:
     stripPrefix:
       name: emissions-stripprefix
       prefixes:
-        - /api/emissions
+        - /api/
 
   env:
     DATASYNCENDPOINT:
