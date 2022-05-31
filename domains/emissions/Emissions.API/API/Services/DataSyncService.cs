@@ -6,10 +6,10 @@ namespace API.Services;
 
 public class DataSyncService : IDataSyncService
 {
-    readonly ILogger logger;
+    readonly ILogger<DataSyncService> logger;
     readonly HttpClient httpClient;
 
-    public DataSyncService(ILogger logger, HttpClient httpClient)
+    public DataSyncService(ILogger<DataSyncService> logger, HttpClient httpClient)
     {
         this.logger = logger;
         this.httpClient = httpClient;

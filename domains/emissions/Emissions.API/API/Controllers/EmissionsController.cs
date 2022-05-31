@@ -11,10 +11,10 @@ namespace API.Controllers;
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
-    readonly ILogger logger;
+    readonly ILogger<EmissionsController> logger;
     readonly IEmissionsService emissionsService;
 
-    public EmissionsController(ILogger logger, IEmissionsService emissionsService)
+    public EmissionsController(ILogger<EmissionsController> logger, IEmissionsService emissionsService)
     {
         this.logger = logger;
         this.emissionsService = emissionsService;

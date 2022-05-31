@@ -5,10 +5,10 @@ namespace API.Services;
 
 public class EnergiDataService : IEnergiDataService
 {
-    readonly ILogger logger;
+    readonly ILogger<EnergiDataService> logger;
     readonly HttpClient httpClient;
     
-    public EnergiDataService(ILogger logger, HttpClient httpClient)
+    public EnergiDataService(ILogger<EnergiDataService> logger, HttpClient httpClient)
     {
         this.logger = logger;
         this.httpClient = httpClient;

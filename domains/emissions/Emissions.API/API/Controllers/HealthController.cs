@@ -8,9 +8,10 @@ namespace API.Controllers
     [Route("[controller]")]
     public class HealthController : Controller
     {
-        readonly ILogger logger;
+        readonly ILogger<HealthController> logger;
 
-        public HealthController(ILogger logger)
+
+        public HealthController(ILogger<HealthController> logger)
         {
             this.logger = logger;
         }
