@@ -10,6 +10,10 @@ on:
     paths:
       - libraries/dotnet/EnergyOriginAuthorization/**
 
+concurrency:
+  group: ${{ github.ref }}-EnergyOriginAuthorization
+  cancel-in-progress: false
+
 defaults:
   run:
     working-directory: ./libraries/dotnet/EnergyOriginAuthorization

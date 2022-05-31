@@ -11,7 +11,7 @@ on:
       - domains/data-sync/**
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}-data-sync
   cancel-in-progress: false
 
 jobs:
