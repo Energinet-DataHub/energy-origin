@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+//[Route("[controller]")]
 [Authorize]
 public class EmissionsController : AuthorizationController
 {

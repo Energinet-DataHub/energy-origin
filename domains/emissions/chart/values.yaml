@@ -30,7 +30,7 @@ eo-base-helm-chart:
     stripPrefix:
       name: emissions-stripprefix
       prefixes:
-        - /api/
+        - /api
 
   env:
     DATASYNCENDPOINT:
