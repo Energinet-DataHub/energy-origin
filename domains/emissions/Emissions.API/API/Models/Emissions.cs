@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace API.Models;
+ namespace API.Models;
 
 public class Emissions
 {
@@ -19,3 +17,4 @@ public class Relative
 {
     public float Co2 { get; set; } //g/kWh
 }
+
