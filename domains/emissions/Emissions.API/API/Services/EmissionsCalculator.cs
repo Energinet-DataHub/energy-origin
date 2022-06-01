@@ -12,19 +12,19 @@ class EmissionsCalculator : IEmissionsCalculator
 
         foreach (var measurement in measurements)
         {
-            var timeSeries = measurement.Measurements;
-            foreach (var emission in emissions)
+            foreach (var reading in measurement.Measurements)
             {
-                var hourOfEmission = emission.HourUTC.ToUnixTime();
-                var consumptionMeasurement = timeSeries
-                    .First(_ => emission.GridArea == measurement.MeteringPoint.GridArea && _.DateFrom == hourOfEmission);
-                var co2 = emission.CO2PerkWh * consumptionMeasurement.Quantity;
+                var hourOfMeasurement = reading.DateFrom.ToUtcDateTime();
+                var emission = emissions.FirstOrDefault(_ =>
+                    _.GridArea == measurement.MeteringPoint.GridArea && _.HourUTC == hourOfMeasurement);
+
+                var co2 = emission.CO2PerkWh * reading.Quantity;
                 listOfEmissions.Add(new Emission
                 {
-                    Co2 = co2, 
-                    DateFrom = consumptionMeasurement.DateFrom.ToUtcDateTime(), 
-                    DateTo = consumptionMeasurement.DateTo.ToUtcDateTime(), 
-                    Consumption = consumptionMeasurement.Quantity
+                    Co2 = co2,
+                    DateFrom = reading.DateFrom.ToUtcDateTime(),
+                    DateTo = reading.DateTo.ToUtcDateTime(),
+                    Consumption = reading.Quantity
                 });
             }
         }
