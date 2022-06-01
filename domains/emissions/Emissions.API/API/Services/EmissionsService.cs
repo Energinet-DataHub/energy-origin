@@ -39,7 +39,7 @@ public class EmissionsService : IEmissionsService
         List<TimeSeries> timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
         {
-            var measurements = await dataSyncService.GetMeasurements(authorizationContext, meteringPoint.Gsrn,
+            var measurements = await dataSyncService.GetMeasurements(authorizationContext, meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime, aggregation);
 

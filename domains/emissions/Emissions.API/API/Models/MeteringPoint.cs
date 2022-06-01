@@ -5,9 +5,10 @@ namespace API.Models;
 public class MeteringPoint
 {
     [JsonPropertyName("gsrn")]
-    public long Gsrn { get; set; }
+    public long GSRN { get; set; }
+
+    [JsonPropertyName("gridArea")]
     public string GridArea { get; set; }
-    public string WebAccessCode { get; set; }
 }
 
 public class MeteringPointsResponse

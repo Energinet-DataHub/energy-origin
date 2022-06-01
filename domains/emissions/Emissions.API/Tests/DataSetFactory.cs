@@ -44,7 +44,7 @@ public class DataSetFactory
         {
             new TimeSeries
             {
-                MeteringPoint = new MeteringPoint {Gsrn = 571313121223234323, GridArea = "DK1"},
+                MeteringPoint = new MeteringPoint {GSRN = 571313121223234323, GridArea = "DK1"},
                 Measurements = CreateMeasurements()
             }
         };

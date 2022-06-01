@@ -19,17 +19,15 @@ public class DataSyncService : IDataSyncService
         DateTime dateTo, Aggregation aggregation)
     {
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}&aggregation={aggregation}";
-        try
-        {
 
-            httpClient.AddAuthorizationToken(authorizationContext);
-            return await httpClient.GetFromJsonAsync<List<Measurement>>(url);
-        }
-        catch (Exception e)
+        httpClient.AddAuthorizationToken(authorizationContext);
+        var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
+
+        if (result != null)
         {
-            logger.LogError(e, null);
+            return result;
         }
-        return null;
+        throw new Exception("List of measurements failed");
     }
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext authorizationContext)
@@ -37,21 +35,14 @@ public class DataSyncService : IDataSyncService
 
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(authorizationContext);
-        try
+        Console.WriteLine(await httpClient.GetStringAsync(uri));
+
+        var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
+
+        if (meteringPoints != null && meteringPoints.MeteringPoints != null)
         {
-
-            var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
-
-            if (meteringPoints != null)
-            {
-                return meteringPoints.MeteringPoints;
-            }
+            return meteringPoints.MeteringPoints;
         }
-        catch (Exception e)
-        {
-            logger.LogError(e, null);
-        }
-
-        return null;
+        throw new Exception("List of meteringpoints failed");
     }
 }
