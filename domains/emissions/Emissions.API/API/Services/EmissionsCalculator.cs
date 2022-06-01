@@ -5,9 +5,10 @@ namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
 {
-    public IEnumerable<Emissions> CalculateEmission(List<EmissionRecord> emissions,
+    public EmissionsResponse CalculateEmission(List<EmissionRecord> emissions,
         IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
+
         var listOfEmissions = new List<Emission>();
 
         foreach (var measurement in measurements)
@@ -47,7 +48,10 @@ class EmissionsCalculator : IEmissionsCalculator
                 new Relative (relativeForBucket)
             ));
         }
-        return bucketEmissions;
+
+        var test = new EmissionsResponse(bucketEmissions);
+
+        return test;
     }
 
     static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, List<Emission> listOfEmissions)

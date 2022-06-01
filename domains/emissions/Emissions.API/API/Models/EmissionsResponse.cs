@@ -1,41 +1,60 @@
-using System.Text.Json.Serialization;
+ using System.Text.Json.Serialization;
 
-namespace API.Models;
+ namespace API.Models;
 
 public class EmissionsResponse
 {
-    public EmissionsResult Result { get; }
+    [JsonPropertyName("emissions")]
+    public IEnumerable<Emissions> Emissions { get; }
 
-    public EmissionsResponse(EmissionsResult result)
+    public EmissionsResponse(IEnumerable<Emissions> emissions)
     {
-        Result = result;
+        Emissions = emissions;
     }
 }
 
-public class EmissionRecord
+public class Emissions
 {
-    [JsonPropertyName("priceArea")]
-    public string GridArea { get; }
-    public float NOXPerkWh{ get; }
-    public float CO2PerkWh { get; }
-    public DateTime HourUTC { get; }
+    [JsonPropertyName("dateFrom")]
+    public long DateFrom { get; }
 
-    public EmissionRecord(string gridArea, float nOXPerkWh, float cO2PerkWh, DateTime hourUTC)
+    [JsonPropertyName("dateTo")]
+    public long DateTo { get; }
+
+    [JsonPropertyName("total")]
+    public Total Total { get; }
+
+    [JsonPropertyName("relative")]
+    public Relative Relative { get; }
+
+    public Emissions(long dateFrom, long dateTo, Total total, Relative relative)
     {
-        GridArea = gridArea;
-        NOXPerkWh = nOXPerkWh;
-        CO2PerkWh = cO2PerkWh;
-        HourUTC = hourUTC;
+        DateFrom = dateFrom;
+        DateTo = dateTo;
+        Total = total;
+        Relative = relative;
     }
 }
 
-public class EmissionsResult
+public class Total
 {
-    [JsonPropertyName("records")]
-    public List<EmissionRecord> EmissionRecords { get; }
+    [JsonPropertyName("co2")]
+    public float Co2 { get; } //g
 
-    public EmissionsResult(List<EmissionRecord> emissionRecords)
+    public Total(float co2)
     {
-        EmissionRecords = emissionRecords;
+        Co2 = co2;
     }
 }
+
+public class Relative
+{
+    [JsonPropertyName("co2")]
+    public float Co2 { get; set; } //g/kWh
+
+    public Relative(float co2)
+    {
+        Co2 = co2;
+    }
+}
+

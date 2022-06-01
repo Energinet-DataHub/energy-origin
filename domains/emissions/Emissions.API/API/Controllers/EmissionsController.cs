@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-//[Route("[controller]")]
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
@@ -22,7 +21,7 @@ public class EmissionsController : AuthorizationController
 
     [HttpGet]
     [Route("emissions")]
-    public async Task<IEnumerable<Emissions>> GetEmissions(
+    public async Task<EmissionsResponse> GetEmissions(
         [Required] long dateFrom,
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)

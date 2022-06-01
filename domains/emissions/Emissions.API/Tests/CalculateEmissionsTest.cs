@@ -34,7 +34,7 @@ public sealed class CalculateEmissionsTest
 
         // Act
         var result = sut.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
-            dateTo.ToUnixTime(), aggregation).ToArray();
+            dateTo.ToUnixTime(), aggregation).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);

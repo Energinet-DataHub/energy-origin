@@ -17,7 +17,7 @@ public class EmissionsService : IEmissionsService
         this.emissionsCalculator = emissionsCalculator;
     }
 
-    public async Task<IEnumerable<Emissions>> GetTotalEmissions(AuthorizationContext authorizationContext,
+    public async Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext authorizationContext,
         long dateFrom, long dateTo, Aggregation aggregation)
     {
         //Get list of metering points

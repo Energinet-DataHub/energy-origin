@@ -27,7 +27,7 @@ public sealed class EmissionsServiceTest
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
     {
         // Arrange
-        var result = new Fixture().Create<EmissionsResponse>();
+        var result = new Fixture().Create<EmissionsDataResponse>();
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var serialize = JsonSerializer.Serialize(result, options);
         var edsMock = SetupHttpClient(serialize);

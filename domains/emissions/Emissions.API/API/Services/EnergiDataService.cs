@@ -14,9 +14,9 @@ public class EnergiDataService : IEnergiDataService
         this.httpClient = httpClient;
     }
 
-    public async Task<EmissionsResponse> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo)
+    public async Task<EmissionsDataResponse> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo)
     {
-        var result =await httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
+        var result =await httpClient.GetFromJsonAsync<EmissionsDataResponse>(GetEmissionsQuery(dateFrom, dateTo));
 
         if (result != null)
         {
