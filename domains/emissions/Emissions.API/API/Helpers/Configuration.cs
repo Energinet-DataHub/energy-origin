@@ -2,17 +2,17 @@
 {
     public static class Configuration
     {
-        private const string DataSyncEndpoint = "DATASYNCENDPOINT";
-        private const string DotNetEnvironment = "ASPNETCORE_ENVIRONMENT";
+        const string DataSyncEndpoint = "DATASYNCENDPOINT";
+        const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
 
         public static string GetDataSyncEndpoint()
         {
             return Environment.GetEnvironmentVariable(DataSyncEndpoint) ?? throw new ArgumentNullException();
         }
 
-        public static bool IsDevelopment()
+        public static string GetEnergiDataServiceEndpoint()
         {
-            return "Development".Equals(Environment.GetEnvironmentVariable(DotNetEnvironment), StringComparison.OrdinalIgnoreCase);
+            return Environment.GetEnvironmentVariable(EnergiDataServiceEndpoint) ?? throw new ArgumentNullException();
         }
     }
 }
