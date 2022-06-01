@@ -4,20 +4,38 @@ namespace API.Models;
 
 public class EmissionsResponse
 {
-    public EmissionsResult Result { get; set; }
+    public EmissionsResult Result { get; }
+
+    public EmissionsResponse(EmissionsResult result)
+    {
+        Result = result;
+    }
 }
 
 public class EmissionRecord
 {
     [JsonPropertyName("priceArea")]
-    public string GridArea { get; set; }
-    public float NOXPerkWh{ get; set; }
-    public float CO2PerkWh { get; set; }
-    public DateTime HourUTC { get; set; }
+    public string GridArea { get; }
+    public float NOXPerkWh{ get; }
+    public float CO2PerkWh { get; }
+    public DateTime HourUTC { get; }
+
+    public EmissionRecord(string gridArea, float nOXPerkWh, float cO2PerkWh, DateTime hourUTC)
+    {
+        GridArea = gridArea;
+        NOXPerkWh = nOXPerkWh;
+        CO2PerkWh = cO2PerkWh;
+        HourUTC = hourUTC;
+    }
 }
 
 public class EmissionsResult
 {
     [JsonPropertyName("records")]
-    public List<EmissionRecord> EmissionRecords { get; set; }
+    public List<EmissionRecord> EmissionRecords { get; }
+
+    public EmissionsResult(List<EmissionRecord> emissionRecords)
+    {
+        EmissionRecords = emissionRecords;
+    }
 }

@@ -13,7 +13,7 @@ namespace Tests;
 public sealed class CalculateEmissionsTest
 {
     readonly DataSetFactory dataSetFactory = new();
-    
+
     [Theory]
     [InlineData(Aggregation.Total)]
     [InlineData(Aggregation.Actual)]
@@ -28,7 +28,7 @@ public sealed class CalculateEmissionsTest
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
         var timeSeries = dataSetFactory.CreateTimeSeries();
         var emissions = dataSetFactory.CreateEmissions();
-     
+
 
         var sut = new EmissionsCalculator();
 
@@ -52,81 +52,73 @@ public sealed class CalculateEmissionsTest
             case Aggregation.Total:
                 return new List<Emissions>()
                 {
-                    new()
-                    {
-                        DateFrom = dateFrom.ToUnixTime(),
-                        DateTo = dateTo.ToUnixTime(),
-                        Relative = new Relative{ Co2 = 122.4514f },
-                        Total = new Total() { Co2 =  481.234f }
-                    }
+                    new(
+                        dateFrom.ToUnixTime(),
+                        dateTo.ToUnixTime(),
+                        new Total( 481.234f ),
+                        new Relative(122.4514f)
+                        )
+
                 };
             case Aggregation.Actual:
             case Aggregation.Hour:
                 return new List<Emissions>()
                 {
-                    new()
-                    {
-                        DateFrom = dateFrom.ToUnixTime(),
-                        DateTo = dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative{Co2 = 124f},
-                        Total = new Total() {Co2 =  153.016f }
-                    },
-                    new()
-                    {
-                        DateFrom = dateFrom.AddHours(1).ToUnixTime(),
-                        DateTo = dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative{Co2 = 234f},
-                        Total = new Total() {Co2 =  56.628f }
-                    },
-                    new()
-                    {
-                        DateFrom = dateFrom.AddHours(2).ToUnixTime(),
-                        DateTo = dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative{Co2 =85f},
-                        Total = new Total() {Co2 =  55.59f }
-                    },
-                    new()
-                    {
-                        DateFrom = dateFrom.AddHours(3).ToUnixTime(),
-                        DateTo = dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative{Co2 = 120f},
-                        Total = new Total() {Co2 =  216f }
-                    },
+                    new(
+                        dateFrom.ToUnixTime(),
+                        dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(153.016f),
+                        new Relative(124f)
+                    ),
+                    new(
+                        dateFrom.AddHours(1).ToUnixTime(),
+                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(56.628f),
+                        new Relative(234f)
+                    ),
+                    new(
+                        dateFrom.AddHours(2).ToUnixTime(),
+                        dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(55.59f),
+                        new Relative(85f)
+                    ),
+                    new(
+                        dateFrom.AddHours(3).ToUnixTime(),
+                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(216f),
+                        new Relative(120f)
+                    ),
                 };
             case Aggregation.Day:
                 return new List<Emissions>()
                 {
-                    new()
-                    {
-                        DateFrom = dateFrom.ToUnixTime(),
-                        DateTo = dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative { Co2 = 142.03523f },
-                        Total = new Total() { Co2 = 209.644f }
-                    },
-                    new()
-                    {
-                        DateFrom = dateFrom.AddHours(2).ToUnixTime(),
-                        DateTo = dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        Relative = new Relative { Co2 = 110.67237f },
-                        Total = new Total() { Co2 = 271.59f }
-                    }
+                    new(
+                        dateFrom.ToUnixTime(),
+                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(209.644f),
+                        new Relative(142.03523f)
+                    ),
+                    new(
+
+                        dateFrom.AddHours(2).ToUnixTime(),
+                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                        new Total(271.59f),
+                        new Relative(110.67237f)
+                    )
                 };
             case Aggregation.Month:
             case Aggregation.Year:
                 return new List<Emissions>()
                 {
-                    new()
-                    {
-                        DateFrom = dateFrom.ToUnixTime(),
-                        DateTo = dateTo.ToUnixTime(),
-                        Relative = new Relative{Co2 = 122.4514f},
-                        Total = new Total() {Co2 =  481.234f }
-                    }
+                    new(
+                        dateFrom.ToUnixTime(),
+                        dateTo.ToUnixTime(),
+                        new Total(481.234f),
+                        new Relative(122.4514f)
+                    )
                 };
             default:
                 return new List<Emissions>();
         }
-
-        
     }
 }

@@ -18,6 +18,10 @@ class EmissionsCalculator : IEmissionsCalculator
                 var emission = emissions.FirstOrDefault(_ =>
                     _.GridArea == measurement.MeteringPoint.GridArea && _.HourUTC == hourOfMeasurement);
 
+                if (emission == null)
+                {
+                    throw new Exception("Emissions is null");
+                }
                 var co2 = emission.CO2PerkWh * reading.Quantity;
                 listOfEmissions.Add(new Emission
                 {
@@ -36,16 +40,13 @@ class EmissionsCalculator : IEmissionsCalculator
         {
             var totalForBucket = groupedEmission.Sum(_ => _.Co2);
             var relativeForBucket = totalForBucket / groupedEmission.Sum(_ => _.Consumption);
-            bucketEmissions.Add(new Emissions
-            {
-                DateFrom = groupedEmission.First().DateFrom.ToUnixTime(),
-                DateTo = groupedEmission.Last().DateTo.ToUnixTime(),
-                Total = new Total {Co2 = totalForBucket/1000},
-                Relative = new Relative {Co2 = relativeForBucket},
-            });
-
+            bucketEmissions.Add(new Emissions(
+                groupedEmission.First().DateFrom.ToUnixTime(),
+                groupedEmission.Last().DateTo.ToUnixTime(),
+                new Total (totalForBucket / 1000),
+                new Relative (relativeForBucket)
+            ));
         }
-
         return bucketEmissions;
     }
 

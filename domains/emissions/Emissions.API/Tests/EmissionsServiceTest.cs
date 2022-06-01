@@ -10,6 +10,7 @@ using API.Models;
 using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Tests;
 public sealed class EmissionsServiceTest
 {
     readonly DataSetFactory dataSetFactory = new();
-    
+
     [Fact]
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
     {
@@ -33,7 +34,9 @@ public sealed class EmissionsServiceTest
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var sut = new EnergiDataService(null, edsMock);
+        var logger = new Mock<ILogger<EnergiDataService>>();
+
+        var sut = new EnergiDataService(logger.Object, edsMock);
 
         // Act
         var res = await sut.GetEmissionsPerHour(dateFrom, dateTo);
@@ -54,12 +57,14 @@ public sealed class EmissionsServiceTest
         var measurements = dataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
+        var mockEds = new Mock<IEnergiDataService>();
+        var mockEmissionsCalculater = new Mock<IEmissionsCalculator>();
 
         mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<long>(),
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Aggregation>()))
             .Returns(Task.FromResult(measurements.AsEnumerable()));
 
-        var sut = new EmissionsService(mockDataSyncService.Object, null, null);
+        var sut = new EmissionsService(mockDataSyncService.Object, mockEds.Object, mockEmissionsCalculater.Object);
         //Act
 
         var timeSeries = (await sut.GetTimeSeries(context,
@@ -75,7 +80,7 @@ public sealed class EmissionsServiceTest
 
     HttpClient SetupHttpClient(string serialize)
     {
-        
+
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         handlerMock
             .Protected()
@@ -91,8 +96,8 @@ public sealed class EmissionsServiceTest
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(serialize),
             }).Verifiable();
-        
-        
+
+
         return new HttpClient(handlerMock.Object)
         {
             BaseAddress = new Uri("http://test.com/"),

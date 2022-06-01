@@ -43,7 +43,7 @@ public class EmissionsService : IEmissionsService
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime, aggregation);
 
-            timeSeries.Add(new TimeSeries { Measurements = measurements, MeteringPoint = meteringPoint});
+            timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }
 
         return timeSeries;

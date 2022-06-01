@@ -43,10 +43,10 @@ public class DataSetFactory
         return new List<TimeSeries>
         {
             new TimeSeries
-            {
-                MeteringPoint = new MeteringPoint {GSRN = 571313121223234323, GridArea = "DK1"},
-                Measurements = CreateMeasurements()
-            }
+            (
+                new MeteringPoint(571313121223234323, "DK1"),
+                CreateMeasurements()
+            )
         };
     }
 
@@ -55,29 +55,33 @@ public class DataSetFactory
         return new List<EmissionRecord>
         {
             new EmissionRecord
-            {
-                CO2PerkWh = 124,
-                GridArea = "DK1",
-                HourUTC = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc)
-            },
+            (
+                gridArea: "DK1",
+                nOXPerkWh: 0,
+                cO2PerkWh: 124,
+                hourUTC: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc)
+            ),
             new EmissionRecord
-            {
-                CO2PerkWh = 234,
-                GridArea = "DK1",
-                HourUTC = new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc)
-            },
+            (
+                gridArea: "DK1",
+                nOXPerkWh: 0,
+                cO2PerkWh: 234,
+                hourUTC: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc)
+            ),
             new EmissionRecord
-            {
-                CO2PerkWh = 85,
-                GridArea = "DK1",
-                HourUTC = new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc)
-            },
+            (
+                gridArea: "DK1",
+                nOXPerkWh: 0,
+                cO2PerkWh: 85,
+                hourUTC: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc)
+            ),
             new EmissionRecord
-            {
-                CO2PerkWh = 120,
-                GridArea = "DK1",
-                HourUTC = new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc)
-            },
+            (
+                gridArea: "DK1",
+                nOXPerkWh: 0,
+                cO2PerkWh: 120,
+                hourUTC: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc)
+            ),
         };
     }
 }

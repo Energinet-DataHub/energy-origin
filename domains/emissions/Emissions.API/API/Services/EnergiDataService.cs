@@ -16,20 +16,13 @@ public class EnergiDataService : IEnergiDataService
 
     public async Task<EmissionsResponse> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo)
     {
-        try
-        {
-            return await httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
-        }
-        catch (JsonException e)
-        {
-            logger.LogError(e, null);
-        }
-        catch (HttpRequestException e)
-        {
-            logger.LogError(e, null);
-        }
+        var result =await httpClient.GetFromJsonAsync<EmissionsResponse>(GetEmissionsQuery(dateFrom, dateTo));
 
-        return null;
+        if (result != null)
+        {
+            return result;
+        }
+        throw new Exception("EDS Emissions query failed");
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
