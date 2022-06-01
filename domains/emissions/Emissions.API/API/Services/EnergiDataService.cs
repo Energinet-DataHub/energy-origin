@@ -7,7 +7,7 @@ public class EnergiDataService : IEnergiDataService
 {
     readonly ILogger<EnergiDataService> logger;
     readonly HttpClient httpClient;
-    
+
     public EnergiDataService(ILogger<EnergiDataService> logger, HttpClient httpClient)
     {
         this.logger = logger;
@@ -35,6 +35,6 @@ public class EnergiDataService : IEnergiDataService
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
-            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom.ToShortDateString()}' AND \"HourUTC\" <= '{dateTo.ToShortDateString()}' ";
+            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom.ToString("MM/dd/yyyy")}' AND \"HourUTC\" <= '{dateTo.ToString("MM/dd/yyyy")}' ";
     }
 }

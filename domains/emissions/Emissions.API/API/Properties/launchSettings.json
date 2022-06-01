@@ -15,10 +15,10 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DATASYNCENDPOINT": "http://localhost:8080/",
+        "DATASYNCENDPOINT": "http://localhost:8081/",
         "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/"
       },
-      "applicationUrl": "http://localhost:8081",
+      "applicationUrl": "http://localhost:8082",
       "dotnetRunMessages": true
     },
     "Docker": {

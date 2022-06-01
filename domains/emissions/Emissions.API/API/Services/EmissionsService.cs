@@ -22,8 +22,8 @@ public class EmissionsService : IEmissionsService
     {
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
-        
-        //Get emissions in date range 
+
+        //Get emissions in date range
         var emissions = await energiDataService.GetEmissionsPerHour(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
 
         //Get metering point time series
@@ -49,5 +49,5 @@ public class EmissionsService : IEmissionsService
         return timeSeries;
     }
 
-    
+
 }

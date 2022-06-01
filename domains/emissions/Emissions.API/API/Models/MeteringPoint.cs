@@ -6,7 +6,11 @@ public class MeteringPoint
 {
     [JsonPropertyName("gsrn")]
     public long Gsrn { get; set; }
-    
-    [JsonPropertyName("gridArea")]
     public string GridArea { get; set; }
+    public string WebAccessCode { get; set; }
+}
+
+public class MeteringPointsResponse
+{
+    public List<MeteringPoint> MeteringPoints { get; set; }
 }

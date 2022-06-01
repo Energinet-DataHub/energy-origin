@@ -18,9 +18,10 @@ public class DataSyncService : IDataSyncService
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext authorizationContext, long gsrn, DateTime dateFrom,
         DateTime dateTo, Aggregation aggregation)
     {
-        var url = new Uri($"measurements?gsrn={gsrn}&dateFrom={dateFrom}&dateTo={dateTo}&aggregation={aggregation}");
+        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}&aggregation={aggregation}";
         try
         {
+
             httpClient.AddAuthorizationToken(authorizationContext);
             return await httpClient.GetFromJsonAsync<List<Measurement>>(url);
         }
@@ -34,14 +35,16 @@ public class DataSyncService : IDataSyncService
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext authorizationContext)
     {
 
-        var uri = new Uri($"meteringpoints");
+        var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(authorizationContext);
         try
         {
-            var meteringPoints = await httpClient.GetFromJsonAsync<List<MeteringPoint>>(uri);
+
+            var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
+
             if (meteringPoints != null)
             {
-                return meteringPoints;
+                return meteringPoints.MeteringPoints;
             }
         }
         catch (Exception e)
