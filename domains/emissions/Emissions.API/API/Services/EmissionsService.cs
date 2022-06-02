@@ -7,13 +7,13 @@ namespace API.Services;
 public class EmissionsService : IEmissionsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IEnergiDataService energiDataService;
+    readonly IEmissionDataService emissionDataService;
     readonly IEmissionsCalculator emissionsCalculator;
 
-    public EmissionsService(IDataSyncService dataSyncService, IEnergiDataService energiDataService, IEmissionsCalculator emissionsCalculator)
+    public EmissionsService(IDataSyncService dataSyncService, IEmissionDataService emissionDataService, IEmissionsCalculator emissionsCalculator)
     {
         this.dataSyncService = dataSyncService;
-        this.energiDataService = energiDataService;
+        this.emissionDataService = emissionDataService;
         this.emissionsCalculator = emissionsCalculator;
     }
 
@@ -24,7 +24,7 @@ public class EmissionsService : IEmissionsService
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
 
         //Get emissions in date range
-        var emissions = await energiDataService.GetEmissionsPerHour(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
+        var emissions = await emissionDataService.GetEmissionsPerHour(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
 
         //Get metering point time series
         var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);

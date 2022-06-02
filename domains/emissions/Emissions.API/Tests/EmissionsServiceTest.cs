@@ -34,9 +34,9 @@ public sealed class EmissionsServiceTest
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var logger = new Mock<ILogger<EnergiDataService>>();
+        var logger = new Mock<ILogger<EmissionDataService>>();
 
-        var sut = new EnergiDataService(logger.Object, edsMock);
+        var sut = new EmissionDataService(logger.Object, edsMock);
 
         // Act
         var res = await sut.GetEmissionsPerHour(dateFrom, dateTo);
@@ -57,7 +57,7 @@ public sealed class EmissionsServiceTest
         var measurements = dataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
-        var mockEds = new Mock<IEnergiDataService>();
+        var mockEds = new Mock<IEmissionDataService>();
         var mockEmissionsCalculater = new Mock<IEmissionsCalculator>();
 
         mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<long>(),

@@ -6,7 +6,7 @@ public static class ServicesConfiguration
 {
     public static void AddCustomServices(this IServiceCollection services)
     {
-        services.AddHttpClient<IEnergiDataService, EnergiDataService>(client =>
+        services.AddHttpClient<IEmissionDataService, EmissionDataService>(client =>
         {
             client.BaseAddress = new Uri(Configuration.GetEnergiDataServiceEndpoint());
         });

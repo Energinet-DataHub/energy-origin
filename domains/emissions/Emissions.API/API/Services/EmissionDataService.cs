@@ -1,14 +1,13 @@
 using API.Models;
-using JsonException = Newtonsoft.Json.JsonException;
 
 namespace API.Services;
 
-public class EnergiDataService : IEnergiDataService
+public class EmissionDataService : IEmissionDataService
 {
-    readonly ILogger<EnergiDataService> logger;
+    readonly ILogger<EmissionDataService> logger;
     readonly HttpClient httpClient;
 
-    public EnergiDataService(ILogger<EnergiDataService> logger, HttpClient httpClient)
+    public EmissionDataService(ILogger<EmissionDataService> logger, HttpClient httpClient)
     {
         this.logger = logger;
         this.httpClient = httpClient;
