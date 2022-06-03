@@ -29,10 +29,12 @@ GET /api/emissions
             "dateFrom": 1514826000, 
             "dateTo": 1514864000,  
             "total": {
-                "co2": 1241245534.213   //g
+                "value": 1241245534.213,   //g
+                "unit": "g"
             },
             "relative": {
-                "co2": 1234.213   // g/kWh
+                "value": 1234.213,   // g/kWh
+                "unit": "g/Kwh"
             }
         }
     ]
@@ -151,12 +153,12 @@ GET /api/sources
                 "waste": 0, 
                 "straw": 0,
                 "oil": 0,
-                "natural-gas": 0,
+                "naturalGas": 0,
                 "coal": 0.05,
                 "biogas": 0,
                 "solar": 0,
-                "wind-onshore": 0,
-                "wind-offshore": 0.56
+                "windOnshore": 0,
+                "windOffshore": 0.56
             }
         }
     ]
