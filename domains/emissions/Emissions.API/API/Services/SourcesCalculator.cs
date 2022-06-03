@@ -19,7 +19,7 @@ namespace API.Services
                 {
                     var utcDateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
                     var gridArea = timeSeries.MeteringPoint.GridArea;
-                    var totalShares = groupedDeclarations.First(_ => 
+                    var totalShares = groupedDeclarations.First(_ =>
                         _.Key == utcDateTime + gridArea
                     );
                     consumptionResult.TryGetValue(utcDateTime + gridArea, out var shares);
@@ -31,11 +31,13 @@ namespace API.Services
 
                     foreach (var totalShare in totalShares)
                     {
-                        shares.Add(new ConsumptionShare(totalShare.ShareTotal * measurement.Quantity), );
+                        shares.Add(new ConsumptionShare((float)totalShare.ShareTotal * measurement.Quantity, measurement.DateFrom, totalShare.ProductionType));
 
                     }
-                }  
+                }
             }
+
+
             return result;
         }
 
@@ -43,7 +45,7 @@ namespace API.Services
         {
             if (aggregation == Aggregation.Total)
                 return declaration.GroupBy(_ => "total");
-            
+
             return declaration.GroupBy(_ => GetDateAsString(_.HourUTC, aggregation) + _.PriceArea);
 
         }
@@ -68,12 +70,12 @@ namespace API.Services
                     throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null);
             }
 
-            
+
         }
 
         class ConsumptionShare
         {
-            public ConsumptionShare(float value, float measurementTime, string productionType)
+            public ConsumptionShare(float value, long measurementTime, string productionType)
             {
                 Value = value;
                 Date = measurementTime;
@@ -83,7 +85,7 @@ namespace API.Services
             public float Value { get; }
 
             public long Date { get; }
-            
+
             public string ProductionType { get; }
         }
     }

@@ -7,29 +7,8 @@
 
         public Quantity(float value, QuantityUnit unit)
         {
-            Unit = unit;
             Value = value;
+            Unit = unit;
         }
-
-        #region Equality
-        protected bool Equals(Quantity? other)
-        {
-            return other != null && Unit == other.Unit && Value == other.Value;
-        }
-
-        public override bool Equals(object? obj)
-        {
-         
-            return Equals(obj as Quantity);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return HashCode.Combine(Unit, Value);
-            }
-        }
-        #endregion Equality
     }
 }
