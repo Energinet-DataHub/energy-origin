@@ -24,7 +24,7 @@ public class EmissionsService : IEmissionsService
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
 
         //Get emissions in date range
-        var emissions = await emissionDataService.GetEmissionsPerHour(DateTimeUtil.ToUtcDateTime(dateFrom), DateTimeUtil.ToUtcDateTime(dateTo));
+        var emissions = await emissionDataService.GetEmissionsPerHour(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
 
         //Get metering point time series
         var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
@@ -49,5 +49,16 @@ public class EmissionsService : IEmissionsService
         return timeSeries;
     }
 
+    public async Task<IEnumerable<EnergySourceResponse>> GetSourceDeclaration(AuthorizationContext authorizationContext, long dateFrom, long dateTo, Aggregation aggregation)
+    {
+        //Get list of metering points
+        var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
 
+        //Get metering point time series
+        var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
+
+        var declaration = await emissionDataService.GetDeclarationProduction(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime(), aggregation);
+
+        return new List<EnergySourceResponse>();
+    }
 }
