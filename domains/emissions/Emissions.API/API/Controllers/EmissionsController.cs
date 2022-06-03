@@ -33,7 +33,7 @@ public class EmissionsController : AuthorizationController
 
     [HttpGet]
     [Route("sources")]
-    public async Task<IEnumerable<EnergySourceResponse>> GetEnergySources(
+    public async Task<EnergySourceResponse> GetEnergySources(
         [Required] long dateFrom,
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)

@@ -25,22 +25,22 @@ public class EmissionDataService : IEmissionDataService
         throw new Exception("EDS Emissions query failed");
     }
 
-    public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo, Aggregation aggregation)
+    public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo)
     {
-        var result = await httpClient.GetFromJsonAsync<DeclarationProduction>(GetQuery(dateFrom, dataTo, aggregation));
+        var result = await httpClient.GetFromJsonAsync<DeclarationProduction>(GetQuery(dateFrom, dataTo));
         if (result != null)
         {
             return result;
         }
 
-        throw new Exception($"EDS declarationproduction query failed. query:{GetQuery(dateFrom, dataTo, aggregation)}");
+        throw new Exception($"EDS declarationproduction query failed. query:{GetQuery(dateFrom, dataTo)}");
     }
 
-    string GetQuery(DateTime dateFrom, DateTime dateTo, Aggregation aggregation)
+    string GetQuery(DateTime dateFrom, DateTime dateTo)
     {
         return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
                "from \"declarationproduction\" " +
-               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy}";
+               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy} AND WHERE  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
     }
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {

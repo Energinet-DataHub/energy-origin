@@ -9,12 +9,14 @@ public class EmissionsService : IEmissionsService
     readonly IDataSyncService dataSyncService;
     readonly IEmissionDataService emissionDataService;
     readonly IEmissionsCalculator emissionsCalculator;
+    readonly ISourcesCalculator sourcesCalculator;
 
-    public EmissionsService(IDataSyncService dataSyncService, IEmissionDataService emissionDataService, IEmissionsCalculator emissionsCalculator)
+    public EmissionsService(IDataSyncService dataSyncService, IEmissionDataService emissionDataService, IEmissionsCalculator emissionsCalculator, ISourcesCalculator sourcesCalculator)
     {
         this.dataSyncService = dataSyncService;
         this.emissionDataService = emissionDataService;
         this.emissionsCalculator = emissionsCalculator;
+        this.sourcesCalculator = sourcesCalculator;
     }
 
     public async Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext authorizationContext,
@@ -49,7 +51,7 @@ public class EmissionsService : IEmissionsService
         return timeSeries;
     }
 
-    public async Task<IEnumerable<EnergySourceResponse>> GetSourceDeclaration(AuthorizationContext authorizationContext, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext authorizationContext, long dateFrom, long dateTo, Aggregation aggregation)
     {
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
@@ -57,8 +59,10 @@ public class EmissionsService : IEmissionsService
         //Get metering point time series
         var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
 
-        var declaration = await emissionDataService.GetDeclarationProduction(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime(), aggregation);
+        //Get Declaration, Production types and Emissions per Hour
+        var declaration = await emissionDataService.GetDeclarationProduction(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
 
-        return new List<EnergySourceResponse>();
+        return sourcesCalculator.CalculateSourceEmissions(measurements, declaration, dateFrom, dateTo, aggregation);
+
     }
 }
