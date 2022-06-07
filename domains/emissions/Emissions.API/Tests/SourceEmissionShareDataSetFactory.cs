@@ -18,25 +18,25 @@ namespace Tests
                 {
                     DateFrom = new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
                     DateTo = new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 1234
+                    Quantity = 1000
                 },
                 new Measurement
                 {
                     DateFrom = new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
                     DateTo = new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 242
+                    Quantity = 2000
                 },
                 new Measurement
                 {
                     DateFrom = new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
                     DateTo = new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 654
+                    Quantity = 3000
                 },
                 new Measurement
                 {
                     DateFrom = new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
                     DateTo = new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 1800
+                    Quantity = 4000
                 }
             };
         }

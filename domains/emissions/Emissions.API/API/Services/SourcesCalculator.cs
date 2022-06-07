@@ -14,12 +14,12 @@ namespace API.Services
             IEnumerable<IGrouping<string, Record>> groupedDeclarations = GetGroupedDeclarations(aggregation, declaration.Result.Records);
             var consumptionResults = new Dictionary<string, List<ConsumptionShare>>();
 
-            foreach (var timeSeries in measurements)
+            foreach (var measurements in timeSeries)
             {
-                foreach (var measurement in meteringPointTimeSeries.Measurements)
+                foreach (var measurement in measurements.Measurements)
                 {
                     var utcDateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
-                    var gridArea = meteringPointTimeSeries.MeteringPoint.GridArea;
+                    var gridArea = measurements.MeteringPoint.GridArea;
                     var key = utcDateTime + gridArea;
                     var totalShares = groupedDeclarations.Single(_ =>
                         _.Key == key
@@ -53,35 +53,24 @@ namespace API.Services
                     group consumption by consumption.ProductionType into groupValues
                     select new EnergySourceDeclaration
                     (
-
+                        groupValues.Min(_ => _.Date),
+                        groupValues.Max(_ => _.Date),
+                        CalculateRenewable(groupValues),
+                        groupValues.ToDictionary(x => x.ProductionType, x => x.Value)
                     );
-
-
             }
 
             IEnumerable<IGrouping<string, Measurement>> groupedMeasurements = GetGroupedMeasurements(aggregation, timeSeries);
 
 
-            //foreach (var productionTypeValue in productionTypeValues.Select(_ => _.))
-            //{
-            //    var consumptionProcentResult = productionTypeValue * totalQuantity;
-            //}
-
-
-            //foreach (var totalShare in totalShares)
-            //{
-            //    shares.Add(new ConsumptionShare((float)totalShare.ShareTotal * measurement.Quantity, measurement.DateFrom, totalShare.ProductionType));
-
-            //}
-
-
-
-
-
-
             EnergySourceResponse EnergySources = null;
             result = EnergySources;
             return result;
+        }
+
+        private float CalculateRenewable(IGrouping<string, ConsumptionShare> groupValues)
+        {
+            throw new NotImplementedException();
         }
 
         private IEnumerable<IGrouping<string, Measurement>> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
@@ -133,11 +122,18 @@ namespace API.Services
 
         class ConsumptionShare
         {
-            public float Value { get; set; }
+            public ConsumptionShare(float value, long date, string productionType)
+            {
+                Value = value;
+                Date = date;
+                ProductionType = productionType;
+            }
 
-            public long Date { get; set; }
+            public float Value { get; }
 
-            public string ProductionType { get; set; }
+            public long Date { get; }
+
+            public string ProductionType { get; }
 
         }
     }
