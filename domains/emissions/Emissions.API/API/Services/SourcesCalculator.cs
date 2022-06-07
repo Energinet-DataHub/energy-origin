@@ -6,22 +6,23 @@ namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
     {
-        public EnergySourceResponse CalculateSourceEmissions(IEnumerable<TimeSeries> measurements, DeclarationProduction declaration,
+        public EnergySourceResponse CalculateSourceEmissions(IEnumerable<TimeSeries> timeSeries, DeclarationProduction declaration,
             long dateFrom, long dateTo, Aggregation aggregation)
         {
-            EnergySourceResponse result;
+            EnergySourceResponse result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
 
             IEnumerable<IGrouping<string, Record>> groupedDeclarations = GetGroupedDeclarations(aggregation, declaration.Result.Records);
             var consumptionResults = new Dictionary<string, List<ConsumptionShare>>();
 
             foreach (var timeSeries in measurements)
             {
-                foreach (var measurement in timeSeries.Measurements)
+                foreach (var measurement in meteringPointTimeSeries.Measurements)
                 {
                     var utcDateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
-                    var gridArea = timeSeries.MeteringPoint.GridArea;
-                    var totalShares = groupedDeclarations.First(_ =>
-                        _.Key == utcDateTime + gridArea
+                    var gridArea = meteringPointTimeSeries.MeteringPoint.GridArea;
+                    var key = utcDateTime + gridArea;
+                    var totalShares = groupedDeclarations.Single(_ =>
+                        _.Key == key
                     );
                     consumptionResults.TryGetValue(utcDateTime + gridArea, out var shares);
                     if (shares == null)
@@ -58,6 +59,7 @@ namespace API.Services
 
             }
 
+            IEnumerable<IGrouping<string, Measurement>> groupedMeasurements = GetGroupedMeasurements(aggregation, timeSeries);
 
 
             //foreach (var productionTypeValue in productionTypeValues.Select(_ => _.))
@@ -82,10 +84,23 @@ namespace API.Services
             return result;
         }
 
+        private IEnumerable<IGrouping<string, Measurement>> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
+        {
+            if (aggregation == Aggregation.Total)
+            {
+                return timeSeries.SelectMany(_ => _.Measurements).GroupBy(x => "total");
+            }
+
+            return timeSeries.SelectMany(y => y.Measurements)
+                .GroupBy(x => GetDateAsString(x.DateFrom.ToUtcDateTime(), aggregation));
+        }
+
         private IEnumerable<IGrouping<string, Record>> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
         {
             if (aggregation == Aggregation.Total)
-                return declaration.GroupBy(_ => "total");
+            {
+                return declaration.GroupBy(_ => "total" + _.PriceArea);
+            }
 
             return declaration.GroupBy(_ => GetDateAsString(_.HourUTC, aggregation) + _.PriceArea);
 
@@ -107,6 +122,8 @@ namespace API.Services
                     return date.ToString("yyyy/MM/dd/HH/mm");
                 case Aggregation.Actual:
                     return date.ToString("yyyy/MM/dd/HH");
+                case Aggregation.Total:
+                    return "total";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null);
             }
@@ -116,18 +133,12 @@ namespace API.Services
 
         class ConsumptionShare
         {
-            public ConsumptionShare(float value, long measurementTime, string productionType)
-            {
-                Value = value;
-                Date = measurementTime;
-                ProductionType = productionType;
-            }
+            public float Value { get; set; }
 
-            public float Value { get; }
+            public long Date { get; set; }
 
-            public long Date { get; }
+            public string ProductionType { get; set; }
 
-            public string ProductionType { get; }
         }
     }
 }

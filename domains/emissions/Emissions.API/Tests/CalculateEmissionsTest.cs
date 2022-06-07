@@ -12,7 +12,7 @@ namespace Tests;
 [UnitTest]
 public sealed class CalculateEmissionsTest
 {
-    readonly DataSetFactory dataSetFactory = new();
+    readonly CalculateEmissionDataSetFactory calculateEmissionDataSetFactory = new();
 
     [Theory]
     [InlineData(Aggregation.Total)]
@@ -26,8 +26,8 @@ public sealed class CalculateEmissionsTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeries();
-        var emissions = dataSetFactory.CreateEmissions();
+        var timeSeries = calculateEmissionDataSetFactory.CreateTimeSeries();
+        var emissions = calculateEmissionDataSetFactory.CreateEmissions();
 
 
         var sut = new EmissionsCalculator();
