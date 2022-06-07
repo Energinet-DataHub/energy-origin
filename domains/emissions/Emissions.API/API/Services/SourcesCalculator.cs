@@ -1,6 +1,7 @@
 ﻿using API.Helpers;
 using API.Models;
 
+
 namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
@@ -11,8 +12,8 @@ namespace API.Services
             EnergySourceResponse result;
 
             IEnumerable<IGrouping<string, Record>> groupedDeclarations = GetGroupedDeclarations(aggregation, declaration.Result.Records);
+            var consumptionResults = new Dictionary<string, List<ConsumptionShare>>();
 
-            var consumptionResult = new Dictionary<string, List<ConsumptionShare>>();
             foreach (var timeSeries in measurements)
             {
                 foreach (var measurement in timeSeries.Measurements)
@@ -22,22 +23,62 @@ namespace API.Services
                     var totalShares = groupedDeclarations.First(_ =>
                         _.Key == utcDateTime + gridArea
                     );
-                    consumptionResult.TryGetValue(utcDateTime + gridArea, out var shares);
+                    consumptionResults.TryGetValue(utcDateTime + gridArea, out var shares);
                     if (shares == null)
                     {
                         shares = new List<ConsumptionShare>();
-                        consumptionResult.Add(utcDateTime + gridArea, shares);
+                        consumptionResults.Add(utcDateTime + gridArea, shares);
                     }
 
-                    foreach (var totalShare in totalShares)
-                    {
-                        shares.Add(new ConsumptionShare((float)totalShare.ShareTotal * measurement.Quantity, measurement.DateFrom, totalShare.ProductionType));
 
-                    }
+                    var query =
+                        from totalShare in totalShares
+                        group shares by new { totalShare.HourUTC, totalShare.PriceArea, totalShare.ProductionType } into groupedShares
+                        select new ConsumptionShare
+                        (
+                            groupedShares.Select(a => a.Sum(s => s.Value * measurement.Quantity)).Sum(),
+                            groupedShares.Key.HourUTC.ToUnixTime(),
+                            groupedShares.Key.ProductionType
+                        );
+                    shares.AddRange(query);
+
+                    var totalQuantity =+ measurement.Quantity;
                 }
+            }
+            foreach (var consumptionResult in consumptionResults)
+            {
+                var productionTypeValues =
+                    from consumption in consumptionResult.Value
+                    group consumption by consumption.ProductionType into groupValues
+                    select new EnergySourceDeclaration
+                    (
+
+                    );
+
+
             }
 
 
+
+            //foreach (var productionTypeValue in productionTypeValues.Select(_ => _.))
+            //{
+            //    var consumptionProcentResult = productionTypeValue * totalQuantity;
+            //}
+
+
+            //foreach (var totalShare in totalShares)
+            //{
+            //    shares.Add(new ConsumptionShare((float)totalShare.ShareTotal * measurement.Quantity, measurement.DateFrom, totalShare.ProductionType));
+
+            //}
+
+
+
+
+
+
+            EnergySourceResponse EnergySources = null;
+            result = EnergySources;
             return result;
         }
 
