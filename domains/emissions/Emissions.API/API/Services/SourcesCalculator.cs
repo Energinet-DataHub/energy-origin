@@ -1,4 +1,5 @@
-﻿using API.Helpers;
+﻿using System.Runtime.InteropServices.ComTypes;
+using API.Helpers;
 using API.Models;
 
 
@@ -6,13 +7,16 @@ namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
     {
+        private IList<string> RenewableSources = Configuration.GetRenewableSources();
+
+
         public EnergySourceResponse CalculateSourceEmissions(IEnumerable<TimeSeries> timeSeries, DeclarationProduction declaration,
             long dateFrom, long dateTo, Aggregation aggregation)
         {
             EnergySourceResponse result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
 
             IEnumerable<IGrouping<string, Record>> groupedDeclarations = GetGroupedDeclarations(aggregation, declaration.Result.Records);
-            var consumptionResults = new Dictionary<string, List<ConsumptionShare>>();
+            var consumptionResults = new Dictionary<string, Dictionary<string, ConsumptionShare>>();
 
             foreach (var measurements in timeSeries)
             {
@@ -20,57 +24,58 @@ namespace API.Services
                 {
                     var utcDateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
                     var gridArea = measurements.MeteringPoint.GridArea;
-                    var key = utcDateTime + gridArea;
                     var totalShares = groupedDeclarations.Single(_ =>
-                        _.Key == key
+                        _.Key == utcDateTime + gridArea
                     );
-                    consumptionResults.TryGetValue(utcDateTime + gridArea, out var shares);
-                    if (shares == null)
+
+                    if (!consumptionResults.TryGetValue(utcDateTime, out var shares))
                     {
-                        shares = new List<ConsumptionShare>();
-                        consumptionResults.Add(utcDateTime + gridArea, shares);
+                        shares = new Dictionary<string, ConsumptionShare>();
+                        consumptionResults.Add(utcDateTime, shares);
                     }
 
 
-                    var query =
-                        from totalShare in totalShares
-                        group shares by new { totalShare.HourUTC, totalShare.PriceArea, totalShare.ProductionType } into groupedShares
-                        select new ConsumptionShare
-                        (
-                            groupedShares.Select(a => a.Sum(s => s.Value * measurement.Quantity)).Sum(),
-                            groupedShares.Key.HourUTC.ToUnixTime(),
-                            groupedShares.Key.ProductionType
-                        );
-                    shares.AddRange(query);
-
-                    var totalQuantity =+ measurement.Quantity;
+                    foreach (var totalShare in totalShares.Where(_ => _.HourUTC.ToUnixTime() == measurement.DateFrom))
+                    {
+                        if (!shares.TryGetValue(totalShare.ProductionType, out var share))
+                        {
+                            share = new ConsumptionShare
+                            {
+                                Value = 0,
+                                DateFrom = measurement.DateFrom,
+                                DateTo = measurement.DateTo,
+                                ProductionType = totalShare.ProductionType
+                            };
+                            shares.Add(totalShare.ProductionType, share);
+                        }
+                        share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
+                    }
                 }
             }
-            foreach (var consumptionResult in consumptionResults)
-            {
-                var productionTypeValues =
-                    from consumption in consumptionResult.Value
-                    group consumption by consumption.ProductionType into groupValues
-                    select new EnergySourceDeclaration
-                    (
-                        groupValues.Min(_ => _.Date),
-                        groupValues.Max(_ => _.Date),
-                        CalculateRenewable(groupValues),
-                        groupValues.ToDictionary(x => x.ProductionType, x => x.Value)
-                    );
-            }
-
             IEnumerable<IGrouping<string, Measurement>> groupedMeasurements = GetGroupedMeasurements(aggregation, timeSeries);
 
+            foreach (var consumptionResult in consumptionResults)
+            {
+                var matchingConsumptionSum = groupedMeasurements.Single(_ => _.Key == consumptionResult.Key).Sum(_ => _.Quantity);
 
-            EnergySourceResponse EnergySources = null;
-            result = EnergySources;
+                var sources = consumptionResult.Value.ToDictionary(_ => _.Key, _ => _.Value.Value/(matchingConsumptionSum*100));
+                
+                result.EnergySources.Add(new EnergySourceDeclaration
+                (
+                    consumptionResult.Value.Min(_ => _.Value.DateFrom),
+                    consumptionResult.Value.Max(_ => _.Value.DateTo),
+                    CalculateRenewable(sources),
+                    sources
+                ));
+            }
+            
             return result;
+
         }
 
-        private float CalculateRenewable(IGrouping<string, ConsumptionShare> groupValues)
+        private float CalculateRenewable(IDictionary<string, float> groupValues)
         {
-            throw new NotImplementedException();
+            return groupValues.Where(_ => RenewableSources.Contains(_.Key)).Sum(_ => _.Value);
         }
 
         private IEnumerable<IGrouping<string, Measurement>> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
@@ -122,18 +127,12 @@ namespace API.Services
 
         class ConsumptionShare
         {
-            public ConsumptionShare(float value, long date, string productionType)
-            {
-                Value = value;
-                Date = date;
-                ProductionType = productionType;
-            }
+            public float Value { get; set; }
 
-            public float Value { get; }
+            public long DateFrom { get; set; }
+            public long DateTo { get; set; }
 
-            public long Date { get; }
-
-            public string ProductionType { get; }
+            public string? ProductionType { get; set; }
 
         }
     }

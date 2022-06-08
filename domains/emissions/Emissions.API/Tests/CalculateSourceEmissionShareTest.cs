@@ -22,13 +22,15 @@ namespace Tests
             var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
             var timeSeries = sourceEmissionShareDataSetFactory.CreateTimeSeries();
             var emissionShares = sourceEmissionShareDataSetFactory.CreateEmissionsShares();
+            Environment.SetEnvironmentVariable("RENEWABLESOURCES",
+                "Wood, Waste, Straw , BioGas, Solar, WindInshore, WindOfShore");
 
 
             var sut = new SourcesCalculator();
 
             // Act
             var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, dateFrom.ToUnixTime(),
-                dateTo.ToUnixTime(), Aggregation.Total);
+                dateTo.ToUnixTime(), Aggregation.Hour);
         }
     }
 }
