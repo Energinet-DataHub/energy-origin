@@ -83,7 +83,7 @@ namespace API.Services
                 var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
 
                 var sources = consumptionResult.Value.ToDictionary(a => 
-                    a.Key, b => (float)Math.Round(b.Value.Value / (matchingConsumptionSum * 100), 4));
+                    a.Key, b => (float)Math.Round(b.Value.Value / (matchingConsumptionSum * 100), 5));
 
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (
