@@ -1,3 +1,4 @@
+using System.Text.Json;
 using API.Models;
 
 namespace API.Services;
@@ -24,9 +25,26 @@ public class EmissionDataService : IEmissionDataService
         throw new Exception("EDS Emissions query failed");
     }
 
+    public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo)
+    {
+        var result = await httpClient.GetFromJsonAsync<DeclarationProduction>(GetQuery(dateFrom, dataTo));
+        if (result != null)
+        {
+            return result;
+        }
+
+        throw new Exception($"EDS declarationproduction query failed. query:{GetQuery(dateFrom, dataTo)}");
+    }
+
+    string GetQuery(DateTime dateFrom, DateTime dateTo)
+    {
+        return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
+               "from \"declarationproduction\" " +
+               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy} AND WHERE  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+    }
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
-            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom.ToString("MM/dd/yyyy")}' AND \"HourUTC\" <= '{dateTo.ToString("MM/dd/yyyy")}' ";
+            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy)}'";
     }
 }
