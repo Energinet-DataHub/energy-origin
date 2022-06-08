@@ -7,7 +7,7 @@ namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
     {
-        private IList<string> RenewableSources = Configuration.GetRenewableSources();
+        readonly IList<string> RenewableSources = Configuration.GetRenewableSources();
 
 
         public EnergySourceResponse CalculateSourceEmissions(IEnumerable<TimeSeries> timeSeries, DeclarationProduction declaration,
