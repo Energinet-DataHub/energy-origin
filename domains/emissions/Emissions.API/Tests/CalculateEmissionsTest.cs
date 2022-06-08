@@ -12,7 +12,7 @@ namespace Tests;
 [UnitTest]
 public sealed class CalculateEmissionsTest
 {
-    readonly DataSetFactory dataSetFactory = new();
+    readonly CalculateEmissionDataSetFactory calculateEmissionDataSetFactory = new();
 
     [Theory]
     [InlineData(Aggregation.Total)]
@@ -26,8 +26,8 @@ public sealed class CalculateEmissionsTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeries();
-        var emissions = dataSetFactory.CreateEmissions();
+        var timeSeries = calculateEmissionDataSetFactory.CreateTimeSeries();
+        var emissions = calculateEmissionDataSetFactory.CreateEmissions();
 
 
         var sut = new EmissionsCalculator();
@@ -39,8 +39,8 @@ public sealed class CalculateEmissionsTest
         // Assert
         Assert.NotNull(result);
         var emissionsEnumerable = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
-        Assert.Equal(emissionsEnumerable.Select(_ => _.Total.Co2), result.Select(_ => _.Total.Co2));
-        Assert.Equal(emissionsEnumerable.Select(_ => _.Relative.Co2), result.Select(_ => _.Relative.Co2));
+        Assert.Equal(emissionsEnumerable.Select(_ => _.Total), result.Select(_ => _.Total));
+        Assert.Equal(emissionsEnumerable.Select(_ => _.Relative), result.Select(_ => _.Relative));
         Assert.Equal(emissionsEnumerable.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
         Assert.Equal(emissionsEnumerable.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
@@ -55,8 +55,8 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateTo.ToUnixTime(),
-                        new Total( 481.234f ),
-                        new Relative(122.4514f)
+                        new Quantity(481.234f, QuantityUnit.g),
+                        new Quantity(122.4514f, QuantityUnit.gPerkWh)
                         )
 
                 };
@@ -67,26 +67,26 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(153.016f),
-                        new Relative(124f)
+                        new Quantity(153.016f, QuantityUnit.g),
+                        new Quantity(124f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(1).ToUnixTime(),
                         dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(56.628f),
-                        new Relative(234f)
+                        new Quantity(56.628f, QuantityUnit.g),
+                        new Quantity(234f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(2).ToUnixTime(),
                         dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(55.59f),
-                        new Relative(85f)
+                        new Quantity(55.59f, QuantityUnit.g),
+                        new Quantity(85f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(3).ToUnixTime(),
                         dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(216f),
-                        new Relative(120f)
+                        new Quantity(216f, QuantityUnit.g),
+                        new Quantity(120f, QuantityUnit.gPerkWh)
                     ),
                 };
             case Aggregation.Day:
@@ -95,15 +95,15 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(209.644f),
-                        new Relative(142.03523f)
+                        new Quantity(209.644f, QuantityUnit.g),
+                        new Quantity(142.03523f, QuantityUnit.gPerkWh)
                     ),
                     new(
 
                         dateFrom.AddHours(2).ToUnixTime(),
                         dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Total(271.59f),
-                        new Relative(110.67237f)
+                        new Quantity(271.59f, QuantityUnit.g),
+                        new Quantity(110.67237f, QuantityUnit.gPerkWh)
                     )
                 };
             case Aggregation.Month:
@@ -113,8 +113,8 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateTo.ToUnixTime(),
-                        new Total(481.234f),
-                        new Relative(122.4514f)
+                        new Quantity(481.234f, QuantityUnit.g),
+                        new Quantity(122.4514f, QuantityUnit.gPerkWh)
                     )
                 };
             default:
