@@ -126,12 +126,12 @@ namespace Tests
                             new(
                                 dateFrom.ToUnixTime(),
                                 dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0.9999f,
+                                0.99999f,
                                 new()
                                 {
-                                    { "Solar", 0.4333f },
-                                    { "WindOnshore", 0.4333f },
-                                    { "BioGas", 0.1333f }
+                                    { "Solar", 0.43333f },
+                                    { "WindOnshore", 0.43333f },
+                                    { "BioGas", 0.13333f }
                                 }
                             ),
                             new(
@@ -140,8 +140,8 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.2429f },
-                                    { "WindOnshore", 0.3571f },
+                                    { "Solar", 0.24286f },
+                                    { "WindOnshore", 0.35714f },
                                     { "BioGas", 0.4f }
                                 }
                             )

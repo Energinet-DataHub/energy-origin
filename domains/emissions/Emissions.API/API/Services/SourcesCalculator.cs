@@ -6,6 +6,7 @@ namespace API.Services
     public class SourcesCalculator : ISourcesCalculator
     {
         readonly IList<string> renewableSources = Configuration.GetRenewableSources();
+        readonly float wasteRenewableShare = Configuration.GetWasteRenewableShare();
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
@@ -83,7 +84,7 @@ namespace API.Services
                 var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
 
                 var sources = consumptionResult.Value.ToDictionary(a =>
-                    a.Key, b => (float)Math.Round(b.Value.Value / (matchingConsumptionSum * 100), 5));
+                    a.Key, b => (float)Math.Round((b.Value.Value / matchingConsumptionSum / 100), 5));
 
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (
@@ -98,7 +99,7 @@ namespace API.Services
         }
 
         float CalculateRenewable(IDictionary<string, float> groupValues) =>
-            groupValues.Where(a => renewableSources.Contains(a.Key)).Sum(a => a.Value);
+             groupValues.Where(a => renewableSources.Contains(a.Key)).Sum(a => a.Value * (a.Key == "Waste" ? wasteRenewableShare : 1));
 
         ILookup<string, Measurement> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
         {

@@ -27,6 +27,8 @@ public class EmissionDataService : IEmissionDataService
 
     public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo)
     {
+        var res = await httpClient.GetStringAsync(GetQuery(dateFrom, dataTo));
+
         var result = await httpClient.GetFromJsonAsync<DeclarationProduction>(GetQuery(dateFrom, dataTo));
         if (result != null)
         {
@@ -38,10 +40,12 @@ public class EmissionDataService : IEmissionDataService
 
     string GetQuery(DateTime dateFrom, DateTime dateTo)
     {
+
         return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
                "from \"declarationproduction\" " +
-               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy} AND WHERE  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
     }
+
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
