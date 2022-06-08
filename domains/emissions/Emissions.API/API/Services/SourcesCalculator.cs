@@ -28,38 +28,55 @@ namespace API.Services
                         _.Key == utcDateTime + gridArea
                     );
 
-                    if (!consumptionResults.TryGetValue(utcDateTime, out var shares))
-                    {
-                        shares = new Dictionary<string, ConsumptionShare>();
-                        consumptionResults.Add(utcDateTime, shares);
-                    }
-
-
-                    foreach (var totalShare in totalShares.Where(_ => _.HourUTC.ToUnixTime() == measurement.DateFrom))
-                    {
-                        if (!shares.TryGetValue(totalShare.ProductionType, out var share))
-                        {
-                            share = new ConsumptionShare
-                            {
-                                Value = 0,
-                                DateFrom = measurement.DateFrom,
-                                DateTo = measurement.DateTo,
-                                ProductionType = totalShare.ProductionType
-                            };
-                            shares.Add(totalShare.ProductionType, share);
-                        }
-                        share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
-                    }
+                    CalculateConsumptionShare(consumptionResults, utcDateTime, totalShares, measurement);
                 }
             }
+            CalculateSourceEmissionPercentage(timeSeries, aggregation, consumptionResults, result);
+
+            return result;
+
+        }
+
+        static void CalculateConsumptionShare(Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults, string utcDateTime, IGrouping<string, Record> totalShares,
+            Measurement measurement)
+        {
+            if (!consumptionResults.TryGetValue(utcDateTime, out var shares))
+            {
+                shares = new Dictionary<string, ConsumptionShare>();
+                consumptionResults.Add(utcDateTime, shares);
+            }
+
+            foreach (var totalShare in totalShares.Where(_ => _.HourUTC.ToUnixTime() == measurement.DateFrom))
+            {
+                if (!shares.TryGetValue(totalShare.ProductionType, out var share))
+                {
+                    share = new ConsumptionShare
+                    {
+                        Value = 0,
+                        DateFrom = measurement.DateFrom,
+                        DateTo = measurement.DateTo,
+                        ProductionType = totalShare.ProductionType
+                    };
+                    shares.Add(totalShare.ProductionType, share);
+                }
+
+                share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
+            }
+        }
+
+        void CalculateSourceEmissionPercentage(IEnumerable<TimeSeries> timeSeries, Aggregation aggregation, Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults,
+            EnergySourceResponse result)
+        {
             IEnumerable<IGrouping<string, Measurement>> groupedMeasurements = GetGroupedMeasurements(aggregation, timeSeries);
 
             foreach (var consumptionResult in consumptionResults)
             {
-                var matchingConsumptionSum = groupedMeasurements.Single(_ => _.Key == consumptionResult.Key).Sum(_ => _.Quantity);
+                var matchingConsumptionSum =
+                    groupedMeasurements.Single(_ => _.Key == consumptionResult.Key).Sum(_ => _.Quantity);
 
-                var sources = consumptionResult.Value.ToDictionary(_ => _.Key, _ => _.Value.Value/(matchingConsumptionSum*100));
-                
+                var sources =
+                    consumptionResult.Value.ToDictionary(_ => _.Key, _ => _.Value.Value / (matchingConsumptionSum * 100));
+
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (
                     consumptionResult.Value.Min(_ => _.Value.DateFrom),
@@ -68,17 +85,14 @@ namespace API.Services
                     sources
                 ));
             }
-            
-            return result;
-
         }
 
-        private float CalculateRenewable(IDictionary<string, float> groupValues)
+        float CalculateRenewable(IDictionary<string, float> groupValues)
         {
             return groupValues.Where(_ => RenewableSources.Contains(_.Key)).Sum(_ => _.Value);
         }
 
-        private IEnumerable<IGrouping<string, Measurement>> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
+        IEnumerable<IGrouping<string, Measurement>> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
         {
             if (aggregation == Aggregation.Total)
             {
@@ -89,7 +103,7 @@ namespace API.Services
                 .GroupBy(x => GetDateAsString(x.DateFrom.ToUtcDateTime(), aggregation));
         }
 
-        private IEnumerable<IGrouping<string, Record>> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
+        IEnumerable<IGrouping<string, Record>> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
         {
             if (aggregation == Aggregation.Total)
             {
