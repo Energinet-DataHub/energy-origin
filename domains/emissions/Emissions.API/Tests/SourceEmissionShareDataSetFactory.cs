@@ -50,7 +50,7 @@ namespace Tests
             };
         }
 
-        public DeclarationProduction CreateEmissionsShares()
+        public List<Record> CreateEmissionsShares()
         {
             return new DeclarationProduction(String.Empty, true, 
                 new Result(new List<Record>
@@ -71,7 +71,7 @@ namespace Tests
                     new Record(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
                     new Record(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
 
-                }, new List<Field>(), String.Empty));
+            };
         }
     }
 }

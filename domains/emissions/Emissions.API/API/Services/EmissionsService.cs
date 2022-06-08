@@ -62,7 +62,6 @@ public class EmissionsService : IEmissionsService
         //Get Declaration, Production types and Emissions per Hour
         var declaration = await emissionDataService.GetDeclarationProduction(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
 
-        return sourcesCalculator.CalculateSourceEmissions(measurements, declaration, dateFrom, dateTo, aggregation);
-
+        return sourcesCalculator.CalculateSourceEmissions(measurements, declaration.Result.Records, aggregation);
     }
 }
