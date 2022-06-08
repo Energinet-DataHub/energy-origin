@@ -8,7 +8,7 @@ namespace API.Services
         readonly IList<string> renewableSources = Configuration.GetRenewableSources();
 
         public EnergySourceResponse CalculateSourceEmissions(
-            IEnumerable<TimeSeries> timeSeries, 
+            IEnumerable<TimeSeries> timeSeries,
             List<Record> declarationRecords,
             Aggregation aggregation)
         {
@@ -32,8 +32,8 @@ namespace API.Services
         }
 
         void CalculateConsumptionShare(
-            Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults, 
-            string utcDateTime, 
+            Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults,
+            string utcDateTime,
             IEnumerable<Record> totalShares,
             Measurement measurement)
         {
@@ -71,8 +71,8 @@ namespace API.Services
         }
 
         EnergySourceResponse CalculateSourceEmissionPercentage(
-            IEnumerable<TimeSeries> timeSeries, 
-            Aggregation aggregation, 
+            IEnumerable<TimeSeries> timeSeries,
+            Aggregation aggregation,
             Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults)
         {
             var result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
@@ -82,7 +82,7 @@ namespace API.Services
             {
                 var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
 
-                var sources = consumptionResult.Value.ToDictionary(a => 
+                var sources = consumptionResult.Value.ToDictionary(a =>
                     a.Key, b => (float)Math.Round(b.Value.Value / (matchingConsumptionSum * 100), 5));
 
                 result.EnergySources.Add(new EnergySourceDeclaration
