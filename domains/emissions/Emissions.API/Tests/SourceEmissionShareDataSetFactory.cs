@@ -52,8 +52,7 @@ namespace Tests
 
         public List<Record> CreateEmissionsShares()
         {
-            return new DeclarationProduction(String.Empty, true, 
-                new Result(new List<Record>
+            return new List<Record>
                 {
                     new Record(50, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
                     new Record(30, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),

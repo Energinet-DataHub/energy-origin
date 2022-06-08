@@ -58,6 +58,15 @@ namespace API.Services
                 }
 
                 share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
+                if (measurement.DateFrom < share.DateFrom)
+                {
+                    share.DateFrom = measurement.DateFrom;
+                }
+
+                if (measurement.DateTo > share.DateTo)
+                {
+                    share.DateTo = measurement.DateTo;
+                }
             }
         }
 
@@ -74,7 +83,7 @@ namespace API.Services
                 var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
 
                 var sources = consumptionResult.Value.ToDictionary(a => 
-                    a.Key, b => b.Value.Value / (matchingConsumptionSum * 100));
+                    a.Key, b => (float)Math.Round(b.Value.Value / (matchingConsumptionSum * 100), 4));
 
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (

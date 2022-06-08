@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using API.Helpers;
 using API.Models;
 using API.Services;
 using Xunit;
@@ -24,20 +27,19 @@ namespace Tests
             var timeSeries = sourceEmissionShareDataSetFactory.CreateTimeSeries();
             var emissionShares = sourceEmissionShareDataSetFactory.CreateEmissionsShares();
             Environment.SetEnvironmentVariable("RENEWABLESOURCES",
-                "Wood, Waste, Straw , BioGas, Solar, WindOnshore, WindOffshore");
+                "Wood,Waste,Straw,BioGas,Solar,WindOnshore,WindOffshore");
 
 
             var sut = new SourcesCalculator();
 
             // Act
-            var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, dateFrom.ToUnixTime(),
-                dateTo.ToUnixTime(), aggregation);
+            var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, aggregation);
 
             //Assert
             Assert.NotNull(result);
             var emissionsEnumerable = GetExpectedSourceEmissions(aggregation, dateFrom, dateTo).EnergySources;
             Assert.Equal(emissionsEnumerable.Select(_ => _.Renewable), result.EnergySources.Select(_ => _.Renewable));
-            Assert.Equal(emissionsEnumerable.Select(_ => _.Source), result.EnergySources.Select(_ => _.Source));
+            Assert.Equal(emissionsEnumerable.Select(_ => _.Ratios), result.EnergySources.Select(_ => _.Ratios));
             Assert.Equal(emissionsEnumerable.Select(_ => _.DateFrom), result.EnergySources.Select(_ => _.DateFrom));
             Assert.Equal(emissionsEnumerable.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
         }
@@ -47,6 +49,8 @@ namespace Tests
             switch (aggregation)
             {
                 case Aggregation.Total:
+                case Aggregation.Month:
+                case Aggregation.Year:
                     return new EnergySourceResponse(
 
                         new List<EnergySourceDeclaration>
@@ -54,7 +58,7 @@ namespace Tests
                             new(
                                 dateFrom.ToUnixTime(),
                                 dateTo.ToUnixTime(),
-                                0,
+                                1,
                                 new()
                                 {
                                     { "Solar", 0.3f },
@@ -72,7 +76,7 @@ namespace Tests
                             new(
                                 dateFrom.ToUnixTime(),
                                 dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0,
+                                1,
                                 new()
                                 {
                                     { "Solar", 0.5f },
@@ -83,7 +87,7 @@ namespace Tests
                             new(
                                 dateFrom.AddHours(1).ToUnixTime(),
                                 dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0,
+                                1,
                                 new()
                                 {
                                     { "Solar", 0.4f },
@@ -94,7 +98,7 @@ namespace Tests
                             new(
                                 dateFrom.AddHours(2).ToUnixTime(),
                                 dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0,
+                                1,
                                 new()
                                 {
                                     { "Solar", 0.3f },
@@ -105,19 +109,44 @@ namespace Tests
                             new(
                                 dateFrom.AddHours(3).ToUnixTime(),
                                 dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0,
+                                1,
                                 new()
                                 {
                                     { "Solar", 0.2f },
                                     { "WindOnshore", 0.4f },
-                                    { "BioGas", 0.5f }
+                                    { "BioGas", 0.4f }
                                 }
                             )
                         });
                 case Aggregation.Day:
+                    return new EnergySourceResponse(
 
-                case Aggregation.Month:
-                case Aggregation.Year:
+                        new List<EnergySourceDeclaration>
+                        {
+                            new(
+                                dateFrom.ToUnixTime(),
+                                dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                0.9999f,
+                                new()
+                                {
+                                    { "Solar", 0.4333f },
+                                    { "WindOnshore", 0.4333f },
+                                    { "BioGas", 0.1333f }
+                                }
+                            ),
+                            new(
+                                dateFrom.AddHours(2).ToUnixTime(),
+                                dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                1,
+                                new()
+                                {
+                                    { "Solar", 0.2429f },
+                                    { "WindOnshore", 0.3571f },
+                                    { "BioGas", 0.4f }
+                                }
+                            )
+                        });
+
 
                 default:
                     return new EnergySourceResponse(new List<EnergySourceDeclaration>());
