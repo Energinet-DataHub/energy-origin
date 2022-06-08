@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using API.Helpers;
 using API.Models;
 using API.Services;
 using Xunit;
@@ -29,8 +24,7 @@ namespace Tests
             var sut = new SourcesCalculator();
 
             // Act
-            var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, dateFrom.ToUnixTime(),
-                dateTo.ToUnixTime(), Aggregation.Hour);
+            var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, Aggregation.Hour);
         }
     }
 }
