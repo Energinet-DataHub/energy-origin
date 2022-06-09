@@ -26,8 +26,7 @@ namespace Tests
             var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
             var timeSeries = sourceEmissionShareDataSetFactory.CreateTimeSeries();
             var emissionShares = sourceEmissionShareDataSetFactory.CreateEmissionsShares();
-            Environment.SetEnvironmentVariable("RENEWABLESOURCES",
-                "Wood,Waste,Straw,BioGas,Solar,WindOnshore,WindOffshore");
+            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "Wood,Waste,Straw,BioGas,Solar,WindOnshore,WindOffshore");
 
 
             var sut = new SourcesCalculator();

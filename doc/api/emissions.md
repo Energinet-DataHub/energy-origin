@@ -34,7 +34,7 @@ GET /api/emissions
             },
             "relative": {
                 "value": 1234.213,
-                "unit": "g/Kwh"
+                "unit": "g/kWh"
             }
         }
     ]
