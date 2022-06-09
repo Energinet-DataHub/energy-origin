@@ -26,9 +26,20 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-
-        // Validation
+        // TODO: Validation
 
         return await emissionsService.GetTotalEmissions(Context, dateFrom, dateTo, aggregation);
+    }
+
+    [HttpGet]
+    [Route("sources")]
+    public async Task<EnergySourceResponse> GetEnergySources(
+        [Required] long dateFrom,
+        [Required] long dateTo,
+        Aggregation aggregation = Aggregation.Total)
+    {
+        // TODO: Validation
+
+        return await emissionsService.GetSourceDeclaration(Context, dateFrom, dateTo, aggregation);
     }
 }
