@@ -27,8 +27,6 @@ public class EmissionDataService : IEmissionDataService
 
     public async Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo)
     {
-        var res = await httpClient.GetStringAsync(GetQuery(dateFrom, dataTo));
-
         var result = await httpClient.GetFromJsonAsync<DeclarationProduction>(GetQuery(dateFrom, dataTo));
         if (result != null)
         {
