@@ -18,7 +18,12 @@
             HourUTC = hourUTC;
             Version = version;
             PriceArea = priceArea;
-            ProductionType = Char.ToLowerInvariant(productionType[0]) + productionType.Substring(1);
+            ProductionType = productionType.Length switch
+            {
+                0 => "",
+                1 => productionType.ToLowerInvariant(),
+                _ => char.ToLowerInvariant(productionType[0]) + productionType[1..]
+            };
         }
     }
 }

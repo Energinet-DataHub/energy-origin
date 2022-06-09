@@ -1,4 +1,3 @@
-using System.Text.Json;
 using API.Models;
 
 namespace API.Services;
@@ -31,12 +30,12 @@ public class EmissionDataService : IEmissionDataService
     {
         return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
                "from \"declarationproduction\" " +
-               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
-            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy)}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy)}'";
+            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy)}'";
     }
 }

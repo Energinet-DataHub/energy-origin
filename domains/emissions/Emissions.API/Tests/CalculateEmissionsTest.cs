@@ -38,8 +38,8 @@ public sealed class CalculateEmissionsTest
         // Assert
         Assert.NotNull(result);
         var expected = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
-        Assert.Equal(expected.Select(_ => _.Total), result.Select(_ => _.Total));
-        Assert.Equal(expected.Select(_ => _.Relative), result.Select(_ => _.Relative));
+        Assert.Equal(expected.Select(_ => (_.Total.Unit, _.Total.Value)), result.Select(_ => (_.Total.Unit, _.Total.Value)));
+        Assert.Equal(expected.Select(_ => (_.Relative.Unit, _.Relative.Value)), result.Select(_ => (_.Relative.Unit, _.Relative.Value)));
         Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
         Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }

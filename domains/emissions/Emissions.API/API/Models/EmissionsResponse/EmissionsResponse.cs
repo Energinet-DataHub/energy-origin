@@ -1,14 +1,15 @@
  using System.Text.Json.Serialization;
 
- namespace API.Models;
-
-public class EmissionsResponse
+namespace API.Models
 {
-    [JsonPropertyName("emissions")]
-    public IEnumerable<Emissions> Emissions { get; }
-
-    public EmissionsResponse(IEnumerable<Emissions> emissions)
+    public class EmissionsResponse
     {
-        Emissions = emissions;
+        [JsonPropertyName("emissions")]
+        public IEnumerable<Emissions> Emissions { get; }
+
+        public EmissionsResponse(IEnumerable<Emissions> emissions)
+        {
+            Emissions = emissions;
+        }
     }
 }
