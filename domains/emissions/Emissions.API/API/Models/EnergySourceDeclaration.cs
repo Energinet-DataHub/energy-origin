@@ -10,9 +10,9 @@
             Ratios = ratios;
         }
 
-        public long DateFrom { get; set; }
-        public long DateTo { get; set; }
-        public float Renewable { get; set; }
-        public Dictionary<string, float> Ratios {get; set; }
+        public long DateFrom { get; }
+        public long DateTo { get; }
+        public float Renewable { get; }
+        public Dictionary<string, float> Ratios { get; }
     }
 }

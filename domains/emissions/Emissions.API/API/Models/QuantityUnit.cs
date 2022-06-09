@@ -25,22 +25,25 @@ namespace API.Models
         [Description("GW")]
         GW = 6,
 
+        [Description("mg")]
+        mg = 7,
+
         [Description("g")]
-        g = 7,
+        g = 8,
 
         [Description("kg")]
-        kg = 8,
+        kg = 9,
 
         [Description("Mg")]
-        Mg = 9,
+        Mg = 10,
 
         [Description("mg/kWh")]
-        mgPerkWh = 10,
+        mgPerkWh = 11,
 
         [Description("g/kWh")]
-        gPerkWh = 11,
+        gPerkWh = 12,
 
         [Description("kg/kWh")]
-        kgPerkWh = 12,
+        kgPerkWh = 13,
     }
 }

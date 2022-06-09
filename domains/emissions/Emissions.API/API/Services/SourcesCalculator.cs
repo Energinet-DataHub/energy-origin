@@ -7,24 +7,26 @@ namespace API.Services
     {
         readonly IList<string> renewableSources = Configuration.GetRenewableSources();
         readonly float wasteRenewableShare = Configuration.GetWasteRenewableShare();
+        private const string waste = "waste";
+        private const string total = "total";
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
-            List<Record> declarationRecords,
+            List<Record> records,
             Aggregation aggregation)
         {
-            var groupedDeclarations = GetGroupedDeclarations(aggregation, declarationRecords);
+            var groupedDeclarations = GetGroupedDeclarations(aggregation, records);
             var consumptionResults = new Dictionary<string, Dictionary<string, ConsumptionShare>>();
 
             foreach (var measurements in timeSeries)
             {
                 foreach (var measurement in measurements.Measurements)
                 {
-                    var utcDateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
+                    var dateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
                     var gridArea = measurements.MeteringPoint.GridArea;
-                    var totalShares = groupedDeclarations[utcDateTime + gridArea];
+                    var totalShares = groupedDeclarations[dateTime + gridArea];
 
-                    CalculateConsumptionShare(consumptionResults, utcDateTime, totalShares, measurement);
+                    CalculateConsumptionShareByReference(consumptionResults, dateTime, totalShares, measurement);
                 }
             }
             var result = CalculateSourceEmissionPercentage(timeSeries, aggregation, consumptionResults);
@@ -32,16 +34,16 @@ namespace API.Services
             return result;
         }
 
-        void CalculateConsumptionShare(
+        void CalculateConsumptionShareByReference(
             Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults,
-            string utcDateTime,
+            string dateTime,
             IEnumerable<Record> totalShares,
             Measurement measurement)
         {
-            if (!consumptionResults.TryGetValue(utcDateTime, out var shares))
+            if (!consumptionResults.TryGetValue(dateTime, out var shares))
             {
                 shares = new Dictionary<string, ConsumptionShare>();
-                consumptionResults.Add(utcDateTime, shares);
+                consumptionResults.Add(dateTime, shares);
             }
 
             foreach (var totalShare in totalShares.Where(a => a.HourUTC.ToUnixTime() == measurement.DateFrom))
@@ -49,16 +51,17 @@ namespace API.Services
                 if (!shares.TryGetValue(totalShare.ProductionType, out var share))
                 {
                     share = new ConsumptionShare
-                    {
-                        Value = 0,
-                        DateFrom = measurement.DateFrom,
-                        DateTo = measurement.DateTo,
-                        ProductionType = totalShare.ProductionType
-                    };
+                    (
+                        0,
+                        measurement.DateFrom,
+                        measurement.DateTo,
+                        totalShare.ProductionType
+                    );
                     shares.Add(totalShare.ProductionType, share);
                 }
 
                 share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
+
                 if (measurement.DateFrom < share.DateFrom)
                 {
                     share.DateFrom = measurement.DateFrom;
@@ -99,12 +102,13 @@ namespace API.Services
         }
 
         float CalculateRenewable(IDictionary<string, float> groupValues) =>
-             groupValues.Where(a => renewableSources.Contains(a.Key)).Sum(a => a.Value * (a.Key == "Waste" ? wasteRenewableShare : 1));
+             groupValues.Where(a => renewableSources.Contains(a.Key)).
+                    Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
 
         ILookup<string, Measurement> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
         {
             if (aggregation == Aggregation.Total)
-                return timeSeries.SelectMany(a => a.Measurements).ToLookup(x => "total");
+                return timeSeries.SelectMany(a => a.Measurements).ToLookup(x => total);
 
             return timeSeries.SelectMany(y => y.Measurements)
                 .ToLookup(x => GetDateAsString(x.DateFrom.ToUtcDateTime(), aggregation));
@@ -113,32 +117,24 @@ namespace API.Services
         ILookup<string, Record> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
         {
             if (aggregation == Aggregation.Total)
-                return declaration.ToLookup(a => "total" + a.PriceArea);
+                return declaration.ToLookup(a => total + a.PriceArea);
 
             return declaration.ToLookup(a => GetDateAsString(a.HourUTC, aggregation) + a.PriceArea);
         }
 
         string GetDateAsString(DateTime date, Aggregation aggregation)
         {
-            switch (aggregation)
+            return aggregation switch
             {
-                case Aggregation.Year:
-                    return date.ToString("yyyy");
-                case Aggregation.Month:
-                    return date.ToString("yyyy/MM");
-                case Aggregation.Day:
-                    return date.ToString("yyyy/MM/dd");
-                case Aggregation.Hour:
-                    return date.ToString("yyyy/MM/dd/HH");
-                case Aggregation.QuarterHour:
-                    return date.ToString("yyyy/MM/dd/HH/mm");
-                case Aggregation.Actual:
-                    return date.ToString("yyyy/MM/dd/HH");
-                case Aggregation.Total:
-                    return "total";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null);
-            }
+                Aggregation.Year => date.ToString("yyyy"),
+                Aggregation.Month => date.ToString("yyyy/MM"),
+                Aggregation.Day => date.ToString("yyyy/MM/dd"),
+                Aggregation.Hour => date.ToString("yyyy/MM/dd/HH"),
+                Aggregation.QuarterHour => date.ToString("yyyy/MM/dd/HH/mm"),
+                Aggregation.Actual => date.ToString("yyyy/MM/dd/HH"),
+                Aggregation.Total => total,
+                _ => throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null),
+            };
         }
 
         class ConsumptionShare
@@ -146,7 +142,15 @@ namespace API.Services
             public float Value { get; set; }
             public long DateFrom { get; set; }
             public long DateTo { get; set; }
-            public string? ProductionType { get; set; }
+            public string ProductionType { get; }
+
+            public ConsumptionShare(float value, long dateFrom, long dateTo, string productionType)
+            {
+                Value = value;
+                DateFrom = dateFrom;
+                DateTo = dateTo;
+                ProductionType = productionType;
+            }
         }
     }
 }

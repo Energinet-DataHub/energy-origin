@@ -12,7 +12,7 @@ namespace Tests;
 [UnitTest]
 public sealed class CalculateEmissionsTest
 {
-    readonly CalculateEmissionDataSetFactory calculateEmissionDataSetFactory = new();
+    readonly CalculateEmissionDataSetFactory dataSetFactory = new();
 
     [Theory]
     [InlineData(Aggregation.Total)]
@@ -26,23 +26,22 @@ public sealed class CalculateEmissionsTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = calculateEmissionDataSetFactory.CreateTimeSeries();
-        var emissions = calculateEmissionDataSetFactory.CreateEmissions();
+        var timeSeries = dataSetFactory.CreateTimeSeries();
+        var emissions = dataSetFactory.CreateEmissions();
 
-
-        var sut = new EmissionsCalculator();
+        var calculator = new EmissionsCalculator();
 
         // Act
-        var result = sut.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
+        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
             dateTo.ToUnixTime(), aggregation).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);
-        var emissionsEnumerable = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
-        Assert.Equal(emissionsEnumerable.Select(_ => _.Total), result.Select(_ => _.Total));
-        Assert.Equal(emissionsEnumerable.Select(_ => _.Relative), result.Select(_ => _.Relative));
-        Assert.Equal(emissionsEnumerable.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
-        Assert.Equal(emissionsEnumerable.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
+        var expected = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
+        Assert.Equal(expected.Select(_ => _.Total), result.Select(_ => _.Total));
+        Assert.Equal(expected.Select(_ => _.Relative), result.Select(_ => _.Relative));
+        Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
+        Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
 
     IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)

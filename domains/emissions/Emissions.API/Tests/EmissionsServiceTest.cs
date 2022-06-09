@@ -21,7 +21,7 @@ namespace Tests;
 [UnitTest]
 public sealed class EmissionsServiceTest
 {
-    readonly CalculateEmissionDataSetFactory calculateEmissionDataSetFactory = new();
+    readonly CalculateEmissionDataSetFactory dataSetFactory = new();
 
     [Fact]
     public async void DatePeriod_GetEmissions_EmissionRecordsReturned()
@@ -54,18 +54,18 @@ public sealed class EmissionsServiceTest
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
-        var measurements = calculateEmissionDataSetFactory.CreateMeasurements();
+        var measurements = dataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
         var mockEds = new Mock<IEmissionDataService>();
-        var mockEmissionsCalculater = new Mock<IEmissionsCalculator>();
-        var mockSourcesCalculater = new Mock<ISourcesCalculator>();
+        var mockEmissionsCalculator = new Mock<IEmissionsCalculator>();
+        var mockSourcesCalculator = new Mock<ISourcesCalculator>();
 
         mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<long>(),
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Aggregation>()))
             .Returns(Task.FromResult(measurements.AsEnumerable()));
 
-        var sut = new EmissionsService(mockDataSyncService.Object, mockEds.Object, mockEmissionsCalculater.Object, mockSourcesCalculater.Object);
+        var sut = new EmissionsService(mockDataSyncService.Object, mockEds.Object, mockEmissionsCalculator.Object, mockSourcesCalculator.Object);
         //Act
 
         var timeSeries = (await sut.GetTimeSeries(context,

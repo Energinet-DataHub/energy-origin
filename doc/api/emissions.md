@@ -153,12 +153,12 @@ GET /api/sources
                 "waste": 0.00000, 
                 "straw": 0.00000,
                 "oil": 0.00000,
-                "naturalgas": 0.00000,
+                "naturalGas": 0.00000,
                 "coal": 0.05000,
-                "biogas": 0.00000,
+                "bioGas": 0.00000,
                 "solar": 0.00000,
-                "windonshore": 0.00000,
-                "windoffshore": 0.56666
+                "windOnshore": 0.00000,
+                "windOffshore": 0.56666
             }
         }
     ]

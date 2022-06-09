@@ -6,5 +6,5 @@ public interface IEmissionDataService
 {
     Task<EmissionsDataResponse> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo);
 
-    Task<DeclarationProduction> GetDeclarationProduction(DateTime dateFrom, DateTime dataTo);
+    Task<ProductionEmission> GetProductionEmission(DateTime dateFrom, DateTime dateTo);
 }

@@ -2,10 +2,10 @@
 {
     public static class Configuration
     {
-        const string DataSyncEndpoint = "DATASYNCENDPOINT";
-        const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
-        const string RenewableSources = "RENEWABLESOURCES";
-        const string WasteRenewableShare = "WASTERENEWABLESHARE";
+        private const string DataSyncEndpoint = "DATASYNCENDPOINT";
+        private const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
+        private const string RenewableSources = "RENEWABLESOURCES";
+        private const string WasteRenewableShare = "WASTERENEWABLESHARE";
 
         public static string GetDataSyncEndpoint()
         {
@@ -19,8 +19,8 @@
 
         public static IList<string> GetRenewableSources()
         {
-            var renewableSourcesConfiguration = Environment.GetEnvironmentVariable(RenewableSources) ?? throw new ArgumentNullException();
-            return renewableSourcesConfiguration.Split(',');
+            var renewableSources = Environment.GetEnvironmentVariable(RenewableSources) ?? throw new ArgumentNullException();
+            return renewableSources.Split(',');
         }
         public static float GetWasteRenewableShare()
         {

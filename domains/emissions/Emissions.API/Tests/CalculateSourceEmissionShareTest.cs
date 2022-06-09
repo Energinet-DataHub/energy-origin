@@ -10,7 +10,7 @@ namespace Tests
 {
     public sealed class CalculateSourceEmissionShareTest
     {
-        readonly SourceEmissionShareDataSetFactory sourceEmissionShareDataSetFactory = new();
+        readonly SourceEmissionShareDataSetFactory dataSetFactory = new();
 
         [Theory]
         [InlineData(Aggregation.Total)]
@@ -24,23 +24,23 @@ namespace Tests
             // Arrange
             var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
             var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-            var timeSeries = sourceEmissionShareDataSetFactory.CreateTimeSeries();
-            var emissionShares = sourceEmissionShareDataSetFactory.CreateEmissionsShares();
-            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "Wood,Waste,Straw,BioGas,Solar,WindOnshore,WindOffshore");
+            var timeSeries = dataSetFactory.CreateTimeSeries();
+            var emissionShares = dataSetFactory.CreateEmissionsShares();
+            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
+            Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
 
-
-            var sut = new SourcesCalculator();
+            var calculator = new SourcesCalculator();
 
             // Act
-            var result = sut.CalculateSourceEmissions(timeSeries, emissionShares, aggregation);
+            var result = calculator.CalculateSourceEmissions(timeSeries, emissionShares, aggregation);
 
             //Assert
             Assert.NotNull(result);
-            var emissionsEnumerable = GetExpectedSourceEmissions(aggregation, dateFrom, dateTo).EnergySources;
-            Assert.Equal(emissionsEnumerable.Select(_ => _.Renewable), result.EnergySources.Select(_ => _.Renewable));
-            Assert.Equal(emissionsEnumerable.Select(_ => _.Ratios), result.EnergySources.Select(_ => _.Ratios));
-            Assert.Equal(emissionsEnumerable.Select(_ => _.DateFrom), result.EnergySources.Select(_ => _.DateFrom));
-            Assert.Equal(emissionsEnumerable.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
+            var expected = GetExpectedSourceEmissions(aggregation, dateFrom, dateTo).EnergySources;
+            Assert.Equal(expected.Select(_ => _.Renewable), result.EnergySources.Select(_ => _.Renewable));
+            Assert.Equal(expected.Select(_ => _.Ratios), result.EnergySources.Select(_ => _.Ratios));
+            Assert.Equal(expected.Select(_ => _.DateFrom), result.EnergySources.Select(_ => _.DateFrom));
+            Assert.Equal(expected.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
         }
 
         EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
@@ -60,9 +60,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.3f },
-                                    { "WindOnshore", 0.38f },
-                                    { "BioGas", 0.32f }
+                                    { "solar", 0.3f },
+                                    { "windOnshore", 0.38f },
+                                    { "bioGas", 0.32f }
                                 }
                             )
                         });
@@ -78,9 +78,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.5f },
-                                    { "WindOnshore", 0.3f },
-                                    { "BioGas", 0.2f }
+                                    { "solar", 0.5f },
+                                    { "windOnshore", 0.3f },
+                                    { "bioGas", 0.2f }
                                 }
                             ),
                             new(
@@ -89,9 +89,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.4f },
-                                    { "WindOnshore", 0.5f },
-                                    { "BioGas", 0.1f }
+                                    { "solar", 0.4f },
+                                    { "windOnshore", 0.5f },
+                                    { "bioGas", 0.1f }
                                 }
                             ),
                             new(
@@ -100,9 +100,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.3f },
-                                    { "WindOnshore", 0.3f },
-                                    { "BioGas", 0.4f }
+                                    { "solar", 0.3f },
+                                    { "windOnshore", 0.3f },
+                                    { "bioGas", 0.4f }
                                 }
                             ),
                             new(
@@ -111,9 +111,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.2f },
-                                    { "WindOnshore", 0.4f },
-                                    { "BioGas", 0.4f }
+                                    { "solar", 0.2f },
+                                    { "windOnshore", 0.4f },
+                                    { "bioGas", 0.4f }
                                 }
                             )
                         });
@@ -128,9 +128,9 @@ namespace Tests
                                 0.99999f,
                                 new()
                                 {
-                                    { "Solar", 0.43333f },
-                                    { "WindOnshore", 0.43333f },
-                                    { "BioGas", 0.13333f }
+                                    { "solar", 0.43333f },
+                                    { "windOnshore", 0.43333f },
+                                    { "bioGas", 0.13333f }
                                 }
                             ),
                             new(
@@ -139,9 +139,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "Solar", 0.24286f },
-                                    { "WindOnshore", 0.35714f },
-                                    { "BioGas", 0.4f }
+                                    { "solar", 0.24286f },
+                                    { "windOnshore", 0.35714f },
+                                    { "bioGas", 0.4f }
                                 }
                             )
                         });
