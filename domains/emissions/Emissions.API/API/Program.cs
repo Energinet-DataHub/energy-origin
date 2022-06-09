@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using API.Helpers;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -8,7 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddJsonOptions(options => {  options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); 
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

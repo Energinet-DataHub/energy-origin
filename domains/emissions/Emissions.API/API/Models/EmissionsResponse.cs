@@ -22,12 +22,12 @@ public class Emissions
     public long DateTo { get; }
 
     [JsonPropertyName("total")]
-    public Total Total { get; }
+    public Quantity Total { get; }
 
     [JsonPropertyName("relative")]
-    public Relative Relative { get; }
+    public Quantity Relative { get; }
 
-    public Emissions(long dateFrom, long dateTo, Total total, Relative relative)
+    public Emissions(long dateFrom, long dateTo, Quantity total, Quantity relative)
     {
         DateFrom = dateFrom;
         DateTo = dateTo;

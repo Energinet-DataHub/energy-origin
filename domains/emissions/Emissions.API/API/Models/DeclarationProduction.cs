@@ -49,7 +49,7 @@ public class Record
         HourUTC = hourUTC;
         Version = version;
         PriceArea = priceArea;
-        ProductionType = productionType;
+        ProductionType = productionType.ToLower();
     }
 }
 
