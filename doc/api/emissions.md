@@ -29,10 +29,12 @@ GET /api/emissions
             "dateFrom": 1514826000, 
             "dateTo": 1514864000,  
             "total": {
-                "co2": 1241245534.213   //g
+                "value": 1241245534.213,
+                "unit": "g"
             },
             "relative": {
-                "co2": 1234.213   // g/kWh
+                "value": 1234.213,
+                "unit": "g/kWh"
             }
         }
     ]
@@ -141,27 +143,28 @@ GET /api/sources
 
 ```json
 {
-    "energysources": [
+    "energySources": [
         {
             "dateFrom": 1514826000, 
             "dateTo": 1514864000, 
-            "renewable": 0.69,
-            "source" : {
-                "wood": 0.12,
-                "waste": 0, 
-                "straw": 0,
-                "oil": 0,
-                "natural-gas": 0,
-                "coal": 0.05,
-                "biogas": 0,
-                "solar": 0,
-                "wind-onshore": 0,
-                "wind-offshore": 0.56
+            "renewable": 0.68888,
+            "ratios" : {
+                "wood": 0.12222,
+                "waste": 0.00000, 
+                "straw": 0.00000,
+                "oil": 0.00000,
+                "naturalGas": 0.00000,
+                "coal": 0.05000,
+                "bioGas": 0.00000,
+                "solar": 0.00000,
+                "windOnshore": 0.00000,
+                "windOffshore": 0.56666
             }
         }
     ]
 }
 ```
+Ratios are returned with 5 fractional digits. Due to rounding the sum might not add up to one.
 
 ## Internal call structure
 
