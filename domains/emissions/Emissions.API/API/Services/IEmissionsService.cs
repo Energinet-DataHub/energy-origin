@@ -7,4 +7,6 @@ public interface IEmissionsService
 {
     Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext authorizationContext, long dateFrom,
         long dateTo, Aggregation aggregation);
+
+    Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext authorizationContext, long dateFrom, long dateTo, Aggregation aggregation);
 }

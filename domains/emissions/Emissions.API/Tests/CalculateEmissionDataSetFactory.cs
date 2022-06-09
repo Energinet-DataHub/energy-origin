@@ -5,7 +5,7 @@ using API.Models;
 
 namespace Tests;
 
-public class DataSetFactory
+internal class CalculateEmissionDataSetFactory
 {
     public List<Measurement> CreateMeasurements()
     {

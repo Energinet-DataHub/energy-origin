@@ -15,7 +15,7 @@ namespace API.Controllers
         {
             this.logger = logger;
         }
-        
+
         [HttpGet]
         public IActionResult GetStatus()
         {

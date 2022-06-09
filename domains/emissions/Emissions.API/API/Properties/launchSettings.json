@@ -16,7 +16,9 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DATASYNCENDPOINT": "http://localhost:8081/",
-        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/"
+        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/",
+        "RENEWABLESOURCES": "Wood,Waste,Straw,BioGas,Solar,WindOnshore,WindOffshore",
+        "WASTERENEWABLESHARE": "55"
       },
       "applicationUrl": "http://localhost:8082",
       "dotnetRunMessages": true
