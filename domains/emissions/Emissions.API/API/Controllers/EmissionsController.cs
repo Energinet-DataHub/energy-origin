@@ -26,7 +26,7 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-        // Validation
+        // TODO: Validation
 
         return await emissionsService.GetTotalEmissions(Context, dateFrom, dateTo, aggregation);
     }
