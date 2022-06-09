@@ -44,8 +44,8 @@ class EmissionsCalculator : IEmissionsCalculator
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTime(),
                 groupedEmission.Last().DateTo.ToUnixTime(),
-                new Total (totalForBucket / 1000),
-                new Relative (relativeForBucket)
+                new Quantity(totalForBucket / 1000, QuantityUnit.g),
+                new Quantity(relativeForBucket, QuantityUnit.gPerkWh)
             ));
         }
 
