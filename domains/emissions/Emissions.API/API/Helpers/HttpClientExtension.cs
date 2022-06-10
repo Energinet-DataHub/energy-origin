@@ -5,9 +5,9 @@ namespace API.Helpers;
 
 public static class HttpClientExtension
 {
-    public static HttpClient AddAuthorizationToken(this HttpClient client, AuthorizationContext authorizationContext)
+    public static HttpClient AddAuthorizationToken(this HttpClient client, AuthorizationContext context)
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authorizationContext.Token);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", context.Token);
 
         return client;
     }

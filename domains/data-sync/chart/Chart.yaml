@@ -3,7 +3,7 @@ name: eo-data-sync
 description: A chart containing the sync domain
 
 type: application
-version: 0.2.8
+version: 0.2.9
 
 dependencies:
   - name: eo-base-helm-chart
