@@ -35,13 +35,13 @@ public class EmissionsService : IEmissionsService
         return emissionsCalculator.CalculateEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo, aggregation);
     }
 
-    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext authorizationContext, long dateFrom, long dateTo,
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo,
         Aggregation aggregation, IEnumerable<MeteringPoint> meteringPoints)
     {
         List<TimeSeries> timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
         {
-            var measurements = await dataSyncService.GetMeasurements(authorizationContext, meteringPoint.GSRN,
+            var measurements = await dataSyncService.GetMeasurements(context, meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime, aggregation);
 
@@ -51,13 +51,13 @@ public class EmissionsService : IEmissionsService
         return timeSeries;
     }
 
-    public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext authorizationContext, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
     {
         //Get list of metering points
-        var meteringPoints = await dataSyncService.GetListOfMeteringPoints(authorizationContext);
+        var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         //Get metering point time series
-        var measurements = await GetTimeSeries(authorizationContext, dateFrom, dateTo, aggregation, meteringPoints);
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
 
         var declaration = await emissionDataService.GetProductionEmission(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
 
