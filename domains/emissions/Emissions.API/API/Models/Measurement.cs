@@ -2,7 +2,7 @@ namespace API.Models;
 
 public class Measurement
 {
-    public long Gsrn { get; set; }
+    public string? Gsrn { get; set; }
 
     public long DateFrom { get; set; }
 
