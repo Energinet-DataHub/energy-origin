@@ -61,7 +61,7 @@ public sealed class EmissionsServiceTest
         var mockEmissionsCalculator = new Mock<IEmissionsCalculator>();
         var mockSourcesCalculator = new Mock<ISourcesCalculator>();
 
-        mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<long>(),
+        mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<string>(),
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Aggregation>()))
             .Returns(Task.FromResult(measurements.AsEnumerable()));
 
