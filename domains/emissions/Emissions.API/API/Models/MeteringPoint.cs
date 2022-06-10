@@ -5,12 +5,12 @@ namespace API.Models;
 public class MeteringPoint
 {
     [JsonPropertyName("gsrn")]
-    public long GSRN { get; }
+    public string GSRN { get; }
 
     [JsonPropertyName("gridArea")]
     public string GridArea { get; }
 
-    public MeteringPoint(long gsrn, string gridArea)
+    public MeteringPoint(string gsrn, string gridArea)
     {
         GSRN = gsrn;
         GridArea = gridArea;
