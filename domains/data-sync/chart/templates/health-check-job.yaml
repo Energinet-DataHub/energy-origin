@@ -20,5 +20,7 @@ spec:
             envFrom:
               - configMapRef:
                   name: {{ required "api config map is required" .Values.apiConfigMapName }}
+{{- if .Values.envFrom }}
 {{- toYaml .Values.envFrom | nindent 14 }}
+{{- end }}
           restartPolicy: Never

@@ -1,6 +1,6 @@
 apiConfigMapName: 
 volumeSecrets: []
-envFrom: []
+envFrom:
 
 api:
   replicaCount: 3
