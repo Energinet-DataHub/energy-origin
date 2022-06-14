@@ -25,9 +25,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ required "api config map is required" .Values.apiConfigMapName }}
-{{- range .Values.envFrom }}
-{{- toYaml . | nindent 12 }}
-{{- end }}
+{{- toYaml .Values.envFrom | nindent 12 }}
           volumeMounts:
             - name: health-check-script-volume
               mountPath: "/tmp/health-script"
