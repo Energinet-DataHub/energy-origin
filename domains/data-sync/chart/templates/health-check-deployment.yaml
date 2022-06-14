@@ -1,9 +1,8 @@
-{{ if (((.Values.datahub).health_check).enabled) }}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: health-check-deployment
+  name: {{ .Release.Name }}-health
+  namespace: {{ .Release.Namespace }}
   labels:
     app: health-check
 spec:
@@ -18,23 +17,32 @@ spec:
     spec:
       containers:
         - name: health-check
-          image: curlimages/curl:7.82.0
+          image: '{{ .Values.healthCheck.image.name }}:{{ .Values.healthCheck.image.tag }}'
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           env:
             - name: SLEEPINTERVAL
-              value: {{ required "datahub.health_check.sleep_interval is required" .Values.datahub.health_check.sleep_interval | quote}}
-            - name: DATAHUB2ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                    name: datahub2-endpoint-secret
-                    key: endpoint
+              value: {{ required "healthCheck.sleepInterval is required" .Values.healthCheck.sleepInterval | quote}}
+          envFrom:
+            - configMapRef:
+                name: {{ required "api config map is required" .Values.apiConfigMapName }}
           volumeMounts:
             - name: health-check-script-volume
               mountPath: "/tmp/health-script"
               readOnly: true
+{{- range .Values.volumeSecrets }}
+            - name: {{ .name }}-volume
+              mountPath: "{{ required "volumeSecret .path is required" .path }}"
+              readOnly: true
+{{- end }}
       volumes:
         - name: health-check-script-volume
           configMap:
             name: health-check-script
             defaultMode: 0744
-{{ end }}
+{{- range .Values.volumeSecrets }}
+        - name: {{ .name }}-volume
+          secret:
+            secretName: {{ required "volumeSecret .name is required" .name }} 
+            optional: false
+{{- end }}
+
