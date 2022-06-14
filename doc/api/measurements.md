@@ -28,7 +28,7 @@ GET /api/consumptions
     "consumptions": [
         {
             "dateFrom": 1514826000, 
-            "dateTo": 1514864000,  
+            "dateTo": 1514864000, 
             "value": 123154
         }
     ]
