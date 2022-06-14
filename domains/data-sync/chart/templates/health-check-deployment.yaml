@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: health-check-deployment
+  name: {{ .Release.Name }}-health
+  namespace: {{ .Release.Namespace }}
   labels:
     app: health-check
 spec:
