@@ -29,8 +29,20 @@ spec:
             - name: health-check-script-volume
               mountPath: "/tmp/health-script"
               readOnly: true
+{{- range .Values.volumeSecrets }}
+            - name: {{ .name }}-volume
+              mountPath: "{{ required "volumeSecret .path is required" .path }}"
+              readOnly: true
+{{- end }}
       volumes:
         - name: health-check-script-volume
           configMap:
             name: health-check-script
             defaultMode: 0744
+{{- range .Values.volumeSecrets }}
+        - name: {{ .name }}-volume
+          secret:
+            secretName: {{ required "volumeSecret .name is required" .name }} 
+            optional: false
+{{- end }}
+
