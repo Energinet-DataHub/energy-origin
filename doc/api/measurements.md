@@ -25,12 +25,11 @@ GET /api/consumption
 
 ```json
 {
-    "measurements": [
+    "consumptions": [
         {
             "dateFrom": 1514826000, 
             "dateTo": 1514864000,  
-            "value": 123154,
-            "unit": "kWh",
+            "value": 123154
         }
     ]
 }

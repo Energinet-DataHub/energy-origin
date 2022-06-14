@@ -1,6 +1,6 @@
 apiVersion: v2
-name: eo-consumption
-description: A chart containing the consumption domain.
+name: eo-measurements
+description: A chart containing the measurements domain.
 
 type: application
 version: 0.0.1
