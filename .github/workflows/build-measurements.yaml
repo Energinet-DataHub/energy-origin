@@ -1,17 +1,17 @@
-name: Build - emissions
+name: Build - measurements
 
 on:
   pull_request:
     paths:
-      - domains/emissions/**
+      - domains/measurements/**
   push:
     branches:
       - main
     paths:
-      - domains/emissions/**
+      - domains/measurements/**
 
 concurrency:
-  group: ${{ github.ref }}-emissions
+  group: ${{ github.ref }}-measurements
   cancel-in-progress: false
 
 jobs:
@@ -24,10 +24,10 @@ jobs:
         [
           {
             "deployment_name": "api",
-            "dockerfile": "domains/emissions/Emissions.API/API/Dockerfile",
-            "image_name": "eo-emissions",
+            "dockerfile": "domains/measurements/Measurements.API/API/Dockerfile",
+            "image_name": "eo-measurements",
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
-            "context": "domains/emissions/Emissions.API/"
+            "context": "domains/measurements/Measurements.API/"
           }
         ]
     steps:
@@ -35,14 +35,14 @@ jobs:
         id: get_semver
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/emissions/chart/Chart.yaml
+          yaml_file: domains/measurements/chart/Chart.yaml
           yaml_path: version
 
       - name: Get container version
         id: get_api_container_version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/emissions/chart/values.yaml
+          yaml_file: domains/measurements/chart/values.yaml
           yaml_path: eo-base-helm-chart.deployments.api.image.tag
 
   build_container_and_release_chart:
@@ -51,7 +51,7 @@ jobs:
     uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
     with:
       helm_repository: ${{ github.repository_owner }}/helm-charts
-      chart_folder: domains/emissions/chart
+      chart_folder: domains/measurements/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
       include_image_name: true
