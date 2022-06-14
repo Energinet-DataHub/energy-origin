@@ -25,6 +25,12 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+                - exit 1
+            initialDelaySeconds: 5
+            periodSeconds: 5
 {{- if .Values.api.imagePullSecrets }}
       imagePullSecrets:
 {{- toYaml .Values.api.imagePullSecrets | nindent 8 }}
