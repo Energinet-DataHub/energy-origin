@@ -1,4 +1,3 @@
----
 fullnameOverride: "eo-measurements"
 
 eo-base-helm-chart:
@@ -10,7 +9,7 @@ eo-base-helm-chart:
       probes: true
       image:
         repository: ghcr.io/energinet-datahub/eo-measurements
-        tag: 0.0.3
+        tag: 0.0.1
   service:
     deployment: api
     type: ClusterIP
