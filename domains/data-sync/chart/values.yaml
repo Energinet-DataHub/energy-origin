@@ -1,11 +1,12 @@
 apiConfigMapName: 
 volumeSecrets: []
+envFrom: []
 
 api:
   replicaCount: 3
   image:
     name: ghcr.io/energinet-datahub/eo-data-sync
-    tag: 0.3.0-pr.15-b55e990
+    tag: 0.3.0-pr.15-868cd6b
   imagePullSecrets:
 
 healthCheck:

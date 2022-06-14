@@ -20,6 +20,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ required "api config map is required" .Values.apiConfigMapName }}
+{{- range .Values.envFrom }}
+{{- toYaml . | nindent 12 }}
+{{- end }}
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
           ports:
             - containerPort: 80
