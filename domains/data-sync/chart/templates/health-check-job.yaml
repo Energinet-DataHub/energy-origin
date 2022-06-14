@@ -16,7 +16,7 @@ spec:
             command:
               - /bin/sh
               - -c
-              - curl -S -s --connect-timeout 10 --head --fail $DATAHUB2ENDPOINT
+              - curl -v -S -s --connect-timeout 10 --head --fail $DATAHUB2ENDPOINT
             envFrom:
               - configMapRef:
                   name: {{ required "api config map is required" .Values.apiConfigMapName }}
