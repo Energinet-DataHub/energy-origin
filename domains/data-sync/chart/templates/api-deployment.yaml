@@ -27,11 +27,11 @@ spec:
               protocol: TCP
 {{- range .Values.volumeSecrets }}
           volumeMounts:
-          - name: {{ required .name }}-volume
+          - name: {{ .name }}-volume
             mountPath: "{{ required "volumeSecret .path is required" .path }} "
             readOnly: true
       volumes:
-        - name: {{ required .name }}-volume
+        - name: {{ .name }}-volume
           secret:
             secretName: {{ required "volumeSecret .name is required" .name }} 
             optional: false
