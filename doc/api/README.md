@@ -28,7 +28,7 @@ This folder will contain documentation for working with the APIs and developing 
 
 ### Measurements Domains
 
-- GET [/api/consumption](measurements.md##get-measurements-for-consumption-data)
+- GET [/api/measurements/consumptions](measurements.md##get-measurements-for-consumption-data)
 
 ## INTERNAL
 
