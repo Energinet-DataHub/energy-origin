@@ -19,4 +19,4 @@ spec:
             envFrom:
               - configMapRef:
                   name: {{ required "api config map is required" .Values.apiConfigMapName }}
-          restartPolicy: OnFailure
+          restartPolicy: Never
