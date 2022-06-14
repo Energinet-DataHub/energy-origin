@@ -1,0 +1,36 @@
+---
+fullnameOverride: "eo-consumption"
+
+eo-base-helm-chart:
+  fullnameOverride: "eo-consumption"
+
+  deployments:
+    api:
+      replicaCount: 3
+      probes: true
+      image:
+        repository: ghcr.io/energinet-datahub/eo-consumption
+        tag: 0.0.3
+  service:
+    deployment: api
+    type: ClusterIP
+    port: 80
+
+  ingress:
+    hosts: []
+    paths:
+      - /api/consumption
+    servicePort: 80
+    middlewares:
+      - name: eo-auth-service
+        namespace:
+      - name: consumption-stripprefix
+
+  middleware:
+    stripPrefix:
+      name: consumption-stripprefix
+      prefixes:
+        - /api
+
+  env:
+    DATASYNCENDPOINT:

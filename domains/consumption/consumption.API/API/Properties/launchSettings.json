@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:31849",
+      "sslPort": 44347
+    }
+  },
+  "profiles": {
+    "Emissions": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATASYNCENDPOINT": "http://localhost:8081/",
+        "ENERGIDATASERVICEENDPOINT": "https://api.energidataservice.dk/",
+        "RENEWABLESOURCES": "wood,waste,straw,bioGas,solar,windOnshore,windOffshore",
+        "WASTERENEWABLESHARE": "55"
+      },
+      "applicationUrl": "http://localhost:8082",
+      "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "publishAllPorts": true,
+      "useSSL": false
+    }
+  }
+}

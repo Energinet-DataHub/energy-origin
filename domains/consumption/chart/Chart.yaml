@@ -1,0 +1,11 @@
+apiVersion: v2
+name: eo-consumption
+description: A chart containing the consumption domain.
+
+type: application
+version: 0.0.1
+
+dependencies:
+  - name: eo-base-helm-chart
+    version: 0.6.1
+    repository: "https://energinet-datahub.github.io/helm-charts/"
