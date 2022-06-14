@@ -4,9 +4,9 @@ metadata:
   name: health-check-script
 data:
     run-me.sh: |-
-            echo "ENDPOINT: '$DATAHUB2ENDPOINT'"
-            while true; do
-                curl -S -s --connect-timeout 10  --head --fail $DATAHUB2ENDPOINT
-                date
-                sleep $SLEEPINTERVAL
-            done
+      echo "ENDPOINT: '$DATAHUB2ENDPOINT'"
+      while true; do
+          curl -v -S -s --connect-timeout 10  --head --fail $DATAHUB2ENDPOINT
+          date
+          sleep $SLEEPINTERVAL
+      done
