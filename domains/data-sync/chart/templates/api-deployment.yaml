@@ -28,12 +28,12 @@ spec:
 {{- range .Values.volumeSecrets }}
           volumeMounts:
           - name: volumeSecret
-            mountPath: "{{ required "volumeSecret path is required" Values.volumeSecret.path }} "
+            mountPath: "{{ required "volumeSecret .path is required" .path }} "
             readOnly: true
       volumes:
         - name: volumeSecret
           secret:
-            secretName: {{ required "volumeSecret name is required" Values.volumeSecret.name }} 
+            secretName: {{ required "volumeSecret .name is required" .name }} 
             optional: false
 {{- end }}
 {{- if .Values.api.imagePullSecrets }}
