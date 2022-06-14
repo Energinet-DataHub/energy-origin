@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: health-check
-          image: '{{ .Values.healthCheck.image.name }}:{{ .Values.healthCheck.image.tag }}:'
+          image: '{{ .Values.healthCheck.image.name }}:{{ .Values.healthCheck.image.tag }}'
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           env:
             - name: SLEEPINTERVAL
