@@ -28,7 +28,7 @@ spec:
 {{- range .Values.volumeSecrets }}
           volumeMounts:
           - name: {{ .name }}-volume
-            mountPath: "{{ required "volumeSecret .path is required" .path }} "
+            mountPath: "{{ required "volumeSecret .path is required" .path }}"
             readOnly: true
       volumes:
         - name: {{ .name }}-volume
