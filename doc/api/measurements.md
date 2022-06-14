@@ -9,7 +9,7 @@ The measurements api should take three query parameters.
 ## Request
 
 ```text
-GET /api/consumption
+GET /api/consumptions
         ?dateFrom=1514826000
         &dateTo=1514864000
         &aggregation=TOTAL   
