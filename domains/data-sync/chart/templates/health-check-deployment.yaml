@@ -21,7 +21,7 @@ spec:
           command: [ "/bin/sh", "/tmp/health-script/run-me.sh" ]
           env:
             - name: SLEEPINTERVAL
-              value: {{ required "healthCheck.sleepInterval is required" .Values.healthCheck.sleepInterval }}
+              value: {{ required "healthCheck.sleepInterval is required" .Values.healthCheck.sleepInterval | quote}}
           envFrom:
             - configMapRef:
                 name: {{ required "api config map is required" .Values.apiConfigMapName }}
