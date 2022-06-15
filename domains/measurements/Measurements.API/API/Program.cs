@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using API.Helpers;
-using API.Services;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -20,13 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
-
-builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
-{
-    client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
-});
-builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
-builder.Services.AddScoped<IConsumptionCalculator, ConsumptionCalculator>();
+builder.Services.AddCustomServices();
 
 var app = builder.Build();
 

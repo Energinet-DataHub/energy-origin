@@ -1,8 +1,6 @@
-using System.Net.Http.Headers;
 using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
-
 
 namespace API.Services;
 
@@ -23,7 +21,6 @@ public class DataSyncService : IDataSyncService
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}&aggregation={aggregation}";
 
         httpClient.AddAuthorizationToken(context);
-
         var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
 
         if (result != null)
@@ -37,6 +34,7 @@ public class DataSyncService : IDataSyncService
     {
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(context);
+        Console.WriteLine(await httpClient.GetStringAsync(uri));
 
         var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
 

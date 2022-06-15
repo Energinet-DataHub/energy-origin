@@ -2,14 +2,14 @@
 
 namespace API.Models
 {
-    public class ConsumptionResponse
+    public class ConsumptionsResponse
     {
-        [JsonPropertyName("consumption")]
-        public IEnumerable<Consumption> Consumption { get; }
+        [JsonPropertyName("consumptions")]
+        public IEnumerable<Consumptions> Consumptions { get; }
 
-        public ConsumptionResponse(IEnumerable<Consumption> consumption)
+        public ConsumptionsResponse(IEnumerable<Consumptions> consumptions)
         {
-            Consumption = consumption;
+            Consumptions = consumptions;
         }
     }
 }

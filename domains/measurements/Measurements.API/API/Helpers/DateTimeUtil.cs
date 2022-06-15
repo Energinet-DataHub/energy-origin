@@ -1,8 +1,8 @@
 namespace API.Helpers;
 
-public static class DateTimeExtensionMethod
+public static class DateTimeUtil
 {
-    public static DateTime FromDateTime(this long unixDateTimeSeconds) =>
+    public static DateTime ToUtcDateTime(this long unixDateTimeSeconds) =>
         DateTimeOffset.FromUnixTimeSeconds(unixDateTimeSeconds).UtcDateTime;
 
     public static long ToUnixTime(this DateTime dateTime) =>

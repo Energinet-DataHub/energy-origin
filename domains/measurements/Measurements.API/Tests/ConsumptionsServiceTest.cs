@@ -13,9 +13,9 @@ using Xunit.Categories;
 namespace Tests;
 
 [UnitTest]
-public sealed class ConsumptionServiceTest
+public sealed class ConsumptionsServiceTest
 {
-    readonly CalculateConsumptionDataSetFactory dataSetFactory = new();
+    readonly CalculateConsumptionsDataSetFactory dataSetFactory = new();
 
     [Fact]
     public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
@@ -28,13 +28,13 @@ public sealed class ConsumptionServiceTest
         var measurements = dataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
+        var mockConsumptionsCalculator = new Mock<IConsumptionsCalculator>();
 
         mockDataSyncService.Setup(a => a.GetMeasurements(It.IsAny<AuthorizationContext>(), It.IsAny<string>(),
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Aggregation>()))
             .Returns(Task.FromResult(measurements.AsEnumerable()));
 
-        var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IConsumptionCalculator>().Object);
-
+        var sut = new MeasurementsService(mockDataSyncService.Object, mockConsumptionsCalculator.Object);
         //Act
 
         var timeSeries = (await sut.GetTimeSeries(context,

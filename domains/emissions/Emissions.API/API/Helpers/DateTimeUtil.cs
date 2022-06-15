@@ -1,6 +1,6 @@
 namespace API.Helpers;
 
-public static class EnergyOriginDateTimeExtension
+public static class DateTimeUtil
 {
     public static DateTime ToUtcDateTime(this long unixDateTimeSeconds) => 
         DateTimeOffset.FromUnixTimeSeconds(unixDateTimeSeconds).UtcDateTime;
