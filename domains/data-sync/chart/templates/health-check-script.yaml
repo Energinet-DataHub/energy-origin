@@ -6,7 +6,7 @@ data:
     run-me.sh: |-
       echo "ENDPOINT: '$DATAHUB2ENDPOINT'"
       while true; do
-          curl -v --connect-timeout 10 --fail --cert $DATAHUB2CERTIFICATEFILEPATH $DATAHUB2ENDPOINT 
+          curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT 
           date
           sleep $SLEEPINTERVAL
       done
