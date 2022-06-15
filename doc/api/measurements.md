@@ -9,7 +9,7 @@ The measurements api should take three query parameters.
 ## Request
 
 ```text
-GET /api/measurements/consumptions
+GET /api/measurements/consumption
         ?dateFrom=1514826000
         &dateTo=1514864000
         &aggregation=TOTAL   
@@ -25,7 +25,7 @@ GET /api/measurements/consumptions
 
 ```json
 {
-    "consumptions": [
+    "consumption": [
         {
             "dateFrom": 1514826000, 
             "dateTo": 1514864000, 
@@ -43,7 +43,7 @@ sequenceDiagram
     participant em as Measurements Domain
     participant ds as DataSync Domain
 
-    spa->>+ em: GET /api/measurements/consumptions  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
+    spa->>+ em: GET /api/measurements/consumption  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
     
     em->>+ ds: GET /measurements
     ds--)- em: List<MeasurementsDTO>

@@ -20,14 +20,14 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [Route("measurements/consumptions")]
-    public async Task<ConsumptionsResponse> GetMeasurements(
+    [Route("measurements/consumption")]
+    public async Task<ConsumptionResponse> GetMeasurements(
         [Required] long dateFrom,
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
         // TODO: Validation
 
-        return await measurementsService.GetConsumptions(Context, dateFrom, dateTo, aggregation);
+        return await measurementsService.GetConsumption(Context, dateFrom, dateTo, aggregation);
     }
 }

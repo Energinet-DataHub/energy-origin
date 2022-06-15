@@ -7,22 +7,22 @@ namespace API.Services;
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionsCalculator consumptionsCalculator;
+    readonly IConsumptionCalculator consumptionCalculator;
 
     public MeasurementsService(IDataSyncService dataSyncService,
-            IConsumptionsCalculator consumptionsCalculator)
+            IConsumptionCalculator consumptionCalculator)
     {
         this.dataSyncService = dataSyncService;
-        this.consumptionsCalculator = consumptionsCalculator;
+        this.consumptionCalculator = consumptionCalculator;
     }
 
-    public async Task<ConsumptionsResponse> GetConsumptions(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<ConsumptionResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
 
-        return consumptionsCalculator.CalculateConsumptions(measurements, dateFrom, dateTo, aggregation);
+        return consumptionCalculator.CalculateConsumption(measurements, dateFrom, dateTo, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo,
