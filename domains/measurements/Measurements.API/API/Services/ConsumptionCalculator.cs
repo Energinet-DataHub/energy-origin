@@ -1,7 +1,6 @@
 using API.Helpers;
 using API.Models;
-using System.Linq;
-using DateTimeExtensionMethod;
+
 
 namespace API.Services;
 
@@ -15,8 +14,8 @@ class ConsumptionCalculator : IConsumptionCalculator
                                     from reading in measurement.Measurements
                                     select new ConsumptionInteral
                                     {
-                                        DateFrom = reading.DateFrom.FromUnixTime(),
-                                        DateTo = reading.DateTo.FromUnixTime(),
+                                        DateFrom = reading.DateFrom.ToDateTime(),
+                                        DateTo = reading.DateTo.ToDateTime(),
                                         Value = reading.Quantity
                                     });
 
