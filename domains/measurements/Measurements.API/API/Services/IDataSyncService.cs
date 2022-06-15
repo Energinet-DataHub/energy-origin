@@ -5,7 +5,7 @@ namespace API.Services;
 
 public interface IDataSyncService
 {
-    Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime utcDateTime, DateTime dateTime, Aggregation aggregation);
+    Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo, Aggregation aggregation);
 
     Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context);
 }

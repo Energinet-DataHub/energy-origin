@@ -5,5 +5,5 @@ namespace API.Services;
 
 public interface IMeasurementsService
 {
-    Task<ConsumptionsResponse> GetConsumptions(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation);
+    Task<ConsumptionResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation);
 }
