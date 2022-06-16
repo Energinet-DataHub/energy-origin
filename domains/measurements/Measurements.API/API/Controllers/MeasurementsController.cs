@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using API.Models;
+using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,15 +19,15 @@ public class MeasurementsController : AuthorizationController
         this.measurementsService = measurementsService;
     }
 
+    /// <summary>
+    /// Get consumption measurements for all metering point connected to current user
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("measurements/consumption")]
-    public async Task<ConsumptionResponse> GetMeasurements(
-        [Required] long dateFrom,
-        [Required] long dateTo,
-        Aggregation aggregation = Aggregation.Total)
+    public async Task<ConsumptionsResponse> GetMeasurements([FromQuery] MeasurementsRequest request)
     {
-        // TODO: Validation
-
-        return await measurementsService.GetConsumption(Context, dateFrom, dateTo, aggregation);
+        return await measurementsService.GetConsumptions(Context, request.DateFrom, request.DateTo, request.Aggregation);
     }
 }

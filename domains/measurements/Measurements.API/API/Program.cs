@@ -3,10 +3,16 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using API.Helpers;
 using API.Services;
+using API.Validation;
+using FluentValidation.AspNetCore;
+using MicroElements.Swashbuckle.FluentValidation;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 
 [assembly: InternalsVisibleTo("Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpContextAccessor();
 
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -14,10 +20,18 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
+    
+builder.Services.AddFluentValidation(c =>
+{
+    c.RegisterValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
+    c.ValidatorFactoryType = typeof(HttpContextServiceProviderValidatorFactory);
+});
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddFluentValidationRulesToSwagger();
 
 builder.Services.AddHttpClient();
 
