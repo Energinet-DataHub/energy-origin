@@ -1,14 +1,12 @@
 using System;
 using Xunit;
 
-
 namespace EnergyOriginDateTimeExtension.Tests
 {
     public class EnergyOriginDateTimeExtensionTests
     {
         [Fact]
         public void ValidateToUnixTime_GivenValidDateTime_CorrectConvertion()
-
         {
             var dateTime = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
             long expectedTime = 1609538400;
@@ -18,7 +16,6 @@ namespace EnergyOriginDateTimeExtension.Tests
 
         [Fact]
         public void ValidateToDateTime_GivenValidUnixDateTime_CorrectConvertion()
-
         {
             long dateTime = 1609538400;
             var expectedTime  = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
