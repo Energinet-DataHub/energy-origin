@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
-    <PackageId>EnergyOriginAuthorization</PackageId>
+    <PackageId>EnergyOriginDateTimeExtension</PackageId>
     <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
     <Authors>Team Fenris</Authors>
     <Company>Energinet DataHub A/S</Company>
