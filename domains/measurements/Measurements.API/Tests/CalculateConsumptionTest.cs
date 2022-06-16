@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using API.Helpers;
 using API.Models;
@@ -15,13 +14,13 @@ public sealed class CalculateConsumptionTest
     readonly CalculateConsumptionDataSetFactory dataSetFactory = new();
 
     [Theory]
-    [InlineData(Aggregation.Total)]
-    [InlineData(Aggregation.Actual)]
-    [InlineData(Aggregation.Hour)]
-    [InlineData(Aggregation.Day)]
-    [InlineData(Aggregation.Month)]
-    [InlineData(Aggregation.Year)]
-    public void Measurements_CalculateConsumption_Aggregation(Aggregation aggregation)
+    [InlineData(Aggregation.Total,  new long[] { 1609538400 }, new long[] { 1609552799 }, new float[] { 3930f })]
+    [InlineData(Aggregation.Actual, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new float[] { 1234f, 242f, 654f, 1800f })]
+    [InlineData(Aggregation.Hour,   new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new float[] { 1234f, 242f, 654f, 1800f })]
+    [InlineData(Aggregation.Day,    new long[] { 1609538400, 1609545600 }, new long[] { 1609545599, 1609552799 }, new float[] { 1476f, 2454f })]
+    [InlineData(Aggregation.Month,  new long[] { 1609538400 }, new long[] { 1609552799 }, new float[] { 3930f })]
+    [InlineData(Aggregation.Year,   new long[] { 1609538400 }, new long[] { 1609552799 }, new float[] { 3930f })]
+    public void Measurements_CalculateConsumption_Aggregation(Aggregation aggregation, long[] expectedDateFrom, long[] expectedDateTo, float[] expectedValues)
     {
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
@@ -36,103 +35,8 @@ public sealed class CalculateConsumptionTest
 
         // Assert
         Assert.NotNull(result);
-        var expected = GetExpectedConsumption(aggregation, dateFrom, dateTo).ToArray();
-        Assert.Equal(expected.Select(_ => _.Value), result.Select(_ => _.Value));
-        Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
-        Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
-    }
-
-    //TheoryData<long, long, float> expectedHour => new TheoryData<long, long, float>
-    //{
-    //   { new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(), new DateTime(2021, 1, 1, 22, 59, 59, DateTimeKind.Utc).ToUnixTime(), 1234f },
-    //   { new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(), new DateTime(2021, 1, 1, 23, 59, 59, DateTimeKind.Utc).ToUnixTime(), 1234f },
-    //   { new DateTime(2021, 1, 2, 0,  0, 0, DateTimeKind.Utc).ToUnixTime(), new DateTime(2021, 1, 2, 0,  59, 59, DateTimeKind.Utc).ToUnixTime(), 1234f },
-    //   { new DateTime(2021, 1, 2, 1,  0, 0, DateTimeKind.Utc).ToUnixTime(), new DateTime(2021, 1, 2, 1,  59, 59, DateTimeKind.Utc).ToUnixTime(), 1234f },
-    //};
-
-    //public static class TestData
-    //{
-    //    private static Consumption Consumption1 = new Consumption(
-    //        new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-    //        new DateTime(2021, 1, 1, 22, 59, 59, DateTimeKind.Utc).ToUnixTime(),
-    //        1234f);
-    //    private static Consumption Consumption2 = new Consumption(
-    //        new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-    //        new DateTime(2021, 1, 1, 23, 59, 59, DateTimeKind.Utc).ToUnixTime(),
-    //        1234f);
-    //    private static Consumption Consumption3 = new Consumption(
-    //        new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-    //        new DateTime(2021, 1, 2, 0, 59, 59, DateTimeKind.Utc).ToUnixTime(),
-    //        1234f);
-    //    private static Consumption Consumption4 = new Consumption(
-    //        new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-    //        new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc).ToUnixTime(),
-    //        1234f);
-    //    public static List<Consumption> dummyHourConsumptionList
-    //    {
-    //        get
-    //        {
-    //            return new List<Consumption>()
-    //            {
-    //                Consumption1,
-    //                Consumption2,
-    //                Consumption3,
-    //                Consumption4,
-    //            };
-    //        }
-    //    }
-    //}
-
-    IEnumerable<Consumption> GetExpectedConsumption(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
-    {
-        return aggregation switch
-        {
-            Aggregation.Actual or Aggregation.Hour => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1234f
-                    ),
-                    new(
-                        dateFrom.AddHours(1).ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        242f
-                    ),
-                    new(
-                        dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        654f
-                    ),
-                    new(
-                        dateFrom.AddHours(3).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1800f
-                    ),
-                },
-            Aggregation.Day => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1476f
-                    ),
-                    new(
-
-                        dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        2454f
-                    )
-                },
-            Aggregation.Month or Aggregation.Year or Aggregation.Total => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateTo.ToUnixTime(),
-                        3930f
-                    )
-                },
-            _ => new List<Consumption>(),
-        };
+        Assert.Equal(expectedValues, result.Select(_ => _.Value));
+        Assert.Equal(expectedDateFrom, result.Select(_ => _.DateFrom));
+        Assert.Equal(expectedDateTo, result.Select(_ => _.DateTo));
     }
 }

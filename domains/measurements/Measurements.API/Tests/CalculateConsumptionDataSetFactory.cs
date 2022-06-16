@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using API.Helpers;
 using API.Models;
 
-
 namespace Tests;
 
 internal class CalculateConsumptionDataSetFactory
@@ -48,59 +47,6 @@ internal class CalculateConsumptionDataSetFactory
                 new MeteringPoint("571313121223234323"),
                 CreateMeasurements()
             )
-        };
-    }
-
-    public IEnumerable<Consumption> GetExpectedConsumption(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
-    {
-        return aggregation switch
-        {
-            Aggregation.Actual or Aggregation.Hour => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1234f
-                    ),
-                    new(
-                        dateFrom.AddHours(1).ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        242f
-                    ),
-                    new(
-                        dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        654f
-                    ),
-                    new(
-                        dateFrom.AddHours(3).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1800f
-                    ),
-                },
-            Aggregation.Day => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        1476f
-                    ),
-                    new(
-
-                        dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        2454f
-                    )
-                },
-            Aggregation.Month or Aggregation.Year or Aggregation.Total => new List<Consumption>()
-                {
-                    new(
-                        dateFrom.ToUnixTime(),
-                        dateTo.ToUnixTime(),
-                        3930f
-                    )
-                },
-            _ => new List<Consumption>(),
         };
     }
 }

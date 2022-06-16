@@ -47,6 +47,7 @@ class ConsumptionCalculator : IConsumptionCalculator
         };
         return groupedConsumptions;
     }
+
     private class ConsumptionInteral
     {
         public DateTime DateFrom { get; set; }
