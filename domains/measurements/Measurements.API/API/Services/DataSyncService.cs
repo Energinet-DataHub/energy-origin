@@ -1,8 +1,7 @@
-using System.Net.Http.Headers;
 using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
-
+using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
