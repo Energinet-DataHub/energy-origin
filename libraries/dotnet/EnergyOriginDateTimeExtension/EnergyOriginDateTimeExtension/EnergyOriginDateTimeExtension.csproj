@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
     <Authors>Team Fenris</Authors>
     <Company>Energinet DataHub A/S</Company>
-    <PackageDescription>This library allows for authorization handling using attributes.</PackageDescription>
+    <PackageDescription>This library facilitate converting between DateTime, unix timestamps and vice versa.</PackageDescription>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
