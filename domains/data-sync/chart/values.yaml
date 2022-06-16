@@ -1,35 +1,16 @@
----
-fullnameOverride: "eo-data-sync"
+apiConfigMapName: 
+volumeSecrets: []
+envFrom:
 
-eo-base-helm-chart:
-  fullnameOverride: "eo-data-sync"
+api:
+  replicaCount: 3
+  image:
+    name: ghcr.io/energinet-datahub/eo-data-sync
+    tag: 0.3.0-pr.15-1ba1997
+  imagePullSecrets:
 
-  deployments:
-    api:
-      replicaCount: 3
-      probes: false
-      image:
-        repository: ghcr.io/energinet-datahub/eo-data-sync
-        tag: 0.2.13
-      imagePullSecrets:
-        - name: container-registry-pullsecret
-
-  envSecrets:
-    DATAHUB2ENDPOINT:
-      secretName: datahub2-api-endpoint-secret
-      key: endpoint
-
-  service:
-    deployment: api
-    type: ClusterIP
-    port: 80
-
-datahub:
-  health_check:
-    enabled: false
-
-    # Endpoint to call
-    # endpoint: YOUR_ENCRYPTED_ENDPOINT
-
-    # Time to wait in seconds between requests
-    sleep_interval: 3600
+healthCheck:
+  image:
+    name: curlimages/curl
+    tag: 7.83.1
+  sleepInterval: 3600
