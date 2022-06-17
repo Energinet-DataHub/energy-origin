@@ -13,4 +13,4 @@ healthCheck:
   image:
     name: curlimages/curl
     tag: 7.83.1
-  sleepInterval: 3600
+  schedule: "0/5 * * * *"

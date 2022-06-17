@@ -1,9 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: hello
+  name: {{ .Release.Name }}-health
+  namespace: {{ .Release.Namespace }}
 spec:
-  schedule: "* * * * *"
+  schedule: {{ .Values.healthCheck.schedule | qoute }}
   jobTemplate:
     spec:
       backoffLimit: 0
@@ -16,11 +17,26 @@ spec:
             command:
               - /bin/sh
               - -c
-              - curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT
+              - curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT
             envFrom:
               - configMapRef:
                   name: {{ required "api config map is required" .Values.apiConfigMapName }}
 {{- if .Values.envFrom }}
-{{- toYaml .Values.envFrom | nindent 14 }}
+{{- toYaml .Values.envFrom | nindent 12 }}
 {{- end }}
+            volumeMounts:
+{{- range .Values.volumeSecrets }}
+              - name: {{ .name }}-volume
+                mountPath: "{{ required "volumeSecret .path is required" .path }}"
+                readOnly: true
+{{- end }}
+
           restartPolicy: Never
+          volumes:
+{{- range .Values.volumeSecrets }}
+            - name: {{ .name }}-volume
+              secret:
+                secretName: {{ required "volumeSecret .name is required" .name }} 
+                optional: false
+{{- end }}
+
