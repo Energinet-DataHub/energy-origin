@@ -1,9 +1,9 @@
 using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
+using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
-using EnergyOriginDateTimeExtension;
 
 public class DataSyncService : IDataSyncService
 {
