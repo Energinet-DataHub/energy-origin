@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-health
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: {{ .Values.healthCheck.schedule | qoute }}
+  schedule: {{ .Values.healthCheck.schedule | quote }}
   jobTemplate:
     spec:
       backoffLimit: 0
