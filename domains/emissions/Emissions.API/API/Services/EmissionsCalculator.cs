@@ -1,5 +1,6 @@
 using API.Helpers;
 using API.Models;
+using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
@@ -15,7 +16,7 @@ class EmissionsCalculator : IEmissionsCalculator
         {
             foreach (var reading in measurement.Measurements)
             {
-                var hourOfMeasurement = reading.DateFrom.ToUtcDateTime();
+                var hourOfMeasurement = reading.DateFrom.ToDateTime();
                 var emission = emissions.FirstOrDefault(_ =>
                     _.GridArea == measurement.MeteringPoint.GridArea && _.HourUTC == hourOfMeasurement);
 
@@ -27,8 +28,8 @@ class EmissionsCalculator : IEmissionsCalculator
                 listOfEmissions.Add(new Emission
                 {
                     Co2 = co2,
-                    DateFrom = reading.DateFrom.ToUtcDateTime(),
-                    DateTo = reading.DateTo.ToUtcDateTime(),
+                    DateFrom = reading.DateFrom.ToDateTime(),
+                    DateTo = reading.DateTo.ToDateTime(),
                     Consumption = reading.Quantity
                 });
             }

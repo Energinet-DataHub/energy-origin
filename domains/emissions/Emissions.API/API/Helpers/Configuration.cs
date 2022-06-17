@@ -25,7 +25,7 @@
         public static float GetWasteRenewableShare()
         {
             var wasteRenewableShare = Environment.GetEnvironmentVariable(WasteRenewableShare) ?? throw new ArgumentNullException();
-            return float.Parse(wasteRenewableShare)/100;
+            return float.Parse(wasteRenewableShare) / 100;
         }
     }
 }
