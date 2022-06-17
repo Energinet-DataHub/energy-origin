@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: data-sync-api
+    app: {{ .Release.Name }}-api
   name: {{ .Release.Name }}-api
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.api.replicaCount }}
   selector:
     matchLabels:
-      app: data-sync-api
+      app: {{ .Release.Name }}-api
   template:
     metadata:
       labels:
-        app: data-sync-api
+        app: {{ .Release.Name }}-api
     spec:
       containers:
-        - name: data-sync-api
+        - name: {{ .Release.Name }}-api
           envFrom:
             - configMapRef:
                 name: {{ required "api config map is required" .Values.apiConfigMapName }}

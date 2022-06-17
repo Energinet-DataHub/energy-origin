@@ -10,5 +10,5 @@ spec:
       protocol: TCP
       targetPort: http
   selector:
-    app: data-sync-api
+    app: {{ .Release.Name }}-api
   type: ClusterIP
