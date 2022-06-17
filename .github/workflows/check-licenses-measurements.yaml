@@ -1,0 +1,17 @@
+name: Check Licenses - measurements
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - domains/measurements/**
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check license
+      uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@main
+      with:
+        project-folder: domains/measurements/Measurements.API/API

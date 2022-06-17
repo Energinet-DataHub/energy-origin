@@ -1,0 +1,9 @@
+
+api:
+  replicaCount: 3
+  probes: true
+  image:
+    name: ghcr.io/energinet-datahub/eo-measurements
+    tag: 0.0.1
+  env:
+    DATASYNCENDPOINT:
