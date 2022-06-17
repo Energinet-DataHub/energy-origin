@@ -1,5 +1,6 @@
 ﻿using API.Helpers;
 using API.Models;
+using EnergyOriginDateTimeExtension;
 
 namespace API.Services
 {
@@ -22,7 +23,7 @@ namespace API.Services
             {
                 foreach (var measurement in measurements.Measurements)
                 {
-                    var dateTime = GetDateAsString(measurement.DateFrom.ToUtcDateTime(), aggregation);
+                    var dateTime = GetDateAsString(measurement.DateFrom.ToDateTime(), aggregation);
                     var gridArea = measurements.MeteringPoint.GridArea;
                     var totalShares = groupedDeclarations[dateTime + gridArea];
 
@@ -111,7 +112,7 @@ namespace API.Services
                 return timeSeries.SelectMany(a => a.Measurements).ToLookup(x => total);
 
             return timeSeries.SelectMany(y => y.Measurements)
-                .ToLookup(x => GetDateAsString(x.DateFrom.ToUtcDateTime(), aggregation));
+                .ToLookup(x => GetDateAsString(x.DateFrom.ToDateTime(), aggregation));
         }
 
         ILookup<string, Record> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
