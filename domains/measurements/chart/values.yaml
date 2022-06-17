@@ -1,35 +1,9 @@
-fullnameOverride: "eo-measurements"
 
-eo-base-helm-chart:
-  fullnameOverride: "eo-measurements"
-
-  deployments:
-    api:
-      replicaCount: 3
-      probes: true
-      image:
-        repository: ghcr.io/energinet-datahub/eo-measurements
-        tag: 0.0.1
-  service:
-    deployment: api
-    type: ClusterIP
-    port: 80
-
-  ingress:
-    hosts: []
-    paths:
-      - /api/measurements
-    servicePort: 80
-    middlewares:
-      - name: eo-auth-service
-        namespace:
-      - name: measurements-stripprefix
-
-  middleware:
-    stripPrefix:
-      name: measurements-stripprefix
-      prefixes:
-        - /api/measurements
-
+api:
+  replicaCount: 3
+  probes: true
+  image:
+    name: ghcr.io/energinet-datahub/eo-measurements
+    tag: 0.0.1
   env:
     DATASYNCENDPOINT:

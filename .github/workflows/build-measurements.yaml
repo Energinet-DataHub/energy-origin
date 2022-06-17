@@ -43,7 +43,7 @@ jobs:
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
           yaml_file: domains/measurements/chart/values.yaml
-          yaml_path: eo-base-helm-chart.deployments.api.image.tag
+          yaml_path: api.image.tag
 
   build_container_and_release_chart:
     name: Build containers
