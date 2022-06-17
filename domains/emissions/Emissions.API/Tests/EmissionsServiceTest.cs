@@ -69,8 +69,8 @@ public sealed class EmissionsServiceTest
         //Act
 
         var timeSeries = (await sut.GetTimeSeries(context,
-            ((DateTimeOffset) DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
-            ((DateTimeOffset) DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(), Aggregation.Hour,
+            ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
+            ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(), Aggregation.Hour,
             meteringPoints)).ToArray();
         //Assert
 
