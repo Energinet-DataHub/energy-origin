@@ -3,6 +3,7 @@ using API.Models;
 using EnergyOriginAuthorization;
 
 namespace API.Services;
+using EnergyOriginDateTimeExtension;
 
 public class DataSyncService : IDataSyncService
 {
