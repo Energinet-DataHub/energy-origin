@@ -99,8 +99,14 @@ GET /measurements
             "dateFrom": 1514826000,
             "dateTo": 1514864000,
             "quantity": 1865880,
-            "quality": 1 // 1=measured 2=estimated
+            "quality": 10
         },...
     ]
 }
 ```
+
+Quality enum:
+    Measured = 10
+    Revised = 20
+    Calculated = 30
+    Estimated = 40
