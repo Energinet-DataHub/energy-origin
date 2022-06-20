@@ -18,7 +18,11 @@ spec:
             command:
               - /bin/sh
               - -c
-              - curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT
+              - if [[ -z "${DATAHUB2CERTIFICATEFILEPATH}" ]]; then
+                  curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT
+                else
+                  curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT
+                fi
             envFrom:
               - configMapRef:
                   name: {{ required "api config map is required" .Values.apiConfigMapName }}
