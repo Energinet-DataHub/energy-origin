@@ -1,6 +1,7 @@
 using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
+using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
@@ -27,7 +28,7 @@ public class EmissionsService : IEmissionsService
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var emissions = await emissionDataService.GetEmissionsPerHour(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
+        var emissions = await emissionDataService.GetEmissionsPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
 
@@ -59,7 +60,7 @@ public class EmissionsService : IEmissionsService
         //Get metering point time series
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
 
-        var declaration = await emissionDataService.GetProductionEmission(dateFrom.ToUtcDateTime(), dateTo.ToUtcDateTime());
+        var declaration = await emissionDataService.GetProductionEmission(dateFrom.ToDateTime(), dateTo.ToDateTime());
 
         return sourcesCalculator.CalculateSourceEmissions(measurements, declaration.Result.Records, aggregation);
     }
