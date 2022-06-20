@@ -3,9 +3,4 @@ name: eo-data-sync
 description: A chart containing the sync domain
 
 type: application
-version: 0.2.10
-
-dependencies:
-  - name: eo-base-helm-chart
-    version: 0.6.1
-    repository: "https://energinet-datahub.github.io/helm-charts/"
+version: 0.4.1

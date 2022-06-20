@@ -5,7 +5,14 @@ namespace API.Models;
 public enum Quality
 {
     [Description("Measured")]
-    Measured = 1,
+    Measured = 10,
+
+    [Description("Revised")]
+    Revised = 20,
+
+    [Description("Calculated")]
+    Calculated = 30,
+
     [Description("Estimated")]
-    Estimated = 2
+    Estimated = 40,
 }
