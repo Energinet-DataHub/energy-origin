@@ -6,6 +6,7 @@ using API.Models;
 using API.Services;
 using Xunit;
 using Xunit.Categories;
+using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
