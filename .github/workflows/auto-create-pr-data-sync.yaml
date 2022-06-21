@@ -1,0 +1,35 @@
+name: Auto-create PR - data sync
+
+on:
+  push:
+    branches:
+      - "*"
+      - "!main"
+    paths:
+      - domains/data-sync/**
+
+jobs:
+  autocreate-pr:
+    name: Auto-create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for message [TAG]
+        id: check
+        shell: bash
+        run: |
+          echo "Checking branch '${{ github.ref_name }}' commit message:"
+          echo "${{ github.event.head_commit.message }}"
+
+          echo "::set-output name=relevant::false"
+          if grep -q "[AUTO-PR]" <<< "${{ github.event.head_commit.message }}"; then
+            echo "::set-output name=relevant::true"
+          fi
+
+      - name: Create Pull Request
+        if: ${{ steps.check.outputs.relevant == 'true' }}
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: Update chart for '${{ github.ref_name }}'
+          branch: "${{ github.ref }}"
+          commit-message: Update chart for '${{ github.ref_name }}'
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
