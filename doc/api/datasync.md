@@ -63,7 +63,13 @@ GET /meteringpoints
 {
     "meteringpoints": [
         {
-            "gsrn": 57131300000000001
+            "gsrn": 57131300000000001,
+            "address": "Vejlevej 32",
+            "cityName": "Vejle",
+            "floor": "",
+            "room": "",
+            "gridArea": "DK2",
+            "postCode": "7100"
         }
     ]
 }
