@@ -60,5 +60,5 @@ jobs:
           echo sooon
           gh pr list --state open
           echo "things!"
-          gh pr list --state open -q '.'
+          gh pr list --state open --json
           
