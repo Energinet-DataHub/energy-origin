@@ -26,6 +26,10 @@ This folder will contain documentation for working with the APIs and developing 
 - GET [/api/emissions](emissions.md#get-emissions)
 - GET [/api/sources](emissions.md#get-sources-of-energy)
 
+### Measurements Domains
+
+- GET [/api/measurements/consumption](measurements.md##get-measurements-for-consumption-data)
+
 ## INTERNAL
 
 ### Auth-internal

@@ -1,0 +1,19 @@
+{
+    "meteringpoints": [
+        {
+            "gsrn": "571313121223234323",
+            "gridArea": "DK1",
+            "type": "consumption"
+        },
+        {
+            "gsrn": "571313121223234324",
+            "gridArea": "DK2",
+            "type": "consumption"
+        },
+        {
+            "gsrn": "571313121223234325",
+            "gridArea": "DK1",
+            "type": "production"
+        }
+    ]
+}
