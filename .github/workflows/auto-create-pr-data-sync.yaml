@@ -56,9 +56,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr list --state open --head '${{ github.ref_name }}'
-          echo sooon
-          gh pr list --state open
-          echo "things!"
-          gh pr list --state open --json number,baseRefName,headRefName
-          
+          gh pr list --state open --head '${{ github.ref_name }}' --json headRefName | grep -Eqv '${{ github.ref_name }}' && exit 0
+
+          echo "gh pr create --base main --title 'Update chart for ${{ github.ref_name }}' --body ''"
