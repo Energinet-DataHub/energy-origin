@@ -51,7 +51,7 @@ jobs:
       #     author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
       - name: Create Pull Request
-        if: ${{ steps.check.outputs.relevant == 'true' }}
+        # if: ${{ steps.check.outputs.relevant == 'true' }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
