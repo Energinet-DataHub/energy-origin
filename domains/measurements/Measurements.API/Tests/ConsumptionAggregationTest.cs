@@ -27,10 +27,10 @@ public sealed class ConsumptionAggregationTest
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
         var timeSeries = dataSetFactory.CreateTimeSeries();
 
-        var calculator = new ConsumptionAggregation();
+        var aggregationCalculator = new ConsumptionAggregation();
 
         // Act
-        var result = calculator.CalculateAggregation(timeSeries,
+        var result = aggregationCalculator.CalculateAggregation(timeSeries,
             dateFrom.ToUnixTime(),
             dateTo.ToUnixTime(),
             aggregation).AggregatedMeasurement.ToArray();

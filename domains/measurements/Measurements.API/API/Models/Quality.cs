@@ -3,10 +3,13 @@ using System.Text.Json.Serialization;
 namespace API.Models;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum EnergyQuantityValueQuality
+public enum Quality
 {
-    measured,
-    revised,
-    calculated,
-    estimated,
+    Measured,
+
+    Revised,
+
+    Calculated,
+
+    Estimated,
 }

@@ -10,9 +10,9 @@ public class Measurement
 
     public int Quantity { get; set; }
 
-    public EnergyQuantityValueQuality Quality { get; set; }
+    public Quality Quality { get; set; }
 
-    public Measurement(string gsrn, long dateFrom, long dateTo, int quantity, EnergyQuantityValueQuality quality)
+    public Measurement(string gsrn, long dateFrom, long dateTo, int quantity, Quality quality)
     {
         GSRN = gsrn;
         DateFrom = dateFrom;
