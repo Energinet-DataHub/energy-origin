@@ -1,4 +1,3 @@
-using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
@@ -6,35 +5,35 @@ namespace API.Services;
 
 class ConsumptionCalculator : IConsumptionCalculator
 {
-    public ConsumptionResponse CalculateConsumption(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
+    public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
-        var listOfConsumptions = new List<ConsumptionInteral>();
+        var listOfConsumptions = new List<AggregatedMeasurementInteral>();
 
         listOfConsumptions.AddRange(from measurement in measurements
                                     from reading in measurement.Measurements
-                                    select new ConsumptionInteral
+                                    select new AggregatedMeasurementInteral
                                     {
                                         DateFrom = reading.DateFrom.ToDateTime(),
                                         DateTo = reading.DateTo.ToDateTime(),
                                         Value = reading.Quantity
                                     });
 
-        IEnumerable<IGrouping<string, ConsumptionInteral>> groupedConsumptions = GetGroupedConsumption(aggregation, listOfConsumptions);
+        IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedConsumptions = GetGroupedConsumption(aggregation, listOfConsumptions);
 
         var bucketConsumptions = (from groupedConsumption in groupedConsumptions
                                   let totalForBucket = groupedConsumption.Sum(_ => _.Value)
-                                  select new Consumption(
+                                  select new AggregatedMeasurement(
                                         groupedConsumption.First().DateFrom.ToUnixTime(),
                                         groupedConsumption.Last().DateTo.ToUnixTime(),
                                         totalForBucket
                                     )).ToList();
 
-        return new ConsumptionResponse(bucketConsumptions);
+        return new MeasurementResponse(bucketConsumptions);
     }
 
-    static IEnumerable<IGrouping<string, ConsumptionInteral>> GetGroupedConsumption(Aggregation aggregation, List<ConsumptionInteral> listOfConsumptions)
+    static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, List<AggregatedMeasurementInteral> listOfConsumptions)
     {
-        IEnumerable<IGrouping<string, ConsumptionInteral>> groupedConsumptions = aggregation switch
+        IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedConsumptions = aggregation switch
         {
             Aggregation.Year        => listOfConsumptions.GroupBy(_ => _.DateFrom.Year.ToString()),
             Aggregation.Month       => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM")),
@@ -48,7 +47,7 @@ class ConsumptionCalculator : IConsumptionCalculator
         return groupedConsumptions;
     }
 
-    private class ConsumptionInteral
+    private class AggregatedMeasurementInteral
     {
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }

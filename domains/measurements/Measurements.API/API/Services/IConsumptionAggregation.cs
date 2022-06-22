@@ -2,9 +2,9 @@ using API.Models;
 
 namespace API.Services;
 
-public interface IConsumptionCalculator
+public interface IConsumptionAggregation
 {
-    ConsumptionResponse CalculateConsumption(
+    MeasurementResponse CalculateAggregation(
         IEnumerable<TimeSeries> measurements,
         long dateFrom,
         long dateTo,

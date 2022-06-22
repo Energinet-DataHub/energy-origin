@@ -10,7 +10,6 @@ namespace API.Controllers
     {
         readonly ILogger<HealthController> logger;
 
-
         public HealthController(ILogger<HealthController> logger)
         {
             this.logger = logger;

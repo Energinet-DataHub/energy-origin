@@ -1,4 +1,3 @@
-using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
 
@@ -7,22 +6,22 @@ namespace API.Services;
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionCalculator consumptionCalculator;
+    readonly IConsumptionAggregation aggregateMeasurements;
 
     public MeasurementsService(IDataSyncService dataSyncService,
-            IConsumptionCalculator consumptionCalculator)
+            IConsumptionAggregation AggregateMeasurements)
     {
         this.dataSyncService = dataSyncService;
-        this.consumptionCalculator = consumptionCalculator;
+        this.aggregateMeasurements = AggregateMeasurements;
     }
 
-    public async Task<ConsumptionResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<MeasurementResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
 
-        return consumptionCalculator.CalculateConsumption(measurements, dateFrom, dateTo, aggregation);
+        return aggregateMeasurements.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo,
@@ -33,8 +32,7 @@ public class MeasurementsService : IMeasurementsService
         {
             var measurements = await dataSyncService.GetMeasurements(context, meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
-                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime,
-                aggregation);
+                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime);
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }

@@ -40,7 +40,7 @@ builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
     client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
 });
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
-builder.Services.AddScoped<IConsumptionCalculator, ConsumptionCalculator>();
+builder.Services.AddScoped<IAggregateMeasurements, AggregateMeasurements>();
 
 var app = builder.Build();
 

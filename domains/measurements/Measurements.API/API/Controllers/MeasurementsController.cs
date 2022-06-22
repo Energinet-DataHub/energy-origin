@@ -26,7 +26,7 @@ public class MeasurementsController : AuthorizationController
     /// <returns></returns>
     [HttpGet]
     [Route("measurements/consumption")]
-    public async Task<ConsumptionResponse> GetMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<MeasurementResponse> GetMeasurements([FromQuery] MeasurementsRequest request)
     {
         return await measurementsService.GetConsumption(Context, request.DateFrom, request.DateTo, request.Aggregation);
     }

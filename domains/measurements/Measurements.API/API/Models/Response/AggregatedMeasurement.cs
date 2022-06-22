@@ -1,6 +1,6 @@
 ﻿namespace API.Models
 {
-    public class Consumption
+    public class AggregatedMeasurement
     {
         public long DateFrom { get; }
 
@@ -8,7 +8,7 @@
 
         public int Value { get; }
 
-        public Consumption(long dateFrom, long dateTo, int value)
+        public AggregatedMeasurement(long dateFrom, long dateTo, int value)
         {
             DateFrom = dateFrom;
             DateTo = dateTo;
