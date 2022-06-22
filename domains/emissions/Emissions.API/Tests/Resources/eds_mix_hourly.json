@@ -1,0 +1,66 @@
+{
+    "help": "https://api.energidataservice.dk/help_show?name=datastore_search_sql",
+    "success": true,
+    "result": {
+        "records": [
+            {
+                "ShareTotal": 0.157272835625138,
+                "HourUTC": "2021-01-01T00:00:00",
+                "Version": "Preliminary",
+                "PriceArea": "DK1",
+                "ProductionType": "Hydro"
+            },
+            {
+                "ShareTotal": 0.0065486185187496,
+                "HourUTC": "2021-01-01T00:00:00",
+                "Version": "Preliminary",
+                "PriceArea": "DK1",
+                "ProductionType": "Solar"
+            },
+            {
+                "ShareTotal": 6.12541311332831,
+                "HourUTC": "2021-01-01T00:00:00",
+                "Version": "Preliminary",
+                "PriceArea": "DK1",
+                "ProductionType": "WindOffshore"
+            },
+            {
+                "ShareTotal": 3.41999590799095,
+                "HourUTC": "2021-01-01T00:00:00",
+                "Version": "Preliminary",
+                "PriceArea": "DK1",
+                "ProductionType": "WindOnshore"
+            },
+            {
+                "ShareTotal": 4.31004707193119,
+                "HourUTC": "2021-01-01T00:00:00",
+                "Version": "Preliminary",
+                "PriceArea": "DK1",
+                "ProductionType": "BioGas"
+            }
+        ],
+        "fields": [
+            {
+                "type": "timestamp",
+                "id": "HourUTC"
+            },
+            {
+                "type": "text",
+                "id": "PriceArea"
+            },
+            {
+                "type": "text",
+                "id": "Version"
+            },
+            {
+                "type": "text",
+                "id": "ProductionType"
+            },
+            {
+                "type": "float8",
+                "id": "ShareTotal"
+            }
+        ],
+        "sql": "SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" from \"declarationproduction\" WHERE \"HourUTC\" >= '01/01/2021' AND \"HourUTC\" <= '01/02/2021' AND (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total') LIMIT 5"
+    }
+}
