@@ -41,8 +41,8 @@ jobs:
           # gh pr list --state open --head '${{ github.ref_name }}' --json headRefName | grep -Eq '${{ github.ref_name }}' && exit 0
           # gh pr create --base main --title "Update chart for '${{ github.ref_name }}'" --body ''
 
-          git --local config user.name 'github-actions'
-          git --local config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config --local user.name 'github-actions'
+          git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
           git commit -m 'PR created' --allow-empty
           git push --set-upstream origin '${{ github.head_ref }}'
