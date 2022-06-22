@@ -19,7 +19,7 @@ public class MeasurementsService : IMeasurementsService
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         return aggregateMeasurements.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
     }

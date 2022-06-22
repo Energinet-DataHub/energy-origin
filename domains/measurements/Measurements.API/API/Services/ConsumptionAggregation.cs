@@ -35,13 +35,13 @@ class ConsumptionAggregation : IConsumptionAggregation
     {
         IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedConsumptions = aggregation switch
         {
-            Aggregation.Year        => listOfConsumptions.GroupBy(_ => _.DateFrom.Year.ToString()),
-            Aggregation.Month       => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM")),
-            Aggregation.Day         => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd")),
-            Aggregation.Hour        => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
+            Aggregation.Year => listOfConsumptions.GroupBy(_ => _.DateFrom.Year.ToString()),
+            Aggregation.Month => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM")),
+            Aggregation.Day => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd")),
+            Aggregation.Hour => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
             Aggregation.QuarterHour => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH/mm")),
-            Aggregation.Actual      => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
-            Aggregation.Total       => listOfConsumptions.GroupBy(_ => "total"),
+            Aggregation.Actual => listOfConsumptions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
+            Aggregation.Total => listOfConsumptions.GroupBy(_ => "total"),
             _ => throw new ArgumentOutOfRangeException($"Invalid value {nameof(aggregation)}"),
         };
         return groupedConsumptions;

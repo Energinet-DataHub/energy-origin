@@ -18,9 +18,10 @@ public sealed class AggregationServiceTest
     readonly ConsumptionAggregationDataSetFactory dataSetFactory = new();
 
     [Fact]
-    public async void MeasurementsService_GetTimeSeries_Measurements()
+    public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
     {
         //Arrange
+
         var context = new AuthorizationContext("subject", "actor", "token");
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);

@@ -46,9 +46,9 @@ internal class ConsumptionAggregationDataSetFactory
                 new MeteringPoint(
                     gsrn: "571313121223234323",
                     gridArea: "DK1",
-                    type: MeterType.consumption),
+                    type: MeterType.Consumption),
                 CreateMeasurements()
-                )
+            )
         };
     }
 }
