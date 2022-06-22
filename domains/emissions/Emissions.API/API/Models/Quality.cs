@@ -1,18 +1,16 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace API.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Quality
 {
-    [Description("Measured")]
-    Measured = 10,
+    Measured,
 
-    [Description("Revised")]
-    Revised = 20,
+    Revised,
 
-    [Description("Calculated")]
-    Calculated = 30,
+    Calculated,
 
-    [Description("Estimated")]
-    Estimated = 40,
+    Estimated,
 }
