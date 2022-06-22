@@ -5,8 +5,8 @@ on:
     branches:
       - "**"
       - "!main"
-    # paths:
-    #   - domains/data-sync/**
+    paths:
+      - domains/data-sync/**
 
 jobs:
   autocreate-pr:
@@ -27,6 +27,8 @@ jobs:
 
       - uses: actions/checkout@v3
         if: ${{ steps.check.outputs.relevant == 'true' }}
+        with:
+          ref: main
 
       - name: Create Pull Request
         if: ${{ steps.check.outputs.relevant == 'true' }}
