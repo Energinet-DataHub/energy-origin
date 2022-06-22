@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Helpers;
 using API.Models;
 using API.Services;
 using Xunit;
 using Xunit.Categories;
-using EnergyOriginDateTimeExtension;
 using Moq;
 using EnergyOriginAuthorization;
 using AutoFixture;
