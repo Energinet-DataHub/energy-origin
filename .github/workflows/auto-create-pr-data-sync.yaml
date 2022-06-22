@@ -5,8 +5,8 @@ on:
     branches:
       - "*"
       - "!main"
-    paths:
-      - domains/data-sync/**
+    # paths:
+    #   - domains/data-sync/**
 
 jobs:
   autocreate-pr:
