@@ -35,17 +35,27 @@ jobs:
       #     git fetch origin main:main
       #     git reset --hard main
 
-      - name: Make a change
-        shell: bash
-        run: |
-          date > domains/data-sync/.pr-changed
+      # - name: Make a change
+      #   shell: bash
+      #   run: |
+      #     date > domains/data-sync/.pr-changed
+
+      # - name: Create Pull Request
+      #   # if: ${{ steps.check.outputs.relevant == 'true' }}
+      #   uses: peter-evans/create-pull-request@v4
+      #   with:
+      #     title: Update chart for '${{ github.ref_name }}'
+      #     # branch: "${{ github.ref }}"
+      #     branch: main
+      #     commit-message: Update chart for '${{ github.ref_name }}'
+      #     author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
       - name: Create Pull Request
-        # if: ${{ steps.check.outputs.relevant == 'true' }}
-        uses: peter-evans/create-pull-request@v4
-        with:
-          title: Update chart for '${{ github.ref_name }}'
-          # branch: "${{ github.ref }}"
-          branch: main
-          commit-message: Update chart for '${{ github.ref_name }}'
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+        if: ${{ steps.check.outputs.relevant == 'true' }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr list --state open
+          echo "things!"
+          gh pr list --state open --head '${{ github.ref_name }}'
