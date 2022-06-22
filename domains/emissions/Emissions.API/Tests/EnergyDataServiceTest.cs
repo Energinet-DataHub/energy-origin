@@ -14,6 +14,7 @@ using EnergyOriginAuthorization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
+using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
 
@@ -27,7 +28,7 @@ public sealed class EnergyDataServiceTest
     public async void DatePeriod_GetEmissionsPerHour_EmissionRecordsReturned()
     {
         // Arrange
-        var edsMock = SetupHttpClientFromFile("eds_emissions_hourly.json");
+        var edsMock = MockHttpClientFactory.SetupHttpClientFromFile("eds_emissions_hourly.json");
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
@@ -47,7 +48,7 @@ public sealed class EnergyDataServiceTest
     public async void DatePeriod_GetResidualMixPerHour_EmissionRecordsReturned()
     {
         // Arrange
-        var edsMock = SetupHttpClientFromFile("eds_mix_hourly.json");
+        var edsMock = MockHttpClientFactory.SetupHttpClientFromFile("eds_mix_hourly.json");
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
@@ -61,40 +62,5 @@ public sealed class EnergyDataServiceTest
         // Assert
         Assert.NotEmpty(res);
         Assert.Equal(5, res.Count());
-    }
-
-
-    HttpClient SetupHttpClientFromFile(string resourceName)
-    {
-        var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
-        var path = System.IO.Path.Combine(directory, "../../../Resources/", resourceName);
-        string json = File.ReadAllText(path);
-        return SetupHttpClient(json);
-    }
-
-    HttpClient SetupHttpClient(string serialize)
-    {
-
-        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-        handlerMock
-            .Protected()
-            // Setup the PROTECTED method to mock
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            // prepare the expected response of the mocked http call
-            .ReturnsAsync(new HttpResponseMessage()
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(serialize),
-            }).Verifiable();
-
-
-        return new HttpClient(handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://test.com/"),
-        };
     }
 }

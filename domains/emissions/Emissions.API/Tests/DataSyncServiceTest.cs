@@ -14,6 +14,7 @@ using EnergyOriginAuthorization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
+using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
 
@@ -26,7 +27,7 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetListOfMeteringPoints_success()
     {
         // Arrange
-        var mockClient = SetupHttpClientFromFile("datasync_meteringpoints.json");
+        var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
@@ -50,7 +51,7 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetMeasurements_success()
     {
         // Arrange
-        var mockClient = SetupHttpClientFromFile("datasync_measurements.json");
+        var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_measurements.json");
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
@@ -70,39 +71,5 @@ public sealed class DataSyncServiceTest
         Assert.Equal(1609459200, res.First().DateTo);
         Assert.Equal(1250, res.First().Quantity);
         Assert.Equal(Quality.Measured, res.First().Quality);
-    }
-
-    HttpClient SetupHttpClientFromFile(string resourceName)
-    {
-        var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
-        var path = System.IO.Path.Combine(directory, "../../../Resources/", resourceName);
-        string json = File.ReadAllText(path);
-        return SetupHttpClient(json);
-    }
-
-    HttpClient SetupHttpClient(string serialize)
-    {
-
-        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-        handlerMock
-            .Protected()
-            // Setup the PROTECTED method to mock
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            // prepare the expected response of the mocked http call
-            .ReturnsAsync(new HttpResponseMessage()
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(serialize),
-            }).Verifiable();
-
-
-        return new HttpClient(handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://test.com/"),
-        };
     }
 }
