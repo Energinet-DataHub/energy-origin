@@ -6,8 +6,8 @@ on:
       - "**"
       - "!main"
     paths:
-      # - .github/workflows/auto-create-pr-data-sync.yaml
-      - domains/data-sync/**
+      - .github/workflows/auto-create-pr-data-sync.yaml
+      # - domains/data-sync/**
 
 jobs:
   autocreate-pr:
@@ -27,13 +27,22 @@ jobs:
           fi
 
       - uses: actions/checkout@v3
-        if: ${{ steps.check.outputs.relevant == 'true' }}
+        # if: ${{ steps.check.outputs.relevant == 'true' }}
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY_ENERGY_ORIGIN }}
+          fetch-depth: 0
 
       - name: Create Pull Request
-        if: ${{ steps.check.outputs.relevant == 'true' }}
+        # if: ${{ steps.check.outputs.relevant == 'true' }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr list --state open --head '${{ github.ref_name }}' --json headRefName | grep -Eq '${{ github.ref_name }}' && exit 0
-          gh pr create --base main --title "Update chart for '${{ github.ref_name }}'" --body ''
+          # gh pr list --state open --head '${{ github.ref_name }}' --json headRefName | grep -Eq '${{ github.ref_name }}' && exit 0
+          # gh pr create --base main --title "Update chart for '${{ github.ref_name }}'" --body ''
+
+          git --local config user.name 'github-actions'
+          git --local config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git commit -m 'PR created' --allow-empty
+          git push --set-upstream origin '${{ github.head_ref }}'
