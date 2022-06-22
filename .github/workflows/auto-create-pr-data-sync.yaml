@@ -6,58 +6,34 @@ on:
       - "**"
       - "!main"
     paths:
-      - .github/workflows/auto-create-pr-data-sync.yaml
-      # - domains/data-sync/**
+      # - .github/workflows/auto-create-pr-data-sync.yaml
+      - domains/data-sync/**
 
 jobs:
   autocreate-pr:
     name: Auto-create PR
     runs-on: ubuntu-latest
     steps:
-      # - name: Check for message [TAG]
-      #   id: check
-      #   shell: bash
-      #   run: |
-      #     echo "Checking branch '${{ github.ref_name }}' commit message:"
-      #     echo "${{ github.event.head_commit.message }}"
+      - name: Check for message [TAG]
+        id: check
+        shell: bash
+        run: |
+          echo "Checking branch '${{ github.ref_name }}' commit message:"
+          echo "${{ github.event.head_commit.message }}"
 
-      #     echo "::set-output name=relevant::false"
-      #     if grep -q "[AUTO-PR]" <<< "${{ github.event.head_commit.message }}"; then
-      #       echo "::set-output name=relevant::true"
-      #     fi
+          echo "::set-output name=relevant::false"
+          if grep -q "[AUTO-PR]" <<< "${{ github.event.head_commit.message }}"; then
+            echo "::set-output name=relevant::true"
+          fi
 
       - uses: actions/checkout@v3
-        # if: ${{ steps.check.outputs.relevant == 'true' }}
-
-      # - name: Reset branch
-      #   shell: bash
-      #   run: |
-      #     git fetch origin main:main
-      #     git reset --hard main
-
-      # - name: Make a change
-      #   shell: bash
-      #   run: |
-      #     date > domains/data-sync/.pr-changed
-
-      # - name: Create Pull Request
-      #   # if: ${{ steps.check.outputs.relevant == 'true' }}
-      #   uses: peter-evans/create-pull-request@v4
-      #   with:
-      #     title: Update chart for '${{ github.ref_name }}'
-      #     # branch: "${{ github.ref }}"
-      #     branch: main
-      #     commit-message: Update chart for '${{ github.ref_name }}'
-      #     author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+        if: ${{ steps.check.outputs.relevant == 'true' }}
 
       - name: Create Pull Request
-        # if: ${{ steps.check.outputs.relevant == 'true' }}
+        if: ${{ steps.check.outputs.relevant == 'true' }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr list --state open --head '${{ github.ref_name }}' --json headRefName | grep -Eq '${{ github.ref_name }}' && exit 0
-
-          gh pr list --state open --head 'preview/add-consumption-endpoint' --json headRefName | grep -Eq 'preview/add-consumption-endpoint' && echo 'yay!'
-
-          echo "gh pr create --base main --title 'Update chart for ${{ github.ref_name }}' --body ''"
+          gh pr create --base main --title "Update chart for '${{ github.ref_name }}'" --body ''
