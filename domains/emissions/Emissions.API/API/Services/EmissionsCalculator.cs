@@ -1,4 +1,3 @@
-using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
@@ -6,7 +5,10 @@ namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
 {
-    public EmissionsResponse CalculateEmission(List<EmissionRecord> emissions,
+
+    private const int decimalPrecision = 5;
+
+    public EmissionsResponse CalculateEmission(IEnumerable<EmissionRecord> emissions,
         IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
 
@@ -45,8 +47,8 @@ class EmissionsCalculator : IEmissionsCalculator
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTime(),
                 groupedEmission.Last().DateTo.ToUnixTime(),
-                new Quantity(totalForBucket / 1000, QuantityUnit.g),
-                new Quantity(relativeForBucket, QuantityUnit.gPerkWh)
+                new Quantity(Math.Round(totalForBucket / 1000, decimalPrecision), QuantityUnit.g),
+                new Quantity(Math.Round(relativeForBucket, decimalPrecision), QuantityUnit.gPerkWh)
             ));
         }
 
@@ -102,7 +104,7 @@ internal class Emission
 {
     public DateTime DateFrom { get; set; }
     public DateTime DateTo { get; set; }
-    public float Co2 { get; set; }
+    public decimal Co2 { get; set; }
     public int Consumption { get; set; }
 
 }

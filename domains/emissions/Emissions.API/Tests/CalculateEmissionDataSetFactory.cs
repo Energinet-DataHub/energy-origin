@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
@@ -12,30 +11,30 @@ internal class CalculateEmissionDataSetFactory
     {
         return new List<Measurement>
         {
-            new Measurement
-            {
-                DateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
-                Quantity = 1234
-            },
-            new Measurement
-            {
-                DateFrom = new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
-                Quantity = 242
-            },
-            new Measurement
-            {
-                DateFrom = new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
-                Quantity = 654
-            },
-            new Measurement
-            {
-                DateFrom = new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo = new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
-                Quantity = 1800
-            }
+            new Measurement(
+                "571313121223234323",
+                new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+                new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                1234,
+                Quality.Measured),
+            new Measurement(
+                "571313121223234323",
+                new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
+                242,
+                Quality.Measured),
+            new Measurement(
+                "571313121223234323",
+                new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                654,
+                Quality.Measured),
+            new Measurement(
+                "571313121223234323",
+                new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
+                1800,
+                Quality.Measured)
         };
     }
 
@@ -45,8 +44,39 @@ internal class CalculateEmissionDataSetFactory
         {
             new TimeSeries
             (
-                new MeteringPoint("571313121223234323", "DK1"),
+                new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
                 CreateMeasurements()
+            ),
+            new TimeSeries
+            (
+                new MeteringPoint("571313121223234324", "DK1", MeterType.Consumption),
+                new List<Measurement>
+                {
+                    new Measurement(
+                        "571313121223234324",
+                        new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+                        new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        789,
+                        Quality.Measured),
+                    new Measurement(
+                        "571313121223234324",
+                        new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
+                        1212,
+                        Quality.Measured),
+                    new Measurement(
+                        "571313121223234324",
+                        new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        324,
+                        Quality.Measured),
+                    new Measurement(
+                        "571313121223234324",
+                        new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
+                        1233,
+                        Quality.Measured)
+                }
             )
         };
     }
