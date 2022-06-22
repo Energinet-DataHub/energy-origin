@@ -36,13 +36,13 @@ public class EnergiDataService : IEnergiDataService
     {
         return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
                "from \"declarationproduction\" " +
-               $"WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+               $"WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd/}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
         return
-            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:MM/dd/yyyy}' AND \"HourUTC\" <= '{dateTo:MM/dd/yyyy)}'";
+            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd)}'";
     }
 
     private class Response<T>
@@ -60,28 +60,9 @@ public class EnergiDataService : IEnergiDataService
         [JsonPropertyName("records")]
         public List<T> Records { get; }
 
-        public List<Field> Fields { get; }
-
-        public string Sql { get; }
-
-        public Result(List<T> records, List<Field> fields, string sql)
+        public Result(List<T> records)
         {
             Records = records;
-            Fields = fields;
-            Sql = sql;
-        }
-    }
-
-    private class Field
-    {
-        public string Type { get; }
-
-        public string Id { get; }
-
-        public Field(string type, string id)
-        {
-            Type = type;
-            Id = id;
         }
     }
 }
