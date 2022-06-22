@@ -16,8 +16,7 @@ public class DataSyncService : IDataSyncService
         this.httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom,
-        DateTime dateTo)
+    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo)
     {
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}";
 

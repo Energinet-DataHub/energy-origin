@@ -12,10 +12,11 @@ public class EmissionsService : IEmissionsService
     readonly IEmissionsCalculator emissionsCalculator;
     readonly ISourcesCalculator sourcesCalculator;
 
-    public EmissionsService(IDataSyncService dataSyncService,
-                            IEnergiDataService energyDataService,
-                            IEmissionsCalculator emissionsCalculator,
-                            ISourcesCalculator sourcesCalculator)
+    public EmissionsService(
+        IDataSyncService dataSyncService,
+        IEnergiDataService energyDataService,
+        IEmissionsCalculator emissionsCalculator,
+        ISourcesCalculator sourcesCalculator)
     {
         this.dataSyncService = dataSyncService;
         this.energyDataService = energyDataService;
