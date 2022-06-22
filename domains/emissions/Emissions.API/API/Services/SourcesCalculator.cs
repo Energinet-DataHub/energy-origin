@@ -13,7 +13,7 @@ namespace API.Services
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
-            List<Record> records,
+            IEnumerable<MixRecord> records,
             Aggregation aggregation)
         {
             var groupedDeclarations = GetGroupedDeclarations(aggregation, records);
@@ -38,7 +38,7 @@ namespace API.Services
         void CalculateConsumptionShareByReference(
             Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults,
             string dateTime,
-            IEnumerable<Record> totalShares,
+            IEnumerable<MixRecord> totalShares,
             Measurement measurement)
         {
             if (!consumptionResults.TryGetValue(dateTime, out var shares))
@@ -115,7 +115,7 @@ namespace API.Services
                 .ToLookup(x => GetDateAsString(x.DateFrom.ToDateTime(), aggregation));
         }
 
-        ILookup<string, Record> GetGroupedDeclarations(Aggregation aggregation, List<Record> declaration)
+        ILookup<string, MixRecord> GetGroupedDeclarations(Aggregation aggregation, IEnumerable<MixRecord> declaration)
         {
             if (aggregation == Aggregation.Total)
                 return declaration.ToLookup(a => total + a.PriceArea);

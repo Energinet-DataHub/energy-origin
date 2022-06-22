@@ -6,7 +6,7 @@ namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
 {
-    public EmissionsResponse CalculateEmission(List<EmissionRecord> emissions,
+    public EmissionsResponse CalculateEmission(IEnumerable<EmissionRecord> emissions,
         IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
 
