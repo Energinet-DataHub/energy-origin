@@ -16,10 +16,9 @@ public class DataSyncService : IDataSyncService
         this.httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom,
-        DateTime dateTo, Aggregation aggregation)
+    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo)
     {
-        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}&aggregation={aggregation}";
+        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}";
 
         httpClient.AddAuthorizationToken(context);
         var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
@@ -33,10 +32,8 @@ public class DataSyncService : IDataSyncService
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context)
     {
-
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(context);
-        Console.WriteLine(await httpClient.GetStringAsync(uri));
 
         var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
 
