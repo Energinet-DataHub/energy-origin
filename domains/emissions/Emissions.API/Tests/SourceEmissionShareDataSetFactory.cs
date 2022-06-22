@@ -45,7 +45,7 @@ namespace Tests
             {
                 new TimeSeries
                 (
-                    new MeteringPoint("571313121223234323", "DK1", MeterType.consumption),
+                    new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
                     CreateMeasurements()
                 )
             };

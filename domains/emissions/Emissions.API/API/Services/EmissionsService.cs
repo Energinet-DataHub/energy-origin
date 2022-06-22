@@ -31,7 +31,7 @@ public class EmissionsService : IEmissionsService
 
         var emissions = await energyDataService.GetEmissionsPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
 
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         //Calculate total emission
         return emissionsCalculator.CalculateEmission(emissions, measurements, dateFrom, dateTo, aggregation);
@@ -59,7 +59,7 @@ public class EmissionsService : IEmissionsService
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         //Get metering point time series
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         var mixRecords = await energyDataService.GetResidualMixPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
 

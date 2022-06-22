@@ -7,6 +7,6 @@ namespace API.Models;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MeterType
 {
-    consumption,
-    production,
+    Consumption,
+    Production,
 }

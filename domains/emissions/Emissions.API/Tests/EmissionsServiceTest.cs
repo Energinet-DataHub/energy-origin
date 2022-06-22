@@ -26,9 +26,9 @@ public sealed class EmissionsServiceTests
         var time3 = 1654045200;
 
         var mps = new List<MeteringPoint>(){
-            new MeteringPoint("286432579631400001", "DK1", MeterType.consumption),
-            new MeteringPoint("286432579631400002", "DK1", MeterType.production),
-            new MeteringPoint("286432579631400003", "DK1", MeterType.consumption),
+            new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
+            new MeteringPoint("286432579631400002", "DK1", MeterType.Production),
+            new MeteringPoint("286432579631400003", "DK1", MeterType.Consumption),
         };
 
         var meterpoint1Time0Quantity = 1250;
@@ -129,9 +129,9 @@ public sealed class EmissionsServiceTests
         var time3 = 1654045200;
 
         var mps = new List<MeteringPoint>(){
-            new MeteringPoint("286432579631400001", "DK1", MeterType.consumption),
-            new MeteringPoint("286432579631400002", "DK1", MeterType.production),
-            new MeteringPoint("286432579631400003", "DK1", MeterType.consumption),
+            new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
+            new MeteringPoint("286432579631400002", "DK1", MeterType.Production),
+            new MeteringPoint("286432579631400003", "DK1", MeterType.Consumption),
         };
 
         var meterpoint1Time0Quantity = 1250;

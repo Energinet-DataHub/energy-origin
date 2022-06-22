@@ -44,7 +44,7 @@ public sealed class DataSyncServiceTest
 
         Assert.Equal("571313121223234323", res.First().GSRN);
         Assert.Equal("DK1", res.First().GridArea);
-        Assert.Equal(MeterType.consumption, res.First().Type);
+        Assert.Equal(MeterType.Consumption, res.First().Type);
     }
 
     [Fact]
