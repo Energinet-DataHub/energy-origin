@@ -45,4 +45,4 @@ jobs:
           git config --local user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
           git commit -m 'PR created' --allow-empty
-          git push --set-upstream origin '${{ github.head_ref }}'
+          git push --set-upstream origin '${{ github.ref_name }}'
