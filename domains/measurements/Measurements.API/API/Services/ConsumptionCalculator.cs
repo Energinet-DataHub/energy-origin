@@ -52,6 +52,6 @@ class ConsumptionCalculator : IConsumptionCalculator
     {
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-        public float Value { get; set; }
+        public int Value { get; set; }
     }
 }

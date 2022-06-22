@@ -6,9 +6,9 @@
 
         public long DateTo { get; }
 
-        public float Value { get; }
+        public int Value { get; }
 
-        public Consumption(long dateFrom, long dateTo, float value)
+        public Consumption(long dateFrom, long dateTo, int value)
         {
             DateFrom = dateFrom;
             DateTo = dateTo;

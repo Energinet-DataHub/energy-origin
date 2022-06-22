@@ -20,7 +20,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
-    
+
 builder.Services.AddFluentValidation(c =>
 {
     c.RegisterValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();

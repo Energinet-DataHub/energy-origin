@@ -2,7 +2,7 @@ namespace API.Models;
 
 public class Measurement
 {
-    public string? GSRN { get; set; }
+    public string GSRN { get; set; }
 
     public long DateFrom { get; set; }
 
@@ -10,5 +10,15 @@ public class Measurement
 
     public int Quantity { get; set; }
 
-    public Quality Quality { get; set; }
+    public EnergyQuantityValueQuality Quality { get; set; }
+
+    public Measurement(string gsrn, long dateFrom, long dateTo, int quantity, EnergyQuantityValueQuality quality)
+    {
+        GSRN = gsrn;
+        DateFrom = dateFrom;
+        DateTo = dateTo;
+        Quantity = quantity;
+        Quality = quality;
+    }
 }
+

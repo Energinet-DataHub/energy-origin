@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "Consumption": {
+    "Measurements": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
