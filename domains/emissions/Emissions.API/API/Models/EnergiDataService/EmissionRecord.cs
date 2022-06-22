@@ -4,11 +4,11 @@ public class EmissionRecord
 {
     [JsonPropertyName("priceArea")]
     public string GridArea { get; }
-    public float NOXPerkWh { get; }
-    public float CO2PerkWh { get; }
+    public decimal NOXPerkWh { get; }
+    public decimal CO2PerkWh { get; }
     public DateTime HourUTC { get; }
 
-    public EmissionRecord(string gridArea, float nOXPerkWh, float cO2PerkWh, DateTime hourUTC)
+    public EmissionRecord(string gridArea, decimal nOXPerkWh, decimal cO2PerkWh, DateTime hourUTC)
     {
         GridArea = gridArea;
         NOXPerkWh = nOXPerkWh;

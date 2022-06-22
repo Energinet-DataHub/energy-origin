@@ -8,12 +8,12 @@ namespace API.Services;
 public class EmissionsService : IEmissionsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IEnergyDataService energyDataService;
+    readonly IEnergiDataService energyDataService;
     readonly IEmissionsCalculator emissionsCalculator;
     readonly ISourcesCalculator sourcesCalculator;
 
     public EmissionsService(IDataSyncService dataSyncService,
-                            IEnergyDataService energyDataService,
+                            IEnergiDataService energyDataService,
                             IEmissionsCalculator emissionsCalculator,
                             ISourcesCalculator sourcesCalculator)
     {

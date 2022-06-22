@@ -61,9 +61,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.3f },
-                                    { "windOnshore", 0.38f },
-                                    { "bioGas", 0.32f }
+                                    { "solar", 0.3m },
+                                    { "windOnshore", 0.38m },
+                                    { "bioGas", 0.32m }
                                 }
                             )
                         });
@@ -79,9 +79,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.5f },
-                                    { "windOnshore", 0.3f },
-                                    { "bioGas", 0.2f }
+                                    { "solar", 0.5m },
+                                    { "windOnshore", 0.3m },
+                                    { "bioGas", 0.2m }
                                 }
                             ),
                             new(
@@ -90,9 +90,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.4f },
-                                    { "windOnshore", 0.5f },
-                                    { "bioGas", 0.1f }
+                                    { "solar", 0.4m },
+                                    { "windOnshore", 0.5m },
+                                    { "bioGas", 0.1m }
                                 }
                             ),
                             new(
@@ -101,9 +101,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.3f },
-                                    { "windOnshore", 0.3f },
-                                    { "bioGas", 0.4f }
+                                    { "solar", 0.3m },
+                                    { "windOnshore", 0.3m },
+                                    { "bioGas", 0.4m }
                                 }
                             ),
                             new(
@@ -112,9 +112,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.2f },
-                                    { "windOnshore", 0.4f },
-                                    { "bioGas", 0.4f }
+                                    { "solar", 0.2m },
+                                    { "windOnshore", 0.4m },
+                                    { "bioGas", 0.4m }
                                 }
                             )
                         });
@@ -126,12 +126,12 @@ namespace Tests
                             new(
                                 dateFrom.ToUnixTime(),
                                 dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0.99999f,
+                                0.99999m,
                                 new()
                                 {
-                                    { "solar", 0.43333f },
-                                    { "windOnshore", 0.43333f },
-                                    { "bioGas", 0.13333f }
+                                    { "solar", 0.43333m },
+                                    { "windOnshore", 0.43333m },
+                                    { "bioGas", 0.13333m }
                                 }
                             ),
                             new(
@@ -140,9 +140,9 @@ namespace Tests
                                 1,
                                 new()
                                 {
-                                    { "solar", 0.24286f },
-                                    { "windOnshore", 0.35714f },
-                                    { "bioGas", 0.4f }
+                                    { "solar", 0.24286m },
+                                    { "windOnshore", 0.35714m },
+                                    { "bioGas", 0.4m }
                                 }
                             )
                         });

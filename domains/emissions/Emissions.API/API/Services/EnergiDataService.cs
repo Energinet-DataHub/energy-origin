@@ -3,12 +3,12 @@ using API.Models;
 
 namespace API.Services;
 
-public class EnergyDataService : IEnergyDataService
+public class EnergiDataService : IEnergiDataService
 {
-    readonly ILogger<EnergyDataService> logger;
+    readonly ILogger<EnergiDataService> logger;
     readonly HttpClient httpClient;
 
-    public EnergyDataService(ILogger<EnergyDataService> logger, HttpClient httpClient)
+    public EnergiDataService(ILogger<EnergiDataService> logger, HttpClient httpClient)
     {
         this.logger = logger;
         this.httpClient = httpClient;

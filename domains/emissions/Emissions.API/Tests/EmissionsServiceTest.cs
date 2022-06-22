@@ -100,7 +100,7 @@ public sealed class EmissionsServiceTests
             It.IsAny<DateTime>()
         )).ReturnsAsync(measurements3);
 
-        var emissionsDataService = new Mock<IEnergyDataService>();
+        var emissionsDataService = new Mock<IEnergiDataService>();
         emissionsDataService.Setup(
             x => x.GetEmissionsPerHour(
                 It.IsAny<DateTime>(),
@@ -112,9 +112,9 @@ public sealed class EmissionsServiceTests
 
         var result = await service.GetTotalEmissions(new AuthorizationContext("", "", ""), time0, time3, Aggregation.Hour);
 
-        Assert.Equal(((meterpoint1Time0Quantity + meterpoint3Time0Quantity) * time0Co2) / 1000f, result.Emissions.First().Total.Value);
-        Assert.Equal(((meterpoint1Time1Quantity + meterpoint3Time1Quantity) * time1Co2) / 1000f, result.Emissions.Skip(1).First().Total.Value);
-        Assert.Equal(((meterpoint1Time2Quantity + meterpoint3Time2Quantity) * time2Co2) / 1000f, result.Emissions.Skip(2).First().Total.Value);
+        Assert.Equal(((meterpoint1Time0Quantity + meterpoint3Time0Quantity) * time0Co2) / 1000m, result.Emissions.First().Total.Value);
+        Assert.Equal(((meterpoint1Time1Quantity + meterpoint3Time1Quantity) * time1Co2) / 1000m, result.Emissions.Skip(1).First().Total.Value);
+        Assert.Equal(((meterpoint1Time2Quantity + meterpoint3Time2Quantity) * time2Co2) / 1000m, result.Emissions.Skip(2).First().Total.Value);
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public sealed class EmissionsServiceTests
             It.IsAny<DateTime>()
         )).ReturnsAsync(measurements3);
 
-        var emissionsDataService = new Mock<IEnergyDataService>();
+        var emissionsDataService = new Mock<IEnergiDataService>();
         emissionsDataService.Setup(
             x => x.GetResidualMixPerHour(
                 It.IsAny<DateTime>(),
@@ -216,9 +216,9 @@ public sealed class EmissionsServiceTests
 
         var a = result.EnergySources.First();
 
-        Assert.Equal(0.4251f, a.Renewable);
-        Assert.Equal(0.4251f, a.Ratios["windOnshore"]);
-        Assert.Equal(0.5749f, a.Ratios["coal"]);
+        Assert.Equal(0.4251m, a.Renewable);
+        Assert.Equal(0.4251m, a.Ratios["windOnshore"]);
+        Assert.Equal(0.5749m, a.Ratios["coal"]);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public sealed class EmissionsServiceTests
         var measurements = new CalculateEmissionDataSetFactory().CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
-        var mockEds = new Mock<IEnergyDataService>();
+        var mockEds = new Mock<IEnergiDataService>();
         var mockEmissionsCalculator = new Mock<IEmissionsCalculator>();
         var mockSourcesCalculator = new Mock<ISourcesCalculator>();
 

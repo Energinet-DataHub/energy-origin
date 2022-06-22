@@ -7,9 +7,10 @@ namespace API.Services
     public class SourcesCalculator : ISourcesCalculator
     {
         readonly IList<string> renewableSources = Configuration.GetRenewableSources();
-        readonly float wasteRenewableShare = Configuration.GetWasteRenewableShare();
+        readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
         private const string waste = "waste";
         private const string total = "total";
+        private const int decimalPrecision = 5;
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
@@ -61,7 +62,7 @@ namespace API.Services
                     shares.Add(totalShare.ProductionType, share);
                 }
 
-                share.Value += (float)totalShare.ShareTotal * measurement.Quantity;
+                share.Value += (decimal)totalShare.ShareTotal * measurement.Quantity;
 
                 if (measurement.DateFrom < share.DateFrom)
                 {
@@ -88,7 +89,7 @@ namespace API.Services
                 var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
 
                 var sources = consumptionResult.Value.ToDictionary(a =>
-                    a.Key, b => (float)Math.Round((b.Value.Value / matchingConsumptionSum / 100), 5));
+                    a.Key, b => (decimal)Math.Round((b.Value.Value / matchingConsumptionSum / 100), decimalPrecision));
 
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (
@@ -102,7 +103,7 @@ namespace API.Services
             return result;
         }
 
-        float CalculateRenewable(IDictionary<string, float> groupValues) =>
+        decimal CalculateRenewable(IDictionary<string, decimal> groupValues) =>
              groupValues.Where(a => renewableSources.Contains(a.Key)).
                     Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
 
@@ -140,12 +141,12 @@ namespace API.Services
 
         class ConsumptionShare
         {
-            public float Value { get; set; }
+            public decimal Value { get; set; }
             public long DateFrom { get; set; }
             public long DateTo { get; set; }
             public string ProductionType { get; }
 
-            public ConsumptionShare(float value, long dateFrom, long dateTo, string productionType)
+            public ConsumptionShare(decimal value, long dateFrom, long dateTo, string productionType)
             {
                 Value = value;
                 DateFrom = dateFrom;

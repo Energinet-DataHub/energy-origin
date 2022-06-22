@@ -2,7 +2,7 @@ using API.Models;
 
 namespace API.Services;
 
-public interface IEnergyDataService
+public interface IEnergiDataService
 {
     Task<IEnumerable<EmissionRecord>> GetEmissionsPerHour(DateTime dateFrom, DateTime dateTo);
 
