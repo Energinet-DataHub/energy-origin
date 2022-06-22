@@ -25,6 +25,9 @@ jobs:
             echo "::set-output name=relevant::true"
           fi
 
+      - uses: actions/checkout@v3
+        if: ${{ steps.check.outputs.relevant == 'true' }}
+
       - name: Create Pull Request
         if: ${{ steps.check.outputs.relevant == 'true' }}
         uses: peter-evans/create-pull-request@v4
