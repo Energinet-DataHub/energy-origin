@@ -3,7 +3,7 @@ using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
-class ConsumptionCalculator : IConsumptionCalculator
+class ConsumptionAggregation : IConsumptionAggregation
 {
     public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
