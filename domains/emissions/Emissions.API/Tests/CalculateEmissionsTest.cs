@@ -26,7 +26,7 @@ public sealed class CalculateEmissionsTest
     {
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
-        var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
+        var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
         var timeSeries = dataSetFactory.CreateTimeSeries();
         var emissions = dataSetFactory.CreateEmissions();
 
@@ -55,8 +55,8 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateTo.ToUnixTime(),
-                        new Quantity(481.234f, QuantityUnit.g),
-                        new Quantity(122.4514f, QuantityUnit.gPerkWh)
+                        new Quantity(1038.178f, QuantityUnit.g),
+                        new Quantity(138.64557f, QuantityUnit.gPerkWh)
                         )
 
                 };
@@ -66,26 +66,26 @@ public sealed class CalculateEmissionsTest
                 {
                     new(
                         dateFrom.ToUnixTime(),
-                        dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(153.016f, QuantityUnit.g),
+                        dateFrom.AddHours(1).ToUnixTime(),
+                        new Quantity(250.852f, QuantityUnit.g),
                         new Quantity(124f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(1).ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(56.628f, QuantityUnit.g),
+                        dateFrom.AddHours(2).ToUnixTime(),
+                        new Quantity(340.236f, QuantityUnit.g),
                         new Quantity(234f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(55.59f, QuantityUnit.g),
+                        dateFrom.AddHours(3).ToUnixTime(),
+                        new Quantity(83.13f, QuantityUnit.g),
                         new Quantity(85f, QuantityUnit.gPerkWh)
                     ),
                     new(
                         dateFrom.AddHours(3).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(216f, QuantityUnit.g),
+                        dateFrom.AddHours(4).ToUnixTime(),
+                        new Quantity(363.96f, QuantityUnit.g),
                         new Quantity(120f, QuantityUnit.gPerkWh)
                     ),
                 };
@@ -94,16 +94,16 @@ public sealed class CalculateEmissionsTest
                 {
                     new(
                         dateFrom.ToUnixTime(),
-                        dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(209.644f, QuantityUnit.g),
-                        new Quantity(142.03523f, QuantityUnit.gPerkWh)
+                        dateFrom.AddHours(2).ToUnixTime(),
+                        new Quantity(591.088f, QuantityUnit.g),
+                        new Quantity(169.99942f, QuantityUnit.gPerkWh)
                     ),
                     new(
 
                         dateFrom.AddHours(2).ToUnixTime(),
-                        dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                        new Quantity(271.59f, QuantityUnit.g),
-                        new Quantity(110.67237f, QuantityUnit.gPerkWh)
+                        dateFrom.AddHours(4).ToUnixTime(),
+                        new Quantity(447.09f, QuantityUnit.g),
+                        new Quantity(111.465968f, QuantityUnit.gPerkWh)
                     )
                 };
             case Aggregation.Month:
@@ -113,8 +113,8 @@ public sealed class CalculateEmissionsTest
                     new(
                         dateFrom.ToUnixTime(),
                         dateTo.ToUnixTime(),
-                        new Quantity(481.234f, QuantityUnit.g),
-                        new Quantity(122.4514f, QuantityUnit.gPerkWh)
+                        new Quantity(1038.178f, QuantityUnit.g),
+                        new Quantity(138.64557f, QuantityUnit.gPerkWh)
                     )
                 };
             default:
