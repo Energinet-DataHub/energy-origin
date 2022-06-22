@@ -3,8 +3,8 @@ name: Auto-create PR - data sync
 on:
   push:
     branches:
-      - "*"
-    #   - "!main"
+      - "**"
+      - "!main"
     # paths:
     #   - domains/data-sync/**
 
