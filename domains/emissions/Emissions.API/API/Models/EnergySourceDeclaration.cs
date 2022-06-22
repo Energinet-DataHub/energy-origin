@@ -4,10 +4,10 @@
     {
         public long DateFrom { get; }
         public long DateTo { get; }
-        public float Renewable { get; }
-        public Dictionary<string, float> Ratios { get; }
+        public decimal Renewable { get; }
+        public Dictionary<string, decimal> Ratios { get; }
 
-        public EnergySourceDeclaration(long dateFrom, long dateTo, float renewable, Dictionary<string, float> ratios)
+        public EnergySourceDeclaration(long dateFrom, long dateTo, decimal renewable, Dictionary<string, decimal> ratios)
         {
             DateFrom = dateFrom;
             DateTo = dateTo;

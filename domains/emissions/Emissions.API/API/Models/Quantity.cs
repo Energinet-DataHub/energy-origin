@@ -3,9 +3,9 @@
     public class Quantity
     {
         public QuantityUnit Unit { get; set; }
-        public float Value { get; set; }
+        public decimal Value { get; set; }
 
-        public Quantity(float value, QuantityUnit unit)
+        public Quantity(decimal value, QuantityUnit unit)
         {
             Value = value;
             Unit = unit;

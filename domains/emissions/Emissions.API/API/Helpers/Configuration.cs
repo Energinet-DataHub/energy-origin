@@ -22,10 +22,10 @@
             var renewableSources = Environment.GetEnvironmentVariable(RenewableSources) ?? throw new ArgumentNullException();
             return renewableSources.Split(',');
         }
-        public static float GetWasteRenewableShare()
+        public static decimal GetWasteRenewableShare()
         {
             var wasteRenewableShare = Environment.GetEnvironmentVariable(WasteRenewableShare) ?? throw new ArgumentNullException();
-            return float.Parse(wasteRenewableShare) / 100;
+            return decimal.Parse(wasteRenewableShare) / 100;
         }
     }
 }

@@ -8,17 +8,17 @@ namespace API.Services;
 public class EmissionsService : IEmissionsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IEmissionDataService emissionDataService;
+    readonly IEnergiDataService energyDataService;
     readonly IEmissionsCalculator emissionsCalculator;
     readonly ISourcesCalculator sourcesCalculator;
 
     public EmissionsService(IDataSyncService dataSyncService,
-                            IEmissionDataService emissionDataService,
+                            IEnergiDataService energyDataService,
                             IEmissionsCalculator emissionsCalculator,
                             ISourcesCalculator sourcesCalculator)
     {
         this.dataSyncService = dataSyncService;
-        this.emissionDataService = emissionDataService;
+        this.energyDataService = energyDataService;
         this.emissionsCalculator = emissionsCalculator;
         this.sourcesCalculator = sourcesCalculator;
     }
@@ -28,12 +28,12 @@ public class EmissionsService : IEmissionsService
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var emissions = await emissionDataService.GetEmissionsPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
+        var emissions = await energyDataService.GetEmissionsPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
 
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
 
         //Calculate total emission
-        return emissionsCalculator.CalculateEmission(emissions.Result.EmissionRecords, measurements, dateFrom, dateTo, aggregation);
+        return emissionsCalculator.CalculateEmission(emissions, measurements, dateFrom, dateTo, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo,
@@ -44,7 +44,7 @@ public class EmissionsService : IEmissionsService
         {
             var measurements = await dataSyncService.GetMeasurements(context, meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
-                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime, aggregation);
+                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime);
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }
@@ -58,10 +58,10 @@ public class EmissionsService : IEmissionsService
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         //Get metering point time series
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints);
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.consumption));
 
-        var declaration = await emissionDataService.GetProductionEmission(dateFrom.ToDateTime(), dateTo.ToDateTime());
+        var mixRecords = await energyDataService.GetResidualMixPerHour(dateFrom.ToDateTime(), dateTo.ToDateTime());
 
-        return sourcesCalculator.CalculateSourceEmissions(measurements, declaration.Result.Records, aggregation);
+        return sourcesCalculator.CalculateSourceEmissions(measurements, mixRecords, aggregation);
     }
 }
