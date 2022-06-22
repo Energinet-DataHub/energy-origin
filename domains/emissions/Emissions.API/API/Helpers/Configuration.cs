@@ -22,6 +22,7 @@
             var renewableSources = Environment.GetEnvironmentVariable(RenewableSources) ?? throw new ArgumentNullException();
             return renewableSources.Split(',');
         }
+
         public static decimal GetWasteRenewableShare()
         {
             var wasteRenewableShare = Environment.GetEnvironmentVariable(WasteRenewableShare) ?? throw new ArgumentNullException();

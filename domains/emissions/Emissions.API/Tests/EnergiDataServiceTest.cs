@@ -21,7 +21,7 @@ using Xunit.Categories;
 namespace Tests;
 
 [UnitTest]
-public sealed class EnergyDataServiceTest
+public sealed class EnergiDataServiceTest
 {
 
     [Fact]

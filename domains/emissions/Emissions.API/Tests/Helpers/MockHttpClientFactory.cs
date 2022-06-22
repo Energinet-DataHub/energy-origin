@@ -22,8 +22,8 @@ public static class MockHttpClientFactory
 
     public static HttpClient SetupHttpClient(string serialize)
     {
-
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+
         handlerMock
             .Protected()
             // Setup the PROTECTED method to mock
