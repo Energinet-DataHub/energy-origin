@@ -12,30 +12,30 @@ namespace Tests
         {
             return new List<Measurement>
             {
-                new Measurement
-                {
-                    DateFrom = new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    DateTo = new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 1000
-                },
-                new Measurement
-                {
-                    DateFrom = new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    DateTo = new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 2000
-                },
-                new Measurement
-                {
-                    DateFrom = new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    DateTo = new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 3000
-                },
-                new Measurement
-                {
-                    DateFrom = new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    DateTo = new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    Quantity = 4000
-                }
+                new Measurement(
+                    "571313121223234323",
+                    new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    1000,
+                    Quality.Measured),
+                new Measurement(
+                    "571313121223234323",
+                    new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
+                    2000,
+                    Quality.Measured),
+                new Measurement(
+                    "571313121223234323",
+                    new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    3000,
+                    Quality.Measured),
+                new Measurement(
+                    "571313121223234323",
+                    new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    4000,
+                    Quality.Measured)
             };
         }
 
@@ -45,31 +45,31 @@ namespace Tests
             {
                 new TimeSeries
                 (
-                    new MeteringPoint("571313121223234323", "DK1"),
+                    new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
                     CreateMeasurements()
                 )
             };
         }
 
-        public List<Record> CreateEmissionsShares()
+        public List<MixRecord> CreateEmissionsShares()
         {
-            return new List<Record>
+            return new List<MixRecord>
                 {
-                    new Record(50, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
-                    new Record(30, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
-                    new Record(20, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
+                    new MixRecord(50, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
+                    new MixRecord(30, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
+                    new MixRecord(20, new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
 
-                    new Record(40, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
-                    new Record(50, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
-                    new Record(10, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
+                    new MixRecord(40, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
+                    new MixRecord(50, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
+                    new MixRecord(10, new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
 
-                    new Record(30, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
-                    new Record(30, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
-                    new Record(40, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
+                    new MixRecord(30, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
+                    new MixRecord(30, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
+                    new MixRecord(40, new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
 
-                    new Record(20, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
-                    new Record(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
-                    new Record(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
+                    new MixRecord(20, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
+                    new MixRecord(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
+                    new MixRecord(40, new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
 
             };
         }
