@@ -18,7 +18,7 @@ public class EnergiDataService : IEnergiDataService
     {
         var query = GetEmissionsQuery(dateFrom, dateTo);
 
-        var result = await httpClient.GetFromJsonAsync<Response<EmissionRecord>>(query) ?? throw new Exception($"EDS Emissions query failed");
+        var result = await httpClient.GetFromJsonAsync<Response<EmissionRecord>>(query) ?? throw new Exception($"EDS Emissions query failed. query:'{query}'");
 
         return result.Result.Records;
     }
@@ -27,7 +27,7 @@ public class EnergiDataService : IEnergiDataService
     {
         var query = GetMixQuery(dateFrom, dateTo);
 
-        var result = await httpClient.GetFromJsonAsync<Response<MixRecord>>(query) ?? throw new Exception($"EDS declarationproduction query failed. query:{query}");
+        var result = await httpClient.GetFromJsonAsync<Response<MixRecord>>(query) ?? throw new Exception($"EDS declarationproduction query failed. query:'{query}'");
 
         return result.Result.Records;
     }
