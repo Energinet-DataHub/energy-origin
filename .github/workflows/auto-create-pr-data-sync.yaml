@@ -56,6 +56,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh pr list --state open --head '${{ github.ref_name }}'
+          echo sooon
           gh pr list --state open
           echo "things!"
-          gh pr list --state open --head '${{ github.ref_name }}'
+          gh pr list --state open -q '.'
+          
