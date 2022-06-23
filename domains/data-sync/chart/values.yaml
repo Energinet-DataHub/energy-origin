@@ -1,7 +1,3 @@
-apiConfigMapName: 
-volumeSecrets: []
-envFrom:
-
 api:
   replicaCount: 3
   image:
