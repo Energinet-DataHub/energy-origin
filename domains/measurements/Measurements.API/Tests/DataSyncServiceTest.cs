@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using API.Models;
+﻿using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using System.Linq;
 using Tests.Helpers;
 using Xunit;
 

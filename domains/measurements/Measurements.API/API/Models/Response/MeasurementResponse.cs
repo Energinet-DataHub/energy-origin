@@ -4,7 +4,7 @@ namespace API.Models
 {
     public class MeasurementResponse
     {
-        [JsonPropertyName("AggregatedMeasurement")]
+        [JsonPropertyName("measurements")]
         public IEnumerable<AggregatedMeasurement> AggregatedMeasurement { get; }
 
         public MeasurementResponse(IEnumerable<AggregatedMeasurement> aggregatedMeasurement)
