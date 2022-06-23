@@ -35,17 +35,21 @@ public sealed class AggregationServiceTest
             It.IsAny<string>(),
             It.IsAny<DateTime>(),
             It.IsAny<DateTime>()))
-            .Returns(Task.FromResult(measurements.AsEnumerable()));
+            .Returns(Task.FromResult(measurements.AsEnumerable()
+         ));
 
         var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IConsumptionAggregator>().Object);
 
         //Act
 
-        var timeSeries = (await sut.GetTimeSeries(context,
+        var timeSeries = await sut.GetTimeSeries(
+            context,
             ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
             ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(),
-            Aggregation.Hour,
-            meteringPoints)).ToArray();
+            meteringPoints
+        );
+
+        timeSeries = timeSeries.ToArray();
 
         //Assert
 

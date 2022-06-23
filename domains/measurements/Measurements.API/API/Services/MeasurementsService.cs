@@ -6,28 +6,28 @@ namespace API.Services;
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionAggregator aggregateMeasurements;
+    readonly IConsumptionAggregator aggregator;
 
-    public MeasurementsService(IDataSyncService dataSyncService,
-            IConsumptionAggregator AggregateMeasurements)
+    public MeasurementsService(IDataSyncService dataSyncService, IConsumptionAggregator aggregator)
     {
         this.dataSyncService = dataSyncService;
-        this.aggregateMeasurements = AggregateMeasurements;
+        this.aggregator = aggregator;
     }
 
     public async Task<MeasurementResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var measurements = await GetTimeSeries(context, dateFrom, dateTo, aggregation, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
+        var consumptionMeteringPoints = meteringPoints.Where(mp => mp.Type == MeterType.Consumption);
 
-        return aggregateMeasurements.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
+
+        return aggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
     }
 
-    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo,
-        Aggregation aggregation, IEnumerable<MeteringPoint> meteringPoints)
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo, IEnumerable<MeteringPoint> meteringPoints)
     {
-        List<TimeSeries> timeSeries = new List<TimeSeries>();
+        var timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
         {
             var measurements = await dataSyncService.GetMeasurements(
@@ -35,7 +35,7 @@ public class MeasurementsService : IMeasurementsService
                 meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime
-                );
+            );
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }
