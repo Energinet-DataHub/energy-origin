@@ -63,7 +63,17 @@ GET /meteringpoints
 {
     "meteringpoints": [
         {
-            "gsrn": 57131300000000001
+            "gsrn": "57131300000000001",
+            "gridArea": "Tennet",
+            "address":
+                {
+                    "address1": "Dieselstraße 28",
+                    "address2": "3. Stock", // omitted if null
+                    "locality": "Niedersachsen", // omitted if null
+                    "city": "Wolfsburg",
+                    "postalCode": "38446",
+                    "country": "DE",
+                }
         }
     ]
 }
