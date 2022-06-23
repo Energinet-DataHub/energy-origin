@@ -30,7 +30,8 @@ public sealed class ConsumptionAggregationTest
         var aggregationCalculator = new ConsumptionAggregation();
 
         // Act
-        var result = aggregationCalculator.CalculateAggregation(timeSeries,
+        var result = aggregationCalculator.CalculateAggregation(
+            timeSeries,
             dateFrom.ToUnixTime(),
             dateTo.ToUnixTime(),
             aggregation).AggregatedMeasurement.ToArray();

@@ -30,9 +30,12 @@ public class MeasurementsService : IMeasurementsService
         List<TimeSeries> timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
         {
-            var measurements = await dataSyncService.GetMeasurements(context, meteringPoint.GSRN,
+            var measurements = await dataSyncService.GetMeasurements(
+                context, 
+                meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
-                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime);
+                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime
+                );
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }

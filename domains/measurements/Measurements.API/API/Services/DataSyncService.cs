@@ -21,13 +21,19 @@ public class DataSyncService : IDataSyncService
 
         httpClient.AddAuthorizationToken(context);
 
-        var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
-
-        if (result != null)
+        var reponse = await httpClient.GetAsync(url);
+        if (reponse == null || !reponse.IsSuccessStatusCode)
         {
-            return result;
+            throw new Exception($"Fetch of measurements failed, uri: {httpClient.BaseAddress} {url}");
         }
-        throw new Exception("List of measurements failed");
+
+        var result = await reponse.Content.ReadFromJsonAsync<List<Measurement>>();
+        if (result == null)
+        {
+            throw new Exception($"Parsing of meteringpoints failed. Content: {reponse.Content}");
+        }
+
+        return result;
     }
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context)
@@ -35,12 +41,18 @@ public class DataSyncService : IDataSyncService
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(context);
 
-        var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
-
-        if (meteringPoints != null && meteringPoints.MeteringPoints != null)
+        var reponse = await httpClient.GetAsync(uri);
+        if (reponse == null || !reponse.IsSuccessStatusCode)
         {
-            return meteringPoints.MeteringPoints;
+            throw new Exception($"Fetch of meteringpoints failed, uri: {httpClient.BaseAddress} {uri}");
         }
-        throw new Exception("List of meteringpoints failed");
+        
+        var result = await reponse.Content.ReadFromJsonAsync<MeteringPointsResponse>();
+        if (result == null || result.MeteringPoints == null)
+        {
+            throw new Exception($"Parsing of meteringpoints failed. Content: {reponse.Content}");
+        }
+
+        return result.MeteringPoints;
     }
 }
