@@ -1,0 +1,9 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+	"name": "Alpine",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {}
+	},
+	"remoteUser": "vscode"
+}
