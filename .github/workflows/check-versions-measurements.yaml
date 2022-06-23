@@ -1,0 +1,20 @@
+name: Version Check - measurements
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - domains/measurements/**
+jobs:
+  helm_check_version:
+    name: Helm chart check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: domains/measurements/chart/Chart.yaml
+      yaml_path: version
+
+  api_check_version:
+    name: API check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: domains/measurements/chart/values.yaml
+      yaml_path: api.image.tag
