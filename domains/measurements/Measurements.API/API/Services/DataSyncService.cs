@@ -24,7 +24,7 @@ public class DataSyncService : IDataSyncService
         var reponse = await httpClient.GetAsync(url);
         if (reponse == null || !reponse.IsSuccessStatusCode)
         {
-            throw new Exception($"Fetch of measurements failed, uri: {httpClient.BaseAddress} {url}");
+            throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
         }
 
         var result = await reponse.Content.ReadFromJsonAsync<List<Measurement>>();
@@ -44,7 +44,7 @@ public class DataSyncService : IDataSyncService
         var reponse = await httpClient.GetAsync(uri);
         if (reponse == null || !reponse.IsSuccessStatusCode)
         {
-            throw new Exception($"Fetch of meteringpoints failed, uri: {httpClient.BaseAddress} {uri}");
+            throw new Exception($"Fetch of meteringpoints failed, base: {httpClient.BaseAddress} url: {uri}");
         }
         
         var result = await reponse.Content.ReadFromJsonAsync<MeteringPointsResponse>();
