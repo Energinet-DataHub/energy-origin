@@ -4,7 +4,6 @@ using API.Validation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -31,12 +30,7 @@ builder.Services.AddFluentValidation(c =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    // using System.Reflection;
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-});
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
 

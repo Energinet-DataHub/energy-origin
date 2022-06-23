@@ -1,6 +1,5 @@
 using API.Models;
 using EnergyOriginDateTimeExtension;
-using System.Linq;
 
 namespace API.Services;
 
@@ -9,22 +8,24 @@ class ConsumptionAggregation : IConsumptionAggregator
     public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
         var listOfConsumptions = measurements.SelectMany(
-                                  measurement => measurement.Measurements.Select(
-                                  reading => new AggregatedMeasurementInteral{
-                                      DateFrom = reading.DateFrom.ToDateTime(),
-                                      DateTo = reading.DateTo.ToDateTime(),
-                                      Value = reading.Quantity
-                                  })).ToList();
+            measurement => measurement.Measurements.Select(
+                reading => new AggregatedMeasurementInteral(
+                    reading.DateFrom.ToDateTime(),
+                    reading.DateTo.ToDateTime(),
+                    reading.Quantity / 1000
+                )
+            )
+        ).ToList();
 
         IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedConsumptions = GetGroupedConsumption(aggregation, listOfConsumptions);
 
-        var bucketConsumptions = (from groupedConsumption in groupedConsumptions
-                                  let totalForBucket = groupedConsumption.Sum(_ => _.Value)
-                                  select new AggregatedMeasurement(
-                                        groupedConsumption.First().DateFrom.ToUnixTime(),
-                                        groupedConsumption.Last().DateTo.ToUnixTime(),
-                                        totalForBucket
-                                    )).ToList();
+        var bucketConsumptions = groupedConsumptions.Select(
+            group => new AggregatedMeasurement(
+                group.First().DateFrom.ToUnixTime(),
+                group.Last().DateTo.ToUnixTime(),
+                group.Sum(it => it.Value)
+            )
+        ).ToList();
 
         return new MeasurementResponse(bucketConsumptions);
     }
@@ -50,5 +51,12 @@ class ConsumptionAggregation : IConsumptionAggregator
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
         public int Value { get; set; }
+
+        public AggregatedMeasurementInteral(DateTime dateFrom, DateTime dateTo, int value)
+        {
+            DateFrom = dateFrom;
+            DateTo = dateTo;
+            Value = value;
+        }
     }
 }

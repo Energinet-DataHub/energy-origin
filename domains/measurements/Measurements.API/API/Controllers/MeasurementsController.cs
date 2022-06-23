@@ -19,9 +19,6 @@ public class MeasurementsController : AuthorizationController
         this.measurementsService = measurementsService;
     }
 
-    /// <summary>
-    /// Get consumption measurements for all metering point connected to current user
-    /// </summary>
     [HttpGet]
     [Route("measurements/consumption")]
     public async Task<MeasurementResponse> GetMeasurements([FromQuery] MeasurementsRequest request)
