@@ -3,7 +3,7 @@
 
 # Get Measurements for consumption data
 
-The measurements api should take three query parameters.
+The measurements api should take three query parameters and returns a date from, to and a value given in Wh.
 
 ## Request
 
@@ -11,7 +11,7 @@ The measurements api should take three query parameters.
 GET /api/measurements/consumption
         ?dateFrom=1514826000
         &dateTo=1514864000
-        &aggregation=TOTAL   
+        &aggregation=TOTAL
 ```
 
 ## Parameters
@@ -22,13 +22,13 @@ GET /api/measurements/consumption
 
 ## Response
 
-```json
+```jsonc
 {
     "measurements": [
         {
-            "dateFrom": 1514826000, 
-            "dateTo": 1514864000, 
-            "value": 123154
+            "dateFrom": 1514826000, // as unix time stamp 
+            "dateTo": 1514864000, // as unix time stamp 
+            "value": 123154 // in Wh
         }
     ]
 }

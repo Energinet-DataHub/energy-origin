@@ -12,7 +12,7 @@ class ConsumptionAggregation : IConsumptionAggregator
                 reading => new AggregatedMeasurementInteral(
                     reading.DateFrom.ToDateTime(),
                     reading.DateTo.ToDateTime(),
-                    reading.Quantity / 1000
+                    reading.Quantity
                 )
             )
         ).ToList();
