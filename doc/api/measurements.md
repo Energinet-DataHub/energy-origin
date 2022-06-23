@@ -5,7 +5,6 @@
 
 The measurements api should take three query parameters.
 
-
 ## Request
 
 ```text
@@ -48,7 +47,7 @@ sequenceDiagram
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<Meteringpoint>
     
-    loop For each mp
+    loop For each mp of type consumption
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
         
       ds --)- em: List< Measurement>
