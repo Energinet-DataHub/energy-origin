@@ -1,22 +1,20 @@
 using API.Models;
 using EnergyOriginDateTimeExtension;
+using System.Linq;
 
 namespace API.Services;
 
-class ConsumptionAggregation : IConsumptionAggregation
+class ConsumptionAggregation : IConsumptionAggregator
 {
     public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
     {
-        var listOfConsumptions = new List<AggregatedMeasurementInteral>();
-
-        listOfConsumptions.AddRange(from measurement in measurements
-                                    from reading in measurement.Measurements
-                                    select new AggregatedMeasurementInteral
-                                    {
-                                        DateFrom = reading.DateFrom.ToDateTime(),
-                                        DateTo = reading.DateTo.ToDateTime(),
-                                        Value = reading.Quantity
-                                    });
+        var listOfConsumptions = measurements.SelectMany(
+                                  measurement => measurement.Measurements.Select(
+                                  reading => new AggregatedMeasurementInteral{
+                                      DateFrom = reading.DateFrom.ToDateTime(),
+                                      DateTo = reading.DateTo.ToDateTime(),
+                                      Value = reading.Quantity
+                                  })).ToList();
 
         IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedConsumptions = GetGroupedConsumption(aggregation, listOfConsumptions);
 

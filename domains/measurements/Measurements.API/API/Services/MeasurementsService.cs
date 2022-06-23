@@ -6,10 +6,10 @@ namespace API.Services;
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionAggregation aggregateMeasurements;
+    readonly IConsumptionAggregator aggregateMeasurements;
 
     public MeasurementsService(IDataSyncService dataSyncService,
-            IConsumptionAggregation AggregateMeasurements)
+            IConsumptionAggregator AggregateMeasurements)
     {
         this.dataSyncService = dataSyncService;
         this.aggregateMeasurements = AggregateMeasurements;

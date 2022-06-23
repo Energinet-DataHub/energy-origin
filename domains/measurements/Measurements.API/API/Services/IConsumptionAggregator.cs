@@ -2,7 +2,7 @@ using API.Models;
 
 namespace API.Services;
 
-public interface IConsumptionAggregation
+public interface IConsumptionAggregator
 {
     MeasurementResponse CalculateAggregation(
         IEnumerable<TimeSeries> measurements,
