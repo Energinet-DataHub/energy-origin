@@ -1,9 +1,15 @@
-// For format details, see https://aka.ms/devcontainer.json.
-{
-	"name": "Alpine",
+
+{	"name": "Debian",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"args": {}
+		"args": { "VARIANT": "bullseye" }
 	},
-	"remoteUser": "vscode"
+	"postCreateCommand": "/usr/local/go/bin/go install sigs.k8s.io/kind@v0.14.0",
+	"remoteUser": "vscode",
+	"features": {
+		"docker-from-docker": "20.10",
+		"kubectl-helm-minikube": "1.23",
+		"azure-cli": "latest",
+		"golang": "1.18"
+	}
 }
