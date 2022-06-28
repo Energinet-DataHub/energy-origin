@@ -33,7 +33,7 @@ jobs:
 
       - name: Release chart
         id: release-chart
-        uses: Energinet-DataHub/.github/.github/actions/helm-release-chart.yaml@main
+        uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
         with:
           chart_folder: domains/data-sync/chart
           chart_version: ${{ steps.chart-version.outputs.semver }}
