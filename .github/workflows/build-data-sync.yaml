@@ -31,7 +31,7 @@ jobs:
 
       - name: Release chart
         id: release-chart
-        uses: Energinet-DataHub/.github/.github/action/helm-release-chart.yaml@feature/443-automatic-version-handling
+        uses: Energinet-DataHub/.github/.github/action/helm-release-chart.yaml@main
         with:
           chart_folder: domains/data-sync/chart
           chart_version: ${{ steps.chart-version.outputs.semver }}
