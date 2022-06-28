@@ -22,6 +22,8 @@ jobs:
       chart-name: ${{ steps.release-chart.outputs.chart-name }}
       chart-version: ${{ steps.release-chart.outputs.chart-version }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Resolve chart version
         id: chart-version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
