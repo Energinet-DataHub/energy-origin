@@ -19,8 +19,8 @@ jobs:
     name: Release chart
     runs-on: ubuntu-latest
     outputs:
-      chart-name: ${{ steps.release-chart.outputs.chart-name }}
-      chart-version: ${{ steps.release-chart.outputs.chart-version }}
+      chart-name: ${{ steps.release-chart.outputs.chart_name }}
+      chart-version: ${{ steps.release-chart.outputs.chart_version }}
     steps:
       - uses: actions/checkout@v3
 
