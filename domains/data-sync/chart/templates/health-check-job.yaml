@@ -19,7 +19,7 @@ spec:
               - /bin/sh
               - -c
               - if [[ -z "${DATAHUB2CERTIFICATEFILEPATH}" ]]; then
-                  curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT
+                  curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT;
                 else
-                  curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT
+                  curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT;
                 fi

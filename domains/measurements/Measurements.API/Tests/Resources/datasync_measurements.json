@@ -1,0 +1,16 @@
+[
+    {
+        "gsrn": "571313121223234323",
+        "dateFrom": "1609455600",
+        "dateTo": "1609459200",
+        "quantity": 1250,
+        "quality": "measured"
+    },
+    {
+        "gsrn": "571313121223234323",
+        "dateFrom": "1609459200",
+        "dateTo": "1609462800",
+        "quantity": 2520,
+        "quality": "measured"
+    }
+]

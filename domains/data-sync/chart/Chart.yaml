@@ -1,3 +1,4 @@
+---
 apiVersion: v2
 name: eo-data-sync
 description: A chart containing the sync domain
