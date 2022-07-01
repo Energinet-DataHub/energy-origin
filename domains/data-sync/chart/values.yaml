@@ -7,7 +7,7 @@ api:
   replicaCount: 3
   image:
     name: ghcr.io/energinet-datahub/eo-data-sync
-    tag: 0.6.3
+    tag: 0.6.4-pr.26-631cde6
   imagePullSecrets:
 
 healthCheck:
