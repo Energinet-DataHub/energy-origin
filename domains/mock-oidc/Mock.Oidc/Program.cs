@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Mock.Oidc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/connect/signin";
         options.LogoutPath = "/connect/signout";
     });
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    // Configure the context to use an in-memory store.
+    options.UseInMemoryDatabase("db");
+
+    // Register the entity sets needed by OpenIddict.
+    options.UseOpenIddict();
+});
 
 var app = builder.Build();
 
