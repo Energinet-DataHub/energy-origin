@@ -103,6 +103,7 @@ builder.Services.AddOpenIddict()
             .EnableAuthorizationEndpointPassthrough()
             .EnableAuthorizationRequestCaching();
 
+        // TODO: Enable if user info is added
         // Register the event handler responsible for populating userinfo responses.
         //options.AddEventHandler<OpenIddictServerEvents.HandleUserinfoRequestContext>(options =>
         //    options.UseSingletonHandler<Handlers.PopulateUserinfo>());
@@ -120,6 +121,7 @@ builder.Services.AddOpenIddict()
         options.EnableAuthorizationEntryValidation();
     });
 
+builder.Services.AddHostedService<OpenIddictApplicationSeeder>();
 
 var app = builder.Build();
 
