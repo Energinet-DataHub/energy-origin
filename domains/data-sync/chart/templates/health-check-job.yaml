@@ -19,29 +19,7 @@ spec:
               - /bin/sh
               - -c
               - if [[ -z "${DATAHUB2CERTIFICATEFILEPATH}" ]]; then
-                  curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT
+                  curl -v --connect-timeout 10 --fail $DATAHUB2ENDPOINT;
                 else
-                  curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT
+                  curl -v --connect-timeout 10 --fail --cert-type P12 --cert $DATAHUB2CERTIFICATEFILEPATH:$DATAHUB2CERTIFICATEFILEPASSWORD $DATAHUB2ENDPOINT;
                 fi
-            envFrom:
-              - configMapRef:
-                  name: {{ required "api config map is required" .Values.apiConfigMapName }}
-{{- if .Values.envFrom }}
-{{- toYaml .Values.envFrom | nindent 14 }}
-{{- end }}
-
-{{- if .Values.volumeSecrets}}
-            volumeMounts:
-{{- range .Values.volumeSecrets }}
-              - name: {{ .name }}-volume
-                mountPath: "{{ required "volumeSecret .path is required" .path }}"
-                readOnly: true
-{{- end }}
-          volumes:
-{{- range .Values.volumeSecrets }}
-            - name: {{ .name }}-volume
-              secret:
-                secretName: {{ required "volumeSecret .name is required" .name }} 
-                optional: false
-{{- end }}
-{{- end }}

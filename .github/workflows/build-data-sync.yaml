@@ -15,46 +15,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  define_build:
-    name: Define build matrix
+  release-chart:
+    name: Release chart
     runs-on: ubuntu-latest
     outputs:
-      chart_version: ${{ steps.get_semver.outputs.semver }}
-      containers: >-
-        []
+      chart-name: ${{ steps.release-chart.outputs.chart_name }}
+      chart-version: ${{ steps.release-chart.outputs.chart_version }}
     steps:
-      - name: Get chart version
-        id: get_semver
+      - uses: actions/checkout@v3
+
+      - name: Resolve chart version
+        id: chart-version
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
           yaml_file: domains/data-sync/chart/Chart.yaml
           yaml_path: version
 
-  build_container_and_release_chart:
-    name: Build containers
-    needs: [define_build]
-    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
-    with:
-      helm_repository: ${{ github.repository_owner }}/helm-charts
-      chart_folder: domains/data-sync/chart
-      chart_version: ${{ needs.define_build.outputs.chart_version }}
-      containers: ${{ needs.define_build.outputs.containers }}
-      include_image_name: true
-    secrets:
-      deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+      - name: Release chart
+        id: release-chart
+        uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
+        with:
+          chart_folder: domains/data-sync/chart
+          chart_version: ${{ steps.chart-version.outputs.semver }}
+          include_image_name: true
+          deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
-  update_environment:
-    name: Update env
-    needs: [build_container_and_release_chart]
+  update-environment:
+    name: Update preview environment
+    needs: [release-chart]
     #only on: push to main OR PR on 'preview/**' branch
     if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
     uses: Energinet-DataHub/.github/.github/workflows/update-chart-in-env.yaml@main
     with:
       env_repository: ${{ github.repository_owner }}/eo-base-environment
       env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
-      app_name: ${{ needs.build_container_and_release_chart.outputs.chart_name }}
+      app_name: ${{ needs.release-chart.outputs.chart-name }}
       helm_repository: https://${{ github.repository_owner }}.github.io/helm-charts/
-      chart_name: ${{ needs.build_container_and_release_chart.outputs.chart_name }}
-      chart_version: ${{ needs.build_container_and_release_chart.outputs.chart_version }}
+      chart_name: ${{ needs.release-chart.outputs.chart-name }}
+      chart_version: ${{ needs.release-chart.outputs.chart-version }}
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
