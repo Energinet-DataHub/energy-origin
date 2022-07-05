@@ -4,12 +4,14 @@
 		"dockerfile": "Dockerfile",
 		"args": { "VARIANT": "bullseye" }
 	},
-	"postCreateCommand": "/usr/local/go/bin/go install sigs.k8s.io/kind@v0.14.0",
 	"remoteUser": "vscode",
 	"features": {
-		"docker-from-docker": "20.10",
-		"kubectl-helm-minikube": "1.23",
-		"azure-cli": "latest",
-		"golang": "1.18"
+		"docker-from-docker": "20.10"
+	},
+	"mounts": [
+		"source=${env:HOME}${env:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind"
+	],
+	"remoteEnv": {
+		"SYNC_LOCALHOST_KUBECONFIG": "true"
 	}
 }
