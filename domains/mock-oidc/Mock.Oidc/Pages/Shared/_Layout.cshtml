@@ -23,10 +23,26 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" href=".well-known/openid-configuration">OpenID Connect configuration</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href=".well-known/jwks">JWK</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Connect/Signin">Sign in</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Connect/Authorize">Authorize</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Connect/Authorize"
+                               asp-route-client_id="oidc_certification_app_1"
+                               asp-route-redirect_uri="https://www.certification.openid.net/test/a/d6e0d2a6-003e-4721-8b67-a24380468aa8/callback"
+                               asp-route-response_type="code"
+                               asp-route-scope="openid profile"
+                               asp-route-state="c6770cf5939c4db9bd293b189c2d0107"
+                               asp-route-code_challenge="da5apBQRrEqOVKxhNQ82fqG6EdRcDlpKKU_baV63nu0"
+                               asp-route-code_challenge_method="S256"
+                               asp-route-response_mode="query">
+                                Authorize
+                            </a>
                         </li>
                     </ul>
                 </div>
