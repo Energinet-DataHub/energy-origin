@@ -127,7 +127,7 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddHostedService<OpenIddictApplicationSeeder>();
 
-builder.Services.LoadSettings(builder.Configuration);
+builder.Services.LoadYamlFiles(builder.Configuration);
 
 var app = builder.Build();
 

@@ -4,9 +4,9 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Mock.Oidc;
 
-public static class SettingsLoader
+public static class YamlFileLoader
 {
-    public static void LoadSettings(this IServiceCollection services, IConfiguration configuration)
+    public static void LoadYamlFiles(this IServiceCollection services, IConfiguration configuration)
     {
         var yamlDeserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
