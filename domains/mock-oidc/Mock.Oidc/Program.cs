@@ -52,7 +52,8 @@ builder.Services.AddOpenIddict()
     {
         // Enable the authorization, token (, introspection and userinfo) endpoints. //TODO: Fix this comment
         options.SetAuthorizationEndpointUris("/connect/authorize")
-            .SetTokenEndpointUris("/connect/token");
+            .SetTokenEndpointUris("/connect/token")
+            .SetLogoutEndpointUris("/connect/logout");
         //.SetIntrospectionEndpointUris("/connect/introspect") //TODO: Is this needed?
         //.SetUserinfoEndpointUris("/connect/userinfo");
 
@@ -102,6 +103,7 @@ builder.Services.AddOpenIddict()
         // Note: the pass-through mode is not enabled for the token endpoint
         // so that token requests are automatically handled by OpenIddict.
         options.UseAspNetCore()
+            .EnableLogoutEndpointPassthrough()
             .EnableAuthorizationEndpointPassthrough()
             .EnableAuthorizationRequestCaching();
 
