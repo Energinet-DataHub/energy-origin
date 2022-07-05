@@ -1,0 +1,18 @@
+﻿@page
+@model Mock.Oidc.Pages.Connect.SigninModel
+@{
+}
+
+<div>
+    <h1>Sign in</h1>
+    
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <p>You are signed in as @User.Identity.Name!</p>
+    }
+
+    <form asp-antiforgery="true" method="post">
+        <button name="username" value="Charlotte" type="submit">Sign in as Charlotte</button>
+        <button name="username" value="Not-Charlotte" type="submit">Sign in as Not-Charlotte</button>
+    </form>
+</div>
