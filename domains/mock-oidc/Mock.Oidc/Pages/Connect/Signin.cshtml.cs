@@ -8,10 +8,19 @@ using System.Security.Claims;
 
 namespace Mock.Oidc.Pages.Connect;
 
+using Mock.Oidc.Models;
+
 public class SigninModel : PageModel
 {
+    public UserDescriptor[] Users { get; }
+
     [FromForm]
-    public string? Username { get; set; }
+    public string? Subject { get; set; }
+
+    public SigninModel(UserDescriptor[] users)
+    {
+        Users = users;
+    }
 
     public void OnGet()
     {
@@ -19,21 +28,17 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost(string? returnUrl = null)
     {
+        var userDescriptor = Users.FirstOrDefault(u => u.Subject == Subject);
+        if (userDescriptor == null)
+        {
+            return BadRequest();
+        }
+
         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, OpenIddictConstants.Claims.Name, OpenIddictConstants.Claims.Role);
 
         var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
         identity.AddClaim(new Claim(OpenIddictConstants.Claims.AuthenticationTime, time, ClaimValueTypes.Integer64));
-
-        if (string.Equals(Username, "Charlotte", StringComparison.OrdinalIgnoreCase))
-        {
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "7DADB7DB-0637-4446-8626-2781B06A9E20"));
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Charlotte"));
-        }
-        else if (string.Equals(Username, "Not-Charlotte", StringComparison.OrdinalIgnoreCase))
-        {
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "95D7BE81-0CFB-4B52-9C92-33A45747FCEF"));
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Not Charlotte"));
-        }
+        identity.AddClaims(userDescriptor.ToClaims());
 
         var properties = new AuthenticationProperties
         {

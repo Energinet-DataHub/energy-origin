@@ -127,6 +127,8 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddHostedService<OpenIddictApplicationSeeder>();
 
+builder.Services.LoadSettings(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
