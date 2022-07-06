@@ -129,7 +129,8 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddHostedService<OpenIddictApplicationSeeder>();
 
-builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["OidcFiles:UsersPath"]);
+builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["SettingFiles:UsersPath"]);
+builder.Services.AddFromYamlFile<ClientDescriptor[]>(builder.Configuration["SettingFiles:ClientsPath"]);
 
 var app = builder.Build();
 
