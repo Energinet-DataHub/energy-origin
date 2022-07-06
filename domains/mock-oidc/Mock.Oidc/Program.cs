@@ -90,6 +90,9 @@ builder.Services.AddOpenIddict()
 
         // Expose all the supported scopes in the discovery document.
         options.RegisterScopes( //TODO: Correct scopes
+            "nemid",
+            "mitid",
+            "ssn",
             "address",
             "email",
             "phone",

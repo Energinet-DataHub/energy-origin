@@ -87,16 +87,7 @@ public class AuthorizeModel : PageModel
 
         var principal = new ClaimsPrincipal(identity);
 
-        // TODO: Check that these scopes are needed
-        principal.SetScopes(new[]
-        {
-            Scopes.OfflineAccess,
-            Scopes.OpenId,
-            Scopes.Address,
-            Scopes.Email,
-            Scopes.Phone,
-            Scopes.Profile
-        }.Intersect(request.GetScopes()));
+        principal.SetScopes(request.GetScopes());
 
         // All claims are set to two destinations: access_token and id_token
         foreach (var claim in identity.Claims)

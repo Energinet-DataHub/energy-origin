@@ -47,7 +47,10 @@ public class OpenIddictApplicationSeeder : IHostedService
                 Permissions.Scopes.Address,
                 Permissions.Scopes.Email,
                 Permissions.Scopes.Profile,
-                Permissions.Scopes.Roles
+                Permissions.Scopes.Roles,
+                "scp:nemid",
+                "scp:mitid",
+                "scp:ssn"
             }
         });
 
