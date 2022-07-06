@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Mock.Oidc;
+using Mock.Oidc.Extensions;
+using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -127,7 +129,7 @@ builder.Services.AddOpenIddict()
 
 builder.Services.AddHostedService<OpenIddictApplicationSeeder>();
 
-builder.Services.LoadYamlFiles(builder.Configuration);
+builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["OidcFiles:UsersPath"]);
 
 var app = builder.Build();
 

@@ -1,0 +1,24 @@
+﻿namespace Mock.Oidc.Extensions;
+
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+public static class YamlExtensions
+{
+    public static void AddFromYamlFile<T>(this IServiceCollection services, string yamlFilePath) where T : class
+    {
+        var yamlDeserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        using var reader = new StreamReader(yamlFilePath);
+        var users = yamlDeserializer.Deserialize<T>(reader);
+
+        if (users == null)
+        {
+            throw new Exception("Could not load YAML file");
+        }
+
+        services.AddSingleton<T>(_ => users);
+    }
+}
