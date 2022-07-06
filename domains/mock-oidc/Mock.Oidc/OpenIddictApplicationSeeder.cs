@@ -50,7 +50,8 @@ public class OpenIddictApplicationSeeder : IHostedService
                 Permissions.Scopes.Roles,
                 "scp:nemid",
                 "scp:mitid",
-                "scp:ssn"
+                "scp:ssn",
+                "scp:userinfo_token"
             }
         });
 

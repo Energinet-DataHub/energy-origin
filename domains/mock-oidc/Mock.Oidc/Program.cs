@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Mock.Oidc;
 using Mock.Oidc.Extensions;
 using Mock.Oidc.Models;
+using OpenIddict.Abstractions;
+using OpenIddict.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,17 +54,16 @@ builder.Services.AddOpenIddict()
     })
     .AddServer(options =>
     {
-        // Enable the authorization, token (, introspection and userinfo) endpoints. //TODO: Fix this comment
+        // Enable the authorization, token and userinfo endpoints. //TODO: Fix this comment if introspect is added
         options.SetAuthorizationEndpointUris("/connect/authorize")
             .SetTokenEndpointUris("/connect/token")
-            .SetLogoutEndpointUris("/connect/logout");
+            .SetLogoutEndpointUris("/connect/logout")
+            .SetUserinfoEndpointUris("/connect/userinfo");
         //.SetIntrospectionEndpointUris("/connect/introspect") //TODO: Is this needed?
-        //.SetUserinfoEndpointUris("/connect/userinfo");
+
 
         // Enable the authorization code, implicit and the refresh token flows.
-        options.AllowAuthorizationCodeFlow()
-            .AllowImplicitFlow()
-            .AllowRefreshTokenFlow();
+        options.AllowAuthorizationCodeFlow();
 
         // Expose all the supported claims in the discovery document.
         options.RegisterClaims( //TODO: Correct claims
@@ -93,6 +94,7 @@ builder.Services.AddOpenIddict()
             "nemid",
             "mitid",
             "ssn",
+            "userinfo_token",
             "address",
             "email",
             "phone",
@@ -114,8 +116,15 @@ builder.Services.AddOpenIddict()
 
         // TODO: Enable if user info is added
         // Register the event handler responsible for populating userinfo responses.
-        //options.AddEventHandler<OpenIddictServerEvents.HandleUserinfoRequestContext>(options =>
-        //    options.UseSingletonHandler<Handlers.PopulateUserinfo>());
+        options.AddEventHandler<OpenIddictServerEvents.HandleUserinfoRequestContext>(b =>
+        {
+            b.UseInlineHandler(context =>
+            {
+                context.Claims.Add(new KeyValuePair<string, OpenIddictParameter>("customClaim", "foo"));
+
+                return default;
+            });
+        });
     })
     .AddValidation(options =>
     {
