@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using OpenIddict.Abstractions;
-using System.Globalization;
-using System.Security.Claims;
 
 namespace Mock.Oidc.Pages.Connect;
 
@@ -34,17 +29,6 @@ public class SigninModel : PageModel
             return BadRequest();
         }
 
-        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, OpenIddictConstants.Claims.Name, OpenIddictConstants.Claims.Role);
-
-        var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-        identity.AddClaim(new Claim(OpenIddictConstants.Claims.AuthenticationTime, time, ClaimValueTypes.Integer64));
-        identity.AddClaims(userDescriptor.ToClaims());
-
-        var properties = new AuthenticationProperties
-        {
-            RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/connect/signin"
-        };
-
-        return SignIn(new ClaimsPrincipal(identity), properties, CookieAuthenticationDefaults.AuthenticationScheme);
+        return Page();
     }
 }
