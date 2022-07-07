@@ -33,12 +33,12 @@ public class SigninModel : PageModel
     {
     }
 
-    public IActionResult OnPost(string? returnUrl = null)
+    public IActionResult OnPost()
     {
-        if (!string.Equals(ClientId, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
+        if (ClientId is null || !string.Equals(ClientId, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
             return BadRequest("Invalid client_id");
 
-        if (!string.Equals(RedirectUri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        if (RedirectUri is null || !string.Equals(RedirectUri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
             return BadRequest("Invalid redirect_uri");
 
         var userDescriptor = Users.FirstOrDefault(u => u.Subject == Subject);
@@ -47,15 +47,14 @@ public class SigninModel : PageModel
             return BadRequest();
         }
 
-        string code = userDescriptor.Name?.ToMd5() ?? "";
+        var code = userDescriptor.Name?.ToMd5() ?? "";
 
         var builder = new UriBuilder(RedirectUri);
-
-        var queryString = QueryString
+        builder.Query = QueryString
             .FromUriComponent(builder.Uri)
             .Add("code", code)
-            .Add("state", State);
-        builder.Query = queryString.ToString();
+            .Add("state", State)
+            .ToString();
 
         var uri = builder.ToString();
 
