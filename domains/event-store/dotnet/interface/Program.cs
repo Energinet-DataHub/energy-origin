@@ -40,14 +40,23 @@ class Program
 
             var eventStore = EventStoreFactory<Said>.create();
 
+            Console.WriteLine($"\n- Produce message.");
             eventStore.Produce(message, new List<String> { "Gossip", "Tabloid" });
 
+            Console.WriteLine($"\n- Make consumer.");
             var consumer = eventStore.MakeConsumer("Gossip");
 
             while (true) {
+                Console.WriteLine($"\n- Consume:");
                 var saidEvent = await consumer.Consume();
                 Console.WriteLine($"I heard that {saidEvent.Actor} said {saidEvent.Statement}");
+                break;
             }
+
+            // House keeping
+
+            Directory.Delete("store", true);
+
         }).Wait();
     }
 }

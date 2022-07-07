@@ -8,25 +8,29 @@ namespace EventStore.Flatfile;
 
 public class FlatFileEventStore<T> : IEventStore<T> where T : EventModel {
     const string ROOT = "store";
+    const string TOPIC_SUFFIX = ".topic";
+    const string EVENT_SUFFIX = ".event";
 
     public FlatFileEventStore() {
-        Directory.CreateDirectory(ROOT);
+        if (!Directory.Exists(ROOT)) {
+            Directory.CreateDirectory(ROOT);
+        }
     }
 
     public void Produce(T model, IEnumerable<string> topics) {
         var message = Event.From(model);
 
         foreach(string topic in topics) {
-            var path = $"{ROOT}/{topic}/"; // should have more directory division
+            var path = $"{ROOT}/{topic}{TOPIC_SUFFIX}/"; // should have more directory division
             if (!Directory.Exists(path)) {
                 Directory.CreateDirectory(path);
             }
-            File.WriteAllText($"{path}/{message.Issued}-{message.Id}", JsonConvert.SerializeObject(message));
+            File.WriteAllText($"{path}/{message.Issued}-{message.Id}{EVENT_SUFFIX}", JsonConvert.SerializeObject(message));
         }
     }
 
     public IEventConsumer<T> MakeConsumer(string topicPrefix) => CreateConsumer(topicPrefix, null);
     public IEventConsumer<T> MakeConsumer(string topicPrefix, DateTime fromDate) => CreateConsumer(topicPrefix, fromDate);
 
-    IEventConsumer<T> CreateConsumer(string topicPrefix, DateTime? fromDate) => new FlatFileEventConsumer<T>(ROOT, topicPrefix, fromDate);
+    IEventConsumer<T> CreateConsumer(string topicPrefix, DateTime? fromDate) => new FlatFileEventConsumer<T>(ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, fromDate);
 }

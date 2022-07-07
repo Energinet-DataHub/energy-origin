@@ -1,4 +1,5 @@
 using System;
+using EnergyOriginDateTimeExtension;
 
 namespace EventStore.Serialization;
 
@@ -22,11 +23,11 @@ public class Event {
     }
 
     public static Event From(EventModel model) {
-        var now = ((DateTimeOffset)DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc));
+        var now = DateTime.Now;
 
         return new Event(
             Guid.NewGuid().ToString(),
-            now.ToUnixTimeSeconds(),
+            now.ToUnixTime(),
             now.Millisecond,
             model.Type,
             model.Version,
