@@ -1,7 +1,7 @@
-﻿namespace Mock.Oidc.Extensions;
-
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+
+namespace Mock.Oidc.Extensions;
 
 public static class YamlExtensions
 {
@@ -12,13 +12,13 @@ public static class YamlExtensions
             .Build();
 
         using var reader = new StreamReader(yamlFilePath);
-        var users = yamlDeserializer.Deserialize<T>(reader);
+        var result = yamlDeserializer.Deserialize<T>(reader);
 
-        if (users == null)
+        if (result == null)
         {
             throw new Exception("Could not load YAML file");
         }
 
-        services.AddSingleton<T>(_ => users);
+        services.AddSingleton<T>(_ => result);
     }
 }

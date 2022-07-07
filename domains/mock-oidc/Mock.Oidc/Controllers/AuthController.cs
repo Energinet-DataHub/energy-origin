@@ -29,30 +29,32 @@ public class AuthController : Controller
         {
             return BadRequest("Invalid code - no matching user");
         }
-        
+
+        var issuer = $"{Request.Scheme}://{Request.Host}";
+        var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
         return Ok(
             new
             {
-                access_token = GenerateToken(),
+                access_token = GenerateToken(issuer, issuedAt, new()),
                 token_type = "Bearer",
                 expires_in = 3600,
                 scope = "openid nemid mitid userinfo_token",
-                id_token = GenerateToken(),
-                userinfo_token = GenerateToken()
+                id_token = GenerateToken(issuer, issuedAt, user.IdToken),
+                userinfo_token = GenerateToken(issuer, issuedAt, user.UserinfoToken)
             });
     }
 
-    private static string GenerateToken()
+    private static string GenerateToken(string issuer, long issuedAt, Dictionary<string, object> claims)
     {
         var rsa = RSAProvider.RSA;
 
-        var token = JwtBuilder.Create()
+        return JwtBuilder.Create()
             .WithAlgorithm(new RS256Algorithm(rsa, rsa))
-            .AddClaim("exp", DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds())
-            .AddClaim("claim1", 0)
-            .AddClaim("claim2", "claim2-value")
+            .AddClaim("iss", issuer)
+            .AddClaim("iat", issuedAt)
+            .AddClaim("exp", issuedAt + 3600) // One hour until expiry
+            .AddClaims(claims)
             .Encode();
-
-        return token;
     }
 }
