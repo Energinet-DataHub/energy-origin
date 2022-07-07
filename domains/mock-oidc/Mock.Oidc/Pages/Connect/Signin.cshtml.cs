@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Mock.Oidc.Extensions;
+using Mock.Oidc.Models;
 
 namespace Mock.Oidc.Pages.Connect;
-
-using Mock.Oidc.Models;
 
 public class SigninModel : PageModel
 {
@@ -47,7 +47,7 @@ public class SigninModel : PageModel
             return BadRequest();
         }
 
-        string code = "foo";
+        string code = userDescriptor.Name?.ToMd5() ?? "";
 
         var builder = new UriBuilder(RedirectUri);
 
