@@ -1,15 +1,15 @@
 using System;
 using EventStore;
+using EventStore.Serialization;
 
 namespace Topics;
 
 public class Said : EventModel {
-    public string Type { get => "Said"; }
-    public int Version { get => 1; }
-    public string Data { get => "JSON"; } // FIXME: json encoding
+    public override string Type { get => "Said"; }
+    public override int Version { get => 1; }
 
-    public readonly string Actor;
-    public readonly string Statement;
+    public string Actor { get; }
+    public string Statement { get; }
 
     public Said(string actor, string statement) {
         Actor = actor;

@@ -1,15 +1,16 @@
 using System;
+using System.Text.Json;
 using EventStore;
+using EventStore.Serialization;
 
 namespace Topics;
 
 public class UserCreatedVersion1 : EventModel {
-    public string Type { get => "UserCreated"; }
-    public int Version { get => 1; }
-    public string Data { get => "JSON"; } // FIXME: json encoding
+    public override string Type { get => "UserCreated"; }
+    public override int Version { get => 1; }
 
-    public readonly string Id;
-    public readonly string Subject;
+    public string Id { get; }
+    public string Subject { get; }
 
     public UserCreatedVersion1(string id, string subject) {
         Id = id;

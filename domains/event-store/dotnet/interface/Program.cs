@@ -1,15 +1,53 @@
 using System;
 using EventStore;
+using EventStore.Serialization;
+using Topics;
 
-// FIXME: written while interface wont compile
+using Newtonsoft.Json; // NOTE: using System.Text.Json.Serialization has issues that needs fixing
 
-var eventStore = EventStoreFactory.create();
+class Program
+{
+    static void Main(string[] args)
+    {
+        Task.Run(async () =>
+        {
+            // How event can be de/serialized
 
-eventStore.Produce(new Said("Anton Actor", "I like to act!"), new List<String> { "Gossip", "Tabloid" });
+            Console.WriteLine("# Example of en-/de-coding event messages:\n");
 
-var consumer = eventStore.MakeConsumer<Said>("Gossip");
+            var message = new Said("Anton Actor", "I like to act!");
 
-while (true) {
-    var saidEvent = consumer.Consume();
-    Console.WriteLine($"I heard that {saidEvent.Actor} said {saidEvent.Statement}");
+            Console.WriteLine($"- Sending message of type '{message.Type}':\n{message.Data}");
+
+            var package = Event.From(message);
+            var payload = JsonConvert.SerializeObject(package);
+
+            Console.WriteLine($"\n- Packaged:\n{payload}");
+
+            var reconstructedEvent = Unpack.Event(payload);
+
+            var reconstructed = Unpack.Message<Said>(reconstructedEvent);
+
+            Console.WriteLine($"\n- Received message of type '{reconstructed.Type}':\n{reconstructed.Data}");
+
+            Console.WriteLine("\n");
+
+
+
+            // Usage of event store
+
+            Console.WriteLine("# Example of using an event store:\n");
+
+            var eventStore = EventStoreFactory<Said>.create();
+
+            eventStore.Produce(message, new List<String> { "Gossip", "Tabloid" });
+
+            var consumer = eventStore.MakeConsumer("Gossip");
+
+            while (true) {
+                var saidEvent = await consumer.Consume();
+                Console.WriteLine($"I heard that {saidEvent.Actor} said {saidEvent.Statement}");
+            }
+        }).Wait();
+    }
 }

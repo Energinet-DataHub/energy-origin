@@ -1,16 +1,16 @@
 using System;
 
-namespace EventStore;
+namespace EventStore.Serialization;
 
 public class Event {
-    public readonly string Id;
+    public string Id { get; }
     
-    public readonly long Issued;
-    public readonly int IssuedFraction;
+    public long Issued { get; }
+    public int IssuedFraction { get; }
     
-    public readonly string ModelType;
-    public readonly int ModelVersion;
-    public readonly string Data;
+    public string ModelType { get; }
+    public int ModelVersion { get; }
+    public string Data { get; }
 
     public Event(string id, long issued, int issuedFraction, string modelType, int modelVersion, string data) {
         Id = id;
@@ -21,8 +21,8 @@ public class Event {
         Data = data;
     }
 
-    public Event FromModel(EventModel model) {
-        var now = ((DateTimeOffset)DateTime.SpecifyKind(new DateTime(), DateTimeKind.Utc));
+    public static Event From(EventModel model) {
+        var now = ((DateTimeOffset)DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc));
 
         return new Event(
             Guid.NewGuid().ToString(),
