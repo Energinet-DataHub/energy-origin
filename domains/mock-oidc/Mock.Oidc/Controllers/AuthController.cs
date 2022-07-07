@@ -18,6 +18,10 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [Route("Connect/Logout")]
+    public IActionResult LogOut() => Ok();
+
+    [HttpPost]
     [Route("Connect/Token")]
     public IActionResult Token(string client_id, string code, string client_secret, string redirect_uri)
     {
