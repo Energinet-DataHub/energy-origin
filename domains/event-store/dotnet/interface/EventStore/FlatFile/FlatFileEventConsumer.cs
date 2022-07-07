@@ -17,16 +17,24 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
     public FlatFileEventConsumer(string root, string topicPrefix, DateTime? fromDate) {
         this.fromDate = fromDate;
 
+        Console.WriteLine($"Generating directories using: {root}");
+
         watchers = Directory.GetFiles(root, topicPrefix)
-            .Select(path => createWatcher($"{root}/{path}")) // FIXME: verify root/path
+            .Select(path => {
+                Console.Write($"Watching directories in: {root}/{path}");
+                return createWatcher($"{root}/{path}"); // FIXME: verify root/path
+            })
             .ToList();
 
-        rootWatcher = new FileSystemWatcher();
-        rootWatcher.Path = root;
-        rootWatcher.NotifyFilter = NotifyFilters.DirectoryName;
-        rootWatcher.Filter = "*";
-        rootWatcher.Created += new FileSystemEventHandler(OnCreatedDirectory);
+        rootWatcher = new FileSystemWatcher(root);
+        rootWatcher.NotifyFilter = NotifyFilters.LastWrite;
+        rootWatcher.Filter = "*.*";
+        rootWatcher.Created += OnCreatedDirectory;
         rootWatcher.EnableRaisingEvents = true;
+        rootWatcher.IncludeSubdirectories = true;
+        rootWatcher.Error += OnError;
+
+        Console.WriteLine(rootWatcher.Path);
     }
 
     public async Task<T> Consume() {
@@ -36,7 +44,10 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
         return queue.Dequeue();
     }
 
+    private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException());
+
     void OnCreatedDirectory(object source, FileSystemEventArgs e) {
+        Console.Write($"OnCreatedDirectory: {e.FullPath}");
         watchers.Add(createWatcher(e.FullPath));
     }
 
@@ -57,6 +68,7 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
     }
 
     private FileSystemWatcher createWatcher(string path) {
+        Console.Write($"Watching files in: {path}");
         var watcher = new FileSystemWatcher();
         watcher.Path = path;
         watcher.NotifyFilter = NotifyFilters.FileName;

@@ -7,13 +7,17 @@ using EventStore.Serialization;
 namespace EventStore.Flatfile;
 
 public class FlatFileEventStore<T> : IEventStore<T> where T : EventModel {
-    const string ROOT = "topics";
+    const string ROOT = "store";
+
+    public FlatFileEventStore() {
+        Directory.CreateDirectory(ROOT);
+    }
 
     public void Produce(T model, IEnumerable<string> topics) {
         var message = Event.From(model);
 
         foreach(string topic in topics) {
-            var path = $"{ROOT}/{message.ModelType}-{topic}/"; // should have more directory division
+            var path = $"{ROOT}/{topic}/"; // should have more directory division
             if (!Directory.Exists(path)) {
                 Directory.CreateDirectory(path);
             }
