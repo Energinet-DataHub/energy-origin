@@ -12,13 +12,12 @@
     }
     
     <form asp-antiforgery="true" method="post">
+        
         @foreach (var user in Model.Users)
         {
             <button name="subject" value="@user.Subject" type="submit">Sign in as @user.Name (@user.Description)</button>
         }
     </form>
     
-    <form asp-page="Logout" asp-antiforgery="true" method="post">
-        <button type="submit">Log out</button>
-    </form>
+    
 </div>

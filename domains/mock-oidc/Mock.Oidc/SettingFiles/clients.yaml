@@ -1,3 +1,0 @@
-﻿- clientId: "energy-origin"
-  clientSecret: "secret_secret_secret"
-  redirectUri: "https://localhost:7124"

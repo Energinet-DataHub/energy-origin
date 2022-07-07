@@ -6,8 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["SettingFiles:UsersPath"]);
-builder.Services.AddFromYamlFile<ClientDescriptor[]>(builder.Configuration["SettingFiles:ClientsPath"]);
+builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["USERS_FILE_PATH"]);
+builder.Services.AddSingleton(_ => 
+    new ClientDescriptor(
+        builder.Configuration["CLIENT_ID"], 
+        builder.Configuration["CLIENT_SECRET"], 
+        builder.Configuration["CLIENT_REDIRECT_URI"]));
 
 var app = builder.Build();
 
