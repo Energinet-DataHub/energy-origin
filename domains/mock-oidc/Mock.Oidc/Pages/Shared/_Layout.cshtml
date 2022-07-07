@@ -32,15 +32,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Connect/Signin">Sign in</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Connect/Authorize"
-                               asp-route-client_id="energy-origin"
-                               asp-route-redirect_uri="https://localhost:7124"
-                               asp-route-response_type="code"
-                               asp-route-scope="openid nemid mitid ssn userinfo_token"
-                               asp-route-state="c6770cf5939c4db9bd293b189c2d0107"
-                               asp-route-code_challenge="da5apBQRrEqOVKxhNQ82fqG6EdRcDlpKKU_baV63nu0"
-                               asp-route-code_challenge_method="S256"
-                               asp-route-response_mode="query">
+                            <a class="nav-link text-dark" href="/Connect/Authorize?client_id=energy-origin&redirect_uri=https://localhost:7124&response_type=code&scope=openid nemid mitid ssn userinfo_token&state=c6770cf5939c4db9bd293b189c2d0107&code_challenge=da5apBQRrEqOVKxhNQ82fqG6EdRcDlpKKU_baV63nu0&code_challenge_method=S256&response_mode=query">
                                 Authorize
                             </a>
                         </li>

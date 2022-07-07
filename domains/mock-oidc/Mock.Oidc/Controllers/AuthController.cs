@@ -21,6 +21,22 @@ public class AuthController : Controller
     [Route("Connect/Logout")]
     public IActionResult LogOut() => Ok();
 
+    [HttpGet]
+    [Route("Connect/Authorize")]
+    public IActionResult Authorize()
+    {
+        var clientId = Request.Query["client_id"].FirstOrDefault();
+        if (!string.Equals(clientId, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
+            return BadRequest("Invalid client_id");
+
+        var redirectUri = Request.Query["redirect_uri"].FirstOrDefault();
+        if (!string.Equals(redirectUri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+            return BadRequest("Invalid redirect_uri");
+
+        //TODO: Transfer all query parameters
+        return RedirectToPage("/Connect/Signin", new { state = Request.Query["state"].FirstOrDefault(), client_id = clientId, redirect_uri = redirectUri });
+    }
+
     [HttpPost]
     [Route("Connect/Token")]
     public IActionResult Token(string client_id, string code, string client_secret, string redirect_uri)
