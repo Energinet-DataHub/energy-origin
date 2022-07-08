@@ -8,16 +8,16 @@
 
         public string Version { get; }
 
-        public string PriceArea { get; }
+        public string GridArea { get; }
 
         public string ProductionType { get; }
 
-        public MixRecord(decimal shareTotal, DateTime hourUTC, string version, string priceArea, string productionType)
+        public MixRecord(decimal shareTotal, DateTime hourUTC, string version, string gridArea, string productionType)
         {
             ShareTotal = shareTotal;
             HourUTC = hourUTC;
             Version = version;
-            PriceArea = priceArea;
+            GridArea = gridArea;
             ProductionType = productionType.Length switch
             {
                 0 => "",
