@@ -1,21 +1,23 @@
 ﻿- name: "Charlotte"
-  subject: "7DADB7DB-0637-4446-8626-2781B06A9E20"
   idToken:
+    sub: "7DADB7DB-0637-4446-8626-2781B06A9E20"
     foo: bla
     num: 42
     nemid.cpr: 123415678-45456
   userinfoToken:
+    sub: "7DADB7DB-0637-4446-8626-2781B06A9E20"
     bar: bla
     num: 24
     nemid.cvr: 9876543210
 - name: "Not Charlotte"
-  subject: "95D7BE81-0CFB-4B52-9C92-33A45747FCEF"
   description: "This is not Charlotte"
   idToken:
+    sub: "95D7BE81-0CFB-4B52-9C92-33A45747FCEF"
     foo: bla
     num: 42
     nemid.cpr: 123415678-45456
   userinfoToken:
+    sub: "95D7BE81-0CFB-4B52-9C92-33A45747FCEF"
     bar: bla
     num: 24
     nemid.cvr: 9876543210

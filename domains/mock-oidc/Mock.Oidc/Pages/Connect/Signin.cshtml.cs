@@ -12,7 +12,7 @@ public class SigninModel : PageModel
     public UserDescriptor[] Users { get; }
 
     [FromForm]
-    public string? Subject { get; set; }
+    public string? Name { get; set; }
 
     [FromQuery(Name = "client_id")]
     public string? ClientId { get; set; }
@@ -41,7 +41,7 @@ public class SigninModel : PageModel
             return BadRequest(validationError);
         }
         
-        var userDescriptor = Users.FirstOrDefault(u => u.Subject == Subject);
+        var userDescriptor = Users.FirstOrDefault(u => u.Name == Name);
         if (userDescriptor == null)
         {
             return BadRequest();

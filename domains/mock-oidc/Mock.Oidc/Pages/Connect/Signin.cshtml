@@ -15,7 +15,7 @@
         
         @foreach (var user in Model.Users)
         {
-            <button name="subject" value="@user.Subject" type="submit">Sign in as @user.Name (@user.Description)</button>
+            <button name="name" value="@user.Name" type="submit">Sign in as @user.Name (@user.Description)</button>
         }
     </form>
     
