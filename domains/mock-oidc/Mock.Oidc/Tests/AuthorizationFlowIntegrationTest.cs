@@ -1,6 +1,9 @@
+using AngleSharp.Html.Dom;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Web;
+using Tests.Extensions;
 using Xunit;
 
 namespace Tests;
@@ -24,9 +27,9 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     }
 
     [Fact]
-    public async Task AuthorizeRedirectsToSignin()
+    public async Task CompleteFlowTest()
     {
-        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false })!;
 
         var query = new QueryBuilder
         {
@@ -42,7 +45,27 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var authorizeResponse = await client.GetAsync(requestUri);
 
         Assert.Equal(HttpStatusCode.Redirect, authorizeResponse.StatusCode);
-        Assert.StartsWith("/Connect/Signin", authorizeResponse.Headers.Location!.OriginalString);
+        var redirectLocation = authorizeResponse.Headers.Location!.OriginalString;
+        Assert.StartsWith("/Connect/Signin", redirectLocation);
+
+        var signinPage = await client.GetAsync(redirectLocation);
+        var signinDocument = await signinPage.GetHtmlDocument();
+        Assert.Equal(HttpStatusCode.OK, signinPage.StatusCode);
+
+        var submitButtonsSelector = signinDocument.QuerySelectorAll("button[type=submit]");
+        Assert.Equal(2, submitButtonsSelector.Length);
+
+        var signupResponse = await client.SendAsync(
+            (IHtmlFormElement)signinDocument.QuerySelector("form[id='user-selection-form']")!, 
+            (IHtmlElement)submitButtonsSelector.First());
+
+        Assert.Equal(HttpStatusCode.Redirect, signupResponse.StatusCode);
+        Assert.StartsWith(RedirectUri, signupResponse.Headers.Location!.AbsoluteUri);
+
+        var queryStringForCallback = HttpUtility.ParseQueryString(signupResponse.Headers.Location!.Query);
+        var code = queryStringForCallback["code"];
+
+        Assert.NotNull(code);
     }
     
     public void Dispose()

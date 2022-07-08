@@ -11,7 +11,7 @@
         <p>You are signed in as @User.Identity.Name!</p>
     }
     
-    <form asp-antiforgery="true" method="post">
+    <form asp-antiforgery="true" method="post" id="user-selection-form">
         
         @foreach (var user in Model.Users)
         {
