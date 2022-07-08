@@ -35,12 +35,12 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost()
     {
-        if (ClientId is null || !string.Equals(ClientId, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
-            return BadRequest("Invalid client_id");
-
-        if (RedirectUri is null || !string.Equals(RedirectUri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
-            return BadRequest("Invalid redirect_uri");
-
+        var (isValid, validationError) = _client.Validate(ClientId, RedirectUri);
+        if (!isValid)
+        {
+            return BadRequest(validationError);
+        }
+        
         var userDescriptor = Users.FirstOrDefault(u => u.Subject == Subject);
         if (userDescriptor == null)
         {
@@ -49,11 +49,11 @@ public class SigninModel : PageModel
 
         var code = userDescriptor.Name?.ToMd5() ?? "";
 
-        var builder = new UriBuilder(RedirectUri);
+        var builder = new UriBuilder(RedirectUri ?? "");
         builder.Query = QueryString
             .FromUriComponent(builder.Uri)
             .Add("code", code)
-            .Add("state", State)
+            .Add("state", State ?? "")
             .ToString();
 
         var uri = builder.ToString();

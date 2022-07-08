@@ -25,16 +25,12 @@ public class AuthController : Controller
     [Route("Connect/Authorize")]
     public IActionResult Authorize(string client_id, string redirect_uri)
     {
-        if (!string.Equals(client_id, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
+        var (isValid, validationError) = _client.Validate(client_id, redirect_uri);
+        if (!isValid) 
         {
-            return BadRequest("Invalid client_id");
+            return BadRequest(validationError);
         }
-
-        if (!string.Equals(redirect_uri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return BadRequest("Invalid redirect_uri");
-        }
-
+        
         var routeValues = new RouteValueDictionary();
         foreach (var keyValuePair in Request.Query)
         {
@@ -48,10 +44,13 @@ public class AuthController : Controller
     [Route("Connect/Token")]
     public IActionResult Token(string client_id, string code, string client_secret, string redirect_uri)
     {
-        //TODO: Validate against _client
-        
-        var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
+        var (isValid, validationError) = _client.Validate(client_id, client_secret, redirect_uri);
+        if (!isValid)
+        {
+            return BadRequest(validationError);
+        }
 
+        var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {
             return BadRequest("Invalid code - no matching user");
