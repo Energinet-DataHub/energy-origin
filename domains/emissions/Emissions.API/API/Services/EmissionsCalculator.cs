@@ -6,10 +6,14 @@ namespace API.Services;
 class EmissionsCalculator : IEmissionsCalculator
 {
 
-    private const int decimalPrecision = 5;
+    const int decimalPrecision = 5;
 
-    public EmissionsResponse CalculateEmission(IEnumerable<EmissionRecord> emissions,
-        IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
+    public EmissionsResponse CalculateEmission(
+        IEnumerable<EmissionRecord> emissions,
+        IEnumerable<TimeSeries> measurements,
+        DateTime dateFrom,
+        DateTime dateTo, 
+        Aggregation aggregation)
     {
 
         var listOfEmissions = new List<Emission>();
@@ -18,9 +22,8 @@ class EmissionsCalculator : IEmissionsCalculator
         {
             foreach (var reading in measurement.Measurements)
             {
-                var hourOfMeasurement = reading.DateFrom.ToDateTime();
-                var emission = emissions.FirstOrDefault(_ =>
-                    _.GridArea == measurement.MeteringPoint.GridArea && _.HourUTC == hourOfMeasurement);
+                var emission = emissions.FirstOrDefault(a =>
+                    a.GridArea == measurement.MeteringPoint.GridArea && a.HourUTC == reading.DateFrom);
 
                 if (emission == null)
                 {
@@ -30,8 +33,8 @@ class EmissionsCalculator : IEmissionsCalculator
                 listOfEmissions.Add(new Emission
                 {
                     Co2 = co2,
-                    DateFrom = reading.DateFrom.ToDateTime(),
-                    DateTo = reading.DateTo.ToDateTime(),
+                    DateFrom = reading.DateFrom,
+                    DateTo = reading.DateTo,
                     Consumption = reading.Quantity
                 });
             }
@@ -106,5 +109,4 @@ internal class Emission
     public DateTime DateTo { get; set; }
     public decimal Co2 { get; set; }
     public int Consumption { get; set; }
-
 }
