@@ -35,3 +35,6 @@ app.MapRazorPages();
 app.MapControllers();
 
 app.Run();
+
+//Make this a partial class in order to reference it in test project
+public partial class Program { }
