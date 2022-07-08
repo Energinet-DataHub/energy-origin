@@ -59,8 +59,8 @@ namespace API.Services
                 //Create production type percentage dictionary and calculate renewable percentage for period.
                 var sourcesWithPercentage = consumptionShares.ToDictionary(a => a.productionType, b => b.percentageOfTotal);
                 var renewablePercentage = sourcesWithPercentage
-                    .Where(a => renewableSources.Contains(a.Key)).
-                    Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
+                    .Where(a => renewableSources.Contains(a.Key))
+                    .Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
 
                 //Add to results
                 result.EnergySources.Add(new EnergySourceDeclaration(dateFrom, dateTo, renewablePercentage, sourcesWithPercentage));
