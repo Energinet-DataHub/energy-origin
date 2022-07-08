@@ -3,6 +3,7 @@ using System.Linq;
 using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
+using EnergyOriginDateTimeExtension;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Helpers;
@@ -44,8 +45,8 @@ public sealed class DataSyncServiceTest
         // Arrange
         var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_measurements.json");
 
-        var dateFrom = new DateTime(2021, 1, 1);
-        var dateTo = new DateTime(2021, 1, 2);
+        var dateFrom = new DateTime(2020, 12, 31, 23, 0, 0, DateTimeKind.Utc);
+        var dateTo = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var logger = new Mock<ILogger<DataSyncService>>();
 
         var datasync = new DataSyncService(logger.Object, mockClient);
@@ -58,8 +59,8 @@ public sealed class DataSyncServiceTest
         Assert.Equal(2, res.Count());
 
         Assert.Equal("571313121223234323", res.First().GSRN);
-        Assert.Equal(1609455600, res.First().DateFrom);
-        Assert.Equal(1609459200, res.First().DateTo);
+        Assert.Equal(dateFrom, res.First().DateFrom);
+        Assert.Equal(dateTo, res.First().DateTo);
         Assert.Equal(1250, res.First().Quantity);
         Assert.Equal(Quality.Measured, res.First().Quality);
     }
