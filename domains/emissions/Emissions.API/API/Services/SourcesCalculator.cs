@@ -32,12 +32,12 @@ namespace API.Services
                 foreach (var measurement in singleTimeSeries.Measurements)
                 {
                     //Get measurement date as string, based on aggregation (period).
-                    var aggregatedDateTime = GetAggregationDateString(measurement.DateFrom.ToDateTime(), aggregation);
+                    var aggregatedDateTime = GetAggregationDateString(measurement.DateFrom, aggregation);
 
                     //Look up declarations by measurement period and metering point grid area.
                     var gridArea = singleTimeSeries.MeteringPoint.GridArea;
                     var declarations = declarationLookup[aggregatedDateTime + gridArea]
-                        .Where(a => a.HourUTC.ToUnixTime() == measurement.DateFrom);
+                        .Where(a => a.HourUTC == measurement.DateFrom);
                                         
                     CalculateConsumptionShareByReference(consumptionResults, aggregatedDateTime, declarations, measurement);
                 }
@@ -122,8 +122,8 @@ namespace API.Services
                 //Add a new declaration with a period, source percentages and renewable energy percentage.
                 result.EnergySources.Add(new EnergySourceDeclaration
                 (
-                    consumptionResult.Value.Min(a => a.Value.DateFrom),
-                    consumptionResult.Value.Max(a => a.Value.DateTo),
+                    consumptionResult.Value.Min(a => a.Value.DateFrom).ToUnixTime(),
+                    consumptionResult.Value.Max(a => a.Value.DateTo).ToUnixTime(),
                     renewablePercentage,
                     sourcesWithPercentage
                 ));
@@ -145,7 +145,7 @@ namespace API.Services
                 return timeSeries.SelectMany(a => a.Measurements).ToLookup(x => total);
 
             return timeSeries.SelectMany(y => y.Measurements)
-                .ToLookup(x => GetAggregationDateString(x.DateFrom.ToDateTime(), aggregation));
+                .ToLookup(x => GetAggregationDateString(x.DateFrom, aggregation));
         }
 
         //Create a lookup using the aggregated declaration date + grid area as the key.
@@ -180,11 +180,11 @@ namespace API.Services
         class ConsumptionShare
         {
             public decimal Value { get; set; }
-            public long DateFrom { get; set; }
-            public long DateTo { get; set; }
+            public DateTime DateFrom { get; set; }
+            public DateTime DateTo { get; set; }
             public string ProductionType { get; }
 
-            public ConsumptionShare(decimal value, long dateFrom, long dateTo, string productionType)
+            public ConsumptionShare(decimal value, DateTime dateFrom, DateTime dateTo, string productionType)
             {
                 Value = value;
                 DateFrom = dateFrom;
