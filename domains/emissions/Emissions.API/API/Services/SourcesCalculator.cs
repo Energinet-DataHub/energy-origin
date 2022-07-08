@@ -19,7 +19,7 @@ namespace API.Services
         {
             //TODO: Check if it makes sense to treat 'aggregation total' separately.
 
-            //Get declarations lookup using aggregation and price area as key.
+            //Get declarations lookup using aggregation and grid area as key.
             //When expressing a date as a string using an aggregation, it becomes a period.
             var declarationLookup = GetDeclarationLookup(aggregation, records);
                         
@@ -148,15 +148,15 @@ namespace API.Services
                 .ToLookup(x => GetAggregationDateString(x.DateFrom.ToDateTime(), aggregation));
         }
 
-        //Create a lookup using the aggregated declaration date + price area as the key.
-        //This groups the declarations for each price area and whatever period the aggregation covers.
-        //When the aggregation is 'total', declarations are effectively grouped only on price area.
+        //Create a lookup using the aggregated declaration date + grid area as the key.
+        //This groups the declarations for each grid area and whatever period the aggregation covers.
+        //When the aggregation is 'total', declarations are effectively grouped only on grid area.
         ILookup<string, MixRecord> GetDeclarationLookup(Aggregation aggregation, IEnumerable<MixRecord> declaration)
         {
             if (aggregation == Aggregation.Total)
-                return declaration.ToLookup(a => total + a.PriceArea);
+                return declaration.ToLookup(a => total + a.GridArea);
 
-            return declaration.ToLookup(a => GetAggregationDateString(a.HourUTC, aggregation) + a.PriceArea);
+            return declaration.ToLookup(a => GetAggregationDateString(a.HourUTC, aggregation) + a.GridArea);
         }
 
         //Translates a date into an aggregated date string.
