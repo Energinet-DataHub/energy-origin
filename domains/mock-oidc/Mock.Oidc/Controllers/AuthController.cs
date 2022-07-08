@@ -23,18 +23,25 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("Connect/Authorize")]
-    public IActionResult Authorize()
+    public IActionResult Authorize(string client_id, string redirect_uri)
     {
-        var clientId = Request.Query["client_id"].FirstOrDefault();
-        if (!string.Equals(clientId, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(client_id, _client.ClientId, StringComparison.InvariantCultureIgnoreCase))
+        {
             return BadRequest("Invalid client_id");
+        }
 
-        var redirectUri = Request.Query["redirect_uri"].FirstOrDefault();
-        if (!string.Equals(redirectUri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(redirect_uri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        {
             return BadRequest("Invalid redirect_uri");
+        }
 
-        //TODO: Transfer all query parameters
-        return RedirectToPage("/Connect/Signin", new { state = Request.Query["state"].FirstOrDefault(), client_id = clientId, redirect_uri = redirectUri });
+        var routeValues = new RouteValueDictionary();
+        foreach (var keyValuePair in Request.Query)
+        {
+            routeValues.Add(keyValuePair.Key, keyValuePair.Value);
+        }
+
+        return RedirectToPage("/Connect/Signin", routeValues);
     }
 
     [HttpPost]
