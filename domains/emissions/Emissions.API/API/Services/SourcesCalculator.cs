@@ -8,123 +8,70 @@ namespace API.Services
     {
         readonly IList<string> renewableSources = Configuration.GetRenewableSources();
         readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
-        private const string waste = "waste";
-        private const string total = "total";
-        private const int decimalPrecision = 5;
+        const string waste = "waste";
+        const string total = "total";
+        const int decimalPrecision = 5;
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
             IEnumerable<MixRecord> records,
             Aggregation aggregation)
         {
-            var groupedDeclarations = GetGroupedDeclarations(aggregation, records);
-            var consumptionResults = new Dictionary<string, Dictionary<string, ConsumptionShare>>();
-
-            foreach (var measurements in timeSeries)
-            {
-                foreach (var measurement in measurements.Measurements)
-                {
-                    var dateTime = GetDateAsString(measurement.DateFrom.ToDateTime(), aggregation);
-                    var gridArea = measurements.MeteringPoint.GridArea;
-                    var totalShares = groupedDeclarations[dateTime + gridArea];
-
-                    CalculateConsumptionShareByReference(consumptionResults, dateTime, totalShares, measurement);
-                }
-            }
-            var result = CalculateSourceEmissionPercentage(timeSeries, aggregation, consumptionResults);
-
-            return result;
-        }
-
-        void CalculateConsumptionShareByReference(
-            Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults,
-            string dateTime,
-            IEnumerable<MixRecord> totalShares,
-            Measurement measurement)
-        {
-            if (!consumptionResults.TryGetValue(dateTime, out var shares))
-            {
-                shares = new Dictionary<string, ConsumptionShare>();
-                consumptionResults.Add(dateTime, shares);
-            }
-
-            foreach (var totalShare in totalShares.Where(a => a.HourUTC.ToUnixTime() == measurement.DateFrom))
-            {
-                if (!shares.TryGetValue(totalShare.ProductionType, out var share))
-                {
-                    share = new ConsumptionShare
-                    (
-                        0,
-                        measurement.DateFrom,
-                        measurement.DateTo,
-                        totalShare.ProductionType
-                    );
-                    shares.Add(totalShare.ProductionType, share);
-                }
-
-                share.Value += (decimal)totalShare.ShareTotal * measurement.Quantity;
-
-                if (measurement.DateFrom < share.DateFrom)
-                {
-                    share.DateFrom = measurement.DateFrom;
-                }
-
-                if (measurement.DateTo > share.DateTo)
-                {
-                    share.DateTo = measurement.DateTo;
-                }
-            }
-        }
-
-        EnergySourceResponse CalculateSourceEmissionPercentage(
-            IEnumerable<TimeSeries> timeSeries,
-            Aggregation aggregation,
-            Dictionary<string, Dictionary<string, ConsumptionShare>> consumptionResults)
-        {
             var result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
-            var groupedMeasurements = GetGroupedMeasurements(aggregation, timeSeries);
 
-            foreach (var consumptionResult in consumptionResults)
+            //Get dictionary of measurement values using aggregated date string as key.
+            var measurementGroups = 
+                (from singleTimeSeries in timeSeries
+                from measurement in singleTimeSeries.Measurements
+                select new { 
+                    singleTimeSeries.MeteringPoint.GridArea, 
+                    measurement.DateFrom, 
+                    measurement.DateTo, 
+                    measurement.Quantity })
+                .GroupBy(a => GetAggregationDateString(a.DateFrom, aggregation));
+
+            //Go through each period (aggregated date string).
+            foreach (var measurementGroup in measurementGroups)
             {
-                var matchingConsumptionSum = groupedMeasurements[consumptionResult.Key].Sum(_ => _.Quantity);
+                var totalConsumption = measurementGroup.Sum(a => a.Quantity);
 
-                var sources = consumptionResult.Value.ToDictionary(a =>
-                    a.Key, b => (decimal)Math.Round((b.Value.Value / matchingConsumptionSum / 100), decimalPrecision));
+                //Get a summed share value, date interval and percentage of total for each production type.
+                var consumptionShares =
+                    from measurement in measurementGroup
+                    join declaration in records
+                        on new { measurement.GridArea, measurement.DateFrom }
+                        equals new { declaration.GridArea, DateFrom = declaration.HourUTC }                    
+                    group new { measurement, declaration } by declaration.ProductionType into productionTypeGroup
+                    let shareValue = productionTypeGroup.Sum(a => a.declaration.ShareTotal * a.measurement.Quantity)
+                    select new
+                    {
+                        productionType = productionTypeGroup.Key,
+                        shareValue,
+                        dateFrom = productionTypeGroup.Min(a => a.measurement.DateFrom),
+                        dateTo = productionTypeGroup.Max(a => a.measurement.DateTo),
+                        percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, decimalPrecision)
+                    };
 
-                result.EnergySources.Add(new EnergySourceDeclaration
-                (
-                    consumptionResult.Value.Min(a => a.Value.DateFrom),
-                    consumptionResult.Value.Max(a => a.Value.DateTo),
-                    CalculateRenewable(sources),
-                    sources
-                ));
+                //Get period in unix timestamps for entire aggregation.
+                var dateFrom = consumptionShares.Min(a => a.dateFrom).ToUnixTime();
+                var dateTo = consumptionShares.Max(a => a.dateTo).ToUnixTime();
+
+                //Create production type percentage dictionary and calculate renewable percentage for period.
+                var sourcesWithPercentage = consumptionShares.ToDictionary(a => a.productionType, b => b.percentageOfTotal);
+                var renewablePercentage = sourcesWithPercentage
+                    .Where(a => renewableSources.Contains(a.Key))
+                    .Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
+
+                //Add to results
+                result.EnergySources.Add(new EnergySourceDeclaration(dateFrom, dateTo, renewablePercentage, sourcesWithPercentage));
             }
 
             return result;
         }
 
-        decimal CalculateRenewable(IDictionary<string, decimal> groupValues) =>
-             groupValues.Where(a => renewableSources.Contains(a.Key)).
-                    Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
-
-        ILookup<string, Measurement> GetGroupedMeasurements(Aggregation aggregation, IEnumerable<TimeSeries> timeSeries)
-        {
-            if (aggregation == Aggregation.Total)
-                return timeSeries.SelectMany(a => a.Measurements).ToLookup(x => total);
-
-            return timeSeries.SelectMany(y => y.Measurements)
-                .ToLookup(x => GetDateAsString(x.DateFrom.ToDateTime(), aggregation));
-        }
-
-        ILookup<string, MixRecord> GetGroupedDeclarations(Aggregation aggregation, IEnumerable<MixRecord> declaration)
-        {
-            if (aggregation == Aggregation.Total)
-                return declaration.ToLookup(a => total + a.PriceArea);
-
-            return declaration.ToLookup(a => GetDateAsString(a.HourUTC, aggregation) + a.PriceArea);
-        }
-
-        string GetDateAsString(DateTime date, Aggregation aggregation)
+        //Translates a date into an aggregated date string.
+        //This creates a period bucket/bin spanning the aggregation amount.
+        string GetAggregationDateString(DateTime date, Aggregation aggregation)
         {
             return aggregation switch
             {
@@ -137,22 +84,6 @@ namespace API.Services
                 Aggregation.Total => total,
                 _ => throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null),
             };
-        }
-
-        class ConsumptionShare
-        {
-            public decimal Value { get; set; }
-            public long DateFrom { get; set; }
-            public long DateTo { get; set; }
-            public string ProductionType { get; }
-
-            public ConsumptionShare(decimal value, long dateFrom, long dateTo, string productionType)
-            {
-                Value = value;
-                DateFrom = dateFrom;
-                DateTo = dateTo;
-                ProductionType = productionType;
-            }
         }
     }
 }
