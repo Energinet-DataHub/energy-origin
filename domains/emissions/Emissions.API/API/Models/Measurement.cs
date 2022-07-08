@@ -4,8 +4,10 @@ public class Measurement
 {
     public string GSRN { get; set; }
 
+    //TODO: Change to DateTime
     public long DateFrom { get; set; }
 
+    //TODO: Change to DateTime
     public long DateTo { get; set; }
 
     public int Quantity { get; set; }

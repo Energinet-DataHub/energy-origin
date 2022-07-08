@@ -26,7 +26,8 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-        // TODO: Validation
+        //TODO: Validation
+        //TODO: Convert dates to DateTime
 
         return await emissionsService.GetTotalEmissions(Context, dateFrom, dateTo, aggregation);
     }
@@ -38,7 +39,8 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-        // TODO: Validation
+        //TODO: Validation
+        //TODO: Convert dates to DateTime
 
         return await emissionsService.GetSourceDeclaration(Context, dateFrom, dateTo, aggregation);
     }
