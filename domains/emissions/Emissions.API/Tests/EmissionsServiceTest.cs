@@ -9,6 +9,7 @@ using Moq;
 using EnergyOriginAuthorization;
 using AutoFixture;
 using System.Threading.Tasks;
+using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
@@ -18,10 +19,10 @@ public sealed class EmissionsServiceTests
     [Fact]
     public async void GetEmissions_3MP2Consumption_Success()
     {
-        var time0 = 1654034400;
-        var time1 = 1654038000;
-        var time2 = 1654041600;
-        var time3 = 1654045200;
+        var time0 = 1654034400L.ToDateTime();
+        var time1 = 1654038000L.ToDateTime();
+        var time2 = 1654041600L.ToDateTime();
+        var time3 = 1654045200L.ToDateTime();
 
         var mps = new List<MeteringPoint>(){
             new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
@@ -64,9 +65,9 @@ public sealed class EmissionsServiceTests
         var time2Co2 = 12;
 
         var emissionResponse = new List<EmissionRecord>(){
-            new EmissionRecord("DK1", 0, time0Co2, DateTimeOffset.FromUnixTimeSeconds(time0).UtcDateTime),
-            new EmissionRecord("DK1", 0, time1Co2, DateTimeOffset.FromUnixTimeSeconds(time1).UtcDateTime),
-            new EmissionRecord("DK1", 0, time2Co2, DateTimeOffset.FromUnixTimeSeconds(time2).UtcDateTime),
+            new EmissionRecord("DK1", 0, time0Co2, time0),
+            new EmissionRecord("DK1", 0, time1Co2, time1),
+            new EmissionRecord("DK1", 0, time2Co2, time2),
         };
 
         var dataSyncService = new Mock<IDataSyncService>();
@@ -121,10 +122,10 @@ public sealed class EmissionsServiceTests
         Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
         Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
 
-        var time0 = 1654034400;
-        var time1 = 1654038000;
-        var time2 = 1654041600;
-        var time3 = 1654045200;
+        var time0 = 1654034400L.ToDateTime();
+        var time1 = 1654038000L.ToDateTime();
+        var time2 = 1654041600L.ToDateTime();
+        var time3 = 1654045200L.ToDateTime();
 
         var mps = new List<MeteringPoint>(){
             new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
@@ -163,12 +164,12 @@ public sealed class EmissionsServiceTests
             };
 
         var mixResponse = new List<MixRecord>(){
-            new MixRecord(50, DateTimeOffset.FromUnixTimeSeconds(time0).UtcDateTime, "", "DK1", "windOnshore"),
-            new MixRecord(50, DateTimeOffset.FromUnixTimeSeconds(time0).UtcDateTime, "", "DK1", "coal"),
-            new MixRecord(20, DateTimeOffset.FromUnixTimeSeconds(time1).UtcDateTime, "", "DK1", "windOnshore"),
-            new MixRecord(80, DateTimeOffset.FromUnixTimeSeconds(time1).UtcDateTime, "", "DK1", "coal"),
-            new MixRecord(70, DateTimeOffset.FromUnixTimeSeconds(time2).UtcDateTime, "", "DK1", "windOnshore"),
-            new MixRecord(30, DateTimeOffset.FromUnixTimeSeconds(time2).UtcDateTime, "", "DK1", "coal"),
+            new MixRecord(50, time0, "", "DK1", "windOnshore"),
+            new MixRecord(50, time0, "", "DK1", "coal"),
+            new MixRecord(20, time1, "", "DK1", "windOnshore"),
+            new MixRecord(80, time1, "", "DK1", "coal"),
+            new MixRecord(70, time2, "", "DK1", "windOnshore"),
+            new MixRecord(30, time2, "", "DK1", "coal"),
         };
 
         var dataSyncService = new Mock<IDataSyncService>();
@@ -241,10 +242,7 @@ public sealed class EmissionsServiceTests
         var sut = new EmissionsService(mockDataSyncService.Object, mockEds.Object, mockEmissionsCalculator.Object, mockSourcesCalculator.Object);
         //Act
 
-        var timeSeries = (await sut.GetTimeSeries(context,
-            ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
-            ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(), Aggregation.Hour,
-            meteringPoints)).ToArray();
+        var timeSeries = (await sut.GetTimeSeries(context, dateFrom, dateTo, meteringPoints)).ToArray();
         //Assert
 
         Assert.NotNull(timeSeries);
