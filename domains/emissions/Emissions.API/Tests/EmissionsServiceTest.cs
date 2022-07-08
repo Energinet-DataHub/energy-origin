@@ -19,10 +19,10 @@ public sealed class EmissionsServiceTests
     [Fact]
     public async void GetEmissions_3MP2Consumption_Success()
     {
-        var time0 = ((long)1654034400).ToDateTime();
-        var time1 = ((long)1654038000).ToDateTime();
-        var time2 = ((long)1654041600).ToDateTime();
-        var time3 = ((long)1654045200).ToDateTime();
+        var time0 = 1654034400L.ToDateTime();
+        var time1 = 1654038000L.ToDateTime();
+        var time2 = 1654041600L.ToDateTime();
+        var time3 = 1654045200L.ToDateTime();
 
         var mps = new List<MeteringPoint>(){
             new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
@@ -122,10 +122,10 @@ public sealed class EmissionsServiceTests
         Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
         Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
 
-        var time0 = ((long)1654034400).ToDateTime();
-        var time1 = ((long)1654038000).ToDateTime();
-        var time2 = ((long)1654041600).ToDateTime();
-        var time3 = ((long)1654045200).ToDateTime();
+        var time0 = 1654034400L.ToDateTime();
+        var time1 = 1654038000L.ToDateTime();
+        var time2 = 1654041600L.ToDateTime();
+        var time3 = 1654045200L.ToDateTime();
 
         var mps = new List<MeteringPoint>(){
             new MeteringPoint("286432579631400001", "DK1", MeterType.Consumption),
