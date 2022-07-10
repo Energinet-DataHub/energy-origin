@@ -2,6 +2,7 @@ using AngleSharp.Html.Dom;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Text.Json;
 using System.Web;
 using Tests.Extensions;
 using Xunit;
@@ -35,7 +36,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         {
             { "client_id", ClientId },
             { "redirect_uri", RedirectUri },
-            { "state", "foo" },
+            { "state", "testState" },
             { "response_type", "code" },
             { "scope", "openid nemid mitid ssn userinfo_token" },
             { "response_mode", "query" }
@@ -64,8 +65,49 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         var queryStringForCallback = HttpUtility.ParseQueryString(signupResponse.Headers.Location!.Query);
         var code = queryStringForCallback["code"];
+        var callbackState = queryStringForCallback["state"];
 
-        Assert.NotNull(code);
+        Assert.Equal("testState", callbackState);
+
+        //TODO: Figure out how Token-endpoint can accept json
+        //var json = JsonSerializer.Serialize(new
+        //{
+        //    code = code, 
+        //    client_id = ClientId, 
+        //    client_secret = ClientSecret, 
+        //    redirect_uri = RedirectUri
+        //});
+        //var data = new StringContent(json, Encoding.UTF8, "application/json");
+        var data = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "code", code },
+            { "client_id", ClientId },
+            { "client_secret", ClientSecret },
+            { "redirect_uri", RedirectUri }
+        });
+        var tokenResponse = await client.PostAsync("/Connect/Token", data);
+
+        Assert.Equal(HttpStatusCode.OK, tokenResponse.StatusCode);
+
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var jsonDocument = JsonDocument.Parse(tokenJson).RootElement;
+
+        var idJwtToken = jsonDocument.GetProperty("id_token").GetString();
+        var idTokenJson = idJwtToken.GetJwtPayload();
+        var idToken = JsonDocument.Parse(idTokenJson).RootElement;
+        
+        Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", idToken.GetProperty("sub").GetString());
+        Assert.Equal(42, idToken.GetProperty("foo").GetInt32());
+
+        var userInfoJwtToken = jsonDocument.GetProperty("userinfo_token").GetString();
+        var userInfoTokenJson = userInfoJwtToken.GetJwtPayload();
+        var userInfoToken = JsonDocument.Parse(userInfoTokenJson).RootElement;
+
+        Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", userInfoToken.GetProperty("sub").GetString());
+        Assert.Equal(42, userInfoToken.GetProperty("bar").GetInt32());
+
+        var logoutResponse = await client.PostAsync("/Connect/Logout", new StringContent(""));
+        Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
     }
     
     public void Dispose()

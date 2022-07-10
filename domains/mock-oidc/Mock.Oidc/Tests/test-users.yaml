@@ -1,14 +1,10 @@
 ﻿- name: "Charlotte"
   idToken:
     sub: "7DADB7DB-0637-4446-8626-2781B06A9E20"
-    foo: bla
-    num: 42
-    nemid.cpr: 123415678-45456
+    foo: 42
   userinfoToken:
     sub: "7DADB7DB-0637-4446-8626-2781B06A9E20"
-    bar: bla
-    num: 24
-    nemid.cvr: 9876543210
+    bar: 42
 - name: "Not Charlotte"
   description: "This is not Charlotte"
   idToken:
