@@ -14,7 +14,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     private readonly WebApplicationFactory<Program> _factory;
 
     private const string ClientId = "energy-origin";
-    private const string ClientSecret = "secret_secret_secret";
+    private const string ClientSecret = "secret";
     private const string RedirectUri = "https://www.foo.com/callback";
 
     public AuthorizationFlowIntegrationTest()
@@ -30,7 +30,9 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     [Fact]
     public async Task CompleteFlowTest()
     {
-        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false })!;
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        // Navigate to authorization endpoint
 
         var query = new QueryBuilder
         {
@@ -49,62 +51,60 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var redirectLocation = authorizeResponse.Headers.Location!.OriginalString;
         Assert.StartsWith("/Connect/Signin", redirectLocation);
 
+        // Follow the redirect to the signin page
+
         var signinPage = await client.GetAsync(redirectLocation);
         var signinDocument = await signinPage.GetHtmlDocument();
+
         Assert.Equal(HttpStatusCode.OK, signinPage.StatusCode);
 
-        var submitButtonsSelector = signinDocument.QuerySelectorAll("button[type=submit]");
-        Assert.Equal(2, submitButtonsSelector.Length);
+        // Click on the first submit button, which matches the first user in test-users.yaml
 
-        var signupResponse = await client.SendAsync(
-            (IHtmlFormElement)signinDocument.QuerySelector("form[id='user-selection-form']")!, 
-            (IHtmlElement)submitButtonsSelector.First());
+        var formElement = (IHtmlFormElement)signinDocument.QuerySelector("form[id='user-selection-form']")!;
+        var firstSubmitButtonElement = (IHtmlElement)signinDocument.QuerySelectorAll("button[type=submit]").First();
+        var signupResponse = await client.SendAsync(formElement, firstSubmitButtonElement);
 
         Assert.Equal(HttpStatusCode.Redirect, signupResponse.StatusCode);
         Assert.StartsWith(RedirectUri, signupResponse.Headers.Location!.AbsoluteUri);
 
         var queryStringForCallback = HttpUtility.ParseQueryString(signupResponse.Headers.Location!.Query);
-        var code = queryStringForCallback["code"];
+        var code = queryStringForCallback["code"]!;
         var callbackState = queryStringForCallback["state"];
-
         Assert.Equal("testState", callbackState);
 
-        //TODO: Figure out how Token-endpoint can accept json
-        //var json = JsonSerializer.Serialize(new
-        //{
-        //    code = code, 
-        //    client_id = ClientId, 
-        //    client_secret = ClientSecret, 
-        //    redirect_uri = RedirectUri
-        //});
-        //var data = new StringContent(json, Encoding.UTF8, "application/json");
-        var data = new FormUrlEncodedContent(new Dictionary<string, string>
+        // Get token from endpoint using authorization code
+        
+        var tokenRequestData = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "code", code },
             { "client_id", ClientId },
             { "client_secret", ClientSecret },
             { "redirect_uri", RedirectUri }
         });
-        var tokenResponse = await client.PostAsync("/Connect/Token", data);
+        var tokenResponse = await client.PostAsync("/Connect/Token", tokenRequestData);
 
         Assert.Equal(HttpStatusCode.OK, tokenResponse.StatusCode);
 
-        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
-        var jsonDocument = JsonDocument.Parse(tokenJson).RootElement;
+        // From the token response, extract id_token and userinfo_token
 
-        var idJwtToken = jsonDocument.GetProperty("id_token").GetString();
-        var idTokenJson = idJwtToken.GetJwtPayload();
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var token = JsonDocument.Parse(tokenJson).RootElement;
+
+        var idTokenJwt = token.GetProperty("id_token").GetString()!;
+        var idTokenJson = idTokenJwt.GetJwtPayload();
         var idToken = JsonDocument.Parse(idTokenJson).RootElement;
         
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", idToken.GetProperty("sub").GetString());
         Assert.Equal(42, idToken.GetProperty("foo").GetInt32());
 
-        var userInfoJwtToken = jsonDocument.GetProperty("userinfo_token").GetString();
-        var userInfoTokenJson = userInfoJwtToken.GetJwtPayload();
+        var userInfoTokenJwt = token.GetProperty("userinfo_token").GetString()!;
+        var userInfoTokenJson = userInfoTokenJwt.GetJwtPayload();
         var userInfoToken = JsonDocument.Parse(userInfoTokenJson).RootElement;
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", userInfoToken.GetProperty("sub").GetString());
         Assert.Equal(42, userInfoToken.GetProperty("bar").GetInt32());
+
+        // Logout
 
         var logoutResponse = await client.PostAsync("/Connect/Logout", new StringContent(""));
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
