@@ -25,6 +25,7 @@ form {
     color: #fff;
     margin: 32px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 h2 {
