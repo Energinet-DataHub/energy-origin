@@ -5,9 +5,9 @@ public class UserDescriptor
     private Dictionary<string, object> _idToken;
     private Dictionary<string, object> _userinfoToken;
 
-    public string? Subject { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 
     public Dictionary<string, object> IdToken
     {

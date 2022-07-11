@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>- Mock.Oidc</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      href="/css/site.css?v=AKvNjO3dCPPS0eSU1Ez8T2wI280i08yGycV9ndytL-c"
+    />
+    <link
+      rel="stylesheet"
+      href="/Mock.Oidc.styles.css?v=i93j5y_cifrqwgIBLdXmy1wUV-qpvIenJ2UYKsg5_vQ"
+    />
+  </head>
+  <style>
+    body {
+      background-color: #00847c;
+    }
+
+    form {
+      display: inline-flex;
+    }
+
+    .peopleButton {
+      background-color: #02525e;
+      border: 0;
+      display: flex;
+      color: #fff;
+      margin: 32px;
+      border-radius: 8px;
+    }
+
+    h2 {
+      max-width: min-content;
+      padding: 0 16px;
+      color: #ffd237;
+      text-transform: uppercase;
+    }
+  </style>
+  <body>
+    <header>
+      <nav
+        b-zc0l44zgiq
+        class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+      >
+        <div b-zc0l44zgiq class="container">
+          <a class="navbar-brand" href="/">Mock.Oidc</a>
+          <button
+            b-zc0l44zgiq
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target=".navbar-collapse"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span b-zc0l44zgiq class="navbar-toggler-icon"></span>
+          </button>
+          <div
+            b-zc0l44zgiq
+            class="navbar-collapse collapse d-sm-inline-flex justify-content-between"
+          >
+            <ul b-zc0l44zgiq class="navbar-nav flex-grow-1">
+              <li b-zc0l44zgiq class="nav-item">
+                <a class="nav-link text-dark" href="/">Home</a>
+              </li>
+              <li b-zc0l44zgiq class="nav-item">
+                <a
+                  b-zc0l44zgiq
+                  class="nav-link text-dark"
+                  href=".well-known/openid-configuration"
+                  >OpenID Connect configuration</a
+                >
+              </li>
+              <li b-zc0l44zgiq class="nav-item">
+                <a
+                  b-zc0l44zgiq
+                  class="nav-link text-dark"
+                  href=".well-known/jwks"
+                  >JWK</a
+                >
+              </li>
+              <li b-zc0l44zgiq class="nav-item">
+                <a class="nav-link text-dark" href="/Connect/Signin">Sign in</a>
+              </li>
+              <li b-zc0l44zgiq class="nav-item">
+                <a
+                  class="nav-link text-dark"
+                  href="/Connect/Authorize?client_id=energy-origin&amp;redirect_uri=https%3A%2F%2Flocalhost%3A7124&amp;response_type=code&amp;scope=openid%20nemid%20mitid%20ssn%20userinfo_token&amp;state=c6770cf5939c4db9bd293b189c2d0107&amp;code_challenge=da5apBQRrEqOVKxhNQ82fqG6EdRcDlpKKU_baV63nu0&amp;code_challenge_method=S256&amp;response_mode=query"
+                >
+                  Authorize
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div b-zc0l44zgiq class="container">
+      <main b-zc0l44zgiq role="main" class="pb-3">
+        <div>
+          <h1>Sign in</h1>
+
+          <form method="post" action="/Connect/Signin">
+            <button
+              name="subject"
+              value="7DADB7DB-0637-4446-8626-2781B06A9E20"
+              type="submit"
+              class="peopleButton"
+            >
+              <img src="charlotteCSR.png" width="175" />
+              <div>
+                <h2>Charlotte CSR</h2>
+                Log ind
+              </div>
+            </button>
+            <button
+              name="subject"
+              value="95D7BE81-0CFB-4B52-9C92-33A45747FCEF"
+              type="submit"
+              class="peopleButton"
+            >
+              <img src="erikEnergirådgiver.png" width="175" />
+              <div>
+                <h2>Erik Energirådgiver</h2>
+                Log ind
+              </div>
+            </button>
+            <input
+              name="__RequestVerificationToken"
+              type="hidden"
+              value="CfDJ8GiB5JZ1YhFIqGaKhmFTa04W2W_4iTxChArX9P03DcLW9XivbiFJDJdUywlXfZNPTqeclHCP4C7PlCE4oIEBJ6t9w06TYqcnwuUKqdJPzO2Am-s9Oow38tGg0PyAPOPqUkVTYGIMIYMxgCCmwJL-e8Q"
+            />
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <footer b-zc0l44zgiq class="border-top footer text-muted">
+      <div b-zc0l44zgiq class="container">
+        &copy; 2022 - Mock.Oidc - <a href="">Privacy</a>
+      </div>
+    </footer>
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js?v=4q1jwFhaPaZgr8WAUSrux6hAuh0XDg9kPS3xIVq36I0"></script>
+
+    <!-- Visual Studio Browser Link -->
+    <script
+      type="text/javascript"
+      src="https://localhost:44399/8f4e2ec17abc4495b1eb6e3d4d4f7e5d/browserLink"
+      async="async"
+      id="__browserLink_initializationData"
+      data-requestId="41b61af2767a4499aac72f0e678fc651"
+      data-requestMappingFromServer="False"
+    ></script>
+    <!-- End Browser Link -->
+
+    <script src="/_framework/aspnetcore-browser-refresh.js"></script>
+  </body>
+</html>
