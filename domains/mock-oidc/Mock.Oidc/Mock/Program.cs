@@ -3,8 +3,9 @@ using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddHealthChecks();
 
 builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["USERS_FILE_PATH"]);
 builder.Services.AddSingleton(_ => 
@@ -20,6 +21,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
 
