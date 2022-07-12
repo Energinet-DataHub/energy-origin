@@ -4,12 +4,12 @@ public record ClientDescriptor(string ClientId, string ClientSecret, string Redi
 {
     public (bool isValid, string validationError) Validate(string? clientId, string? redirectUri)
     {
-        if (!string.Equals(clientId, ClientId, StringComparison.InvariantCultureIgnoreCase))
+        if (string.IsNullOrWhiteSpace(clientId) || !string.Equals(clientId, ClientId, StringComparison.InvariantCultureIgnoreCase))
         {
             return (false, "Invalid client_id");
         }
 
-        if (!string.Equals(redirectUri, RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        if (string.IsNullOrWhiteSpace(redirectUri) || !string.Equals(redirectUri, RedirectUri, StringComparison.InvariantCultureIgnoreCase))
         {
             return (false, "Invalid redirect_uri");
         }
@@ -25,7 +25,7 @@ public record ClientDescriptor(string ClientId, string ClientSecret, string Redi
             return result;
         }
 
-        if (!string.Equals(clientSecret, ClientSecret, StringComparison.InvariantCultureIgnoreCase))
+        if (string.IsNullOrWhiteSpace(clientSecret) || !string.Equals(clientSecret, ClientSecret, StringComparison.InvariantCultureIgnoreCase))
         {
             return (false, "Invalid client_secret");
         }
