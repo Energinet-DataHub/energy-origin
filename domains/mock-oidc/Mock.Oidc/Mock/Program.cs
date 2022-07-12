@@ -1,4 +1,5 @@
 using Mock.Oidc.Extensions;
+using Mock.Oidc.Jwt;
 using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["USERS_FILE_PATH"]);
 builder.Services.AddSingleton(_ => 
     new ClientDescriptor(

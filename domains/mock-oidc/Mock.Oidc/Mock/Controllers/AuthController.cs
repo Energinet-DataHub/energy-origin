@@ -1,7 +1,6 @@
-﻿using JWT.Algorithms;
-using JWT.Builder;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Mock.Oidc.Extensions;
+using Mock.Oidc.Jwt;
 using Mock.Oidc.Models;
 
 namespace Mock.Oidc.Controllers;
@@ -10,11 +9,13 @@ public class AuthController : Controller
 {
     private readonly ClientDescriptor _client;
     private readonly UserDescriptor[] _users;
+    private readonly IJwtTokenGenerator _tokenGenerator;
 
-    public AuthController(ClientDescriptor client, UserDescriptor[] users)
+    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator)
     {
         _client = client;
         _users = users;
+        _tokenGenerator = tokenGenerator;
     }
 
     [HttpPost]
@@ -56,31 +57,23 @@ public class AuthController : Controller
             return BadRequest("Invalid code - no matching user");
         }
 
-        var issuer = $"{Request.Scheme}://{Request.Host}";
-        var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var baseClaims = new Dictionary<string, object>
+        {
+            { "iss", $"{Request.Scheme}://{Request.Host}" },
+            { "iat", now },
+            { "exp", now + 3600 }
+        };
 
         return Ok(
             new
             {
-                access_token = GenerateToken(issuer, issuedAt, new()),
+                access_token = _tokenGenerator.Generate(baseClaims),
                 token_type = "Bearer",
                 expires_in = 3600,
                 scope = "openid nemid mitid userinfo_token",
-                id_token = GenerateToken(issuer, issuedAt, user.IdToken),
-                userinfo_token = GenerateToken(issuer, issuedAt, user.UserinfoToken)
+                id_token = _tokenGenerator.Generate(baseClaims.Plus(user.IdToken)),
+                userinfo_token = _tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
             });
-    }
-
-    private static string GenerateToken(string issuer, long issuedAt, Dictionary<string, object> claims)
-    {
-        var rsa = RSAProvider.RSA;
-
-        return JwtBuilder.Create()
-            .WithAlgorithm(new RS256Algorithm(rsa, rsa))
-            .AddClaim("iss", issuer)
-            .AddClaim("iat", issuedAt)
-            .AddClaim("exp", issuedAt + 3600) // One hour until expiry
-            .AddClaims(claims)
-            .Encode();
     }
 }
