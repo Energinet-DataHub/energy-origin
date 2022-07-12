@@ -17,5 +17,4 @@ RUN dotnet publish "Mock.Oidc.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK CMD curl --fail http://localhost:5000/health || exit 1
 ENTRYPOINT ["dotnet", "Mock.Oidc.dll"]
