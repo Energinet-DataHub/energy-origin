@@ -1,18 +1,10 @@
-﻿namespace Mock.Oidc.Jwt;
+﻿using Jose;
 
-using JWT.Algorithms;
-using JWT.Builder;
-using Mock.Oidc.Controllers;
+namespace Mock.Oidc.Jwt;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
-    public string Generate(Dictionary<string, object> claims)
-    {
-        var rsa = RSAProvider.RSA;
+    private readonly byte[] _secretKey = { 71, 169, 0, 146, 29, 249, 85, 175, 83, 69, 213, 13, 6, 171, 190, 35, 10, 94, 255, 61, 57, 82, 91, 182, 100, 167, 217, 111, 54, 75, 193, 160 };
 
-        return JwtBuilder.Create()
-            .WithAlgorithm(new RS256Algorithm(rsa, rsa))
-            .AddClaims(claims)
-            .Encode();
-    }
+    public string Generate(Dictionary<string, object> claims) => JWT.Encode(claims, _secretKey, JwsAlgorithm.HS256);
 }
