@@ -7,6 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="SettingFiles\users.yaml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="JWT" Version="9.0.3" />
 		<PackageReference Include="YamlDotNet" Version="11.2.1" />
 	</ItemGroup>
