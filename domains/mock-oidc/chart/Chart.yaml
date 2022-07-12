@@ -1,6 +1,6 @@
 apiVersion: v2
-name: eo-measurements
-description: A chart containing the measurements domain.
+name: eo-mock-oidc
+description: A chart containing the OIDC mock.
 
 type: application
 version: 0.0.1
