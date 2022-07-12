@@ -2,7 +2,7 @@ api:
   replicaCount: 3
   probes: true
   image:
-    name: ghcr.io/energinet-datahub/eo-mock-oidc
+    name: ghcr.io/energinet-datahub/eo-oidc-mock
     tag: 0.0.1
   env:
     USERS_FILE_PATH:

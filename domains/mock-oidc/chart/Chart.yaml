@@ -1,5 +1,5 @@
 apiVersion: v2
-name: eo-mock-oidc
+name: eo-oidc-mock
 description: A chart containing the OIDC mock.
 
 type: application
