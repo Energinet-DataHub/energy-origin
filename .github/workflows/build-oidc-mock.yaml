@@ -25,7 +25,7 @@ jobs:
           {
             "deployment_name": "api",
             "dockerfile": "domains/mock-oidc/Mock.Oidc/Mock/Dockerfile",
-            "image_name": "eo-mock-oidc",
+            "image_name": "eo-oidc-mock",
             "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
             "context": "domains/mock-oidc/Mock.Oidc/"
           }
