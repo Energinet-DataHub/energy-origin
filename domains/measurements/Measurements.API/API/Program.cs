@@ -44,7 +44,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
 
-//builder.Services.AddHttpClient();
+builder.Services.AddHttpClient();
 
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
 {
