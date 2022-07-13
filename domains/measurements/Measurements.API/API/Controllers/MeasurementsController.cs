@@ -3,6 +3,7 @@ using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
 
@@ -23,6 +24,7 @@ public class MeasurementsController : AuthorizationController
     [Route("measurements/consumption")]
     public async Task<MeasurementResponse> GetMeasurements([FromQuery] MeasurementsRequest request)
     {
+
         return await measurementsService.GetConsumption(Context, request.DateFrom, request.DateTo, request.Aggregation);
     }
 }

@@ -1,5 +1,6 @@
 using API.Models;
 using EnergyOriginAuthorization;
+using Serilog;
 
 namespace API.Services;
 
@@ -19,7 +20,14 @@ public class MeasurementsService : IMeasurementsService
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         var consumptionMeteringPoints = meteringPoints.Where(mp => mp.Type == MeterType.Consumption);
-
+        Log.Information("Hello, {@consumptionMeteringPoints}, at date range {dateFrom}, {dateTo}",
+          new
+          {
+              Name = "consumptionMeteringPoints",
+              consumptionMeteringPoints = new[] { consumptionMeteringPoints }
+          },
+          dateFrom,
+          dateTo);
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
 
         return aggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
