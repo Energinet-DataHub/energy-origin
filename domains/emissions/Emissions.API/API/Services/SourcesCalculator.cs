@@ -10,7 +10,6 @@ namespace API.Services
         readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
         const string waste = "waste";
         const string total = "total";
-        const int decimalPrecision = 5;
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
@@ -49,7 +48,7 @@ namespace API.Services
                         shareValue,
                         dateFrom = productionTypeGroup.Min(a => a.measurement.DateFrom),
                         dateTo = productionTypeGroup.Max(a => a.measurement.DateTo),
-                        percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, decimalPrecision)
+                        percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, Configuration.DecimalPrecision)
                     };
 
                 //Get period in unix timestamps for entire aggregation.

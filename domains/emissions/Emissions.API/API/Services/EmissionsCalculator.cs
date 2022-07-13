@@ -1,3 +1,4 @@
+using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
@@ -5,9 +6,6 @@ namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
 {
-
-    const int decimalPrecision = 5;
-
     public EmissionsResponse CalculateEmission(
         IEnumerable<EmissionRecord> emissions,
         IEnumerable<TimeSeries> measurements,
@@ -50,8 +48,8 @@ class EmissionsCalculator : IEmissionsCalculator
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTime(),
                 groupedEmission.Last().DateTo.ToUnixTime(),
-                new Quantity(Math.Round(totalForBucket / 1000, decimalPrecision), QuantityUnit.g),
-                new Quantity(Math.Round(relativeForBucket, decimalPrecision), QuantityUnit.gPerkWh)
+                new Quantity(Math.Round(totalForBucket / 1000, Configuration.DecimalPrecision), QuantityUnit.g),
+                new Quantity(Math.Round(relativeForBucket, Configuration.DecimalPrecision), QuantityUnit.gPerkWh)
             ));
         }
 
