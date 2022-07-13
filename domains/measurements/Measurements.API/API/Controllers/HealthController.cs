@@ -1,5 +1,6 @@
 ﻿using API.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers
 {
@@ -25,6 +26,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, null);
+                Log.Information("The error message {Message}", ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
