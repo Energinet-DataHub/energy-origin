@@ -17,4 +17,4 @@ jobs:
     uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
     with:
       yaml_file: domains/emissions/chart/values.yaml
-      yaml_path: eo-base-helm-chart.deployments.api.image.tag
+      yaml_path: api.image.tag
