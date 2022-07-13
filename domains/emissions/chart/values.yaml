@@ -10,7 +10,7 @@ eo-base-helm-chart:
       probes: true
       image:
         repository: ghcr.io/energinet-datahub/eo-emissions
-        tag: 0.1.2
+        tag: 0.1.2-pr.79-23fe75c
   service:
     deployment: api
     type: ClusterIP
