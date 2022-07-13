@@ -1,0 +1,17 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+</div>
+
+@if (Request.Query.ContainsKey("code"))
+{
+    <div>
+        <h2>Code</h2>
+        <p>@Request.Query["code"]</p>
+    </div>
+}
