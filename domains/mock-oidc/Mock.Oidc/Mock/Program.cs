@@ -26,6 +26,8 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
+app.UseMiddleware<LogFailedRequestMiddleware>();
+
 app.Run();
 
 //Make this a partial class in order to reference it in test project

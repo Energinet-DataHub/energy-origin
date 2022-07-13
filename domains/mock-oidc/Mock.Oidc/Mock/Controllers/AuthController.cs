@@ -10,14 +10,11 @@ public class AuthController : Controller
     private readonly ClientDescriptor _client;
     private readonly UserDescriptor[] _users;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly ILogger<AuthController> _logger;
-
-    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
+    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator)
     {
         _client = client;
         _users = users;
         _tokenGenerator = tokenGenerator;
-        _logger = logger;
     }
 
     [HttpPost]
@@ -77,14 +74,5 @@ public class AuthController : Controller
                 id_token = _tokenGenerator.Generate(baseClaims.Plus(user.IdToken)),
                 userinfo_token = _tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
             });
-    }
-
-    [HttpGet, HttpPost, HttpOptions]
-    [Route(".well-known/openid-configuration")]
-    [Route(".well-known/jwks")]
-    public IActionResult WellKnownRoutes()
-    {
-        _logger.LogWarning($"{Request.Path} not implemented");
-        return NotFound();
     }
 }
