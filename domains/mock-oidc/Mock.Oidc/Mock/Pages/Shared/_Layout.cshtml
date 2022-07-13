@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mock.Oidc</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li>
+                    <a asp-area="" asp-page="/Index">Home</a>
+                </li>
+                <li>
+                    <a href=".well-known/openid-configuration">OpenID Connect configuration</a>
+                </li>
+                <li>
+                    <a href=".well-known/jwks">JWK</a>
+                </li>
+                <li>
+                    <a asp-area="" asp-page="/Connect/Signin">Sign in</a>
+                </li>
+                <li>
+                    <a href="/Connect/Authorize?client_id=energy-origin&redirect_uri=https://localhost:7124&response_type=code&scope=openid nemid mitid ssn userinfo_token&state=c6770cf5939c4db9bd293b189c2d0107&code_challenge=da5apBQRrEqOVKxhNQ82fqG6EdRcDlpKKU_baV63nu0&code_challenge_method=S256&response_mode=query">
+                        Authorize
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div>
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+</body>
+</html>
