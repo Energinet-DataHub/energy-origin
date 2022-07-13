@@ -32,8 +32,7 @@ public sealed class CalculateEmissionsTest
         var calculator = new EmissionsCalculator();
 
         // Act
-        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom.ToUnixTime(),
-            dateTo.ToUnixTime(), aggregation).Emissions.ToArray();
+        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, aggregation).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);

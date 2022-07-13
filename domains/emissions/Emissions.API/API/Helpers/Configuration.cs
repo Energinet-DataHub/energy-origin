@@ -7,6 +7,8 @@
         private const string RenewableSources = "RENEWABLESOURCES";
         private const string WasteRenewableShare = "WASTERENEWABLESHARE";
 
+        public static int DecimalPrecision => 5;
+
         public static string GetDataSyncEndpoint()
         {
             return Environment.GetEnvironmentVariable(DataSyncEndpoint) ?? throw new ArgumentNullException();
