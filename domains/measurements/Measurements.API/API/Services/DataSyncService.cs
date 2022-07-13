@@ -1,18 +1,19 @@
 using API.Models;
 using EnergyOriginAuthorization;
 using EnergyOriginDateTimeExtension;
+using Microsoft.Extensions.Logging;
 using Serilog; 
 
 namespace API.Services;
 
 public class DataSyncService : IDataSyncService
 {
-    //readonly ILogger<DataSyncService> logger;
+    readonly ILogger<DataSyncService> logger;
     readonly HttpClient httpClient;
 
-    public DataSyncService(HttpClient httpClient)//ILogger<DataSyncService> logger, HttpClient httpClient)
+    public DataSyncService(ILogger<DataSyncService> logger, HttpClient httpClient)
     {
-      //  this.logger = logger;
+        this.logger = logger;
         this.httpClient = httpClient;
     }
 
@@ -23,7 +24,7 @@ public class DataSyncService : IDataSyncService
         httpClient.AddAuthorizationToken(context);
 
         var reponse = await httpClient.GetAsync(url);
-        Log.Information("Reponse for {url} is {reponse} in GetMeasurements", reponse);
+
         if (reponse == null || !reponse.IsSuccessStatusCode)
         {
             throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
@@ -44,7 +45,6 @@ public class DataSyncService : IDataSyncService
         httpClient.AddAuthorizationToken(context);
 
         var response = await httpClient.GetAsync(uri);
-        Log.Information("The response for {url} is {response} in GetListOfMeteringPoints", uri, response);
         if (response == null || !response.IsSuccessStatusCode)
         {
             throw new Exception($"Fetch of meteringpoints failed, base: {httpClient.BaseAddress} url: {uri}");

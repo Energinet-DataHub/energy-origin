@@ -13,67 +13,59 @@ using Serilog.Formatting.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
 
-Log.Logger = new LoggerConfiguration()
+var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
+    .CreateLogger(); 
+   
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
-try
+builder.Services.AddHttpContextAccessor();
+
+// Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    var builder = WebApplication.CreateBuilder(args);
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
-    builder.Services.AddHttpContextAccessor();
-
-    // Add services to the container.
-    builder.Services.AddControllers().AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    });
-
-    builder.Services.AddFluentValidation(c =>
-    {
-        c.RegisterValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
-        c.ValidatorFactoryType = typeof(HttpContextServiceProviderValidatorFactory);
-    });
-
-
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    builder.Services.AddFluentValidationRulesToSwagger();
-
-    //builder.Services.AddHttpClient();
-
-    builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
-    {
-        client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
-    });
-    builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
-    builder.Services.AddScoped<IConsumptionAggregator, ConsumptionAggregation>();
-
-    var app = builder.Build();
-
-    // Configure the HTTP request pipeline.
-    if (builder.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseAuthorization();
-
-    app.UseHttpLogging();
-
-    app.MapControllers();
-
-    app.Run();
-}
-catch (Exception ex)
+builder.Services.AddFluentValidation(c =>
 {
-    Log.Fatal(ex, "Host terminated unexpectedly");
-}
-finally
+    c.RegisterValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
+    c.ValidatorFactoryType = typeof(HttpContextServiceProviderValidatorFactory);
+});
+
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddFluentValidationRulesToSwagger();
+
+//builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
 {
-    Log.CloseAndFlush();
+    client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
+});
+builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
+builder.Services.AddScoped<IConsumptionAggregator, ConsumptionAggregation>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (builder.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseAuthorization();
+
+app.UseHttpLogging();
+
+app.MapControllers();
+
+app.Run();

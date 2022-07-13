@@ -5,7 +5,7 @@ using Serilog;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("health")]
     public class HealthController : Controller
     {
         readonly ILogger<HealthController> logger;
@@ -26,7 +26,6 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, null);
-                Log.Information("The error message {Message}", ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
