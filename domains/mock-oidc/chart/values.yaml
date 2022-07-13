@@ -3,7 +3,7 @@ api:
   probes: true
   image:
     name: ghcr.io/energinet-datahub/eo-oidc-mock
-    tag: 0.0.1-pr.75-0b1ef19
+    tag: 0.0.1
   env:
     USERS_FILE_PATH:
     CLIENT_ID:
