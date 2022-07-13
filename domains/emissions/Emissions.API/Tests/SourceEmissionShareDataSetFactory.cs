@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using API.Models;
+using EnergyOriginDateTimeExtension;
 
 namespace Tests
 {
@@ -12,26 +13,26 @@ namespace Tests
             {
                 new Measurement(
                     "571313121223234323",
-                    new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc),
-                    new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc),
+                    new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
                     1000,
                     Quality.Measured),
                 new Measurement(
                     "571313121223234323",
-                    new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc),
-                    new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc),
+                    new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
                     2000,
                     Quality.Measured),
                 new Measurement(
                     "571313121223234323",
-                    new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc),
-                    new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc),
+                    new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
                     3000,
                     Quality.Measured),
                 new Measurement(
                     "571313121223234323",
-                    new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc),
-                    new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc),
+                    new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
                     4000,
                     Quality.Measured)
             };

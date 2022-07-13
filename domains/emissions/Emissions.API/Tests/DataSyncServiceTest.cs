@@ -21,8 +21,6 @@ public sealed class DataSyncServiceTest
         // Arrange
         var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
 
-        var dateFrom = new DateTime(2021, 1, 1);
-        var dateTo = new DateTime(2021, 1, 2);
         var logger = new Mock<ILogger<DataSyncService>>();
 
         var datasync = new DataSyncService(logger.Object, mockClient);
@@ -45,8 +43,8 @@ public sealed class DataSyncServiceTest
         // Arrange
         var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_measurements.json");
 
-        var dateFrom = new DateTime(2020, 12, 31, 23, 0, 0, DateTimeKind.Utc);
-        var dateTo = new DateTime(2021, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var dateFrom = 1609455600L;
+        var dateTo = 1609459200L;
         var logger = new Mock<ILogger<DataSyncService>>();
 
         var datasync = new DataSyncService(logger.Object, mockClient);

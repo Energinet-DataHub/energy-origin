@@ -27,7 +27,7 @@ namespace API.Services
                     measurement.DateFrom, 
                     measurement.DateTo, 
                     measurement.Quantity })
-                .GroupBy(a => GetAggregationDateString(a.DateFrom, aggregation));
+                .GroupBy(a => GetAggregationDateString(a.DateFrom.ToDateTime(), aggregation));
 
             //Go through each period (aggregated date string).
             foreach (var measurementGroup in measurementGroups)
@@ -38,7 +38,7 @@ namespace API.Services
                 var consumptionShares =
                     from measurement in measurementGroup
                     join declaration in records
-                        on new { measurement.GridArea, measurement.DateFrom }
+                        on new { measurement.GridArea, DateFrom = measurement.DateFrom.ToDateTime() }
                         equals new { declaration.GridArea, DateFrom = declaration.HourUTC }                    
                     group new { measurement, declaration } by declaration.ProductionType into productionTypeGroup
                     let shareValue = productionTypeGroup.Sum(a => a.declaration.ShareTotal * a.measurement.Quantity)
@@ -52,8 +52,8 @@ namespace API.Services
                     };
 
                 //Get period in unix timestamps for entire aggregation.
-                var dateFrom = consumptionShares.Min(a => a.dateFrom).ToUnixTime();
-                var dateTo = consumptionShares.Max(a => a.dateTo).ToUnixTime();
+                var dateFrom = consumptionShares.Min(a => a.dateFrom);
+                var dateTo = consumptionShares.Max(a => a.dateTo);
 
                 //Create production type percentage dictionary and calculate renewable percentage for period.
                 var sourcesWithPercentage = consumptionShares.ToDictionary(a => a.productionType, b => b.percentageOfTotal);

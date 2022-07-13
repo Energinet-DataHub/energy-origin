@@ -21,7 +21,7 @@ class EmissionsCalculator : IEmissionsCalculator
             foreach (var reading in measurement.Measurements)
             {
                 var emission = emissions.FirstOrDefault(a =>
-                    a.GridArea == measurement.MeteringPoint.GridArea && a.HourUTC == reading.DateFrom);
+                    a.GridArea == measurement.MeteringPoint.GridArea && a.HourUTC == reading.DateFrom.ToDateTime());
 
                 if (emission == null)
                 {
@@ -31,8 +31,8 @@ class EmissionsCalculator : IEmissionsCalculator
                 listOfEmissions.Add(new Emission
                 {
                     Co2 = co2,
-                    DateFrom = reading.DateFrom,
-                    DateTo = reading.DateTo,
+                    DateFrom = reading.DateFrom.ToDateTime(),
+                    DateTo = reading.DateTo.ToDateTime(),
                     Consumption = reading.Quantity
                 });
             }
