@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
+using EnergyOriginDateTimeExtension;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -26,9 +27,12 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-        // TODO: Validation
+        //TODO: Validation
 
-        return await emissionsService.GetTotalEmissions(Context, dateFrom, dateTo, aggregation);
+        var dateFromDateTime = dateFrom.ToDateTime();
+        var dateToDateTime = dateTo.ToDateTime();
+
+        return await emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, aggregation);
     }
 
     [HttpGet]
@@ -38,8 +42,11 @@ public class EmissionsController : AuthorizationController
         [Required] long dateTo,
         Aggregation aggregation = Aggregation.Total)
     {
-        // TODO: Validation
+        //TODO: Validation
 
-        return await emissionsService.GetSourceDeclaration(Context, dateFrom, dateTo, aggregation);
+        var dateFromDateTime = dateFrom.ToDateTime();
+        var dateToDateTime = dateTo.ToDateTime();
+
+        return await emissionsService.GetSourceDeclaration(Context, dateFromDateTime, dateToDateTime, aggregation);
     }
 }
