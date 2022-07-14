@@ -81,13 +81,10 @@ jobs:
     name: Update preview environment
     needs: release-chart
     if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
-    uses: Energinet-DataHub/.github/.github/workflows/update-chart-in-env.yaml@main
+    uses: ./.github/actions/update-base-environment.yaml@preview/oidc-mock
     with:
-      env_repository: ${{ github.repository_owner }}/eo-base-environment
       env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
       app_name: ${{ needs.release-chart.outputs.chart-name }}
-      helm_repository: https://${{ github.repository_owner }}.github.io/helm-charts/
       chart_name: ${{ needs.release-chart.outputs.chart-name }}
       chart_version: ${{ needs.resolve-versions.outputs.chart }}
-    secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
