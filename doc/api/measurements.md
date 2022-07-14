@@ -1,7 +1,7 @@
 
 # Measurements domain
 
-# Get Measurements for consumption data
+# Get Measurements for consumption and production data
 
 The measurements api should take three query parameters and returns a date from, to and a value given in Wh.
 
@@ -48,12 +48,12 @@ sequenceDiagram
     participant em as Measurements Domain
     participant ds as DataSync Domain
 
-    spa->>+ em: GET /api/measurements/consumption  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
+    spa->>+ em: GET /api/measurements/{consumption || production}  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
     
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<Meteringpoint>
     
-    loop For each mp of type consumption
+    loop For each mp of type consumption or production
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
         
       ds --)- em: List< Measurement>
