@@ -1,0 +1,76 @@
+name: Build - oidc mock
+
+on:
+  pull_request:
+    paths:
+      - domains/mock-oidc/**
+  push:
+    branches:
+      - main
+    paths:
+      - domains/mock-oidc/**
+
+concurrency:
+  group: ${{ github.ref }}-mock-oidc
+  cancel-in-progress: false
+
+jobs:
+  define_build:
+    name: Define build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      chart_version: ${{ steps.get_semver.outputs.semver }}
+      containers: >-
+        [
+          {
+            "deployment_name": "api",
+            "dockerfile": "domains/mock-oidc/Mock.Oidc/Mock/Dockerfile",
+            "image_name": "eo-oidc-mock",
+            "image_tag": "${{ steps.get_api_container_version.outputs.semver }}",
+            "context": "domains/mock-oidc/Mock.Oidc/"
+          }
+        ]
+    steps:
+      - name: Get chart version
+        id: get_semver
+        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        with:
+          yaml_file: domains/mock-oidc/chart/Chart.yaml
+          yaml_path: version
+
+      - name: Get container version
+        id: get_api_container_version
+        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        with:
+          yaml_file: domains/mock-oidc/chart/values.yaml
+          yaml_path: api.image.tag
+
+  build_container_and_release_chart:
+    name: Build containers
+    needs: [define_build]
+    uses: Energinet-DataHub/.github/.github/workflows/build-containers-and-release-chart.yaml@main
+    with:
+      helm_repository: ${{ github.repository_owner }}/helm-charts
+      chart_folder: domains/mock-oidc/chart
+      chart_version: ${{ needs.define_build.outputs.chart_version }}
+      containers: ${{ needs.define_build.outputs.containers }}
+      version_yaml_path_prefix: "api.image.tag"
+      include_image_name: true
+    secrets:
+      deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+
+  update_environment:
+    name: Update env
+    needs: [build_container_and_release_chart]
+    #only on: push to main OR PR on 'preview/**' branch
+    if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
+    uses: Energinet-DataHub/.github/.github/workflows/update-chart-in-env.yaml@main
+    with:
+      env_repository: ${{ github.repository_owner }}/eo-base-environment
+      env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
+      app_name: ${{ needs.build_container_and_release_chart.outputs.chart_name }}
+      helm_repository: https://${{ github.repository_owner }}.github.io/helm-charts/
+      chart_name: ${{ needs.build_container_and_release_chart.outputs.chart_name }}
+      chart_version: ${{ needs.build_container_and_release_chart.outputs.chart_version }}
+    secrets:
+      deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
