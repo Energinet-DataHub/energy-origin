@@ -46,7 +46,7 @@ public class DataSyncService : IDataSyncService
         {
             throw new Exception($"Fetch of meteringpoints failed, base: {httpClient.BaseAddress} url: {uri}");
         }
-        
+
         var result = await reponse.Content.ReadFromJsonAsync<MeteringPointsResponse>();
         if (result == null || result.MeteringPoints == null)
         {

@@ -7,6 +7,7 @@ public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
     readonly IAggregator aggregator;
+
     public MeasurementsService(IDataSyncService dataSyncService, IAggregator aggregator)
     {
         this.dataSyncService = dataSyncService;
@@ -30,7 +31,7 @@ public class MeasurementsService : IMeasurementsService
         foreach (var meteringPoint in meteringPoints)
         {
             var measurements = await dataSyncService.GetMeasurements(
-                context, 
+                context,
                 meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime

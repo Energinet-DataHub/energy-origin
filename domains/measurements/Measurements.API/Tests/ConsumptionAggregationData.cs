@@ -1,6 +1,4 @@
 using API.Models;
-using EnergyOriginDateTimeExtension;
-using System;
 using System.Collections.Generic;
 
 namespace Tests;
