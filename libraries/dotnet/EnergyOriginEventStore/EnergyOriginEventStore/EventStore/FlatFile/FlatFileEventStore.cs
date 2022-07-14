@@ -6,8 +6,9 @@ using EventStore.Serialization;
 
 namespace EventStore.Flatfile;
 
-public class FlatFileEventStore<T> : IEventStore<T> where T : EventModel
+public class FlatFileEventStore : IEventStore
 {
+
     const string ROOT = "store";
     const string TOPIC_SUFFIX = ".topic";
     const string EVENT_SUFFIX = ".event";
@@ -23,7 +24,7 @@ public class FlatFileEventStore<T> : IEventStore<T> where T : EventModel
         this.unpacker = new Unpacker();
     }
 
-    public void Produce(T model, IEnumerable<string> topics)
+    public void Produce(EventModel model, IEnumerable<string> topics)
     {
         var message = Event.From(model);
 
@@ -38,8 +39,8 @@ public class FlatFileEventStore<T> : IEventStore<T> where T : EventModel
         }
     }
 
-    public IEventConsumer<T> MakeConsumer(string topicPrefix) => CreateConsumer(topicPrefix, null);
-    public IEventConsumer<T> MakeConsumer(string topicPrefix, DateTime fromDate) => CreateConsumer(topicPrefix, fromDate);
+    public IEventConsumer<T> MakeConsumer<T>(string topicPrefix) where T : EventModel => CreateConsumer<T>(topicPrefix, null);
+    public IEventConsumer<T> MakeConsumer<T>(string topicPrefix, DateTime fromDate) where T : EventModel => CreateConsumer<T>(topicPrefix, fromDate);
 
-    IEventConsumer<T> CreateConsumer(string topicPrefix, DateTime? fromDate) => new FlatFileEventConsumer<T>(unpacker, ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, fromDate);
+    IEventConsumer<T> CreateConsumer<T>(string topicPrefix, DateTime? fromDate) where T : EventModel => new FlatFileEventConsumer<T>(unpacker, ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, fromDate);
 }

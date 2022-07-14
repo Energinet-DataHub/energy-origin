@@ -6,8 +6,8 @@ namespace EventStore;
 
 public class EventStoreFactory<T> where T : EventModel
 {
-    public static IEventStore<T> create()
+    public static IEventStore create()
     {
-        return new FlatFileEventStore<T>();
+        return new FlatFileEventStore();
     }
 }

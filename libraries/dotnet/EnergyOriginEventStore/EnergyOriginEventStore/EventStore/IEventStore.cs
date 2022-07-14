@@ -3,12 +3,12 @@ using EventStore.Serialization;
 
 namespace EventStore;
 
-public interface IEventStore<T> where T : EventModel
+public interface IEventStore
 {
-    void Produce(T model, IEnumerable<string> topics);
+    void Produce(EventModel model, IEnumerable<string> topics);
 
-    IEventConsumer<T> MakeConsumer(string topicPrefix);
-    IEventConsumer<T> MakeConsumer(string topicPrefix, DateTime fromDate);
+    IEventConsumer<T> MakeConsumer<T>(string topicPrefix) where T : EventModel;
+    IEventConsumer<T> MakeConsumer<T>(string topicPrefix, DateTime fromDate) where T : EventModel;
 
     // void Delete(string topic);
     // sample topics:

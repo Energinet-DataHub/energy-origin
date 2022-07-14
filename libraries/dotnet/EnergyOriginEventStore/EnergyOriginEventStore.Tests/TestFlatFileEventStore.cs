@@ -19,7 +19,7 @@ public class TestFlatFileEventStore
 
                 eventStore.Produce(message, new List<String> { "Gossip", "Tabloid" });
 
-                var consumer = eventStore.MakeConsumer("Gossip");
+                var consumer = eventStore.MakeConsumer<Said>("Gossip");
                 var saidEvent = await consumer.Consume();
 
                 Assert.Equal(message.Actor, saidEvent.Actor);
