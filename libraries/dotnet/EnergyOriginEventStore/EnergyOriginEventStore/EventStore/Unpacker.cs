@@ -35,14 +35,9 @@ public class Unpacker : IUnpacker
 
     public EventModel UnpackModel(Event payload)
     {
-        Type type;
-        if (this.typeDictionary.TryGetValue(Tuple.Create(payload.ModelType, payload.ModelVersion), out type))
-        {
-            return JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
-        }
-        else
-        {
+        Type type = this.typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
             throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");
-        }
+
+        return JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
     }
 }
