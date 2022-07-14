@@ -1,5 +1,6 @@
 using API.Models;
 using EnergyOriginAuthorization;
+using Serilog;
 
 namespace API.Services;
 
