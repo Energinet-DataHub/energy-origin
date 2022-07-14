@@ -12,8 +12,7 @@ public class Unpacker : IUnpacker
 
     public Unpacker()
     {
-
-        var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsDefined(typeof(EventModelVersionAttribute)));
+        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(EventModelVersionAttribute)));
         this.typeDictionary = new Dictionary<Tuple<string, int>, Type>();
 
         foreach (var type in types)
@@ -38,6 +37,20 @@ public class Unpacker : IUnpacker
         Type type = this.typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
             throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");
 
-        return JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
+        EventModel? current = JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
+
+        while (true)
+        {
+            var next = current.NextVersion();
+
+            if (next is null)
+            {
+                return current;
+            }
+            else
+            {
+                current = next;
+            }
+        }
     }
 }

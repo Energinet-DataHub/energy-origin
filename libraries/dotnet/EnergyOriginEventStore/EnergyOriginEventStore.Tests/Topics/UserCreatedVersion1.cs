@@ -14,4 +14,9 @@ public class UserCreatedVersion1 : EventModel
         Id = id;
         Subject = subject;
     }
+
+    public override EventModel? NextVersion()
+    {
+        return new UserCreated(this.Id, this.Subject, "Anonymous");
+    }
 }
