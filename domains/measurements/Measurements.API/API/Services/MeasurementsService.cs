@@ -7,12 +7,19 @@ namespace API.Services;
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionAggregator aggregator;
+    readonly IConsumptionAggregator? consumptionAggregator;
+    readonly IProductionAggregator? productionAggregator;
 
     public MeasurementsService(IDataSyncService dataSyncService, IConsumptionAggregator aggregator)
     {
         this.dataSyncService = dataSyncService;
-        this.aggregator = aggregator;
+        consumptionAggregator = aggregator;
+    }
+
+    public MeasurementsService(IDataSyncService dataSyncService, IProductionAggregator aggregator)
+    {
+        this.dataSyncService = dataSyncService;
+        productionAggregator = aggregator;
     }
 
     public async Task<MeasurementResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
@@ -23,7 +30,18 @@ public class MeasurementsService : IMeasurementsService
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
 
-        return aggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
+        return consumptionAggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
+    }
+
+    public async Task<MeasurementResponse> GetProduction(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
+    {
+        var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
+
+        var productionMeteringPoints = meteringPoints.Where(mp => mp.Type == MeterType.Production);
+
+        var measurements = await GetTimeSeries(context, dateFrom, dateTo, productionMeteringPoints);
+
+        return productionAggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo, IEnumerable<MeteringPoint> meteringPoints)
