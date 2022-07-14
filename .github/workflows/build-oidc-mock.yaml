@@ -61,6 +61,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Update image tag
+        uses: Energinet-DataHub/.github/.github/actions/yaml-set@main
+        with:
+          yaml_file: domains/mock-oidc/chart/values.yaml
+          yaml_path: api.image.tag
+          value: ${{ needs.resolve-versions.outputs.image }}
+
       - name: Release chart
         id: release-chart
         uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
