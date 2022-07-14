@@ -79,7 +79,7 @@ jobs:
 
   update-environment:
     name: Update preview environment
-    needs: release-chart
+    needs: [resolve-versions, release-chart]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
     steps:
