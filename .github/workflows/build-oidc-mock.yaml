@@ -88,6 +88,6 @@ jobs:
       app_name: ${{ needs.release-chart.outputs.chart-name }}
       helm_repository: https://${{ github.repository_owner }}.github.io/helm-charts/
       chart_name: ${{ needs.release-chart.outputs.chart-name }}
-      chart_version: ${{ needs.release-chart.outputs.chart-version }}
+      chart_version: ${{ needs.resolve-versions.outputs.chart }}
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
