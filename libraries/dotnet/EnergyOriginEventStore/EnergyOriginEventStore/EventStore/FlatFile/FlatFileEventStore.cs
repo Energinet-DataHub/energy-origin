@@ -24,7 +24,7 @@ public class FlatFileEventStore : IEventStore
         this.unpacker = new Unpacker();
     }
 
-    public void Produce(EventModel model, IEnumerable<string> topics)
+    public async Task Produce(EventModel model, IEnumerable<string> topics)
     {
         var message = Event.From(model);
 
@@ -35,7 +35,8 @@ public class FlatFileEventStore : IEventStore
             {
                 Directory.CreateDirectory(path);
             }
-            File.WriteAllText($"{path}/{message.Issued}-{message.Id}{EVENT_SUFFIX}", JsonConvert.SerializeObject(message));
+
+            await File.WriteAllTextAsync($"{path}/{message.Issued}-{message.Id}{EVENT_SUFFIX}", JsonConvert.SerializeObject(message));
         }
     }
 

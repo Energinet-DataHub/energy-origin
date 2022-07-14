@@ -17,7 +17,7 @@ public class TestFlatFileEventStore
 
                 var message = new Said("Anton Actor", "I like to act!");
 
-                eventStore.Produce(message, new List<String> { "Gossip", "Tabloid" });
+                await eventStore.Produce(message, new List<String> { "Gossip", "Tabloid" });
 
                 var consumer = eventStore.MakeConsumer<Said>("Gossip");
                 var saidEvent = await consumer.Consume();
@@ -26,7 +26,7 @@ public class TestFlatFileEventStore
                 Assert.Equal(message.Statement, saidEvent.Statement);
             }).Wait();
         }
-        catch (Exception)
+        finally
         {
             Directory.Delete("store", true);
         }
