@@ -1,0 +1,24 @@
+﻿@page
+@model Mock.Oidc.Pages.Connect.SigninModel
+@{
+}
+
+<div>
+    <h1>Sign in</h1>
+
+    <form asp-antiforgery="true" method="post" id="user-selection-form">
+        
+        @foreach (var user in Model.Users)
+        {
+            <button name="name" value="@user.Name" type="submit" class="peopleButton">
+                <img src="@user.ImageUrl"/>
+                <div>
+                    <h2>@user.Name</h2>
+                    <p>@user.Description</p>
+                    <p>Log ind</p>
+                </div>
+            </button>
+        }
+    </form>
+
+</div>
