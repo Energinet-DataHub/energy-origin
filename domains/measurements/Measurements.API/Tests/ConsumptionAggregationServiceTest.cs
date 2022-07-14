@@ -15,7 +15,7 @@ namespace Tests;
 [UnitTest]
 public sealed class AggregationServiceTest
 {
-    readonly ConsumptionAggregationDataSetFactory dataSetFactory = new();
+    readonly ConsumptionAggregationData dataSetFactory = new();
 
     [Fact]
     public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
@@ -38,7 +38,7 @@ public sealed class AggregationServiceTest
             .Returns(Task.FromResult(measurements.AsEnumerable()
          ));
 
-        var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IConsumptionAggregator>().Object);
+        var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IAggregator>().Object);
 
         //Act
 

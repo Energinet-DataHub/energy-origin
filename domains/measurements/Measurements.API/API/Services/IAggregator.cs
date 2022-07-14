@@ -2,7 +2,7 @@
 
 namespace API.Services
 {
-    public interface IProductionAggregator
+    public interface IAggregator
     {
         MeasurementResponse CalculateAggregation(
         IEnumerable<TimeSeries> measurements,

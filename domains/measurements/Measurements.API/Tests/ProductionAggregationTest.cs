@@ -4,12 +4,11 @@ using EnergyOriginDateTimeExtension;
 using System;
 using System.Linq;
 using Xunit;
-using Xunit.Categories;
 
 namespace Tests;
 public sealed class ProductionAggregationTest
 {
-    readonly ProductionAggregationDataSetFactory dataSetFactory = new();
+    readonly ProductionAggregationData dataSetFactory = new();
 
     [Theory]
     [InlineData(Aggregation.Total, new long[] { 1609538400 }, new long[] { 1609552799 }, new int[] { 3930 })]
@@ -25,7 +24,7 @@ public sealed class ProductionAggregationTest
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
         var timeSeries = dataSetFactory.CreateTimeSeries();
 
-        var aggregationCalculator = new ProductionAggregation();
+        var aggregationCalculator = new MeasurementAggregation();
 
         // Act
         var result = aggregationCalculator.CalculateAggregation(
