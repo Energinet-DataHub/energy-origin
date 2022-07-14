@@ -19,6 +19,11 @@ builder.Services.AddSingleton(_ =>
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UsePathBase(builder.Configuration["BASE_HREF"] ?? "/");
+}
+
 app.UseStaticFiles();
 
 app.UseRouting();
