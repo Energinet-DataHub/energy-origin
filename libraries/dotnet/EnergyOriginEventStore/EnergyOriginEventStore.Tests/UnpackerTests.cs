@@ -31,9 +31,9 @@ public class UnpackerTests
         var _event = Event.From(message);
 
         var unpacked_message = packer.UnpackModel(_event);
-        Assert.IsType<UserCreated>(unpacked_message);
+        Assert.IsType<UserCreatedVersion2>(unpacked_message);
 
-        var types_message = (UserCreated)unpacked_message;
+        var types_message = (UserCreatedVersion2)unpacked_message;
 
         Assert.NotNull(unpacked_message);
         Assert.Equal(message.Id, types_message.Id);
