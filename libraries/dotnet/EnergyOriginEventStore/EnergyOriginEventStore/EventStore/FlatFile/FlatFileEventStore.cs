@@ -1,7 +1,4 @@
-using System;
-using System.IO;
 using Newtonsoft.Json;
-using EventStore;
 using EventStore.Serialization;
 
 namespace EventStore.Flatfile;

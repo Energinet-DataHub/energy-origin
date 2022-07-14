@@ -1,4 +1,3 @@
-using System;
 using EnergyOriginDateTimeExtension;
 
 namespace EventStore.Serialization;

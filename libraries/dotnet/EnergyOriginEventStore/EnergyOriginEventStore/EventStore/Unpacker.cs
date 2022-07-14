@@ -1,6 +1,4 @@
-using System;
 using System.Reflection;
-using EnergyOriginDateTimeExtension;
 using EventStore.Serialization;
 using Newtonsoft.Json;
 

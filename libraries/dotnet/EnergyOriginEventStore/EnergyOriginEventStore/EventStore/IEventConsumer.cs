@@ -1,5 +1,3 @@
-using System;
-
 namespace EventStore;
 
 public interface IEventConsumer<T>

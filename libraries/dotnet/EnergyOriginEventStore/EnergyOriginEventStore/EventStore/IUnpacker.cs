@@ -1,4 +1,3 @@
-using System;
 using EventStore.Serialization;
 
 namespace EventStore;

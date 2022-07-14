@@ -1,5 +1,6 @@
 using EnergyOriginEventStore.Tests.Topics;
 using EventStore;
+using EventStore.Flatfile;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;
@@ -13,7 +14,7 @@ public class TestFlatFileEventStore
         {
             Task.Run(async () =>
             {
-                var eventStore = EventStoreFactory<Said>.create();
+                var eventStore = new FlatFileEventStore();
 
                 var message = new Said("Anton Actor", "I like to act!");
 

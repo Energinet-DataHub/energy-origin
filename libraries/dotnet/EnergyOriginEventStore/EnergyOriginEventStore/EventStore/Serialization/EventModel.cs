@@ -35,7 +35,7 @@ public abstract class EventModel
         this.attribute = t.GetCustomAttribute<EventModelVersionAttribute>(false) ??
             throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
     }
-    
+
     public virtual EventModel? NextVersion()
     {
         return null;
