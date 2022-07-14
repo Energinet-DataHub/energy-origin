@@ -54,7 +54,7 @@ sequenceDiagram
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<Meteringpoint>
     
-    loop For each mp of type consumption or production
+    loop For each mp of type consumption
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
         
       ds --)- em: List< Measurement>
