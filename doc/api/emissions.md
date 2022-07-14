@@ -13,12 +13,6 @@ GET /api/emissions
         &dateTo=1514864000
         &aggregation=TOTAL   
 ```
-GET /api/production
-        ?dateFrom=1514826000
-        &dateTo=1514864000
-        &aggregation=TOTAL   
-```
-
 
 ## Parameters
 

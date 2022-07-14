@@ -13,6 +13,12 @@ GET /api/measurements/consumption
         &dateTo=1514864000
         &aggregation=TOTAL
 ```
+```text
+GET /api/measurements/production
+        ?dateFrom=1514826000
+        &dateTo=1514864000
+        &aggregation=TOTAL
+```
 
 ## Parameters
 
