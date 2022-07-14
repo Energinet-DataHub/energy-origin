@@ -7,10 +7,20 @@ using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Serilog;
+using Serilog.Formatting.Json;
+
 
 [assembly: InternalsVisibleTo("Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console(new JsonFormatter())
+    .CreateLogger(); 
+   
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddHttpContextAccessor();
 
@@ -53,6 +63,8 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+app.UseHttpLogging();
 
 app.MapControllers();
 

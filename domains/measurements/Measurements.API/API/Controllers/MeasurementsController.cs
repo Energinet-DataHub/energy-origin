@@ -3,6 +3,7 @@ using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
 
