@@ -54,7 +54,7 @@ jobs:
       chart_folder: domains/mock-oidc/chart
       chart_version: ${{ needs.define_build.outputs.chart_version }}
       containers: ${{ needs.define_build.outputs.containers }}
-      version_yaml_path_prefix: ""
+      version_yaml_path_prefix: "api.image.tag"
       include_image_name: true
     secrets:
       deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
