@@ -19,14 +19,19 @@ builder.Services.AddSingleton(_ =>
 
 var app = builder.Build();
 
+if (!string.IsNullOrWhiteSpace(builder.Configuration["BASE_HREF"]))
+{
+    app.UsePathBase(builder.Configuration["BASE_HREF"]);
+}
+
+app.UseMiddleware<LogRequestMiddleware>();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHealthChecks("/health");
-
-app.UseMiddleware<LogFailedRequestMiddleware>();
 
 app.Run();
 
