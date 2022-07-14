@@ -1,13 +1,9 @@
-using System;
-using System.Text.Json;
-using EventStore;
 using EventStore.Serialization;
 
-namespace Topics;
+namespace EnergyOriginEventStore.Tests.Topics;
 
+[EventModelVersion("UserCreated", 1)]
 public class UserCreatedVersion1 : EventModel {
-    public override string Type { get => "UserCreated"; }
-    public override int Version { get => 1; }
 
     public string Id { get; }
     public string Subject { get; }

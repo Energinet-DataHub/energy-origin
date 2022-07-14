@@ -1,12 +1,9 @@
-using System;
-using EventStore;
 using EventStore.Serialization;
 
-namespace Topics;
+namespace EnergyOriginEventStore.Tests.Topics;
 
+[EventModelVersion("Said", 1)]
 public class Said : EventModel {
-    public override string Type { get => "Said"; }
-    public override int Version { get => 1; }
 
     public string Actor { get; }
     public string Statement { get; }

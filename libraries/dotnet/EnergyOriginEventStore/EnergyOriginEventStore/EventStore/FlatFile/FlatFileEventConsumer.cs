@@ -1,15 +1,10 @@
-using System;
-using System.IO;
-using System.Linq;
-using Newtonsoft.Json;
-using EventStore;
 using EventStore.Serialization;
-using Topics;
 using EnergyOriginDateTimeExtension;
 
 namespace EventStore.Flatfile;
 
 public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T : EventModel {
+    private IUnpacker unpacker;
     long fromDate;
     string topicSuffix;
     string eventSuffix;
@@ -17,7 +12,8 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
     List<FileSystemWatcher> watchers;
     Queue<T> queue = new Queue<T>();
 
-    public FlatFileEventConsumer(string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate) {
+    public FlatFileEventConsumer(IUnpacker unpacker, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate) {
+        this.unpacker = unpacker; 
         this.fromDate = fromDate?.ToUnixTime() ?? 0;
         this.topicSuffix = topicSuffix;
         this.eventSuffix = eventSuffix;
@@ -63,11 +59,11 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
 
     void load(string path) {
         var payload = File.ReadAllText(path);
-        var reconstructedEvent = Unpack.Event(payload);
+        var reconstructedEvent = unpacker.UnpackEvent(payload);
         if (reconstructedEvent.Issued < fromDate) {
             return;
         }
-        var reconstructed = Unpack.Message<T>(reconstructedEvent);
+        var reconstructed = unpacker.UnpackModel<T>(reconstructedEvent);
         queue.Enqueue(reconstructed);
     }
 
