@@ -3,7 +3,8 @@ using EventStore.Serialization;
 
 namespace EventStore;
 
-public interface IEventStore<T> where T : EventModel {
+public interface IEventStore<T> where T : EventModel
+{
     void Produce(T model, IEnumerable<string> topics);
 
     IEventConsumer<T> MakeConsumer(string topicPrefix);

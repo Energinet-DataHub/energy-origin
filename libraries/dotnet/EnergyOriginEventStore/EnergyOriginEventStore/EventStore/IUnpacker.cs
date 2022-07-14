@@ -3,7 +3,8 @@ using EventStore.Serialization;
 
 namespace EventStore;
 
-public interface IUnpacker {
+public interface IUnpacker
+{
 
     Event UnpackEvent(string payload);
 

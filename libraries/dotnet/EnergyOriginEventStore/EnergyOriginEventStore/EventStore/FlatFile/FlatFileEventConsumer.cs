@@ -3,7 +3,8 @@ using EnergyOriginDateTimeExtension;
 
 namespace EventStore.Flatfile;
 
-public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T : EventModel {
+public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T : EventModel
+{
     private IUnpacker unpacker;
     long fromDate;
     string topicSuffix;
@@ -12,8 +13,9 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
     List<FileSystemWatcher> watchers;
     Queue<T> queue = new Queue<T>();
 
-    public FlatFileEventConsumer(IUnpacker unpacker, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate) {
-        this.unpacker = unpacker; 
+    public FlatFileEventConsumer(IUnpacker unpacker, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
+    {
+        this.unpacker = unpacker;
         this.fromDate = fromDate?.ToUnixTime() ?? 0;
         this.topicSuffix = topicSuffix;
         this.eventSuffix = eventSuffix;
@@ -31,8 +33,10 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
         rootWatcher.EnableRaisingEvents = true;
     }
 
-    public async Task<T> Consume() {
-        while (queue.Count() == 0) {
+    public async Task<T> Consume()
+    {
+        while (queue.Count() == 0)
+        {
             await Task.Delay(25);
         }
         return queue.Dequeue();
@@ -42,12 +46,15 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
 
     void OnCreatedDirectory(object source, FileSystemEventArgs e) => watchers.Add(createWatcher(e.FullPath));
 
-    void OnCreatedFile(object source, FileSystemEventArgs e) {
+    void OnCreatedFile(object source, FileSystemEventArgs e)
+    {
         load(e.FullPath);
     }
 
-    public void Dispose() {
-        watchers.ForEach(it => {
+    public void Dispose()
+    {
+        watchers.ForEach(it =>
+        {
             it.Created -= OnCreatedFile;
             it.Error -= OnError;
             it.Dispose();
@@ -57,17 +64,20 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
         rootWatcher.Dispose();
     }
 
-    void load(string path) {
+    void load(string path)
+    {
         var payload = File.ReadAllText(path);
         var reconstructedEvent = unpacker.UnpackEvent(payload);
-        if (reconstructedEvent.Issued < fromDate) {
+        if (reconstructedEvent.Issued < fromDate)
+        {
             return;
         }
         var reconstructed = unpacker.UnpackModel<T>(reconstructedEvent);
         queue.Enqueue(reconstructed);
     }
 
-    FileSystemWatcher createWatcher(string path) {
+    FileSystemWatcher createWatcher(string path)
+    {
         Directory.GetFiles(path)
             .Where(it => it.EndsWith(eventSuffix)).ToList()
             .ForEach(it => load(it));
