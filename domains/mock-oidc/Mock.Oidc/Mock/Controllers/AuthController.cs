@@ -31,13 +31,7 @@ public class AuthController : Controller
             return BadRequest(validationError);
         }
         
-        var routeValues = new RouteValueDictionary();
-        foreach (var keyValuePair in Request.Query)
-        {
-            routeValues.Add(keyValuePair.Key, keyValuePair.Value);
-        }
-
-        return RedirectToPage("/Connect/Signin", routeValues);
+        return Redirect($"{Environment.GetEnvironmentVariable("BASE_HREF") ?? "/"}Connect/Signin{Request.QueryString}");
     }
 
     [HttpPost]
