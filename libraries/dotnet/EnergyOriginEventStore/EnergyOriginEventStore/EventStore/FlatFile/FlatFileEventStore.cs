@@ -6,9 +6,9 @@ namespace EventStore.FlatFile;
 public class FlatFileEventStore : IEventStore
 {
 
-    const string ROOT = "store";
-    const string TOPIC_SUFFIX = ".topic";
-    const string EVENT_SUFFIX = ".event";
+    public string ROOT => "store";
+    public string TOPIC_SUFFIX => ".topic";
+    public string EVENT_SUFFIX => ".event";
 
     public FlatFileEventStore()
     {
@@ -34,8 +34,15 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
+    public event Action? disposeEvent;
+
     public IEventConsumerBuilder GetBuilder(string topicPrefix)
     {
-        return new FlatFileEventConsumerBuilder(ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix);
+        return new FlatFileEventConsumerBuilder(this, topicPrefix);
+    }
+
+    public void Dispose()
+    {
+        disposeEvent?.Invoke();
     }
 }

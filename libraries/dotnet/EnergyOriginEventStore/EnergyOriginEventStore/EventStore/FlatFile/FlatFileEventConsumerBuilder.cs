@@ -8,23 +8,24 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
     private Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers = new Dictionary<Type, IEnumerable<Action<Event<EventModel>>>>();
 
-    private string ROOT;
-    private string TOPIC_SUFFIX;
-    private string EVENT_SUFFIX;
+    private FlatFileEventStore fileStore;
     private string topicPrefix;
+    private string? pointer = null;
 
-    public FlatFileEventConsumerBuilder(string ROOT, string TOPIC_SUFFIX, string EVENT_SUFFIX, string topicPrefix)
+    public FlatFileEventConsumerBuilder(FlatFileEventStore fileStore, string topicPrefix)
     {
-        this.ROOT = ROOT;
-        this.TOPIC_SUFFIX = TOPIC_SUFFIX;
-        this.EVENT_SUFFIX = EVENT_SUFFIX;
+        this.fileStore = fileStore;
         this.topicPrefix = topicPrefix;
     }
 
     public IEventConsumer Build()
     {
         var unpacker = new Unpacker();
-        return new FlatFileEventConsumer(unpacker, handlers, ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, null);
+        var consumer = new FlatFileEventConsumer(unpacker, handlers, fileStore, topicPrefix, pointer);
+
+        fileStore.disposeEvent += consumer.Dispose;
+
+        return consumer;
     }
 
     public IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel
@@ -45,7 +46,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        throw new NotImplementedException();
+        this.pointer = pointer;
+        return this;
     }
-
 }

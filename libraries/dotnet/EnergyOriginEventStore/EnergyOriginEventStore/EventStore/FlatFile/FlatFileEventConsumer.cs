@@ -6,31 +6,46 @@ namespace EventStore.FlatFile;
 
 public class FlatFileEventConsumer : IDisposable, IEventConsumer
 {
+    private FlatFileEventStore fileStore;
     private IUnpacker unpacker;
-    long fromDate;
-    string topicSuffix;
-    string eventSuffix;
+    long fromIssued;
+    long fromFraction;
+
     FileSystemWatcher rootWatcher;
     List<FileSystemWatcher> watchers;
     // Queue<EventModel> queue = new Queue<EventModel>();
     Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
 
-    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
+    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
     {
+        this.fileStore = fileStore;
         this.unpacker = unpacker;
         this.handlers = handlers;
-        this.fromDate = fromDate?.ToUnixTime() ?? 0;
-        this.topicSuffix = topicSuffix;
-        this.eventSuffix = eventSuffix;
 
-        Console.WriteLine($"* Setup watchers using: {root} and prefix: {topicPrefix}");
+        if (pointer is not null)
+        {
+            try
+            {
+                var a = pointer.Split('-');
+                this.fromIssued = long.Parse(a[0]);
+                this.fromFraction = long.Parse(a[1]);
+            }
+            catch (Exception)
+            {
+                throw new InvalidDataException("Pointer not a valid format");
+            }
+        }
 
-        watchers = Directory.EnumerateDirectories(root)
-            .Where(it => it.StartsWith($"{root}/{topicPrefix}") && it.EndsWith(topicSuffix))
+
+
+        Console.WriteLine($"* Setup watchers using: {fileStore.ROOT} and prefix: {topicPrefix}");
+
+        watchers = Directory.EnumerateDirectories(fileStore.ROOT)
+            .Where(it => it.StartsWith($"{fileStore.ROOT}/{topicPrefix}") && it.EndsWith(fileStore.TOPIC_SUFFIX))
             .Select(it => createWatcher(it))
             .ToList();
 
-        rootWatcher = new FileSystemWatcher(root, "*.topic");
+        rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
         rootWatcher.Created += OnCreatedDirectory;
         rootWatcher.Error += OnError;
         rootWatcher.EnableRaisingEvents = true;
@@ -71,10 +86,12 @@ public class FlatFileEventConsumer : IDisposable, IEventConsumer
     {
         var payload = File.ReadAllText(path);
         var reconstructedEvent = unpacker.UnpackEvent(payload);
-        if (reconstructedEvent.Issued < fromDate)
+        if (reconstructedEvent.Issued < fromIssued ||
+            (reconstructedEvent.Issued == fromIssued && reconstructedEvent.IssuedFraction <= fromFraction))
         {
             return;
         }
+
         var reconstructed = unpacker.UnpackModel(reconstructedEvent);
 
         // Optimization Queue events and have worker execute them.
@@ -83,17 +100,22 @@ public class FlatFileEventConsumer : IDisposable, IEventConsumer
         var t = reconstructed.GetType();
         var b = handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
 
-        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, reconstructedEvent.Issued.ToString())));
+        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, eventToPointer(reconstructedEvent))));
+    }
+
+    string eventToPointer(InternalEvent e)
+    {
+        return e.Issued.ToString() + "-" + e.IssuedFraction.ToString();
     }
 
     FileSystemWatcher createWatcher(string path)
     {
         Directory.GetFiles(path)
-            .Where(it => it.EndsWith(eventSuffix)).ToList()
+            .Where(it => it.EndsWith(fileStore.EVENT_SUFFIX)).ToList()
             .ForEach(it => load(it));
 
         Console.WriteLine($"* Watching files in: {path}");
-        var watcher = new FileSystemWatcher(path, $"*{eventSuffix}");
+        var watcher = new FileSystemWatcher(path, $"*{fileStore.EVENT_SUFFIX}");
         watcher.Created += OnCreatedFile;
         watcher.Error += OnError;
         watcher.EnableRaisingEvents = true;
