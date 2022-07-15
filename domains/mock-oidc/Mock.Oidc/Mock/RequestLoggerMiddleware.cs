@@ -16,7 +16,12 @@ public class RequestLoggerMiddleware
 
         var req = httpContext.Request;
         var res = httpContext.Response;
-        
+
+        if (string.Equals(req.Path.Value, "/health", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return;
+        }
+
         var message = $"{res.StatusCode} - (Scheme: {req.Scheme} Host: {req.Host}) {req.Method} (PathBase: {req.PathBase}) {req.Path}{req.QueryString}";
 
         if (res.StatusCode >= 400)
