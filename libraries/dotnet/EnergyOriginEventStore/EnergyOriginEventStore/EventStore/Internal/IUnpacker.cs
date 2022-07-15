@@ -1,6 +1,6 @@
 using EventStore.Serialization;
 
-namespace EventStore;
+namespace EventStore.Internal;
 
 public interface IUnpacker
 {

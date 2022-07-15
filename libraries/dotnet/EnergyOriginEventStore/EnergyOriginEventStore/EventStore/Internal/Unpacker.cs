@@ -2,7 +2,7 @@ using System.Reflection;
 using EventStore.Serialization;
 using Newtonsoft.Json;
 
-namespace EventStore;
+namespace EventStore.Internal;
 
 public class Unpacker : IUnpacker
 {

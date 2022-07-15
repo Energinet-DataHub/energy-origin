@@ -1,5 +1,5 @@
 using EnergyOriginEventStore.Tests.Topics;
-using EventStore;
+using EventStore.Internal;
 using EventStore.Serialization;
 using Xunit;
 

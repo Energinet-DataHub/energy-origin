@@ -1,9 +1,10 @@
 using EventStore.Serialization;
 using EnergyOriginDateTimeExtension;
+using EventStore.Internal;
 
-namespace EventStore.Flatfile;
+namespace EventStore.FlatFile;
 
-public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T : EventModel
+public class FlatFileEventConsumer : IDisposable, IEventConsumer
 {
     private IUnpacker unpacker;
     long fromDate;
@@ -11,11 +12,13 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
     string eventSuffix;
     FileSystemWatcher rootWatcher;
     List<FileSystemWatcher> watchers;
-    Queue<T> queue = new Queue<T>();
+    // Queue<EventModel> queue = new Queue<EventModel>();
+    Dictionary<Type, IEnumerable<Action<EventModel>>> handlers;
 
-    public FlatFileEventConsumer(IUnpacker unpacker, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
+    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<EventModel>>> handlers, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
     {
         this.unpacker = unpacker;
+        this.handlers = handlers;
         this.fromDate = fromDate?.ToUnixTime() ?? 0;
         this.topicSuffix = topicSuffix;
         this.eventSuffix = eventSuffix;
@@ -33,14 +36,14 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
         rootWatcher.EnableRaisingEvents = true;
     }
 
-    public async Task<T> Consume()
-    {
-        while (queue.Count() == 0)
-        {
-            await Task.Delay(25);
-        }
-        return queue.Dequeue();
-    }
+    // public async Task<EventModel> Consume()
+    // {
+    //     while (queue.Count() == 0)
+    //     {
+    //         await Task.Delay(25);
+    //     }
+    //     return queue.Dequeue();
+    // }
 
     private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException());
 
@@ -72,8 +75,15 @@ public class FlatFileEventConsumer<T> : IDisposable, IEventConsumer<T> where T :
         {
             return;
         }
-        var reconstructed = unpacker.UnpackModel<T>(reconstructedEvent);
-        queue.Enqueue(reconstructed);
+        var reconstructed = unpacker.UnpackModel(reconstructedEvent);
+
+        // Optimization Queue events and have worker execute them.
+        //queue.Enqueue(reconstructed);
+
+        var t = reconstructed.GetType();
+        var b = handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
+
+        b.AsParallel().ForAll(x => x.Invoke(reconstructed));
     }
 
     FileSystemWatcher createWatcher(string path)

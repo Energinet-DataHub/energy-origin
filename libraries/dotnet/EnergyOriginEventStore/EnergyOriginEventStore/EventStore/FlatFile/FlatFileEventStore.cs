@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using EventStore.Serialization;
 
-namespace EventStore.Flatfile;
+namespace EventStore.FlatFile;
 
 public class FlatFileEventStore : IEventStore
 {
@@ -9,7 +9,6 @@ public class FlatFileEventStore : IEventStore
     const string ROOT = "store";
     const string TOPIC_SUFFIX = ".topic";
     const string EVENT_SUFFIX = ".event";
-    private Unpacker unpacker;
 
     public FlatFileEventStore()
     {
@@ -17,8 +16,6 @@ public class FlatFileEventStore : IEventStore
         {
             Directory.CreateDirectory(ROOT);
         }
-
-        this.unpacker = new Unpacker();
     }
 
     public async Task Produce(EventModel model, IEnumerable<string> topics)
@@ -37,8 +34,9 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
-    public IEventConsumer<T> MakeConsumer<T>(string topicPrefix) where T : EventModel => CreateConsumer<T>(topicPrefix, null);
-    public IEventConsumer<T> MakeConsumer<T>(string topicPrefix, DateTime fromDate) where T : EventModel => CreateConsumer<T>(topicPrefix, fromDate);
 
-    IEventConsumer<T> CreateConsumer<T>(string topicPrefix, DateTime? fromDate) where T : EventModel => new FlatFileEventConsumer<T>(unpacker, ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, fromDate);
+    public IEventConsumerBuilder GetBuilder(string topicPrefix)
+    {
+        return new FlatFileEventConsumerBuilder(ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix);
+    }
 }
