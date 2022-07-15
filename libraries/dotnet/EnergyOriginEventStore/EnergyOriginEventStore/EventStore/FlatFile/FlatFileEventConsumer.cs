@@ -1,5 +1,4 @@
 using EventStore.Serialization;
-using EnergyOriginDateTimeExtension;
 using EventStore.Internal;
 
 namespace EventStore.FlatFile;

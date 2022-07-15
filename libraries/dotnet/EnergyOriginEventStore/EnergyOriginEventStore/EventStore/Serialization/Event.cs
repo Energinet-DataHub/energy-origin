@@ -1,5 +1,3 @@
-using EnergyOriginDateTimeExtension;
-
 namespace EventStore.Serialization;
 
 public class Event<T> where T : EventModel
