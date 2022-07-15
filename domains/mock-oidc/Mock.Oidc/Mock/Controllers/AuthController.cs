@@ -10,11 +10,14 @@ public class AuthController : Controller
     private readonly ClientDescriptor _client;
     private readonly UserDescriptor[] _users;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator)
+    private readonly ILogger<AuthController> _logger;
+
+    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
     {
         _client = client;
         _users = users;
         _tokenGenerator = tokenGenerator;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -44,15 +47,19 @@ public class AuthController : Controller
     [Route("Connect/Token")]
     public IActionResult Token(string client_id, string code, string client_secret, string redirect_uri)
     {
+        _logger.LogInformation($"connect/token: client_id={client_id} code={code} redirect_uri={redirect_uri}");   
+
         var (isValid, validationError) = _client.Validate(client_id, client_secret, redirect_uri);
         if (!isValid)
         {
+            _logger.LogInformation($"connect/token: {validationError}");
             return BadRequest(validationError);
         }
 
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {
+            _logger.LogInformation($"connect/token: Invalid code - no matching user");
             return BadRequest("Invalid code - no matching user");
         }
 
