@@ -83,4 +83,14 @@ public class AuthController : Controller
                 userinfo_token = _tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
             });
     }
+
+    [HttpGet]
+    [Route(".well-known/openid-configuration/jwks")]
+    public IActionResult Jwks()
+    {
+        return Ok(new
+        {
+            keys = new[] { _tokenGenerator.GenerateJwk() }
+        });
+    }
 }
