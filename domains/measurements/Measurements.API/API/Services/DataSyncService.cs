@@ -51,6 +51,7 @@ public class DataSyncService : IDataSyncService
         }
 
         var result = await response.Content.ReadFromJsonAsync<MeteringPointsResponse>();
+
         if (result == null || result.MeteringPoints == null)
         {
             throw new Exception($"Parsing of meteringpoints failed. Content: {response.Content}");
