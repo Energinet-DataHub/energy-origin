@@ -4,9 +4,9 @@ namespace EventStore.Internal;
 
 public interface IUnpacker
 {
-    Event UnpackEvent(string payload);
+    InternalEvent UnpackEvent(string payload);
 
-    EventModel UnpackModel(Event payload);
+    EventModel UnpackModel(InternalEvent payload);
 
-    T UnpackModel<T>(Event payload) where T : EventModel;
+    T UnpackModel<T>(InternalEvent payload) where T : EventModel;
 }

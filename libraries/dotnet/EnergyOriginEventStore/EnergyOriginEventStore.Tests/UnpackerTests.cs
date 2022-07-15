@@ -13,7 +13,7 @@ public class UnpackerTests
         Unpacker packer = new Unpacker();
 
         var message = new Said("Anton Actor", "I like to act!");
-        var _event = Event.From(message);
+        var _event = InternalEvent.From(message);
 
         var unpacked_message = packer.UnpackModel(_event) as Said;
 
@@ -28,7 +28,7 @@ public class UnpackerTests
         Unpacker packer = new Unpacker();
 
         var message = new UserCreatedVersion1("123", "my-id");
-        var _event = Event.From(message);
+        var _event = InternalEvent.From(message);
 
         var unpacked_message = packer.UnpackModel(_event);
         Assert.IsType<UserCreatedVersion2>(unpacked_message);

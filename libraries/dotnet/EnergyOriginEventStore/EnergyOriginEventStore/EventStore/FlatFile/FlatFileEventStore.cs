@@ -20,7 +20,7 @@ public class FlatFileEventStore : IEventStore
 
     public async Task Produce(EventModel model, IEnumerable<string> topics)
     {
-        var message = Event.From(model);
+        var message = InternalEvent.From(model);
 
         foreach (string topic in topics)
         {

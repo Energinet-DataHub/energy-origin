@@ -20,17 +20,17 @@ public class Unpacker : IUnpacker
         }
     }
 
-    public Event UnpackEvent(string payload)
+    public InternalEvent UnpackEvent(string payload)
     {
-        return JsonConvert.DeserializeObject<Event>(payload) ?? throw new Exception($"Payload could not be decoded: {payload}");
+        return JsonConvert.DeserializeObject<InternalEvent>(payload) ?? throw new Exception($"Payload could not be decoded: {payload}");
     }
 
-    public T UnpackModel<T>(Event payload) where T : EventModel
+    public T UnpackModel<T>(InternalEvent payload) where T : EventModel
     {
         return (T)UnpackModel(payload) ?? throw new InvalidCastException("Event not of correct type");
     }
 
-    public EventModel UnpackModel(Event payload)
+    public EventModel UnpackModel(InternalEvent payload)
     {
         Type type = this.typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
             throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");

@@ -13,9 +13,9 @@ public class FlatFileEventConsumer : IDisposable, IEventConsumer
     FileSystemWatcher rootWatcher;
     List<FileSystemWatcher> watchers;
     // Queue<EventModel> queue = new Queue<EventModel>();
-    Dictionary<Type, IEnumerable<Action<EventModel>>> handlers;
+    Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
 
-    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<EventModel>>> handlers, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
+    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, string root, string topicSuffix, string eventSuffix, string topicPrefix, DateTime? fromDate)
     {
         this.unpacker = unpacker;
         this.handlers = handlers;
@@ -83,7 +83,7 @@ public class FlatFileEventConsumer : IDisposable, IEventConsumer
         var t = reconstructed.GetType();
         var b = handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
 
-        b.AsParallel().ForAll(x => x.Invoke(reconstructed));
+        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, reconstructedEvent.Issued.ToString())));
     }
 
     FileSystemWatcher createWatcher(string path)

@@ -25,7 +25,7 @@ public class FlatFileEventStoreTests
                     .GetBuilder("Gossip")
                     .AddHandler<Said>((value) =>
                     {
-                        received_value = value;
+                        received_value = value.EventModel;
                         semaphore.Release();
                     })
                     .Build();

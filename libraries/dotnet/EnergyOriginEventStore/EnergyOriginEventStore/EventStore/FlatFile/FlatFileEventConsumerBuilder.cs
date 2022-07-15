@@ -6,7 +6,7 @@ namespace EventStore.FlatFile;
 internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 {
 
-    private Dictionary<Type, IEnumerable<Action<EventModel>>> handlers = new Dictionary<Type, IEnumerable<Action<EventModel>>>();
+    private Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers = new Dictionary<Type, IEnumerable<Action<Event<EventModel>>>>();
 
     private string ROOT;
     private string TOPIC_SUFFIX;
@@ -27,19 +27,25 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
         return new FlatFileEventConsumer(unpacker, handlers, ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix, null);
     }
 
-    public IEventConsumerBuilder AddHandler<T>(Action<T> handler) where T : EventModel
+    public IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel
     {
         Type t = typeof(T);
 
         var list = handlers.GetValueOrDefault(t);
         if (list is null)
         {
-            list = new List<Action<EventModel>>();
+            list = new List<Action<Event<EventModel>>>();
         }
 
-        Action<EventModel> casted_handler = (e) => handler((T)e);
+        Action<Event<EventModel>> casted_handler = (e) => handler(new Event<T>((T)e.EventModel, e.Pointer));
         handlers[t] = list.Append(casted_handler);
 
         return this;
     }
+
+    public IEventConsumerBuilder ContinueFrom(string pointer)
+    {
+        throw new NotImplementedException();
+    }
+
 }
