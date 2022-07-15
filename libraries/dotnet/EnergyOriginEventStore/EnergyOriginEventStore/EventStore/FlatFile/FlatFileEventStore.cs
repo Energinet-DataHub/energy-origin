@@ -18,7 +18,7 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
-    public async Task Produce(EventModel model, IEnumerable<string> topics)
+    public async Task Produce(EventModel model, params string[] topics)
     {
         var message = InternalEvent.From(model);
 
