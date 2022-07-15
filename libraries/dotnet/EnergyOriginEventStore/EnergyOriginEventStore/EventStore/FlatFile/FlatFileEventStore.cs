@@ -34,7 +34,6 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
-
     public IEventConsumerBuilder GetBuilder(string topicPrefix)
     {
         return new FlatFileEventConsumerBuilder(ROOT, TOPIC_SUFFIX, EVENT_SUFFIX, topicPrefix);
