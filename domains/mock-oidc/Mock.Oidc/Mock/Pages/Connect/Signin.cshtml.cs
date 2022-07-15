@@ -48,7 +48,7 @@ public class SigninModel : PageModel
         var userDescriptor = Users.FirstOrDefault(u => string.Equals(u.Name, Name, StringComparison.InvariantCultureIgnoreCase));
         if (userDescriptor == null)
         {
-            return BadRequest();
+            return BadRequest($"User '{Name}' not found");
         }
 
         var code = userDescriptor.Name?.ToMd5() ?? "";
