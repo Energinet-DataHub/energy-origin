@@ -45,7 +45,7 @@ public class SigninModel : PageModel
             return BadRequest(validationError);
         }
         
-        var userDescriptor = Users.FirstOrDefault(u => u.Name == Name);
+        var userDescriptor = Users.FirstOrDefault(u => string.Equals(u.Name, Name, StringComparison.InvariantCultureIgnoreCase));
         if (userDescriptor == null)
         {
             return BadRequest();
