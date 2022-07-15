@@ -6,7 +6,7 @@
 <div>
     <h1>Sign in</h1>
 
-    <form asp-antiforgery="true" method="post" id="user-selection-form">
+    <form asp-antiforgery="false" method="post" id="user-selection-form">
         
         @foreach (var user in Model.Users)
         {

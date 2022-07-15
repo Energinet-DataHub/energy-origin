@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Mock.Oidc;
 using Mock.Oidc.Extensions;
 using Mock.Oidc.Jwt;
@@ -5,7 +6,10 @@ using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
+}); 
 
 builder.Services.AddHealthChecks();
 
