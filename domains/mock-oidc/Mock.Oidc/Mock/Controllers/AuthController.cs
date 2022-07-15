@@ -50,12 +50,12 @@ public class AuthController : Controller
         _logger.LogInformation($"connect/token: client_id={client_id} code={code} redirect_uri={redirect_uri}");
         _logger.LogInformation(string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
 
-        var (isValid, validationError) = _client.Validate(client_id, client_secret, redirect_uri);
-        if (!isValid)
-        {
-            _logger.LogInformation($"connect/token: {validationError}");
-            return BadRequest(validationError);
-        }
+        //var (isValid, validationError) = _client.Validate(client_id, client_secret, redirect_uri);
+        //if (!isValid)
+        //{
+        //    _logger.LogInformation($"connect/token: {validationError}");
+        //    return BadRequest(validationError);
+        //}
 
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
