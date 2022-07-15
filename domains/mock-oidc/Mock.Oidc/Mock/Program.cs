@@ -21,10 +21,14 @@ var app = builder.Build();
 
 if (!string.IsNullOrWhiteSpace(builder.Configuration["BASE_HREF"]))
 {
-    app.UsePathBase(builder.Configuration["BASE_HREF"]);
+    app.Use((context, next) =>
+    {
+        context.Request.PathBase = new PathString(builder.Configuration["BASE_HREF"]);
+        return next(context);
+    });
 }
 
-app.UseMiddleware<LogRequestMiddleware>();
+app.UseMiddleware<RequestLoggerMiddleware>();
 
 app.UseStaticFiles();
 
