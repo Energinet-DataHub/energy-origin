@@ -23,7 +23,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
-    [Route("Connect/Logout")]
+    [Route("api/v1/session/logout")]
     public IActionResult LogOut() => Ok();
 
     [HttpGet]

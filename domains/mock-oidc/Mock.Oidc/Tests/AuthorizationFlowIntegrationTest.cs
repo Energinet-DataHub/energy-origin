@@ -74,6 +74,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         Assert.Equal("testState", callbackState);
 
         // Get token from endpoint using authorization code
+
         var authorization = $"{ClientId}:{ClientSecret}".EncodeBase64();
         var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "/Connect/Token");
         tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
@@ -108,7 +109,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         // Logout
 
-        var logoutResponse = await client.PostAsync("/Connect/Logout", new StringContent(""));
+        var logoutResponse = await client.PostAsync("/api/v1/session/logout", new StringContent(""));
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
     }
     
