@@ -2,8 +2,8 @@
 
 public class UserDescriptor
 {
-    private Dictionary<string, object> _idToken;
-    private Dictionary<string, object> _userinfoToken;
+    private Dictionary<string, object>? _idToken;
+    private Dictionary<string, object>? _userinfoToken;
 
     public string? Name { get; set; }
     public string? Description { get; set; }
@@ -11,13 +11,13 @@ public class UserDescriptor
 
     public Dictionary<string, object> IdToken
     {
-        get => _idToken;
+        get => _idToken ?? new();
         set => _idToken = EnsureCorrectTypeForNumbers(value);
     }
 
     public Dictionary<string, object> UserinfoToken
     {
-        get => _userinfoToken;
+        get => _userinfoToken ?? new();
         set => _userinfoToken = EnsureCorrectTypeForNumbers(value);
     }
 

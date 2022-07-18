@@ -17,7 +17,7 @@ public static class HtmlExtensions
         void ResponseFactory(VirtualResponse htmlResponse)
         {
             htmlResponse
-                .Address(response.RequestMessage.RequestUri)
+                .Address(response.RequestMessage?.RequestUri)
                 .Status(response.StatusCode);
 
             MapHeaders(response.Headers);
