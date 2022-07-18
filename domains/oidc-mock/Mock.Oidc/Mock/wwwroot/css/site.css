@@ -1,0 +1,36 @@
+html { font-size: 14px; }
+
+@media (min-width: 768px) {
+    html { font-size: 16px; }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    background-color: #00847c;
+}
+
+form {
+    display: inline-flex;
+}
+
+.peopleButton {
+    background-color: #02525e;
+    border: 0;
+    display: flex;
+    color: #fff;
+    margin: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+h2 {
+    max-width: min-content;
+    padding: 0 16px;
+    color: #ffd237;
+    text-transform: uppercase;
+}
