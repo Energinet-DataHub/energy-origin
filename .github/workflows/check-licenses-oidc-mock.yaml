@@ -1,4 +1,4 @@
-name: Check Licenses - mock oidc
+name: Check Licenses - oidc mock
 on:
   pull_request:
     branches: [ main ]

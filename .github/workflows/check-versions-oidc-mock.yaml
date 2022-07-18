@@ -1,4 +1,4 @@
-name: Version Check - mock oidc
+name: Version Check - oidc mock
 on:
   pull_request:
     branches: [ main ]
