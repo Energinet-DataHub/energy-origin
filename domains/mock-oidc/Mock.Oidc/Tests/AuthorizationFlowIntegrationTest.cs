@@ -1,6 +1,7 @@
 using AngleSharp.Html.Dom;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Mock.Oidc.Extensions;
 using System.Net;
 using System.Text.Json;
 using System.Web;
@@ -73,14 +74,16 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         Assert.Equal("testState", callbackState);
 
         // Get token from endpoint using authorization code
-        
-        var tokenRequestData = new FormUrlEncodedContent(new Dictionary<string, string>
+        var authorization = $"{ClientId}:{ClientSecret}".EncodeBase64();
+        var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "/Connect/Token");
+        tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
+        tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "code", code },
             { "grant_type", "authorization_code" },
             { "redirect_uri", RedirectUri }
         });
-        var tokenResponse = await client.PostAsync("/Connect/Token", tokenRequestData);
+        var tokenResponse = await client.SendAsync(tokenRequest);
 
         Assert.Equal(HttpStatusCode.OK, tokenResponse.StatusCode);
 

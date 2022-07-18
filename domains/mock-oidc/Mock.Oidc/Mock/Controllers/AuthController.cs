@@ -49,18 +49,24 @@ public class AuthController : Controller
     [Route("Connect/Token")]
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
-        _logger.LogInformation($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-        _logger.LogInformation($"Authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-
-        if (!string.Equals(redirect_uri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return BadRequest("Invalid redirect_uri");
-        }
-
+        _logger.LogInformation($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        _logger.LogInformation($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
             return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
+        }
+
+        var auth = (authorizationHeader.Parameter ?? ":").DecodeBase64();
+        var split = auth.Split(":");
+        var clientId = split[0];
+        var clientSecret = split[1];
+
+        var (isValid, validationError) = _client.Validate(clientId, clientSecret, redirect_uri);
+        if (!isValid)
+        {
+            return BadRequest(validationError);
         }
         
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
