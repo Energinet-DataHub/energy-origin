@@ -1,4 +1,4 @@
-﻿namespace API.Helpers
+namespace API.Helpers
 {
     public static class Configuration
     {
