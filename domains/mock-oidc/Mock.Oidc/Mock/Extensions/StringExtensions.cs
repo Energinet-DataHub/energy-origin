@@ -20,7 +20,7 @@ public static class StringExtensions
 
     public static string DecodeBase64(this string value)
     {
-        var valueBytes = System.Convert.FromBase64String(value);
+        var valueBytes = Convert.FromBase64String(value);
         return Encoding.UTF8.GetString(valueBytes);
     }
 }

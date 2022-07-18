@@ -1,4 +1,5 @@
 using AngleSharp.Html.Dom;
+using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Mock.Oidc.Extensions;
@@ -96,7 +97,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var idTokenJwt = token.GetProperty("id_token").GetString()!;
         var idTokenJson = idTokenJwt.GetJwtPayload();
         var idToken = JsonDocument.Parse(idTokenJson).RootElement;
-        
+
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", idToken.GetProperty("sub").GetString());
         Assert.Equal(42, idToken.GetProperty("foo").GetInt32());
 
@@ -106,6 +107,15 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", userInfoToken.GetProperty("sub").GetString());
         Assert.Equal(42, userInfoToken.GetProperty("bar").GetInt32());
+
+        // Get JWK and verify signature
+
+        var jwkResponse = await client.GetAsync(".well-known/openid-configuration/jwks");
+        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
+        var jwk = jwkSet.Keys.Single();
+
+        Assert.NotNull(JWT.Decode(idTokenJwt, jwk));
+        Assert.NotNull(JWT.Decode(userInfoTokenJwt, jwk));
 
         // Logout
 
