@@ -77,8 +77,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var tokenRequestData = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "code", code },
-            { "client_id", ClientId },
-            { "client_secret", ClientSecret },
+            { "grant_type", "authorization_code" },
             { "redirect_uri", RedirectUri }
         });
         var tokenResponse = await client.PostAsync("/Connect/Token", tokenRequestData);

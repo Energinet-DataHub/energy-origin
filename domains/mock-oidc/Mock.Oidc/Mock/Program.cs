@@ -18,7 +18,7 @@ builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["USERS_
 builder.Services.AddSingleton(_ => 
     new ClientDescriptor(
         builder.Configuration["CLIENT_ID"], 
-        builder.Configuration["CLIENT_SECRET"], 
+        builder.Configuration["CLIENT_SECRET"], //TODO: Delete client secret
         builder.Configuration["CLIENT_REDIRECT_URI"]));
 
 var app = builder.Build();

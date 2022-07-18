@@ -14,5 +14,5 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string Generate(Dictionary<string, object> claims) => JWT.Encode(claims, _jwk, JwsAlgorithm.HS256);
 
-    public IDictionary<string, object> GenerateJwk() => _jwk.ToDictionary();
+    public IDictionary<string, object> GetJwkProperties() => _jwk.ToDictionary();
 }

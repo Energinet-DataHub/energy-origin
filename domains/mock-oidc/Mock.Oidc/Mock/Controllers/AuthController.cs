@@ -45,22 +45,24 @@ public class AuthController : Controller
 
     [HttpPost]
     [Route("Connect/Token")]
-    public IActionResult Token(string client_id, string code, string client_secret, string redirect_uri)
+    public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
-        _logger.LogInformation($"connect/token: client_id={client_id} code={code} redirect_uri={redirect_uri}");
-        _logger.LogInformation(string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
+        _logger.LogInformation($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
 
-        //var (isValid, validationError) = _client.Validate(client_id, client_secret, redirect_uri);
-        //if (!isValid)
-        //{
-        //    _logger.LogInformation($"connect/token: {validationError}");
-        //    return BadRequest(validationError);
-        //}
+        if (!string.Equals(redirect_uri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return BadRequest("Invalid redirect_uri");
+        }
 
+        if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
+        }
+        
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {
-            _logger.LogInformation($"connect/token: Invalid code - no matching user");
+            _logger.LogInformation("connect/token: Invalid code - no matching user");
             return BadRequest("Invalid code - no matching user");
         }
 
@@ -90,7 +92,7 @@ public class AuthController : Controller
     {
         return Ok(new
         {
-            keys = new[] { _tokenGenerator.GenerateJwk() }
+            keys = new[] { _tokenGenerator.GetJwkProperties() }
         });
     }
 }

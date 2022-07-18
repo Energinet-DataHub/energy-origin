@@ -4,5 +4,5 @@ public interface IJwtTokenGenerator
 {
     string Generate(Dictionary<string, object> claims);
     
-    IDictionary<string, object> GenerateJwk();
+    IDictionary<string, object> GetJwkProperties();
 }
