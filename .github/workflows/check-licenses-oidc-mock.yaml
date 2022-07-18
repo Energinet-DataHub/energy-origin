@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - domains/mock-oidc/**
+      - domains/oidc-mock/**
 jobs:
   check-licenses:
     runs-on: ubuntu-latest
@@ -14,5 +14,5 @@ jobs:
     - name: Check license
       uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@main
       with:
-        project-folder: domains/mock-oidc/Mock.Oidc/Mock
+        project-folder: domains/oidc-mock/Mock.Oidc/Mock
         license-mapping-file: .mapped-licenses.json

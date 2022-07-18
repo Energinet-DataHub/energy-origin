@@ -3,15 +3,15 @@ name: Build - oidc mock
 on:
   pull_request:
     paths:
-      - domains/mock-oidc/**
+      - domains/oidc-mock/**
   push:
     branches:
       - main
     paths:
-      - domains/mock-oidc/**
+      - domains/oidc-mock/**
 
 concurrency:
-  group: ${{ github.ref }}-mock-oidc
+  group: ${{ github.ref }}-oidc-mock
   cancel-in-progress: false
 
 jobs:
@@ -26,14 +26,14 @@ jobs:
         id: resolve-chart
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/mock-oidc/chart/Chart.yaml
+          yaml_file: domains/oidc-mock/chart/Chart.yaml
           yaml_path: version
 
       - name: Resolve image version
         id: resolve-image
         uses: Energinet-DataHub/.github/.github/actions/get-semver@main
         with:
-          yaml_file: domains/mock-oidc/chart/values.yaml
+          yaml_file: domains/oidc-mock/chart/values.yaml
           yaml_path: api.image.tag
 
   publish:
@@ -46,10 +46,10 @@ jobs:
       - name: Build image
         uses: Energinet-DataHub/.github/.github/actions/build-and-push-container@main
         with:
-          dockerfile: domains/mock-oidc/Mock.Oidc/Mock/Dockerfile
+          dockerfile: domains/oidc-mock/Mock.Oidc/Mock/Dockerfile
           image-name: eo-oidc-mock
           image-tag: ${{ needs.resolve-versions.outputs.image }}
-          docker-context: domains/mock-oidc/Mock.Oidc/
+          docker-context: domains/oidc-mock/Mock.Oidc/
 
   release-chart:
     name: Release chart
@@ -64,7 +64,7 @@ jobs:
       - name: Update image tag
         uses: Energinet-DataHub/.github/.github/actions/yaml-set@main
         with:
-          yaml_file: domains/mock-oidc/chart/values.yaml
+          yaml_file: domains/oidc-mock/chart/values.yaml
           yaml_path: api.image.tag
           value: ${{ needs.resolve-versions.outputs.image }}
 
@@ -72,7 +72,7 @@ jobs:
         id: release-chart
         uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
         with:
-          chart_folder: domains/mock-oidc/chart
+          chart_folder: domains/oidc-mock/chart
           chart_version: ${{ needs.resolve-versions.outputs.chart }}
           include_image_name: true
           deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
