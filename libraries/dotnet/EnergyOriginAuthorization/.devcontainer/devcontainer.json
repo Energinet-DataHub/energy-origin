@@ -14,10 +14,13 @@
 	},
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+	"settings": {
+		"editor.formatOnSave": true
+	},
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
+		"EditorConfig.EditorConfig",
 		"ms-dotnettools.csharp"
 	],
 
