@@ -40,9 +40,8 @@ jobs:
     - name: Restore
       run: dotnet restore
 
-    # DISABLED while applying whitespace rules
-    # - name: Lint
-    #   run: dotnet format --verify-no-changes -v diag
+    - name: Lint
+      run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       run: dotnet test --no-restore --verbosity normal *.Tests
