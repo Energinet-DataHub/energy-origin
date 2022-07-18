@@ -1,0 +1,20 @@
+name: Version Check - oidc mock
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - domains/mock-oidc/**
+jobs:
+  helm_check_version:
+    name: Helm chart check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: domains/mock-oidc/chart/Chart.yaml
+      yaml_path: version
+
+  api_check_version:
+    name: API check version
+    uses: Energinet-DataHub/.github/.github/workflows/version-increment-check.yaml@main
+    with:
+      yaml_file: domains/mock-oidc/chart/values.yaml
+      yaml_path: api.image.tag
