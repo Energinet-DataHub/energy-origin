@@ -223,4 +223,3 @@ POST /api/auth/terms/accept
 ForwardAuth endpoint for Træfik.
 
 https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/
-

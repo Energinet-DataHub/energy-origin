@@ -32,8 +32,8 @@ GET /api/measurements/production
 {
     "measurements": [
         {
-            "dateFrom": 1514826000, // as unix time stamp 
-            "dateTo": 1514864000, // as unix time stamp 
+            "dateFrom": 1514826000, // as unix time stamp
+            "dateTo": 1514864000, // as unix time stamp
             "value": 123154 // in Wh
         }
     ]
@@ -50,13 +50,13 @@ sequenceDiagram
     participant ds as DataSync Domain
 
     spa->>+ em: GET /api/measurements/consumption  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
-    
+
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<Meteringpoint>
-    
+
     loop For each mp of type consumption
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
-        
+
       ds --)- em: List< Measurement>
     end
     em->> em: aggregateMeasurements
@@ -74,13 +74,13 @@ sequenceDiagram
     participant ds as DataSync Domain
 
     spa->>+ em: GET /api/measurements/production  ?dateFrom:DateTime  &dateTo: DateTime &aggregation: Aggregation
-    
+
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<Meteringpoint>
-    
+
     loop For each mp of type production
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
-        
+
       ds --)- em: List< Measurement>
     end
     em->> em: aggregateMeasurements
