@@ -36,7 +36,7 @@ public sealed class AggregationServiceTest
             It.IsAny<DateTime>(),
             It.IsAny<DateTime>()))
             .Returns(Task.FromResult(measurements.AsEnumerable()
-         ));
+        ));
 
         var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IAggregator>().Object);
 

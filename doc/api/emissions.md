@@ -11,7 +11,7 @@ The emissions api should take three query parameters
 GET /api/emissions
         ?dateFrom=1514826000
         &dateTo=1514864000
-        &aggregation=TOTAL   
+        &aggregation=TOTAL
 ```
 
 ## Parameters
@@ -26,8 +26,8 @@ GET /api/emissions
 {
     "emissions": [
         {
-            "dateFrom": 1514826000, 
-            "dateTo": 1514864000,  
+            "dateFrom": 1514826000,
+            "dateTo": 1514864000,
             "total": {
                 "value": 1241245534.213,
                 "unit": "g"
@@ -101,13 +101,13 @@ sequenceDiagram
     participant eds as EnergiDataService
 
     spa->>+ em: GET /api/emissions  ?dateFrom:DateTime  &dateTo: DateTime
-    
+
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<MeteringPointDTO>
-    
+
     loop For each mp
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
-        
+
       ds --)- em: List< MeasurementDTO>
     end
     em->>+ eds: GET https://www.energidataservice.dk/tso-electricity/declarationemissionhour
@@ -130,7 +130,7 @@ This endpoint returns the personal mix of energy for the period.
 GET /api/sources
         ?dateFrom=1514826000
         &dateTo=1514864000
-        &aggregation=TOTAL   
+        &aggregation=TOTAL
 ```
 
 ## Parameters
@@ -145,12 +145,12 @@ GET /api/sources
 {
     "energySources": [
         {
-            "dateFrom": 1514826000, 
-            "dateTo": 1514864000, 
+            "dateFrom": 1514826000,
+            "dateTo": 1514864000,
             "renewable": 0.68888,
             "ratios" : {
                 "wood": 0.12222,
-                "waste": 0.00000, 
+                "waste": 0.00000,
                 "straw": 0.00000,
                 "oil": 0.00000,
                 "naturalGas": 0.00000,
@@ -178,13 +178,13 @@ sequenceDiagram
     participant eds as EnergiDataService
 
     spa->>+ em: GET /api/sources ?dateFrom:DateTime  &dateTo: DateTime
-    
+
     em->>+ ds: GET /meteringpoints
     ds--)- em: List<MeteringPointDTO>
-    
+
     loop For each mp
       em ->>+ ds: GET /measurements ?gsrn:long &dateFrom:DateTime &dateTo: DateTime
-        
+
       ds --)- em: List< MeasurementDTO>
     end
     em->>+ eds: GET https://www.energidataservice.dk/tso-electricity/declarationproduction

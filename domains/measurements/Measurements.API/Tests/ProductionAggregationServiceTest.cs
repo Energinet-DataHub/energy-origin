@@ -1,4 +1,4 @@
-﻿using API.Models;
+using API.Models;
 using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
