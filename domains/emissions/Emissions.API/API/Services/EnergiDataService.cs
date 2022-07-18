@@ -35,8 +35,8 @@ public class EnergiDataService : IEnergiDataService
     string GetMixQuery(DateTime dateFrom, DateTime dateTo)
     {
         return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
-               "from \"declarationproduction\" " +
-               $"WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd/}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+                "from \"declarationproduction\" " +
+                $"WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd/}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)

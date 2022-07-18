@@ -1,4 +1,4 @@
-﻿using API.Models;
+using API.Models;
 using System.Collections.Generic;
 
 namespace Tests;
@@ -19,4 +19,3 @@ internal class ProductionAggregationData : MeasurementAggregationDataSetFactory
         };
     }
 }
-

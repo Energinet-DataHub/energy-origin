@@ -1,4 +1,4 @@
-﻿using API.Services;
+using API.Services;
 
 namespace API.Helpers;
 

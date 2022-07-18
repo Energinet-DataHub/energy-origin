@@ -9,7 +9,7 @@
 ## Context and Problem Statement
 
 Isolating each domain in its own git repository cleanly separates the domains,
-but it requires additional tooling and workflows in the repositories to 
+but it requires additional tooling and workflows in the repositories to
 automate all of the flows.
 
 ---
