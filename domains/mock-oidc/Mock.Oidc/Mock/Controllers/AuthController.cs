@@ -5,6 +5,8 @@ using Mock.Oidc.Models;
 
 namespace Mock.Oidc.Controllers;
 
+using System.Net.Http.Headers;
+
 public class AuthController : Controller
 {
     private readonly ClientDescriptor _client;
@@ -48,6 +50,8 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         _logger.LogInformation($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
+        _logger.LogInformation($"Authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
 
         if (!string.Equals(redirect_uri, _client.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
         {
