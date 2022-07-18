@@ -20,7 +20,7 @@ GET /api/meteringpoints
 {
     "meteringpoints": [
         {
-            "gsrn": 57131300000000001, 
+            "gsrn": 57131300000000001,
         }
     ]
 }

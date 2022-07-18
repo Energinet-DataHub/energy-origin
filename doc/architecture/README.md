@@ -9,7 +9,7 @@ using and building the platform.
 
 This document is public as it is a part of the OpenSource project
 called EnergyOrigin.
-  
+
 ---
 
 ## Architecture Overview
