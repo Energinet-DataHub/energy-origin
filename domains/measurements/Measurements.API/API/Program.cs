@@ -17,8 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
-    .CreateLogger(); 
-   
+    .CreateLogger();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
