@@ -1,7 +1,7 @@
 ﻿using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Mock.Oidc.Extensions;
+namespace Oidc.Mock.Extensions;
 
 public static class YamlExtensions
 {

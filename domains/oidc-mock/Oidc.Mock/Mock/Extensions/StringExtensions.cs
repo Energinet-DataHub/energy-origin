@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Mock.Oidc.Extensions;
+namespace Oidc.Mock.Extensions;
 
 public static class StringExtensions
 {

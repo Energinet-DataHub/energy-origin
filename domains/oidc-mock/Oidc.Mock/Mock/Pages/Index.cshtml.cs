@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Mock.Oidc.Pages;
+namespace Oidc.Mock.Pages;
 
 public class IndexModel : PageModel
 {

@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mock\Mock.Oidc.csproj" />
+    <ProjectReference Include="..\Mock\Oidc.Mock.csproj" />
   </ItemGroup>
 
   <ItemGroup>

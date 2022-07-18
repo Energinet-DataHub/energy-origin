@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Mock.Oidc.Extensions;
-using Mock.Oidc.Jwt;
-using Mock.Oidc.Models;
+using Oidc.Mock.Extensions;
+using Oidc.Mock.Jwt;
+using Oidc.Mock.Models;
 using System.Net.Http.Headers;
 
-namespace Mock.Oidc.Controllers;
+namespace Oidc.Mock.Controllers;
 
 public class AuthController : Controller
 {

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Mock.Oidc;
-using Mock.Oidc.Extensions;
-using Mock.Oidc.Jwt;
-using Mock.Oidc.Models;
+using Oidc.Mock;
+using Oidc.Mock.Extensions;
+using Oidc.Mock.Jwt;
+using Oidc.Mock.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

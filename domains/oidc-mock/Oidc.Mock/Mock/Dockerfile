@@ -5,16 +5,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Mock/Mock.Oidc.csproj", "Mock/"]
-RUN dotnet restore "Mock/Mock.Oidc.csproj"
+COPY ["Mock/Oidc.Mock.csproj", "Mock/"]
+RUN dotnet restore "Mock/Oidc.Mock.csproj"
 COPY . .
 WORKDIR "/src/Mock"
-RUN dotnet build "Mock.Oidc.csproj" -c Release -o /app/build
+RUN dotnet build "Oidc.Mock.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Mock.Oidc.csproj" -c Release -o /app/publish
+RUN dotnet publish "Oidc.Mock.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Mock.Oidc.dll"]
+ENTRYPOINT ["dotnet", "Oidc.Mock.dll"]

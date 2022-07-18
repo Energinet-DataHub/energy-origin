@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "Mock.Oidc": {
+    "Oidc.Mock": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

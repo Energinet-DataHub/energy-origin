@@ -1,4 +1,4 @@
-﻿using Mock.Oidc.Extensions;
+﻿using Oidc.Mock.Extensions;
 using Xunit;
 
 namespace Tests;

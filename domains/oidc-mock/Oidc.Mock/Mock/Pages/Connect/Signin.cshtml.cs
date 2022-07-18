@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Mock.Oidc.Extensions;
-using Mock.Oidc.Models;
+using Oidc.Mock.Extensions;
+using Oidc.Mock.Models;
 
-namespace Mock.Oidc.Pages.Connect;
+namespace Oidc.Mock.Pages.Connect;
 
 public class SigninModel : PageModel
 {

@@ -1,6 +1,6 @@
 ﻿using Jose;
 
-namespace Mock.Oidc.Jwt;
+namespace Oidc.Mock.Jwt;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

@@ -1,4 +1,4 @@
-﻿namespace Mock.Oidc;
+﻿namespace Oidc.Mock;
 
 public class Configuration
 {
