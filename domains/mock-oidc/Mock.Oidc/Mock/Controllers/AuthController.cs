@@ -50,8 +50,8 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-        _logger.LogInformation($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-        _logger.LogInformation($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        _logger.LogDebug($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        _logger.LogDebug($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
         
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -66,13 +66,14 @@ public class AuthController : Controller
         var (isValid, validationError) = _client.Validate(clientId, clientSecret, redirect_uri);
         if (!isValid)
         {
+            _logger.LogDebug($"connect/token: {validationError}");
             return BadRequest(validationError);
         }
         
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {
-            _logger.LogInformation("connect/token: Invalid code - no matching user");
+            _logger.LogDebug("connect/token: Invalid code - no matching user");
             return BadRequest("Invalid code - no matching user");
         }
 
