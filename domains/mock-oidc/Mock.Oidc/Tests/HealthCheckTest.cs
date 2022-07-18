@@ -12,6 +12,6 @@ public class HealthCheckTest
         var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
         var healthResponse = await client.GetAsync("/health");
-        Assert.Equal(HttpStatusCode.OK ,healthResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
 }

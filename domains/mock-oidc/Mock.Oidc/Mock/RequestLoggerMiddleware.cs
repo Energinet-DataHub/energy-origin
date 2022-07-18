@@ -17,7 +17,7 @@ public class RequestLoggerMiddleware
             await _next(httpContext);
             return;
         }
-        
+
         logger.LogDebug($"Request - (Scheme: {req.Scheme} Host: {req.Host}) {req.Method} (PathBase: {req.PathBase}) {req.Path}{req.QueryString}");
         await _next(httpContext);
         logger.LogDebug($"Response - {httpContext.Response.StatusCode}");

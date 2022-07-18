@@ -123,7 +123,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var logoutResponse = await client.PostAsync("/api/v1/session/logout", new StringContent(""));
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
     }
-    
+
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "");

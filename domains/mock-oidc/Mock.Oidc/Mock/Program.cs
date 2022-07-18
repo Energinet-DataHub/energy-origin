@@ -6,13 +6,13 @@ using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute())); 
+builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
 
 builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration[Configuration.UsersFilePathKey]);
-builder.Services.AddSingleton(_ => 
+builder.Services.AddSingleton(_ =>
     new ClientDescriptor(
         builder.Configuration[Configuration.ClientIdKey],
         builder.Configuration[Configuration.ClientSecretKey],

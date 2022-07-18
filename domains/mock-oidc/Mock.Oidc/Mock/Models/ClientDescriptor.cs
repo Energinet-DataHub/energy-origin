@@ -29,7 +29,7 @@ public record ClientDescriptor(string ClientId, string ClientSecret, string Redi
         {
             return (false, "Invalid client_secret");
         }
-        
+
         return (true, string.Empty);
     }
 }

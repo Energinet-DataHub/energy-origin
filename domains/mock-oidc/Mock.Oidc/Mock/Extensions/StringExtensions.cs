@@ -11,7 +11,7 @@ public static class StringExtensions
         var bytes = md5.ComputeHash(Encoding.ASCII.GetBytes(input));
         return Convert.ToHexString(bytes);
     }
-    
+
     public static string EncodeBase64(this string value)
     {
         var valueBytes = Encoding.UTF8.GetBytes(value);

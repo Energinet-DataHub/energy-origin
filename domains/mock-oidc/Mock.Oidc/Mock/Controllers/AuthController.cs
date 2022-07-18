@@ -2,10 +2,9 @@
 using Mock.Oidc.Extensions;
 using Mock.Oidc.Jwt;
 using Mock.Oidc.Models;
+using System.Net.Http.Headers;
 
 namespace Mock.Oidc.Controllers;
-
-using System.Net.Http.Headers;
 
 public class AuthController : Controller
 {
@@ -31,11 +30,11 @@ public class AuthController : Controller
     public IActionResult Authorize(string client_id, string redirect_uri)
     {
         var (isValid, validationError) = _client.Validate(client_id, redirect_uri);
-        if (!isValid) 
+        if (!isValid)
         {
             return BadRequest(validationError);
         }
-        
+
         var routeValues = new RouteValueDictionary();
         foreach (var keyValuePair in Request.Query)
         {
@@ -52,7 +51,7 @@ public class AuthController : Controller
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
         _logger.LogDebug($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
         _logger.LogDebug($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
-        
+
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
             return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
@@ -69,7 +68,7 @@ public class AuthController : Controller
             _logger.LogDebug($"connect/token: {validationError}");
             return BadRequest(validationError);
         }
-        
+
         var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {

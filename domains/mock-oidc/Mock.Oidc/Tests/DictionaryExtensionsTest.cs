@@ -8,11 +8,11 @@ public class DictionaryExtensionsTest
     [Fact]
     public void CanAddDictionaries()
     {
-        var dict1 = new Dictionary<string, object> { {"a", 1} };
+        var dict1 = new Dictionary<string, object> { { "a", 1 } };
         var dict2 = new Dictionary<string, object> { { "b", 2 } };
         var actual = dict1.Plus(dict2);
 
-        Assert.Equal(new Dictionary<string, object>{{"a", 1}, {"b", 2}}, actual);
+        Assert.Equal(new Dictionary<string, object> { { "a", 1 }, { "b", 2 } }, actual);
     }
 
     [Fact]
