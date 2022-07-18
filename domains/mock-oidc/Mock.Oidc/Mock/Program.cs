@@ -6,10 +6,7 @@ using Mock.Oidc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
-}); 
+builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute())); 
 
 builder.Services.AddHealthChecks();
 
@@ -32,6 +29,8 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["BASE_HREF"]))
     });
 }
 
+// This middleware is used to log request/responses. With app.UseHttpLogging() it is not possible
+// to filter requests to health controller. Can be replaced by Serilog logging at a later point.
 app.UseMiddleware<RequestLoggerMiddleware>();
 
 app.UseStaticFiles();
