@@ -14,12 +14,12 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration["USERS_FILE_PATH"]);
+builder.Services.AddFromYamlFile<UserDescriptor[]>(builder.Configuration[Configuration.UsersFilePathKey]);
 builder.Services.AddSingleton(_ => 
     new ClientDescriptor(
-        builder.Configuration["CLIENT_ID"], 
-        builder.Configuration["CLIENT_SECRET"], //TODO: Delete client secret
-        builder.Configuration["CLIENT_REDIRECT_URI"]));
+        builder.Configuration[Configuration.ClientIdKey],
+        builder.Configuration[Configuration.ClientSecretKey],
+        builder.Configuration[Configuration.ClientRedirectUriKey]));
 
 var app = builder.Build();
 

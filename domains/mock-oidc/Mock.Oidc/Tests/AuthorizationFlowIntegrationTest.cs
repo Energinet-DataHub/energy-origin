@@ -2,6 +2,7 @@ using AngleSharp.Html.Dom;
 using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Mock.Oidc;
 using Mock.Oidc.Extensions;
 using System.Net;
 using System.Text.Json;
@@ -21,10 +22,10 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
     public AuthorizationFlowIntegrationTest()
     {
-        Environment.SetEnvironmentVariable("USERS_FILE_PATH", "test-users.yaml");
-        Environment.SetEnvironmentVariable("CLIENT_ID", ClientId);
-        Environment.SetEnvironmentVariable("CLIENT_SECRET", ClientSecret);
-        Environment.SetEnvironmentVariable("CLIENT_REDIRECT_URI", RedirectUri);
+        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "test-users.yaml");
+        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, ClientId);
+        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, ClientSecret);
+        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, RedirectUri);
 
         _factory = new WebApplicationFactory<Program>();
     }
@@ -125,10 +126,10 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("USERS_FILE_PATH", "");
-        Environment.SetEnvironmentVariable("CLIENT_ID", "");
-        Environment.SetEnvironmentVariable("CLIENT_SECRET", "");
-        Environment.SetEnvironmentVariable("CLIENT_REDIRECT_URI", "");
+        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "");
+        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, "");
+        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, "");
+        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, "");
 
         _factory.Dispose();
     }
