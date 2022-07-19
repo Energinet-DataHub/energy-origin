@@ -22,11 +22,11 @@ builder.Services.AddSingleton(_ =>
 var app = builder.Build();
 
 // Set PathBase when running behind reverse proxy (see https://www.hanselman.com/blog/dealing-with-application-base-urls-and-razor-link-generation-while-hosting-aspnet-web-apps-behind-reverse-proxies)
-if (!string.IsNullOrWhiteSpace(builder.Configuration["PATH_BASE"]))
+if (!string.IsNullOrWhiteSpace(builder.Configuration[Configuration.PathBaseKey]))
 {
     app.Use((context, next) =>
     {
-        context.Request.PathBase = new PathString(builder.Configuration["PATH_BASE"]);
+        context.Request.PathBase = new PathString(builder.Configuration[Configuration.PathBaseKey]);
         return next(context);
     });
 }

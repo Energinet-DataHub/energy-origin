@@ -10,13 +10,13 @@ public static class JwtExtensions
         var paddedPayload = $"{payload}{GetPadding(payload)}";
         var bytes = Convert.FromBase64String(paddedPayload);
         return Encoding.UTF8.GetString(bytes);
-    }
 
-    private static string GetPadding(string base64EncodedString) =>
-        (base64EncodedString.Length % 4) switch
-        {
-            2 => "==",
-            3 => "=",
-            _ => string.Empty
-        };
+        string GetPadding(string base64EncodedString) =>
+            (base64EncodedString.Length % 4) switch
+            {
+                2 => "==",
+                3 => "=",
+                _ => string.Empty
+            };
+    }
 }

@@ -26,9 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Mock\Oidc.Mock.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>
