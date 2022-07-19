@@ -9,12 +9,10 @@
             "NODE_VERSION": "lts/*"
         }
     },
-
     // Set *default* container specific settings.json values on container create.
     "settings": {
         "editor.formatOnSave": true
     },
-
     // Add the IDs of extensions you want installed when the container is created.
     "extensions": [
         "EditorConfig.EditorConfig",
@@ -22,10 +20,8 @@
         "formulahendry.dotnet-test-explorer",
         "ryanluker.vscode-coverage-gutters"
     ],
-
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [5000, 5001],
-
     // [Optional] To reuse of your local HTTPS dev cert:
     //
     // 1. Export it locally using this command:
@@ -48,11 +44,8 @@
     //
     //    * If only using Remote - Containers with a local container, uncomment this line instead:
     //      "mounts": [ "source=${env:HOME}${env:USERPROFILE}/.aspnet/https,target=/home/vscode/.aspnet/https,type=bind" ],
-
     // Use 'postCreateCommand' to run commands after the container is created.
     "postCreateCommand": "dotnet restore",
-
-
     // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
     "remoteUser": "vscode",
     "features": {
