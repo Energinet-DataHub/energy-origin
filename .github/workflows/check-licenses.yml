@@ -15,7 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: find folders
+      - name: Ensure main branch is known
+        id: define-matrix
+        shell: bash
+        run: |
+          git fetch
+          git checkout main
+          git checkout -
+
+      - name: Find relevant projects
         id: define-matrix
         shell: bash
         run: |
