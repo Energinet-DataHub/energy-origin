@@ -16,6 +16,7 @@ body {
 
 form {
     display: inline-flex;
+    flex-wrap: wrap;
 }
 
 .peopleButton {
