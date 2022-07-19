@@ -2,7 +2,7 @@ namespace Oidc.Mock.Extensions;
 
 public static class DictionaryExtensions
 {
-    public static Dictionary<TKey, TValue> Plus<TKey, TValue>(this Dictionary<TKey, TValue> dict1, Dictionary<TKey, TValue> dict2) where TKey : notnull
+    public static Dictionary<TKey, TValue> Plus<TKey, TValue>(this Dictionary<TKey, TValue> dict1, Dictionary<TKey, TValue>? dict2) where TKey : notnull
     {
         if (dict2 == null)
             return dict1;
