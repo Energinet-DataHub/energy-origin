@@ -9,12 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="test-users.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.17.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />

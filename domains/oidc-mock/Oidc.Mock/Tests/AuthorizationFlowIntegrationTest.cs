@@ -22,7 +22,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
     public AuthorizationFlowIntegrationTest()
     {
-        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "test-users.yaml");
+        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "test-users.json");
         Environment.SetEnvironmentVariable(Configuration.ClientIdKey, ClientId);
         Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, ClientSecret);
         Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, RedirectUri);
