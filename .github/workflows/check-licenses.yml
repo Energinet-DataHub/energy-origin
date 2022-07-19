@@ -8,7 +8,7 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      folders: ${{ steps.define-matrix.outputs.matrix }}
+      matrix: ${{ steps.define-matrix.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v3
