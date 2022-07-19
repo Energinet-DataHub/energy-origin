@@ -1,0 +1,13 @@
+[
+    {
+        "name": "Charlotte",
+        "idToken": {
+            "sub": "7DADB7DB-0637-4446-8626-2781B06A9E20",
+            "some.number": 42
+        },
+        "userinfoToken": {
+            "sub": "7DADB7DB-0637-4446-8626-2781B06A9E20",
+            "some.string": "42"
+        }
+    }
+]
