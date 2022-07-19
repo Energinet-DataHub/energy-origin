@@ -22,7 +22,7 @@ jobs:
           git checkout main
           git checkout -
 
-      - name: Find relevant charts
+      - name: Find relevant version checks
         id: define-matrix
         shell: bash
         run: |
@@ -42,8 +42,7 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
-          # FIXME: disabled libraries/dotnet since we need to configure a bit here
-          matrix=$(find domains -name "chart" -type d | egrep "$pattern" | while read directory; do printf '{"chart": "%s"}' "$directory"; done | jq -sc '.')
+          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
 
           echo "::set-output name=matrix::${matrix}"
 
@@ -51,32 +50,17 @@ jobs:
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'
 
-  check-helm-version:
+  check-version:
     runs-on: ubuntu-latest
     needs: define-matrix
     strategy:
       matrix:
-        charts: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
+        configuration: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
 
       - name: Check Versions
         uses: ./.github/actions/yaml-check-incremented-version
         with:
-          yaml-file: ${{ matrix.charts.chart }}/Chart.yaml
-          yaml-path: version
-
-  check-api-version:
-    runs-on: ubuntu-latest
-    needs: define-matrix
-    strategy:
-      matrix:
-        charts: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Check Versions
-        uses: ./.github/actions/yaml-check-incremented-version
-        with:
-          yaml-file: ${{ matrix.charts.chart }}/values.yaml
-          yaml-path: api.image.tag
+          yaml-file: ${{ matrix.configuration.yaml-file }}
+          yaml-path: ${{ matrix.configuration.yaml-path }}
