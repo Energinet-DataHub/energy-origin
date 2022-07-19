@@ -98,11 +98,9 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route(".well-known/openid-configuration/jwks")]
-    public IActionResult Jwks()
-    {
-        return Ok(new
+    public IActionResult Jwks() =>
+        Ok(new
         {
             keys = new[] { _tokenGenerator.GetJwkProperties() }
         });
-    }
 }

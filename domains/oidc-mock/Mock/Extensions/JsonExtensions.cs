@@ -12,7 +12,7 @@ public static class JsonExtensions
 
         if (result == null)
         {
-            throw new Exception($"Could not load JSON file: {jsonFilePath}");
+            throw new Exception($"Could not deserialize JSON file '{jsonFilePath}' to {typeof(T)}");
         }
 
         services.AddSingleton<T>(_ => result);
