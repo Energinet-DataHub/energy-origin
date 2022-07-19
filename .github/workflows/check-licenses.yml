@@ -65,7 +65,7 @@ jobs:
           find . -type f
 
       - name: Check license
-        uses: .github/actions/dotnet-check-license
+        uses: ./.github/actions/dotnet-check-license
         with:
           project-folder: ${{ matrix.projects.project }}
           license-mapping-file: .mapped-licenses.json
