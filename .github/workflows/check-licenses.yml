@@ -42,7 +42,7 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
-          matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$pattern" | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -s '.')
+          matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$pattern" | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
           echo "::set-output name=matrix::${matrix}"
 
