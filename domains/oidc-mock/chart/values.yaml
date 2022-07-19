@@ -1,0 +1,12 @@
+api:
+  replicaCount: 1
+  probes: true
+  image:
+    name: ghcr.io/energinet-datahub/eo-oidc-mock
+    tag: 0.0.1
+  env:
+    PATH_BASE:
+    USERS_FILE_PATH:
+    CLIENT_ID:
+    CLIENT_SECRET:
+    CLIENT_REDIRECT_URI:
