@@ -59,6 +59,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: debugging
+        shell: bash
+        run: |
+          find . -type f
+
       - name: Check license
         uses: ./.github/actions/dotnet-check-license@preview/oidc-mock
         with:
