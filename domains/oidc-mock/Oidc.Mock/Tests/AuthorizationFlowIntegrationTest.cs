@@ -100,14 +100,14 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var idToken = JsonDocument.Parse(idTokenJson).RootElement;
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", idToken.GetProperty("sub").GetString());
-        Assert.Equal(42, idToken.GetProperty("foo").GetInt32());
+        Assert.Equal("foo", idToken.GetProperty("something").GetString());
 
         var userInfoTokenJwt = token.GetProperty("userinfo_token").GetString()!;
         var userInfoTokenJson = userInfoTokenJwt.GetJwtPayload();
         var userInfoToken = JsonDocument.Parse(userInfoTokenJson).RootElement;
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", userInfoToken.GetProperty("sub").GetString());
-        Assert.Equal(42, userInfoToken.GetProperty("bar").GetInt32());
+        Assert.Equal("bar", userInfoToken.GetProperty("something").GetString());
 
         // Get JWK and verify signature
 

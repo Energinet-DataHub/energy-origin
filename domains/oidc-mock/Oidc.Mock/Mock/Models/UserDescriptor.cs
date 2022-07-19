@@ -27,10 +27,10 @@ public class UserDescriptor
             x => x.Key,
             x =>
             {
-                if (long.TryParse((string?)x.Value, out long value))
-                {
-                    return value;
-                }
+                //if (long.TryParse((string?)x.Value, out long value))
+                //{
+                //    return value;
+                //}
 
                 return x.Value;
             });
