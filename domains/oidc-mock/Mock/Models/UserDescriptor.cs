@@ -7,6 +7,6 @@ public class UserDescriptor
     public string? ImageUrl { get; set; }
 
     public Dictionary<string, object>? IdToken { get; set; }
-    
+
     public Dictionary<string, object>? UserinfoToken { get; set; }
 }

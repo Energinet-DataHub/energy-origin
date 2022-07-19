@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Oidc.Mock.Extensions;
 
@@ -8,7 +8,7 @@ public static class JsonExtensions
     {
         using var reader = new StreamReader(jsonFilePath);
         var json = reader.ReadToEnd();
-        var result = JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
+        var result = JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         if (result == null)
         {
