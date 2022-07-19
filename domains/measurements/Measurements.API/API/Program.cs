@@ -7,10 +7,20 @@ using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Serilog;
+using Serilog.Formatting.Json;
+
 
 [assembly: InternalsVisibleTo("Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console(new JsonFormatter())
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddHttpContextAccessor();
 
@@ -41,7 +51,7 @@ builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client =>
     client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint());
 });
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
-builder.Services.AddScoped<IConsumptionAggregator, ConsumptionAggregation>();
+builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
 
 var app = builder.Build();
 
@@ -53,6 +63,8 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+app.UseHttpLogging();
 
 app.MapControllers();
 

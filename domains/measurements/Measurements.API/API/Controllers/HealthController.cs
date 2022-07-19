@@ -1,10 +1,11 @@
-﻿using API.Helpers;
+using API.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("health")]
     public class HealthController : Controller
     {
         readonly ILogger<HealthController> logger;

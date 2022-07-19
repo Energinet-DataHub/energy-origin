@@ -1,36 +1,10 @@
----
-fullnameOverride: "eo-emissions"
-
-eo-base-helm-chart:
-  fullnameOverride: "eo-emissions"
-
-  deployments:
-    api:
-      replicaCount: 3
-      probes: true
-      image:
-        repository: ghcr.io/energinet-datahub/eo-emissions
-        tag: 0.1.1
-  service:
-    deployment: api
-    type: ClusterIP
-    port: 80
-
-  ingress:
-    hosts: []
-    paths:
-      - /api/emissions
-    servicePort: 80
-    middlewares:
-      - name: eo-auth-service
-        namespace:
-      - name: emissions-stripprefix
-
-  middleware:
-    stripPrefix:
-      name: emissions-stripprefix
-      prefixes:
-        - /api
-
+api:
+  replicaCount: 3
+  image:
+    name: ghcr.io/energinet-datahub/eo-emissions
+    tag: 0.2.4
   env:
     DATASYNCENDPOINT:
+    ENERGIDATASERVICEENDPOINT:
+    RENEWABLESOURCES: # "foo,bar"
+    WASTERENEWABLESHARE:

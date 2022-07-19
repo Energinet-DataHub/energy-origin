@@ -18,11 +18,22 @@ spec:
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
           ports:
             - containerPort: 80
               name: http
               protocol: TCP
-{{- if .Values.api.imagePullSecrets }}
-      imagePullSecrets:
-{{- toYaml .Values.api.imagePullSecrets | nindent 8 }}
-{{- end }}
+          env:
+          {{- if .Values.api.env}}
+          {{- range $name, $value := .Values.api.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+          {{- end}}
+          {{- end}}

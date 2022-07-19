@@ -35,7 +35,7 @@ flowchart LR
     tp --query--> Api
 
     subgraph eo-platform
-      
+
         subgraph example-domain
             direction LR
             Api --query data--> qm[(Query model)]
