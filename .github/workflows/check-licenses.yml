@@ -16,7 +16,6 @@ jobs:
           fetch-depth: 0
 
       - name: Ensure main branch is known
-        id: define-matrix
         shell: bash
         run: |
           git fetch
