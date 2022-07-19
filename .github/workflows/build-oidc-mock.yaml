@@ -46,10 +46,10 @@ jobs:
       - name: Build image
         uses: Energinet-DataHub/.github/.github/actions/build-and-push-container@main
         with:
-          dockerfile: domains/oidc-mock/Oidc.Mock/Mock/Dockerfile
+          dockerfile: domains/oidc-mock/Mock/Dockerfile
           image-name: eo-oidc-mock
           image-tag: ${{ needs.resolve-versions.outputs.image }}
-          docker-context: domains/oidc-mock/Oidc.Mock/
+          docker-context: domains/oidc-mock/
 
   release-chart:
     name: Release chart

@@ -13,7 +13,7 @@
         "formulahendry.dotnet-test-explorer",
         "ryanluker.vscode-coverage-gutters"
     ],
-    "postCreateCommand": "cd Oidc.Mock && dotnet restore",
+    "postCreateCommand": "dotnet restore",
     "remoteUser": "vscode",
     "features": {}
 }
