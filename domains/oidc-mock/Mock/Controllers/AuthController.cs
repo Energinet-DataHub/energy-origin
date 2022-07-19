@@ -8,12 +8,12 @@ namespace Oidc.Mock.Controllers;
 
 public class AuthController : Controller
 {
-    private readonly ClientDescriptor _client;
-    private readonly UserDescriptor[] _users;
+    private readonly Client _client;
+    private readonly User[] _users;
     private readonly IJwtTokenGenerator _tokenGenerator;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(ClientDescriptor client, UserDescriptor[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
+    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
     {
         _client = client;
         _users = users;

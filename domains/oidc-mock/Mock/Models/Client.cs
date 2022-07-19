@@ -1,6 +1,6 @@
 namespace Oidc.Mock.Models;
 
-public record ClientDescriptor(string ClientId, string ClientSecret, string RedirectUri)
+public record Client(string ClientId, string ClientSecret, string RedirectUri)
 {
     public (bool isValid, string validationError) Validate(string? clientId, string? redirectUri)
     {

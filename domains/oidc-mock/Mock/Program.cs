@@ -12,9 +12,9 @@ builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(ne
 builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddFromJsonFile<UserDescriptor[]>(builder.Configuration[Configuration.UsersFilePathKey]);
+builder.Services.AddFromJsonFile<User[]>(builder.Configuration[Configuration.UsersFilePathKey]);
 builder.Services.AddSingleton(_ =>
-    new ClientDescriptor(
+    new Client(
         builder.Configuration[Configuration.ClientIdKey],
         builder.Configuration[Configuration.ClientSecretKey],
         builder.Configuration[Configuration.ClientRedirectUriKey]));

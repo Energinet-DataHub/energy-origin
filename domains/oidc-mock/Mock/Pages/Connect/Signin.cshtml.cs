@@ -8,9 +8,9 @@ namespace Oidc.Mock.Pages.Connect;
 public class SigninModel : PageModel
 {
     private readonly ILogger<SigninModel> _logger;
-    private readonly ClientDescriptor _client;
+    private readonly Client _client;
 
-    public UserDescriptor[] Users { get; }
+    public User[] Users { get; }
 
     [FromForm]
     public string? Name { get; set; }
@@ -24,7 +24,7 @@ public class SigninModel : PageModel
     [FromQuery(Name = "state")]
     public string? State { get; set; }
 
-    public SigninModel(UserDescriptor[] users, ClientDescriptor client, ILogger<SigninModel> logger)
+    public SigninModel(User[] users, Client client, ILogger<SigninModel> logger)
     {
         _client = client;
         _logger = logger;
