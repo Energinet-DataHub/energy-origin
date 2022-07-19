@@ -18,7 +18,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
     private const string ClientId = "energy-origin";
     private const string ClientSecret = "secret";
-    private const string RedirectUri = "https://www.foo.com/callback";
+    private const string RedirectUri = "https://example.com/callback";
 
     public AuthorizationFlowIntegrationTest()
     {
@@ -61,7 +61,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, signinPage.StatusCode);
 
-        // Click on the first submit button, which matches the first user in test-users.yaml
+        // Click on the first submit button, which matches the first user in test-users.json
 
         var formElement = (IHtmlFormElement)signinDocument.QuerySelector("form[id='user-selection-form']")!;
         var firstSubmitButtonElement = (IHtmlElement)signinDocument.QuerySelectorAll("button[type=submit]").First();
@@ -100,14 +100,14 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var idToken = JsonDocument.Parse(idTokenJson).RootElement;
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", idToken.GetProperty("sub").GetString());
-        Assert.Equal("foo", idToken.GetProperty("something").GetString());
+        Assert.Equal(42, idToken.GetProperty("some.number").GetInt32());
 
         var userInfoTokenJwt = token.GetProperty("userinfo_token").GetString()!;
         var userInfoTokenJson = userInfoTokenJwt.GetJwtPayload();
         var userInfoToken = JsonDocument.Parse(userInfoTokenJson).RootElement;
 
         Assert.Equal("7DADB7DB-0637-4446-8626-2781B06A9E20", userInfoToken.GetProperty("sub").GetString());
-        Assert.Equal("bar", userInfoToken.GetProperty("something").GetString());
+        Assert.Equal("42", userInfoToken.GetProperty("some.string").GetString());
 
         // Get JWK and verify signature
 
