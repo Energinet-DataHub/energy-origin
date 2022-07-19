@@ -1,0 +1,19 @@
+{
+    "name": "C# (.NET)",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
+    },
+    "settings": {
+        "editor.formatOnSave": true
+    },
+    "extensions": [
+        "EditorConfig.EditorConfig",
+        "ms-dotnettools.csharp",
+        "formulahendry.dotnet-test-explorer",
+        "ryanluker.vscode-coverage-gutters"
+    ],
+    "postCreateCommand": "dotnet restore",
+    "remoteUser": "vscode",
+    "features": {}
+}
