@@ -27,45 +27,45 @@ runs:
         fetch-depth: 0
 
     - name: Get Previous tag
-      id: previous_tag
+      id: previous-tag
       uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
       with:
-        yaml_file: ${{ inputs.base_yaml_file || inputs.yaml_file }}
-        yaml_path: ${{ inputs.base_yaml_path || inputs.yaml_path }}
+        yaml_file: ${{ inputs.base-yaml-file || inputs.yaml-file }}
+        yaml_path: ${{ inputs.base-yaml-path || inputs.yaml-path }}
 
     - name: Check if previous tag is valid semver
-      id: is_prev_tag_valid
+      id: is-prev-tag-valid
       uses: rubenesp87/semver-validation-action@cd30707b188980006854de19df716fc9cf39f37f
       continue-on-error: true # Accept old versions to be invalid since new versions are checked they are valid
       with:
-        version: ${{ steps.previous_tag.outputs.result }}
+        version: ${{ steps.previous-tag.outputs.result }}
 
     - name: Get next valid semvers
       id: semvers
-      if: steps.is_prev_tag_valid.outcome == 'success'
+      if: steps.is-prev-tag-valid.outcome == 'success'
       uses: "WyriHaximus/github-action-next-semvers@v1"
       with:
-        version: ${{ steps.previous_tag.outputs.result }}
+        version: ${{ steps.previous-tag.outputs.result }}
 
     - uses: actions/checkout@v3
       with:
         ref: ${{ github.head_ref }}
 
     - name: Get current tag
-      id: current_tag
+      id: current-tag
       uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
       with:
-        yaml_file: ${{ inputs.yaml_file }}
-        yaml_path: ${{ inputs.yaml_path }}
+        yaml_file: ${{ inputs.yaml-file }}
+        yaml_path: ${{ inputs.yaml-path }}
 
     - name: Check if current tag is valid semver
       uses: rubenesp87/semver-validation-action@cd30707b188980006854de19df716fc9cf39f37f
       with:
-        version: ${{ steps.current_tag.outputs.result }}
+        version: ${{ steps.current-tag.outputs.result }}
 
     - name: Check versions
-      if: ${{ steps.is_prev_tag_valid.outcome == 'success' && steps.current_tag.outputs.result != steps.semvers.outputs.patch && steps.current_tag.outputs.result != steps.semvers.outputs.minor && steps.current_tag.outputs.result != steps.semvers.outputs.major }}
+      if: ${{ steps.is-prev-tag-valid.outcome == 'success' && steps.current-tag.outputs.result != steps.semvers.outputs.patch && steps.current-tag.outputs.result != steps.semvers.outputs.minor && steps.current-tag.outputs.result != steps.semvers.outputs.major }}
       shell: bash
       run: |
-        echo "The version ${{ steps.current_tag.outputs.result }} must be an increment of the current version on main ${{ steps.previous_tag.outputs.result }}."
+        echo "The version ${{ steps.current-tag.outputs.result }} must be an increment of the current version on main ${{ steps.previous-tag.outputs.result }}."
         exit 1
