@@ -1,4 +1,4 @@
-﻿namespace Oidc.Mock.Models;
+namespace Oidc.Mock.Models;
 
 public class UserDescriptor
 {

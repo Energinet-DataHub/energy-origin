@@ -1,4 +1,4 @@
-﻿using YamlDotNet.Serialization;
+using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Oidc.Mock.Extensions;

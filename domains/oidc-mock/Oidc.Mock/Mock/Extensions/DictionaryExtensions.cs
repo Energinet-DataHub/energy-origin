@@ -1,4 +1,4 @@
-﻿namespace Oidc.Mock.Extensions;
+namespace Oidc.Mock.Extensions;
 
 public static class DictionaryExtensions
 {

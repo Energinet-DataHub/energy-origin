@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Io;

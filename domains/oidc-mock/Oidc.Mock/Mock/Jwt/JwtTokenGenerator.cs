@@ -1,4 +1,4 @@
-﻿using Jose;
+using Jose;
 
 namespace Oidc.Mock.Jwt;
 

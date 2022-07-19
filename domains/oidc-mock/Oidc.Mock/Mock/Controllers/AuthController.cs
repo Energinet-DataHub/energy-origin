@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Jwt;
 using Oidc.Mock.Models;

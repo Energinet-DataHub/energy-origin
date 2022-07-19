@@ -1,4 +1,4 @@
-﻿namespace Oidc.Mock.Jwt;
+namespace Oidc.Mock.Jwt;
 
 public interface IJwtTokenGenerator
 {
