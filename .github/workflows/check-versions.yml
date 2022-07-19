@@ -1,0 +1,66 @@
+name: Check Versions
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.define-matrix.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Ensure main branch is known
+        shell: bash
+        run: |
+          git fetch
+          git checkout main
+          git checkout -
+
+      - name: Find relevant version checks
+        id: define-matrix
+        shell: bash
+        run: |
+          pattern=$(find domains libraries/dotnet -type d -mindepth 1 -maxdepth 1 -exec printf '^%s|' {} \; | sed 's/|$//g')
+
+          echo '::group::Search pattern'
+          echo "$pattern"
+          echo '::endgroup::'
+
+          echo '::group::Change set'
+          git diff --stat=10000 main
+          echo '::endgroup::'
+
+          pattern=$(git diff --stat=10000 main | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs printf '^%s|' | sed 's/|$//g')
+
+          echo '::group::Relevance pattern'
+          echo "$pattern"
+          echo '::endgroup::'
+
+          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
+
+          echo "::set-output name=matrix::${matrix}"
+
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
+  check-version:
+    runs-on: ubuntu-latest
+    needs: define-matrix
+    strategy:
+      matrix:
+        configuration: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check Versions
+        uses: ./.github/actions/yaml-check-incremented-version
+        with:
+          yaml-file: ${{ matrix.configuration.yaml-file }}
+          yaml-path: ${{ matrix.configuration.yaml-path }}
