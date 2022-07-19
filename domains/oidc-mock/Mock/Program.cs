@@ -6,6 +6,7 @@ using Oidc.Mock.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ignore anti-forgery token on forms - it causes problems when PathBase is used
 builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
 
 builder.Services.AddHealthChecks();
@@ -20,11 +21,12 @@ builder.Services.AddSingleton(_ =>
 
 var app = builder.Build();
 
-if (!string.IsNullOrWhiteSpace(builder.Configuration["BASE_HREF"]))
+// Set PathBase when running behind reverse proxy (see https://www.hanselman.com/blog/dealing-with-application-base-urls-and-razor-link-generation-while-hosting-aspnet-web-apps-behind-reverse-proxies)
+if (!string.IsNullOrWhiteSpace(builder.Configuration["PATH_BASE"]))
 {
     app.Use((context, next) =>
     {
-        context.Request.PathBase = new PathString(builder.Configuration["BASE_HREF"]);
+        context.Request.PathBase = new PathString(builder.Configuration["PATH_BASE"]);
         return next(context);
     });
 }
