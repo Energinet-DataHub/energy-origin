@@ -42,7 +42,8 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
-          matrix=$(find domains libraries/dotnet -name "chart" -type d | egrep "$pattern" | while read directory; do printf '{"chart": "%s"}' "$directory"; done | jq -sc '.')
+          # FIXME: disabled libraries/dotnet since we need to configure a bit here
+          matrix=$(find domains -name "chart" -type d | egrep "$pattern" | while read directory; do printf '{"chart": "%s"}' "$directory"; done | jq -sc '.')
 
           echo "::set-output name=matrix::${matrix}"
 
