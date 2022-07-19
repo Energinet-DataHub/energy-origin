@@ -51,12 +51,12 @@ jobs:
     needs: define-matrix
     strategy:
       matrix:
-        folder: ${{ needs.define-matrix.outputs.matrix }}
+        projects: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
 
       - name: Check license
         uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@main
         with:
-          project-folder: ${{ matrix.project }}
+          project-folder: ${{ matrix.projects.project }}
           license-mapping-file: .mapped-licenses.json
