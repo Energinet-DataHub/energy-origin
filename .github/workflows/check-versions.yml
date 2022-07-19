@@ -64,3 +64,5 @@ jobs:
         with:
           yaml-file: ${{ matrix.configuration.yaml-file }}
           yaml-path: ${{ matrix.configuration.yaml-path }}
+          base-yaml-file: ${{ matrix.configuration.base-yaml-file }}
+          base-yaml-path: ${{ matrix.configuration.base-yaml-path }}
