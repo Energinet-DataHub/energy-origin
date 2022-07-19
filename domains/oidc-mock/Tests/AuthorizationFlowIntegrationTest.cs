@@ -27,7 +27,8 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, ClientSecret);
         Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, RedirectUri);
 
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
     }
 
     [Fact]
