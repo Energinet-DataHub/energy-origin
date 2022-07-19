@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Check license
-        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@main
+        uses: .github/actions/dotnet-check-license@preview/oidc-mock
         with:
           project-folder: ${{ matrix.projects.project }}
           license-mapping-file: .mapped-licenses.json
