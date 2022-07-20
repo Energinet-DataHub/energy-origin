@@ -1,0 +1,10 @@
+[
+    {
+        "yaml-file": "domains/measurements/chart/Chart.yaml",
+        "yaml-path": "version"
+    },
+    {
+        "yaml-file": "domains/measurements/chart/values.yaml",
+        "yaml-path": "api.image.tag"
+    }
+]
