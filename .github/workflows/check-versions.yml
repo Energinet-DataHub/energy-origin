@@ -36,7 +36,7 @@ jobs:
           git diff --stat=10000 main
           echo '::endgroup::'
 
-          set -x
+          set -x +e
 
           git diff --stat=10000 main | sed 's/^ *//g'
 
