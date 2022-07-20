@@ -1,4 +1,4 @@
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Serialization;
 
 namespace EnergyOriginEventStore.Tests.Topics;
 

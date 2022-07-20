@@ -1,4 +1,4 @@
-namespace EventStore.Serialization;
+namespace EnergyOriginEventStore.EventStore.Serialization;
 
 public class Event<T> where T : EventModel
 {

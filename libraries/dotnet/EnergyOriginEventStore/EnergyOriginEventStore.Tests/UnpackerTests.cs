@@ -1,6 +1,6 @@
+using EnergyOriginEventStore.EventStore.Internal;
+using EnergyOriginEventStore.EventStore.Serialization;
 using EnergyOriginEventStore.Tests.Topics;
-using EventStore.Internal;
-using EventStore.Serialization;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;

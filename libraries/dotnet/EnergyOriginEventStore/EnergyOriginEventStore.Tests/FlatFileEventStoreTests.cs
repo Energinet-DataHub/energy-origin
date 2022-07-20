@@ -1,6 +1,6 @@
+using EnergyOriginEventStore.EventStore;
+using EnergyOriginEventStore.EventStore.FlatFile;
 using EnergyOriginEventStore.Tests.Topics;
-using EventStore;
-using EventStore.FlatFile;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;

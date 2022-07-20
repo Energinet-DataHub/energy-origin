@@ -1,4 +1,4 @@
-namespace EventStore.Serialization;
+namespace EnergyOriginEventStore.EventStore.Serialization;
 
 [AttributeUsage(AttributeTargets.All, Inherited = true, AllowMultiple = false)]
 public class EventModelVersionAttribute : Attribute

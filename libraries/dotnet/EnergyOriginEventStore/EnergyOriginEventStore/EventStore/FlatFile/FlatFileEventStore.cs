@@ -1,7 +1,7 @@
+using EnergyOriginEventStore.EventStore.Serialization;
 using Newtonsoft.Json;
-using EventStore.Serialization;
 
-namespace EventStore.FlatFile;
+namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 public class FlatFileEventStore : IEventStore
 {

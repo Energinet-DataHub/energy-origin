@@ -1,4 +1,4 @@
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Serialization;
 
 namespace EnergyOriginEventStore.Tests.Topics;
 
@@ -16,6 +16,6 @@ public class UserCreatedVersion1 : EventModel
 
     public override EventModel? NextVersion()
     {
-        return new UserCreatedVersion2(this.Id, this.Subject, "Anonymous");
+        return new UserCreatedVersion2(Id, Subject, "Anonymous");
     }
 }

@@ -1,7 +1,7 @@
-using EventStore.Internal;
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Internal;
+using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace EventStore.FlatFile;
+namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 {

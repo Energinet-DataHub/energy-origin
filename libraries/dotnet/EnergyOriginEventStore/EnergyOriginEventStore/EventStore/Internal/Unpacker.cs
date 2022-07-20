@@ -1,8 +1,8 @@
-using System.Reflection;
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Serialization;
 using Newtonsoft.Json;
+using System.Reflection;
 
-namespace EventStore.Internal;
+namespace EnergyOriginEventStore.EventStore.Internal;
 
 public class Unpacker : IUnpacker
 {

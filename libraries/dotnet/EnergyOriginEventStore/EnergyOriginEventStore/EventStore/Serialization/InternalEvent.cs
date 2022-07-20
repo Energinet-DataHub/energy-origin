@@ -1,6 +1,6 @@
 using EnergyOriginDateTimeExtension;
 
-namespace EventStore.Serialization;
+namespace EnergyOriginEventStore.EventStore.Serialization;
 
 public class InternalEvent
 {

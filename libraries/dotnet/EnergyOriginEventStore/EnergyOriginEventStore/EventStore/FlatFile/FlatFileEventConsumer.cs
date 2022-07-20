@@ -1,7 +1,7 @@
-using EventStore.Serialization;
-using EventStore.Internal;
+using EnergyOriginEventStore.EventStore.Internal;
+using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace EventStore.FlatFile;
+namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 public class FlatFileEventConsumer : IEventConsumer
 {

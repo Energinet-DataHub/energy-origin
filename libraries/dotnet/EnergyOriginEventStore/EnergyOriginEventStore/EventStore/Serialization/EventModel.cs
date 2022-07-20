@@ -1,7 +1,7 @@
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace EventStore.Serialization;
+namespace EnergyOriginEventStore.EventStore.Serialization;
 
 public abstract class EventModel
 {

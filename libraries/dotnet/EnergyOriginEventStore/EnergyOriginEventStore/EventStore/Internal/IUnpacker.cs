@@ -1,6 +1,6 @@
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace EventStore.Internal;
+namespace EnergyOriginEventStore.EventStore.Internal;
 
 public interface IUnpacker
 {

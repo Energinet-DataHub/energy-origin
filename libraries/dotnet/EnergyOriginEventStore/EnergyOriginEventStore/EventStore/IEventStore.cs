@@ -1,6 +1,6 @@
-using EventStore.Serialization;
+using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace EventStore;
+namespace EnergyOriginEventStore.EventStore;
 
 public interface IEventStore : IDisposable
 {
