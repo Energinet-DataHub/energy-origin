@@ -79,7 +79,7 @@ public class AuthController : Controller
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var baseClaims = new Dictionary<string, object>
         {
-            { "iss", $"{Request.Scheme}://{Request.Host}" },
+            { "iss", $"https://{Request.Host}/{Request.PathBase}" },
             { "iat", now },
             { "exp", now + 3600 }
         };
