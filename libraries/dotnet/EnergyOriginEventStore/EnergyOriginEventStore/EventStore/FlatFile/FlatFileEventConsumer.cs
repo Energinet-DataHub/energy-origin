@@ -3,121 +3,108 @@ using EventStore.Internal;
 
 namespace EventStore.FlatFile;
 
-public class FlatFileEventConsumer : IDisposable, IEventConsumer
+public class FlatFileEventConsumer : IEventConsumer
 {
-    private FlatFileEventStore fileStore;
-    private IUnpacker unpacker;
-    long fromIssued;
-    long fromFraction;
+    private readonly FlatFileEventStore _fileStore;
+    private readonly IUnpacker _unpacker;
+    private readonly long _fromIssued;
+    private readonly long _fromFraction;
 
-    FileSystemWatcher rootWatcher;
-    List<FileSystemWatcher> watchers;
-    // Queue<EventModel> queue = new Queue<EventModel>();
-    Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
+    private readonly FileSystemWatcher _rootWatcher;
+    private readonly List<FileSystemWatcher> _watchers;
+    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
 
     public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
     {
-        this.fileStore = fileStore;
-        this.unpacker = unpacker;
-        this.handlers = handlers;
+        _fileStore = fileStore;
+        _unpacker = unpacker;
+        _handlers = handlers;
 
         if (pointer is not null)
         {
             try
             {
                 var a = pointer.Split('-');
-                this.fromIssued = long.Parse(a[0]);
-                this.fromFraction = long.Parse(a[1]);
+                _fromIssued = long.Parse(a[0]);
+                _fromFraction = long.Parse(a[1]);
             }
             catch (Exception)
             {
-                throw new InvalidDataException("Pointer not a valid format");
+                throw new InvalidDataException($"Pointer '{pointer}' not a valid format");
             }
         }
 
-
-
         Console.WriteLine($"* Setup watchers using: {fileStore.ROOT} and prefix: {topicPrefix}");
 
-        watchers = Directory.EnumerateDirectories(fileStore.ROOT)
+        _watchers = Directory.EnumerateDirectories(fileStore.ROOT)
             .Where(it => it.StartsWith($"{fileStore.ROOT}/{topicPrefix}") && it.EndsWith(fileStore.TOPIC_SUFFIX))
-            .Select(it => createWatcher(it))
+            .Select(it => CreateWatcher(it))
             .ToList();
 
-        rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
-        rootWatcher.Created += OnCreatedDirectory;
-        rootWatcher.Error += OnError;
-        rootWatcher.EnableRaisingEvents = true;
+        _rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
+        _rootWatcher.Created += OnCreatedDirectory;
+        _rootWatcher.Error += OnError;
+        _rootWatcher.EnableRaisingEvents = true;
     }
-
-    // public async Task<EventModel> Consume()
-    // {
-    //     while (queue.Count() == 0)
-    //     {
-    //         await Task.Delay(25);
-    //     }
-    //     return queue.Dequeue();
-    // }
 
     private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException());
 
-    void OnCreatedDirectory(object source, FileSystemEventArgs e) => watchers.Add(createWatcher(e.FullPath));
+    private void OnCreatedDirectory(object source, FileSystemEventArgs e) => _watchers.Add(CreateWatcher(e.FullPath));
 
-    void OnCreatedFile(object source, FileSystemEventArgs e)
+    private void OnCreatedFile(object source, FileSystemEventArgs e)
     {
-        load(e.FullPath);
+        Load(e.FullPath);
     }
 
-    public void Dispose()
+    private FileSystemWatcher CreateWatcher(string path)
     {
-        watchers.ForEach(it =>
-        {
-            it.Created -= OnCreatedFile;
-            it.Error -= OnError;
-            it.Dispose();
-        });
-        rootWatcher.Created -= OnCreatedDirectory;
-        rootWatcher.Error -= OnError;
-        rootWatcher.Dispose();
+        Directory
+            .GetFiles(path)
+            .Where(it => it.EndsWith(_fileStore.EVENT_SUFFIX))
+            .ToList()
+            .ForEach(Load);
+
+        Console.WriteLine($"* Watching files in: {path}");
+        var watcher = new FileSystemWatcher(path, $"*{_fileStore.EVENT_SUFFIX}");
+        watcher.Created += OnCreatedFile;
+        watcher.Error += OnError;
+        watcher.EnableRaisingEvents = true;
+        return watcher;
     }
 
-    void load(string path)
+    private void Load(string path)
     {
         var payload = File.ReadAllText(path);
-        var reconstructedEvent = unpacker.UnpackEvent(payload);
-        if (reconstructedEvent.Issued < fromIssued ||
-            (reconstructedEvent.Issued == fromIssued && reconstructedEvent.IssuedFraction <= fromFraction))
+        var reconstructedEvent = _unpacker.UnpackEvent(payload);
+        if (reconstructedEvent.Issued < _fromIssued ||
+            (reconstructedEvent.Issued == _fromIssued && reconstructedEvent.IssuedFraction <= _fromFraction))
         {
             return;
         }
 
-        var reconstructed = unpacker.UnpackModel(reconstructedEvent);
+        var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
 
         // Optimization Queue events and have worker execute them.
         //queue.Enqueue(reconstructed);
 
         var t = reconstructed.GetType();
-        var b = handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
+        var b = _handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
 
-        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, eventToPointer(reconstructedEvent))));
+        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, EventToPointer(reconstructedEvent))));
     }
 
-    string eventToPointer(InternalEvent e)
-    {
-        return e.Issued.ToString() + "-" + e.IssuedFraction.ToString();
-    }
+    private static string EventToPointer(InternalEvent e) => $"{e.Issued}-{e.IssuedFraction}";
 
-    FileSystemWatcher createWatcher(string path)
+    public void Dispose()
     {
-        Directory.GetFiles(path)
-            .Where(it => it.EndsWith(fileStore.EVENT_SUFFIX)).ToList()
-            .ForEach(it => load(it));
-
-        Console.WriteLine($"* Watching files in: {path}");
-        var watcher = new FileSystemWatcher(path, $"*{fileStore.EVENT_SUFFIX}");
-        watcher.Created += OnCreatedFile;
-        watcher.Error += OnError;
-        watcher.EnableRaisingEvents = true;
-        return watcher;
+        _watchers.ForEach(it =>
+        {
+            it.Created -= OnCreatedFile;
+            it.Error -= OnError;
+            it.Dispose();
+        });
+        _rootWatcher.Created -= OnCreatedDirectory;
+        _rootWatcher.Error -= OnError;
+        _rootWatcher.Dispose();
     }
 }
