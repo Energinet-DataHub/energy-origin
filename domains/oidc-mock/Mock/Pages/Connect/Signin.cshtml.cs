@@ -48,7 +48,7 @@ public class SigninModel : PageModel
         var userDescriptor = Users.FirstOrDefault(u => string.Equals(u.Name, Name, StringComparison.InvariantCultureIgnoreCase));
         if (userDescriptor == null)
         {
-            _logger.LogDebug($"OnPost: User '{Name}' not found");
+            _logger.LogError($"OnPost: User '{Name}' not found");
             return BadRequest($"User '{Name}' not found");
         }
 
