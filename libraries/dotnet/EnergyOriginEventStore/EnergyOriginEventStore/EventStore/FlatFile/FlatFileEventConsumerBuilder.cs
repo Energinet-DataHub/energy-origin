@@ -22,7 +22,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
         var unpacker = new Unpacker();
         var consumer = new FlatFileEventConsumer(unpacker, _handlers, _fileStore, _topicPrefix, _pointer);
 
-        _fileStore.disposeEvent += consumer.Dispose;
+        _fileStore.DisposeEvent += consumer.Dispose;
 
         return consumer;
     }

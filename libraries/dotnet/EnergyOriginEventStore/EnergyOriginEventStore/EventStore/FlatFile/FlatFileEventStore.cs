@@ -5,10 +5,9 @@ namespace EventStore.FlatFile;
 
 public class FlatFileEventStore : IEventStore
 {
-
-    public string ROOT => "store";
-    public string TOPIC_SUFFIX => ".topic";
-    public string EVENT_SUFFIX => ".event";
+    public const string ROOT = "store";
+    public const string TOPIC_SUFFIX = ".topic";
+    public const string EVENT_SUFFIX = ".event";
 
     public FlatFileEventStore()
     {
@@ -22,7 +21,7 @@ public class FlatFileEventStore : IEventStore
     {
         var message = InternalEvent.From(model);
 
-        foreach (string topic in topics)
+        foreach (var topic in topics)
         {
             var path = $"{ROOT}/{topic}{TOPIC_SUFFIX}/"; // should have more directory division
             if (!Directory.Exists(path))
@@ -34,15 +33,15 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
-    public event Action? disposeEvent;
-
     public IEventConsumerBuilder GetBuilder(string topicPrefix)
     {
         return new FlatFileEventConsumerBuilder(this, topicPrefix);
     }
 
+    public event Action? DisposeEvent;
+
     public void Dispose()
     {
-        disposeEvent?.Invoke();
+        DisposeEvent?.Invoke();
     }
 }
