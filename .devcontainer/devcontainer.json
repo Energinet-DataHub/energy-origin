@@ -1,5 +1,5 @@
 {
-    "name": "C# (.NET)",
+    "name": "Github - Linux",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
