@@ -3,6 +3,11 @@ name: Check Versions
 on:
   pull_request:
     branches: [main]
+    paths: # FIXME: remove these ignore paths!
+      - "!domains/emissions/.check-versions.json"
+      - "!domains/measurements/.check-versions.json"
+      - "!libraries/dotnet/EnergyOriginAuthorization/.check-versions.json"
+      - "!libraries/dotnet/EnergyOriginDateTimeExtension/.check-versions.json"
 
 jobs:
   define-matrix:
