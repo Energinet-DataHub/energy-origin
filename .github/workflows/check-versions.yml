@@ -42,8 +42,7 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
-          # FIXME: re-enable checking non-oidc-mock
-          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | egrep oidc-mock | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
+          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
 
           echo "::set-output name=matrix::${matrix}"
 
