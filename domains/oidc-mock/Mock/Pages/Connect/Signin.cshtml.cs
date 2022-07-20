@@ -63,6 +63,8 @@ public class SigninModel : PageModel
 
         var uri = builder.ToString();
 
+_logger.LogInfo($"Login success: Name={Name}");
+
         return Redirect(uri);
     }
 }
