@@ -6,17 +6,17 @@ namespace EventStore.Internal;
 
 public class Unpacker : IUnpacker
 {
-    private Dictionary<Tuple<string, int>, Type> typeDictionary;
+    private readonly Dictionary<Tuple<string, int>, Type> _typeDictionary;
 
     public Unpacker()
     {
         var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(EventModelVersionAttribute)));
-        this.typeDictionary = new Dictionary<Tuple<string, int>, Type>();
+        _typeDictionary = new Dictionary<Tuple<string, int>, Type>();
 
         foreach (var type in types)
         {
             var attribute = type.GetCustomAttribute<EventModelVersionAttribute>() ?? throw new NotSupportedException("Attribute not found on type that should have it.");
-            this.typeDictionary.Add(Tuple.Create(attribute.Type, attribute.Version), type);
+            _typeDictionary.Add(Tuple.Create(attribute.Type, attribute.Version), type);
         }
     }
 
@@ -32,10 +32,10 @@ public class Unpacker : IUnpacker
 
     public EventModel UnpackModel(InternalEvent payload)
     {
-        Type type = this.typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
-            throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");
+        var type = _typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
+                   throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");
 
-        EventModel? current = JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
+        var current = JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");
 
         while (true)
         {
@@ -45,10 +45,8 @@ public class Unpacker : IUnpacker
             {
                 return current;
             }
-            else
-            {
-                current = next;
-            }
+
+            current = next;
         }
     }
 }

@@ -5,9 +5,9 @@ namespace EventStore.FlatFile;
 
 public class FlatFileEventStore : IEventStore
 {
-    public const string ROOT = "store";
-    public const string TOPIC_SUFFIX = ".topic";
-    public const string EVENT_SUFFIX = ".event";
+    public string ROOT => "store";
+    public string TOPIC_SUFFIX => ".topic";
+    public string EVENT_SUFFIX => ".event";
 
     public FlatFileEventStore()
     {
