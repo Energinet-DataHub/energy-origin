@@ -38,6 +38,10 @@ jobs:
 
           set -x
 
+          git diff --stat=10000 main | sed 's/^ *//g'
+
+          echo more
+
           git diff --stat=10000 main | sed 's/^ *//g' | egrep -o "$pattern"
 
           pattern=$(git diff --stat=10000 main | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
