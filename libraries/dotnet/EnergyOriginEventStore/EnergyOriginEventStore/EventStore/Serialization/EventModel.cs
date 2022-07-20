@@ -5,13 +5,13 @@ namespace EventStore.Serialization;
 
 public abstract class EventModel
 {
-    private EventModelVersionAttribute attribute;
+    private readonly EventModelVersionAttribute _attribute;
 
     [JsonIgnore]
-    public string Type => this.attribute.Type;
+    public string Type => _attribute.Type;
 
     [JsonIgnore]
-    public int Version => this.attribute.Version;
+    public int Version => _attribute.Version;
 
     [JsonIgnore]
     public string Data => JsonConvert.SerializeObject(this);
@@ -20,7 +20,7 @@ public abstract class EventModel
     {
         Type t = GetType();
 
-        this.attribute = t.GetCustomAttribute<EventModelVersionAttribute>(false) ??
+        this._attribute = t.GetCustomAttribute<EventModelVersionAttribute>(false) ??
             throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
     }
 
