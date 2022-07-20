@@ -33,7 +33,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
         var list = _handlers.GetValueOrDefault(t) ?? new List<Action<Event<EventModel>>>();
 
-        Action<Event<EventModel>> casted_handler = (e) => handler(new Event<T>((T)e.EventModel, e.Pointer));
+        Action<Event<EventModel>> casted_handler = e => handler(new Event<T>((T)e.EventModel, e.Pointer));
         _handlers[t] = list.Append(casted_handler);
 
         return this;
