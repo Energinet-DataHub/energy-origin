@@ -42,6 +42,11 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
+          if [ -z "$pattern" ]; then
+            echo 'Relevance pattern is empty, emitting empty matrix.'
+            echo '::set-output name=matrix::[]'
+          fi
+
           matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
 
           echo "::set-output name=matrix::${matrix}"

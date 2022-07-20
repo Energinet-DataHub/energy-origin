@@ -42,6 +42,11 @@ jobs:
           echo "$pattern"
           echo '::endgroup::'
 
+          if [ -z "$pattern" ]; then
+            echo 'Relevance pattern is empty, emitting empty matrix.'
+            echo '::set-output name=matrix::[]'
+          fi
+
           # FIXME: re-enable checking Tests projects
           matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$pattern" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
