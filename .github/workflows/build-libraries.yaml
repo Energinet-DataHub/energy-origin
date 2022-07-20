@@ -80,7 +80,7 @@ jobs:
           project=$(basename "${{ matrix.projects.project }}")
 
           printf 'Solution: %s\n' "$solution"
-          printf 'Project: %s\n' $project"
+          printf 'Project: %s\n' "$project"
 
           echo "::set-output name=solution::${solution}"
           echo "::set-output name=project::${project}"
