@@ -76,12 +76,13 @@ public class AuthController : Controller
             return BadRequest("Invalid code - no matching user");
         }
 
+        const int expirationInSeconds = 3600;
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var baseClaims = new Dictionary<string, object>
         {
             { "iss", $"https://{Request.Host}/{Request.PathBase}" },
             { "iat", now },
-            { "exp", now + 3600 }
+            { "exp", now + expirationInSeconds }
         };
 
         return Ok(
@@ -89,7 +90,7 @@ public class AuthController : Controller
             {
                 access_token = _tokenGenerator.Generate(baseClaims),
                 token_type = "Bearer",
-                expires_in = 3600,
+                expires_in = expirationInSeconds,
                 scope = "openid nemid mitid userinfo_token",
                 id_token = _tokenGenerator.Generate(baseClaims.Plus(user.IdToken)),
                 userinfo_token = _tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
