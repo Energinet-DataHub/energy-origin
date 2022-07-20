@@ -1,7 +1,7 @@
 using AngleSharp.Html.Dom;
 using Xunit;
 
-namespace Tests.Extensions;
+namespace Tests.TestHelpers;
 
 public static class HttpClientExtensions
 {

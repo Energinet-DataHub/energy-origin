@@ -7,7 +7,7 @@ using Oidc.Mock.Extensions;
 using System.Net;
 using System.Text.Json;
 using System.Web;
-using Tests.Extensions;
+using Tests.TestHelpers;
 using Xunit;
 
 namespace Tests;

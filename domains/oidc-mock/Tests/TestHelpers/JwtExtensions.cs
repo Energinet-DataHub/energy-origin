@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Tests.Extensions;
+namespace Tests.TestHelpers;
 
 public static class JwtExtensions
 {

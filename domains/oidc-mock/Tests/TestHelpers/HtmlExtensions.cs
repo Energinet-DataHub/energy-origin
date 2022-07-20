@@ -3,7 +3,7 @@ using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Io;
 
-namespace Tests.Extensions;
+namespace Tests.TestHelpers;
 
 public static class HtmlExtensions
 {
