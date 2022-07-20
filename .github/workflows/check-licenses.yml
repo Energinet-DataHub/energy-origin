@@ -36,7 +36,9 @@ jobs:
           git diff --stat=10000 main
           echo '::endgroup::'
 
+          set +e
           pattern=$(git diff --stat=10000 main | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
+          set -e
 
           echo '::group::Relevance pattern'
           echo "$pattern"
@@ -45,6 +47,7 @@ jobs:
           if [ -z "$pattern" ]; then
             echo 'Relevance pattern is empty, emitting empty matrix.'
             echo '::set-output name=matrix::[]'
+            exit 0
           fi
 
           # FIXME: re-enable checking Tests projects
