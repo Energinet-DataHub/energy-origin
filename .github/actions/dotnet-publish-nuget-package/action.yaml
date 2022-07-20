@@ -1,0 +1,62 @@
+name: Dotnet Publish NuGet Package
+
+description: Lints, tests, builds a library. If working on main branch it will publish a NuGet Package.
+
+inputs:
+  solution-file-folder:
+    description: The folder of the project and tests to create a library from
+    required: true
+
+  project-name:
+    description: The folder name of the project to create a library from. This is not a path
+    required: true
+
+  package-version:
+    description: The version of the package
+    required: true
+
+  dotnet-version:
+    description: The version of dotnet to setup
+    default: 6.0.101
+    required: false
+
+  nuget-api-key:
+    description: A valid api key to publish to the NuGet repository
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Restore
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet restore
+
+    - name: Lint
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet test --no-restore --verbosity normal *.Tests
+
+    - name: Pack
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet pack --output build --configuration Release --no-restore -p:Version=${{ inputs.package-version }} ${{ inputs.project-name }}
+
+    - name: Publish
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      if: startsWith(github.ref, 'refs/heads/main')
+      run: dotnet nuget push build/*.nupkg --api-key ${{ inputs.nuget-api-key }} --source https://api.nuget.org/v3/index.json
