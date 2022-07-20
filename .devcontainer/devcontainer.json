@@ -1,0 +1,17 @@
+{
+    "name": "Github - Linux",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
+    },
+    "settings": {
+        "editor.formatOnSave": true
+    },
+    "extensions": [
+        "EditorConfig.EditorConfig",
+        "redhat.vscode-yaml"
+    ],
+    "postCreateCommand": "",
+    "remoteUser": "vscode",
+    "features": {}
+}
