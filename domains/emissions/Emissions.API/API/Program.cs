@@ -2,10 +2,19 @@ using System.Text.Json.Serialization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using API.Helpers;
+using Serilog;
+using Serilog.Formatting.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
 
+var logger = new LoggerConfiguration()
+    .WriteTo.Console(new JsonFormatter())
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>

@@ -1,20 +1,21 @@
 using API.Models;
 using EnergyOriginAuthorization;
+using Serilog;
 
 namespace API.Services;
 
 public class MeasurementsService : IMeasurementsService
 {
     readonly IDataSyncService dataSyncService;
-    readonly IConsumptionAggregator aggregator;
+    readonly IAggregator aggregator;
 
-    public MeasurementsService(IDataSyncService dataSyncService, IConsumptionAggregator aggregator)
+    public MeasurementsService(IDataSyncService dataSyncService, IAggregator aggregator)
     {
         this.dataSyncService = dataSyncService;
         this.aggregator = aggregator;
     }
 
-    public async Task<MeasurementResponse> GetConsumption(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
@@ -31,7 +32,7 @@ public class MeasurementsService : IMeasurementsService
         foreach (var meteringPoint in meteringPoints)
         {
             var measurements = await dataSyncService.GetMeasurements(
-                context, 
+                context,
                 meteringPoint.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
                 DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime

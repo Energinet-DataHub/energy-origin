@@ -1,4 +1,4 @@
-﻿namespace API.Helpers
+namespace API.Helpers
 {
     public static class Configuration
     {
@@ -6,6 +6,8 @@
         private const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
         private const string RenewableSources = "RENEWABLESOURCES";
         private const string WasteRenewableShare = "WASTERENEWABLESHARE";
+
+        public static int DecimalPrecision => 5;
 
         public static string GetDataSyncEndpoint()
         {

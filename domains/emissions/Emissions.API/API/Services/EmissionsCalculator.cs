@@ -1,3 +1,4 @@
+using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
@@ -5,11 +6,12 @@ namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
 {
-
-    private const int decimalPrecision = 5;
-
-    public EmissionsResponse CalculateEmission(IEnumerable<EmissionRecord> emissions,
-        IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
+    public EmissionsResponse CalculateEmission(
+        IEnumerable<EmissionRecord> emissions,
+        IEnumerable<TimeSeries> measurements,
+        DateTime dateFrom,
+        DateTime dateTo,
+        Aggregation aggregation)
     {
 
         var listOfEmissions = new List<Emission>();
@@ -18,9 +20,8 @@ class EmissionsCalculator : IEmissionsCalculator
         {
             foreach (var reading in measurement.Measurements)
             {
-                var hourOfMeasurement = reading.DateFrom.ToDateTime();
-                var emission = emissions.FirstOrDefault(_ =>
-                    _.GridArea == measurement.MeteringPoint.GridArea && _.HourUTC == hourOfMeasurement);
+                var emission = emissions.FirstOrDefault(a =>
+                    a.GridArea == measurement.MeteringPoint.GridArea && a.HourUTC == reading.DateFrom.ToDateTime());
 
                 if (emission == null)
                 {
@@ -47,8 +48,8 @@ class EmissionsCalculator : IEmissionsCalculator
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTime(),
                 groupedEmission.Last().DateTo.ToUnixTime(),
-                new Quantity(Math.Round(totalForBucket / 1000, decimalPrecision), QuantityUnit.g),
-                new Quantity(Math.Round(relativeForBucket, decimalPrecision), QuantityUnit.gPerkWh)
+                new Quantity(Math.Round(totalForBucket / 1000, Configuration.DecimalPrecision), QuantityUnit.g),
+                new Quantity(Math.Round(relativeForBucket, Configuration.DecimalPrecision), QuantityUnit.gPerkWh)
             ));
         }
 
@@ -106,5 +107,4 @@ internal class Emission
     public DateTime DateTo { get; set; }
     public decimal Co2 { get; set; }
     public int Consumption { get; set; }
-
 }

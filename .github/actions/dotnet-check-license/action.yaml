@@ -1,0 +1,59 @@
+name: Dotnet Check License
+
+description: Verifies only allowed licenses are in use
+
+inputs:
+  project-folder:
+    description: The folder containing the project to check.
+    required: true
+  allowed-licenses-file:
+    description: |
+      The file containing the licenses allowed.
+      The contents should be a JSON array of strings. One for each valid license type.
+      Example:
+      ```json
+      [
+        "MIT",
+        "MS-EULA",
+        "Apache-2.0"
+      ]
+      ```
+    required: false
+    default: .allowed-licenses.json
+  license-mapping-file:
+    description: |
+      This file allows for mapping license URIs to license types.
+      Example:
+      ```json
+      {
+        "https://example.com/LICENSE.txt":"Apache-2.0"
+      }
+      ```
+    required: false
+  tool-version:
+    default: 2.4.0
+    description: The version of the dotnet-project-licenses tool to use
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.9.0
+
+    - name: Install license tool
+      shell: bash
+      run: dotnet tool install --global dotnet-project-licenses --version ${{ inputs.tool-version }}
+
+    - name: Add mapping argument
+      id: arguments
+      shell: bash
+      if: inputs.license-mapping-file
+      run: |
+        echo ::set-output name=arguments::--licenseurl-to-license-mappings ${{ inputs.license-mapping-file }}
+
+    - name: Run license check
+      shell: bash
+      run: ~/.dotnet/tools/dotnet-project-licenses -i ${{ inputs.project-folder }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ steps.arguments.outputs.arguments }}
