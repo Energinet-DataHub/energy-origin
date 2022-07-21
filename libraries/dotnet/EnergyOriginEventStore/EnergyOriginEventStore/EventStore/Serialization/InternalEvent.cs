@@ -2,7 +2,7 @@ using EnergyOriginDateTimeExtension;
 
 namespace EnergyOriginEventStore.EventStore.Serialization;
 
-public class InternalEvent
+internal class InternalEvent
 {
     public string Id { get; }
 

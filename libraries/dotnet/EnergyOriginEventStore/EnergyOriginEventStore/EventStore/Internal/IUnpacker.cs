@@ -2,7 +2,7 @@ using EnergyOriginEventStore.EventStore.Serialization;
 
 namespace EnergyOriginEventStore.EventStore.Internal;
 
-public interface IUnpacker
+internal interface IUnpacker
 {
     InternalEvent UnpackEvent(string payload);
 

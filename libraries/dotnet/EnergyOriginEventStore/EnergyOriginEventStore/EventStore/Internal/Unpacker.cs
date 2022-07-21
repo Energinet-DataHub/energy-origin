@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace EnergyOriginEventStore.EventStore.Internal;
 
-public class Unpacker : IUnpacker
+internal class Unpacker : IUnpacker
 {
     private readonly Dictionary<Tuple<string, int>, Type> _typeDictionary;
 

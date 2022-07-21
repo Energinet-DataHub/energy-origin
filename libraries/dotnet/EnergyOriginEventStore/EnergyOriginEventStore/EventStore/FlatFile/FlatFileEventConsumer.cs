@@ -3,7 +3,7 @@ using EnergyOriginEventStore.EventStore.Serialization;
 
 namespace EnergyOriginEventStore.EventStore.FlatFile;
 
-public class FlatFileEventConsumer : IEventConsumer
+internal class FlatFileEventConsumer : IEventConsumer
 {
     private readonly FlatFileEventStore _fileStore;
     private readonly IUnpacker _unpacker;
