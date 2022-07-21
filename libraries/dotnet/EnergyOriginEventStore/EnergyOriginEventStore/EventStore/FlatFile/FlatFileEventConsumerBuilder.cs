@@ -29,12 +29,12 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel
     {
-        Type t = typeof(T);
+        Type type = typeof(T);
 
-        var list = _handlers.GetValueOrDefault(t) ?? new List<Action<Event<EventModel>>>();
+        var list = _handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
 
         Action<Event<EventModel>> casted_handler = e => handler(new Event<T>((T)e.EventModel, e.Pointer));
-        _handlers[t] = list.Append(casted_handler);
+        _handlers[type] = list.Append(casted_handler);
 
         return this;
     }

@@ -2,28 +2,9 @@ using EnergyOriginDateTimeExtension;
 
 namespace EnergyOriginEventStore.EventStore.Serialization;
 
-internal class InternalEvent
+internal record InternalEvent(string Id, long Issued, int IssuedFraction, string ModelType, int ModelVersion, string Data)
 {
-    public string Id { get; }
-
-    public long Issued { get; }
-    public int IssuedFraction { get; }
-
-    public string ModelType { get; }
-    public int ModelVersion { get; }
-    public string Data { get; }
-
-    public InternalEvent(string id, long issued, int issuedFraction, string modelType, int modelVersion, string data)
-    {
-        Id = id;
-        Issued = issued;
-        IssuedFraction = issuedFraction;
-        ModelType = modelType;
-        ModelVersion = modelVersion;
-        Data = data;
-    }
-
-    public static InternalEvent From(EventModel model)
+    internal static InternalEvent From(EventModel model)
     {
         var now = DateTime.Now;
 

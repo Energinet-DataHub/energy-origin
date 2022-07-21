@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace EnergyOriginEventStore.EventStore.Serialization;
 
-public abstract class EventModel
+public abstract record EventModel
 {
     private readonly EventModelVersionAttribute _attribute;
 
@@ -16,12 +16,10 @@ public abstract class EventModel
     [JsonIgnore]
     public string Data => JsonConvert.SerializeObject(this);
 
-    public EventModel()
+    protected EventModel()
     {
-        Type t = GetType();
-
-        this._attribute = t.GetCustomAttribute<EventModelVersionAttribute>(false) ??
-            throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
+        _attribute = GetType().GetCustomAttribute<EventModelVersionAttribute>(false) ??
+                     throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
     }
 
     public virtual EventModel? NextVersion()
