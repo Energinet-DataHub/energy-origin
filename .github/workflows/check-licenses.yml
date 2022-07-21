@@ -37,7 +37,7 @@ jobs:
           echo '::endgroup::'
 
           set +e
-          pattern=$(git diff --stat=10000 main | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
+          pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
           set -e
 
           echo '::group::Relevance pattern'
