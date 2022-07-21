@@ -1,67 +1,67 @@
 {
-  "total": 8734,
-  "limit": 10,
-  "dataset": "DeclarationEmissionHour",
-  "records": [
-    {
-      "HourUTC": "2021-07-01T21:00:00",
-      "PriceArea": "DK1",
-      "CO2PerkWh": 149.748856,
-      "NOxPerkWh": 98.044144
-    },
-    {
-      "HourUTC": "2021-07-01T21:00:00",
-      "PriceArea": "DK2",
-      "CO2PerkWh": 30.495327,
-      "NOxPerkWh": 60.706318
-    },
-    {
-      "HourUTC": "2021-07-01T20:00:00",
-      "PriceArea": "DK1",
-      "CO2PerkWh": 157.401581,
-      "NOxPerkWh": 108.068398
-    },
-    {
-      "HourUTC": "2021-07-01T20:00:00",
-      "PriceArea": "DK2",
-      "CO2PerkWh": 88.515053,
-      "NOxPerkWh": 85.074692
-    },
-    {
-      "HourUTC": "2021-07-01T19:00:00",
-      "PriceArea": "DK1",
-      "CO2PerkWh": 146.197723,
-      "NOxPerkWh": 108.344765
-    },
-    {
-      "HourUTC": "2021-07-01T19:00:00",
-      "PriceArea": "DK2",
-      "CO2PerkWh": 145.686295,
-      "NOxPerkWh": 108.328362
-    },
-    {
-      "HourUTC": "2021-07-01T18:00:00",
-      "PriceArea": "DK1",
-      "CO2PerkWh": 111.930893,
-      "NOxPerkWh": 91.138756
-    },
-    {
-      "HourUTC": "2021-07-01T18:00:00",
-      "PriceArea": "DK2",
-      "CO2PerkWh": 168.413696,
-      "NOxPerkWh": 111.102234
-    },
-    {
-      "HourUTC": "2021-07-01T17:00:00",
-      "PriceArea": "DK1",
-      "CO2PerkWh": 149.951691,
-      "NOxPerkWh": 108.697075
-    },
-    {
-      "HourUTC": "2021-07-01T17:00:00",
-      "PriceArea": "DK2",
-      "CO2PerkWh": 227.857391,
-      "NOxPerkWh": 132.597183
-    }
-  ]
+    "total": 8734,
+    "limit": 10,
+    "dataset": "DeclarationEmissionHour",
+    "records": [
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 149.748856,
+            "NOxPerkWh": 98.044144
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 30.495327,
+            "NOxPerkWh": 60.706318
+        },
+        {
+            "HourUTC": "2021-07-01T20:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 157.401581,
+            "NOxPerkWh": 108.068398
+        },
+        {
+            "HourUTC": "2021-07-01T20:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 88.515053,
+            "NOxPerkWh": 85.074692
+        },
+        {
+            "HourUTC": "2021-07-01T19:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 146.197723,
+            "NOxPerkWh": 108.344765
+        },
+        {
+            "HourUTC": "2021-07-01T19:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 145.686295,
+            "NOxPerkWh": 108.328362
+        },
+        {
+            "HourUTC": "2021-07-01T18:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 111.930893,
+            "NOxPerkWh": 91.138756
+        },
+        {
+            "HourUTC": "2021-07-01T18:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 168.413696,
+            "NOxPerkWh": 111.102234
+        },
+        {
+            "HourUTC": "2021-07-01T17:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 149.951691,
+            "NOxPerkWh": 108.697075
+        },
+        {
+            "HourUTC": "2021-07-01T17:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 227.857391,
+            "NOxPerkWh": 132.597183
+        }
+    ]
 }
