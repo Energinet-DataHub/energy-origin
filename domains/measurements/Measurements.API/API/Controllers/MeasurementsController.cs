@@ -1,3 +1,4 @@
+using API.Models;
 using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
@@ -21,6 +22,7 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
+    [Produces(typeof(MeasurementResponse))]
     [Route("measurements/consumption")]
     public async Task<IActionResult> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
     {
@@ -28,13 +30,14 @@ public class MeasurementsController : AuthorizationController
         if (!validateResult.IsValid)
         {
             validateResult.AddToModelState(ModelState, null);
-            return BadRequest(ModelState);
+            return ValidationProblem(ModelState);
         }
 
         return Ok(await _measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation));
     }
 
     [HttpGet]
+    [Produces(typeof(MeasurementResponse))]
     [Route("measurements/production")]
     public async Task<IActionResult> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
     {
