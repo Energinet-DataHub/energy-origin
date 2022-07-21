@@ -10,9 +10,9 @@ public class EmissionRecord
 
     public EmissionRecord(string gridArea, decimal nOXPerkWh, decimal cO2PerkWh, DateTime hourUTC)
     {
-        GridArea = gridArea;
-        NOXPerkWh = nOXPerkWh;
-        CO2PerkWh = cO2PerkWh;
         HourUTC = hourUTC;
+        GridArea = gridArea;
+        CO2PerkWh = cO2PerkWh;
+        NOXPerkWh = nOXPerkWh;
     }
 }
