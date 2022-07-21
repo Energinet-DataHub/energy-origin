@@ -2,22 +2,18 @@
 {
     public class MixRecord
     {
-        public decimal ShareTotal { get; }
-
         public DateTime HourUTC { get; }
-
-        public string Version { get; }
-
         public string GridArea { get; }
-
+        public string Version { get; }
+        public decimal ShareTotal { get; }
         public string ProductionType { get; }
 
         public MixRecord(decimal shareTotal, DateTime hourUTC, string version, string gridArea, string productionType)
         {
-            ShareTotal = shareTotal;
             HourUTC = hourUTC;
-            Version = version;
             GridArea = gridArea;
+            Version = version;
+            ShareTotal = shareTotal;
             ProductionType = productionType.Length switch
             {
                 0 => "",

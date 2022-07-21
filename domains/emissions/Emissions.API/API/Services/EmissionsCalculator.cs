@@ -10,7 +10,7 @@ class EmissionsCalculator : IEmissionsCalculator
         IEnumerable<EmissionRecord> emissions,
         IEnumerable<TimeSeries> measurements,
         DateTime dateFrom,
-        DateTime dateTo, 
+        DateTime dateTo,
         Aggregation aggregation)
     {
 

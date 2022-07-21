@@ -19,14 +19,16 @@ namespace API.Services
             var result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
 
             //Get dictionary of measurement values using aggregated date string as key.
-            var measurementGroups = 
+            var measurementGroups =
                 (from singleTimeSeries in timeSeries
-                from measurement in singleTimeSeries.Measurements
-                select new { 
-                    singleTimeSeries.MeteringPoint.GridArea, 
-                    measurement.DateFrom, 
-                    measurement.DateTo, 
-                    measurement.Quantity })
+                 from measurement in singleTimeSeries.Measurements
+                 select new
+                 {
+                     singleTimeSeries.MeteringPoint.GridArea,
+                     measurement.DateFrom,
+                     measurement.DateTo,
+                     measurement.Quantity
+                 })
                 .GroupBy(a => GetAggregationDateString(a.DateFrom.ToDateTime(), aggregation));
 
             //Go through each period (aggregated date string).
@@ -39,7 +41,7 @@ namespace API.Services
                     from measurement in measurementGroup
                     join declaration in records
                         on new { measurement.GridArea, DateFrom = measurement.DateFrom.ToDateTime() }
-                        equals new { declaration.GridArea, DateFrom = declaration.HourUTC }                    
+                        equals new { declaration.GridArea, DateFrom = declaration.HourUTC }
                     group new { measurement, declaration } by declaration.ProductionType into productionTypeGroup
                     let shareValue = productionTypeGroup.Sum(a => a.declaration.ShareTotal * a.measurement.Quantity)
                     select new
