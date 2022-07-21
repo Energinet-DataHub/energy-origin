@@ -1,87 +1,67 @@
 {
-    "help": "https://api.energidataservice.dk/help_show?name=datastore_search_sql",
-    "success": true,
-    "result": {
-        "records": [
-            {
-                "CO2PerkWh": 132.511405,
-                "HourUTC": "2021-01-01T00:00:00",
-                "PriceArea": "DK1",
-                "NOxPerkWh": 150.2945717
-            },
-            {
-                "CO2PerkWh": 53.07605276,
-                "HourUTC": "2021-01-01T00:00:00",
-                "PriceArea": "DK2",
-                "NOxPerkWh": 201.1520742
-            },
-            {
-                "CO2PerkWh": 116.3886683,
-                "HourUTC": "2021-01-01T01:00:00",
-                "PriceArea": "DK1",
-                "NOxPerkWh": 144.9847714
-            },
-            {
-                "CO2PerkWh": 53.69571877,
-                "HourUTC": "2021-01-01T01:00:00",
-                "PriceArea": "DK2",
-                "NOxPerkWh": 200.351393
-            },
-            {
-                "CO2PerkWh": 109.8466328,
-                "HourUTC": "2021-01-01T02:00:00",
-                "PriceArea": "DK1",
-                "NOxPerkWh": 141.4094625
-            },
-            {
-                "CO2PerkWh": 55.07241161,
-                "HourUTC": "2021-01-01T02:00:00",
-                "PriceArea": "DK2",
-                "NOxPerkWh": 203.1223727
-            },
-            {
-                "CO2PerkWh": 111.2150058,
-                "HourUTC": "2021-01-01T03:00:00",
-                "PriceArea": "DK1",
-                "NOxPerkWh": 138.6318727
-            },
-            {
-                "CO2PerkWh": 56.70321689,
-                "HourUTC": "2021-01-01T03:00:00",
-                "PriceArea": "DK2",
-                "NOxPerkWh": 210.4075205
-            },
-            {
-                "CO2PerkWh": 114.0052958,
-                "HourUTC": "2021-01-01T04:00:00",
-                "PriceArea": "DK1",
-                "NOxPerkWh": 142.247407
-            },
-            {
-                "CO2PerkWh": 57.27649657,
-                "HourUTC": "2021-01-01T04:00:00",
-                "PriceArea": "DK2",
-                "NOxPerkWh": 217.6125486
-            }
-        ],
-        "fields": [
-            {
-                "type": "text",
-                "id": "PriceArea"
-            },
-            {
-                "type": "timestamp",
-                "id": "HourUTC"
-            },
-            {
-                "type": "float8",
-                "id": "CO2PerkWh"
-            },
-            {
-                "type": "float8",
-                "id": "NOxPerkWh"
-            }
-        ],
-        "sql": "SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '01/01/2021' AND \"HourUTC\" <= '01/02/2021' LIMIT 10"
-    }
+    "total": 8734,
+    "limit": 10,
+    "dataset": "DeclarationEmissionHour",
+    "records": [
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 149.748856,
+            "NOxPerkWh": 98.044144
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 30.495327,
+            "NOxPerkWh": 60.706318
+        },
+        {
+            "HourUTC": "2021-07-01T20:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 157.401581,
+            "NOxPerkWh": 108.068398
+        },
+        {
+            "HourUTC": "2021-07-01T20:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 88.515053,
+            "NOxPerkWh": 85.074692
+        },
+        {
+            "HourUTC": "2021-07-01T19:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 146.197723,
+            "NOxPerkWh": 108.344765
+        },
+        {
+            "HourUTC": "2021-07-01T19:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 145.686295,
+            "NOxPerkWh": 108.328362
+        },
+        {
+            "HourUTC": "2021-07-01T18:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 111.930893,
+            "NOxPerkWh": 91.138756
+        },
+        {
+            "HourUTC": "2021-07-01T18:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 168.413696,
+            "NOxPerkWh": 111.102234
+        },
+        {
+            "HourUTC": "2021-07-01T17:00:00",
+            "PriceArea": "DK1",
+            "CO2PerkWh": 149.951691,
+            "NOxPerkWh": 108.697075
+        },
+        {
+            "HourUTC": "2021-07-01T17:00:00",
+            "PriceArea": "DK2",
+            "CO2PerkWh": 227.857391,
+            "NOxPerkWh": 132.597183
+        }
+    ]
 }

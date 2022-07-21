@@ -21,12 +21,14 @@ namespace API.Services
             //Get dictionary of measurement values using aggregated date string as key.
             var measurementGroups =
                 (from singleTimeSeries in timeSeries
-                from measurement in singleTimeSeries.Measurements
-                select new {
-                    singleTimeSeries.MeteringPoint.GridArea,
-                    measurement.DateFrom,
-                    measurement.DateTo,
-                    measurement.Quantity })
+                 from measurement in singleTimeSeries.Measurements
+                 select new
+                 {
+                     singleTimeSeries.MeteringPoint.GridArea,
+                     measurement.DateFrom,
+                     measurement.DateTo,
+                     measurement.Quantity
+                 })
                 .GroupBy(a => GetAggregationDateString(a.DateFrom.ToDateTime(), aggregation));
 
             //Go through each period (aggregated date string).
