@@ -1,66 +1,77 @@
 {
-    "help": "https://api.energidataservice.dk/help_show?name=datastore_search_sql",
-    "success": true,
-    "result": {
-        "records": [
-            {
-                "ShareTotal": 0.157272835625138,
-                "HourUTC": "2021-01-01T00:00:00",
-                "Version": "Preliminary",
-                "PriceArea": "DK1",
-                "ProductionType": "Hydro"
-            },
-            {
-                "ShareTotal": 0.0065486185187496,
-                "HourUTC": "2021-01-01T00:00:00",
-                "Version": "Preliminary",
-                "PriceArea": "DK1",
-                "ProductionType": "Solar"
-            },
-            {
-                "ShareTotal": 6.12541311332831,
-                "HourUTC": "2021-01-01T00:00:00",
-                "Version": "Preliminary",
-                "PriceArea": "DK1",
-                "ProductionType": "WindOffshore"
-            },
-            {
-                "ShareTotal": 3.41999590799095,
-                "HourUTC": "2021-01-01T00:00:00",
-                "Version": "Preliminary",
-                "PriceArea": "DK1",
-                "ProductionType": "WindOnshore"
-            },
-            {
-                "ShareTotal": 4.31004707193119,
-                "HourUTC": "2021-01-01T00:00:00",
-                "Version": "Preliminary",
-                "PriceArea": "DK1",
-                "ProductionType": "BioGas"
-            }
-        ],
-        "fields": [
-            {
-                "type": "timestamp",
-                "id": "HourUTC"
-            },
-            {
-                "type": "text",
-                "id": "PriceArea"
-            },
-            {
-                "type": "text",
-                "id": "Version"
-            },
-            {
-                "type": "text",
-                "id": "ProductionType"
-            },
-            {
-                "type": "float8",
-                "id": "ShareTotal"
-            }
-        ],
-        "sql": "SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" from \"declarationproduction\" WHERE \"HourUTC\" >= '01/01/2021' AND \"HourUTC\" <= '01/02/2021' AND (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total') LIMIT 5"
+  "total": 227084,
+  "limit": 10,
+  "dataset": "DeclarationProduction",
+  "records": [
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "BioGas",
+      "ShareTotal": 4.219855
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Coal",
+      "ShareTotal": 40.379128
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "NaturalGas",
+      "ShareTotal": 2.452905
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Oil",
+      "ShareTotal": 0.605874
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Straw",
+      "ShareTotal": 2.566639
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Waste",
+      "ShareTotal": 7.214719
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Wood",
+      "ShareTotal": 0.641430
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "BioGas",
+      "ShareTotal": 4.219855
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "Coal",
+      "ShareTotal": 40.379128
+    },
+    {
+      "HourUTC": "2021-07-01T21:00:00",
+      "PriceArea": "DK1",
+      "version": "Preliminary",
+      "ProductionType": "NaturalGas",
+      "ShareTotal": 2.452905
     }
+  ]
 }
