@@ -38,7 +38,6 @@ public class FlatFileEventStoreTests : IDisposable
     [Fact]
     public async Task EventStore_ResumeFromPointer_success()
     {
-
         string? pointer = null;
 
         const string message1 = "I like to act!";
