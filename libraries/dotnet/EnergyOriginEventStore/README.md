@@ -76,17 +76,11 @@ We need to proceed with something, so a proof of concept have been put together 
 ---
 
 ```C#
-public interface IEventStore<T> where T : EventModel {
-    void Produce(T model, IEnumerable<string> topics);
+public interface IEventStore : IDisposable
+{
+    Task Produce(EventModel model, params string[] topics);
 
-    IEventConsumer<T> MakeConsumer(string topicPrefix);
-    IEventConsumer<T> MakeConsumer(string topicPrefix, DateTime fromDate);
-
-    // void Delete(string topic);
-    // sample topics:
-    // - user-1234567890-sensitive
-    // - user-1234567890-data
-    // - all-users
+    IEventConsumerBuilder GetBuilder(string topicPrefix);
 }
 ```
 
