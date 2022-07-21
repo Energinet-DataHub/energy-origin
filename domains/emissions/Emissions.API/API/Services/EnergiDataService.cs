@@ -3,6 +3,8 @@ using API.Models;
 
 namespace API.Services;
 
+// Swagger doc for EDS: https://api.energidataservice.dk/
+
 public class EnergiDataService : IEnergiDataService
 {
     readonly ILogger<EnergiDataService> logger;
