@@ -53,8 +53,12 @@ public class FlatFileEventStoreTests : IDisposable
             var message = new Said("Anton Actor", message1);
             await eventStore.Produce(message, "Gossip");
 
+            await Task.Delay(TimeSpan.FromMilliseconds(5));
+
             message = new Said("Anton Actor", message2);
             await eventStore.Produce(message, "Gossip");
+
+            await Task.Delay(TimeSpan.FromMilliseconds(5));
 
             message = new Said("Anton Actor", message3);
             await eventStore.Produce(message, "Gossip");
