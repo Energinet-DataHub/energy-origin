@@ -1,4 +1,4 @@
-﻿using API.Models;
+using API.Models;
 using EnergyOriginDateTimeExtension;
 using System;
 using System.Collections.Generic;
