@@ -22,7 +22,6 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [ProducesResponseType(200)]
     [Route("measurements/consumption")]
     public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
     {
@@ -37,7 +36,6 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [ProducesResponseType(200)]
     [Route("measurements/production")]
     public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
     {
