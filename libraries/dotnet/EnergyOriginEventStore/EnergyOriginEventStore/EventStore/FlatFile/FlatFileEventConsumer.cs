@@ -75,6 +75,7 @@ internal class FlatFileEventConsumer : IEventConsumer
         if (reconstructedEvent.Issued < _fromIssued ||
             (reconstructedEvent.Issued == _fromIssued && reconstructedEvent.IssuedFraction <= _fromFraction))
         {
+            Console.WriteLine($"Skip event: {reconstructedEvent}. FromIssued={_fromIssued}. FromFraction={_fromFraction}");
             return;
         }
 
