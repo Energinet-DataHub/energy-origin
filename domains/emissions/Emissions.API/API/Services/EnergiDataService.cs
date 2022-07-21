@@ -3,6 +3,8 @@ using API.Models;
 
 namespace API.Services;
 
+// Swagger doc for EDS: https://api.energidataservice.dk/
+
 public class EnergiDataService : IEnergiDataService
 {
     readonly ILogger<EnergiDataService> logger;
@@ -18,41 +20,29 @@ public class EnergiDataService : IEnergiDataService
     {
         var query = GetEmissionsQuery(dateFrom, dateTo);
 
-        var result = await httpClient.GetFromJsonAsync<Response<EmissionRecord>>(query) ?? throw new Exception($"EDS Emissions query failed. query:'{query}'");
+        var result = await httpClient.GetFromJsonAsync<Result<EmissionRecord>>(query) ?? throw new Exception($"EDS Emissions query failed. query:'{query}'");
 
-        return result.Result.Records;
+        return result.Records;
     }
 
     public async Task<IEnumerable<MixRecord>> GetResidualMixPerHour(DateTime dateFrom, DateTime dateTo)
     {
         var query = GetMixQuery(dateFrom, dateTo);
 
-        var result = await httpClient.GetFromJsonAsync<Response<MixRecord>>(query) ?? throw new Exception($"EDS declarationproduction query failed. query:'{query}'");
+        var result = await httpClient.GetFromJsonAsync<Result<MixRecord>>(query) ?? throw new Exception($"EDS declarationproduction query failed. query:'{query}'");
 
-        return result.Result.Records;
+        return result.Records;
     }
 
     string GetMixQuery(DateTime dateFrom, DateTime dateTo)
     {
-        return "datastore_search_sql?sql=SELECT \"HourUTC\", \"PriceArea\", \"Version\", \"ProductionType\", \"ShareTotal\" " +
-                "from \"declarationproduction\" " +
-                $"WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd/}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd}' AND  (\"FuelAllocationMethod\" LIKE 'All' OR \"FuelAllocationMethod\" LIKE 'Total')";
+        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
-        return
-            $"datastore_search_sql?sql=SELECT \"PriceArea\", \"HourUTC\", \"CO2PerkWh\", \"NOxPerkWh\"  from \"declarationemissionhour\" WHERE \"HourUTC\" >= '{dateFrom:yyyy/MM/dd}' AND \"HourUTC\" <= '{dateTo:yyyy/MM/dd)}'";
-    }
 
-    private class Response<T>
-    {
-        public Result<T> Result { get; }
-
-        public Response(Result<T> result)
-        {
-            Result = result;
-        }
+        return $"dataset/declarationemissionhour?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,CO2PerkWh,NOxPerkWh";
     }
 
     private class Result<T>

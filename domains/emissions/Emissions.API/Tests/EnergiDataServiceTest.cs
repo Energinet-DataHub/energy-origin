@@ -50,6 +50,6 @@ public sealed class EnergiDataServiceTest
 
         // Assert
         Assert.NotEmpty(res);
-        Assert.Equal(5, res.Count());
+        Assert.Equal(10, res.Count());
     }
 }
