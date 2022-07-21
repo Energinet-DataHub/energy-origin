@@ -10,7 +10,6 @@ public class FlatFileEventStoreTests : IDisposable
     [Fact]
     public async Task EventStore_Works_success()
     {
-        Console.WriteLine("EventStore_Works_success");
         var semaphore = new SemaphoreSlim(0);
         IEventStore eventStore = new FlatFileEventStore();
 
@@ -39,7 +38,6 @@ public class FlatFileEventStoreTests : IDisposable
     [Fact]
     public async Task EventStore_ResumeFromPointer_success()
     {
-        Console.WriteLine("EventStore_ResumeFromPointer_success");
         string? pointer = null;
 
         const string message1 = "I like to act!";
@@ -53,12 +51,12 @@ public class FlatFileEventStoreTests : IDisposable
             var message = new Said("Anton Actor", message1);
             await eventStore.Produce(message, "Gossip");
 
-            await Task.Delay(TimeSpan.FromMilliseconds(5));
+            await Task.Delay(TimeSpan.FromMilliseconds(5)); // Sleep added to add "space" between file timestamps for each event
 
             message = new Said("Anton Actor", message2);
             await eventStore.Produce(message, "Gossip");
 
-            await Task.Delay(TimeSpan.FromMilliseconds(5));
+            await Task.Delay(TimeSpan.FromMilliseconds(5)); // Sleep added to add "space" between file timestamps for each event
 
             message = new Said("Anton Actor", message3);
             await eventStore.Produce(message, "Gossip");
