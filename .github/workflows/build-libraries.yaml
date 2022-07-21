@@ -89,7 +89,7 @@ jobs:
         id: resolve-version
         uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
         with:
-          yaml_file: ./libraries/dotnet/EnergyOriginDateTimeExtension/version.yaml
+          yaml_file: ${{ steps.resolve-paths.outputs.solution }}/version.yaml
           yaml_path: version
 
       - name: Build library
