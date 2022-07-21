@@ -1,9 +1,9 @@
-using API.Models;
 using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace API.Controllers;
 
@@ -11,26 +11,40 @@ namespace API.Controllers;
 [Authorize]
 public class MeasurementsController : AuthorizationController
 {
-    readonly ILogger<MeasurementsController> logger;
-    readonly IMeasurementsService measurementsService;
+    private readonly IMeasurementsService _measurementsService;
+    private readonly IValidator<MeasurementsRequest> _validator;
 
-    public MeasurementsController(ILogger<MeasurementsController> logger, IMeasurementsService measurementsService)
+    public MeasurementsController(IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
-        this.logger = logger;
-        this.measurementsService = measurementsService;
+        _measurementsService = measurementsService;
+        _validator = validator;
     }
 
     [HttpGet]
     [Route("measurements/consumption")]
-    public async Task<MeasurementResponse> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<IActionResult> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
     {
-        return await measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation);
+        var validateResult = await _validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState, null);
+            return BadRequest(ModelState);
+        }
+
+        return Ok(await _measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation));
     }
 
     [HttpGet]
     [Route("measurements/production")]
-    public async Task<MeasurementResponse> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<IActionResult> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
     {
-        return await measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation);
+        var validateResult = await _validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState, null);
+            return BadRequest(ModelState);
+        }
+
+        return Ok(await _measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation));
     }
 }

@@ -1,14 +1,12 @@
 using API.Helpers;
 using API.Services;
 using API.Validation;
-using FluentValidation.AspNetCore;
-using MicroElements.Swashbuckle.FluentValidation;
-using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using FluentValidation;
+using Serilog;
+using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Serilog;
-using Serilog.Formatting.Json;
 
 
 [assembly: InternalsVisibleTo("Tests")]
@@ -22,8 +20,6 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-builder.Services.AddHttpContextAccessor();
-
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -31,18 +27,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddFluentValidation(c =>
-{
-    c.RegisterValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
-    c.ValidatorFactoryType = typeof(HttpContextServiceProviderValidatorFactory);
-});
-
+builder.Services.AddValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddFluentValidationRulesToSwagger();
 
 builder.Services.AddHttpClient();
 
