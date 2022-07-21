@@ -7,12 +7,11 @@ public class FlatFileEventConsumer : IEventConsumer
 {
     private readonly FlatFileEventStore _fileStore;
     private readonly IUnpacker _unpacker;
+    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
     private readonly long _fromIssued;
     private readonly long _fromFraction;
-
     private readonly FileSystemWatcher _rootWatcher;
     private readonly List<FileSystemWatcher> _watchers;
-    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
 
     public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
     {
@@ -33,8 +32,6 @@ public class FlatFileEventConsumer : IEventConsumer
                 throw new InvalidDataException($"Pointer '{pointer}' not a valid format");
             }
         }
-
-        Console.WriteLine($"* Setup watchers using: {fileStore.ROOT} and prefix: {topicPrefix}");
 
         _watchers = Directory.EnumerateDirectories(fileStore.ROOT)
             .Where(it => it.StartsWith($"{fileStore.ROOT}/{topicPrefix}") && it.EndsWith(fileStore.TOPIC_SUFFIX))
@@ -64,7 +61,6 @@ public class FlatFileEventConsumer : IEventConsumer
             .ToList()
             .ForEach(Load);
 
-        Console.WriteLine($"* Watching files in: {path}");
         var watcher = new FileSystemWatcher(path, $"*{_fileStore.EVENT_SUFFIX}");
         watcher.Created += OnCreatedFile;
         watcher.Error += OnError;
