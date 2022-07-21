@@ -15,11 +15,11 @@ public class UnpackerTests
         var message = new Said("Anton Actor", "I like to act!");
         var @event = InternalEvent.From(message);
 
-        var unpacked_message = packer.UnpackModel(@event) as Said;
+        var unpackedMessage = packer.UnpackModel(@event) as Said;
 
-        Assert.NotNull(unpacked_message);
-        Assert.Equal(message.Actor, unpacked_message?.Actor);
-        Assert.Equal(message.Statement, unpacked_message?.Statement);
+        Assert.NotNull(unpackedMessage);
+        Assert.Equal(message.Actor, unpackedMessage?.Actor);
+        Assert.Equal(message.Statement, unpackedMessage?.Statement);
     }
 
     [Fact]
