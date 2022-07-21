@@ -23,9 +23,9 @@ internal class FlatFileEventConsumer : IEventConsumer
         {
             try
             {
-                var a = pointer.Split('-');
-                _fromIssued = long.Parse(a[0]);
-                _fromFraction = long.Parse(a[1]);
+                var parts = pointer.Split('-');
+                _fromIssued = long.Parse(parts[0]);
+                _fromFraction = long.Parse(parts[1]);
             }
             catch (Exception)
             {
@@ -44,7 +44,7 @@ internal class FlatFileEventConsumer : IEventConsumer
         _rootWatcher.EnableRaisingEvents = true;
     }
 
-    private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException());
+    private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException()); // At this point, logging using dependency injection is not implemented, so errors are written to console. As the flat file-based solution is not for production, this is acceptable
 
     private void OnCreatedDirectory(object source, FileSystemEventArgs e) => _watchers.Add(CreateWatcher(e.FullPath));
 
