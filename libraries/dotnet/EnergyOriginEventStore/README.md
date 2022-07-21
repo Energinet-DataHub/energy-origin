@@ -87,12 +87,6 @@ public interface IEventStore : IDisposable
 ### FlatFile POC
 ---
 
-Open devcontainer and run:
-```sh
-cd poc
-dotnet run
-```
-
 Potentially useful on:
 - a single instance mounted a single disk
 - multiple instances mounting a shared disk
