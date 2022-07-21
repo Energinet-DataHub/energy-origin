@@ -43,7 +43,7 @@ public class MeasurementsController : AuthorizationController
         if (!validateResult.IsValid)
         {
             validateResult.AddToModelState(ModelState, null);
-            return BadRequest(ModelState);
+            return ValidationProblem(ModelState);
         }
 
         return Ok(await _measurementsService.GetMeasurements(Context, request.DateFrom, request.DateTo, request.Aggregation));
