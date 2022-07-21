@@ -22,9 +22,9 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [Produces(typeof(MeasurementResponse))]
+    [ProducesResponseType(200)]
     [Route("measurements/consumption")]
-    public async Task<IActionResult> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
     {
         var validateResult = await _validator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -37,9 +37,9 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [Produces(typeof(MeasurementResponse))]
+    [ProducesResponseType(200)]
     [Route("measurements/production")]
-    public async Task<IActionResult> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
     {
         var validateResult = await _validator.ValidateAsync(request);
         if (!validateResult.IsValid)
