@@ -1,8 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
 using EnergyOriginDateTimeExtension;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -11,42 +12,46 @@ namespace API.Controllers;
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
-    readonly ILogger<EmissionsController> logger;
-    readonly IEmissionsService emissionsService;
+    private readonly IEmissionsService _emissionsService;
+    private readonly IValidator<EnergySourceRequest> _validator;
 
-    public EmissionsController(ILogger<EmissionsController> logger, IEmissionsService emissionsService)
+    public EmissionsController(IEmissionsService emissionsService, IValidator<EnergySourceRequest> validator)
     {
-        this.logger = logger;
-        this.emissionsService = emissionsService;
+        _emissionsService = emissionsService;
+        _validator = validator;
     }
 
     [HttpGet]
     [Route("emissions")]
-    public async Task<EmissionsResponse> GetEmissions(
-        [Required] long dateFrom,
-        [Required] long dateTo,
-        Aggregation aggregation = Aggregation.Total)
+    public async Task<ActionResult<EmissionsResponse>> GetEmissions([FromQuery] EnergySourceRequest request)
     {
-        //TODO: Validation
+        var result = await _validator.ValidateAsync(request);
+        if (!result.IsValid)
+        {
+            result.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
+        }
 
-        var dateFromDateTime = dateFrom.ToDateTime();
-        var dateToDateTime = dateTo.ToDateTime();
+        var dateFromDateTime = request.DateFrom.ToDateTime();
+        var dateToDateTime = request.DateTo.ToDateTime();
 
-        return await emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, aggregation);
+        return Ok(await _emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
     }
 
     [HttpGet]
     [Route("sources")]
-    public async Task<EnergySourceResponse> GetEnergySources(
-        [Required] long dateFrom,
-        [Required] long dateTo,
-        Aggregation aggregation = Aggregation.Total)
+    public async Task<ActionResult<EnergySourceResponse>> GetEnergySources([FromQuery] EnergySourceRequest request)
     {
-        //TODO: Validation
+        var result = await _validator.ValidateAsync(request);
+        if (!result.IsValid)
+        {
+            result.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
+        }
 
-        var dateFromDateTime = dateFrom.ToDateTime();
-        var dateToDateTime = dateTo.ToDateTime();
+        var dateFromDateTime = request.DateFrom.ToDateTime();
+        var dateToDateTime = request.DateTo.ToDateTime();
 
-        return await emissionsService.GetSourceDeclaration(Context, dateFromDateTime, dateToDateTime, aggregation);
+        return Ok(await _emissionsService.GetSourceDeclaration(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
     }
 }
