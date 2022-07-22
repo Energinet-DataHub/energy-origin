@@ -1,6 +1,6 @@
 using API.Helpers;
+using API.Models.Request;
 using API.Services;
-using API.Validation;
 using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Serilog;
@@ -27,7 +27,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<MeasurementsRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<MeasurementsRequest.Validator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
