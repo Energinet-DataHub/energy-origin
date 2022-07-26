@@ -2,9 +2,34 @@ namespace API.Helpers;
 
 public static class Configuration
 {
-    private const string Scope = "SCOPE";
+    // Token related
+    private const string InternalTokenSecret = "INTERNALTOKENSECRET";
+    private const string TokenExpiryTime = "TOKENEXPIRYTIME";
 
-    public static List<String> GetScopes()
+
+    private const string Scope = "SCOPE";
+    private const string AmrValues = "AMRVALUES";
+
+
+    // ------------------------------------------------
+    public static string GetInternalTokenSecret()
+    {
+        var token = Environment.GetEnvironmentVariable(InternalTokenSecret) ?? throw new ArgumentNullException();
+
+        return token;
+    }
+
+    public static int GetTokenExpiryTimeInDays()
+    {
+        var expiryTimeString = Environment.GetEnvironmentVariable(TokenExpiryTime) ?? throw new ArgumentNullException();
+
+        var expiryTime = int.Parse(expiryTimeString);
+
+        return expiryTime;
+    }
+
+    // ------------------------------------------------
+    public static List<string> GetScopes()
     {
         var scope = Environment.GetEnvironmentVariable(Scope) ?? throw new ArgumentNullException();
 
@@ -12,4 +37,13 @@ public static class Configuration
 
         return scopes;
     }
+
+    public static string GetAmrValues()
+    {
+        var amrValues = Environment.GetEnvironmentVariable(AmrValues) ?? throw new ArgumentNullException();
+
+        return amrValues;
+    }
+
+    // ------------------------------------------------
 }
