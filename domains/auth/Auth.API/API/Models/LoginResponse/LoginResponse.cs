@@ -4,12 +4,12 @@ namespace API.Models;
 
 public class LoginResponse
 {
-    [JsonPropertyName("login")]
-    public IEnumerable<Login> Login { get; }
+    [JsonPropertyName("next_url")]
+    public string NextUrl { get; }
 
-    public LoginResponse(IEnumerable<Login> login)
+    public LoginResponse(string nextUrl)
     {
-        Login = login;
+        NextUrl = nextUrl;
     }
 
 
