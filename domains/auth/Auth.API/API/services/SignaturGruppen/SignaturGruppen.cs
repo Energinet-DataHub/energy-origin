@@ -1,8 +1,5 @@
 using API.Helpers;
 using API.Models.Oidc;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authorization;
 
 
 namespace API.services.SignaturGruppen;
@@ -29,7 +26,7 @@ public class SignaturGruppen
         };
 
         
-        var gg = new Jwt
+        
 
 
 

@@ -16,7 +16,8 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        return await
+        var nestUrl = "sdhfljsdhflsdhflkjsd";
+        return nestUrl;
 
     }
 
