@@ -1,5 +1,6 @@
 using API.Helpers;
 using API.Models.Oidc;
+using Microsoft.AspNetCore.Authentication.OAuth;
 
 
 namespace API.services.SignaturGruppen;
@@ -7,7 +8,7 @@ namespace API.services.SignaturGruppen;
 
 public class SignaturGruppen
 {
-    public string CreateRedirecthUrl(string feUrl, string returnUrl, string language = "en")
+    public string CreateRedirecthUrl(string feUrl, string returnUrl)
     {
         var amrValues = new Dictionary<string, string>()
         {
@@ -19,13 +20,23 @@ public class SignaturGruppen
         };
 
         // Create dataclass of AuthState
-        var authState = new AuthState
+        var authState = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
+        // /connect/authorize
+
+        // create redirect url
+        var oAuthOptions = new OAuthOptions
+        {
+            AuthorizationEndpoint = $"{Configuration.GetOidcUrl()}/connect/authorize",
+        };
         
+
+        var gg = new OAuthEvents();
+        var redirectUrl = gg.RedirectToAuthorizationEndpoint(oAuthOptions);
         
 
 

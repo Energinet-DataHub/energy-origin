@@ -6,9 +6,11 @@ public static class Configuration
     private const string InternalTokenSecret = "INTERNALTOKENSECRET";
     private const string TokenExpiryTime = "TOKENEXPIRYTIME";
 
-
+    // OIDC Related
     private const string Scope = "SCOPE";
     private const string AmrValues = "AMRVALUES";
+    private const string OidcUrl = "OIDCURL";
+    private const string OidcClientId = "OIDCCLIENTID";
 
 
     // ------------------------------------------------
@@ -29,7 +31,7 @@ public static class Configuration
     }
 
     // ------------------------------------------------
-    public static List<string> GetScopes()
+    public static ICollection<string> GetScopes()
     {
         var scope = Environment.GetEnvironmentVariable(Scope) ?? throw new ArgumentNullException();
 
@@ -43,6 +45,20 @@ public static class Configuration
         var amrValues = Environment.GetEnvironmentVariable(AmrValues) ?? throw new ArgumentNullException();
 
         return amrValues;
+    }
+
+    public static string GetOidcUrl()
+    {
+        var oidcUrl = Environment.GetEnvironmentVariable(OidcUrl) ?? throw new ArgumentNullException();
+
+        return oidcUrl;
+    }
+
+    private static string GetOidcClientId()
+    {
+        var clientId = Environment.GetEnvironmentVariable(OidcClientId) ?? throw new ArgumentNullException();
+
+        return clientId;
     }
 
     // ------------------------------------------------

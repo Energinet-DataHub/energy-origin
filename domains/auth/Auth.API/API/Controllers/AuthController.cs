@@ -16,8 +16,8 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        var nestUrl = "sdhfljsdhflsdhflkjsd";
-        return nestUrl;
+        var nextUrl = "sdhfljsdhflsdhflkjsd";
+        return nextUrl;
 
     }
 
