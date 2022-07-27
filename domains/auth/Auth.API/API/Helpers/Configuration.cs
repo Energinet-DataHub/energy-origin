@@ -11,6 +11,7 @@ public static class Configuration
     private const string AmrValues = "AMRVALUES";
     private const string OidcUrl = "OIDCURL";
     private const string OidcClientId = "OIDCCLIENTID";
+    private const string OidcClientSecret = "OIDCCLIENTSECRET";
 
 
     // ------------------------------------------------
@@ -54,11 +55,18 @@ public static class Configuration
         return oidcUrl;
     }
 
-    private static string GetOidcClientId()
+    public static string GetOidcClientId()
     {
         var clientId = Environment.GetEnvironmentVariable(OidcClientId) ?? throw new ArgumentNullException();
 
         return clientId;
+    }
+
+    public static string GetOidcClientSecret()
+    {
+        var clientSecret = Environment.GetEnvironmentVariable(OidcClientSecret) ?? throw new ArgumentNullException();
+
+        return clientSecret;
     }
 
     // ------------------------------------------------

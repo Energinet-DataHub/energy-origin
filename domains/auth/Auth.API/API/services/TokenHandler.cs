@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace API.services;
+namespace API.Services;
 public class TokenHandler
 {
     private byte[] internalToken = Encoding.ASCII.GetBytes(Configuration.GetInternalTokenSecret());

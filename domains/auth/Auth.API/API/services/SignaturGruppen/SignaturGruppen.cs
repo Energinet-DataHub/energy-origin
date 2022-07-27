@@ -1,12 +1,12 @@
 using API.Helpers;
 using API.Models.Oidc;
-using Microsoft.AspNetCore.Authentication.OAuth;
+using System.Text.Json;
 
 
-namespace API.services.SignaturGruppen;
+namespace API.Services;
 
 
-public class SignaturGruppen
+public class SignaturGruppen : OAuthService
 {
     public string CreateRedirecthUrl(string feUrl, string returnUrl)
     {
@@ -26,20 +26,12 @@ public class SignaturGruppen
             ReturnUrl = returnUrl
         };
 
-        // /connect/authorize
+        JsonSerializer.Serialize(nemId);
 
-        // create redirect url
-        var oAuthOptions = new OAuthOptions
-        {
-            AuthorizationEndpoint = $"{Configuration.GetOidcUrl()}/connect/authorize",
-        };
+
+        CreateAuthorizationUrl(authState, JsonSerializer.Serialize(nemId));
         
-
-        var gg = new OAuthEvents();
-        var redirectUrl = gg.RedirectToAuthorizationEndpoint(oAuthOptions);
         
-
-
 
         return "lol";
     }
