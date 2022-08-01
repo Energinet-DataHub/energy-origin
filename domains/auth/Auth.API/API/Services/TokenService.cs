@@ -43,7 +43,7 @@ public class TokenService
 
         query.Add("responsetype", responseType);
         query.Add("client_id", Configuration.GetOidcClientId());
-        query.Add("redirect_uri", $"{feUrl}/api/auth/oidc/login/callback");
+        query.Add("redirect_uri", $"{feUrl}/auth/oidc/login/callback");
         query.Add("scope", Configuration.GetScopes().ToString()!);
         query.Add("state", state.ToString()!);
         query.Add("language", lang);
