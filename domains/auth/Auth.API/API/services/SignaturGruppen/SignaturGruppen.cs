@@ -1,15 +1,13 @@
 using API.Helpers;
 using API.Models.Oidc;
-using API.Services;
+using API.Models;
 using System.Text.Json;
-
 
 namespace API.Services;
 
-
 public class SignaturGruppen : TokenService
 {
-    public string CreateRedirecthUrl(string feUrl, string returnUrl)
+    public LoginResponse CreateRedirecthUrl(string feUrl, string returnUrl)
     {
         var amrValues = new Dictionary<string, string>()
         {
@@ -27,11 +25,13 @@ public class SignaturGruppen : TokenService
             ReturnUrl = returnUrl
         };
 
-        var query = CreateAuthorizationRedirectUrl("code", authState, "en");
+        var query = CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
 
-        query.Add("idp_params", JsonSerializer.Serialize(nemId));  
+        query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        return query.ToString();
+        var redirectUrl = new LoginResponse(nextUrl: Configuration.GetOidcUrl() + query.ToString());
+
+        return redirectUrl;
     }
 }
 
