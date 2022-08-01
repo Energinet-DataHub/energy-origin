@@ -1,12 +1,13 @@
 using API.Helpers;
 using API.Models.Oidc;
+using API.Services;
 using System.Text.Json;
 
 
 namespace API.Services;
 
 
-public class SignaturGruppen : OAuthService
+public class SignaturGruppen : TokenService
 {
     public string CreateRedirecthUrl(string feUrl, string returnUrl)
     {
@@ -26,17 +27,12 @@ public class SignaturGruppen : OAuthService
             ReturnUrl = returnUrl
         };
 
-        JsonSerializer.Serialize(nemId);
+        var query = CreateAuthorizationRedirectUrl("code", authState, "en");
 
+        query.Add("idp_params", JsonSerializer.Serialize(nemId));  
 
-        CreateAuthorizationUrl(authState, JsonSerializer.Serialize(nemId));
-        
-        
-
-        return "lol";
+        return query.ToString();
     }
-
-
 }
 
 

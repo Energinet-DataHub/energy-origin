@@ -13,6 +13,9 @@ public static class Configuration
     private const string OidcClientId = "OIDCCLIENTID";
     private const string OidcClientSecret = "OIDCCLIENTSECRET";
 
+    // Our own url
+    private const string OurUrl = "OURURL";
+
 
     // ------------------------------------------------
     public static string GetInternalTokenSecret()
@@ -70,4 +73,12 @@ public static class Configuration
     }
 
     // ------------------------------------------------
+
+    public static string GetOutUrl()
+    {
+        var ourUrl = Environment.GetEnvironmentVariable(OurUrl) ?? throw new ArgumentNullException();
+
+        return ourUrl;
+    }
+
 }

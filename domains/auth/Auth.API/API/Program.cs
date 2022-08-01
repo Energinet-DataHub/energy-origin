@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Serilog;
 using Serilog.Formatting.Json;
+using API.Helpers;
 
 
 var logger = new LoggerConfiguration()
@@ -37,7 +38,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthentication(config =>
+    {
+        // Check cookie for authentication
+        config.DefaultAuthenticateScheme = "ClientCookie";
+        // Deal out cookie
+        config.DefaultSignInScheme = "ClientCookie";
+        // Check if authenticated
+        config.DefaultChallengeScheme = "Oidc";
+    })
+        .AddCookie("ClientCookie")
+        .AddOAuth("Oidc", config =>
+        {
+            config.ClientId = Configuration.GetOidcClientId();
+            config.ClientSecret = Configuration.GetOidcClientSecret();
+            config.CallbackPath = "/oidc/callback";
+            config.AuthorizationEndpoint = $"{Configuration.GetOidcUrl}/connect/authorize";
+        });
+}
+
 app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 
