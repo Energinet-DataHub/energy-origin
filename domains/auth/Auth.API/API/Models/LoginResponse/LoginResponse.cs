@@ -5,7 +5,7 @@ namespace API.Models;
 public class LoginResponse
 {
     [JsonPropertyName("next_url")]
-    public string NextUrl { get; set; }
+    public string NextUrl { get; }
 
     public LoginResponse(string nextUrl)
     {

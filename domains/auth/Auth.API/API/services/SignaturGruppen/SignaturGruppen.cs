@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace API.Services;
 
-public class SignaturGruppen : TokenService
+public class SignaturGruppen : ISignaturGruppen
 {
     public LoginResponse CreateRedirecthUrl(string feUrl, string returnUrl)
     {
@@ -19,13 +19,11 @@ public class SignaturGruppen : TokenService
         };
 
         // Create dataclass of AuthState
-        var authState = new AuthState()
-        {
-            FeUrl = feUrl,
-            ReturnUrl = returnUrl
-        };
+        var authState = new AuthState(feUrl, returnUrl);
 
-        var query = CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
+        var tokenHandler = new TokenService();
+
+        var query = tokenHandler.CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Serilog;
 using Serilog.Formatting.Json;
-using API.Helpers;
+using API.Services;
 
 
 var logger = new LoggerConfiguration()
@@ -26,7 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
-
+builder.Services.AddScoped<ISignaturGruppen, SignaturGruppen>();
 
 var app = builder.Build();
 
@@ -37,7 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+/*
 void ConfigureServices(IServiceCollection services)
 {
     services.AddAuthentication(config =>
@@ -58,14 +58,14 @@ void ConfigureServices(IServiceCollection services)
             config.AuthorizationEndpoint = $"{Configuration.GetOidcUrl}/connect/authorize";
         });
 }
+*/
+
+
 
 app.UseHttpsRedirection();
-
 
 app.UseAuthorization();
 
 app.MapControllers();
-
-
 
 app.Run();
