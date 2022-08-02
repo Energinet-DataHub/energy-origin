@@ -1,12 +1,10 @@
 using API.Helpers;
 using API.Models.Oidc;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Http.Extensions;
 
 
 namespace API.Services;

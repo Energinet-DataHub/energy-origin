@@ -39,7 +39,7 @@ public static class Configuration
     {
         var scope = Environment.GetEnvironmentVariable(Scope) ?? throw new ArgumentNullException();
 
-        var combinedScopes = scope.Replace(",", "+").Replace(" ","");
+        var combinedScopes = scope.Replace(",", "+").Replace(" ", "");
 
         return combinedScopes;
     }

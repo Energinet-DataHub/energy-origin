@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 using API.Models;
-using API.Services; 
+using API.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers;
 
@@ -24,7 +24,7 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        
+
         return signaturGruppen.CreateRedirecthUrl(feUrl, returnUrl);
     }
 
