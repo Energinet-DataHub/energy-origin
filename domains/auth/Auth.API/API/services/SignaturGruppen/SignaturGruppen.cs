@@ -32,5 +32,3 @@ public class SignaturGruppen : ISignaturGruppen
         return redirectUrl;
     }
 }
-
-

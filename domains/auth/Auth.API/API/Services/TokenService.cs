@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http.Extensions;
 
+
 namespace API.Services;
 public class TokenService
 {
@@ -17,7 +18,14 @@ public class TokenService
     {
         var claims = new[]
         {
-            new Claim("state", state.ToString()!)
+            new Claim("fe_url", state.FeUrl),
+            new Claim("return_url", state.ReturnUrl),
+            new Claim("terms_accepted", state.TermsAccepted.ToString()),
+            new Claim("terms_version", state.TermsVersion),
+            new Claim("id_token", state.IdToken),
+            new Claim("tin", state.Tin),
+            new Claim("identity_provider", state.IdentityProvider),
+            new Claim("external_subject", state.ExternalSubject)
         };
 
         var key = new SymmetricSecurityKey(internalToken);
@@ -27,8 +35,6 @@ public class TokenService
 
         var token = new JwtSecurityToken(
             claims: claims,
-            notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddDays(Configuration.GetTokenExpiryTimeInDays()),
             signingCredentials: signingCredentials
             );
 
@@ -41,15 +47,13 @@ public class TokenService
     {
         var query = new QueryBuilder();
 
-        query.Add("responsetype", responseType);
+        query.Add("response_type", responseType);
         query.Add("client_id", Configuration.GetOidcClientId());
-        query.Add("redirect_uri", $"{feUrl}/auth/oidc/login/callback");
-        query.Add("scope", Configuration.GetScopes().ToString()!);
-        query.Add("state", state.ToString()!);
+        query.Add("redirect_uri", $"{feUrl}/api/auth/oidc/login/callback");
+        query.Add("scope", Configuration.GetScopes());
+        query.Add("state", EncodeJwtToken(state));
         query.Add("language", lang);
 
         return query;
     }
-
-
 }

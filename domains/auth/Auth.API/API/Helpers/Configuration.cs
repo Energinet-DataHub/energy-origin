@@ -35,13 +35,13 @@ public static class Configuration
     }
 
     // ------------------------------------------------
-    public static ICollection<string> GetScopes()
+    public static string GetScopes()
     {
         var scope = Environment.GetEnvironmentVariable(Scope) ?? throw new ArgumentNullException();
 
-        List<string> scopes = scope.Split(",").ToList();
+        var combinedScopes = scope.Replace(",", "+").Replace(" ","");
 
-        return scopes;
+        return combinedScopes;
     }
 
     public static string GetAmrValues()
