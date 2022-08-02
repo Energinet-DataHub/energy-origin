@@ -2,7 +2,7 @@ using System;
 
 namespace Tests.Resources
 {
-    public static class EnvironmentVariable
+    public static class AddEnvironmentVariables
     {
         public static void EnvironmentVariables()
         {

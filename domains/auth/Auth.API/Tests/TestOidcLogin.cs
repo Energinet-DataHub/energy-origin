@@ -15,7 +15,7 @@ public sealed class TestOidcLogin
     {
         //Arrange
 
-        EnvironmentVariable.EnvironmentVariables();
+        AddEnvironmentVariables.EnvironmentVariables();
 
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";

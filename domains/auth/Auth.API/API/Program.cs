@@ -39,30 +39,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-/*
-void ConfigureServices(IServiceCollection services)
-{
-    services.AddAuthentication(config =>
-    {
-        // Check cookie for authentication
-        config.DefaultAuthenticateScheme = "ClientCookie";
-        // Deal out cookie
-        config.DefaultSignInScheme = "ClientCookie";
-        // Check if authenticated
-        config.DefaultChallengeScheme = "Oidc";
-    })
-        .AddCookie("ClientCookie")
-        .AddOAuth("Oidc", config =>
-        {
-            config.ClientId = Configuration.GetOidcClientId();
-            config.ClientSecret = Configuration.GetOidcClientSecret();
-            config.CallbackPath = "/oidc/callback";
-            config.AuthorizationEndpoint = $"{Configuration.GetOidcUrl}/connect/authorize";
-        });
-}
-*/
-
-
 
 app.UseHttpsRedirection();
 
