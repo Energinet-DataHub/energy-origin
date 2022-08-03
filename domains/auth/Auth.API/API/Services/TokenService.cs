@@ -1,5 +1,5 @@
 using API.Helpers;
-using API.Models.Oidc;
+using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -8,7 +8,7 @@ using System.Text;
 
 
 namespace API.Services;
-public class TokenService
+public class TokenService : ITokenService
 {
     private byte[] internalToken = Encoding.ASCII.GetBytes(Configuration.GetInternalTokenSecret());
 

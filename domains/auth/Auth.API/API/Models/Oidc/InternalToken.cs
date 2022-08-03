@@ -1,4 +1,4 @@
-namespace API.Models.Oidc;
+namespace API.Models;
 public class InternalToken
 {
     public DateTime Issued { get; }

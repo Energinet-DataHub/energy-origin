@@ -1,12 +1,20 @@
 using API.Helpers;
 using API.Models;
-using API.Models.Oidc;
 using System.Text.Json;
 
 namespace API.Services;
 
 public class SignaturGruppen : ISignaturGruppen
 {
+    readonly ILogger<SignaturGruppen> logger;
+    readonly ITokenService tokenService;
+
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, ITokenService tokenService)
+    {
+        this.logger = logger;
+        this.tokenService = tokenService;
+    }
+
     public LoginResponse CreateRedirecthUrl(string feUrl, string returnUrl)
     {
         var amrValues = new Dictionary<string, string>()
@@ -21,9 +29,8 @@ public class SignaturGruppen : ISignaturGruppen
         // Create dataclass of AuthState
         var authState = new AuthState(feUrl, returnUrl);
 
-        var tokenHandler = new TokenService();
 
-        var query = tokenHandler.CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
+        var query = tokenService.CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 

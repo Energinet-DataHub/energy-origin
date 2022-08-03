@@ -1,4 +1,4 @@
-namespace API.Models.Oidc;
+namespace API.Models;
 public class AuthState
 {
     public string FeUrl { get; }
