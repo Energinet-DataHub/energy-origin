@@ -5,7 +5,7 @@ namespace API.Services;
 
 class MeasurementAggregation : IAggregator
 {
-    public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, long dateFrom, long dateTo, Aggregation aggregation)
+    public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, Aggregation aggregation)
     {
         var listOfMeasurements = measurements.SelectMany(
             measurement => measurement.Measurements.Select(

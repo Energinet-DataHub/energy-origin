@@ -44,8 +44,8 @@ public sealed class AggregationServiceTest
 
         var timeSeries = await sut.GetTimeSeries(
             context,
-            ((DateTimeOffset)DateTime.SpecifyKind(dateFrom, DateTimeKind.Utc)).ToUnixTimeSeconds(),
-            ((DateTimeOffset)DateTime.SpecifyKind(dateTo, DateTimeKind.Utc)).ToUnixTimeSeconds(),
+            dateFrom,
+            dateTo,
             meteringPoints
         );
 
