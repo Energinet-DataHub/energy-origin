@@ -12,20 +12,20 @@ namespace API.Controllers;
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
-    private readonly IEmissionsService _emissionsService;
-    private readonly IValidator<EnergySourceRequest> _validator;
+    readonly IEmissionsService emissionsService;
+    readonly IValidator<EnergySourceRequest> validator;
 
     public EmissionsController(IEmissionsService emissionsService, IValidator<EnergySourceRequest> validator)
     {
-        _emissionsService = emissionsService;
-        _validator = validator;
+        this.emissionsService = emissionsService;
+        this.validator = validator;
     }
 
     [HttpGet]
     [Route("emissions")]
     public async Task<ActionResult<EmissionsResponse>> GetEmissions([FromQuery] EnergySourceRequest request)
     {
-        var result = await _validator.ValidateAsync(request);
+        var result = await validator.ValidateAsync(request);
         if (!result.IsValid)
         {
             result.AddToModelState(ModelState, null);
@@ -35,14 +35,14 @@ public class EmissionsController : AuthorizationController
         var dateFromDateTime = request.DateFrom.ToDateTime();
         var dateToDateTime = request.DateTo.ToDateTime();
 
-        return Ok(await _emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
+        return Ok(await emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
     }
 
     [HttpGet]
     [Route("sources")]
     public async Task<ActionResult<EnergySourceResponse>> GetEnergySources([FromQuery] EnergySourceRequest request)
     {
-        var result = await _validator.ValidateAsync(request);
+        var result = await validator.ValidateAsync(request);
         if (!result.IsValid)
         {
             result.AddToModelState(ModelState, null);
@@ -52,6 +52,6 @@ public class EmissionsController : AuthorizationController
         var dateFromDateTime = request.DateFrom.ToDateTime();
         var dateToDateTime = request.DateTo.ToDateTime();
 
-        return Ok(await _emissionsService.GetSourceDeclaration(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
+        return Ok(await emissionsService.GetSourceDeclaration(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
     }
 }
