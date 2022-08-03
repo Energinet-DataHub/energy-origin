@@ -29,8 +29,6 @@ public sealed class ProductionAggregationTest
         // Act
         var result = aggregationCalculator.CalculateAggregation(
             timeSeries,
-            dateFrom.ToUnixTime(),
-            dateTo.ToUnixTime(),
             aggregation).AggregatedMeasurement.ToArray();
 
         // Assert
