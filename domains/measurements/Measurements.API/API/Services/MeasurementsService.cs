@@ -1,6 +1,5 @@
 using API.Models;
 using EnergyOriginAuthorization;
-using Serilog;
 
 namespace API.Services;
 
@@ -15,7 +14,9 @@ public class MeasurementsService : IMeasurementsService
         this.aggregator = aggregator;
     }
 
-    public async Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, long dateFrom, long dateTo, Aggregation aggregation)
+    public async Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, DateTime dateFrom,
+        DateTime dateTo,
+        Aggregation aggregation)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
@@ -23,10 +24,10 @@ public class MeasurementsService : IMeasurementsService
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
 
-        return aggregator.CalculateAggregation(measurements, dateFrom, dateTo, aggregation);
+        return aggregator.CalculateAggregation(measurements, aggregation);
     }
 
-    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, long dateFrom, long dateTo, IEnumerable<MeteringPoint> meteringPoints)
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, DateTime dateFrom, DateTime dateTo, IEnumerable<MeteringPoint> meteringPoints)
     {
         var timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
@@ -34,8 +35,8 @@ public class MeasurementsService : IMeasurementsService
             var measurements = await dataSyncService.GetMeasurements(
                 context,
                 meteringPoint.GSRN,
-                DateTimeOffset.FromUnixTimeSeconds(dateFrom).UtcDateTime,
-                DateTimeOffset.FromUnixTimeSeconds(dateTo).UtcDateTime
+                dateFrom,
+                dateTo
             );
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
