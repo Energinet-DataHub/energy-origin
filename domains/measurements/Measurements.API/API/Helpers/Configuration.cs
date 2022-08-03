@@ -2,7 +2,7 @@ namespace API.Helpers
 {
     public static class Configuration
     {
-        private const string DataSyncEndpoint = "DATASYNCENDPOINT";
+        const string DataSyncEndpoint = "DATASYNCENDPOINT";
 
         public static string GetDataSyncEndpoint()
         {

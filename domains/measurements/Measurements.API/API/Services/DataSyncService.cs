@@ -1,8 +1,6 @@
 using API.Models;
 using EnergyOriginAuthorization;
 using EnergyOriginDateTimeExtension;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace API.Services;
 
