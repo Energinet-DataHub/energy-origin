@@ -4,3 +4,11 @@ api:
     name: ghcr.io/energinet-datahub/eo-auth
     tag: 0.0.1
   env:
+    INTERNALTOKENSECRET
+    TOKENEXPIRYTIME
+    SCOPE
+    AMRVALUES
+    OIDCURL
+    OIDCCLIENTID
+    OIDCCLIENTSECRET
+    BASEURL

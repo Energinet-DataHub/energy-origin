@@ -18,7 +18,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "InternalTokenSecret": "INTERNALTOKENSECRET",
-        "TokenExpiryTime": 1,
+        "TokenExpiryTime": "1",
         "Scope": "SCOPE, SCOPE1",
         "AmrValues": "AMRVALUES",
         "OidcUrl": "OIDCURL",

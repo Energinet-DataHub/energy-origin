@@ -13,8 +13,8 @@ public static class Configuration
     private const string OidcClientId = "OIDCCLIENTID";
     private const string OidcClientSecret = "OIDCCLIENTSECRET";
 
-    // Our own url
-    private const string OurUrl = "OURURL";
+    // Base url
+    private const string BaseUrl = "BASEURL";
 
 
     // ------------------------------------------------
@@ -74,11 +74,11 @@ public static class Configuration
 
     // ------------------------------------------------
 
-    public static string GetOutUrl()
+    public static string GetBasetUrl()
     {
-        var ourUrl = Environment.GetEnvironmentVariable(OurUrl) ?? throw new ArgumentNullException();
+        var baseUrl = Environment.GetEnvironmentVariable(BaseUrl) ?? throw new ArgumentNullException();
 
-        return ourUrl;
+        return baseUrl;
     }
 
 }
