@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace API.Models
 {
     public class MixRecord
     {
         public DateTime HourUTC { get; }
+        [JsonPropertyName("PriceArea")]
         public string GridArea { get; }
         public string Version { get; }
         public decimal ShareTotal { get; }

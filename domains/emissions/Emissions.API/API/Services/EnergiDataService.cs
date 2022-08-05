@@ -36,13 +36,13 @@ public class EnergiDataService : IEnergiDataService
 
     string GetMixQuery(DateTime dateFrom, DateTime dateTo)
     {
-        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal";
+        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
 
-        return $"dataset/declarationemissionhour?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,CO2PerkWh,NOxPerkWh";
+        return $"dataset/declarationemissionhour?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,CO2PerkWh,NOxPerkWh&timezone=UTC";
     }
 
     private class Result<T>
