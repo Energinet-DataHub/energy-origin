@@ -16,11 +16,12 @@ public class MeasurementsService : IMeasurementsService
 
     public async Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, DateTime dateFrom,
         DateTime dateTo,
-        Aggregation aggregation)
+        Aggregation aggregation,
+        MeterType TypeOfMP)
     {
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        var consumptionMeteringPoints = meteringPoints.Where(mp => mp.Type == MeterType.Consumption);
+        var consumptionMeteringPoints = meteringPoints.Where(mp => mp.Type == TypeOfMP);
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
 
