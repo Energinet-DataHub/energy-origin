@@ -7,30 +7,30 @@ namespace Tests
 {
     internal class SourceEmissionShareDataSetFactory
     {
-        public List<Measurement> CreateMeasurements()
+        public List<Measurement> CreateMeasurements(string MP)
         {
             return new List<Measurement>
             {
                 new Measurement(
-                    "571313121223234323",
+                    MP,
                     new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
                     new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
                     1000,
                     Quality.Measured),
                 new Measurement(
-                    "571313121223234323",
+                    MP,
                     new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
                     new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
                     2000,
                     Quality.Measured),
                 new Measurement(
-                    "571313121223234323",
+                    MP,
                     new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
                     new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
                     3000,
                     Quality.Measured),
                 new Measurement(
-                    "571313121223234323",
+                    MP,
                     new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
                     new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
                     4000,
@@ -45,7 +45,12 @@ namespace Tests
                 new TimeSeries
                 (
                     new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
-                    CreateMeasurements()
+                    CreateMeasurements("571313121223234323")
+                ),
+                new TimeSeries
+                (
+                    new MeteringPoint("571313121223234341", "DK1", MeterType.Consumption),
+                    CreateMeasurements("571313121223234341")
                 )
             };
         }
