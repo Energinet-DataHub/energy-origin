@@ -27,22 +27,32 @@ public class EnergiDataService : IEnergiDataService
 
     public async Task<IEnumerable<MixRecord>> GetResidualMixPerHour(DateTime dateFrom, DateTime dateTo)
     {
-        var query = GetMixQuery(dateFrom, dateTo);
+        var queryTotal = GetMixQueryTotal(dateFrom, dateTo);
+        var queryAll = GetMixQueryAll(dateFrom, dateTo);
 
-        var result = await httpClient.GetFromJsonAsync<Result<MixRecord>>(query) ?? throw new Exception($"EDS declarationproduction query failed. query:'{query}'");
+        var resultTotal = await httpClient.GetFromJsonAsync<Result<MixRecord>>(queryTotal) ?? throw new Exception($"EDS declarationproduction query failed. query:'{queryTotal}'");
+        var resultAll = await httpClient.GetFromJsonAsync<Result<MixRecord>>(queryAll) ?? throw new Exception($"EDS declarationproduction query failed. query:'{queryAll}'");
 
-        return result.Records;
+        resultTotal.Records.AddRange(resultAll.Records);
+
+        return resultTotal.Records;
     }
 
-    string GetMixQuery(DateTime dateFrom, DateTime dateTo)
+    string GetMixQueryTotal(DateTime dateFrom, DateTime dateTo)
     {
-        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal";
+
+        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC&filter="+"{\"FuelAllocationMethod\":\"Total\"}";
+    }
+    string GetMixQueryAll(DateTime dateFrom, DateTime dateTo)
+    {
+
+        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC&filter=" + "{\"FuelAllocationMethod\":\"All\"}";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)
     {
 
-        return $"dataset/declarationemissionhour?start={dateFrom:yyyy-MM-dd}&end={dateTo:yyyy-MM-dd}&columns=HourUTC,PriceArea,CO2PerkWh,NOxPerkWh";
+        return $"dataset/declarationemissionhour?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,CO2PerkWh,NOxPerkWh&timezone=UTC";
     }
 
     private class Result<T>

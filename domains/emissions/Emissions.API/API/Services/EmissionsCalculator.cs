@@ -2,6 +2,7 @@ using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
+
 namespace API.Services;
 
 class EmissionsCalculator : IEmissionsCalculator
@@ -15,32 +16,44 @@ class EmissionsCalculator : IEmissionsCalculator
     {
 
         var listOfEmissions = new List<Emission>();
+        var co2List = new List<decimal>();
+        var bucketEmissions = new List<Emissions>();
 
         foreach (var measurement in measurements)
         {
-            foreach (var reading in measurement.Measurements)
-            {
-                var emission = emissions.FirstOrDefault(a =>
-                    a.GridArea == measurement.MeteringPoint.GridArea && a.HourUTC == reading.DateFrom.ToDateTime());
 
-                if (emission == null)
-                {
-                    throw new Exception("Emissions is null");
-                }
-                var co2 = emission.CO2PerkWh * reading.Quantity;
+            var emissionGridArea = emissions.Where(a => a.GridArea.Contains(measurement.MeteringPoint.GridArea)).ToList();
+
+            var measurementTimeMatches = from first in measurement.Measurements.Select(x => x.DateFrom)
+                                         join second in emissionGridArea.Select(x => x.HourUTC.ToUnixTime())
+                                             on first equals second
+                                             select measurement.Measurements.Where(x => x.DateFrom.Equals(first)).Single();
+
+            var emissionsTimeMatches = from first in measurement.Measurements.Select(x => x.DateFrom)
+                                       join second in emissionGridArea.Select(x => x.HourUTC.ToUnixTime())
+                                             on first equals second
+                                             select emissionGridArea.Where(x => x.HourUTC.ToUnixTime().Equals(first)).Single();
+
+            var quantity = measurementTimeMatches.Select(y => y.Quantity).ToList();
+            var co2PerkWh = emissionsTimeMatches.Select(y => y.CO2PerkWh).ToList();
+
+            co2List = quantity.Select((dValue, index) => dValue * co2PerkWh[index]).ToList();
+
+            foreach (var measure in measurementTimeMatches)
+            {
                 listOfEmissions.Add(new Emission
                 {
-                    Co2 = co2,
-                    DateFrom = reading.DateFrom.ToDateTime(),
-                    DateTo = reading.DateTo.ToDateTime(),
-                    Consumption = reading.Quantity
+                    Co2 = co2List[0],
+                    DateFrom = measure.DateFrom.ToDateTime(),
+                    DateTo = measure.DateTo.ToDateTime(),
+                    Consumption = measure.Quantity
                 });
+                co2List.RemoveAt(0);
             }
         }
 
         IEnumerable<IGrouping<string, Emission>> groupedEmissions = GetGroupedEmissions(aggregation, listOfEmissions);
 
-        var bucketEmissions = new List<Emissions>();
         foreach (var groupedEmission in groupedEmissions)
         {
             var totalForBucket = groupedEmission.Sum(_ => _.Co2);
@@ -53,9 +66,9 @@ class EmissionsCalculator : IEmissionsCalculator
             ));
         }
 
-        var test = new EmissionsResponse(bucketEmissions);
+        var response = new EmissionsResponse(bucketEmissions);
 
-        return test;
+        return response;
     }
 
     static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, List<Emission> listOfEmissions)
@@ -80,9 +93,7 @@ class EmissionsCalculator : IEmissionsCalculator
                 break;
 
             case Aggregation.QuarterHour:
-                groupedEmissions =
-                    listOfEmissions.GroupBy(_ =>
-                        _.DateFrom.ToString("yyyy/MM/dd/HH/mm"));
+                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH/mm"));
                 break;
 
             case Aggregation.Actual:
