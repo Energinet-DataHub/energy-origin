@@ -36,9 +36,9 @@ public class MeasurementsController : AuthorizationController
         var dateFromDateTime = request.DateFrom.ToDateTime();
         var dateToDateTime = request.DateTo.ToDateTime();
 
-        var TypeOfMP = MeterType.Consumption;
+        var typeOfMP = MeterType.Consumption;
 
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, TypeOfMP));
+        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
     }
 
     [HttpGet]
@@ -55,8 +55,8 @@ public class MeasurementsController : AuthorizationController
         var dateFromDateTime = request.DateFrom.ToDateTime();
         var dateToDateTime = request.DateTo.ToDateTime();
 
-        var TypeOfMP = MeterType.Production;
+        var typeOfMP = MeterType.Production;
 
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, TypeOfMP));
+        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
     }
 }
