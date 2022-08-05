@@ -6,5 +6,6 @@ namespace API.Services;
 public interface IMeasurementsService
 {
     Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, DateTime dateFrom, DateTime dateTo,
-        Aggregation aggregation);
+        Aggregation aggregation,
+        MeterType typeOfMP);
 }
