@@ -36,6 +36,7 @@ public class EnergiDataService : IEnergiDataService
 
     string GetMixQuery(DateTime dateFrom, DateTime dateTo)
     {
+        // Dataset -> https://www.energidataservice.dk/tso-electricity/DeclarationProduction
         return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC";
     }
 
