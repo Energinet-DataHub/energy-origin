@@ -16,7 +16,7 @@ class EmissionsCalculator : IEmissionsCalculator
     {
 
         var listOfEmissions = new List<Emission>();
-        var Co2List = new List<decimal>();
+        var co2List = new List<decimal>();
         var bucketEmissions = new List<Emissions>();
 
         foreach (var measurement in measurements)
@@ -34,21 +34,21 @@ class EmissionsCalculator : IEmissionsCalculator
                                              on first equals second
                                              select emissionGridArea.Where(x => x.HourUTC.ToUnixTime().Equals(first)).Single();
 
-            var Quantity = measurementTimeMatches.Select(y => y.Quantity).ToList();
-            var CO2PerkWh = emissionsTimeMatches.Select(y => y.CO2PerkWh).ToList();
+            var quantity = measurementTimeMatches.Select(y => y.Quantity).ToList();
+            var co2PerkWh = emissionsTimeMatches.Select(y => y.CO2PerkWh).ToList();
 
-            Co2List = Quantity.Select((dValue, index) => dValue * CO2PerkWh[index]).ToList();
+            co2List = quantity.Select((dValue, index) => dValue * co2PerkWh[index]).ToList();
 
             foreach (var measure in measurementTimeMatches)
             {
                 listOfEmissions.Add(new Emission
                 {
-                    Co2 = Co2List[0],
+                    Co2 = co2List[0],
                     DateFrom = measure.DateFrom.ToDateTime(),
                     DateTo = measure.DateTo.ToDateTime(),
                     Consumption = measure.Quantity
                 });
-                Co2List.RemoveAt(0);
+                co2List.RemoveAt(0);
             }
         }
 
