@@ -28,7 +28,6 @@ public class CryptographyService : ICryptographyService
                     return Convert.ToBase64String(data);
                 }
             }
-
         }
     }
 
@@ -54,5 +53,4 @@ public class CryptographyService : ICryptographyService
             }
         }
     }
-
 }
