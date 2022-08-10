@@ -12,6 +12,32 @@ public class MemoryEventStore : IEventStore
 
     public MemoryEventStore() { }
 
+    internal async Task Attach(MemoryEventConsumer consumer)
+    {
+        // NOTE: The following will enqueue an action that in turn will enqueue an action for each known message and then an action to begin listening for new messages.
+        // By letting a queued action perform the message deliveries and actual attaching, we avoid dealing with new messages during attachment.
+
+        _actions.Enqueue(async () =>
+        {
+            foreach (var message in _messages)
+            {
+                _actions.Enqueue(() =>
+                {
+                    consumer.OnMessage(this, message);
+                });
+            }
+
+            _actions.Enqueue(() =>
+            {
+                OnMessage += consumer.OnMessage;
+            });
+
+            await Drain().ConfigureAwait(false);
+        });
+
+        await Drain().ConfigureAwait(false);
+    }
+
     #region IEventStore
 
     public async Task Produce(EventModel model, params string[] topics)
@@ -25,7 +51,6 @@ public class MemoryEventStore : IEventStore
             _actions.Enqueue(() =>
             {
                 _messages.Add(item);
-
                 OnMessage?.Invoke(this, item);
             });
         }
@@ -68,6 +93,7 @@ public class MemoryEventStore : IEventStore
     #region Pointers
 
     private string Pointer(InternalEvent model) => $"{model.Issued}-{model.IssuedFraction}";
+
     private Tuple<long, long> PointerValues(string pointer)
     {
         long issued;
@@ -85,7 +111,7 @@ public class MemoryEventStore : IEventStore
         return new Tuple<long, long>(issued, fraction);
     }
 
-    internal bool IsIncluded(string? continuationPointer, string messagePointer)
+    internal bool ShouldInclude(string? continuationPointer, string messagePointer)
     {
         if (continuationPointer == null) return true;
 
@@ -93,32 +119,6 @@ public class MemoryEventStore : IEventStore
         var messageValues = PointerValues(messagePointer);
 
         return messageValues.Item1 > continuationValues.Item1 || (messageValues.Item1 == continuationValues.Item1 && messageValues.Item2 > continuationValues.Item2);
-    }
-
-    internal async Task Attach(MemoryEventConsumer consumer)
-    {
-        // NOTE: The following will enqueue an action that in turn will enqueue an action for each known message and then an action to begin listening for new messages.
-        // By letting a queued action perform the message deliveries and actual attaching, we avoid dealing with new messages during attachment.
-
-        _actions.Enqueue(async () =>
-        {
-            foreach (var message in _messages)
-            {
-                _actions.Enqueue(() =>
-                {
-                    consumer.OnMessage(this, message);
-                });
-            }
-
-            _actions.Enqueue(() =>
-            {
-                OnMessage += consumer.OnMessage;
-            });
-
-            await Drain().ConfigureAwait(false);
-        });
-
-        await Drain().ConfigureAwait(false);
     }
 
     #endregion

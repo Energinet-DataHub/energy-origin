@@ -27,10 +27,7 @@ internal class MemoryEventConsumer : IEventConsumer
         if (!e.Topic.StartsWith(_topicPrefix)) return;
 
         var reconstructedEvent = _unpacker.UnpackEvent(e.Message);
-        if (!_store.IsIncluded(_pointer, e.Pointer))
-        {
-            return;
-        }
+        if (!_store.ShouldInclude(_pointer, e.Pointer)) return;
 
         var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
         var type = reconstructed.GetType();
