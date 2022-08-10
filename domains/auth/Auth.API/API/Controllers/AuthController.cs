@@ -24,8 +24,8 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-
-        return signaturGruppen.CreateRedirecthUrl(feUrl, returnUrl);
+        AuthState state = new AuthState(feUrl, returnUrl)
+        return signaturGruppen.NextStep(state);
     }
 
 }
