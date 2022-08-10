@@ -42,6 +42,36 @@ public sealed class CalculateEmissionsTest
         Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
         Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
+  
+    [Theory]
+    [InlineData(Aggregation.Total)]
+    [InlineData(Aggregation.Actual)]
+    [InlineData(Aggregation.Hour)]
+    [InlineData(Aggregation.Day)]
+    [InlineData(Aggregation.Month)]
+    [InlineData(Aggregation.Year)]
+    public void EmissionsAndMeasurements_CalculateTotalEmission_MismatchBetweenDatasetSize(Aggregation aggregation)
+    {
+        // Arrange
+        var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
+        var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
+        var timeSeries = dataSetFactory.CreateTimeSeriesForMismatchMeasurements();
+        var emissions = dataSetFactory.CreateEmissions();
+
+        var calculator = new EmissionsCalculator();
+
+        // Act
+        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, aggregation).Emissions.ToArray();
+
+        // Assert
+        Assert.NotNull(result);
+        var expected = GetExpectedEmissions(aggregation, dateFrom, dateTo).ToArray();
+        Assert.Equal(expected.Select(_ => (_.Total.Unit, _.Total.Value)), result.Select(_ => (_.Total.Unit, _.Total.Value)));
+        Assert.Equal(expected.Select(_ => (_.Relative.Unit, _.Relative.Value)), result.Select(_ => (_.Relative.Unit, _.Relative.Value)));
+        Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
+        Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
+    }
+
 
     IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
     {
@@ -56,7 +86,6 @@ public sealed class CalculateEmissionsTest
                         new Quantity(1038.178m, QuantityUnit.g),
                         new Quantity(138.64557m, QuantityUnit.gPerkWh)
                         )
-
                 };
             case Aggregation.Actual:
             case Aggregation.Hour:

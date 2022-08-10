@@ -17,7 +17,7 @@ public sealed class EnergiDataServiceTest
     public async void DatePeriod_GetEmissionsPerHour_EmissionRecordsReturned()
     {
         // Arrange
-        var edsMock = MockHttpClientFactory.SetupHttpClientFromFile("eds_emissions_hourly.json");
+        var edsMock = MockHttpClientFactory.SetupHttpClientFromFile("eds_emissions_hourly_all.json");
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
