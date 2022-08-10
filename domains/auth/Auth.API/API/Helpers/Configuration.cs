@@ -17,6 +17,11 @@ public static class Configuration
     private const string BaseUrl = "BASEURL";
 
 
+    // Cryptography
+    private const string Publickey = "PUBLICKEY";
+    private const string SecretKey = "SECRETKEY";
+
+
     // ------------------------------------------------
     public static string GetInternalTokenSecret()
     {
@@ -79,6 +84,22 @@ public static class Configuration
         var baseUrl = Environment.GetEnvironmentVariable(BaseUrl) ?? throw new ArgumentNullException();
 
         return baseUrl;
+    }
+
+    // ------------------------------------------------
+
+    public static string GetPublicKey()
+    {
+        var publicKey = Environment.GetEnvironmentVariable(Publickey) ?? throw new ArgumentException();
+
+        return publicKey;
+    }
+
+    public static string GetSecretKey()
+    {
+        var secretKey = Environment.GetEnvironmentVariable(SecretKey) ?? throw new ArgumentException();
+
+        return secretKey;
     }
 
 }

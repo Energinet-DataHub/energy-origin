@@ -5,5 +5,5 @@ namespace API.Models;
 public record NextStep
 {
     [JsonPropertyName("next_url")]
-    public string NextUrl { get; init;  }
+    public string NextUrl { get; init; }
 }

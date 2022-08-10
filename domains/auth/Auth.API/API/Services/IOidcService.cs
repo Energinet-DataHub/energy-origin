@@ -6,5 +6,5 @@ public interface IOidcService
 {
     string EncodeJwtToken(AuthState state);
 
-    QueryBuilder CreateAuthorizationRedirectUrl(string responseType, string feUrl, AuthState state, string lang);
+    QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang);
 }

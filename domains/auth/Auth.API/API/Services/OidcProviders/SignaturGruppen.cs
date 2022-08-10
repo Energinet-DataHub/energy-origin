@@ -6,16 +6,16 @@ namespace API.Services;
 
 public class SignaturGruppen : IOidcProviders
 {
+    readonly IOidcService oidcService;
     readonly ILogger<SignaturGruppen> logger;
-    readonly ITokenService tokenService;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, ITokenService tokenService)
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService)
     {
         this.logger = logger;
-        this.tokenService = tokenService;
+        this.oidcService = oidcService;
     }
 
-    public LoginResponse CreateRedirecthUrl(string feUrl, string returnUrl)
+    public NextStep CreateRedirecthUrl(AuthState state)
     {
         var amrValues = new Dictionary<string, string>()
         {
@@ -26,15 +26,11 @@ public class SignaturGruppen : IOidcProviders
             { "nemid", amrValues}
         };
 
-        // Create dataclass of AuthState
-        var authState = new AuthState(feUrl, returnUrl);
-
-
-        var query = tokenService.CreateAuthorizationRedirectUrl("code", feUrl, authState, "en");
+        var query = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var redirectUrl = new LoginResponse(nextUrl: Configuration.GetOidcUrl() + query.ToString());
+        var redirectUrl = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
 
         return redirectUrl;
     }

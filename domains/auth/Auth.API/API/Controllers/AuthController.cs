@@ -10,22 +10,27 @@ namespace API.Controllers;
 public class AuthController
 {
     readonly ILogger<AuthController> logger;
-    readonly ISignaturGruppen signaturGruppen;
+    readonly IOidcProviders oidcProviders;
 
-    public AuthController(ILogger<AuthController> logger, ISignaturGruppen signaturGruppen)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders)
     {
         this.logger = logger;
-        this.signaturGruppen = signaturGruppen;
+        this.oidcProviders = oidcProviders;
     }
 
     [HttpGet]
     [Route("/api/auth/oidc/login")]
-    public LoginResponse Login(
+    public NextStep Login(
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new AuthState(feUrl, returnUrl)
-        return signaturGruppen.NextStep(state);
+        AuthState state = new AuthState()
+        {
+            FeUrl = feUrl,
+            ReturnUrl = returnUrl
+        };
+
+        return oidcProviders.CreateRedirecthUrl(state);
     }
 
 }

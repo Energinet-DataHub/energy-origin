@@ -41,13 +41,13 @@ public class OidcService : IOidcService
         return jwtToken;
     }
 
-    public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, string feUrl, AuthState state, string lang)
+    public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
     {
         var query = new QueryBuilder();
 
         query.Add("response_type", responseType);
         query.Add("client_id", Configuration.GetOidcClientId());
-        query.Add("redirect_uri", $"{feUrl}/api/auth/oidc/login/callback");
+        query.Add("redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback");
         query.Add("scope", Configuration.GetScopes());
         query.Add("state", EncodeJwtToken(state));
         query.Add("language", lang);
