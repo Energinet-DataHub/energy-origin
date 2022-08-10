@@ -17,14 +17,9 @@ internal class MemoryEventConsumer : IEventConsumer
         _handlers = handlers;
         _pointer = pointer;
 
-        _store.OnMessage += OnMessage; // FIXME: verify these events works
+        _store.OnMessage += OnMessage;
 
-        Task.Run(() => this.Reload()).Wait();
-    }
-
-    private async Task Reload()
-    {
-        await _store.Reload(this);
+        Task.Run(async () => await _store.Reload(this).ConfigureAwait(false));
     }
 
     private void OnMessage(object sender, MessageEventArgs e)

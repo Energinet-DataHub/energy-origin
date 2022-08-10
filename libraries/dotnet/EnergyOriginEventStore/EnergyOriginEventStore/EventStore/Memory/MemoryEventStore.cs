@@ -24,8 +24,10 @@ public class MemoryEventStore : IEventStore
 
             _actions.Enqueue(() =>
             {
-                _messages.Append(item);
-                OnMessage?.Invoke(this, item); // FIXME: must handle topic filtering
+                _messages.Add(item);
+
+                // FIXME: must handle topic filtering
+                OnMessage?.Invoke(this, item);
             });
         }
 
@@ -71,25 +73,51 @@ public class MemoryEventStore : IEventStore
 
     private string Pointer(InternalEvent model)
     {
-        return $"{model.Issued}-{model.IssuedFraction}"; // FIXME: better, maybe vectorclock?
+        return $"{model.Issued}-{model.IssuedFraction}";
+    }
+    private Tuple<long, long> PointerValues(string pointer)
+    {
+        long issued;
+        long fraction;
+        try
+        {
+            var parts = pointer.Split('-');
+            issued = long.Parse(parts[0]);
+            fraction = long.Parse(parts[1]);
+        }
+        catch (Exception)
+        {
+            throw new InvalidDataException($"Pointer '{pointer}' not a valid format");
+        }
+        return new Tuple<long, long>(issued, fraction);
     }
 
     internal bool IsIncluded(string? continuationPointer, string messagePointer)
     {
         if (continuationPointer == null) return true;
 
-        return false; // FIXME: finish this
+        var continuationValues = PointerValues(continuationPointer);
+        var messageValues = PointerValues(messagePointer);
+
+        return messageValues.Item1 > continuationValues.Item1 || (messageValues.Item1 == continuationValues.Item1 && messageValues.Item2 > continuationValues.Item2);
     }
 
     internal async Task Reload(MemoryEventConsumer consumer)
     {
-        foreach (var message in _messages)
+        _actions.Enqueue(async () =>
         {
-            _actions.Enqueue(() =>
+            foreach (var message in _messages)
             {
-                OnMessage?.Invoke(this, message); // FIXME: must handle topic filtering
-            });
-        }
+                _actions.Enqueue(() =>
+                {
+                    // FIXME: must only be for this consumer!
+                    // FIXME: must handle topic filtering
+                    OnMessage?.Invoke(this, message);
+                });
+            }
+
+            await Drain().ConfigureAwait(false);
+        });
 
         await Drain().ConfigureAwait(false);
     }

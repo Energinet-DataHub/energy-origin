@@ -26,7 +26,7 @@ public class MemoryEventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
 
         Assert.NotNull(receivedValue);
         Assert.Equal(message.Actor, receivedValue?.Actor);
@@ -44,54 +44,105 @@ public class MemoryEventStoreTests
         const string message2 = "I want another helicopter";
         const string message3 = "I feel poor, because i only have one yacht!";
 
-        using (var eventStore = new MemoryEventStore())
-        {
-            var semaphore = new SemaphoreSlim(0);
+        var eventStore = new MemoryEventStore();
 
-            var message = new Said("Anton Actor", message1);
-            await eventStore.Produce(message, "Gossip");
+        var semaphore = new SemaphoreSlim(0);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(5)); // Sleep added to add "space" between file timestamps for each event
+        var message = new Said("Anton Actor", message1);
+        await eventStore.Produce(message, "Gossip");
 
-            message = new Said("Anton Actor", message2);
-            await eventStore.Produce(message, "Gossip");
+        message = new Said("Anton Actor", message2);
+        await eventStore.Produce(message, "Gossip");
 
-            await Task.Delay(TimeSpan.FromMilliseconds(5)); // Sleep added to add "space" between file timestamps for each event
+        message = new Said("Anton Actor", message3);
+        await eventStore.Produce(message, "Gossip");
 
-            message = new Said("Anton Actor", message3);
-            await eventStore.Produce(message, "Gossip");
-
-            var consumer = eventStore
-                .GetBuilder("Gossip")
-                .AddHandler<Said>(value =>
+        var consumer = eventStore
+            .GetBuilder("Gossip")
+            .AddHandler<Said>(value =>
+            {
+                if (value.EventModel.Statement == message2)
                 {
-                    if (value.EventModel.Statement == message2)
-                    {
-                        pointer = value.Pointer;
-                        semaphore.Release();
-                    }
-                })
-                .Build();
+                    pointer = value.Pointer;
+                }
+                if (value.EventModel.Statement == message3)
+                {
+                    semaphore.Release();
+                }
+            })
+            .Build();
 
-            await semaphore.WaitAsync(TimeSpan.FromMilliseconds(500));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
 
-            Assert.NotNull(pointer);
-        }
+        Assert.NotNull(pointer);
 
-        using (var eventStore = new MemoryEventStore())
-        {
-            var received = new List<Said>();
+        var received = new List<Said>();
 
-            var consumer = eventStore
-                .GetBuilder("Gossip")
-                .ContinueFrom(pointer!)
-                .AddHandler<Said>(value => received.Add(value.EventModel))
-                .Build();
+        eventStore
+            .GetBuilder("Gossip")
+            .ContinueFrom(pointer!)
+            .AddHandler<Said>(value => received.Add(value.EventModel))
+            .Build();
 
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
 
-            Assert.Single(received);
-            Assert.Equal(message3, received.Single().Statement);
-        }
+        Assert.Single(received);
+        Assert.Equal(message3, received.Single().Statement);
+    }
+
+    [Fact]
+    public async Task EventStore_FiltersTopics_success()
+    {
+        var semaphore = new SemaphoreSlim(0);
+        IEventStore eventStore = new MemoryEventStore();
+
+        var message = new Said("Samuel Salesman", "We have been trying to reach you about your cars extended warrenty!");
+        await eventStore.Produce(message, "Spam", "Advertisement", "Robocall");
+
+        var received = new List<Said>();
+        eventStore
+            .GetBuilder("Advertisement")
+            .AddHandler<Said>(value => received.Add(value.EventModel))
+            .Build();
+
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+        Assert.Single(received);
+    }
+
+
+    [Fact]
+    public async Task EventStore_MultipleListers_success()
+    {
+        var semaphore = new SemaphoreSlim(0);
+        IEventStore eventStore = new MemoryEventStore();
+
+        var received1 = new List<Said>();
+        var received2 = new List<Said>();
+        var received3 = new List<Said>();
+
+        eventStore
+            .GetBuilder("Topical")
+            .AddHandler<Said>(value => received1.Add(value.EventModel))
+            .Build();
+
+        var message = new Said("Tony Topical", "Everybody wants to listen to me!");
+        await eventStore.Produce(message, "Topical");
+
+        eventStore
+            .GetBuilder("Topical")
+            .AddHandler<Said>(value => received2.Add(value.EventModel))
+            .Build();
+
+        eventStore
+            .GetBuilder("Topical")
+            .AddHandler<Said>(value => received3.Add(value.EventModel))
+            .Build();
+
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+        Assert.Single(received1);
+        Assert.Single(received2);
+        Assert.Single(received3);
     }
 }
