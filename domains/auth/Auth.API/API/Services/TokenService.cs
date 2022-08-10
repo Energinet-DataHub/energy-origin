@@ -14,16 +14,25 @@ public class TokenService
     public string EncryptState(AuthState state)
     {
         byte[] iv = new byte[16];
-        using Aes aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(key);
-        aes.IV = iv;
-        ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-        using MemoryStream memoryStream = new MemoryStream();
-        using CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
-        using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
-            streamWriter.Write(state.ToString());
-        byte[] data = memoryStream.ToArray();
-        return Convert.ToBase64String(data);
+        using (Aes aes = Aes.Create())
+        {
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.IV = iv;
+            ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                {
+                    using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
+                    {
+                        streamWriter.Write(state.ToString());
+                    }
+                    byte[] data  = memoryStream.ToArray();
+                    return Convert.ToBase64String(data);
+                }
+            }
+
+        }
     }
 
     public string decryptState(string encryptedState)
@@ -36,10 +45,16 @@ public class TokenService
             aes.Key = Encoding.UTF8.GetBytes(key);
             aes.IV = iv;
             ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            using MemoryStream memoryStream = new MemoryStream(buffer);
-            using CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-            using StreamReader streamReader = new StreamReader(cryptoStream);
-            return streamReader.ReadToEnd();
+            using (MemoryStream memoryStream = new MemoryStream(buffer))
+            {
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                {
+                    using (StreamReader streamReader = new StreamReader(cryptoStream))
+                    {
+                        return streamReader.ReadToEnd();
+                    }
+                }
+            }
         }
     }
 
