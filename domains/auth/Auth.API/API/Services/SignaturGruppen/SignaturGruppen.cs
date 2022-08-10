@@ -7,9 +7,9 @@ namespace API.Services;
 public class SignaturGruppen : ISignaturGruppen
 {
     readonly ILogger<SignaturGruppen> logger;
-    readonly ITokenService tokenService;
+    readonly IOidcService tokenService;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, ITokenService tokenService)
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService tokenService)
     {
         this.logger = logger;
         this.tokenService = tokenService;

@@ -2,7 +2,7 @@ using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace API.Services;
-public interface ITokenService
+public interface IOidcService
 {
     string EncodeJwtToken(AuthState state);
 

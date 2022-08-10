@@ -8,7 +8,7 @@ using System.Text;
 
 
 namespace API.Services;
-public class TokenService : ITokenService
+public class OidcService : IOidcService
 {
     private byte[] internalToken = Encoding.ASCII.GetBytes(Configuration.GetInternalTokenSecret());
 

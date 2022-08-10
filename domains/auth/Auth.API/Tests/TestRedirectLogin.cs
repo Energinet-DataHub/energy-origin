@@ -34,7 +34,7 @@ public sealed class TestRedirectLogin
         var expectedNextUrl = "?response_type=code&client_id=OIDCCLIENTID&redirect_uri=http%3A%2F%2Ftest.energioprindelse.dk%2Fapi%2Fauth%2Foidc%2Flogin%2Fcallback&scope=SCOPE%2BSCOPE1&state=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmZV91cmwiOiJodHRwOi8vdGVzdC5lbmVyZ2lvcHJpbmRlbHNlLmRrIiwicmV0dXJuX3VybCI6Imh0dHBzOi8vZGVtby5lbmVyZ2lvcHJpbmRlbHNlLmRrL2Rhc2hib2FyZCIsInRlcm1zX2FjY2VwdGVkIjoiRmFsc2UiLCJ0ZXJtc192ZXJzaW9uIjoiMCIsImlkX3Rva2VuIjoiIiwidGluIjoiIiwiaWRlbnRpdHlfcHJvdmlkZXIiOiIiLCJleHRlcm5hbF9zdWJqZWN0IjoiIn0.0QgNo_mOGnthS5R4lYTONYC7xmOtywdldWrDXCma8uQ&language=en";
 
         //Act
-        var OidcLogin = new TokenService();
+        var OidcLogin = new OidcService();
         var res = OidcLogin.CreateAuthorizationRedirectUrl("code", feUrl, state, "en");
 
         //Assert
