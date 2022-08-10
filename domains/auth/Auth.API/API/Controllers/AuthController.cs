@@ -30,7 +30,7 @@ public class AuthController
             ReturnUrl = returnUrl
         };
 
-        return oidcProviders.CreateRedirecthUrl(state);
+        return oidcProviders.CreateAuthorizationUri(state);
     }
 
 }

@@ -6,12 +6,12 @@ using API.Services;
 namespace API.Services;
 public class OidcService : IOidcService
 {
-    readonly ILogger _logger;
-    readonly ICryptographyService _cryptographyService;
+    readonly ILogger logger;
+    readonly ICryptographyService cryptography;
     public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography)
     {
-        _logger = logger;
-        _cryptographyService = cryptography;
+        this.logger = logger;
+        this.cryptography = cryptography;
     }
 
     public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
@@ -22,7 +22,7 @@ public class OidcService : IOidcService
         query.Add("client_id", Configuration.GetOidcClientId());
         query.Add("redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback");
         query.Add("scope", Configuration.GetScopes());
-        query.Add("state", _cryptographyService.EncryptState(state));
+        query.Add("state", cryptography.EncryptState(state));
         query.Add("language", lang);
 
         return query;

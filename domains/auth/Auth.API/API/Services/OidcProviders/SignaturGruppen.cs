@@ -15,7 +15,7 @@ public class SignaturGruppen : IOidcProviders
         this.oidcService = oidcService;
     }
 
-    public NextStep CreateRedirecthUrl(AuthState state)
+    public NextStep CreateAuthorizationUri(AuthState state)
     {
         var amrValues = new Dictionary<string, string>()
         {
@@ -30,8 +30,8 @@ public class SignaturGruppen : IOidcProviders
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var redirectUrl = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
+        var authorizationUri = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
 
-        return redirectUrl;
+        return authorizationUri;
     }
 }
