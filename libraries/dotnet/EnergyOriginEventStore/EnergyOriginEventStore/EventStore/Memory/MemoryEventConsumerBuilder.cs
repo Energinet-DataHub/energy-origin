@@ -35,8 +35,5 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
         return this;
     }
 
-    public IEventConsumer Build()
-    {
-        return new MemoryEventConsumer(new Unpacker(), _handlers, _store, _topicPrefix, _pointer);
-    }
+    public IEventConsumer Build() => new MemoryEventConsumer(new Unpacker(), _handlers, _store, _topicPrefix, _pointer);
 }

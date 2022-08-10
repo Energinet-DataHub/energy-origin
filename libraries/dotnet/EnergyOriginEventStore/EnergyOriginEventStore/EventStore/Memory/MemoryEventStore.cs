@@ -26,7 +26,6 @@ public class MemoryEventStore : IEventStore
             {
                 _messages.Add(item);
 
-                // FIXME: must handle topic filtering
                 OnMessage?.Invoke(this, item);
             });
         }
@@ -34,10 +33,7 @@ public class MemoryEventStore : IEventStore
         await Drain().ConfigureAwait(false);
     }
 
-    public IEventConsumerBuilder GetBuilder(string topicPrefix)
-    {
-        return new MemoryEventConsumerBuilder(this, topicPrefix);
-    }
+    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new MemoryEventConsumerBuilder(this, topicPrefix);
 
     public event Action? DisposeEvent;
 
@@ -71,10 +67,7 @@ public class MemoryEventStore : IEventStore
 
     #region Pointers
 
-    private string Pointer(InternalEvent model)
-    {
-        return $"{model.Issued}-{model.IssuedFraction}";
-    }
+    private string Pointer(InternalEvent model) => $"{model.Issued}-{model.IssuedFraction}";
     private Tuple<long, long> PointerValues(string pointer)
     {
         long issued;
@@ -102,19 +95,25 @@ public class MemoryEventStore : IEventStore
         return messageValues.Item1 > continuationValues.Item1 || (messageValues.Item1 == continuationValues.Item1 && messageValues.Item2 > continuationValues.Item2);
     }
 
-    internal async Task Reload(MemoryEventConsumer consumer)
+    internal async Task Attach(MemoryEventConsumer consumer)
     {
+        // NOTE: The following will enqueue an action that in turn will enqueue an action for each known message and then an action to begin listening for new messages.
+        // By letting a queued action perform the message deliveries and actual attaching, we avoid dealing with new messages during attachment.
+
         _actions.Enqueue(async () =>
         {
             foreach (var message in _messages)
             {
                 _actions.Enqueue(() =>
                 {
-                    // FIXME: must only be for this consumer!
-                    // FIXME: must handle topic filtering
-                    OnMessage?.Invoke(this, message);
+                    consumer.OnMessage(this, message);
                 });
             }
+
+            _actions.Enqueue(() =>
+            {
+                OnMessage += consumer.OnMessage;
+            });
 
             await Drain().ConfigureAwait(false);
         });

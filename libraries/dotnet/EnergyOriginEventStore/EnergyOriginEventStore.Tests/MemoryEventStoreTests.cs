@@ -17,7 +17,7 @@ public class MemoryEventStoreTests
         await eventStore.Produce(message, "Gossip", "Tabloid");
 
         Said? receivedValue = null;
-        var consumer = eventStore
+        eventStore
             .GetBuilder("Gossip")
             .AddHandler<Said>((value) =>
             {
@@ -31,8 +31,6 @@ public class MemoryEventStoreTests
         Assert.NotNull(receivedValue);
         Assert.Equal(message.Actor, receivedValue?.Actor);
         Assert.Equal(message.Statement, receivedValue?.Statement);
-
-        consumer.Dispose();
     }
 
     [Fact]
@@ -57,7 +55,7 @@ public class MemoryEventStoreTests
         message = new Said("Anton Actor", message3);
         await eventStore.Produce(message, "Gossip");
 
-        var consumer = eventStore
+        eventStore
             .GetBuilder("Gossip")
             .AddHandler<Said>(value =>
             {
@@ -110,7 +108,6 @@ public class MemoryEventStoreTests
         Assert.Single(received);
     }
 
-
     [Fact]
     public async Task EventStore_MultipleListers_success()
     {
@@ -121,12 +118,13 @@ public class MemoryEventStoreTests
         var received2 = new List<Said>();
         var received3 = new List<Said>();
 
+        var message = new Said("Tony Topical", "Everybody wants to listen to me!");
+
         eventStore
             .GetBuilder("Topical")
             .AddHandler<Said>(value => received1.Add(value.EventModel))
             .Build();
 
-        var message = new Said("Tony Topical", "Everybody wants to listen to me!");
         await eventStore.Produce(message, "Topical");
 
         eventStore
