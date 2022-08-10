@@ -88,13 +88,6 @@ public static class Configuration
 
     // ------------------------------------------------
 
-    public static string GetPublicKey()
-    {
-        var publicKey = Environment.GetEnvironmentVariable(Publickey) ?? throw new ArgumentException();
-
-        return publicKey;
-    }
-
     public static string GetSecretKey()
     {
         var secretKey = Environment.GetEnvironmentVariable(SecretKey) ?? throw new ArgumentException();

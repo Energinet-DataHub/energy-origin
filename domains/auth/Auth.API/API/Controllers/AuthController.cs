@@ -19,7 +19,7 @@ public class AuthController
     }
 
     [HttpGet]
-    [Route("/api/auth/oidc/login")]
+    [Route("/oidc/login")]
     public NextStep Login(
         [Required] string feUrl,
         [Required] string returnUrl)
