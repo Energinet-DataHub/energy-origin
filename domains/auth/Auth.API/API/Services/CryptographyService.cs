@@ -1,13 +1,10 @@
 using API.Models;
 using API.Helpers;
-
-using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace API.Services;
-public class TokenService
+public class CryptographyService : ICryptographyService
 {
     string key = Configuration.GetSecretKey();
 

@@ -1,44 +1,17 @@
 using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
+using API.Services;
 
 namespace API.Services;
 public class OidcService : IOidcService
 {
-    private byte[] internalToken = Encoding.ASCII.GetBytes(Configuration.GetInternalTokenSecret());
-
-    public string EncodeJwtToken(AuthState state)
+    readonly ILogger _logger;
+    readonly ICryptographyService _cryptographyService;
+    public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography)
     {
-        var claims = new[]
-        {
-            new Claim("fe_url", state.FeUrl),
-            new Claim("return_url", state.ReturnUrl),
-            new Claim("terms_accepted", state.TermsAccepted.ToString()),
-            new Claim("terms_version", state.TermsVersion),
-            new Claim("id_token", state.IdToken),
-            new Claim("tin", state.Tin),
-            new Claim("identity_provider", state.IdentityProvider),
-            new Claim("external_subject", state.ExternalSubject)
-        };
-
-        var key = new SymmetricSecurityKey(internalToken);
-        var algorithm = SecurityAlgorithms.HmacSha256;
-
-        var signingCredentials = new SigningCredentials(key, algorithm);
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            signingCredentials: signingCredentials
-            );
-
-        var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return jwtToken;
+        _logger = logger;
+        _cryptographyService = cryptography;
     }
 
     public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
@@ -49,7 +22,7 @@ public class OidcService : IOidcService
         query.Add("client_id", Configuration.GetOidcClientId());
         query.Add("redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback");
         query.Add("scope", Configuration.GetScopes());
-        query.Add("state", EncodeJwtToken(state));
+        query.Add("state", _cryptographyService.EncryptState(state));
         query.Add("language", lang);
 
         return query;
