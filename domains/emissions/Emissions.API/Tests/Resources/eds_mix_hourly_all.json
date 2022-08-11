@@ -1,0 +1,78 @@
+{
+    "total": 10,
+    "filters": "{\"FuelAllocationMethod\":\"All\"}",
+    "limit": 30,
+    "dataset": "DeclarationProduction",
+    "records": [
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Hydro",
+            "ShareTotal": 0.081439
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Solar",
+            "ShareTotal": 0.010581
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "WindOffshore",
+            "ShareTotal": 21.128452
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "WindOnshore",
+            "ShareTotal": 20.698978
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Solar",
+            "ShareTotal": 0.000000
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Hydro",
+            "ShareTotal": 0.000000
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Solar",
+            "ShareTotal": 0.021176
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "WindOffshore",
+            "ShareTotal": 59.064457
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "WindOnshore",
+            "ShareTotal": 17.741219
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Solar",
+            "ShareTotal": 0.000000
+        }
+    ]
+}
