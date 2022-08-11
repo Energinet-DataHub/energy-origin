@@ -9,48 +9,25 @@ class EmissionsCalculator : IEmissionsCalculator
 {
     public EmissionsResponse CalculateEmission(
         IEnumerable<EmissionRecord> emissions,
-        IEnumerable<TimeSeries> measurements,
+        IEnumerable<TimeSeries> timeSeriesList,
         DateTime dateFrom,
         DateTime dateTo,
         Aggregation aggregation)
     {
 
-        var listOfEmissions = new List<Emission>();
-        var co2List = new List<decimal>();
         var bucketEmissions = new List<Emissions>();
 
-        foreach (var measurement in measurements)
-        {
-
-            var emissionGridArea = emissions.Where(a => a.GridArea.Contains(measurement.MeteringPoint.GridArea)).ToList();
-
-            var measurementTimeMatches = from first in measurement.Measurements.Select(x => x.DateFrom)
-                                         join second in emissionGridArea.Select(x => x.HourUTC.ToUnixTime())
-                                             on first equals second
-                                             select measurement.Measurements.Where(x => x.DateFrom.Equals(first)).Single();
-
-            var emissionsTimeMatches = from first in measurement.Measurements.Select(x => x.DateFrom)
-                                       join second in emissionGridArea.Select(x => x.HourUTC.ToUnixTime())
-                                             on first equals second
-                                             select emissionGridArea.Where(x => x.HourUTC.ToUnixTime().Equals(first)).Single();
-
-            var quantity = measurementTimeMatches.Select(y => y.Quantity).ToList();
-            var co2PerkWh = emissionsTimeMatches.Select(y => y.CO2PerkWh).ToList();
-
-            co2List = quantity.Select((dValue, index) => dValue * co2PerkWh[index]).ToList();
-
-            foreach (var measure in measurementTimeMatches)
-            {
-                listOfEmissions.Add(new Emission
+        var listOfEmissions = timeSeriesList.SelectMany(timeseries => timeseries.Measurements.Join(
+                emissions,
+                measurement => new Tuple<string, long>(timeseries.MeteringPoint.GridArea, measurement.DateFrom),
+                record => new Tuple<string, long>(record.GridArea, record.HourUTC.ToUnixTime()),
+                (measurement, record) => new Emission
                 {
-                    Co2 = co2List[0],
-                    DateFrom = measure.DateFrom.ToDateTime(),
-                    DateTo = measure.DateTo.ToDateTime(),
-                    Consumption = measure.Quantity
-                });
-                co2List.RemoveAt(0);
-            }
-        }
+                    Co2 = measurement.Quantity * record.CO2PerkWh,
+                    DateFrom = measurement.DateFrom.ToDateTime(),
+                    DateTo = measurement.DateTo.ToDateTime(),
+                    Consumption = measurement.Quantity
+                }));
 
         IEnumerable<IGrouping<string, Emission>> groupedEmissions = GetGroupedEmissions(aggregation, listOfEmissions);
 
@@ -71,7 +48,7 @@ class EmissionsCalculator : IEmissionsCalculator
         return response;
     }
 
-    static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, List<Emission> listOfEmissions)
+    static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, IEnumerable<Emission> listOfEmissions)
     {
         IEnumerable<IGrouping<string, Emission>> groupedEmissions;
         switch (aggregation)
