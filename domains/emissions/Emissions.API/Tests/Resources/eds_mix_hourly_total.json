@@ -1,0 +1,106 @@
+{
+    "total": 0,
+    "filters": "{\"FuelAllocationMethod\":\"Total\"}",
+    "limit": 30,
+    "dataset": "DeclarationProduction",
+    "records": [
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "BioGas",
+            "ShareTotal": 4.219855
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Coal",
+            "ShareTotal": 40.379128
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "NaturalGas",
+            "ShareTotal": 2.452905
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Oil",
+            "ShareTotal": 0.605874
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Straw",
+            "ShareTotal": 2.566639
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Waste",
+            "ShareTotal": 7.214719
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK1",
+            "version": "Preliminary",
+            "ProductionType": "Wood",
+            "ShareTotal": 0.641430
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "BioGas",
+            "ShareTotal": 3.773292
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Coal",
+            "ShareTotal": 0.000000
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "NaturalGas",
+            "ShareTotal": 1.621629
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Oil",
+            "ShareTotal": 0.044176
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Straw",
+            "ShareTotal": 0.287737
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Waste",
+            "ShareTotal": 11.961630
+        },
+        {
+            "HourUTC": "2021-07-01T21:00:00",
+            "PriceArea": "DK2",
+            "version": "Preliminary",
+            "ProductionType": "Wood",
+            "ShareTotal": 5.484685
+        }
+    ]
+}

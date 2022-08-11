@@ -46,7 +46,7 @@ public class EnergiDataService : IEnergiDataService
     string GetMixQueryAll(DateTime dateFrom, DateTime dateTo)
     {
 
-        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC&filter=" + "{\"FuelAllocationMethod\":\"All\"}";
+        return $"dataset/DeclarationProduction?start={dateFrom:yyyy-MM-ddTHH:mm}&end={dateTo:yyyy-MM-ddTHH:mm}&columns=HourUTC,PriceArea,version,ProductionType,ShareTotal&timezone=UTC&filter="+"{\"FuelAllocationMethod\":\"All\"}";
     }
 
     string GetEmissionsQuery(DateTime dateFrom, DateTime dateTo)

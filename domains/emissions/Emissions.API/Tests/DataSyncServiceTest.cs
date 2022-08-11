@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
@@ -19,7 +20,8 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetListOfMeteringPoints_success()
     {
         // Arrange
-        var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
+        List<string> datasyncData = new List<string>(new string[] { "datasync_meteringpoints.json" });
+        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
 
         var logger = new Mock<ILogger<DataSyncService>>();
 
@@ -41,7 +43,8 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetMeasurements_success()
     {
         // Arrange
-        var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_measurements.json");
+        List<string> datasyncData = new List<string>(new string[] { "datasync_measurements.json" });
+        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
 
         var dateFrom = 1609455600L;
         var dateTo = 1609459200L;
