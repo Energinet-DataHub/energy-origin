@@ -9,7 +9,7 @@ class EmissionsCalculator : IEmissionsCalculator
 {
     public EmissionsResponse CalculateEmission(
         IEnumerable<EmissionRecord> emissions,
-        IEnumerable<TimeSeries> timeseriesList,
+        IEnumerable<TimeSeries> timeSeries,
         DateTime dateFrom,
         DateTime dateTo,
         Aggregation aggregation)
@@ -17,9 +17,9 @@ class EmissionsCalculator : IEmissionsCalculator
 
         var bucketEmissions = new List<Emissions>();
 
-        var listOfEmissions = timeseriesList.SelectMany(timeseries => timeseries.Measurements.Join(
+        var listOfEmissions = timeSeries.SelectMany(timeserie => timeserie.Measurements.Join(
                 emissions,
-                measurement => new Tuple<string, long>(timeseries.MeteringPoint.GridArea, measurement.DateFrom),
+                measurement => new Tuple<string, long>(timeserie.MeteringPoint.GridArea, measurement.DateFrom),
                 record => new Tuple<string, long>(record.GridArea, record.HourUTC.ToUnixTime()),
                 (measurement, record) => new Emission
                 {
