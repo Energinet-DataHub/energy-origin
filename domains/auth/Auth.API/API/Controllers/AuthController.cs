@@ -1,5 +1,6 @@
 using API.Models;
 using API.Services;
+using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,7 +23,8 @@ public class AuthController
     [Route("/oidc/login")]
     public NextStep Login(
         [Required] string feUrl,
-        [Required] string returnUrl)
+        [Required] string returnUrl
+        )
     {
         AuthState state = new AuthState()
         {
@@ -31,6 +33,35 @@ public class AuthController
         };
 
         return oidcProviders.CreateAuthorizationUri(state);
+    }
+
+    [HttpGet]
+    [Route("/oidc/login/callback")]
+    public NextStep Callback(
+        [Required] string code,
+        [Required] string state
+        )
+    {
+        try
+        {
+            AuthState deserilizedState = JsonConvert.DeserializeObject<AuthState>(state)!;
+        }
+        catch (JsonSerializationException)
+        {
+            logger.LogError("Cannot deserilize state");
+            throw new JsonSerializationException();
+        }
+
+        
+
+
+        
+
+
+
+        return new NextStep();
+
+
     }
 
 }

@@ -1,4 +1,3 @@
-using API.Services;
 using Serilog;
 using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
@@ -28,7 +27,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<ISignaturGruppen, SignaturGruppen>();
 
 var app = builder.Build();
 
