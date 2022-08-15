@@ -9,7 +9,7 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 
     private readonly MemoryEventStore _store;
     private readonly string _topicPrefix;
-    private string? _pointer;
+    private MemoryPointer? _pointer;
 
     public MemoryEventConsumerBuilder(MemoryEventStore store, string topicPrefix)
     {
@@ -31,7 +31,7 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        _pointer = pointer;
+        _pointer = new MemoryPointer(pointer);
         return this;
     }
 

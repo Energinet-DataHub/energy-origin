@@ -111,7 +111,6 @@ public class MemoryEventStoreTests
     [Fact]
     public async Task EventStore_MultipleListers_success()
     {
-        var semaphore = new SemaphoreSlim(0);
         IEventStore eventStore = new MemoryEventStore();
 
         var received1 = new List<Said>();

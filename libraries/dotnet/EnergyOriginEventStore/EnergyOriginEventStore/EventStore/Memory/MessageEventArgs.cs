@@ -5,9 +5,9 @@ internal class MessageEventArgs : EventArgs
 {
     public readonly string Message;
     public readonly string Topic;
-    public readonly string Pointer;
+    public readonly MemoryPointer Pointer;
 
-    internal MessageEventArgs(string message, string topic, string pointer)
+    internal MessageEventArgs(string message, string topic, MemoryPointer pointer)
     {
         Message = message;
         Topic = topic;
