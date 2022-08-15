@@ -16,9 +16,7 @@ public static class Configuration
     // Base url
     private const string BaseUrl = "BASEURL";
 
-
     // Cryptography
-    private const string Publickey = "PUBLICKEY";
     private const string SecretKey = "SECRETKEY";
 
 

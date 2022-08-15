@@ -15,16 +15,18 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7231;http://localhost:5231",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "InternalTokenSecret": "INTERNALTOKENSECRET",
-        "TokenExpiryTime": "1",
-        "Scope": "SCOPE, SCOPE1",
-        "AmrValues": "AMRVALUES",
-        "OidcUrl": "OIDCURL",
-        "OidcClientId": "OIDCCLIENTID",
-        "OidcClientSecret": "OIDCCLIENTSECRET"
-      }
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development",
+            "InternalTokenSecret": "INTERNALTOKENSECRET",
+            "TokenExpiryTime": "1",
+            "Scope": "SCOPE, SCOPE1",
+            "AmrValues": "AMRVALUES",
+            "OidcUrl": "OIDCURL",
+            "OidcClientId": "OIDCCLIENTID",
+            "OidcClientSecret": "OIDCCLIENTSECRET",
+            "BaseUrl": "BASEURL",
+            "SecretKey": "mysmallkey123456"
+        }
     },
     "IIS Express": {
       "commandName": "IISExpress",
