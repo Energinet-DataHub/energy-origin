@@ -125,9 +125,9 @@ public class MemoryEventStore : IEventStore
 
     #region Events
 
-    public event MessageEventHandler? OnMessage;
+    internal event MessageEventHandler? OnMessage;
 
-    public delegate void MessageEventHandler(object sender, MessageEventArgs e);
+    internal delegate void MessageEventHandler(object sender, MessageEventArgs e);
 
     #endregion
 }
