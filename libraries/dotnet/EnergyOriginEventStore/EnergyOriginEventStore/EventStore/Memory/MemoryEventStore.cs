@@ -46,7 +46,7 @@ public class MemoryEventStore : IEventStore
 
         foreach (var topic in topics)
         {
-            var item = new MessageEventArgs(JsonConvert.SerializeObject(message), topic, Pointer(message));
+            var item = new MessageEventArgs(JsonConvert.SerializeObject(message), topic, ToPointer(message));
 
             _actions.Enqueue(() =>
             {
@@ -92,7 +92,7 @@ public class MemoryEventStore : IEventStore
 
     #region Pointers
 
-    private string Pointer(InternalEvent model) => $"{model.Issued}-{model.IssuedFraction}";
+    private string ToPointer(InternalEvent model) => $"{model.Issued}-{model.IssuedFraction}";
 
     private Tuple<long, long> PointerValues(string pointer)
     {
