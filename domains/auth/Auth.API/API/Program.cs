@@ -28,6 +28,10 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<ICryptographyService, CryptographyService>();
+builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
+builder.Services.AddScoped<IOidcService, OidcService>();
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
