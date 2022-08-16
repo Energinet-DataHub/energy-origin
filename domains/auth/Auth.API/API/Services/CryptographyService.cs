@@ -32,22 +32,25 @@ public class CryptographyService : ICryptographyService
 
     public string decryptState(string encryptedState)
     {
+
         byte[] buffer = Convert.FromBase64String(encryptedState);
 
         using (MemoryStream memoryStream = new MemoryStream(buffer))
         {
-            var iv = memoryStream.Read(new byte[16]);
             using (Aes aes = Aes.Create())
             {
                 aes.Key = Encoding.UTF8.GetBytes(key);
-                aes.IV = BitConverter.GetBytes(iv);
+                aes.IV = aes.IV;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                 {
                     using (StreamReader streamReader = new StreamReader(cryptoStream))
                     {
-                        return streamReader.ReadToEnd();
+                        var decodedState = streamReader.ReadToEnd();
+                        // Removal of unnecessary chars
+                        var index = decodedState.IndexOf("Auth");
+                        return decodedState[index..decodedState.Length];
                     }
                 }
             }
