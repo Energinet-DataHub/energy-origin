@@ -36,6 +36,7 @@ public class EmissionsController : AuthorizationController
         var dateToDateTime = request.DateTo.ToDateTime();
 
         return Ok(await emissionsService.GetTotalEmissions(Context, dateFromDateTime, dateToDateTime, request.Aggregation));
+
     }
 
     [HttpGet]
