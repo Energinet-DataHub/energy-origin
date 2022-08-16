@@ -89,10 +89,10 @@ class EmissionsCalculator : IEmissionsCalculator
     }
 }
 
-internal class Emission
+internal record Emission
 {
-    public DateTime DateFrom { get; set; }
-    public DateTime DateTo { get; set; }
-    public decimal Co2 { get; set; }
-    public int Consumption { get; set; }
+    public DateTime DateFrom { get; init; }
+    public DateTime DateTo { get; init; }
+    public decimal Co2 { get; init; }
+    public long Consumption { get; init; }
 }
