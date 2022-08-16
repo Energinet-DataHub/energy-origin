@@ -11,13 +11,6 @@ namespace Tests;
 [UnitTest]
 public sealed class TestCryptographics
 {
-    private readonly Mock<ICryptographyService> _cryptographyService;
-
-    public TestCryptographics()
-    {
-        _cryptographyService = new Mock<ICryptographyService>();
-    }
-
     [Fact]
     public void Encrypt_state_success()
     {
@@ -32,13 +25,9 @@ public sealed class TestCryptographics
             ReturnUrl = returnUrl
         };
 
-        var expectedString = "EPday0q/NJZf8i2sVT9+gMDPBw+srbjukn9cA6M5KGYuE2i8N7G0RraBYG5DTrtc9LbiZMXXYDjSz8G5kEhmzpIB0+EjLbCatAuBAYO9lvzpyzJzLmoR+tKkFxuMz4rsBK8ZR2JPb3WTIx3iKp+lZY/CjPBILHOqhwLMVIwc3mOBLw1MsVog2ent0rVxmwbFZVNznxQeBkNRZ6mHFvxuNTykoEpiirvO5z/5QA8LpZTIQWFX2J1opNthm2eo7qaSn4caZ6Qb2+UN6QiC0SoYI7XcskIHVsQCoorWMQvKnSQ5wV/Hiw6KAUNhXhceRCrf";
+        var cryptoService = new CryptographyService();
 
-
-        _cryptographyService.Setup(x => x.EncryptState(state))
-            .Returns(expectedString);
-
-        var encryptedState = _cryptographyService.Object.EncryptState(state);
+        var encryptedState = cryptoService.EncryptState(state.ToString());
 
         Assert.NotNull(encryptedState);
         Assert.NotEmpty(encryptedState);

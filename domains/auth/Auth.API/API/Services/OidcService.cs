@@ -22,7 +22,7 @@ public class OidcService : IOidcService
             { "client_id", Configuration.GetOidcClientId() },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
             { "scope", Configuration.GetScopes() },
-            { "state", _cryptography.EncryptState(state) },
+            { "state", _cryptography.EncryptState(state.ToString()) },
             { "language", lang }
         };
 
