@@ -1,31 +1,33 @@
-using API.Services;
+using API.Helpers;
 using API.Models;
-using Tests.Resources;
-using Xunit;
-using Xunit.Categories;
+using API.Services;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
+using Xunit;
+using Xunit.Categories;
 
 namespace Tests;
 
 [UnitTest]
-public sealed class TestCryptographics
+public class TestCryptographics
 {
     [Fact]
     public void Encrypt_state_success()
     {
-        AddEnvironmentVariables.EnvironmentVariables();
-
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 
-        var state = new AuthState()
+        var state = new AuthState
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
-        var cryptoService = new CryptographyService();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+
+        var cryptoService = new CryptographyService(authOptionsMock.Object);
 
         var encryptedState = cryptoService.EncryptState(state.ToString());
 
