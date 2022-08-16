@@ -1,4 +1,5 @@
 using API.Models;
+using API.Helpers;
 using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
@@ -9,22 +10,24 @@ class MeasurementAggregation : IAggregator
     {
         var listOfMeasurements = measurements.SelectMany(
             measurement => measurement.Measurements.Select(
-                reading => new AggregatedMeasurementInteral(
-                    reading.DateFrom.ToDateTime(),
-                    reading.DateTo.ToDateTime(),
-                    reading.Quantity
-                )
+                reading => new AggregatedMeasurementInteral
+                {
+                    DateFrom = reading.DateFrom.ToDateTime(),
+                    DateTo = reading.DateTo.ToDateTime(),
+                    Value = reading.Quantity
+                }
             )
         ).ToList();
 
         IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedMeasurements = GetGroupedConsumption(aggregation, listOfMeasurements);
 
         var bucketMeasurements = groupedMeasurements.Select(
-            group => new AggregatedMeasurement(
-                group.First().DateFrom.ToUnixTime(),
-                group.Last().DateTo.ToUnixTime(),
-                group.Sum(it => it.Value)
-            )
+            group => new AggregatedMeasurement
+            {
+                DateFrom = group.First().DateFrom.ToUnixTime(),
+                DateTo = group.Last().DateTo.ToUnixTime(),
+                Value = group.Sum(it => it.Value)
+            }
         ).ToList();
 
         return new MeasurementResponse(bucketMeasurements);
@@ -46,17 +49,10 @@ class MeasurementAggregation : IAggregator
         return groupedMeasurements;
     }
 
-    private class AggregatedMeasurementInteral
+    private record AggregatedMeasurementInteral
     {
-        public DateTime DateFrom { get; set; }
-        public DateTime DateTo { get; set; }
-        public int Value { get; set; }
-
-        public AggregatedMeasurementInteral(DateTime dateFrom, DateTime dateTo, int value)
-        {
-            DateFrom = dateFrom;
-            DateTo = dateTo;
-            Value = value;
-        }
+        public DateTime DateFrom { get; init; }
+        public DateTime DateTo { get; init; }
+        public ulong Value { get; init; }
     }
 }

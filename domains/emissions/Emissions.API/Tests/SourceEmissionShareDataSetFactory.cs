@@ -11,30 +11,34 @@ namespace Tests
         {
             return new List<Measurement>
             {
-                new Measurement(
-                    MP,
-                    new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    1000,
-                    Quality.Measured),
-                new Measurement(
-                    MP,
-                    new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
-                    2000,
-                    Quality.Measured),
-                new Measurement(
-                    MP,
-                    new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    3000,
-                    Quality.Measured),
-                new Measurement(
-                    MP,
-                    new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-                    new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
-                    4000,
-                    Quality.Measured)
+                new Measurement{
+                    GSRN = MP,
+                    DateFrom = new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    DateTo = new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    Quantity = 1000,
+                    Quality = Quality.Measured
+                    },
+                new Measurement{
+                    GSRN = MP,
+                    DateFrom = new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    DateTo = new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
+                    Quantity = 2000,
+                    Quality = Quality.Measured
+                    },
+                new Measurement{
+                    GSRN = MP,
+                    DateFrom = new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    DateTo = new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    Quantity = 3000,
+                    Quality = Quality.Measured
+                    },
+                new Measurement{
+                    GSRN = MP,
+                    DateFrom = new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+                    DateTo = new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
+                    Quantity = 4000,
+                    Quality = Quality.Measured
+                    }
             };
         }
 

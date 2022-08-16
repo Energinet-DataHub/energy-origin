@@ -54,7 +54,7 @@ namespace Tests
             Assert.Equal("571313121223234323", res.First().GSRN);
             Assert.Equal(1609455600, res.First().DateFrom);
             Assert.Equal(1609459200, res.First().DateTo);
-            Assert.Equal(1250, res.First().Quantity);
+            Assert.Equal(1250ul, res.First().Quantity);
             Assert.Equal(Quality.Measured, res.First().Quality);
         }
     }

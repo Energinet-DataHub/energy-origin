@@ -1,24 +1,15 @@
 namespace API.Models;
 
 //NOTE: This DTO is a reflection of the output from the DataSync API.
-public class Measurement
+public record Measurement
 {
-    public string GSRN { get; set; }
+    public string GSRN { get; init; }
 
-    public long DateFrom { get; set; }
+    public long DateFrom { get; init; }
 
-    public long DateTo { get; set; }
+    public long DateTo { get; init; }
 
-    public int Quantity { get; set; }
+    public ulong Quantity { get; init; }
 
-    public Quality Quality { get; set; }
-
-    public Measurement(string gsrn, long dateFrom, long dateTo, int quantity, Quality quality)
-    {
-        GSRN = gsrn;
-        DateFrom = dateFrom;
-        DateTo = dateTo;
-        Quantity = quantity;
-        Quality = quality;
-    }
+    public Quality Quality { get; init; }
 }

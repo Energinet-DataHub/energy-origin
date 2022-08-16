@@ -42,7 +42,7 @@ public sealed class CalculateEmissionsTest
         Assert.Equal(expected.Select(_ => _.DateFrom), result.Select(_ => _.DateFrom));
         Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
-  
+
     [Theory]
     [InlineData(Aggregation.Total)]
     [InlineData(Aggregation.Actual)]
@@ -72,6 +72,24 @@ public sealed class CalculateEmissionsTest
         Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
 
+    [Fact]
+    public void EmissionsAndMeasurements_CalculateTotalEmission_HugeDateSet()
+    {
+        // Arrange
+        var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
+        var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
+        var timeSeries = dataSetFactory.CreateTimeSeriesHugeValues();
+        var emissions = dataSetFactory.CreateEmissions();
+
+        var calculator = new EmissionsCalculator();
+
+        // Act
+        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, Aggregation.Total).Emissions.ToArray();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(864000000ul, result.Single().Total.Value);
+    }
 
     IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
     {
