@@ -4,6 +4,7 @@ using Tests.Resources;
 using Xunit;
 using Xunit.Categories;
 using System;
+using System.Text.Json;
 
 namespace Tests;
 
@@ -26,7 +27,7 @@ public sealed class TestCryptographics
 
         var cryptoService = new CryptographyService();
 
-        var encryptedState = cryptoService.EncryptState(state.ToString());
+        var encryptedState = cryptoService.Encrypt(state.ToString());
 
         Assert.NotNull(encryptedState);
         Assert.NotEmpty(encryptedState);
@@ -50,16 +51,16 @@ public sealed class TestCryptographics
             ReturnUrl = returnUrl
         };
 
-        var cryptoService = new CryptographyService();
-        var encryptedState = cryptoService.EncryptState(state.ToString());
+        var serilizedJson = JsonSerializer.Serialize(state);
 
-        var decryptedState = cryptoService.decryptState(encryptedState);
+        var cryptoService = new CryptographyService();
+        var encryptedState = cryptoService.Encrypt(serilizedJson);
+
+        var decryptedState = cryptoService.Decrypt(encryptedState);
 
         Assert.NotNull(decryptedState);
         Assert.NotEmpty(decryptedState);
         Assert.IsType<string>(decryptedState);
-
+        Assert.Equal(serilizedJson, decryptedState);
     }
-
-
 }

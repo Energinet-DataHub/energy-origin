@@ -8,7 +8,7 @@ public class CryptographyService : ICryptographyService
 {
     string key = Configuration.GetSecretKey();
 
-    public string EncryptState(string state)
+    public string Encrypt(string state)
     {
         using (Aes aes = Aes.Create())
         {
@@ -22,7 +22,7 @@ public class CryptographyService : ICryptographyService
                 {
                     using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
                     {
-                        streamWriter.Write(state.ToString());
+                        streamWriter.Write(state);
                     }
                 }
                 return Convert.ToBase64String(memoryStream.ToArray());
@@ -30,26 +30,31 @@ public class CryptographyService : ICryptographyService
         }
     }
 
-    public string decryptState(string encryptedState)
+    public string Decrypt(string encryptedState)
     {
 
         byte[] buffer = Convert.FromBase64String(encryptedState);
-
+        var iv = new byte[16];
         using (MemoryStream memoryStream = new MemoryStream(buffer))
         {
+            memoryStream.Read(iv, 0, 16);
             using (Aes aes = Aes.Create())
             {
                 aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                 {
                     using (StreamReader streamReader = new StreamReader(cryptoStream))
                     {
+                        /*
                         var decodedState = streamReader.ReadToEnd();
                         // Removal of unnecessary chars
                         var index = decodedState.IndexOf("Auth");
                         return decodedState[index..decodedState.Length];
+                        */
+                        return streamReader.ReadToEnd();
                     }
                 }
             }
