@@ -43,7 +43,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.SOLUTION_PATH }}
         run: |
-          dotnet sonarscanner begin -k:"${{ env.SOLUTION_NAME }}" -o:"${{ env.ORGANIZATION }}" -d:sonar.login="${{ secrets.SONAR_TOKEN }} -h"
+          dotnet sonarscanner begin -k:"${{ env.SOLUTION_NAME }}" -o:"${{ env.ORGANIZATION }}" -d:sonar.login="${{ secrets.SONAR_TOKEN }}" -d:sonar.host.url="https://sonarcloud.io"
           dotnet build
           dotnet test --collect "Code Coverage"
           dotnet sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"
