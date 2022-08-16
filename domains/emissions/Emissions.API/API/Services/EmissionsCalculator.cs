@@ -22,12 +22,12 @@ class EmissionsCalculator : IEmissionsCalculator
                 measurement => new Tuple<string, long>(timeseries.MeteringPoint.GridArea, measurement.DateFrom),
                 record => new Tuple<string, long>(record.GridArea, record.HourUTC.ToUnixTime()),
                 (measurement, record) => new Emission
-                {
-                    Co2 = measurement.Quantity * record.CO2PerkWh,
-                    DateFrom = measurement.DateFrom.ToDateTime(),
-                    DateTo = measurement.DateTo.ToDateTime(),
-                    Consumption = measurement.Quantity
-                }));
+                (
+                    Co2: measurement.Quantity * record.CO2PerkWh,
+                    DateFrom: measurement.DateFrom.ToDateTime(),
+                    DateTo: measurement.DateTo.ToDateTime(),
+                    Consumption: measurement.Quantity
+                )));
 
         IEnumerable<IGrouping<string, Emission>> groupedEmissions = GetGroupedEmissions(aggregation, listOfEmissions);
 
@@ -89,10 +89,10 @@ class EmissionsCalculator : IEmissionsCalculator
     }
 }
 
-internal class Emission
-{
-    public DateTime DateFrom { get; set; }
-    public DateTime DateTo { get; set; }
-    public decimal Co2 { get; set; }
-    public int Consumption { get; set; }
-}
+internal record Emission
+(
+    DateTime DateFrom,
+    DateTime DateTo,
+    decimal Co2,
+    long Consumption
+);
