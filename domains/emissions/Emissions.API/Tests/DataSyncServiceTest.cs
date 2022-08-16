@@ -62,7 +62,7 @@ public sealed class DataSyncServiceTest
         Assert.Equal("571313121223234323", res.First().GSRN);
         Assert.Equal(dateFrom, res.First().DateFrom);
         Assert.Equal(dateTo, res.First().DateTo);
-        Assert.Equal(1250ul, res.First().Quantity);
+        Assert.Equal(1250L, res.First().Quantity);
         Assert.Equal(Quality.Measured, res.First().Quality);
     }
 }

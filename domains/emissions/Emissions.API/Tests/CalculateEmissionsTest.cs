@@ -88,7 +88,7 @@ public sealed class CalculateEmissionsTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(864000000ul, result.Single().Total.Value);
+        Assert.Equal(864000000L, result.Single().Total.Value);
     }
 
     IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)

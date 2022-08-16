@@ -14,13 +14,13 @@ public sealed class ConsumptionAggregationTest
     readonly ConsumptionAggregationData dataSetFactory = new();
 
     [Theory]
-    [InlineData(Aggregation.Total, new long[] { 1609538400 }, new long[] { 1609552799 }, new ulong[] { 3930 })]
-    [InlineData(Aggregation.Actual, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new ulong[] { 1234, 242, 654, 1800 })]
-    [InlineData(Aggregation.Hour, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new ulong[] { 1234, 242, 654, 1800 })]
-    [InlineData(Aggregation.Day, new long[] { 1609538400, 1609545600 }, new long[] { 1609545599, 1609552799 }, new ulong[] { 1476, 2454 })]
-    [InlineData(Aggregation.Month, new long[] { 1609538400 }, new long[] { 1609552799 }, new ulong[] { 3930 })]
-    [InlineData(Aggregation.Year, new long[] { 1609538400 }, new long[] { 1609552799 }, new ulong[] { 3930 })]
-    public void Measurements_CalculateAggregation(Aggregation aggregation, long[] expectedDateFrom, long[] expectedDateTo, ulong[] expectedValues)
+    [InlineData(Aggregation.Total, new long[] { 1609538400 }, new long[] { 1609552799 }, new long[] { 3930 })]
+    [InlineData(Aggregation.Actual, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new long[] { 1234, 242, 654, 1800 })]
+    [InlineData(Aggregation.Hour, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new long[] { 1234, 242, 654, 1800 })]
+    [InlineData(Aggregation.Day, new long[] { 1609538400, 1609545600 }, new long[] { 1609545599, 1609552799 }, new long[] { 1476, 2454 })]
+    [InlineData(Aggregation.Month, new long[] { 1609538400 }, new long[] { 1609552799 }, new long[] { 3930 })]
+    [InlineData(Aggregation.Year, new long[] { 1609538400 }, new long[] { 1609552799 }, new long[] { 3930 })]
+    public void Measurements_CalculateAggregation(Aggregation aggregation, long[] expectedDateFrom, long[] expectedDateTo, long[] expectedValues)
     {
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
@@ -58,6 +58,6 @@ public sealed class ConsumptionAggregationTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(6000000000ul, result.Single().Value);
+        Assert.Equal(6000000000L, result.Single().Value);
     }
 }

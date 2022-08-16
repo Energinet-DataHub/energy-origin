@@ -11,11 +11,11 @@ class MeasurementAggregation : IAggregator
         var listOfMeasurements = measurements.SelectMany(
             measurement => measurement.Measurements.Select(
                 reading => new AggregatedMeasurementInteral
-                {
-                    DateFrom = reading.DateFrom.ToDateTime(),
-                    DateTo = reading.DateTo.ToDateTime(),
-                    Value = reading.Quantity
-                }
+                (
+                    DateFrom: reading.DateFrom.ToDateTime(),
+                    DateTo: reading.DateTo.ToDateTime(),
+                    Value: reading.Quantity
+                )
             )
         ).ToList();
 
@@ -23,11 +23,11 @@ class MeasurementAggregation : IAggregator
 
         var bucketMeasurements = groupedMeasurements.Select(
             group => new AggregatedMeasurement
-            {
-                DateFrom = group.First().DateFrom.ToUnixTime(),
-                DateTo = group.Last().DateTo.ToUnixTime(),
-                Value = group.Sum(it => it.Value)
-            }
+            (
+                DateFrom: group.First().DateFrom.ToUnixTime(),
+                DateTo: group.Last().DateTo.ToUnixTime(),
+                Value: group.Sum(it => it.Value)
+            )
         ).ToList();
 
         return new MeasurementResponse(bucketMeasurements);
@@ -50,9 +50,9 @@ class MeasurementAggregation : IAggregator
     }
 
     private record AggregatedMeasurementInteral
-    {
-        public DateTime DateFrom { get; init; }
-        public DateTime DateTo { get; init; }
-        public ulong Value { get; init; }
-    }
+    (
+        DateTime DateFrom,
+        DateTime DateTo,
+        long Value
+    );
 }

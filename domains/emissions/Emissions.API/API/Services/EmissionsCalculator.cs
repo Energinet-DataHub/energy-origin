@@ -94,5 +94,5 @@ internal record Emission
     public DateTime DateFrom { get; init; }
     public DateTime DateTo { get; init; }
     public decimal Co2 { get; init; }
-    public ulong Consumption { get; init; }
+    public long Consumption { get; init; }
 }
