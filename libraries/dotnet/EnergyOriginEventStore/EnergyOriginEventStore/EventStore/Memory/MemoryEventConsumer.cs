@@ -24,7 +24,7 @@ internal class MemoryEventConsumer : IEventConsumer
         Task.Run(async () => await _store.Attach(this).ConfigureAwait(false));
     }
 
-    internal void OnMessage(object sender, MessageEventArgs e)
+    internal void OnMessage(object? sender, MessageEventArgs e)
     {
         if (!e.Topic.StartsWith(_topicPrefix)) return;
 
