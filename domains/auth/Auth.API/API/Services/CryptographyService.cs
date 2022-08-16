@@ -32,7 +32,6 @@ public class CryptographyService : ICryptographyService
 
     public string Decrypt(string encryptedState)
     {
-
         byte[] buffer = Convert.FromBase64String(encryptedState);
         var iv = new byte[16];
         using (MemoryStream memoryStream = new MemoryStream(buffer))
