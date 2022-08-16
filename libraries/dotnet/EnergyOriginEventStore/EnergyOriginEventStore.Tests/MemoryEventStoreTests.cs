@@ -19,7 +19,7 @@ public class MemoryEventStoreTests
         Said? receivedValue = null;
         eventStore
             .GetBuilder("Gossip")
-            .AddHandler<Said>((value) =>
+            .AddHandler<Said>(value =>
             {
                 receivedValue = value.EventModel;
                 semaphore.Release();
@@ -91,10 +91,9 @@ public class MemoryEventStoreTests
     [Fact]
     public async Task EventStore_FiltersTopics_success()
     {
-        var semaphore = new SemaphoreSlim(0);
         IEventStore eventStore = new MemoryEventStore();
 
-        var message = new Said("Samuel Salesman", "We have been trying to reach you about your cars extended warrenty!");
+        var message = new Said("Samuel Salesman", "We have been trying to reach you about your cars extended warranty!");
         await eventStore.Produce(message, "Spam", "Advertisement", "Robocall");
 
         var received = new List<Said>();
@@ -109,7 +108,7 @@ public class MemoryEventStoreTests
     }
 
     [Fact]
-    public async Task EventStore_MultipleListers_success()
+    public async Task EventStore_MultipleListeners_success()
     {
         IEventStore eventStore = new MemoryEventStore();
 
@@ -141,5 +140,86 @@ public class MemoryEventStoreTests
         Assert.Single(received1);
         Assert.Single(received2);
         Assert.Single(received3);
+    }
+
+    [Fact]
+    public async Task EventStore_SetExceptionHandler_works()
+    {
+        IEventStore eventStore = new MemoryEventStore();
+
+        var message = new Said("Exavier Exception", "I have eruptive things to say!");
+        await eventStore.Produce(message, "Unstable");
+
+        eventStore
+            .GetBuilder("Unstable")
+            .AddHandler<Said>(_ => throw new NotImplementedException("Oh Exavier did it again..."))
+            .Build();
+
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+        var semaphore = new SemaphoreSlim(0);
+        var hadException = false;
+
+        eventStore
+            .GetBuilder("Unstable")
+            .AddHandler<Said>(value => throw new NotImplementedException("Oh Exavier did it again..."))
+            .SetExceptionHandler((type, exception) =>
+            {
+                hadException = true;
+                semaphore.Release();
+            })
+            .Build();
+
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(hadException);
+    }
+
+    [Fact]
+    public async Task EventStore_HandleNoHandler()
+    {
+        IEventStore eventStore = new MemoryEventStore();
+        var semaphore = new SemaphoreSlim(0);
+        var hadException = false;
+
+        var message = new Said("Annie Anonymous", "No one listens to me!");
+        await eventStore.Produce(message, "Void");
+
+        eventStore
+            .GetBuilder("Void")
+            .SetExceptionHandler((type, exception) =>
+            {
+                hadException = true;
+                semaphore.Release();
+            })
+            .Build();
+
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(hadException);
+    }
+
+    [Fact]
+    public async Task EventStore_EventFlow_works()
+    {
+        IEventStore eventStore = new MemoryEventStore();
+        var semaphore = new SemaphoreSlim(0);
+        var ensureEventFlowIsExercised = false;
+
+        eventStore
+            .GetBuilder("OldNews")
+            .AddHandler<Said>(_ =>
+            {
+                ensureEventFlowIsExercised = true;
+                semaphore.Release();
+            })
+            .Build();
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+        var message = new Said("Internet Explorer", "Ringo Starr replaces Pete Best as Beatles' drummer.");
+        await eventStore.Produce(message, "OldNews");
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(ensureEventFlowIsExercised);
     }
 }

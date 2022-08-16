@@ -8,16 +8,18 @@ internal class MemoryEventConsumer : IEventConsumer
     private readonly MemoryEventStore _store;
     private readonly IUnpacker _unpacker;
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
+    private readonly Action<string, Exception> _exceptionHandler;
     private readonly MemoryPointer? _pointer;
     private readonly string _topicPrefix;
 
-    public MemoryEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, MemoryEventStore store, string topicPrefix, MemoryPointer? pointer)
+    public MemoryEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, MemoryEventStore store, string topicPrefix, MemoryPointer? pointer)
     {
         _store = store;
         _unpacker = unpacker;
         _handlers = handlers;
         _topicPrefix = topicPrefix;
         _pointer = pointer;
+        _exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
 
         Task.Run(async () => await _store.Attach(this).ConfigureAwait(false));
     }
@@ -31,9 +33,25 @@ internal class MemoryEventConsumer : IEventConsumer
 
         var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
         var type = reconstructed.GetType();
-        var handler = _handlers.GetValueOrDefault(type) ?? throw new NotImplementedException($"No handler for event of type {type.ToString()}");
+        var typeString = type.ToString();
 
-        handler.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, e.Pointer.Serialized)));
+        var handlers = _handlers.GetValueOrDefault(type);
+        if (handlers == null)
+        {
+            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+        }
+
+        (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
+        {
+            try
+            {
+                x.Invoke(new Event<EventModel>(reconstructed, e.Pointer.Serialized));
+            }
+            catch (Exception exception)
+            {
+                _exceptionHandler.Invoke(typeString, exception);
+            }
+        });
     }
 
     public void Dispose() { }

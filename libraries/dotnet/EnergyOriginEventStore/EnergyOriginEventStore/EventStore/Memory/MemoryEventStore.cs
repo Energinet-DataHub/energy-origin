@@ -6,11 +6,13 @@ namespace EnergyOriginEventStore.EventStore.Memory;
 
 public class MemoryEventStore : IEventStore
 {
-    private List<MessageEventArgs> _messages = new();
-    private ConcurrentQueue<Action> _actions = new();
-    [ThreadStatic] private bool isDraining = false;
+    private readonly List<MessageEventArgs> _messages = new();
+    private readonly ConcurrentQueue<Action> _actions = new();
+    private SemaphoreSlim _drainSemaphore = new SemaphoreSlim(1, 1);
 
     public MemoryEventStore() { }
+
+    internal event EventHandler<MessageEventArgs>? OnMessage;
 
     internal async Task Attach(MemoryEventConsumer consumer)
     {
@@ -67,9 +69,9 @@ public class MemoryEventStore : IEventStore
 
     private async Task Drain()
     {
-        if (isDraining) return;
+        if (_drainSemaphore.CurrentCount == 0) return;
 
-        isDraining = true;
+        _drainSemaphore.Wait();
 
         Action? item;
         while (_actions.TryDequeue(out item))
@@ -77,21 +79,13 @@ public class MemoryEventStore : IEventStore
             item?.Invoke();
         }
 
-        isDraining = false;
+        _drainSemaphore.Release();
 
         if (!_actions.IsEmpty)
         {
             await Drain();
         }
     }
-
-    #endregion
-
-    #region Events
-
-    internal event MessageEventHandler? OnMessage;
-
-    internal delegate void MessageEventHandler(object sender, MessageEventArgs e);
 
     #endregion
 }

@@ -91,6 +91,64 @@ public class FlatFileEventStoreTests : IDisposable
         }
     }
 
+
+    [Fact]
+    public async Task EventStore_SetExceptionHandler_works()
+    {
+        IEventStore eventStore = new FlatFileEventStore();
+
+        var message = new Said("Exavier Exception", "I have eruptive things to say!");
+        await eventStore.Produce(message, "Unstable");
+
+        eventStore
+            .GetBuilder("Unstable")
+            .AddHandler<Said>(_ => throw new NotImplementedException("Oh Exavier did it again..."))
+            .Build();
+
+        await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+        var semaphore = new SemaphoreSlim(0);
+        var hadException = false;
+
+        eventStore
+            .GetBuilder("Unstable")
+            .AddHandler<Said>(value => throw new NotImplementedException("Oh Exavier did it again..."))
+            .SetExceptionHandler((type, exception) =>
+            {
+                hadException = true;
+                semaphore.Release();
+            })
+            .Build();
+
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(hadException);
+    }
+
+    [Fact]
+    public async Task EventStore_HandleNoHandler()
+    {
+        IEventStore eventStore = new FlatFileEventStore();
+        var semaphore = new SemaphoreSlim(0);
+        var hadException = false;
+
+        var message = new Said("Annie Anonymous", "No one listens to me!");
+        await eventStore.Produce(message, "Void");
+
+        eventStore
+            .GetBuilder("Void")
+            .SetExceptionHandler((type, exception) =>
+            {
+                hadException = true;
+                semaphore.Release();
+            })
+            .Build();
+
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(hadException);
+    }
+
     public void Dispose()
     {
         Directory.Delete("store", true);

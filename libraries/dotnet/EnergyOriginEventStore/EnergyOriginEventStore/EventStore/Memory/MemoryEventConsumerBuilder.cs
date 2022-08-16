@@ -6,7 +6,7 @@ namespace EnergyOriginEventStore.EventStore.Memory;
 internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 {
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers = new();
-
+    private Action<string, Exception>? _exceptionHandler;
     private readonly MemoryEventStore _store;
     private readonly string _topicPrefix;
     private MemoryPointer? _pointer;
@@ -29,11 +29,17 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
         return this;
     }
 
+    public IEventConsumerBuilder SetExceptionHandler(Action<string, Exception> handler)
+    {
+        _exceptionHandler = handler;
+        return this;
+    }
+
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
         _pointer = new MemoryPointer(pointer);
         return this;
     }
 
-    public IEventConsumer Build() => new MemoryEventConsumer(new Unpacker(), _handlers, _store, _topicPrefix, _pointer);
+    public IEventConsumer Build() => new MemoryEventConsumer(new Unpacker(), _handlers, _exceptionHandler, _store, _topicPrefix, _pointer);
 }
