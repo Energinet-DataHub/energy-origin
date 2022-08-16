@@ -1,0 +1,49 @@
+name: SonarCloud
+
+on:
+  pull_request:
+    paths:
+      - domains/emissions/**
+  push:
+    branches:
+      - main
+    paths:
+      - domains/emissions/**
+
+env:
+  ORGANIZATION: "energinet-datahub"
+
+jobs:
+  sonar-analysis:
+    runs-on: ubuntu-latest
+    env:
+      SOLUTION_NAME: "eo-emissions"
+      SOLUTION_PATH: "domains/emissions/Emissions.API"
+      DOTNET_VERSION: "6.0.302"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "microsoft"
+          java-version: "11"
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }} environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dotnet-sonarscanner
+        shell: bash
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+
+      - name: Run Analysis
+        shell: bash
+        working-directory: ${{ env.SOLUTION_PATH }}
+        run: |
+          dotnet sonarscanner begin -k:"${{ env.SOLUTION_NAME }}" -o:"${{ env.ORGANIZATION }}" -d:sonar.login="${{ secrets.SONAR_TOKEN }}" -d:sonar.host.url="https://sonarcloud.io"
+          dotnet build
+          dotnet test --collect "Code Coverage"
+          dotnet sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"
