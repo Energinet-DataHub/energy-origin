@@ -1,4 +1,4 @@
-namespace API.Helpers;
+namespace API.Configuration;
 
 public class AuthOptions
 {
