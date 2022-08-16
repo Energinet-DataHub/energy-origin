@@ -8,10 +8,8 @@ public class CryptographyService : ICryptographyService
 {
     string key = Configuration.GetSecretKey();
 
-    public string EncryptState(AuthState state)
+    public string Encrypt(string state)
     {
-        byte[] data;
-        //byte[] iv = new byte[16];
         using (Aes aes = Aes.Create())
         {
             aes.Key = Encoding.UTF8.GetBytes(key);
@@ -27,25 +25,23 @@ public class CryptographyService : ICryptographyService
                         streamWriter.Write(state.ToString());
                     }
                     data = memoryStream.ToArray();
-
                 }
             }
             return Convert.ToBase64String(data);
         }
     }
 
-    public string decryptState(string encryptedState)
+    public string Decrypt(string encryptedState)
     {
-        //byte[] iv = new byte[16];
         byte[] buffer = Convert.FromBase64String(encryptedState);
-
+        var iv = new byte[16];
         using (MemoryStream memoryStream = new MemoryStream(buffer))
         {
-            var iv = memoryStream.Read(new byte[16]);
+            memoryStream.Read(iv, 0, 16);
             using (Aes aes = Aes.Create())
             {
                 aes.Key = Encoding.UTF8.GetBytes(key);
-                aes.IV = BitConverter.GetBytes(iv);
+                aes.IV = iv;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))

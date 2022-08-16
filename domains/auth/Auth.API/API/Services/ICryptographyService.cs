@@ -1,9 +1,7 @@
-using API.Models;
-
 namespace API.Services;
 public interface ICryptographyService
 {
-    public string EncryptState(AuthState state);
-    public string decryptState(string encryptedState);
+    public string Encrypt(string state);
+    public string Decrypt(string encryptedState);
 }
 

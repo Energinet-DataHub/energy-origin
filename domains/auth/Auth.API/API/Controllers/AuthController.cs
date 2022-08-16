@@ -1,6 +1,9 @@
 using API.Models;
 using API.Services;
+<<<<<<< HEAD
 using Newtonsoft.Json;
+=======
+>>>>>>> main
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -25,6 +28,7 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl
         )
+
     {
         AuthState state = new AuthState()
         {
@@ -52,10 +56,10 @@ public class AuthController
             throw new JsonSerializationException();
         }
 
-        
 
 
-        
+
+
 
 
 
@@ -64,4 +68,6 @@ public class AuthController
 
     }
 
+=======
+>>>>>>> main
 }
