@@ -48,12 +48,6 @@ public class CryptographyService : ICryptographyService
                 {
                     using (StreamReader streamReader = new StreamReader(cryptoStream))
                     {
-                        /*
-                        var decodedState = streamReader.ReadToEnd();
-                        // Removal of unnecessary chars
-                        var index = decodedState.IndexOf("Auth");
-                        return decodedState[index..decodedState.Length];
-                        */
                         return streamReader.ReadToEnd();
                     }
                 }
