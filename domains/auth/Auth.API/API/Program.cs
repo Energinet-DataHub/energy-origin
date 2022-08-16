@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
-//builder.Services.AddScoped<ISignaturGruppen, SignaturGruppen>();
+
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();

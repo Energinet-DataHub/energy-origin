@@ -27,7 +27,7 @@ public class CryptographyService : ICryptographyService
                         streamWriter.Write(state.ToString());
                     }
                     data = memoryStream.ToArray();
-                    
+
                 }
             }
             return Convert.ToBase64String(data);
