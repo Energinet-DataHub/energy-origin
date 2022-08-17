@@ -1,6 +1,6 @@
 using API.Models;
 
-namespace API.Services;
+namespace API.Services.OidcProviders;
 public interface IOidcProviders
 {
     NextStep CreateAuthorizationUri(AuthState state);

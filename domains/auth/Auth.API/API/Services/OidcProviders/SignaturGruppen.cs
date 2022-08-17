@@ -1,8 +1,8 @@
+using System.Text.Json;
 using API.Helpers;
 using API.Models;
-using System.Text.Json;
 
-namespace API.Services;
+namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcProviders
 {

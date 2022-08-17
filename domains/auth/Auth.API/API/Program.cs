@@ -4,6 +4,7 @@ using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.Services.OidcProviders;
 
 [assembly: InternalsVisibleTo("Tests")]
 
