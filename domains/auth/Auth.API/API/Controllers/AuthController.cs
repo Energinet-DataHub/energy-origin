@@ -2,6 +2,7 @@ using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using API.Services.OidcProviders;
 
 namespace API.Controllers;
 
@@ -24,7 +25,7 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new AuthState()
+        AuthState state = new ()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
@@ -33,4 +34,17 @@ public class AuthController
         return oidcProviders.CreateAuthorizationUri(state);
     }
 
+
+    [HttpPost]
+    [Route("/invalidate")]
+    public Boolean Invalidate([Required] AuthState state)
+    {
+        if (state.IdToken == null)
+        {
+            return false;
+        }
+
+        oidcProviders.Logout(state.Tin);
+        return true;
+    }
 }

@@ -2,17 +2,19 @@ using API.Helpers;
 using API.Models;
 using System.Text.Json;
 
-namespace API.Services;
+namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcProviders
 {
     readonly IOidcService oidcService;
     readonly ILogger<SignaturGruppen> logger;
+    private readonly HttpClient httpClient;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService)
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, HttpClient httpClient)
     {
         this.logger = logger;
         this.oidcService = oidcService;
+        this.httpClient = httpClient;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -33,5 +35,25 @@ public class SignaturGruppen : IOidcProviders
         var authorizationUri = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
 
         return authorizationUri;
+    }
+
+    public async Task Logout(string token)
+    {
+        var url = Configuration.GetOidcUrl();
+        httpClient.BaseAddress = new Uri(url);
+
+        var response = await httpClient.PostAsJsonAsync(
+            "/api/v1/session/logout",
+            new { id_token = token }
+            );
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            logger.LogWarning(
+                "StatusCode: {StatusCode}, url: {Url}, content: {Content}",
+                response.StatusCode, url, content
+                );
+        }
     }
 }
