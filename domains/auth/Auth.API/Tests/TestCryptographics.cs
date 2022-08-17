@@ -1,35 +1,33 @@
-using API.Configuration;
-using API.Models;
 using API.Services;
-using Microsoft.Extensions.Options;
-using Moq;
-using System;
+using API.Models;
+using Tests.Resources;
 using Xunit;
 using Xunit.Categories;
+using System;
+using System.Text.Json;
 
 namespace Tests;
 
 [UnitTest]
-public class TestCryptographics
+public sealed class TestCryptographics
 {
     [Fact]
     public void Encrypt_state_success()
     {
+        Environment.SetEnvironmentVariable("SecretKey", "mysmallkey123456");
+
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 
-        var state = new AuthState
+        var state = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
-        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+        var cryptoService = new CryptographyService();
 
-        var cryptoService = new CryptographyService(authOptionsMock.Object);
-
-        var encryptedState = cryptoService.EncryptState(state.ToString());
+        var encryptedState = cryptoService.Encrypt(state.ToString());
 
         Assert.NotNull(encryptedState);
         Assert.NotEmpty(encryptedState);
@@ -41,5 +39,28 @@ public class TestCryptographics
         Assert.True(base64DecodedState);
     }
 
+    [Fact]
+    public void Decrypt_state_success()
+    {
+        var feUrl = "http://test.energioprindelse.dk";
+        var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 
+        var state = new AuthState()
+        {
+            FeUrl = feUrl,
+            ReturnUrl = returnUrl
+        };
+
+        var serilizedJson = JsonSerializer.Serialize(state);
+
+        var cryptoService = new CryptographyService();
+        var encryptedState = cryptoService.Encrypt(serilizedJson);
+
+        var decryptedState = cryptoService.Decrypt(encryptedState);
+
+        Assert.NotNull(decryptedState);
+        Assert.NotEmpty(decryptedState);
+        Assert.IsType<string>(decryptedState);
+        Assert.Equal(serilizedJson, decryptedState);
+    }
 }

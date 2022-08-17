@@ -1,4 +1,3 @@
-using API.Configuration;
 using API.Services;
 using Serilog;
 using Serilog.Formatting.Json;

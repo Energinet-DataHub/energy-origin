@@ -1,24 +1,18 @@
-using API.Configuration;
-using Microsoft.Extensions.Options;
+using API.Models;
+using API.Helpers;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace API.Services;
-
 public class CryptographyService : ICryptographyService
 {
-    private readonly AuthOptions _authOptions;
+    string key = Configuration.GetSecretKey();
 
-    public CryptographyService(IOptions<AuthOptions> authOptions)
-    {
-        _authOptions = authOptions.Value;
-    }
-
-    public string EncryptState(string state)
+    public string Encrypt(string state)
     {
         using (Aes aes = Aes.Create())
         {
-            aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
+            aes.Key = Encoding.UTF8.GetBytes(key);
             ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -28,7 +22,7 @@ public class CryptographyService : ICryptographyService
                 {
                     using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
                     {
-                        streamWriter.Write(state.ToString());
+                        streamWriter.Write(state);
                     }
                 }
                 return Convert.ToBase64String(memoryStream.ToArray());
@@ -36,17 +30,17 @@ public class CryptographyService : ICryptographyService
         }
     }
 
-    public string decryptState(string encryptedState)
+    public string Decrypt(string encryptedState)
     {
         byte[] buffer = Convert.FromBase64String(encryptedState);
-
+        var iv = new byte[16];
         using (MemoryStream memoryStream = new MemoryStream(buffer))
         {
-            var iv = memoryStream.Read(new byte[16]);
+            memoryStream.Read(iv, 0, 16);
             using (Aes aes = Aes.Create())
             {
-                aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
-                aes.IV = BitConverter.GetBytes(iv);
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))

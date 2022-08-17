@@ -1,30 +1,27 @@
-using API.Configuration;
+using API.Helpers;
 using API.Models;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace API.Services;
 
 public class SignaturGruppen : IOidcProviders
 {
-    private readonly IOidcService oidcService;
-    private readonly AuthOptions authOptions;
-    private readonly ILogger<SignaturGruppen> logger;
+    readonly IOidcService oidcService;
+    readonly ILogger<SignaturGruppen> logger;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, IOptions<AuthOptions> authOptions)
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService)
     {
         this.logger = logger;
         this.oidcService = oidcService;
-        this.authOptions = authOptions.Value;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
     {
-        var amrValues = new Dictionary<string, string>
+        var amrValues = new Dictionary<string, string>()
         {
-            { "amr_values", authOptions.AmrValues }
+            { "amr_values", Configuration.GetAmrValues() }
         };
-        var nemId = new Dictionary<string, Dictionary<string, string>>
+        var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
             { "nemid", amrValues}
         };
@@ -33,7 +30,7 @@ public class SignaturGruppen : IOidcProviders
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var authorizationUri = new NextStep { NextUrl = authOptions.OidcUrl + query.ToString() };
+        var authorizationUri = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
 
         return authorizationUri;
     }
