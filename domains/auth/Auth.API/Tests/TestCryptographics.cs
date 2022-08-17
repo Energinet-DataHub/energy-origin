@@ -1,10 +1,12 @@
-using API.Services;
+using API.Configuration;
 using API.Models;
-using Tests.Resources;
-using Xunit;
-using Xunit.Categories;
+using API.Services;
+using Microsoft.Extensions.Options;
+using Moq;
 using System;
 using System.Text.Json;
+using Xunit;
+using Xunit.Categories;
 
 namespace Tests;
 
@@ -14,18 +16,19 @@ public sealed class TestCryptographics
     [Fact]
     public void Encrypt_state_success()
     {
-        Environment.SetEnvironmentVariable("SecretKey", "mysmallkey123456");
-
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 
-        var state = new AuthState()
+        var state = new AuthState
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
-        var cryptoService = new CryptographyService();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+
+        var cryptoService = new CryptographyService(authOptionsMock.Object);
 
         var encryptedState = cryptoService.Encrypt(state.ToString());
 
@@ -45,7 +48,7 @@ public sealed class TestCryptographics
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 
-        var state = new AuthState()
+        var state = new AuthState
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
@@ -53,7 +56,10 @@ public sealed class TestCryptographics
 
         var serilizedJson = JsonSerializer.Serialize(state);
 
-        var cryptoService = new CryptographyService();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+
+        var cryptoService = new CryptographyService(authOptionsMock.Object);
         var encryptedState = cryptoService.Encrypt(serilizedJson);
 
         var decryptedState = cryptoService.Decrypt(encryptedState);
