@@ -3,6 +3,6 @@ api:
   probes: true
   image:
     name: ghcr.io/energinet-datahub/eo-measurements
-    tag: 0.1.5
+    tag: 0.1.7
   env:
     DATASYNCENDPOINT:

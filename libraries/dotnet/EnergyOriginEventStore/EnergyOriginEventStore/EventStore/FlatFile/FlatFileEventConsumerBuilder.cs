@@ -10,6 +10,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
     private readonly FlatFileEventStore _fileStore;
     private readonly string _topicPrefix;
     private string? _pointer;
+    private Action<string, Exception>? _exceptionHandler;
 
     public FlatFileEventConsumerBuilder(FlatFileEventStore fileStore, string topicPrefix)
     {
@@ -20,7 +21,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
     public IEventConsumer Build()
     {
         var unpacker = new Unpacker();
-        var consumer = new FlatFileEventConsumer(unpacker, _handlers, _fileStore, _topicPrefix, _pointer);
+        var consumer = new FlatFileEventConsumer(unpacker, _handlers, _exceptionHandler, _fileStore, _topicPrefix, _pointer);
 
         _fileStore.DisposeEvent += consumer.Dispose;
 
@@ -42,6 +43,12 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
         _pointer = pointer;
+        return this;
+    }
+
+    public IEventConsumerBuilder SetExceptionHandler(Action<string, Exception> handler)
+    {
+        _exceptionHandler = handler;
         return this;
     }
 }
