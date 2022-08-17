@@ -1,6 +1,5 @@
 using API.Services;
 using API.Models;
-using API.Services.OidcProviders;
 using Tests.Resources;
 using Xunit;
 using Xunit.Categories;

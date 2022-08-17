@@ -2,7 +2,7 @@ using API.Helpers;
 using API.Models;
 using System.Text.Json;
 
-namespace API.Services.OidcProviders;
+namespace API.Services;
 
 public class SignaturGruppen : IOidcProviders
 {

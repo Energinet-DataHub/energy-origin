@@ -30,39 +30,93 @@ public sealed class EmissionsServiceTests
             new MeteringPoint("286432579631400003", "DK1", MeterType.Consumption),
         };
 
-        var meterpoint1Time0Quantity = 1250;
-        var meterpoint1Time1Quantity = 4700;
-        var meterpoint1Time2Quantity = 2500;
+        var meterpoint1Time0Quantity = 1250L;
+        var meterpoint1Time1Quantity = 4700L;
+        var meterpoint1Time2Quantity = 2500L;
 
         var measurements1 = new List<Measurement>(){
-            new Measurement("286432579631400001", time0, time1, meterpoint1Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400001", time1, time2, meterpoint1Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400001", time2, time3, meterpoint1Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint1Time0Quantity,
+                Quality: Quality.Measured
+            ),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint1Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint1Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
-        var meterpoint2Time0Quantity = 3500;
-        var meterpoint2Time1Quantity = 1200;
-        var meterpoint2Time2Quantity = 2400;
+        var meterpoint2Time0Quantity = 3500L;
+        var meterpoint2Time1Quantity = 1200L;
+        var meterpoint2Time2Quantity = 2400L;
 
         var measurements2 = new List<Measurement>(){
-            new Measurement("286432579631400002", time0, time1, meterpoint2Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400002", time1, time2, meterpoint2Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400002", time2, time3, meterpoint2Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint2Time0Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint2Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint2Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
-        var meterpoint3Time0Quantity = 2500;
-        var meterpoint3Time1Quantity = 700;
-        var meterpoint3Time2Quantity = 900;
+        var meterpoint3Time0Quantity = 2500L;
+        var meterpoint3Time1Quantity = 700L;
+        var meterpoint3Time2Quantity = 900L;
 
         var measurements3 = new List<Measurement>(){
-            new Measurement("286432579631400003", time0, time1, meterpoint3Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400003", time1, time2, meterpoint3Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400003", time2, time3, meterpoint3Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint3Time0Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint3Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint3Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
-        var time0Co2 = 30;
-        var time1Co2 = 20;
-        var time2Co2 = 12;
+        var time0Co2 = 30L;
+        var time1Co2 = 20L;
+        var time2Co2 = 12L;
 
         var emissionResponse = new List<EmissionRecord>(){
             new EmissionRecord("DK1", 0, time0Co2, time0.ToDateTime()),
@@ -133,34 +187,88 @@ public sealed class EmissionsServiceTests
             new MeteringPoint("286432579631400003", "DK1", MeterType.Consumption),
         };
 
-        var meterpoint1Time0Quantity = 1250;
-        var meterpoint1Time1Quantity = 4700;
-        var meterpoint1Time2Quantity = 2500;
+        var meterpoint1Time0Quantity = 1250L;
+        var meterpoint1Time1Quantity = 4700L;
+        var meterpoint1Time2Quantity = 2500L;
 
         var measurements1 = new List<Measurement>(){
-            new Measurement("286432579631400001", time0, time1, meterpoint1Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400001", time1, time2, meterpoint1Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400001", time2, time3, meterpoint1Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint1Time0Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint1Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400001",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint1Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
-        var meterpoint2Time0Quantity = 3500;
-        var meterpoint2Time1Quantity = 1200;
-        var meterpoint2Time2Quantity = 2400;
+        var meterpoint2Time0Quantity = 3500L;
+        var meterpoint2Time1Quantity = 1200L;
+        var meterpoint2Time2Quantity = 2400L;
 
         var measurements2 = new List<Measurement>(){
-            new Measurement("286432579631400002", time0, time1, meterpoint2Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400002", time1, time2, meterpoint2Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400002", time2, time3, meterpoint2Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint2Time0Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint2Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400002",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint2Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
-        var meterpoint3Time0Quantity = 2500;
-        var meterpoint3Time1Quantity = 700;
-        var meterpoint3Time2Quantity = 900;
+        var meterpoint3Time0Quantity = 2500L;
+        var meterpoint3Time1Quantity = 700L;
+        var meterpoint3Time2Quantity = 900L;
 
         var measurements3 = new List<Measurement>(){
-            new Measurement("286432579631400003", time0, time1, meterpoint3Time0Quantity, Quality.Measured),
-            new Measurement("286432579631400003", time1, time2, meterpoint3Time1Quantity, Quality.Measured),
-            new Measurement("286432579631400003", time2, time3, meterpoint3Time2Quantity, Quality.Measured),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time0,
+                DateTo: time1,
+                Quantity: meterpoint3Time0Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time1,
+                DateTo: time2,
+                Quantity: meterpoint3Time1Quantity,
+                Quality: Quality.Measured
+                ),
+            new Measurement(
+                GSRN: "286432579631400003",
+                DateFrom: time2,
+                DateTo: time3,
+                Quantity: meterpoint3Time2Quantity,
+                Quality: Quality.Measured
+                ),
             };
 
         var mixResponse = new List<MixRecord>(){

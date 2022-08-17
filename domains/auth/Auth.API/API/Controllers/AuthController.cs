@@ -25,7 +25,7 @@ public class AuthController
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new ()
+        AuthState state = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl

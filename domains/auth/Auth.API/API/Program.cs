@@ -4,7 +4,6 @@ using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Services.OidcProviders;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -33,6 +32,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
+
 
 var app = builder.Build();
 
