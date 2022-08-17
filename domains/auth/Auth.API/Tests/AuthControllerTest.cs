@@ -29,7 +29,7 @@ public class AuthControllerTest
         };
 
         var response = _authController.Invalidate(authState);
-        _mockSignaturGruppen.Verify(mock => mock.Logout(authState.Tin), Times.Once);
+        _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
 
         Assert.True(response);
     }
