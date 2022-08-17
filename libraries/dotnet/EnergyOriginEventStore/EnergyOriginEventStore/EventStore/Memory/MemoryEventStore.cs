@@ -8,7 +8,7 @@ public class MemoryEventStore : IEventStore
 {
     private readonly List<MessageEventArgs> _messages = new();
     private readonly ConcurrentQueue<Action> _actions = new();
-    private SemaphoreSlim _drainSemaphore = new SemaphoreSlim(1, 1);
+    private static SemaphoreSlim _drainSemaphore = new SemaphoreSlim(1, 1);
 
     public MemoryEventStore() { }
 

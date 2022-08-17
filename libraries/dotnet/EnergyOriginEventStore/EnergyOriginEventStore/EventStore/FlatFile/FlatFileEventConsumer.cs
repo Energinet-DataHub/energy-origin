@@ -90,7 +90,7 @@ internal class FlatFileEventConsumer : IEventConsumer
         var handlers = _handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
-            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {typeString}"));
         }
 
         (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
