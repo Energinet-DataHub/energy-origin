@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 using API.Services;
->>>>>>> main
 using Serilog;
 using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;

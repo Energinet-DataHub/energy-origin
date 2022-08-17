@@ -1,15 +1,9 @@
 using API.Services;
 using API.Models;
-using Tests.Resources;
 using Xunit;
 using Xunit.Categories;
-<<<<<<< HEAD
-using Moq;
-using System;
-=======
 using System;
 using System.Text.Json;
->>>>>>> main
 
 namespace Tests;
 
@@ -19,7 +13,7 @@ public sealed class TestCryptographics
     [Fact]
     public void Encrypt_state_success()
     {
-        Environment.SetEnvironmentVariable("SecretKey", "mysmallkey123456");
+        Environment.SetEnvironmentVariable("SECRETKEY", "mysmallkey123456");
 
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
@@ -47,6 +41,8 @@ public sealed class TestCryptographics
     [Fact]
     public void Decrypt_state_success()
     {
+        Environment.SetEnvironmentVariable("SECRETKEY", "mysmallkey123456");
+
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 

@@ -14,6 +14,7 @@ public class CryptographyService : ICryptographyService
         {
             aes.Key = Encoding.UTF8.GetBytes(key);
             ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            byte[] data;
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 memoryStream.Write(aes.IV);

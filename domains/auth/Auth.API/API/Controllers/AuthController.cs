@@ -1,9 +1,6 @@
 using API.Models;
 using API.Services;
-<<<<<<< HEAD
 using Newtonsoft.Json;
-=======
->>>>>>> main
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -68,6 +65,4 @@ public class AuthController
 
     }
 
-=======
->>>>>>> main
 }

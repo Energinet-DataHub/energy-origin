@@ -1,11 +1,7 @@
 using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
-using API.Services;
-<<<<<<< HEAD
-=======
 using System.Text.Json;
->>>>>>> main
 
 namespace API.Services;
 public class OidcService : IOidcService
