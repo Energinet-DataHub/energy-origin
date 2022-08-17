@@ -8,7 +8,7 @@ internal class MemoryEventConsumer : IEventConsumer
     private readonly MemoryEventStore _store;
     private readonly IUnpacker _unpacker;
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
-    private readonly Action<string, Exception> _exceptionHandler;
+    private readonly Action<string, Exception>? _exceptionHandler;
     private readonly MemoryPointer? _pointer;
     private readonly string _topicPrefix;
 
@@ -19,7 +19,7 @@ internal class MemoryEventConsumer : IEventConsumer
         _handlers = handlers;
         _topicPrefix = topicPrefix;
         _pointer = pointer;
-        _exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
+        _exceptionHandler = exceptionHandler;
 
         Task.Run(async () => await _store.Attach(this).ConfigureAwait(false));
     }
@@ -38,7 +38,7 @@ internal class MemoryEventConsumer : IEventConsumer
         var handlers = _handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
-            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+            _exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
         }
 
         (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
@@ -49,7 +49,7 @@ internal class MemoryEventConsumer : IEventConsumer
             }
             catch (Exception exception)
             {
-                _exceptionHandler.Invoke(typeString, exception);
+                _exceptionHandler?.Invoke(typeString, exception);
             }
         });
     }

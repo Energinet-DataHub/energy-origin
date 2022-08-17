@@ -143,22 +143,14 @@ public class MemoryEventStoreTests
     }
 
     [Fact]
-    public async Task EventStore_SetExceptionHandler_works()
+    public async Task EventStore_ExceptionHandlerIsCalled()
     {
         IEventStore eventStore = new MemoryEventStore();
+        var semaphore = new SemaphoreSlim(0);
+        var hadException = false;
 
         var message = new Said("Exavier Exception", "I have eruptive things to say!");
         await eventStore.Produce(message, "Unstable");
-
-        eventStore
-            .GetBuilder("Unstable")
-            .AddHandler<Said>(_ => throw new NotImplementedException("Oh Exavier did it again..."))
-            .Build();
-
-        await Task.Delay(TimeSpan.FromMilliseconds(50));
-
-        var semaphore = new SemaphoreSlim(0);
-        var hadException = false;
 
         eventStore
             .GetBuilder("Unstable")
@@ -176,7 +168,32 @@ public class MemoryEventStoreTests
     }
 
     [Fact]
-    public async Task EventStore_HandleNoHandler()
+    public async Task EventStore_ExceptionsFromHandlersAreSwallowed()
+    {
+        IEventStore eventStore = new MemoryEventStore();
+        var semaphore = new SemaphoreSlim(0);
+        var hasThrownException = false;
+
+        var message = new Said("Exavier Exception", "I have eruptive things to say!");
+        await eventStore.Produce(message, "Unstable");
+
+        eventStore
+            .GetBuilder("Unstable")
+            .AddHandler<Said>(_ =>
+            {
+                hasThrownException = true;
+                semaphore.Release();
+                throw new NotImplementedException("Oh Exavier did it again...");
+            })
+            .Build();
+
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+
+        Assert.True(hasThrownException);
+    }
+
+    [Fact]
+    public async Task EventStore_CallExceptionHandlerWhenNoHandlerIsFound()
     {
         IEventStore eventStore = new MemoryEventStore();
         var semaphore = new SemaphoreSlim(0);
@@ -189,6 +206,7 @@ public class MemoryEventStoreTests
             .GetBuilder("Void")
             .SetExceptionHandler((type, exception) =>
             {
+                Assert.IsType(typeof(NotImplementedException), exception);
                 hadException = true;
                 semaphore.Release();
             })
