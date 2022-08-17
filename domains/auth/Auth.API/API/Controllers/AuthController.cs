@@ -44,7 +44,7 @@ public class AuthController
             return false;
         }
 
-        oidcProviders.Logout(state.Tin);
+        oidcProviders.Logout(state.IdToken);
         return true;
     }
 }
