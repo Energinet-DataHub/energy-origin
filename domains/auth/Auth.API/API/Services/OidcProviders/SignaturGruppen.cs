@@ -43,7 +43,7 @@ public class SignaturGruppen : IOidcProviders
 
     public async Task Logout(string token)
     {
-        var url = Configuration.GetOidcUrl();
+        var url = authOptions.OidcUrl;
         httpClient.BaseAddress = new Uri(url);
 
         var response = await httpClient.PostAsJsonAsync("/api/v1/session/logout", new { id_token = token });
