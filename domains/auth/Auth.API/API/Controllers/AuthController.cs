@@ -8,7 +8,7 @@ namespace API.Controllers;
 
 
 [ApiController]
-public class AuthController
+public class AuthController : ControllerBase
 {
     readonly ILogger<AuthController> logger;
     readonly IOidcProviders oidcProviders;
@@ -37,14 +37,14 @@ public class AuthController
 
     [HttpPost]
     [Route("/invalidate")]
-    public Boolean Invalidate([Required] AuthState state)
+    public IActionResult Invalidate([Required] AuthState state)
     {
         if (state.IdToken == null)
         {
-            return false;
+            return BadRequest();
         }
 
         oidcProviders.Logout(state.IdToken);
-        return true;
+        return Ok();
     }
 }

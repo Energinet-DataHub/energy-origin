@@ -1,6 +1,7 @@
 ﻿using API.Controllers;
 using API.Models;
 using API.Services.OidcProviders;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -28,20 +29,20 @@ public class AuthControllerTest
             IdToken = "test"
         };
 
-        var response = _authController.Invalidate(authState);
+        var response =  _authController.Invalidate(authState);
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
-
-        Assert.True(response);
+        var result = response as OkResult;
+        Assert.NotNull(result);
     }
 
     [Fact]
-    public void return_false_when_no_token()
+    public void return_badrequest_when_no_token()
     {
         var authState = new AuthState();
 
         var response = _authController.Invalidate(authState);
 
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.Tin), Times.Never);
-        Assert.False(response);
+        Assert.NotNull(response as BadRequestResult);
     }
 }
