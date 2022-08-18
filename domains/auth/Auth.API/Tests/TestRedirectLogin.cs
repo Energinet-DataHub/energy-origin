@@ -1,13 +1,11 @@
-using API.Services;
 using API.Models;
-using Tests.Resources;
+using API.Services;
+using Microsoft.AspNetCore.Http.Extensions;
+using Moq;
 using Xunit;
 using Xunit.Categories;
-using Moq;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Tests;
-
 
 [UnitTest]
 public sealed class TestRedirectLogin
@@ -25,8 +23,6 @@ public sealed class TestRedirectLogin
     public void Oidc_Redirect_success()
     {
         //Arrange
-
-        AddEnvironmentVariables.EnvironmentVariables();
 
         var state = new AuthState()
         {
@@ -58,8 +54,6 @@ public sealed class TestRedirectLogin
     public void SignaturGruppen_Redirect_success()
     {
         //Arrange
-
-        AddEnvironmentVariables.EnvironmentVariables();
 
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
