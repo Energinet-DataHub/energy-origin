@@ -1,3 +1,4 @@
+using API.Configuration;
 using API.Services;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -30,10 +31,11 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.Configure<AuthOptions>(builder.Configuration);
+
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
-
 
 var app = builder.Build();
 
