@@ -18,4 +18,17 @@ public class AuthOptions
 
     // Cryptography
     public string SecretKey { get; set; }
+
+    // Cookies
+    public string CookieName { get; set; }
+    public string CookieValue { get; set; }
+    public string CookiePath { get; set; }
+    public string CookieDomain { get; set; }
+    public string CookieHttpOnly { get; set; }
+    public string CookieSameSite { get; set; }
+    public string CookieSecure { get; set; }
+    public string CookieDateTime { get; set; }
+    public int CookieCreateExpires { get; set; }
+    public int CookieLogoutExpires { get; set; }
+
 }

@@ -35,6 +35,7 @@ builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
 
 var app = builder.Build();
 
