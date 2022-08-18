@@ -52,7 +52,7 @@ public class SignaturGruppen : IOidcProviders
 
             logger.LogWarning(
                 "StatusCode: {StatusCode}, url: {Url}, content: {Content}",
-                response.StatusCode, url, content
+                response.StatusCode, response.RequestMessage?.RequestUri, content
                 );
         }
     }
