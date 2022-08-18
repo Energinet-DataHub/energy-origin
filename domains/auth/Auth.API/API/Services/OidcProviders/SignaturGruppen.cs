@@ -42,10 +42,7 @@ public class SignaturGruppen : IOidcProviders
         var url = Configuration.GetOidcUrl();
         httpClient.BaseAddress = new Uri(url);
 
-        var response = await httpClient.PostAsJsonAsync(
-            "/api/v1/session/logout",
-            new { id_token = token }
-            );
+        var response = await httpClient.PostAsJsonAsync("/api/v1/session/logout", new { id_token = token });
         if (!response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
