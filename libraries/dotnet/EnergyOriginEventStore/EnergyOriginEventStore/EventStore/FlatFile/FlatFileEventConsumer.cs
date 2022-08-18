@@ -12,12 +12,14 @@ internal class FlatFileEventConsumer : IEventConsumer
     private readonly long _fromFraction;
     private readonly FileSystemWatcher _rootWatcher;
     private readonly List<FileSystemWatcher> _watchers;
+    private Action<string, Exception> _exceptionHandler;
 
-    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
+    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
     {
         _fileStore = fileStore;
         _unpacker = unpacker;
         _handlers = handlers;
+        _exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
 
         if (pointer is not null)
         {
@@ -83,10 +85,25 @@ internal class FlatFileEventConsumer : IEventConsumer
         // Optimization Queue events and have worker execute them.
         //queue.Enqueue(reconstructed);
 
-        var t = reconstructed.GetType();
-        var b = _handlers.GetValueOrDefault(t) ?? throw new NotImplementedException($"No handler for event of type {t.ToString()}");
+        var type = reconstructed.GetType();
+        var typeString = type.ToString();
+        var handlers = _handlers.GetValueOrDefault(type);
+        if (handlers == null)
+        {
+            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {typeString}"));
+        }
 
-        b.AsParallel().ForAll(x => x.Invoke(new Event<EventModel>(reconstructed, EventToPointer(reconstructedEvent))));
+        (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
+        {
+            try
+            {
+                x.Invoke(new Event<EventModel>(reconstructed, EventToPointer(reconstructedEvent)));
+            }
+            catch (Exception exception)
+            {
+                _exceptionHandler.Invoke(typeString, exception);
+            }
+        });
     }
 
     private static string EventToPointer(InternalEvent e) => $"{e.Issued}-{e.IssuedFraction}";

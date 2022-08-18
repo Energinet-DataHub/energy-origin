@@ -8,5 +8,7 @@ public interface IEventConsumerBuilder
 
     IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel;
 
+    IEventConsumerBuilder SetExceptionHandler(Action<string, Exception> handler);
+
     IEventConsumerBuilder ContinueFrom(string pointer);
 }
