@@ -1,18 +1,21 @@
 using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
-using API.Services;
 using System.Text.Json;
+using System.Net;
+using API.Models.Oidc;
 
 namespace API.Services;
 public class OidcService : IOidcService
 {
     readonly ILogger _logger;
     readonly ICryptographyService _cryptography;
-    public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography)
+    readonly HttpClient _httpClient;
+    public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography, HttpClient httpClient)
     {
         _logger = logger;
         _cryptography = cryptography;
+        _httpClient = httpClient;
     }
 
     public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
@@ -31,5 +34,37 @@ public class OidcService : IOidcService
         };
 
         return query;
+    }
+
+    public async Task<OidcTokenResponse> FetchToken(AuthState state, string code)
+    {
+        string uri = $"{Configuration.GetAuthorityUrl}/connect/token";
+
+        OidcToken jsonData = new OidcToken()
+        {
+            GrantType = "authorization_code",
+            RedirectUrl = state.ReturnUrl,
+            Code = code,
+            ClientId = Configuration.GetOidcClientId(),
+            ClientSecret = Configuration.GetOidcClientSecret()
+        };
+
+        var res = _httpClient.PostAsJsonAsync<OidcToken>(uri, jsonData);
+
+        if (res.Result.StatusCode != HttpStatusCode.OK)
+        {
+            // This should be changes to have better logging
+            _logger.LogCritical(res.Result.StatusCode.ToString());
+            throw new HttpRequestException(res.Result.StatusCode.ToString());
+        }
+
+        var data = JsonSerializer.Deserialize<OidcTokenResponse>(res.Result.Content.ToString()!);
+
+
+
+
+        
+
+
     }
 }

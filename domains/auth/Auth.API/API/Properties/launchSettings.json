@@ -19,11 +19,11 @@
             "ASPNETCORE_ENVIRONMENT": "Development",
             "InternalTokenSecret": "INTERNALTOKENSECRET",
             "TokenExpiryTime": "1",
-            "Scope": "SCOPE, SCOPE1",
-            "AmrValues": "AMRVALUES",
-            "OidcUrl": "OIDCURL",
-            "OidcClientId": "OIDCCLIENTID",
-            "OidcClientSecret": "OIDCCLIENTSECRET",
+            "Scope": "openid, mitid, nemid, userinfo_token",
+            "AmrValues": "nemid.otp nemid.keyfile",
+            "AuthorityUrl": "https://pp.netseidbroker.dk/op",
+            "OidcClientId": "0a775a87-878c-4b83-abe3-ee29c720c3e7",
+            "OidcClientSecret": "rnlguc7CM/wmGSti4KCgCkWBQnfslYr0lMDZeIFsCJweROTROy2ajEigEaPQFl76Py6AVWnhYofl/0oiSAgdtg==",
             "BaseUrl": "BASEURL",
             "SecretKey": "mysmallkey123456"
         }

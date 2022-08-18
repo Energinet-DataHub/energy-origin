@@ -2,6 +2,7 @@ using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace API.Controllers;
 
@@ -31,6 +32,19 @@ public class AuthController
         };
 
         return oidcProviders.CreateAuthorizationUri(state);
+    }
+
+    [HttpGet]
+    [Route("/oidc/login/callback")]
+    public NextStep Callback(
+        [Required] string code,
+        [Required] string state
+        )
+    {
+        AuthState authState = JsonSerializer.Deserialize<AuthState>(state)!;
+
+
+
     }
 
 }

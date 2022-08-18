@@ -30,7 +30,7 @@ public class SignaturGruppen : IOidcProviders
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var authorizationUri = new NextStep() { NextUrl = Configuration.GetOidcUrl() + query.ToString() };
+        var authorizationUri = new NextStep() { NextUrl = Configuration.GetAuthorityUrl() + query.ToString() };
 
         return authorizationUri;
     }

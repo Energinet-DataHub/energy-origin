@@ -9,4 +9,5 @@ public record AuthState
     public string Tin { get; init; }
     public string IdentityProvider { get; init; }
     public string ExternalSubject { get; init; }
+    public bool MitIdReady { get; init; }
 }

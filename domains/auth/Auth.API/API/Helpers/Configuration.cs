@@ -9,7 +9,7 @@ public static class Configuration
     // OIDC Related
     private const string Scope = "SCOPE";
     private const string AmrValues = "AMRVALUES";
-    private const string OidcUrl = "OIDCURL";
+    private const string AuthorityUrl = "AUTHORITYURL";
     private const string OidcClientId = "OIDCCLIENTID";
     private const string OidcClientSecret = "OIDCCLIENTSECRET";
 
@@ -54,11 +54,11 @@ public static class Configuration
         return amrValues;
     }
 
-    public static string GetOidcUrl()
+    public static string GetAuthorityUrl()
     {
-        var oidcUrl = Environment.GetEnvironmentVariable(OidcUrl) ?? throw new ArgumentNullException();
+        var authorityUrl = Environment.GetEnvironmentVariable(AuthorityUrl) ?? throw new ArgumentNullException();
 
-        return oidcUrl;
+        return authorityUrl;
     }
 
     public static string GetOidcClientId()

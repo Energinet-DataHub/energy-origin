@@ -1,4 +1,5 @@
 using API.Services;
+using API.Orchestrator;
 using Serilog;
 using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
@@ -29,6 +30,7 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
