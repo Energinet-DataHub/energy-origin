@@ -49,22 +49,17 @@ public class OidcService : IOidcService
             ClientSecret = Configuration.GetOidcClientSecret()
         };
 
-        var res = _httpClient.PostAsJsonAsync<OidcToken>(uri, jsonData);
+        var res = await _httpClient.PostAsJsonAsync(uri, jsonData);
 
-        if (res.Result.StatusCode != HttpStatusCode.OK)
+        if (res.StatusCode != HttpStatusCode.OK)
         {
             // This should be changes to have better logging
-            _logger.LogCritical(res.Result.StatusCode.ToString());
-            throw new HttpRequestException(res.Result.StatusCode.ToString());
+            _logger.LogCritical(res.StatusCode.ToString());
+            throw new HttpRequestException(res.StatusCode.ToString());
         }
 
-        var data = JsonSerializer.Deserialize<OidcTokenResponse>(res.Result.Content.ToString()!);
+        var data = JsonSerializer.Deserialize<OidcTokenResponse>(res.Content.ToString()!);
 
-
-
-
-        
-
-
+        return data!;
     }
 }
