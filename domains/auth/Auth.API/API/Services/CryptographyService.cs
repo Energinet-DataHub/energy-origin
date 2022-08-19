@@ -1,6 +1,10 @@
 using API.Helpers;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services;
 public class CryptographyService : ICryptographyService
@@ -28,7 +32,6 @@ public class CryptographyService : ICryptographyService
             }
         }
     }
-
     public string Decrypt(string encryptedState)
     {
         byte[] buffer = Convert.FromBase64String(encryptedState);
@@ -52,4 +55,39 @@ public class CryptographyService : ICryptographyService
             }
         }
     }
+
+    public string EncryptJwt(string actor, string subject)
+    {
+
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSecretKey()));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var handler = new JwtSecurityTokenHandler();
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim("actor", actor),
+                new Claim("subject", subject),
+            }),
+            Expires = DateTime.UtcNow.AddDays(Configuration.GetTokenExpiryTimeInDays()),
+            Issuer = "Energy Origin",
+            SigningCredentials = credentials,
+        };
+
+        var token = handler.CreateToken(tokenDescriptor);
+        return handler.WriteToken(token);
+    }
+
+    public T DecodeJwt<T>(string jwtToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+
+        var decodedJwt = handler.ReadJwtToken(jwtToken).RawData;
+
+        return JsonSerializer.Deserialize<T>(decodedJwt)!;
+    }
+
+
 }

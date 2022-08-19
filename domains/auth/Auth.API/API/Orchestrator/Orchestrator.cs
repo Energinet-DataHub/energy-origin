@@ -20,7 +20,7 @@ public class Orchestrator : IOrchestrator
     {
         OidcTokenResponse oidcToken = await _oidcService.FetchToken(state, code);
 
-        IdTokenInfo rawIdToken = _oidcProviders.DecodeJwt(oidcToken.IdToken);
+        IdTokenInfo rawIdToken = _cryptographyService.DecodeJwt<IdTokenInfo>(oidcToken.IdToken);
 
         SignaturGruppenNemId userInfo;
 

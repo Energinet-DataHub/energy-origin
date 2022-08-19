@@ -63,13 +63,4 @@ public class SignaturGruppen : IOidcProviders
 
         return data!;
     }
-
-    public IdTokenInfo DecodeJwt(string jwtToken)
-    {
-        var handler = new JwtSecurityTokenHandler();
-
-        var decodedJwt = handler.ReadJwtToken(jwtToken).RawData;
-
-        return JsonSerializer.Deserialize<IdTokenInfo>(decodedJwt)!;
-    }
 }
