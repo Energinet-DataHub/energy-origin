@@ -19,9 +19,9 @@ public sealed class TestAuthController
 {
 
     [Theory]
-    [InlineData("foo", "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
-    [InlineData("", "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
-    public void Logout_delete_cookie_success(string testToken, string expectedExpiredCookie)
+    [InlineData("Bearer " + "foo", "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
+    [InlineData(null, "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
+    public void Logout_delete_cookie_success(string? testToken, string expectedExpiredCookie)
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
@@ -57,7 +57,7 @@ public sealed class TestAuthController
         };
 
         AuthController.HttpContext.Response.Cookies.Append(authOptionsMock.Object.Value.CookieName, $"{opaqueToken}", cookieOptions);
-        AuthController.HttpContext.Request.Headers.Add(authOptionsMock.Object.Value.CookieName, "Bearer " + testToken);
+        AuthController.HttpContext.Request.Headers.Add(authOptionsMock.Object.Value.CookieName, testToken);
 
         AuthController.Logout();
 
