@@ -40,17 +40,6 @@ public class AuthController : ControllerBase
         return oidcProviders.CreateAuthorizationUri(state);
     }
 
-    [HttpGet]
-    [Route("test/makeCookie")]
-    public ActionResult TestLogin()
-    {
-        var opaque_token = "test"; 
-        var cookieOptions = cookieService.CreateCookieOptions(_authOptions.CookieCreateExpires);
-        HttpContext.Response.Cookies.Append($"{_authOptions.CookieName}", $"{opaque_token}", cookieOptions);
-        return Ok();
-    }
-
-
     [HttpPost]
     [Route("auth/oidc/logout")]
     public ActionResult<LogoutResponse> Logout()
