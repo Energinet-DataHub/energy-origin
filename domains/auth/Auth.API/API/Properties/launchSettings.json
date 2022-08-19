@@ -26,13 +26,7 @@
             "OidcClientSecret": "OIDCCLIENTSECRET",
             "BaseUrl": "BASEURL",
             "SecretKey": "mysmallkey123456",
-            "CookieName": "Authorization",
-            "CookiePath": "/",
-            "CookieDomain": "localhost",
-            "CookieHttpOnly": "true",
-            "CookieSameSite": "Strict",
-            "CookieSecure": "true",
-            "CookieCreateExpires": "6"
+            "CookieName": "Authorization"
         }
     },
     "IIS Express": {
