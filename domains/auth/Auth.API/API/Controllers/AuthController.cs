@@ -1,8 +1,8 @@
 using API.Models;
-using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using API.Services.OidcProviders;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -37,9 +37,9 @@ public class AuthController : ControllerBase
     [Route("/invalidate")]
     public IActionResult Invalidate([Required] AuthState state)
     {
-        if (state.IdToken == null)
+        if (state.IdToken.IsNullOrEmpty())
         {
-            return BadRequest();
+            return BadRequest(nameof(state.IdToken) + " must not be null");
         }
 
         oidcProviders.Logout(state.IdToken);

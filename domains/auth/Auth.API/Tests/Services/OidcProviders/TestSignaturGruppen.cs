@@ -39,22 +39,21 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public async void can_logout_from_signaturgruppen()
+    public async void can_send_a_request_to_signaturgruppen()
     {
-        _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.OK);
-        await _signaturGruppen.Logout("test");
+        var token = "test";
 
-        _mockLogger.Verify(logger => logger.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
-            Times.Never);
+        _handlerMock.Expect("/api/v1/session/logout")
+            .WithPartialContent(token)
+            .Respond(HttpStatusCode.OK);
+
+        await _signaturGruppen.Logout(token);
+
+        _handlerMock.VerifyNoOutstandingExpectation();
     }
 
     [Fact]
-    public async void cannot_logout_from_signaturgruppen()
+    public async void cannot_logout_from_signaturgruppen_so_we_log_a_message()
     {
         _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.Forbidden);
         await _signaturGruppen.Logout("test");

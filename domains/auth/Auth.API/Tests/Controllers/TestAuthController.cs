@@ -41,6 +41,10 @@ public class TestAuthController
         var response = _authController.Invalidate(authState);
 
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Never);
-        Assert.IsType<BadRequestResult>(response);
+
+        Assert.IsType<BadRequestObjectResult>(response);
+        var result = response as BadRequestObjectResult;
+        Assert.Equal(nameof(authState.IdToken) +  " must not be null", result?.Value);
+
     }
 }
