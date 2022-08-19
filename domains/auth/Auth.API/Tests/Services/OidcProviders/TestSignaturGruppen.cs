@@ -14,7 +14,7 @@ using Xunit.Categories;
 namespace Tests.Services.OidcProviders;
 
 [UnitTest]
-public class SignaturGruppenIT
+public class TestSignaturGruppen
 {
     private readonly Mock<IOidcService> _mockOidcService = new();
     private readonly Mock<ILogger<SignaturGruppen>> _mockLogger = new();
@@ -23,9 +23,9 @@ public class SignaturGruppenIT
 
     private SignaturGruppen _signaturGruppen;
 
-    public SignaturGruppenIT()
+    public TestSignaturGruppen()
     {
-        _mockAuthOptions.Setup(a => a.Value).Returns(new AuthOptions()
+        _mockAuthOptions.Setup(a => a.Value).Returns(new AuthOptions
         {
             OidcUrl = "http://localhost:8080"
         });
@@ -36,13 +36,12 @@ public class SignaturGruppenIT
             _mockAuthOptions.Object,
             new HttpClient(_handlerMock)
         );
-
     }
 
     [Fact]
     public async void can_logout_from_signaturgruppen()
     {
-        _handlerMock.When("/api/v1/session/logout").Respond(new HttpResponseMessage(HttpStatusCode.OK));
+        _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.OK);
         await _signaturGruppen.Logout("test");
 
         _mockLogger.Verify(logger => logger.Log(
@@ -57,7 +56,7 @@ public class SignaturGruppenIT
     [Fact]
     public async void cannot_logout_from_signaturgruppen()
     {
-        _handlerMock.When("/api/v1/session/logout").Respond(_ => new HttpResponseMessage(HttpStatusCode.Forbidden));
+        _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.Forbidden);
         await _signaturGruppen.Logout("test");
 
         _mockLogger.Verify(logger => logger.Log(

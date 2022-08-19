@@ -21,7 +21,7 @@
             "TokenExpiryTime": "1",
             "Scope": "SCOPE, SCOPE1",
             "AmrValues": "AMRVALUES",
-            "OidcUrl": "OIDCURL",
+            "OidcUrl": "https://pp.netseidbroker.dk/op",
             "OidcClientId": "OIDCCLIENTID",
             "OidcClientSecret": "OIDCCLIENTSECRET",
             "BaseUrl": "BASEURL",

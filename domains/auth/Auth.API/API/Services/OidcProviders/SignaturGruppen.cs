@@ -13,7 +13,8 @@ public class SignaturGruppen : IOidcProviders
     readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, IOptions<AuthOptions> authOptions, HttpClient httpClient)
+    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, IOptions<AuthOptions> authOptions,
+        HttpClient httpClient)
     {
         this.logger = logger;
         this.oidcService = oidcService;
@@ -29,7 +30,7 @@ public class SignaturGruppen : IOidcProviders
         };
         var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
-            { "nemid", amrValues}
+            { "nemid", amrValues }
         };
 
         var query = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
@@ -51,10 +52,8 @@ public class SignaturGruppen : IOidcProviders
         {
             var content = await response.Content.ReadAsStringAsync();
 
-            logger.LogWarning(
-                "StatusCode: {StatusCode}, url: {Url}, content: {Content}",
-                response.StatusCode, response.RequestMessage?.RequestUri, content
-                );
+            logger.LogWarning("StatusCode: {StatusCode}, url: {Url}, content: {Content}",
+                response.StatusCode, response.RequestMessage?.RequestUri, content);
         }
     }
 }

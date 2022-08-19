@@ -7,18 +7,17 @@ using Moq;
 using Xunit;
 using Xunit.Categories;
 
-namespace Tests;
+namespace API.Controllers;
 
 [UnitTest]
-public class AuthControllerTest
+public class TestAuthController
 {
     private readonly Mock<IOidcProviders> _mockSignaturGruppen = new();
-    private readonly Mock<ILogger<AuthController>> _mockLogger = new();
     private AuthController _authController;
 
-    public AuthControllerTest()
+    public TestAuthController()
     {
-        _authController = new AuthController(_mockLogger.Object, _mockSignaturGruppen.Object);
+        _authController = new AuthController(_mockSignaturGruppen.Object);
     }
 
     [Fact]
@@ -31,8 +30,7 @@ public class AuthControllerTest
 
         var response =  _authController.Invalidate(authState);
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
-        var result = response as OkResult;
-        Assert.NotNull(result);
+        Assert.IsType<OkResult>(response);
     }
 
     [Fact]
@@ -43,6 +41,6 @@ public class AuthControllerTest
         var response = _authController.Invalidate(authState);
 
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Never);
-        Assert.NotNull(response as BadRequestResult);
+        Assert.IsType<BadRequestResult>(response);
     }
 }

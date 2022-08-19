@@ -10,12 +10,10 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly ILogger<AuthController> logger;
     readonly IOidcProviders oidcProviders;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders)
+    public AuthController(IOidcProviders oidcProviders)
     {
-        this.logger = logger;
         this.oidcProviders = oidcProviders;
     }
 
