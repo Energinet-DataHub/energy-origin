@@ -42,8 +42,9 @@ public class AuthController : ControllerBase
 
     [HttpGet]
     [Route("test/makeCookie")]
-    public ActionResult TestLogin(string opaque_token)
+    public ActionResult TestLogin()
     {
+        var opaque_token = "test"; 
         var cookieOptions = cookieService.CreateCookieOptions(_authOptions.CookieCreateExpires);
         HttpContext.Response.Cookies.Append($"{_authOptions.CookieName}", $"{opaque_token}", cookieOptions);
         return Ok();
@@ -54,16 +55,12 @@ public class AuthController : ControllerBase
     [Route("auth/oidc/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-        //1. fecth token -> valid opaque_token
-        //2. if token -> delete token from database, logout from oidc
-        //3. Set cookie with new values
-        //4. give response -> success
 
         var token = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (token != null)
         {
-            //delete opaque_token from DB
+            //delete token from database
             //oidcProviders.Logout(token);
             Response.Cookies.Delete(_authOptions.CookieName);
         }
