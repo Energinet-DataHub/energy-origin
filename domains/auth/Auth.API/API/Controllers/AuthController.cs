@@ -43,12 +43,13 @@ public class AuthController : ControllerBase
     [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-        var token = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
-        if (token != null)
+        if (opaqueToken != null)
         {
-            _tokenStorage.Delete(token);
-            //_oidcProviders.Logout(token);
+            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            //TODO _oidcProviders.Logout(idToken);
+            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
         Response.Cookies.Delete(_authOptions.CookieName);

@@ -2,7 +2,12 @@ namespace API.Services
 {
     public class TokenStorage : ITokenStorage
     {
-        public void Delete(string token)
+        public void DeleteByOpaqueToken(string token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetIdTokenByOpaqueToken(string token)
         {
             throw new NotImplementedException();
         }

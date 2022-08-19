@@ -2,6 +2,7 @@ namespace API.Services
 {
     public interface ITokenStorage
     {
-        void Delete(string token);
+        void DeleteByOpaqueToken(string token);
+        string GetIdTokenByOpaqueToken(string token);
     }
 }

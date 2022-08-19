@@ -19,9 +19,9 @@ public sealed class TestAuthController
 {
 
     [Theory]
-    [InlineData("Bearer " + "foo", "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
-    [InlineData(null, "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/")]
-    public void Logout_delete_cookie_success(string? testToken, string expectedExpiredCookie)
+    [InlineData("Bearer foo")]
+    [InlineData(null)]
+    public void Logout_delete_cookie_success(string? testToken)
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
@@ -35,8 +35,9 @@ public sealed class TestAuthController
         });
 
         var opaqueToken = "TestOpaqueToken";
+        var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 
-        CookieOptions cookieOptions = new CookieOptions
+        var notExpiredCookie = new CookieOptions
         {
             Path = "/",
             Domain = "energioprindelse.dk",
@@ -48,7 +49,7 @@ public sealed class TestAuthController
 
         //Act
 
-        var AuthController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object)
+        var authController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -56,12 +57,12 @@ public sealed class TestAuthController
             }
         };
 
-        AuthController.HttpContext.Response.Cookies.Append(authOptionsMock.Object.Value.CookieName, $"{opaqueToken}", cookieOptions);
-        AuthController.HttpContext.Request.Headers.Add(authOptionsMock.Object.Value.CookieName, testToken);
+        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
+        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
 
-        AuthController.Logout();
+        authController.Logout();
 
         //Assert
-        Assert.Equal(expectedExpiredCookie, AuthController.HttpContext.Response.Headers.Values.Single());
+        Assert.Equal(expectedExpiredCookie, authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
     }
 }
