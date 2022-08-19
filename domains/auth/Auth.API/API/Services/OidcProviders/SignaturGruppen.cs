@@ -21,19 +21,22 @@ public class SignaturGruppen : IOidcProviders
 
     public NextStep CreateAuthorizationUri(AuthState state)
     {
-        var amrValues = new Dictionary<string, string>()
-        {
-            { "amr_values", Configuration.GetAmrValues() }
-        };
-        var nemId = new Dictionary<string, Dictionary<string, string>>()
-        {
-            { "nemid", amrValues}
-        };
-
         var query = _oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
 
-        query.Add("idp_params", JsonSerializer.Serialize(nemId));
-        query.Add("private_to_business", "true");
+        if (state.CustomerType == "company")
+        {
+            var amrValues = new Dictionary<string, string>()
+            {
+                { "amr_values", Configuration.GetAmrValues() }
+            };
+            var nemId = new Dictionary<string, Dictionary<string, string>>()
+            {
+                { "nemid", amrValues}
+            };
+
+            query.Add("idp_params", JsonSerializer.Serialize(nemId));
+            query.Add("private_to_business", "true");
+        }
 
         var authorizationUri = new NextStep() { NextUrl = Configuration.GetAuthorityUrl() + query.ToString() };
 

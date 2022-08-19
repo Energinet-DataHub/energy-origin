@@ -3,7 +3,6 @@ using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 using System.Text.Json;
 using System.Net;
-using API.Models.Oidc;
 
 namespace API.Services;
 public class OidcService : IOidcService

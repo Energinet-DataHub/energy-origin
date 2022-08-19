@@ -4,6 +4,9 @@ namespace API.Models;
 
 public record SignaturGruppenMitId
 {
+    [JsonPropertyName("identity_type")]
+    public string IdentityType { get; init; }
+
     [JsonPropertyName("idp_identity_id")]
     public string IdpIdentityId { get; init; }
 

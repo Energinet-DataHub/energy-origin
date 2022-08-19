@@ -1,5 +1,5 @@
 using API.Models;
-using API.Models.Oidc;
+using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace API.Services;

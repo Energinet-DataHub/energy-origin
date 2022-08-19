@@ -3,6 +3,8 @@ using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+
 
 namespace API.Controllers;
 
@@ -22,13 +24,15 @@ public class AuthController
     [HttpGet]
     [Route("/oidc/login")]
     public NextStep Login(
-        [Required] string feUrl,
-        [Required] string returnUrl)
+        [Required] string fe_url,
+        [Required] string return_url,
+        [Required] string type)
     {
         AuthState state = new AuthState()
         {
-            FeUrl = feUrl,
-            ReturnUrl = returnUrl
+            FeUrl = fe_url,
+            ReturnUrl = return_url,
+            CustomerType = type
         };
 
         return oidcProviders.CreateAuthorizationUri(state);
@@ -43,7 +47,7 @@ public class AuthController
     {
         AuthState authState = JsonSerializer.Deserialize<AuthState>(state)!;
 
-
+        return new NextStep();
 
     }
 
