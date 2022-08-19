@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
-    [Route("auth/oidc/logout")]
+    [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
 
