@@ -48,7 +48,7 @@ public class AuthController : ControllerBase
         if (token != null)
         {
             _tokenStorage.Delete(token);
-            //oidcProviders.Logout(token);
+            //_oidcProviders.Logout(token);
         }
 
         Response.Cookies.Delete(_authOptions.CookieName);
