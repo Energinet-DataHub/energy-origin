@@ -1,18 +1,8 @@
-namespace API.Models
-{
-    public class AggregatedMeasurement
-    {
-        public long DateFrom { get; }
+namespace API.Models;
 
-        public long DateTo { get; }
+public record AggregatedMeasurement(
+    long DateFrom,
+    long DateTo,
+    long Value
+    );
 
-        public int Value { get; }
-
-        public AggregatedMeasurement(long dateFrom, long dateTo, int value)
-        {
-            DateFrom = dateFrom;
-            DateTo = dateTo;
-            Value = value;
-        }
-    }
-}

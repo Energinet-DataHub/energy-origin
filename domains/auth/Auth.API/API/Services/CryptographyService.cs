@@ -1,5 +1,5 @@
-using API.Helpers;
-using System.IdentityModel.Tokens.Jwt;
+using API.Configuration;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -7,15 +7,21 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services;
+
 public class CryptographyService : ICryptographyService
 {
-    string key = Configuration.GetSecretKey();
+    private readonly AuthOptions _authOptions;
+
+    public CryptographyService(IOptions<AuthOptions> authOptions)
+    {
+        _authOptions = authOptions.Value;
+    }
 
     public string Encrypt(string state)
     {
         using (Aes aes = Aes.Create())
         {
-            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
             ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -41,7 +47,7 @@ public class CryptographyService : ICryptographyService
             memoryStream.Read(iv, 0, 16);
             using (Aes aes = Aes.Create())
             {
-                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
                 aes.IV = iv;
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 

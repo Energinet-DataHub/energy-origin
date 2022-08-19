@@ -1,20 +1,25 @@
-using API.Helpers;
+using API.Configuration;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Net;
 
 namespace API.Services;
+
 public class OidcService : IOidcService
 {
     readonly ILogger _logger;
     readonly ICryptographyService _cryptography;
+    private readonly AuthOptions _authOptions;
+
     readonly HttpClient _httpClient;
-    public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography, HttpClient httpClient)
+    public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography, IOptions<AuthOptions> authOptions, HttpClient httpClient)
     {
         _logger = logger;
         _cryptography = cryptography;
         _httpClient = httpClient;
+        _authOptions = authOptions.Value;
     }
 
     public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
@@ -25,7 +30,7 @@ public class OidcService : IOidcService
         var query = new QueryBuilder
         {
             { "response_type", responseType },
-            { "client_id", Configuration.GetOidcClientId() },
+            { "client_id", _authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
             { "scope", "openid" },
             { "state", _cryptography.Encrypt(serilizedJson) },

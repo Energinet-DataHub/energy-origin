@@ -1,3 +1,4 @@
+using API.Configuration;
 using API.Services;
 using API.Orchestrator;
 using Serilog;
@@ -29,6 +30,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
+
+builder.Services.Configure<AuthOptions>(builder.Configuration);
 
 builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
