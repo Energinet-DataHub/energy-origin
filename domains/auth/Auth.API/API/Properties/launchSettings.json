@@ -25,7 +25,8 @@
             "OidcClientId": "OIDCCLIENTID",
             "OidcClientSecret": "OIDCCLIENTSECRET",
             "BaseUrl": "BASEURL",
-            "SecretKey": "mysmallkey123456"
+            "SecretKey": "mysmallkey123456",
+            "CookieName": "Authorization"
         }
     },
     "IIS Express": {
