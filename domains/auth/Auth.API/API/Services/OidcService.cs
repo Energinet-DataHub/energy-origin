@@ -27,7 +27,7 @@ public class OidcService : IOidcService
             { "response_type", responseType },
             { "client_id", Configuration.GetOidcClientId() },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", Configuration.GetScopes() },
+            { "scope", "openid" },
             { "state", _cryptography.Encrypt(serilizedJson) },
             { "language", lang }
         };

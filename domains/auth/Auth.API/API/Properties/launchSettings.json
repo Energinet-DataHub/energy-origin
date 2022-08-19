@@ -19,7 +19,7 @@
             "ASPNETCORE_ENVIRONMENT": "Development",
             "InternalTokenSecret": "INTERNALTOKENSECRET",
             "TokenExpiryTime": "1",
-            "Scope": "openid, mitid, nemid, userinfo_token",
+            "Scope": "nemid",
             "AmrValues": "nemid.otp nemid.keyfile",
             "AuthorityUrl": "https://pp.netseidbroker.dk/op",
             "OidcClientId": "0a775a87-878c-4b83-abe3-ee29c720c3e7",

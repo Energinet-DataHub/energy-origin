@@ -36,6 +36,11 @@ public class SignaturGruppen : IOidcProviders
 
             query.Add("idp_params", JsonSerializer.Serialize(nemId));
             query.Add("private_to_business", "true");
+            query.Add("scope", Configuration.GetScopes());
+        }
+        else if (state.CustomerType == "private")
+        {
+            query.Add("scope", "mitid");
         }
 
         var authorizationUri = new NextStep() { NextUrl = Configuration.GetAuthorityUrl() + query.ToString() };
