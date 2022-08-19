@@ -22,7 +22,7 @@ public sealed class TestLogout
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
-        var odieProvider = new Mock<IOidcProviders>();
+        var oidcProvider = new Mock<IOidcProviders>();
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
@@ -32,7 +32,7 @@ public sealed class TestLogout
             CookieHttpOnly = "true",
             CookieSameSite = "Strict",
             CookieSecure = "true",
-            CookieCreateExpires = 6, 
+            CookieCreateExpires = 6,
         });
 
         var cookieService = new CookieService(authOptionsMock.Object);
@@ -42,9 +42,15 @@ public sealed class TestLogout
 
         //Act
         var cookieOptions = cookieService.CreateCookieOptions(authOptionsMock.Object.Value.CookieCreateExpires);
-        
-        var AuthController = new AuthController(logger.Object, odieProvider.Object, cookieService, authOptionsMock.Object) { ControllerContext = new ControllerContext() { HttpContext = new DefaultHttpContext() }};
-        
+
+        var AuthController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object)
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+
         AuthController.HttpContext.Response.Cookies.Append($"{authOptionsMock.Object.Value.CookieName}", $"{opaqueToken}", cookieOptions);
         AuthController.HttpContext.Request.Headers.Add(authOptionsMock.Object.Value.CookieName, "Bearer " + testToken);
 

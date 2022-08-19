@@ -11,18 +11,15 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly ILogger<AuthController> logger;
-    readonly IOidcProviders oidcProviders;
-    readonly ICookieService cookieService;
+    readonly ILogger<AuthController> _logger;
+    readonly IOidcProviders _oidcProviders;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, ICookieService cookieService, IOptions<AuthOptions> authOptions)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions)
     {
-        this.logger = logger;
-        this.oidcProviders = oidcProviders;
-        this.cookieService = cookieService;
+        _logger = logger;
+        _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
-
     }
 
     [HttpGet]
@@ -37,14 +34,13 @@ public class AuthController : ControllerBase
             ReturnUrl = returnUrl
         };
 
-        return oidcProviders.CreateAuthorizationUri(state);
+        return _oidcProviders.CreateAuthorizationUri(state);
     }
 
     [HttpPost]
     [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-
         var token = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (token != null)
