@@ -24,6 +24,5 @@ public record SignaturGruppenNemId
     public string Cpr { get; init; }
 
     [JsonPropertyName("nemid.cvr")]
-    public string Cvr { get; init; }
-
+    public string Tin { get; init; }
 }

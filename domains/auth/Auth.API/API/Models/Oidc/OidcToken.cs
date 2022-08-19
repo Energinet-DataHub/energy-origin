@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.Models.Oidc;
+namespace API.Models;
 
 public record OidcToken
 {

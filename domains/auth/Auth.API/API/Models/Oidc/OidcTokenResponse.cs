@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.Models.Oidc;
+namespace API.Models;
 
 public record OidcTokenResponse
 {
@@ -18,5 +18,4 @@ public record OidcTokenResponse
 
     [JsonPropertyName("scope")]
     public string Scope { get; init; }
-
 }
