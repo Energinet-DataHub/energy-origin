@@ -15,11 +15,11 @@ namespace Tests.Controller;
 
 
 [UnitTest]
-public sealed class TestLogout
+public sealed class TestAuthController
 {
 
     [Fact]
-    public void Logout_success()
+    public void Logout_delete_cookie_success()
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
