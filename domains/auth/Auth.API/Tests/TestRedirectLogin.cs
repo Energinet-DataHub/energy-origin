@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using RichardSzalay.MockHttp;
 using Xunit;
 using Xunit.Categories;
 
@@ -67,7 +68,7 @@ public sealed class TestRedirectLogin
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { AmrValues = "AMRVALUES" });
 
         //Act
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new MockHttpMessageHandler().ToHttpClient());
 
         var res = signaturGruppen.CreateAuthorizationUri(state);
 
