@@ -3,3 +3,4 @@ api:
   image:
     name: ghcr.io/energinet-datahub/eo-auth
     tag: 0.0.4
+ 

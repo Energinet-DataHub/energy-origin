@@ -4,5 +4,3 @@ public record LogoutResponse
 {
     public bool success { get; init; }
 }
-
-

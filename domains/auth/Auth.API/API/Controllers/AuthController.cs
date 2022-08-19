@@ -13,13 +13,15 @@ public class AuthController : ControllerBase
 {
     readonly ILogger<AuthController> _logger;
     readonly IOidcProviders _oidcProviders;
+    readonly ITokenStorage _tokenStorage;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
+        _tokenStorage = tokenStorage;
     }
 
     [HttpGet]
@@ -45,10 +47,11 @@ public class AuthController : ControllerBase
 
         if (token != null)
         {
-            //delete token from database
+            _tokenStorage.Delete(token);
             //oidcProviders.Logout(token);
-            Response.Cookies.Delete(_authOptions.CookieName);
         }
+
+        Response.Cookies.Delete(_authOptions.CookieName);
 
         return Ok(new LogoutResponse { success = true });
     }
