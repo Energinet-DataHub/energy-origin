@@ -1,6 +1,9 @@
 using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using API.Configuration;
+using Microsoft.Extensions.Options;
 using API.Services.OidcProviders;
 using Microsoft.IdentityModel.Tokens;
 
@@ -10,11 +13,17 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly IOidcProviders oidcProviders;
+    readonly ILogger<AuthController> _logger;
+    readonly IOidcProviders _oidcProviders;
+    readonly ITokenStorage _tokenStorage;
+    private readonly AuthOptions _authOptions;
 
-    public AuthController(IOidcProviders oidcProviders)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
     {
-        this.oidcProviders = oidcProviders;
+        _logger = logger;
+        _oidcProviders = oidcProviders;
+        _authOptions = authOptions.Value;
+        _tokenStorage = tokenStorage;
     }
 
     [HttpGet]
@@ -29,9 +38,8 @@ public class AuthController : ControllerBase
             ReturnUrl = returnUrl
         };
 
-        return oidcProviders.CreateAuthorizationUri(state);
+        return _oidcProviders.CreateAuthorizationUri(state);
     }
-
 
     [HttpPost]
     [Route("/invalidate")]
@@ -42,7 +50,25 @@ public class AuthController : ControllerBase
             return BadRequest(nameof(state.IdToken) + " must not be null");
         }
 
-        oidcProviders.Logout(state.IdToken);
+        _oidcProviders.Logout(state.IdToken);
         return Ok();
+    }
+
+    [HttpPost]
+    [Route("/auth/logout")]
+    public ActionResult<LogoutResponse> Logout()
+    {
+        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+
+        if (opaqueToken != null)
+        {
+            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            //TODO _oidcProviders.Logout(idToken);
+            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
+        }
+
+        Response.Cookies.Delete(_authOptions.CookieName);
+
+        return Ok(new LogoutResponse { success = true });
     }
 }

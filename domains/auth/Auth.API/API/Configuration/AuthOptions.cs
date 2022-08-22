@@ -18,4 +18,7 @@ public class AuthOptions
 
     // Cryptography
     public string SecretKey { get; set; }
+
+    // Cookies
+    public string CookieName { get; set; }
 }
