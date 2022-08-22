@@ -21,7 +21,7 @@ public class TestAuthController
     }
 
     [Fact]
-    public void can_invalidate_token()
+    public void CanInvalidateToken()
     {
         var authState = new AuthState()
         {
@@ -34,7 +34,7 @@ public class TestAuthController
     }
 
     [Fact]
-    public void return_badrequest_when_no_token()
+    public void ReturnBadRequestWhenNoToken()
     {
         var authState = new AuthState();
 

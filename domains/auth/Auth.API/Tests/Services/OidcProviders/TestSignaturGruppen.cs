@@ -39,7 +39,7 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public async void can_send_a_request_to_signaturgruppen()
+    public async void CanSendAReuestToSignaturGruppen()
     {
         var token = "test";
 
@@ -53,7 +53,7 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public async void cannot_logout_from_signaturgruppen_so_we_log_a_message()
+    public async void CannotLogoutFromSignaturGruppenSoWeLogAMessage()
     {
         _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.Forbidden);
         await _signaturGruppen.Logout("test");
