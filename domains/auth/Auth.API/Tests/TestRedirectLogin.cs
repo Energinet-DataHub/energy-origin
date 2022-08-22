@@ -38,10 +38,10 @@ public sealed class TestRedirectLogin
         //Act
         var oidcService = new OidcService(new Mock<ILogger<OidcService>>().Object, cryptographyServiceMock.Object, authOptionsMock.Object, new HttpClient());
         var res = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
-        
+
         //Assert
         Assert.Equal(expectedNextUrl, res.ToQueryString().Value);
-        
+
     }
 
     [Fact]

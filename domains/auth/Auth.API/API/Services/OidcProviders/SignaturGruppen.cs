@@ -51,22 +51,22 @@ public class SignaturGruppen : IOidcProviders
 
     // T makes sure we can pass a dynamic object type I.E NemID and MitID
     public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
-{
-    string uri = $"{_authOptions.AuthorityUrl}/connect/userinfo";
-
-    _httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
-
-    var res = await _httpClient.GetAsync(uri);
-
-    if (res.StatusCode != HttpStatusCode.OK)
     {
-        // This should be changes to have better logging
-        _logger.LogCritical(res.StatusCode.ToString());
-        throw new HttpRequestException(res.StatusCode.ToString());
+        string uri = $"{_authOptions.AuthorityUrl}/connect/userinfo";
+
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
+
+        var res = await _httpClient.GetAsync(uri);
+
+        if (res.StatusCode != HttpStatusCode.OK)
+        {
+            // This should be changes to have better logging
+            _logger.LogCritical(res.StatusCode.ToString());
+            throw new HttpRequestException(res.StatusCode.ToString());
+        }
+
+        var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
+
+        return data!;
     }
-
-    var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
-
-    return data!;
-}
 }
