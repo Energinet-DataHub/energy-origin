@@ -33,7 +33,6 @@
             "CookieSameSite": "Strict",
             "CookieSecure": "true",
             "CookieCreateExpires": "6"
-
         }
     },
     "IIS Express": {

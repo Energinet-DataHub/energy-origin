@@ -18,12 +18,15 @@ namespace Tests.Controller;
 public sealed class TestAuthController
 {
 
-    [Fact]
-    public void Logout_delete_cookie_success()
+    [Theory]
+    [InlineData("Bearer foo")]
+    [InlineData(null)]
+    public void Logout_delete_cookie_success(string? testToken)
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
         var oidcProvider = new Mock<IOidcProviders>();
+        var tokenStorage = new Mock<ITokenStorage>();
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
@@ -31,11 +34,10 @@ public sealed class TestAuthController
             CookieName = "Authorization",
         });
 
-        var testToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZWQiOiIyMDIyLTA1LTE4VDEzOjEzOjQxLjY2MTI2NSswMDowMCIsImV4cGlyZXMiOiIyMDIyLTA1LTE5VDEzOjEzOjQxLjY2MDk4NyswMDowMCIsImFjdG9yIjoiYWN0b3IiLCJzdWJqZWN0Ijoic3ViamVjdCIsInNjb3BlIjpbInNjb3BlMSIsInNjb3BlMiJdfQ.W1C1xKiEYPDeuo1OfRFpm6L3j7YGQJTGmegIgLu2UIQ";
         var opaqueToken = "TestOpaqueToken";
-        var expectedCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+        var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 
-        CookieOptions cookieOptions = new CookieOptions
+        var notExpiredCookie = new CookieOptions
         {
             Path = "/",
             Domain = "energioprindelse.dk",
@@ -47,7 +49,7 @@ public sealed class TestAuthController
 
         //Act
 
-        var AuthController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object)
+        var authController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -55,12 +57,13 @@ public sealed class TestAuthController
             }
         };
 
-        AuthController.HttpContext.Response.Cookies.Append("Authorization", $"{opaqueToken}", cookieOptions);
-        AuthController.HttpContext.Request.Headers.Add("Authorization", "Bearer " + testToken);
+        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
+        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
 
-        AuthController.Logout();
+        authController.Logout();
 
         //Assert
-        Assert.Equal(expectedCookie, AuthController.HttpContext.Response.Headers.Values.Single());
+        Assert.Equal(expectedExpiredCookie, authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
+
     }
 }

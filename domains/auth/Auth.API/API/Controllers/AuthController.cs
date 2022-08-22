@@ -13,13 +13,17 @@ public class AuthController : ControllerBase
 {
     readonly ILogger<AuthController> _logger;
     readonly IOidcProviders _oidcProviders;
+    readonly ITokenStorage _tokenStorage;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
+
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
+        _tokenStorage = tokenStorage;
+
     }
 
     [HttpGet]
@@ -41,14 +45,16 @@ public class AuthController : ControllerBase
     [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-        var token = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
-        if (token != null)
+        if (opaqueToken != null)
         {
-            //delete token from database
-            //oidcProviders.Logout(token);
-            Response.Cookies.Delete(_authOptions.CookieName);
+            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            //TODO _oidcProviders.Logout(idToken);
+            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
+
+        Response.Cookies.Delete(_authOptions.CookieName);
 
         return Ok(new LogoutResponse { success = true });
     }

@@ -27,4 +27,5 @@ public class AuthOptions
     public string CookieHttpOnly { get; set; }
     public string CookieSameSite { get; set; }
     public string CookieSecure { get; set; }
+
 }
