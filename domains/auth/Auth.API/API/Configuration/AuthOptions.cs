@@ -4,12 +4,13 @@ public class AuthOptions
 {
     // Token related
     public string InternalTokenSecret { get; set; }
-    public string TokenExpiryTime { get; set; }
+
+    public string TokenExpiryTimeInDays { get; set; }
 
     // OIDC Related
     public string Scope { get; set; }
     public string AmrValues { get; set; }
-    public string OidcUrl { get; set; }
+    public string AuthorityUrl { get; set; }
     public string OidcClientId { get; set; }
     public string OidcClientSecret { get; set; }
 

@@ -42,15 +42,15 @@ public class OidcService : IOidcService
 
     public async Task<OidcTokenResponse> FetchToken(AuthState state, string code)
     {
-        string uri = $"{Configuration.GetAuthorityUrl}/connect/token";
+        string uri = $"{_authOptions.AuthorityUrl}/connect/token";
 
         OidcToken jsonData = new OidcToken()
         {
             GrantType = "authorization_code",
             RedirectUrl = state.ReturnUrl,
             Code = code,
-            ClientId = Configuration.GetOidcClientId(),
-            ClientSecret = Configuration.GetOidcClientSecret()
+            ClientId = _authOptions.OidcClientId,
+            ClientSecret = _authOptions.OidcClientSecret
         };
 
         var res = await _httpClient.PostAsJsonAsync(uri, jsonData);

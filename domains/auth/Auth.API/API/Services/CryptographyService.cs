@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Services;
 
@@ -65,7 +66,7 @@ public class CryptographyService : ICryptographyService
     public string EncryptJwt(string actor, string subject)
     {
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSecretKey()));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authOptions.SecretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var handler = new JwtSecurityTokenHandler();
@@ -77,7 +78,7 @@ public class CryptographyService : ICryptographyService
                 new Claim("actor", actor),
                 new Claim("subject", subject),
             }),
-            Expires = DateTime.UtcNow.AddDays(Configuration.GetTokenExpiryTimeInDays()),
+            Expires = DateTime.UtcNow.AddDays(int.Parse(_authOptions.TokenExpiryTimeInDays)),
             Issuer = "Energy Origin",
             SigningCredentials = credentials,
         };

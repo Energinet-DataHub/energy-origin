@@ -3,14 +3,13 @@ using API.Models;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Net;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Services;
 
 public class SignaturGruppen : IOidcProviders
 {
     readonly IOidcService _oidcService;
-    private readonly AuthOptions _authOptions;
+    readonly AuthOptions _authOptions;
     readonly ILogger<SignaturGruppen> _logger;
     readonly HttpClient _httpClient;
 
@@ -18,30 +17,34 @@ public class SignaturGruppen : IOidcProviders
     {
         _logger = logger;
         _oidcService = oidcService;
+        _authOptions = authOptions.Value;
         _httpClient = httpClient;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
     {
-        var amrValues = new Dictionary<string, string>()
+        var query = _oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
+
+        if (state.CustomerType == "company")
         {
-            { "amr_values", authOptions.AmrValues }
+            var amrValues = new Dictionary<string, string>()
+        {
+            { "amr_values", _authOptions.AmrValues }
         };
-        var nemId = new Dictionary<string, Dictionary<string, string>>()
+            var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
-            { "nemid", amrValues}
+            { "nemid", amrValues }
         };
 
-        query.Add("idp_params", JsonSerializer.Serialize(nemId));
-        query.Add("private_to_business", "true");
-        query.Add("scope", Configuration.GetScopes());
-    }
+            query.Add("idp_params", JsonSerializer.Serialize(nemId));
+            query.Add("private_to_business", "true");
+        }
         else if (state.CustomerType == "private")
         {
             query.Add("scope", "mitid");
         }
 
-var authorizationUri = new NextStep() { NextUrl = authOptions.AuthorityUrl + query.ToString() };
+        var authorizationUri = new NextStep() { NextUrl = _authOptions.AuthorityUrl + query.ToString() };
 
         return authorizationUri;
     }
@@ -49,7 +52,7 @@ var authorizationUri = new NextStep() { NextUrl = authOptions.AuthorityUrl + que
     // T makes sure we can pass a dynamic object type I.E NemID and MitID
     public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
 {
-    string uri = $"{Configuration.GetAuthorityUrl}/connect/userinfo";
+    string uri = $"{_authOptions.AuthorityUrl}/connect/userinfo";
 
     _httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
 

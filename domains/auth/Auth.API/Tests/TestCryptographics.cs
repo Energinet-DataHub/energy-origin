@@ -45,8 +45,6 @@ public sealed class TestCryptographics
     [Fact]
     public void Decrypt_state_success()
     {
-        AddEnvironmentVariables.EnvironmentVariables();
-
         var feUrl = "http://test.energioprindelse.dk";
         var returnUrl = "https://demo.energioprindelse.dk/dashboard";
 

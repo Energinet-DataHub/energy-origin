@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net.Http;
 using API.Configuration;
 using API.Models;
 using API.Services;
@@ -18,7 +19,7 @@ public sealed class TestRedirectLogin
     public void Oidc_Redirect_success()
     {
         //Arrange
-        const string expectedNextUrl = "?response_type=code&client_id=OIDCCLIENTID&redirect_uri=http%3A%2F%2Ftest.energioprindelse.dk%2Fapi%2Fauth%2Foidc%2Flogin%2Fcallback&scope=SCOPE,%20SCOPE1&state=foo&language=en";
+        const string expectedNextUrl = "?response_type=code&client_id=OIDCCLIENTID&redirect_uri=http%3A%2F%2Ftest.energioprindelse.dk%2Fapi%2Fauth%2Foidc%2Flogin%2Fcallback&scope=openid&state=foo&language=en";
 
         var state = new AuthState
         {
@@ -35,7 +36,7 @@ public sealed class TestRedirectLogin
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { OidcClientId = "OIDCCLIENTID", Scope = "SCOPE, SCOPE1" });
 
         //Act
-        var oidcService = new OidcService(new Mock<ILogger<OidcService>>().Object, cryptographyServiceMock.Object, authOptionsMock.Object);
+        var oidcService = new OidcService(new Mock<ILogger<OidcService>>().Object, cryptographyServiceMock.Object, authOptionsMock.Object, new HttpClient());
         var res = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
         
         //Assert
@@ -47,12 +48,13 @@ public sealed class TestRedirectLogin
     public void SignaturGruppen_Redirect_success()
     {
         //Arrange
-        const string expectedNextUrl = "?foo=42&idp_params=%7B%22nemid%22%3A%7B%22amr_values%22%3A%22AMRVALUES%22%7D%7D";
+        const string expectedNextUrl = "?foo=42&idp_params=%7B%22nemid%22%3A%7B%22amr_values%22%3A%22AMRVALUES%22%7D%7D&private_to_business=true";
 
         var state = new AuthState
         {
             FeUrl = "http://test.energioprindelse.dk",
-            ReturnUrl = "https://demo.energioprindelse.dk/dashboard"
+            ReturnUrl = "https://demo.energioprindelse.dk/dashboard",
+            CustomerType = "company"
         };
 
         var parameters = new[] { new KeyValuePair<string, string>("foo", "42") };
@@ -66,7 +68,7 @@ public sealed class TestRedirectLogin
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { AmrValues = "AMRVALUES" });
 
         //Act
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new HttpClient());
 
         var res = signaturGruppen.CreateAuthorizationUri(state);
 
