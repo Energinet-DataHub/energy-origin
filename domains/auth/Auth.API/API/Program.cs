@@ -5,7 +5,9 @@ using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.Models;
 using API.Services.OidcProviders;
+using FluentValidation;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -36,6 +38,7 @@ builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
 
 var app = builder.Build();

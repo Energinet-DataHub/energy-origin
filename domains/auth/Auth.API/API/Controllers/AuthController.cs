@@ -2,13 +2,14 @@ using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Configuration;
 using Microsoft.Extensions.Options;
 using API.Services.OidcProviders;
-using Microsoft.IdentityModel.Tokens;
+using FluentValidation;
 
 namespace API.Controllers;
-
 
 [ApiController]
 public class AuthController : ControllerBase
@@ -16,14 +17,20 @@ public class AuthController : ControllerBase
     readonly ILogger<AuthController> _logger;
     readonly IOidcProviders _oidcProviders;
     readonly ITokenStorage _tokenStorage;
+    private readonly IValidator<AuthState?> _validator;
+    private readonly ICryptographyService _cryptographyService;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders,
+        IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICryptographyService cryptographyService,
+        IValidator<AuthState> validator)
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
         _tokenStorage = tokenStorage;
+        _cryptographyService = cryptographyService;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -43,14 +50,30 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("/invalidate")]
-    public IActionResult Invalidate([Required] AuthState state)
+    public IActionResult Invalidate([FromQuery] string state)
     {
-        if (state.IdToken.IsNullOrEmpty())
+        AuthState? authState = null;
+        try
         {
-            return BadRequest(nameof(state.IdToken) + " must not be null");
+            var options = new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            authState = JsonSerializer.Deserialize<AuthState>(_cryptographyService.Decrypt(state), options);
+        }
+        catch (Exception e)
+        {
+            return BadRequest("Cannot decrypt " + nameof(AuthState));
         }
 
-        _oidcProviders.Logout(state.IdToken);
+        var validationResult = _validator.Validate(authState);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(nameof(AuthState.IdToken) + " must not be null");
+        }
+
+        _oidcProviders.Logout(authState.IdToken);
         return Ok();
     }
 
