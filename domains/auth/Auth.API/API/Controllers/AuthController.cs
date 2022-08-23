@@ -55,12 +55,12 @@ public class AuthController : ControllerBase
         AuthState? authState = null;
         try
         {
-            var options = new JsonSerializerOptions()
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-
-            authState = JsonSerializer.Deserialize<AuthState>(_cryptographyService.Decrypt(state), options);
+            authState = JsonSerializer.Deserialize<AuthState>(
+                _cryptographyService.Decrypt(state),
+                new JsonSerializerOptions()
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
         }
         catch (Exception e)
         {
