@@ -27,6 +27,7 @@ public sealed class TestAuthController
         var logger = new Mock<ILogger<AuthController>>();
         var oidcProvider = new Mock<IOidcProviders>();
         var tokenStorage = new Mock<ITokenStorage>();
+        var cookieService = new Mock<CookieService>();
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
@@ -49,7 +50,7 @@ public sealed class TestAuthController
 
         //Act
 
-        var authController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object)
+        var authController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object, cookieService.Object)
         {
             ControllerContext = new ControllerContext()
             {

@@ -1,5 +1,7 @@
 using API.Configuration;
 using API.Services;
+using FluentValidation;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Serilog;
 using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
@@ -23,10 +25,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
+builder.Services.AddValidatorsFromAssemblyContaining<CookieOptions>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHealthChecks();
+// Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
+builder.Services.AddTransient<IValidatorFactory, ServiceProviderValidatorFactory>();
+builder.Services.AddFluentValidationRulesToSwagger();
 
 builder.Services.AddHttpClient();
 

@@ -32,7 +32,7 @@
             "CookieHttpOnly": "true",
             "CookieSameSite": "Strict",
             "CookieSecure": "true",
-            "CookieCreateExpires": "6"
+            "CookieExpiresTimeDelta": "6"
         }
     },
     "IIS Express": {
