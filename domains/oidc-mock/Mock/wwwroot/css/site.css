@@ -42,6 +42,10 @@ form {
   margin-bottom: 16px;
 }
 
+button {
+  font-family: inherit;
+}
+
 .peopleButton {
   background-color: #02525e;
   border: 0;
@@ -51,7 +55,7 @@ form {
   cursor: pointer;
   padding: 10px;
   text-align: left;
-  max-width: 335px;
+  max-width: 355px;
   height: 140px;
   align-items: center;
 }
