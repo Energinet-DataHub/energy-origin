@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using API.Configuration;
+using API.Helpers;
 using API.Services;
 using API.Services.OidcProviders;
 using Microsoft.Extensions.Logging;
@@ -16,10 +17,10 @@ namespace Tests.Services.OidcProviders;
 [UnitTest]
 public class TestSignaturGruppen
 {
-    private readonly Mock<IOidcService> _mockOidcService = new();
     private readonly Mock<ILogger<SignaturGruppen>> _mockLogger = new();
     private readonly MockHttpMessageHandler _handlerMock = new();
     private readonly Mock<IOptions<AuthOptions>> _mockAuthOptions = new();
+    private readonly Mock<ICryptography> _cryptography = new();
 
     private SignaturGruppen _signaturGruppen;
 
@@ -32,9 +33,9 @@ public class TestSignaturGruppen
 
         _signaturGruppen = new SignaturGruppen(
             _mockLogger.Object,
-            _mockOidcService.Object,
             _mockAuthOptions.Object,
-            new HttpClient(_handlerMock)
+            new HttpClient(_handlerMock),
+            _cryptography.Object
         );
     }
 

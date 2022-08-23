@@ -3,13 +3,13 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace API.Services;
+namespace API.Helpers;
 
-public class CryptographyService : ICryptographyService
+public class Cryptography : ICryptography
 {
     private readonly AuthOptions _authOptions;
 
-    public CryptographyService(IOptions<AuthOptions> authOptions)
+    public Cryptography(IOptions<AuthOptions> authOptions)
     {
         _authOptions = authOptions.Value;
     }

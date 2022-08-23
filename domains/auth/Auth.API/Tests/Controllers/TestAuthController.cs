@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.Json;
 using API.Configuration;
+using API.Helpers;
 using API.Models;
 using API.Services;
 using API.Services.OidcProviders;
@@ -18,14 +19,12 @@ namespace API.Controllers;
 [UnitTest]
 public class TestAuthController
 {
-    private readonly Mock<IOidcProviders> _mockSignaturGruppen = new();
-    private readonly Mock<ILogger<AuthController>> logger = new();
-    private readonly Mock<ITokenStorage> tokenStorage = new();
+    private readonly Mock<IOidcService> _mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
-    private readonly Mock<ICryptographyService> _cryptographyService = new();
+    private readonly Mock<ICryptography> _cryptographyService = new();
     private readonly InvalidateAuthStateValidator _validator = new();
 
-    private AuthController _authController;
+    private InvalidateController _invalidateController;
 
     public TestAuthController()
     {
@@ -34,8 +33,7 @@ public class TestAuthController
             CookieName = "Authorization",
         });
 
-        _authController = new AuthController(logger.Object, _mockSignaturGruppen.Object, authOptionsMock.Object,
-            tokenStorage.Object, _cryptographyService.Object, _validator)
+        _invalidateController = new InvalidateController(_mockSignaturGruppen.Object, _cryptographyService.Object, _validator)
         {
             ControllerContext = new ControllerContext()
             {
@@ -58,7 +56,7 @@ public class TestAuthController
             .Setup(x => x.Decrypt(authStateAsString))
             .Returns(authStateAsString);
 
-        var response = _authController.Invalidate(authStateAsString);
+        var response = _invalidateController.Invalidate(authStateAsString);
 
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
         Assert.IsType<OkResult>(response);
@@ -67,7 +65,7 @@ public class TestAuthController
     [Fact]
     public void ReturnBadRequestWhenNoState()
     {
-        var response = _authController.Invalidate("");
+        var response = _invalidateController.Invalidate("");
 
         Assert.IsType<BadRequestObjectResult>(response);
         var result = response as BadRequestObjectResult;
@@ -83,39 +81,39 @@ public class TestAuthController
             .Setup(x => x.Decrypt(authStateAsString))
             .Returns(authStateAsString);
 
-        var response = _authController.Invalidate(authStateAsString);
+        var response = _invalidateController.Invalidate(authStateAsString);
 
         Assert.IsType<BadRequestObjectResult>(response);
         var result = response as BadRequestObjectResult;
         Assert.Equal(nameof(AuthState.IdToken) + " must not be null", result?.Value);
     }
 
-    [Theory]
-    [InlineData("Bearer foo")]
-    [InlineData(null)]
-    public void LogoutDeleteCookieSuccess(string? testToken)
-    {
-        var opaqueToken = "TestOpaqueToken";
-        var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-
-        var notExpiredCookie = new CookieOptions
-        {
-            Path = "/",
-            Domain = "energioprindelse.dk",
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = true,
-            Expires = DateTime.UtcNow.AddHours(6),
-        };
-
-
-        _authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        _authController.HttpContext.Request.Headers.Add("Authorization", testToken);
-
-        _authController.Logout();
-
-        //Assert
-        Assert.Equal(expectedExpiredCookie,
-            _authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
-    }
+    // [Theory]
+    // [InlineData("Bearer foo")]
+    // [InlineData(null)]
+    // public void LogoutDeleteCookieSuccess(string? testToken)
+    // {
+    //     var opaqueToken = "TestOpaqueToken";
+    //     var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    //
+    //     var notExpiredCookie = new CookieOptions
+    //     {
+    //         Path = "/",
+    //         Domain = "energioprindelse.dk",
+    //         HttpOnly = true,
+    //         SameSite = SameSiteMode.Strict,
+    //         Secure = true,
+    //         Expires = DateTime.UtcNow.AddHours(6),
+    //     };
+    //
+    //
+    //     _invalidateController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
+    //     _invalidateController.HttpContext.Request.Headers.Add("Authorization", testToken);
+    //
+    //     _invalidateController.Logout();
+    //
+    //     //Assert
+    //     Assert.Equal(expectedExpiredCookie,
+    //         _invalidateController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
+    // }
 }
