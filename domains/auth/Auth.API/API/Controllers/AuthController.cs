@@ -2,14 +2,9 @@ using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-<<<<<<< HEAD
 using System.Text.Json;
-using System.Text.Json.Serialization;
-
-=======
 using API.Configuration;
 using Microsoft.Extensions.Options;
->>>>>>> origin/main
 
 namespace API.Controllers;
 
