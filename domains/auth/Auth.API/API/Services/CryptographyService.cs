@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using API.Models;
 
 namespace API.Services;
 
@@ -80,6 +81,7 @@ public class CryptographyService : ICryptographyService
             }),
             Expires = DateTime.UtcNow.AddDays(int.Parse(_authOptions.TokenExpiryTimeInDays)),
             Issuer = "Energy Origin",
+            Audience = "http://energioprindelse.dk",
             SigningCredentials = credentials,
         };
 
@@ -87,13 +89,65 @@ public class CryptographyService : ICryptographyService
         return handler.WriteToken(token);
     }
 
-    public T DecodeJwt<T>(string jwtToken)
+    public IdTokenInfo DecodeJwtIdToken(string jwtToken)
+    {
+
+        var handler = new JwtSecurityTokenHandler();
+
+        var decodedJwt = handler.ReadJwtToken(jwtToken);
+
+        var claims = decodedJwt.Claims;
+
+        // I somehow can't get this to deserialize claims automatically
+
+        throw new NotImplementedException();
+        // this doesn't work
+        //return JsonSerializer.Deserialize<IdTokenInfo>(decodedJwt.ToString())!;
+    }
+
+    public JwtToken DecodeJwtCustom(string jwtToken)
     {
         var handler = new JwtSecurityTokenHandler();
 
-        var decodedJwt = handler.ReadJwtToken(jwtToken).RawData;
+        var decodedJwt = handler.ReadJwtToken(jwtToken);
 
-        return JsonSerializer.Deserialize<T>(decodedJwt)!;
+        var claims = decodedJwt.Claims;
+
+        var actor = claims.First(x => x.Type == "actor");
+        var subject = claims.First(x => x.Type == "subject");
+
+        return new JwtToken
+        {
+            Actor = claims.First(x => x.Type == "actor").Value,
+            Subject = claims.First(x => x.Type == "subject").Value
+        };
+    }
+
+    public bool ValidateJwtToken(string token)
+    {
+        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_authOptions.SecretKey));
+
+        var issuer = "Energy Origin";
+        var audience = "http://energioprindelse.dk";
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+                IssuerSigningKey = key
+            }, out SecurityToken validatedToken);
+        }
+        catch
+        {
+            return false;
+        }
+        return true;
     }
 
 

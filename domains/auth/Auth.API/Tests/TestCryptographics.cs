@@ -2,8 +2,10 @@ using API.Configuration;
 using API.Models;
 using API.Services;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using Xunit;
 using Xunit.Categories;
@@ -68,5 +70,47 @@ public sealed class TestCryptographics
         Assert.NotEmpty(decryptedState);
         Assert.IsType<string>(decryptedState);
         Assert.Equal(serilizedJson, decryptedState);
+    }
+
+    [Fact]
+    public void Create_JWT()
+    {
+        var actor = "Energy";
+        var subject = "Origin";
+
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456", TokenExpiryTimeInDays = "1" });
+
+        var cryptoService = new CryptographyService(authOptionsMock.Object);
+        var encryptedJwt = cryptoService.EncryptJwt(actor, subject);
+
+        Assert.NotNull(encryptedJwt);
+        Assert.NotEmpty(encryptedJwt);
+        Assert.IsType<string>(encryptedJwt);
+        Assert.True(cryptoService.ValidateJwtToken(encryptedJwt));
+    }
+
+    [Fact]
+    public void Decrypt_JWT_NemID()
+    {
+        var actor = "Energy";
+        var subject = "Origin";
+
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456", TokenExpiryTimeInDays = "1" });
+
+        var cryptoService = new CryptographyService(authOptionsMock.Object);
+        var encryptedJwt = cryptoService.EncryptJwt(actor, subject);
+
+        Assert.True(cryptoService.ValidateJwtToken(encryptedJwt));
+
+        var decrypedJwt = cryptoService.DecodeJwtCustom(encryptedJwt);
+
+        Assert.NotNull(decrypedJwt);
+        Assert.NotEmpty(decrypedJwt.Subject);
+        Assert.NotEmpty(decrypedJwt.Actor);
+        Assert.IsType<JwtToken>(decrypedJwt);
+        Assert.Equal(decrypedJwt.Actor, actor);
+        Assert.Equal(decrypedJwt.Subject, subject);
     }
 }
