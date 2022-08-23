@@ -24,7 +24,7 @@ public class Orchestrator : IOrchestrator
 
         SignaturGruppenNemId userInfo;
 
-
+        // First needed when we accept private users
         if (rawIdToken.Idp == "mitid")
         {
 
@@ -46,11 +46,11 @@ public class Orchestrator : IOrchestrator
         else { throw new Exception(); } // Not sure what exception this should be
 
 
-        // Validate user creation
+        // Validate user creation to see wether or not the user has been created
         var userCreated = false;
         if (userCreated != false)
         {
-            // Create jwt token with actor and subject
+            // Create jwt token with actor and subject and create opaque token and return it
             throw new NotImplementedException();
         }
 
@@ -72,8 +72,5 @@ public class Orchestrator : IOrchestrator
         // Store jwt in db
 
         // Create opaque token and return it
-
-
     }
-
 }
