@@ -1,7 +1,7 @@
 [
     {
-        "name": "foo",
-        "description": "Pariatur ad labore qui aute ullamco mollit",
+        "name": "Charlotte CSR",
+        "description": "Stor virksomhed med mange målepunkter",
         "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=foo",
         "idToken": {
             "sub": "7DADB7DB-0637-4446-8626-2781B06A9E20",
@@ -18,8 +18,8 @@
         }
     },
     {
-        "name": "bar",
-        "description": "Nostrud sit aliqua nulla magna dolore dolor",
+        "name": "Ivan Iværksætter",
+        "description": "Har en enkeltmands-virksomhed og går op i klimaet",
         "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=bar",
         "idToken": {
             "sub": "95D7BE81-0CFB-4B52-9C92-33A45747FCEF",
