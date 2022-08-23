@@ -37,6 +37,7 @@ builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
 
 
 var app = builder.Build();
