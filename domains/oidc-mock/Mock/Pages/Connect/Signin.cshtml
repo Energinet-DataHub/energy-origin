@@ -11,7 +11,7 @@
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
         {
-            <div name="name" value="@user.Name" type="submit" class="peopleButton">
+            <button name="name" value="@user.Name" type="submit" class="peopleButton">
                 <div class="image">
                     <img src="@user.ImageUrl"/>
                 </div>
@@ -19,7 +19,7 @@
                     <h2>@user.Name</h2>
                     <p>@user.Description</p>
                 </div>
-            </div>
+            </button>
         }
     </form>
 </main>
