@@ -15,12 +15,7 @@ namespace EnergyOriginAuthorization
                 }
 
                 var context = AuthorizationContext.decode(token);
-                if (context == null)
-                {
-                    throw new UnauthorizedAccessException("Access is denied by default, since no authorization context was decoded.");
-                }
-
-                return context;
+                return context ?? throw new UnauthorizedAccessException("Access is denied by default, since no authorization context was decoded.");
             }
         }
     }
