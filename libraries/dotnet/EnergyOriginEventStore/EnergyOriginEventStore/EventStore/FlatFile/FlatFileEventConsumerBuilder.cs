@@ -42,7 +42,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        pointer = pointer;
+        this.pointer = pointer;
         return this;
     }
 

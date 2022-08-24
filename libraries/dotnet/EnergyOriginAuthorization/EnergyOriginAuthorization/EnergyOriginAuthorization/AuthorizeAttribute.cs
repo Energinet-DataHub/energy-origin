@@ -22,7 +22,7 @@ namespace EnergyOriginAuthorization
 
         public AuthorizeAttribute(IEnumerable<string> requiredScopes)
         {
-            requiredScopes = requiredScopes;
+            this.requiredScopes = requiredScopes;
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
