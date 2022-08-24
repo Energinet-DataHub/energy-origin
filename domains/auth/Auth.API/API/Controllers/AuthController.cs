@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet]
-    [Route("CreateTestToken")]
+    [Route("CreateTestCookie")]
     public ActionResult CreateTestToken()
     {
         var opaque_token = "test";
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
     [Route("/token/forward-auth")]
     public ActionResult ForwardAuth()
     {
-        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Cookies[_authOptions.CookieName];
 
         if (opaqueToken == null || opaqueToken == "")
         {
@@ -79,13 +79,13 @@ public class AuthController : ControllerBase
     [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Cookies[_authOptions.CookieName];
 
         if (opaqueToken != null)
         {
-            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            //var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
             //TODO _oidcProviders.Logout(idToken);
-            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
+            //_tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
         Response.Cookies.Delete(_authOptions.CookieName);

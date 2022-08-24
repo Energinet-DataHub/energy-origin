@@ -31,7 +31,7 @@ namespace API.TokenStorage
 
         public InternalToken? GetInteralTokenByOpaqueToken(string token)
         {
-            //throw new NotImplementedException();
+            // TODO Get interalToken from DB
 
             InternalToken interalToken = new InternalToken();
             if (interalToken == null)

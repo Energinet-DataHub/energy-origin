@@ -20,11 +20,14 @@ namespace Tests.Controller;
 [UnitTest]
 public sealed class TestAuthController
 {
+    public static IEnumerable<object[]> Cookie => new[]
+{
+            new object[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
+            new object[] { null },
+    };
 
-    [Theory]
-    [InlineData("Bearer foo")]
-    [InlineData(null)]
-    public void LogoutDeleteCookieReturnSuccess(string? testToken)
+    [Theory, MemberData(nameof(Cookie))]
+    public void LogoutDeleteCookieReturnSuccess(string? TestCookie)
     {
         //Arrange
         var logger = new Mock<ILogger<AuthController>>();
@@ -38,18 +41,7 @@ public sealed class TestAuthController
             CookieName = "Authorization",
         });
 
-        var opaqueToken = "TestOpaqueToken";
         var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-
-        var notExpiredCookie = new CookieOptions
-        {
-            Path = "/",
-            Domain = "energioprindelse.dk",
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = true,
-            Expires = DateTime.UtcNow.AddHours(6),
-        };
 
         //Act
 
@@ -61,14 +53,12 @@ public sealed class TestAuthController
             }
         };
 
-        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
+        authController.HttpContext.Request.Headers.Add("Cookie", TestCookie);
 
         authController.Logout();
 
         //Assert
         Assert.Equal(expectedExpiredCookie, authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
-
     }
 
     [Fact]
@@ -77,6 +67,9 @@ public sealed class TestAuthController
         var logger = new Mock<ILogger<AuthController>>();
         var oidcProvider = new Mock<IOidcProviders>();
         var tokenStorage = new Mock<ITokenStorage>();
+        var cookies = new Mock<ICookies>();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+
         tokenStorage.Setup(x => x.GetInteralTokenByOpaqueToken(It.IsAny<string>())).Returns(new InternalToken
         {
             Actor = "Actor",
@@ -86,19 +79,12 @@ public sealed class TestAuthController
             Expires = DateTime.UtcNow.AddHours(6)
         });
 
-        var cookies = new Mock<ICookies>();
-
-        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
         {
             CookieName = "Authorization",
         });
 
-        var authController = new AuthController(logger.Object,
-                                                oidcProvider.Object,
-                                                authOptionsMock.Object,
-                                                tokenStorage.Object,
-                                                cookies.Object)
+        var authController = new AuthController(logger.Object,oidcProvider.Object,authOptionsMock.Object,tokenStorage.Object,cookies.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -108,7 +94,7 @@ public sealed class TestAuthController
 
         var opaqueToken = "TestOpaqueToken";
 
-        authController.HttpContext.Request.Headers.Add("Authorization", opaqueToken);
+        authController.HttpContext.Request.Headers.Add("Cookie", $"Authorization={opaqueToken}");
 
         var response = authController.ForwardAuth();
 
@@ -137,7 +123,7 @@ public sealed class TestAuthController
             }
         };
 
-        authController.HttpContext.Request.Headers.Add("Authorization", "");
+        authController.HttpContext.Request.Headers.Add("Cookie", $"Authorization=");
 
         var response = authController.ForwardAuth();
 
@@ -170,7 +156,7 @@ public sealed class TestAuthController
 
         var opaqueToken = "TestOpaqueToken";
 
-        authController.HttpContext.Request.Headers.Add("Authorization", opaqueToken);
+        authController.HttpContext.Request.Headers.Add("Cookie", $"Authorization={opaqueToken}");
 
         var response = authController.ForwardAuth();
 
