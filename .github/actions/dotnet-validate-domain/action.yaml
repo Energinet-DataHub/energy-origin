@@ -1,0 +1,44 @@
+name: Dotnet Validate Domain
+
+description: Lints, tests, builds a domain.
+
+inputs:
+  solution-file-folder:
+    description: The folder of the project and tests to build from
+    required: true
+
+  dotnet-version:
+    description: The version of dotnet to setup
+    default: 6.0.101
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Restore
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet restore
+
+    - name: Lint
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet test --no-restore --verbosity normal *.Tests
+
+    - name: Build
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet build --no-restore --configuration Release
