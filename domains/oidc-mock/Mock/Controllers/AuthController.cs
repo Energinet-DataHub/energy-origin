@@ -1,24 +1,24 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Jwt;
 using Oidc.Mock.Models;
-using System.Net.Http.Headers;
 
 namespace Oidc.Mock.Controllers;
 
 public class AuthController : Controller
 {
-    private readonly Client _client;
-    private readonly User[] _users;
-    private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly ILogger<AuthController> _logger;
+    private readonly Client client;
+    private readonly User[] users;
+    private readonly IJwtTokenGenerator tokenGenerator;
+    private readonly ILogger<AuthController> logger;
 
     public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
     {
-        _client = client;
-        _users = users;
-        _tokenGenerator = tokenGenerator;
-        _logger = logger;
+        this.client = client;
+        this.users = users;
+        this.tokenGenerator = tokenGenerator;
+        this.logger = logger;
     }
 
     [HttpPost]
@@ -29,7 +29,7 @@ public class AuthController : Controller
     [Route("Connect/Authorize")]
     public IActionResult Authorize(string client_id, string redirect_uri)
     {
-        var (isValid, validationError) = _client.Validate(client_id, redirect_uri);
+        var (isValid, validationError) = client.Validate(client_id, redirect_uri);
         if (!isValid)
         {
             return BadRequest(validationError);
@@ -49,8 +49,8 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-        _logger.LogDebug($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-        _logger.LogDebug($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        logger.LogDebug($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        logger.LogDebug($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -62,17 +62,17 @@ public class AuthController : Controller
         var clientId = split[0];
         var clientSecret = split[1];
 
-        var (isValid, validationError) = _client.Validate(clientId, clientSecret, redirect_uri);
+        var (isValid, validationError) = client.Validate(clientId, clientSecret, redirect_uri);
         if (!isValid)
         {
-            _logger.LogDebug($"connect/token: {validationError}");
+            logger.LogDebug($"connect/token: {validationError}");
             return BadRequest(validationError);
         }
 
-        var user = _users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
+        var user = users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
         if (user == null)
         {
-            _logger.LogDebug("connect/token: Invalid code - no matching user");
+            logger.LogDebug("connect/token: Invalid code - no matching user");
             return BadRequest("Invalid code - no matching user");
         }
 
@@ -88,12 +88,12 @@ public class AuthController : Controller
         return Ok(
             new
             {
-                access_token = _tokenGenerator.Generate(baseClaims),
+                access_token = tokenGenerator.Generate(baseClaims),
                 token_type = "Bearer",
                 expires_in = expirationInSeconds,
                 scope = "openid nemid mitid userinfo_token",
-                id_token = _tokenGenerator.Generate(baseClaims.Plus(user.IdToken)),
-                userinfo_token = _tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
+                id_token = tokenGenerator.Generate(baseClaims.Plus(user.IdToken)),
+                userinfo_token = tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
             });
     }
 
@@ -102,6 +102,6 @@ public class AuthController : Controller
     public IActionResult Jwks() =>
         Ok(new
         {
-            keys = new[] { _tokenGenerator.GetJwkProperties() }
+            keys = new[] { tokenGenerator.GetJwkProperties() }
         });
 }
