@@ -18,7 +18,7 @@ public static class MockHttpClientFactory
     {
         var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
         var path = System.IO.Path.Combine(directory, "../../../Resources/", resourceName);
-        string json = File.ReadAllText(path);
+        var json = File.ReadAllText(path);
         return json;
     }
 

@@ -7,8 +7,8 @@ namespace Oidc.Mock.Pages.Connect;
 
 public class SigninModel : PageModel
 {
-    private readonly ILogger<SigninModel> _logger;
-    private readonly Client _client;
+    private readonly ILogger<SigninModel> logger;
+    private readonly Client client;
 
     public User[] Users { get; }
 
@@ -26,8 +26,8 @@ public class SigninModel : PageModel
 
     public SigninModel(User[] users, Client client, ILogger<SigninModel> logger)
     {
-        _client = client;
-        _logger = logger;
+        this.client = client;
+        this.logger = logger;
         Users = users;
     }
 
@@ -37,9 +37,9 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost()
     {
-        _logger.LogDebug($"OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}");
+        logger.LogDebug($"OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}");
 
-        var (isValid, validationError) = _client.Validate(ClientId, RedirectUri);
+        var (isValid, validationError) = client.Validate(ClientId, RedirectUri);
         if (!isValid)
         {
             return BadRequest(validationError);
@@ -48,7 +48,7 @@ public class SigninModel : PageModel
         var userDescriptor = Users.FirstOrDefault(u => string.Equals(u.Name, Name, StringComparison.InvariantCultureIgnoreCase));
         if (userDescriptor == null)
         {
-            _logger.LogError($"OnPost: User '{Name}' not found");
+            logger.LogError($"OnPost: User '{Name}' not found");
             return BadRequest($"User '{Name}' not found");
         }
 
@@ -63,7 +63,7 @@ public class SigninModel : PageModel
 
         var uri = builder.ToString();
 
-        _logger.LogInformation($"Login success: Name={Name}");
+        logger.LogInformation($"Login success: Name={Name}");
 
         return Redirect(uri);
     }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
+using EnergyOriginDateTimeExtension;
 using Xunit;
 using Xunit.Categories;
-using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
