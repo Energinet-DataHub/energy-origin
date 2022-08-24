@@ -11,9 +11,9 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly ILogger<AuthController> logger;
-    readonly IOidcProviders oidcProviders;
-    readonly ITokenStorage tokenStorage;
+    private readonly ILogger<AuthController> logger;
+    private readonly IOidcProviders oidcProviders;
+    private readonly ITokenStorage tokenStorage;
     private readonly AuthOptions authOptions;
 
     public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)

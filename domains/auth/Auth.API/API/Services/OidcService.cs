@@ -8,8 +8,8 @@ namespace API.Services;
 
 public class OidcService : IOidcService
 {
-    readonly ILogger logger;
-    readonly ICryptographyService cryptography;
+    private readonly ILogger logger;
+    private readonly ICryptographyService cryptography;
     private readonly AuthOptions authOptions;
 
     public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography, IOptions<AuthOptions> authOptions)
