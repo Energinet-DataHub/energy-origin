@@ -1,15 +1,15 @@
-using API.Services;
+using System;
+using System.Linq;
 using API.Configuration;
+using API.Controllers;
+using API.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 using Xunit.Categories;
-using Moq;
-using API.Controllers;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System;
 
 namespace Tests.Controller;
 

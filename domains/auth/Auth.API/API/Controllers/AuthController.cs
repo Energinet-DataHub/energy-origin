@@ -1,8 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+using API.Configuration;
 using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using API.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new AuthState()
+        var state = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl

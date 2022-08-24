@@ -1,6 +1,6 @@
+using System.Reflection;
 using EnergyOriginEventStore.EventStore.Serialization;
 using Newtonsoft.Json;
-using System.Reflection;
 
 namespace EnergyOriginEventStore.EventStore.Internal;
 

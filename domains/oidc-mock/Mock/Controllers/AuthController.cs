@@ -1,8 +1,8 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Jwt;
 using Oidc.Mock.Models;
-using System.Net.Http.Headers;
 
 namespace Oidc.Mock.Controllers;
 

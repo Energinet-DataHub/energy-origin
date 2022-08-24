@@ -1,12 +1,12 @@
+using System.Net;
+using System.Text.Json;
+using System.Web;
 using AngleSharp.Html.Dom;
 using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Oidc.Mock;
 using Oidc.Mock.Extensions;
-using System.Net;
-using System.Text.Json;
-using System.Web;
 using Tests.TestHelpers;
 using Xunit;
 

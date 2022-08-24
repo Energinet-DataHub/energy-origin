@@ -19,7 +19,7 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel
     {
-        Type type = typeof(T);
+        var type = typeof(T);
 
         var list = _handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
 

@@ -1,8 +1,8 @@
+using System.Text.Json;
 using API.Configuration;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 namespace API.Services;
 
