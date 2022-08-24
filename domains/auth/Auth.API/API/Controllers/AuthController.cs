@@ -11,17 +11,17 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly ILogger<AuthController> _logger;
-    readonly IOidcProviders _oidcProviders;
-    readonly ITokenStorage _tokenStorage;
-    private readonly AuthOptions _authOptions;
+    readonly ILogger<AuthController> logger;
+    readonly IOidcProviders oidcProviders;
+    readonly ITokenStorage tokenStorage;
+    private readonly AuthOptions authOptions;
 
     public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
     {
-        _logger = logger;
-        _oidcProviders = oidcProviders;
-        _authOptions = authOptions.Value;
-        _tokenStorage = tokenStorage;
+        this.logger = logger;
+        this.oidcProviders = oidcProviders;
+        this.authOptions = authOptions.Value;
+        this.tokenStorage = tokenStorage;
     }
 
     [HttpGet]
@@ -36,23 +36,23 @@ public class AuthController : ControllerBase
             ReturnUrl = returnUrl
         };
 
-        return _oidcProviders.CreateAuthorizationUri(state);
+        return oidcProviders.CreateAuthorizationUri(state);
     }
 
     [HttpPost]
     [Route("/auth/logout")]
     public ActionResult<LogoutResponse> Logout()
     {
-        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Headers[authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (opaqueToken != null)
         {
-            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
-            //TODO _oidcProviders.Logout(idToken);
-            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
+            var idToken = tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            //TODO oidcProviders.Logout(idToken);
+            tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
-        Response.Cookies.Delete(_authOptions.CookieName);
+        Response.Cookies.Delete(authOptions.CookieName);
 
         return Ok(new LogoutResponse { success = true });
     }

@@ -7,17 +7,17 @@ namespace API.Services;
 
 public class CryptographyService : ICryptographyService
 {
-    private readonly AuthOptions _authOptions;
+    private readonly AuthOptions authOptions;
 
     public CryptographyService(IOptions<AuthOptions> authOptions)
     {
-        _authOptions = authOptions.Value;
+        this.authOptions = authOptions.Value;
     }
 
     public string Encrypt(string state)
     {
         using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
+        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
 
         var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
@@ -42,7 +42,7 @@ public class CryptographyService : ICryptographyService
         memoryStream.Read(iv, 0, 16);
 
         using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
+        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
         aes.IV = iv;
 
         var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);

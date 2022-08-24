@@ -8,15 +8,15 @@ namespace API.Services;
 
 public class OidcService : IOidcService
 {
-    readonly ILogger _logger;
-    readonly ICryptographyService _cryptography;
-    private readonly AuthOptions _authOptions;
+    readonly ILogger logger;
+    readonly ICryptographyService cryptography;
+    private readonly AuthOptions authOptions;
 
     public OidcService(ILogger<OidcService> logger, ICryptographyService cryptography, IOptions<AuthOptions> authOptions)
     {
-        _logger = logger;
-        _cryptography = cryptography;
-        _authOptions = authOptions.Value;
+        this.logger = logger;
+        this.cryptography = cryptography;
+        this.authOptions = authOptions.Value;
     }
 
     public QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
@@ -27,10 +27,10 @@ public class OidcService : IOidcService
         var query = new QueryBuilder
         {
             { "response_type", responseType },
-            { "client_id", _authOptions.OidcClientId },
+            { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", _authOptions.Scope },
-            { "state", _cryptography.Encrypt(serilizedJson) },
+            { "scope", authOptions.Scope },
+            { "state", cryptography.Encrypt(serilizedJson) },
             { "language", lang }
         };
 
