@@ -1,7 +1,6 @@
 using API.Configuration;
 using API.Services;
-using FluentValidation;
-using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using API.TokenStorage;
 using Serilog;
 using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
@@ -25,24 +24,19 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<CookieOptions>();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
-builder.Services.AddTransient<IValidatorFactory, ServiceProviderValidatorFactory>();
-builder.Services.AddFluentValidationRulesToSwagger();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
-
 builder.Services.AddScoped<ICryptographyService, CryptographyService>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
-builder.Services.AddScoped<ICookieService, CookieService>();
-builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
+builder.Services.AddScoped<ICookies, Cookies>();
+builder.Services.AddScoped<ITokenStorage, TokenStorage>();
 
 var app = builder.Build();
 

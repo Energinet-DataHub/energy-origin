@@ -1,9 +1,10 @@
+using API.Configuration;
 using API.Models;
 using API.Services;
+using API.TokenStorage;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using API.Configuration;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers;
 
@@ -14,17 +15,16 @@ public class AuthController : ControllerBase
     readonly ILogger<AuthController> _logger;
     readonly IOidcProviders _oidcProviders;
     readonly ITokenStorage _tokenStorage;
-    readonly ICookieService _cookieService;
+    readonly ICookies _cookies;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICookieService cookieService)
-
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICookies cookies)
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
         _tokenStorage = tokenStorage;
-        _cookieService = cookieService;
+        _cookies = cookies;
     }
 
     [HttpGet]
@@ -43,32 +43,34 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet]
-    [Route("test/makeCookie")]
-    public ActionResult TestLogin()
+    [Route("CreateTestToken")]
+    public ActionResult CreateTestToken()
     {
         var opaque_token = "test";
-        var cookieOptions = _cookieService.CreateCookieOptions(_authOptions.CookieExpiresTimeDelta);
+        var cookieOptions = _cookies.CreateCookieOptions(_authOptions.CookieExpiresTimeDelta);
         HttpContext.Response.Cookies.Append($"{_authOptions.CookieName}", $"{opaque_token}", cookieOptions);
         return Ok();
     }
 
     [HttpGet]
     [Route("/token/forward-auth")]
-    public ActionResult ValidateCookie()
+    public ActionResult ForwardAuth()
     {
         var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
-        if (opaqueToken == null)
+        if (opaqueToken == null || opaqueToken == "")
         {
             return Unauthorized();
         }
 
-        var validCookie = _cookieService.IsValid();
+        var internalToken = _tokenStorage.GetInteralTokenByOpaqueToken(opaqueToken);
 
-        if (validCookie != "test" )
+        if (internalToken == null)
         {
-            return BadRequest();
+            return Unauthorized();
         }
+
+        HttpContext.Response.Headers.Add("Authorization", $"Bearer: {internalToken}");
 
         return Ok();
     }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using API.Configuration;
 using API.Models;
 using API.Services;
@@ -6,6 +5,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Collections.Generic;
 using Xunit;
 using Xunit.Categories;
 
@@ -37,10 +37,10 @@ public sealed class TestRedirectLogin
         //Act
         var oidcService = new OidcService(new Mock<ILogger<OidcService>>().Object, cryptographyServiceMock.Object, authOptionsMock.Object);
         var res = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
-        
+
         //Assert
         Assert.Equal(expectedNextUrl, res.ToQueryString().Value);
-        
+
     }
 
     [Fact]
