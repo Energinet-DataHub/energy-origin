@@ -87,7 +87,7 @@ internal class FlatFileEventConsumer : IEventConsumer
 
         var type = reconstructed.GetType();
         var typeString = type.ToString();
-        var handlers = handlers.GetValueOrDefault(type);
+        var handlers = this.handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
             exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {typeString}"));

@@ -35,10 +35,10 @@ internal class MemoryEventConsumer : IEventConsumer
         var type = reconstructed.GetType();
         var typeString = type.ToString();
 
-        var handlers = handlers.GetValueOrDefault(type);
+        var handlers = this.handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
-            exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+            exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type}"));
         }
 
         (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>

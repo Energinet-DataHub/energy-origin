@@ -37,7 +37,7 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        pointer = new MemoryPointer(pointer);
+        this.pointer = new MemoryPointer(pointer);
         return this;
     }
 
