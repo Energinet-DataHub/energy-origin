@@ -17,6 +17,6 @@ namespace API.Helpers
 
         public static IList<string> GetRenewableSources() => Environment.GetEnvironmentVariable(renewableSources)?.Split(',') ?? throw new ArgumentNullException();
 
-        public static decimal GetWasteRenewableShare() => decimal.Parse(Environment.GetEnvironmentVariable(wasteRenewableShare) ?? throw new ArgumentNullException(), CultureInfo.InvariantCulture) / 100;
+        public static decimal GetWasteRenewableShare() => Convert.ToDecimal(int.Parse(Environment.GetEnvironmentVariable(wasteRenewableShare) ?? throw new ArgumentNullException(), CultureInfo.InvariantCulture)) / 100;
     }
 }
