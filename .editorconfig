@@ -1,5 +1,5 @@
 root = true
-# FIXME: run verbose for all
+
 [*]
 end_of_line = lf
 charset = utf-8

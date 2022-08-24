@@ -2,10 +2,7 @@
     "name": "Github - Linux",
     "build": {
         "dockerfile": "Dockerfile",
-        "args": {
-            "VARIANT": "6.0-bullseye",
-            "NODE_VERSION": "lts/*"
-        }
+        "args": {}
     },
     "settings": {
         "editor.formatOnSave": true
