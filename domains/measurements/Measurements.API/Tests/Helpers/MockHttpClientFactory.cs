@@ -1,11 +1,11 @@
-using Moq;
-using Moq.Protected;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
+using Moq.Protected;
 
 namespace Tests.Helpers;
 
@@ -16,7 +16,7 @@ public static class MockHttpClientFactory
     {
         var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
         var path = Path.Combine(directory, "../../../Resources/", resourceName);
-        string json = File.ReadAllText(path);
+        var json = File.ReadAllText(path);
         return SetupHttpClient(json);
     }
 
