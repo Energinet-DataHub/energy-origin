@@ -2,12 +2,11 @@ using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using API.Configuration;
 using Microsoft.Extensions.Options;
 using API.Services.OidcProviders;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace API.Controllers;
 
@@ -21,9 +20,14 @@ public class AuthController : ControllerBase
     private readonly ICryptographyService _cryptographyService;
     private readonly AuthOptions _authOptions;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders,
-        IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICryptographyService cryptographyService,
-        IValidator<AuthState> validator)
+    public AuthController(
+        ILogger<AuthController> logger,
+        IOidcProviders oidcProviders,
+        IOptions<AuthOptions> authOptions,
+        ITokenStorage tokenStorage,
+        ICryptographyService cryptographyService,
+        InvalidateAuthStateValidator validator
+    )
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
@@ -50,43 +54,40 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("/invalidate")]
-    public IActionResult Invalidate([FromQuery] string state)
+    public async Task<IActionResult> Invalidate([FromQuery] string state)
     {
-        AuthState? authState = null;
+        AuthState? authState;
         try
         {
-            authState = JsonSerializer.Deserialize<AuthState>(
-                _cryptographyService.Decrypt(state),
-                new JsonSerializerOptions()
-                {
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                });
+            authState = _cryptographyService.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
         catch (Exception e)
         {
             return BadRequest("Cannot decrypt " + nameof(AuthState));
         }
 
-        var validationResult = _validator.Validate(authState);
+        var validationResult = await _validator.ValidateAsync(authState);
+
         if (!validationResult.IsValid)
         {
-            return BadRequest(nameof(AuthState.IdToken) + " must not be null");
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
         }
 
-        _oidcProviders.Logout(authState.IdToken);
+        await _oidcProviders.Logout(authState.IdToken);
         return Ok();
     }
 
     [HttpPost]
     [Route("/auth/logout")]
-    public ActionResult<LogoutResponse> Logout()
+    public async Task<ActionResult<LogoutResponse>> Logout()
     {
         var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (opaqueToken != null)
         {
             var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
-            //TODO _oidcProviders.Logout(idToken);
+            await _oidcProviders.Logout(idToken);
             _tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 

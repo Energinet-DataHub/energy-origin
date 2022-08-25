@@ -2,6 +2,8 @@ using API.Configuration;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace API.Services;
 
@@ -31,12 +33,14 @@ public class CryptographyService : ICryptographyService
                         streamWriter.Write(state);
                     }
                 }
+
                 return Convert.ToBase64String(memoryStream.ToArray());
             }
         }
     }
 
-    public string Decrypt(string encryptedState)
+
+    public T? Decrypt<T>(string encryptedState)
     {
         byte[] buffer = Convert.FromBase64String(encryptedState);
         var iv = new byte[16];
@@ -53,7 +57,13 @@ public class CryptographyService : ICryptographyService
                 {
                     using (StreamReader streamReader = new StreamReader(cryptoStream))
                     {
-                        return streamReader.ReadToEnd();
+                        return JsonSerializer.Deserialize<T>(
+                            streamReader.ReadToEnd(),
+                            new JsonSerializerOptions()
+                            {
+                                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                            }
+                        );
                     }
                 }
             }

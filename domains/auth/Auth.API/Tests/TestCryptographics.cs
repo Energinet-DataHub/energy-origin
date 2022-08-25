@@ -62,11 +62,10 @@ public sealed class TestCryptographics
         var cryptoService = new CryptographyService(authOptionsMock.Object);
         var encryptedState = cryptoService.Encrypt(serilizedJson);
 
-        var decryptedState = cryptoService.Decrypt(encryptedState);
+        var decryptedState = cryptoService.Decrypt<AuthState>(encryptedState);
 
         Assert.NotNull(decryptedState);
-        Assert.NotEmpty(decryptedState);
-        Assert.IsType<string>(decryptedState);
-        Assert.Equal(serilizedJson, decryptedState);
+        Assert.IsType<AuthState>(decryptedState);
+        Assert.Equal(state, decryptedState);
     }
 }

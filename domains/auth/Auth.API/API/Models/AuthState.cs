@@ -19,6 +19,5 @@ public class InvalidateAuthStateValidator : AbstractValidator<AuthState>
     public InvalidateAuthStateValidator()
     {
         RuleFor(x => x.IdToken).NotEmpty();
-        RuleFor(x => x.IdToken).NotNull();
     }
 }

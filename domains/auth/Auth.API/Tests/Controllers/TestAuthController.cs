@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using API.Configuration;
 using API.Models;
 using API.Services;
@@ -45,7 +46,7 @@ public class TestAuthController
     }
 
     [Fact]
-    public void CanInvalidateToken()
+    public async Task CanInvalidateToken()
     {
         var authState = new AuthState()
         {
@@ -55,19 +56,19 @@ public class TestAuthController
         var authStateAsString = JsonSerializer.Serialize(authState);
 
         _cryptographyService
-            .Setup(x => x.Decrypt(authStateAsString))
-            .Returns(authStateAsString);
+            .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
+            .Returns(authState);
 
-        var response = _authController.Invalidate(authStateAsString);
+        var response = await _authController.Invalidate(authStateAsString);
 
         _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
         Assert.IsType<OkResult>(response);
     }
 
     [Fact]
-    public void ReturnBadRequestWhenNoState()
+    public async Task ReturnBadRequestWhenNoState()
     {
-        var response = _authController.Invalidate("");
+        var response = await _authController.Invalidate("");
 
         Assert.IsType<BadRequestObjectResult>(response);
         var result = response as BadRequestObjectResult;
@@ -75,19 +76,16 @@ public class TestAuthController
     }
 
     [Fact]
-    public void ReturnBadRequestWhenNoToken()
+    public async Task ReturnBadRequestWhenNoToken()
     {
         var authState = new AuthState();
         var authStateAsString = JsonSerializer.Serialize(authState);
         _cryptographyService
-            .Setup(x => x.Decrypt(authStateAsString))
-            .Returns(authStateAsString);
+            .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
+            .Returns(authState);
 
-        var response = _authController.Invalidate(authStateAsString);
-
-        Assert.IsType<BadRequestObjectResult>(response);
-        var result = response as BadRequestObjectResult;
-        Assert.Equal(nameof(AuthState.IdToken) + " must not be null", result?.Value);
+        var response = await _authController.Invalidate(authStateAsString) as ObjectResult;
+        Assert.IsType<ValidationProblemDetails>(response?.Value);
     }
 
     [Theory]
@@ -115,7 +113,9 @@ public class TestAuthController
         _authController.Logout();
 
         //Assert
-        Assert.Equal(expectedExpiredCookie,
-            _authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
+        Assert.Equal(
+            expectedExpiredCookie,
+            _authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
+        );
     }
 }
