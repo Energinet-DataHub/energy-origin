@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using API.Configuration;
 using API.Models;
-using API.Services.OidcProviders;
 using API.Services;
+using API.Services.OidcProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

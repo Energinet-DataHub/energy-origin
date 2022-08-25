@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations;
 using API.Configuration;
 using API.Models;
 using API.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using API.Services.OidcProviders;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -16,8 +16,8 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> logger;
     private readonly IOidcProviders oidcProviders;
     private readonly ITokenStorage tokenStorage;
-    private readonly IValidator<AuthState?> _validator;
-    private readonly ICryptographyService _cryptographyService;
+    private readonly IValidator<AuthState?> validator;
+    private readonly ICryptographyService cryptographyService;
     private readonly AuthOptions authOptions;
 
     public AuthController(
@@ -33,8 +33,8 @@ public class AuthController : ControllerBase
         this.oidcProviders = oidcProviders;
         this.authOptions = authOptions.Value;
         this.tokenStorage = tokenStorage;
-        _cryptographyService = cryptographyService;
-        _validator = validator;
+        this.cryptographyService = cryptographyService;
+        this.validator = validator;
     }
 
     [HttpGet]
@@ -59,14 +59,14 @@ public class AuthController : ControllerBase
         AuthState? authState;
         try
         {
-            authState = _cryptographyService.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
+            authState = cryptographyService.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
         catch (Exception e)
         {
             return BadRequest();
         }
 
-        var validationResult = await _validator.ValidateAsync(authState);
+        var validationResult = await validator.ValidateAsync(authState);
 
         if (!validationResult.IsValid)
         {
@@ -74,7 +74,7 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        await _oidcProviders.Logout(authState.IdToken);
+        await oidcProviders.Logout(authState.IdToken);
         return Ok();
     }
 
@@ -86,13 +86,13 @@ public class AuthController : ControllerBase
 
         if (opaqueToken != null)
         {
-            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
-            await _oidcProviders.Logout(idToken);
-            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
+            var idToken = tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            await oidcProviders.Logout(idToken);
+            tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
         Response.Cookies.Delete(authOptions.CookieName);
 
-        return Ok(new LogoutResponse { success = true });
+        return Ok(new LogoutResponse { Success = true });
     }
 }

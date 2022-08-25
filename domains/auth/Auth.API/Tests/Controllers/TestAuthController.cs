@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,14 +19,14 @@ namespace API.Controllers;
 [UnitTest]
 public class TestAuthController
 {
-    private readonly Mock<IOidcProviders> _mockSignaturGruppen = new();
+    private readonly Mock<IOidcProviders> mockSignaturGruppen = new();
     private readonly Mock<ILogger<AuthController>> logger = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
-    private readonly Mock<ICryptographyService> _cryptographyService = new();
-    private readonly InvalidateAuthStateValidator _validator = new();
+    private readonly Mock<ICryptographyService> cryptographyService = new();
+    private readonly InvalidateAuthStateValidator validator = new();
 
-    private AuthController _authController;
+    private AuthController authController;
 
     public TestAuthController()
     {
@@ -35,13 +35,13 @@ public class TestAuthController
             CookieName = "Authorization",
         });
 
-        _authController = new AuthController(
+        authController = new AuthController(
             logger.Object,
-            _mockSignaturGruppen.Object,
+            mockSignaturGruppen.Object,
             authOptionsMock.Object,
             tokenStorage.Object,
-            _cryptographyService.Object,
-            _validator
+            cryptographyService.Object,
+            validator
         )
         {
             ControllerContext = new ControllerContext()
@@ -61,20 +61,20 @@ public class TestAuthController
 
         var authStateAsString = JsonSerializer.Serialize(authState);
 
-        _cryptographyService
+        cryptographyService
             .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
-        var response = await _authController.Invalidate(authStateAsString);
+        var response = await authController.Invalidate(authStateAsString);
 
-        _mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
+        mockSignaturGruppen.Verify(mock => mock.Logout(authState.IdToken), Times.Once);
         Assert.IsType<OkResult>(response);
     }
 
     [Fact]
     public async Task ReturnBadRequestWhenNoState()
     {
-        var response = await _authController.Invalidate("");
+        var response = await authController.Invalidate("");
 
         Assert.IsType<BadRequestResult>(response);
     }
@@ -84,11 +84,11 @@ public class TestAuthController
     {
         var authState = new AuthState();
         var authStateAsString = JsonSerializer.Serialize(authState);
-        _cryptographyService
+        cryptographyService
             .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
-        var response = await _authController.Invalidate(authStateAsString) as ObjectResult;
+        var response = await authController.Invalidate(authStateAsString) as ObjectResult;
         Assert.IsType<ValidationProblemDetails>(response?.Value);
     }
 
@@ -111,15 +111,15 @@ public class TestAuthController
         };
 
 
-        _authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        _authController.HttpContext.Request.Headers.Add("Authorization", testToken);
+        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
+        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
 
-        _authController.Logout();
+        authController.Logout();
 
         //Assert
         Assert.Equal(
             expectedExpiredCookie,
-            _authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
+            authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
         );
     }
 }

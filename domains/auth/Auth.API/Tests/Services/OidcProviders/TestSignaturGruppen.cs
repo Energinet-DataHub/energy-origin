@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using API.Configuration;
@@ -16,25 +16,25 @@ namespace Tests.Services.OidcProviders;
 [UnitTest]
 public class TestSignaturGruppen
 {
-    private readonly Mock<IOidcService> _mockOidcService = new();
-    private readonly Mock<ILogger<SignaturGruppen>> _mockLogger = new();
-    private readonly MockHttpMessageHandler _handlerMock = new();
-    private readonly Mock<IOptions<AuthOptions>> _mockAuthOptions = new();
+    private readonly Mock<IOidcService> mockOidcService = new();
+    private readonly Mock<ILogger<SignaturGruppen>> mockLogger = new();
+    private readonly MockHttpMessageHandler handlerMock = new();
+    private readonly Mock<IOptions<AuthOptions>> mockAuthOptions = new();
 
-    private SignaturGruppen _signaturGruppen;
+    private SignaturGruppen signaturGruppen;
 
     public TestSignaturGruppen()
     {
-        _mockAuthOptions.Setup(a => a.Value).Returns(new AuthOptions
+        mockAuthOptions.Setup(a => a.Value).Returns(new AuthOptions
         {
             OidcUrl = "http://localhost:8080"
         });
 
-        _signaturGruppen = new SignaturGruppen(
-            _mockLogger.Object,
-            _mockOidcService.Object,
-            _mockAuthOptions.Object,
-            new HttpClient(_handlerMock)
+        signaturGruppen = new SignaturGruppen(
+            mockLogger.Object,
+            mockOidcService.Object,
+            mockAuthOptions.Object,
+            new HttpClient(handlerMock)
         );
     }
 
@@ -43,22 +43,22 @@ public class TestSignaturGruppen
     {
         var token = "test";
 
-        _handlerMock.Expect("/api/v1/session/logout")
+        handlerMock.Expect("/api/v1/session/logout")
             .WithPartialContent(token)
             .Respond(HttpStatusCode.OK);
 
-        await _signaturGruppen.Logout(token);
+        await signaturGruppen.Logout(token);
 
-        _handlerMock.VerifyNoOutstandingExpectation();
+        handlerMock.VerifyNoOutstandingExpectation();
     }
 
     [Fact]
     public async void CannotLogoutFromSignaturGruppenSoWeLogAMessage()
     {
-        _handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.Forbidden);
-        await _signaturGruppen.Logout("test");
+        handlerMock.When("/api/v1/session/logout").Respond(HttpStatusCode.Forbidden);
+        await signaturGruppen.Logout("test");
 
-        _mockLogger.Verify(logger => logger.Log(
+        mockLogger.Verify(logger => logger.Log(
                 It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),

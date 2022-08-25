@@ -1,16 +1,16 @@
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using API.Configuration;
-using API.Services;
-using Serilog;
-using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
+using API.Configuration;
 using API.Models;
+using API.Services;
 using API.Services.OidcProviders;
 using FluentValidation;
+using Serilog;
+using Serilog.Formatting.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
 
