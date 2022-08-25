@@ -42,7 +42,6 @@ public sealed class TestRedirectLogin
 
         //Assert
         Assert.Equal(expectedNextUrl, res.ToQueryString().Value);
-
     }
 
     [Fact]

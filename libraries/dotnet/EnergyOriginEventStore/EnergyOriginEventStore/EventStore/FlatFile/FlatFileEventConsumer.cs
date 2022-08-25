@@ -5,29 +5,29 @@ namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 internal class FlatFileEventConsumer : IEventConsumer
 {
-    private readonly FlatFileEventStore _fileStore;
-    private readonly IUnpacker _unpacker;
-    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
-    private readonly long _fromIssued;
-    private readonly long _fromFraction;
-    private readonly FileSystemWatcher _rootWatcher;
-    private readonly List<FileSystemWatcher> _watchers;
-    private Action<string, Exception> _exceptionHandler;
+    private readonly FlatFileEventStore fileStore;
+    private readonly IUnpacker unpacker;
+    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
+    private readonly long fromIssued;
+    private readonly long fromFraction;
+    private readonly FileSystemWatcher rootWatcher;
+    private readonly List<FileSystemWatcher> watchers;
+    private Action<string, Exception> exceptionHandler;
 
     public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
     {
-        _fileStore = fileStore;
-        _unpacker = unpacker;
-        _handlers = handlers;
-        _exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
+        this.fileStore = fileStore;
+        this.unpacker = unpacker;
+        this.handlers = handlers;
+        this.exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
 
         if (pointer is not null)
         {
             try
             {
                 var parts = pointer.Split('-');
-                _fromIssued = long.Parse(parts[0]);
-                _fromFraction = long.Parse(parts[1]);
+                fromIssued = long.Parse(parts[0]);
+                fromFraction = long.Parse(parts[1]);
             }
             catch (Exception)
             {
@@ -35,20 +35,20 @@ internal class FlatFileEventConsumer : IEventConsumer
             }
         }
 
-        _watchers = Directory.EnumerateDirectories(fileStore.ROOT)
+        watchers = Directory.EnumerateDirectories(fileStore.ROOT)
             .Where(it => it.StartsWith($"{fileStore.ROOT}/{topicPrefix}") && it.EndsWith(fileStore.TOPIC_SUFFIX))
             .Select(it => CreateWatcher(it))
             .ToList();
 
-        _rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
-        _rootWatcher.Created += OnCreatedDirectory;
-        _rootWatcher.Error += OnError;
-        _rootWatcher.EnableRaisingEvents = true;
+        rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
+        rootWatcher.Created += OnCreatedDirectory;
+        rootWatcher.Error += OnError;
+        rootWatcher.EnableRaisingEvents = true;
     }
 
     private static void OnError(object sender, ErrorEventArgs e) => Console.WriteLine(e.GetException()); // At this point, logging using dependency injection is not implemented, so errors are written to console. As the flat file-based solution is not for production, this is acceptable
 
-    private void OnCreatedDirectory(object source, FileSystemEventArgs e) => _watchers.Add(CreateWatcher(e.FullPath));
+    private void OnCreatedDirectory(object source, FileSystemEventArgs e) => watchers.Add(CreateWatcher(e.FullPath));
 
     private void OnCreatedFile(object source, FileSystemEventArgs e)
     {
@@ -59,11 +59,11 @@ internal class FlatFileEventConsumer : IEventConsumer
     {
         Directory
             .GetFiles(path)
-            .Where(it => it.EndsWith(_fileStore.EVENT_SUFFIX))
+            .Where(it => it.EndsWith(fileStore.EVENT_SUFFIX))
             .ToList()
             .ForEach(Load);
 
-        var watcher = new FileSystemWatcher(path, $"*{_fileStore.EVENT_SUFFIX}");
+        var watcher = new FileSystemWatcher(path, $"*{fileStore.EVENT_SUFFIX}");
         watcher.Created += OnCreatedFile;
         watcher.Error += OnError;
         watcher.EnableRaisingEvents = true;
@@ -73,24 +73,24 @@ internal class FlatFileEventConsumer : IEventConsumer
     private void Load(string path)
     {
         var payload = File.ReadAllText(path);
-        var reconstructedEvent = _unpacker.UnpackEvent(payload);
-        if (reconstructedEvent.Issued < _fromIssued ||
-            (reconstructedEvent.Issued == _fromIssued && reconstructedEvent.IssuedFraction <= _fromFraction))
+        var reconstructedEvent = unpacker.UnpackEvent(payload);
+        if (reconstructedEvent.Issued < fromIssued ||
+            (reconstructedEvent.Issued == fromIssued && reconstructedEvent.IssuedFraction <= fromFraction))
         {
             return;
         }
 
-        var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
+        var reconstructed = unpacker.UnpackModel(reconstructedEvent);
 
         // Optimization Queue events and have worker execute them.
         //queue.Enqueue(reconstructed);
 
         var type = reconstructed.GetType();
         var typeString = type.ToString();
-        var handlers = _handlers.GetValueOrDefault(type);
+        var handlers = this.handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
-            _exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {typeString}"));
+            exceptionHandler.Invoke(typeString, new NotImplementedException($"No handler for event of type {typeString}"));
         }
 
         (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
@@ -101,7 +101,7 @@ internal class FlatFileEventConsumer : IEventConsumer
             }
             catch (Exception exception)
             {
-                _exceptionHandler.Invoke(typeString, exception);
+                exceptionHandler.Invoke(typeString, exception);
             }
         });
     }
@@ -110,14 +110,14 @@ internal class FlatFileEventConsumer : IEventConsumer
 
     public void Dispose()
     {
-        _watchers.ForEach(it =>
+        watchers.ForEach(it =>
         {
             it.Created -= OnCreatedFile;
             it.Error -= OnError;
             it.Dispose();
         });
-        _rootWatcher.Created -= OnCreatedDirectory;
-        _rootWatcher.Error -= OnError;
-        _rootWatcher.Dispose();
+        rootWatcher.Created -= OnCreatedDirectory;
+        rootWatcher.Error -= OnError;
+        rootWatcher.Dispose();
     }
 }

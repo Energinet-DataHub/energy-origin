@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
-using Xunit;
 using EnergyOriginDateTimeExtension;
+using Xunit;
 
 namespace Tests
 {

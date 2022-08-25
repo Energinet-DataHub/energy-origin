@@ -1,10 +1,10 @@
+using System;
+using System.Text.Json;
 using API.Configuration;
 using API.Models;
 using API.Services;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Text.Json;
 using Xunit;
 using Xunit.Categories;
 
@@ -36,8 +36,8 @@ public sealed class TestCryptographics
         Assert.NotEmpty(encryptedState);
         Assert.IsType<string>(encryptedState);
 
-        Span<byte> buffer = new Span<byte>(new byte[encryptedState.Length]);
-        var base64DecodedState = Convert.TryFromBase64String(encryptedState, buffer, out int bytesParsed);
+        var buffer = new Span<byte>(new byte[encryptedState.Length]);
+        var base64DecodedState = Convert.TryFromBase64String(encryptedState, buffer, out var bytesParsed);
 
         Assert.True(base64DecodedState);
     }

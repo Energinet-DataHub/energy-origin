@@ -1,8 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+using API.Configuration;
 using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using API.Configuration;
 using Microsoft.Extensions.Options;
 using API.Services.OidcProviders;
 using FluentValidation;
@@ -13,12 +13,12 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    readonly ILogger<AuthController> _logger;
-    readonly IOidcProviders _oidcProviders;
-    readonly ITokenStorage _tokenStorage;
+    private readonly ILogger<AuthController> logger;
+    private readonly IOidcProviders oidcProviders;
+    private readonly ITokenStorage tokenStorage;
     private readonly IValidator<AuthState?> _validator;
     private readonly ICryptographyService _cryptographyService;
-    private readonly AuthOptions _authOptions;
+    private readonly AuthOptions authOptions;
 
     public AuthController(
         ILogger<AuthController> logger,
@@ -29,10 +29,10 @@ public class AuthController : ControllerBase
         InvalidateAuthStateValidator validator
     )
     {
-        _logger = logger;
-        _oidcProviders = oidcProviders;
-        _authOptions = authOptions.Value;
-        _tokenStorage = tokenStorage;
+        this.logger = logger;
+        this.oidcProviders = oidcProviders;
+        this.authOptions = authOptions.Value;
+        this.tokenStorage = tokenStorage;
         _cryptographyService = cryptographyService;
         _validator = validator;
     }
@@ -43,13 +43,13 @@ public class AuthController : ControllerBase
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new AuthState()
+        var state = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
-        return _oidcProviders.CreateAuthorizationUri(state);
+        return oidcProviders.CreateAuthorizationUri(state);
     }
 
     [HttpPost]
@@ -82,7 +82,7 @@ public class AuthController : ControllerBase
     [Route("/auth/logout")]
     public async Task<ActionResult<LogoutResponse>> Logout()
     {
-        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Headers[authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (opaqueToken != null)
         {
@@ -91,7 +91,7 @@ public class AuthController : ControllerBase
             _tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
-        Response.Cookies.Delete(_authOptions.CookieName);
+        Response.Cookies.Delete(authOptions.CookieName);
 
         return Ok(new LogoutResponse { success = true });
     }

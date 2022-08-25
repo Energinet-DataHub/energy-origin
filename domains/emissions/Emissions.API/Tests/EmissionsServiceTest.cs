@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using API.Models;
 using API.Services;
+using AutoFixture;
+using EnergyOriginAuthorization;
+using EnergyOriginDateTimeExtension;
+using Moq;
 using Xunit;
 using Xunit.Categories;
-using Moq;
-using EnergyOriginAuthorization;
-using AutoFixture;
-using System.Threading.Tasks;
-using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
