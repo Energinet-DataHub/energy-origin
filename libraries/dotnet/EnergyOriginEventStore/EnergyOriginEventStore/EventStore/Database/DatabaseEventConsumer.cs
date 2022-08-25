@@ -11,6 +11,7 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly Action<string, Exception>? _exceptionHandler;
     private readonly string? _pointer;
     private readonly string _topicPrefix;
+    private readonly PeriodicTimer timer;
 
     public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string? pointer)
     {
@@ -21,38 +22,51 @@ internal class DatabaseEventConsumer : IEventConsumer
         _pointer = pointer;
         _exceptionHandler = exceptionHandler;
 
-        // Task.Run(async () => await _store.Attach(this).ConfigureAwait(false));
+        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
     }
 
-    // internal void OnMessage(object? sender, MessageEventArgs e)
-    // {
-    //     if (!e.Topic.StartsWith(_topicPrefix)) return;
+    internal async Task Begin()
+    {
+        while (await timer.WaitForNextTickAsync())
+        {
+            var query = _context.Messages.OrderBy(it => it.Id);
+            if (_pointer != null)
+            {
+                var pointer = Int64.Parse(_pointer ?? "");
+                query.Where(it => it.Id > pointer);
+            }
+            query.Where(it => it.Topic.StartsWith(_topicPrefix));
 
-    //     var reconstructedEvent = _unpacker.UnpackEvent(e.Message);
-    //     if (_pointer != null && !e.Pointer.IsAfter(_pointer)) return;
+            foreach (var message in query)
+            {
+                if (message == null) continue;
 
-    //     var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
-    //     var type = reconstructed.GetType();
-    //     var typeString = type.ToString();
+                var reconstructedEvent = _unpacker.UnpackEvent(message.Payload);
+                var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
 
-    //     var handlers = _handlers.GetValueOrDefault(type);
-    //     if (handlers == null)
-    //     {
-    //         _exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
-    //     }
+                var type = reconstructed.GetType();
+                var typeString = type.ToString();
 
-    //     (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
-    //     {
-    //         try
-    //         {
-    //             x.Invoke(new Event<EventModel>(reconstructed, e.Pointer.Serialized));
-    //         }
-    //         catch (Exception exception)
-    //         {
-    //             _exceptionHandler?.Invoke(typeString, exception);
-    //         }
-    //     });
-    // }
+                var handlers = _handlers.GetValueOrDefault(type);
+                if (handlers == null)
+                {
+                    _exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+                }
+
+                (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
+                {
+                    try
+                    {
+                        x.Invoke(new Event<EventModel>(reconstructed, $"{message.Id}"));
+                    }
+                    catch (Exception exception)
+                    {
+                        _exceptionHandler?.Invoke(typeString, exception);
+                    }
+                });
+            }
+        }
+    }
 
     public void Dispose() { }
 }

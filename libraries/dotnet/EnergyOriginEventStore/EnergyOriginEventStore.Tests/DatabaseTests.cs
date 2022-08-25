@@ -1,7 +1,9 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
+using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Database;
+using EnergyOriginEventStore.Tests.Topics;
 using Npgsql;
 using Xunit;
 
@@ -51,6 +53,34 @@ public class DatabaseTests : IAsyncLifetime
         context.Messages.Add(new() { Payload = "hello" });
 
         await context.SaveChangesAsync();
+
+        Assert.True(true);
+    }
+
+
+    [Fact]
+    public async Task UseEventStore()
+    {
+        var context = new DatabaseEventContext(testcontainers.ConnectionString);
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+
+        // ---
+
+        IEventStore store = new DatabaseEventStore(testcontainers.ConnectionString);
+
+        var message = new Said("Samuel Salesman", "We have been trying to reach you about your cars extended warranty!");
+        await store.Produce(message, "Spam", "Advertisement", "Robocall");
+
+        var received = new List<Said>();
+        store
+            .GetBuilder("Advertisement")
+            .AddHandler<Said>(value => received.Add(value.EventModel))
+            .Build();
+
+        await Task.Delay(TimeSpan.FromMilliseconds(1000));
+
+        Assert.Single(received);
 
         Assert.True(true);
     }

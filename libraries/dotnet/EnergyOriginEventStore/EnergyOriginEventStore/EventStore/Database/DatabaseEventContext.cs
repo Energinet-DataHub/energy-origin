@@ -9,8 +9,6 @@ public class DatabaseEventContext : DbContext
 {
     public DbSet<Message> Messages { get; set; }
 
-    public DbSet<Topic> Topics { get; set; }
-
     private string connectionString;
 
     public DatabaseEventContext(string connectionString)
@@ -21,16 +19,10 @@ public class DatabaseEventContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(connectionString);
 }
 
+[Index(nameof(Topic))]
 public class Message
 {
     public int Id { get; set; }
-    public Topic Topic { get; set; }
+    public string Topic { get; set; }
     public string Payload { get; set; }
-}
-
-[Index(nameof(Name))]
-public class Topic
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
 }

@@ -1,4 +1,5 @@
 using EnergyOriginEventStore.EventStore.Serialization;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace EnergyOriginEventStore.EventStore.Database;
@@ -22,23 +23,12 @@ public class DatabaseEventStore : IEventStore
 
         foreach (var topic in topics)
         {
-            Topic dbTopic;
-            try
-            {
-                dbTopic = context.Topics.Where(it => it.Name == topic).Single();
-            }
-            catch
-            {
-                dbTopic = new Topic() { Name = topic };
-                context.Topics.Add(dbTopic);
-                await context.SaveChangesAsync();
-            }
-
-            context.Messages.Add(new Message() { Topic = dbTopic, Payload = json });
+            context.Messages.Add(new Message() { Topic = topic, Payload = json });
         }
+        await context.SaveChangesAsync();
     }
 
-    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new DatabaseEventConsumerBuilder(this, topicPrefix);
+    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new DatabaseEventConsumerBuilder(context, topicPrefix);
 
     public void Dispose() { }
 
