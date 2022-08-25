@@ -16,7 +16,7 @@ public class CryptographyService : ICryptographyService
         _authOptions = authOptions.Value;
     }
 
-    public string Encrypt(string state)
+    public string Encrypt<T>(T state)
     {
         using (Aes aes = Aes.Create())
         {
@@ -30,7 +30,8 @@ public class CryptographyService : ICryptographyService
                 {
                     using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
                     {
-                        streamWriter.Write(state);
+                        var jsonObject = JsonSerializer.Serialize(state);
+                        streamWriter.Write(jsonObject);
                     }
                 }
 
@@ -39,8 +40,7 @@ public class CryptographyService : ICryptographyService
         }
     }
 
-
-    public T? Decrypt<T>(string encryptedState)
+    public T Decrypt<T>(string encryptedState)
     {
         byte[] buffer = Convert.FromBase64String(encryptedState);
         var iv = new byte[16];

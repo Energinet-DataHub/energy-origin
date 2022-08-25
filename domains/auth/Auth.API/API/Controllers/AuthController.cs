@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest("Cannot decrypt " + nameof(AuthState));
+            return BadRequest();
         }
 
         var validationResult = await _validator.ValidateAsync(authState);

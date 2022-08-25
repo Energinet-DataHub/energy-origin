@@ -1,8 +1,7 @@
 namespace API.Services;
 public interface ICryptographyService
 {
-    public string Encrypt(string state);
-    public T? Decrypt<T>(string encryptedState);
-
+    string Encrypt<T>(T state);
+    T Decrypt<T>(string encryptedState);
 }
 

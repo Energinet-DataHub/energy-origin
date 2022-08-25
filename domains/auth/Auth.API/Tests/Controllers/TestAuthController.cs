@@ -35,8 +35,14 @@ public class TestAuthController
             CookieName = "Authorization",
         });
 
-        _authController = new AuthController(logger.Object, _mockSignaturGruppen.Object, authOptionsMock.Object,
-            tokenStorage.Object, _cryptographyService.Object, _validator)
+        _authController = new AuthController(
+            logger.Object,
+            _mockSignaturGruppen.Object,
+            authOptionsMock.Object,
+            tokenStorage.Object,
+            _cryptographyService.Object,
+            _validator
+        )
         {
             ControllerContext = new ControllerContext()
             {
@@ -70,9 +76,7 @@ public class TestAuthController
     {
         var response = await _authController.Invalidate("");
 
-        Assert.IsType<BadRequestObjectResult>(response);
-        var result = response as BadRequestObjectResult;
-        Assert.Equal("Cannot decrypt " + nameof(AuthState), result?.Value);
+        Assert.IsType<BadRequestResult>(response);
     }
 
     [Fact]
