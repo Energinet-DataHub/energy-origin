@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -14,25 +16,26 @@ public class CryptographyService : ICryptographyService
         this.authOptions = authOptions.Value;
     }
 
-    public string Encrypt(string state)
+    public string Encrypt<T>(T state)
     {
         using var aes = Aes.Create();
+
         aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
-
         var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
         using var memoryStream = new MemoryStream();
         memoryStream.Write(aes.IV);
 
         using var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
-
         using var streamWriter = new StreamWriter(cryptoStream);
-        streamWriter.Write(state);
+        var jsonObject = JsonSerializer.Serialize(state);
+        streamWriter.Write(jsonObject);
+
+        streamWriter.Close();
 
         return Convert.ToBase64String(memoryStream.ToArray());
     }
 
-    public string Decrypt(string encryptedState)
+    public T Decrypt<T>(string encryptedState)
     {
         var buffer = Convert.FromBase64String(encryptedState);
 
@@ -48,8 +51,14 @@ public class CryptographyService : ICryptographyService
         var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
         using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-
         using var streamReader = new StreamReader(cryptoStream);
-        return streamReader.ReadToEnd();
+
+        return JsonSerializer.Deserialize<T>(
+            streamReader.ReadToEnd(),
+            new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            }
+        );
     }
 }

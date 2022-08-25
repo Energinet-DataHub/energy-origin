@@ -54,19 +54,16 @@ public sealed class TestCryptographics
             ReturnUrl = returnUrl
         };
 
-        var serilizedJson = JsonSerializer.Serialize(state);
-
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
 
         var cryptoService = new CryptographyService(authOptionsMock.Object);
-        var encryptedState = cryptoService.Encrypt(serilizedJson);
+        var encryptedState = cryptoService.Encrypt(state);
 
-        var decryptedState = cryptoService.Decrypt(encryptedState);
+        var decryptedState = cryptoService.Decrypt<AuthState>(encryptedState);
 
         Assert.NotNull(decryptedState);
-        Assert.NotEmpty(decryptedState);
-        Assert.IsType<string>(decryptedState);
-        Assert.Equal(serilizedJson, decryptedState);
+        Assert.IsType<AuthState>(decryptedState);
+        Assert.Equal(state, decryptedState);
     }
 }
