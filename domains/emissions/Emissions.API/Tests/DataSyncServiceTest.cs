@@ -20,7 +20,7 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetListOfMeteringPoints_success()
     {
         // Arrange
-        List<string> datasyncData = new List<string>(new string[] { "datasync_meteringpoints.json" });
+        var datasyncData = new List<string>(new string[] { "datasync_meteringpoints.json" });
         var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
 
         var logger = new Mock<ILogger<DataSyncService>>();
@@ -43,7 +43,7 @@ public sealed class DataSyncServiceTest
     public async void DataSync_GetMeasurements_success()
     {
         // Arrange
-        List<string> datasyncData = new List<string>(new string[] { "datasync_measurements.json" });
+        var datasyncData = new List<string>(new string[] { "datasync_measurements.json" });
         var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
 
         var dateFrom = 1609455600L;

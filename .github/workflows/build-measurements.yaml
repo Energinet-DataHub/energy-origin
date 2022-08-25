@@ -43,6 +43,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Validate image
+        uses: ./.github/actions/dotnet-validate-domain
+        with:
+          solution-file-folder: domains/measurements/Measurements.API/
+
       - name: Build image
         uses: Energinet-DataHub/.github/.github/actions/build-and-push-container@main
         with:

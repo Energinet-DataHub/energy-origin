@@ -1,22 +1,22 @@
+using System.Reflection;
 using EnergyOriginEventStore.EventStore.Serialization;
 using Newtonsoft.Json;
-using System.Reflection;
 
 namespace EnergyOriginEventStore.EventStore.Internal;
 
 internal class Unpacker : IUnpacker
 {
-    private readonly Dictionary<Tuple<string, int>, Type> _typeDictionary;
+    private readonly Dictionary<Tuple<string, int>, Type> typeDictionary;
 
     public Unpacker()
     {
         var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(EventModelVersionAttribute)));
-        _typeDictionary = new Dictionary<Tuple<string, int>, Type>();
+        typeDictionary = new Dictionary<Tuple<string, int>, Type>();
 
         foreach (var type in types)
         {
             var attribute = type.GetCustomAttribute<EventModelVersionAttribute>() ?? throw new NotSupportedException("Attribute not found on type that should have it.");
-            _typeDictionary.Add(Tuple.Create(attribute.Type, attribute.Version), type);
+            typeDictionary.Add(Tuple.Create(attribute.Type, attribute.Version), type);
         }
     }
 
@@ -32,7 +32,7 @@ internal class Unpacker : IUnpacker
 
     public EventModel UnpackModel(InternalEvent payload)
     {
-        var type = _typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
+        var type = typeDictionary.GetValueOrDefault(Tuple.Create(payload.ModelType, payload.ModelVersion)) ??
                    throw new NotSupportedException($"Could not find type to unpack event type:\"{payload.ModelType}\" version:\"{payload.ModelVersion}\"");
 
         var current = JsonConvert.DeserializeObject(payload.Data, type) as EventModel ?? throw new Exception("Type not an EventModel!");

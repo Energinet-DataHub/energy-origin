@@ -22,19 +22,13 @@ public class DataSyncService : IDataSyncService
         httpClient.AddAuthorizationToken(context);
 
         var reponse = await httpClient.GetAsync(url);
-
         if (reponse == null || !reponse.IsSuccessStatusCode)
         {
             throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
         }
 
         var result = await reponse.Content.ReadFromJsonAsync<List<Measurement>>();
-        if (result == null)
-        {
-            throw new Exception($"Parsing of meteringpoints failed. Content: {reponse.Content}");
-        }
-
-        return result;
+        return result ?? throw new Exception($"Parsing of meteringpoints failed. Content: {reponse.Content}");
     }
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context)
@@ -49,12 +43,6 @@ public class DataSyncService : IDataSyncService
         }
 
         var result = await response.Content.ReadFromJsonAsync<MeteringPointsResponse>();
-
-        if (result == null || result.MeteringPoints == null)
-        {
-            throw new Exception($"Parsing of meteringpoints failed. Content: {response.Content}");
-        }
-
-        return result.MeteringPoints;
+        return result?.MeteringPoints ?? throw new Exception($"Parsing of meteringpoints failed. Content: {response.Content}");
     }
 }
