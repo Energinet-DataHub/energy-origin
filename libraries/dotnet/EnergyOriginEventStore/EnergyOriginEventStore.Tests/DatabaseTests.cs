@@ -1,6 +1,7 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
+using EnergyOriginEventStore.EventStore.Database;
 using Npgsql;
 using Xunit;
 
@@ -17,18 +18,6 @@ public class DatabaseTests : IAsyncLifetime
       })
       .Build();
 
-    [Fact]
-    public void ExecuteCommand()
-    {
-        using var connection = new NpgsqlConnection(this.testcontainers.ConnectionString);
-        using var command = new NpgsqlCommand();
-
-        connection.Open();
-        command.Connection = connection;
-        command.CommandText = "SELECT 1";
-        command.ExecuteReader();
-    }
-
     public Task InitializeAsync()
     {
         return this.testcontainers.StartAsync();
@@ -37,5 +26,32 @@ public class DatabaseTests : IAsyncLifetime
     public Task DisposeAsync()
     {
         return this.testcontainers.DisposeAsync().AsTask();
+    }
+
+    [Fact]
+    public void ExecuteCommand()
+    {
+        using var connection = new NpgsqlConnection(testcontainers.ConnectionString);
+        using var command = new NpgsqlCommand();
+
+        connection.Open();
+        command.Connection = connection;
+        command.CommandText = "SELECT 1";
+        command.ExecuteReader();
+    }
+
+    [Fact]
+    public async Task UseEF()
+    {
+        var context = new DatabaseEventContext(testcontainers.ConnectionString);
+
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+
+        context.Messages.Add(new() { Payload = "hello" });
+
+        await context.SaveChangesAsync();
+
+        Assert.True(true);
     }
 }
