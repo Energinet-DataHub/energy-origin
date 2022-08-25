@@ -7,13 +7,17 @@ namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcProviders
 {
-    readonly IOidcService oidcService;
+    private readonly IOidcService oidcService;
     private readonly AuthOptions authOptions;
-    readonly ILogger<SignaturGruppen> logger;
+    private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, IOptions<AuthOptions> authOptions,
-        HttpClient httpClient)
+    public SignaturGruppen(
+        ILogger<SignaturGruppen> logger,
+        IOidcService oidcService,
+        IOptions<AuthOptions> authOptions,
+        HttpClient httpClient
+    )
     {
         this.logger = logger;
         this.oidcService = oidcService;

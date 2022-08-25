@@ -110,13 +110,11 @@ public class TestAuthController
             Expires = DateTime.UtcNow.AddHours(6),
         };
 
-
         authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
         authController.HttpContext.Request.Headers.Add("Authorization", testToken);
 
         authController.Logout();
 
-        //Assert
         Assert.Equal(
             expectedExpiredCookie,
             authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
