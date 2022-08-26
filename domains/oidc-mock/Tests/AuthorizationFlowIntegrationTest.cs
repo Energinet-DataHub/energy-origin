@@ -1,12 +1,12 @@
+using System.Net;
+using System.Text.Json;
+using System.Web;
 using AngleSharp.Html.Dom;
 using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Oidc.Mock;
 using Oidc.Mock.Extensions;
-using System.Net;
-using System.Text.Json;
-using System.Web;
 using Tests.TestHelpers;
 using Xunit;
 
@@ -14,34 +14,34 @@ namespace Tests;
 
 public class AuthorizationFlowIntegrationTest : IDisposable
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly WebApplicationFactory<Program> factory;
 
-    private const string ClientId = "energy-origin";
-    private const string ClientSecret = "secret";
-    private const string RedirectUri = "https://example.com/callback";
+    private const string clientId = "energy-origin";
+    private const string clientSecret = "secret";
+    private const string redirectUri = "https://example.com/callback";
 
     public AuthorizationFlowIntegrationTest()
     {
         Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "test-users.json");
-        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, ClientId);
-        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, ClientSecret);
-        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, RedirectUri);
+        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, clientId);
+        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, clientSecret);
+        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, redirectUri);
 
-        _factory = new WebApplicationFactory<Program>()
+        factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
     }
 
     [Fact]
     public async Task CompleteFlowTest()
     {
-        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         // Navigate to authorization endpoint
 
         var query = new QueryBuilder
         {
-            { "client_id", ClientId },
-            { "redirect_uri", RedirectUri },
+            { "client_id", clientId },
+            { "redirect_uri", redirectUri },
             { "state", "testState" },
             { "response_type", "code" },
             { "scope", "openid nemid mitid ssn userinfo_token" },
@@ -69,7 +69,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         var signupResponse = await client.SendAsync(formElement, firstSubmitButtonElement);
 
         Assert.Equal(HttpStatusCode.Redirect, signupResponse.StatusCode);
-        Assert.StartsWith(RedirectUri, signupResponse.Headers.Location!.AbsoluteUri);
+        Assert.StartsWith(redirectUri, signupResponse.Headers.Location!.AbsoluteUri);
 
         var queryStringForCallback = HttpUtility.ParseQueryString(signupResponse.Headers.Location!.Query);
         var code = queryStringForCallback["code"]!;
@@ -78,14 +78,14 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         // Get token from endpoint using authorization code
 
-        var authorization = $"{ClientId}:{ClientSecret}".EncodeBase64();
+        var authorization = $"{clientId}:{clientSecret}".EncodeBase64();
         var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "/Connect/Token");
         tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
         tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "code", code },
             { "grant_type", "authorization_code" },
-            { "redirect_uri", RedirectUri }
+            { "redirect_uri", redirectUri }
         });
         var tokenResponse = await client.SendAsync(tokenRequest);
 
@@ -132,6 +132,6 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, "");
         Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, "");
 
-        _factory.Dispose();
+        factory.Dispose();
     }
 }

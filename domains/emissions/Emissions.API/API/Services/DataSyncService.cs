@@ -23,11 +23,7 @@ public class DataSyncService : IDataSyncService
         httpClient.AddAuthorizationToken(context);
         var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
 
-        if (result != null)
-        {
-            return result;
-        }
-        throw new Exception("List of measurements failed");
+        return result ?? throw new Exception("List of measurements failed");
     }
 
     public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context)
@@ -35,12 +31,8 @@ public class DataSyncService : IDataSyncService
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(context);
 
-        var meteringPoints = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
+        var result = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
 
-        if (meteringPoints != null && meteringPoints.MeteringPoints != null)
-        {
-            return meteringPoints.MeteringPoints;
-        }
-        throw new Exception("List of meteringpoints failed");
+        return result?.MeteringPoints ?? throw new Exception("List of meteringpoints failed");
     }
 }

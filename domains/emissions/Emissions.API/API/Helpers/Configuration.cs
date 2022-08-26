@@ -1,34 +1,22 @@
+using System.Globalization;
+
 namespace API.Helpers
 {
     public static class Configuration
     {
-        private const string DataSyncEndpoint = "DATASYNCENDPOINT";
-        private const string EnergiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
-        private const string RenewableSources = "RENEWABLESOURCES";
-        private const string WasteRenewableShare = "WASTERENEWABLESHARE";
+        private static readonly string dataSyncEndpoint = "DATASYNCENDPOINT";
+        private static readonly string energiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
+        private static readonly string renewableSources = "RENEWABLESOURCES";
+        private static readonly string wasteRenewableShare = "WASTERENEWABLESHARE";
 
         public static int DecimalPrecision => 5;
 
-        public static string GetDataSyncEndpoint()
-        {
-            return Environment.GetEnvironmentVariable(DataSyncEndpoint) ?? throw new ArgumentNullException();
-        }
+        public static string GetDataSyncEndpoint() => Environment.GetEnvironmentVariable(dataSyncEndpoint) ?? throw new ArgumentNullException();
 
-        public static string GetEnergiDataServiceEndpoint()
-        {
-            return Environment.GetEnvironmentVariable(EnergiDataServiceEndpoint) ?? throw new ArgumentNullException();
-        }
+        public static string GetEnergiDataServiceEndpoint() => Environment.GetEnvironmentVariable(energiDataServiceEndpoint) ?? throw new ArgumentNullException();
 
-        public static IList<string> GetRenewableSources()
-        {
-            var renewableSources = Environment.GetEnvironmentVariable(RenewableSources) ?? throw new ArgumentNullException();
-            return renewableSources.Split(',');
-        }
+        public static IList<string> GetRenewableSources() => Environment.GetEnvironmentVariable(renewableSources)?.Split(',') ?? throw new ArgumentNullException();
 
-        public static decimal GetWasteRenewableShare()
-        {
-            var wasteRenewableShare = Environment.GetEnvironmentVariable(WasteRenewableShare) ?? throw new ArgumentNullException();
-            return decimal.Parse(wasteRenewableShare) / 100;
-        }
+        public static decimal GetWasteRenewableShare() => Convert.ToDecimal(int.Parse(Environment.GetEnvironmentVariable(wasteRenewableShare) ?? throw new ArgumentNullException(), CultureInfo.InvariantCulture)) / 100;
     }
 }

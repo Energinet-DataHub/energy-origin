@@ -1,5 +1,5 @@
-using API.Models;
 using API.Helpers;
+using API.Models;
 using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
@@ -19,7 +19,7 @@ class MeasurementAggregation : IAggregator
             )
         ).ToList();
 
-        IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedMeasurements = GetGroupedConsumption(aggregation, listOfMeasurements);
+        var groupedMeasurements = GetGroupedConsumption(aggregation, listOfMeasurements);
 
         var bucketMeasurements = groupedMeasurements.Select(
             group => new AggregatedMeasurement
@@ -35,7 +35,7 @@ class MeasurementAggregation : IAggregator
 
     static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, List<AggregatedMeasurementInteral> listOfMeasurements)
     {
-        IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> groupedMeasurements = aggregation switch
+        var groupedMeasurements = aggregation switch
         {
             Aggregation.Year => listOfMeasurements.GroupBy(_ => _.DateFrom.Year.ToString()),
             Aggregation.Month => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM")),

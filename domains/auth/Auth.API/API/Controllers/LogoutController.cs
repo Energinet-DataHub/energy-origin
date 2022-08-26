@@ -1,6 +1,7 @@
 using API.Configuration;
 using API.Models;
 using API.Services;
+using API.Services.OidcProviders;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -8,30 +9,36 @@ namespace API.Controllers;
 
 public class LogoutController : ControllerBase
 {
-    readonly ITokenStorage _tokenStorage;
-    private readonly AuthOptions _authOptions;
+    readonly ITokenStorage tokenStorage;
+    private readonly IOidcProviders oidcProviders;
+    private readonly AuthOptions authOptions;
 
-    public LogoutController(ITokenStorage tokenStorage, IOptions<AuthOptions> authOptions)
+    public LogoutController(
+        ITokenStorage tokenStorage,
+        IOptions<AuthOptions> authOptions,
+        IOidcProviders oidcProviders
+        )
     {
-        _tokenStorage = tokenStorage;
-        _authOptions = authOptions.Value;
+        this.tokenStorage = tokenStorage;
+        this.authOptions = authOptions.Value;
+        this.oidcProviders = oidcProviders;
     }
 
     [HttpPost]
     [Route("/auth/logout")]
-    public ActionResult<LogoutResponse> Logout()
+    public async Task<ActionResult<LogoutResponse>> Logout()
     {
-        var opaqueToken = HttpContext.Request.Headers[_authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
+        var opaqueToken = HttpContext.Request.Headers[authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
 
         if (opaqueToken != null)
         {
-            var idToken = _tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
-            //TODO _oidcProviders.Logout(idToken);
-            _tokenStorage.DeleteByOpaqueToken(opaqueToken);
+            var idToken = tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
+            await oidcProviders.Logout(idToken);
+            tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 
-        Response.Cookies.Delete(_authOptions.CookieName);
+        Response.Cookies.Delete(authOptions.CookieName);
 
-        return Ok(new LogoutResponse { success = true });
+        return Ok(new LogoutResponse { Success = true });
     }
 }

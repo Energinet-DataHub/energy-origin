@@ -9,25 +9,29 @@ namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcService
 {
-    private readonly AuthOptions _authOptions;
-    private readonly ILogger<SignaturGruppen> _logger;
-    private readonly HttpClient _httpClient;
-    private readonly ICryptography _cryptography;
+    private readonly IOidcService oidcService;
+    private readonly AuthOptions authOptions;
+    private readonly ILogger<SignaturGruppen> logger;
+    private readonly HttpClient httpClient;
+    private readonly ICryptography cryptography;
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOptions<AuthOptions> authOptions,
-        HttpClient httpClient, ICryptography cryptography)
+    public SignaturGruppen(
+        ILogger<SignaturGruppen> logger,
+        IOptions<AuthOptions> authOptions,
+        HttpClient httpClient, ICryptography cryptography
+    )
     {
-        _logger = logger;
-        _authOptions = authOptions.Value;
-        _httpClient = httpClient;
-        _cryptography = cryptography;
+        this.logger = logger;
+        this.authOptions = authOptions.Value;
+        this.httpClient = httpClient;
+        this.cryptography = cryptography;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
     {
         var amrValues = new Dictionary<string, string>()
         {
-            { "amr_values", _authOptions.AmrValues }
+            { "amr_values", authOptions.AmrValues }
         };
         var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
@@ -38,22 +42,22 @@ public class SignaturGruppen : IOidcService
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var authorizationUri = new NextStep() { NextUrl = _authOptions.OidcUrl + query };
+        var authorizationUri = new NextStep() { NextUrl = authOptions.OidcUrl + query };
 
         return authorizationUri;
     }
 
     public async Task Logout(string token)
     {
-        var url = _authOptions.OidcUrl;
-        _httpClient.BaseAddress = new Uri(url);
+        var url = authOptions.OidcUrl;
+        httpClient.BaseAddress = new Uri(url);
 
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/session/logout", new { id_token = token });
+        var response = await httpClient.PostAsJsonAsync("/api/v1/session/logout", new { id_token = token });
         if (!response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
 
-            _logger.LogWarning("StatusCode: {StatusCode}, url: {Url}, content: {Content}",
+            logger.LogWarning("StatusCode: {StatusCode}, url: {Url}, content: {Content}",
                 response.StatusCode, response.RequestMessage?.RequestUri, content);
         }
     }
@@ -65,10 +69,10 @@ public class SignaturGruppen : IOidcService
         var query = new QueryBuilder
         {
             { "response_type", responseType },
-            { "client_id", _authOptions.OidcClientId },
+            { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", _authOptions.Scope },
-            { "state", _cryptography.Encrypt(serilizedJson) },
+            { "scope", authOptions.Scope },
+            { "state", cryptography.Encrypt(serilizedJson) },
             { "language", lang }
         };
 

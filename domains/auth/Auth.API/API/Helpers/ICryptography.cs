@@ -1,7 +1,7 @@
 namespace API.Helpers;
 public interface ICryptography
 {
-    public string Encrypt(string state);
-    public string Decrypt(string encryptedState);
+    string Encrypt<T>(T state);
+    T Decrypt<T>(string encryptedState);
 }
 

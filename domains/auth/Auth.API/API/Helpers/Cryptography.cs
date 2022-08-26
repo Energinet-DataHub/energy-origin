@@ -1,62 +1,64 @@
-using API.Configuration;
-using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using API.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace API.Helpers;
 
 public class Cryptography : ICryptography
 {
-    private readonly AuthOptions _authOptions;
+    private readonly AuthOptions authOptions;
 
     public Cryptography(IOptions<AuthOptions> authOptions)
     {
-        _authOptions = authOptions.Value;
+        this.authOptions = authOptions.Value;
     }
 
-    public string Encrypt(string state)
+    public string Encrypt<T>(T state)
     {
-        using (Aes aes = Aes.Create())
-        {
-            aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
-            ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                memoryStream.Write(aes.IV);
+        using var aes = Aes.Create();
 
-                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                {
-                    using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
-                    {
-                        streamWriter.Write(state);
-                    }
-                }
-                return Convert.ToBase64String(memoryStream.ToArray());
-            }
-        }
+        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
+        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using var memoryStream = new MemoryStream();
+        memoryStream.Write(aes.IV);
+
+        using var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
+        using var streamWriter = new StreamWriter(cryptoStream);
+        var jsonObject = JsonSerializer.Serialize(state);
+        streamWriter.Write(jsonObject);
+
+        streamWriter.Close();
+
+        return Convert.ToBase64String(memoryStream.ToArray());
     }
 
-    public string Decrypt(string encryptedState)
+    public T Decrypt<T>(string encryptedState)
     {
-        byte[] buffer = Convert.FromBase64String(encryptedState);
+        var buffer = Convert.FromBase64String(encryptedState);
+
+        using var memoryStream = new MemoryStream(buffer);
+
         var iv = new byte[16];
-        using (MemoryStream memoryStream = new MemoryStream(buffer))
-        {
-            memoryStream.Read(iv, 0, 16);
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(_authOptions.SecretKey);
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+        memoryStream.Read(iv, 0, 16);
 
-                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
-                {
-                    using (StreamReader streamReader = new StreamReader(cryptoStream))
-                    {
-                        return streamReader.ReadToEnd();
-                    }
-                }
+        using var aes = Aes.Create();
+        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
+        aes.IV = iv;
+
+        var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+        using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+        using var streamReader = new StreamReader(cryptoStream);
+
+        return JsonSerializer.Deserialize<T>(
+            streamReader.ReadToEnd(),
+            new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             }
-        }
+        );
     }
 }
