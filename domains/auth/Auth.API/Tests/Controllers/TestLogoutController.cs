@@ -59,7 +59,6 @@ public class TestLogoutController
 
         await logoutController.Logout();
 
-        //Assert
         Assert.Equal(expectedExpiredCookie, logoutController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
     }
 
