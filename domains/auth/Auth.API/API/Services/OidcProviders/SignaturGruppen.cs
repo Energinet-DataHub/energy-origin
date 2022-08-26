@@ -72,6 +72,7 @@ public class SignaturGruppen : IOidcProviders
         var valueBytes = Encoding.UTF8.GetBytes($"{_authOptions.OidcClientId}:{_authOptions.OidcClientSecret}");
         var authorization = Convert.ToBase64String(valueBytes);
 
+
         var tokenRequest = new HttpRequestMessage(HttpMethod.Post, url);
         tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
         tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -82,12 +83,14 @@ public class SignaturGruppen : IOidcProviders
         });
         var tokenResponse = await _httpClient.SendAsync(tokenRequest);
 
+
         if (tokenResponse.StatusCode != HttpStatusCode.OK)
         {
             _logger.LogDebug($"FetchToken: tokenResponse: {tokenResponse.StatusCode}");
             _logger.LogDebug($"connect/token: authorization header: {tokenRequest.Headers}");
             throw new HttpRequestException(tokenResponse.StatusCode.ToString());
         }
+
 
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
         var token = JsonDocument.Parse(tokenJson).RootElement;

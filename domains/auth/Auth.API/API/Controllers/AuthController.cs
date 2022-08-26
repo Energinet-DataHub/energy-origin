@@ -81,7 +81,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            RedirectToFailure(authState, AuthError.FailedToCommunicateWithIdentityProvider);
+            var redirectUrl = _oidcProviders.BuildFailureUrl(authState, AuthError.FailedToCommunicateWithIdentityProvider);
+            HttpContext.Response.Redirect(redirectUrl.NextUrl);
         }
 
 
