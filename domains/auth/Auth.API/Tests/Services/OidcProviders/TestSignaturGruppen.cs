@@ -76,7 +76,6 @@ public class TestSignaturGruppen
     [Fact]
     public void RedirectSuccess()
     {
-        //Arrange
         const string expectedNextUrl =
             "http://localhost:8080?response_type=code&client_id=OIDCCLIENTID&redirect_uri=http%3A%2F%2Ftest.energioprindelse.dk" +
             "%2Fapi%2Fauth%2Foidc%2Flogin%2Fcallback&scope=SCOPE,%20SCOPE1&state=foo%3D42&language=en&" +

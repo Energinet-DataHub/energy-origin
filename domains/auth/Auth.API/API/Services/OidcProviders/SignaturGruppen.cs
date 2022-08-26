@@ -64,7 +64,7 @@ public class SignaturGruppen : IOidcService
 
     private QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
     {
-        var serilizedJson = JsonSerializer.Serialize(state);
+        var json = JsonSerializer.Serialize(state);
 
         var query = new QueryBuilder
         {
@@ -72,7 +72,7 @@ public class SignaturGruppen : IOidcService
             { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
             { "scope", authOptions.Scope },
-            { "state", cryptography.Encrypt(serilizedJson) },
+            { "state", cryptography.Encrypt(json) },
             { "language", lang }
         };
 
