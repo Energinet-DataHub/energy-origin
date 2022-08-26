@@ -1,10 +1,13 @@
+using System;
+using System;
+using System.Text.Json;
+using System.Text.Json;
 using API.Configuration;
+using API.Helpers;
 using API.Models;
 using API.Services;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Text.Json;
 using Xunit;
 using Xunit.Categories;
 
@@ -28,7 +31,7 @@ public sealed class TestCryptographics
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
 
-        var cryptoService = new CryptographyService(authOptionsMock.Object);
+        var cryptoService = new Cryptography(authOptionsMock.Object);
 
         var encryptedState = cryptoService.Encrypt(state.ToString());
 
@@ -36,8 +39,8 @@ public sealed class TestCryptographics
         Assert.NotEmpty(encryptedState);
         Assert.IsType<string>(encryptedState);
 
-        Span<byte> buffer = new Span<byte>(new byte[encryptedState.Length]);
-        var base64DecodedState = Convert.TryFromBase64String(encryptedState, buffer, out int bytesParsed);
+        var buffer = new Span<byte>(new byte[encryptedState.Length]);
+        var base64DecodedState = Convert.TryFromBase64String(encryptedState, buffer, out var bytesParsed);
 
         Assert.True(base64DecodedState);
     }
@@ -54,19 +57,16 @@ public sealed class TestCryptographics
             ReturnUrl = returnUrl
         };
 
-        var serilizedJson = JsonSerializer.Serialize(state);
-
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
 
-        var cryptoService = new CryptographyService(authOptionsMock.Object);
-        var encryptedState = cryptoService.Encrypt(serilizedJson);
+        var cryptoService = new Cryptography(authOptionsMock.Object);
+        var encryptedState = cryptoService.Encrypt(state);
 
-        var decryptedState = cryptoService.Decrypt(encryptedState);
+        var decryptedState = cryptoService.Decrypt<AuthState>(encryptedState);
 
         Assert.NotNull(decryptedState);
-        Assert.NotEmpty(decryptedState);
-        Assert.IsType<string>(decryptedState);
-        Assert.Equal(serilizedJson, decryptedState);
+        Assert.IsType<AuthState>(decryptedState);
+        Assert.Equal(state, decryptedState);
     }
 }

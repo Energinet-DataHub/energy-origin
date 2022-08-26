@@ -5,40 +5,40 @@ namespace EnergyOriginEventStore.EventStore.Memory;
 
 internal class MemoryEventConsumer : IEventConsumer
 {
-    private readonly MemoryEventStore _store;
-    private readonly IUnpacker _unpacker;
-    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers;
-    private readonly Action<string, Exception>? _exceptionHandler;
-    private readonly MemoryPointer? _pointer;
-    private readonly string _topicPrefix;
+    private readonly MemoryEventStore store;
+    private readonly IUnpacker unpacker;
+    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
+    private readonly Action<string, Exception>? exceptionHandler;
+    private readonly MemoryPointer? pointer;
+    private readonly string topicPrefix;
 
     public MemoryEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, MemoryEventStore store, string topicPrefix, MemoryPointer? pointer)
     {
-        _store = store;
-        _unpacker = unpacker;
-        _handlers = handlers;
-        _topicPrefix = topicPrefix;
-        _pointer = pointer;
-        _exceptionHandler = exceptionHandler;
+        this.store = store;
+        this.unpacker = unpacker;
+        this.handlers = handlers;
+        this.topicPrefix = topicPrefix;
+        this.pointer = pointer;
+        this.exceptionHandler = exceptionHandler;
 
-        Task.Run(async () => await _store.Attach(this).ConfigureAwait(false));
+        Task.Run(async () => await store.Attach(this).ConfigureAwait(false));
     }
 
     internal void OnMessage(object? sender, MessageEventArgs e)
     {
-        if (!e.Topic.StartsWith(_topicPrefix)) return;
+        if (!e.Topic.StartsWith(topicPrefix)) return;
 
-        var reconstructedEvent = _unpacker.UnpackEvent(e.Message);
-        if (_pointer != null && !e.Pointer.IsAfter(_pointer)) return;
+        var reconstructedEvent = unpacker.UnpackEvent(e.Message);
+        if (pointer != null && !e.Pointer.IsAfter(pointer)) return;
 
-        var reconstructed = _unpacker.UnpackModel(reconstructedEvent);
+        var reconstructed = unpacker.UnpackModel(reconstructedEvent);
         var type = reconstructed.GetType();
         var typeString = type.ToString();
 
-        var handlers = _handlers.GetValueOrDefault(type);
+        var handlers = this.handlers.GetValueOrDefault(type);
         if (handlers == null)
         {
-            _exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+            exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type}"));
         }
 
         (handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).AsParallel().ForAll(x =>
@@ -49,7 +49,7 @@ internal class MemoryEventConsumer : IEventConsumer
             }
             catch (Exception exception)
             {
-                _exceptionHandler?.Invoke(typeString, exception);
+                exceptionHandler?.Invoke(typeString, exception);
             }
         });
     }
