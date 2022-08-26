@@ -25,16 +25,6 @@ public class TokenController : ControllerBase
     }
 
     [HttpGet]
-    [Route("CreateTestCookie")]
-    public ActionResult CreateTestToken()
-    {
-        var opaqueToken = "test";
-        var cookieOptions = cookies.CreateCookieOptions(authOptions.CookieExpiresTimeDelta);
-        HttpContext.Response.Cookies.Append($"{authOptions.CookieName}", $"{opaqueToken}", cookieOptions);
-        return Ok();
-    }
-
-    [HttpGet]
     [Route("/token/forward-auth")]
     public ActionResult ForwardAuth()
     {
