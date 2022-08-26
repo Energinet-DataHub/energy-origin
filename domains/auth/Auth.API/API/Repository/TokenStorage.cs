@@ -33,7 +33,7 @@ namespace API.TokenStorage
         {
             // TODO Get interalToken from DB
 
-            InternalToken interalToken = new InternalToken();
+            var interalToken = new InternalToken();
             if (interalToken == null)
             {
                 return null;

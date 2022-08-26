@@ -1,12 +1,12 @@
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
 using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Serilog;
 using Serilog.Formatting.Json;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 [assembly: InternalsVisibleTo("Tests")]
 
