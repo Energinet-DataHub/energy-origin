@@ -5,41 +5,41 @@ namespace EnergyOriginEventStore.EventStore.Database;
 
 internal class DatabaseEventConsumerBuilder : IEventConsumerBuilder
 {
-    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> _handlers = new();
-    private Action<string, Exception>? _exceptionHandler;
-    private readonly DatabaseEventContext _context;
-    private readonly string _topicPrefix;
-    private string? _pointer;
+    private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers = new();
+    private Action<string, Exception>? exceptionHandler;
+    private readonly DatabaseEventContext context;
+    private readonly string topicPrefix;
+    private string? pointer;
 
-    public DatabaseEventConsumerBuilder(DatabaseEventContext store, string topicPrefix)
+    public DatabaseEventConsumerBuilder(DatabaseEventContext context, string topicPrefix)
     {
-        _context = store;
-        _topicPrefix = topicPrefix;
+        this.context = context;
+        this.topicPrefix = topicPrefix;
     }
 
     public IEventConsumerBuilder AddHandler<T>(Action<Event<T>> handler) where T : EventModel
     {
-        Type type = typeof(T);
+        var type = typeof(T);
 
-        var list = _handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
+        var list = handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
 
         Action<Event<EventModel>> castedHandler = e => handler(new Event<T>((T)e.EventModel, e.Pointer));
-        _handlers[type] = list.Append(castedHandler);
+        handlers[type] = list.Append(castedHandler);
 
         return this;
     }
 
     public IEventConsumerBuilder SetExceptionHandler(Action<string, Exception> handler)
     {
-        _exceptionHandler = handler;
+        exceptionHandler = handler;
         return this;
     }
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        _pointer = pointer;
+        this.pointer = pointer;
         return this;
     }
 
-    public IEventConsumer Build() => new DatabaseEventConsumer(new Unpacker(), _handlers, _exceptionHandler, _context, _topicPrefix, _pointer);
+    public IEventConsumer Build() => new DatabaseEventConsumer(new Unpacker(), handlers, exceptionHandler, context, topicPrefix, pointer);
 }

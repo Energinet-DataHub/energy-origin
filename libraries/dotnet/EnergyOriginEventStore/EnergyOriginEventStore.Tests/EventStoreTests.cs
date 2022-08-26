@@ -214,7 +214,7 @@ public abstract class EventStoreTests
             .GetBuilder("Void")
             .SetExceptionHandler((type, exception) =>
             {
-                Assert.IsType(typeof(NotImplementedException), exception);
+                Assert.IsType<NotImplementedException>(exception);
                 hadException = true;
                 semaphore.Release();
             })
