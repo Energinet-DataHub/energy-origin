@@ -1,7 +1,7 @@
-using API.Models;
-using EnergyOriginDateTimeExtension;
 using System;
 using System.Collections.Generic;
+using API.Models;
+using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 internal class MeasurementAggregationDataSetFactory

@@ -4,20 +4,22 @@
     ViewData["Title"] = "Sign in";
 }
 
-<div>
-    <h1>Sign in</h1>
+<main>
+    <img src="~/logo.png" alt="logo" class="logo">
+    <h2 class="action-text">Sign in as specific personas</h2>
 
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
         {
             <button name="name" value="@user.Name" type="submit" class="peopleButton">
-                <img src="@user.ImageUrl"/>
-                <div>
+                <div class="image">
+                    <img src="@user.ImageUrl"/>
+                </div>
+                <div class="details">
                     <h2>@user.Name</h2>
                     <p>@user.Description</p>
-                    <p>Log ind</p>
                 </div>
             </button>
         }
     </form>
-</div>
+</main>

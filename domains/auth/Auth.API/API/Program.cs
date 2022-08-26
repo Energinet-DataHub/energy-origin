@@ -1,11 +1,16 @@
-using API.Configuration;
-using API.Services;
-using API.TokenStorage;
-using Serilog;
-using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.Configuration;
+using API.Helpers;
+using API.Models;
+using API.Services;
+using API.Services.OidcProviders;
+using FluentValidation;
+using API.TokenStorage;
+using Serilog;
+using Serilog.Formatting.Json;
+
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -32,9 +37,9 @@ builder.Services.AddHealthChecks();
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
-builder.Services.AddScoped<ICryptographyService, CryptographyService>();
-builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
-builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddScoped<ICryptography, Cryptography>();
+builder.Services.AddScoped<IOidcService, SignaturGruppen>();
+builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
 

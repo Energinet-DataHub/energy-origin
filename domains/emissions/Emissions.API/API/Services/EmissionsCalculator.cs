@@ -29,7 +29,7 @@ class EmissionsCalculator : IEmissionsCalculator
                     Consumption: measurement.Quantity
                 )));
 
-        IEnumerable<IGrouping<string, Emission>> groupedEmissions = GetGroupedEmissions(aggregation, listOfEmissions);
+        var groupedEmissions = GetGroupedEmissions(aggregation, listOfEmissions);
 
         foreach (var groupedEmission in groupedEmissions)
         {
