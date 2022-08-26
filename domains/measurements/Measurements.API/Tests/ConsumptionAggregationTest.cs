@@ -1,8 +1,8 @@
+using System;
+using System.Linq;
 using API.Models;
 using API.Services;
 using EnergyOriginDateTimeExtension;
-using System;
-using System.Linq;
 using Xunit;
 using Xunit.Categories;
 

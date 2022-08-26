@@ -5,20 +5,20 @@ namespace EnergyOriginEventStore.EventStore.Serialization;
 
 public abstract record EventModel
 {
-    private readonly EventModelVersionAttribute _attribute;
+    private readonly EventModelVersionAttribute attribute;
 
     [JsonIgnore]
-    public string Type => _attribute.Type;
+    public string Type => attribute.Type;
 
     [JsonIgnore]
-    public int Version => _attribute.Version;
+    public int Version => attribute.Version;
 
     [JsonIgnore]
     public string Data => JsonConvert.SerializeObject(this);
 
     protected EventModel()
     {
-        _attribute = GetType().GetCustomAttribute<EventModelVersionAttribute>(false) ??
+        attribute = GetType().GetCustomAttribute<EventModelVersionAttribute>(false) ??
                      throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
     }
 

@@ -1,7 +1,7 @@
-using API.Models;
-using API.TokenStorage;
 using System;
 using System.Collections.Generic;
+using API.Models;
+using API.TokenStorage;
 using Xunit;
 using Xunit.Categories;
 
@@ -23,7 +23,7 @@ public sealed class TestTokenStorage
     {
         var tokenStorage = new TokenStorage();
 
-        InternalToken interalToken = new InternalToken()
+        var internalToken = new InternalToken()
         {
             Actor = "Actor",
             Subject = "Subject",
@@ -32,18 +32,18 @@ public sealed class TestTokenStorage
             Expires = expires,
         };
 
-        var isValid = tokenStorage.InternalTokenValidation(interalToken);
+        var isValid = tokenStorage.InternalTokenValidation(internalToken);
 
         Assert.Equal(expectedIsValid, isValid);
     }
 
-    public static IEnumerable<object[]> interalTokens => new[]
+    public static IEnumerable<object[]> InternalTokens => new[]
 {
             new object[] { new InternalToken(){ Actor = "Actor", Subject = "Subject", Scope = new List<string> { "Scope1", "Scope2" }, Issued = DateTime.UtcNow.AddHours(-1), Expires = DateTime.UtcNow.AddHours(5) }, true },
             new object[] { null , false},
     };
 
-    [Theory, MemberData(nameof(interalTokens))]
+    [Theory, MemberData(nameof(InternalTokens))]
     public void TokenStorage_InteralTokenIsNotNullValidation(InternalToken? interalToken, bool expectedIsValid)
     {
         var tokenStorage = new TokenStorage();

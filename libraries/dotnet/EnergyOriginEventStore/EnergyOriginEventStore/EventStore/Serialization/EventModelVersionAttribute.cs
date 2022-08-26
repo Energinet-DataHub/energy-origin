@@ -9,7 +9,7 @@ public class EventModelVersionAttribute : Attribute
 
     public EventModelVersionAttribute(string type, int version)
     {
-        this.Type = type;
-        this.Version = version;
+        Type = type;
+        Version = version;
     }
 }
