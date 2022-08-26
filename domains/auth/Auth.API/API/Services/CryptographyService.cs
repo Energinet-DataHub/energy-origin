@@ -121,33 +121,4 @@ public class CryptographyService : ICryptographyService
             Subject = claims.First(x => x.Type == "subject").Value
         };
     }
-
-    public bool ValidateJwtToken(string token)
-    {
-        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_authOptions.SecretKey));
-
-        var issuer = "Energy Origin";
-        var audience = "http://energioprindelse.dk";
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        try
-        {
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidIssuer = issuer,
-                ValidAudience = audience,
-                IssuerSigningKey = key
-            }, out SecurityToken validatedToken);
-        }
-        catch
-        {
-            return false;
-        }
-        return true;
-    }
-
-
 }

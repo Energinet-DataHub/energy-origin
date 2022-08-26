@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
+using System.Text;
 
 namespace API.Services;
 
@@ -64,6 +65,34 @@ public class SignaturGruppen : IOidcProviders
 
         return data!;
     }
+    public async Task<JsonElement> FetchToken(AuthState state, string code, string redirectUri)
+    {
+        string url = $"{_authOptions.AuthorityUrl}/connect/token";
+
+        var valueBytes = Encoding.UTF8.GetBytes($"{_authOptions.OidcClientId}:{_authOptions.OidcClientSecret}");
+        var authorization = Convert.ToBase64String(valueBytes);
+
+        var tokenRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
+        tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "code", code },
+            { "grant_type", "authorization_code" },
+            { "redirect_uri", redirectUri }
+        });
+        var tokenResponse = await _httpClient.SendAsync(tokenRequest);
+
+        if (tokenResponse.StatusCode != HttpStatusCode.OK)
+        {
+            _logger.LogDebug($"FetchToken: tokenResponse: {tokenResponse.StatusCode}");
+            _logger.LogDebug($"connect/token: authorization header: {tokenRequest.Headers}");
+            throw new HttpRequestException(tokenResponse.StatusCode.ToString());
+        }
+
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var token = JsonDocument.Parse(tokenJson).RootElement;
+        return token;
+    }
 
     public bool isError(OidcCallbackParams oidcCallbackParams)
     {
@@ -85,9 +114,9 @@ public class SignaturGruppen : IOidcProviders
         return BuildFailureUrl(authState, error);
     }
 
-    private NextStep BuildFailureUrl(AuthState authState, AuthError error)
+    public NextStep BuildFailureUrl(AuthState authState, AuthError error)
     {
-         var query = new QueryBuilder
+        var query = new QueryBuilder
         {
             { "success", "0" },
             { "error_code", error.ErrorCode },

@@ -9,6 +9,7 @@ using API.Controllers.dto;
 using Microsoft.AspNetCore.Http.Extensions;
 using API.Orchestrator;
 using System.Reflection;
+using API.Errors;
 
 namespace API.Controllers;
 
@@ -18,17 +19,19 @@ public class AuthController : ControllerBase
 {
     readonly ILogger<AuthController> _logger;
     readonly IOidcProviders _oidcProviders;
+    private IOidcService _oidcService;
     readonly ITokenStorage _tokenStorage;
     private readonly AuthOptions _authOptions;
     private readonly IOrchestrator _orchestrator;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, IOrchestrator orchestrator)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, IOrchestrator orchestrator, IOidcService oidcService)
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
         _tokenStorage = tokenStorage;
         _orchestrator = orchestrator;
+        _oidcService = oidcService;
     }
 
     [HttpGet]
@@ -48,7 +51,7 @@ public class AuthController : ControllerBase
 
     [HttpGet]
     [Route("/oidc/login/callback")]
-    public NextStep Callback(OidcCallbackParams oidcCallbackParams)
+    public async Task<NextStep> CallbackAsync(OidcCallbackParams oidcCallbackParams)
     {
         AuthState? authState = new AuthState();
 
@@ -71,10 +74,26 @@ public class AuthController : ControllerBase
             HttpContext.Response.Redirect(redirectlocation.NextUrl);
         }
 
-        _orchestrator.Next(authState, oidcCallbackParams.Code);
+        var redirectUri = _authOptions.ServiceUrl + _authOptions.OidcLoginCallbackPath;
+        try
+        {
+            var oidcToken = await _oidcProviders.FetchToken(authState, oidcCallbackParams.Code, redirectUri);
+        }
+        catch (Exception ex)
+        {
+            RedirectToFailure(authState, AuthError.FailedToCommunicateWithIdentityProvider);
+        }
+
+
+
+
+
+
+        //_orchestrator.Next(authState, oidcCallbackParams.Code);
 
         return new NextStep();
     }
+
 
 
 
