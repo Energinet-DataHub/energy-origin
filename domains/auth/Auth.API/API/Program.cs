@@ -40,7 +40,6 @@ builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IOidcService, SignaturGruppen>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
-builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
 
 var app = builder.Build();
