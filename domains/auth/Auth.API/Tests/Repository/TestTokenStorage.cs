@@ -1,7 +1,7 @@
-using API.Models;
-using API.TokenStorage;
 using System;
 using System.Collections.Generic;
+using API.Models;
+using API.TokenStorage;
 using Xunit;
 using Xunit.Categories;
 

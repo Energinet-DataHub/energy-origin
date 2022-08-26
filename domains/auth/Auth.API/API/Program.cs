@@ -6,8 +6,8 @@ using API.Helpers;
 using API.Models;
 using API.Services;
 using API.Services.OidcProviders;
-using FluentValidation;
 using API.TokenStorage;
+using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
 
