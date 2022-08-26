@@ -1,28 +1,30 @@
 using System.Text.Json;
 using API.Configuration;
+using API.Helpers;
 using API.Models;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace API.Services.OidcProviders;
 
-public class SignaturGruppen : IOidcProviders
+public class SignaturGruppen : IOidcService
 {
     private readonly IOidcService oidcService;
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
+    private readonly ICryptography cryptography;
 
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
-        IOidcService oidcService,
         IOptions<AuthOptions> authOptions,
-        HttpClient httpClient
+        HttpClient httpClient, ICryptography cryptography
     )
     {
         this.logger = logger;
-        this.oidcService = oidcService;
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
+        this.cryptography = cryptography;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -36,11 +38,11 @@ public class SignaturGruppen : IOidcProviders
             { "nemid", amrValues }
         };
 
-        var query = oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
+        var query = CreateAuthorizationRedirectUrl("code", state, "en");
 
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
 
-        var authorizationUri = new NextStep() { NextUrl = authOptions.OidcUrl + query.ToString() };
+        var authorizationUri = new NextStep() { NextUrl = authOptions.OidcUrl + query };
 
         return authorizationUri;
     }
@@ -58,5 +60,22 @@ public class SignaturGruppen : IOidcProviders
             logger.LogWarning("StatusCode: {StatusCode}, url: {Url}, content: {Content}",
                 response.StatusCode, response.RequestMessage?.RequestUri, content);
         }
+    }
+
+    private QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
+    {
+        var json = JsonSerializer.Serialize(state);
+
+        var query = new QueryBuilder
+        {
+            { "response_type", responseType },
+            { "client_id", authOptions.OidcClientId },
+            { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
+            { "scope", authOptions.Scope },
+            { "state", cryptography.Encrypt(json) },
+            { "language", lang }
+        };
+
+        return query;
     }
 }

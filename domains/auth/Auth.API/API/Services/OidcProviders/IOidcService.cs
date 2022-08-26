@@ -2,7 +2,7 @@ using API.Models;
 
 namespace API.Services.OidcProviders;
 
-public interface IOidcProviders
+public interface IOidcService
 {
     NextStep CreateAuthorizationUri(AuthState state);
     Task Logout(string token);

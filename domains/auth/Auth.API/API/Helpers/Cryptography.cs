@@ -5,13 +5,13 @@ using System.Text.Json.Serialization;
 using API.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace API.Services;
+namespace API.Helpers;
 
-public class CryptographyService : ICryptographyService
+public class Cryptography : ICryptography
 {
     private readonly AuthOptions authOptions;
 
-    public CryptographyService(IOptions<AuthOptions> authOptions)
+    public Cryptography(IOptions<AuthOptions> authOptions)
     {
         this.authOptions = authOptions.Value;
     }

@@ -1,6 +1,9 @@
 using System;
+using System;
+using System.Text.Json;
 using System.Text.Json;
 using API.Configuration;
+using API.Helpers;
 using API.Models;
 using API.Services;
 using Microsoft.Extensions.Options;
@@ -28,7 +31,7 @@ public sealed class TestCryptographics
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
 
-        var cryptoService = new CryptographyService(authOptionsMock.Object);
+        var cryptoService = new Cryptography(authOptionsMock.Object);
 
         var encryptedState = cryptoService.Encrypt(state.ToString());
 
@@ -57,7 +60,7 @@ public sealed class TestCryptographics
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
 
-        var cryptoService = new CryptographyService(authOptionsMock.Object);
+        var cryptoService = new Cryptography(authOptionsMock.Object);
         var encryptedState = cryptoService.Encrypt(state);
 
         var decryptedState = cryptoService.Decrypt<AuthState>(encryptedState);
