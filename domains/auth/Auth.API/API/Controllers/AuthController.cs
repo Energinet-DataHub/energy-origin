@@ -1,10 +1,14 @@
+using API.Configuration;
 using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using API.Configuration;
-using Microsoft.Extensions.Options;
+using API.Controllers.dto;
+using Microsoft.AspNetCore.Http.Extensions;
+using API.Orchestrator;
+using System.Reflection;
 
 namespace API.Controllers;
 
@@ -16,27 +20,27 @@ public class AuthController : ControllerBase
     readonly IOidcProviders _oidcProviders;
     readonly ITokenStorage _tokenStorage;
     private readonly AuthOptions _authOptions;
+    private readonly IOrchestrator _orchestrator;
 
-    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
+    public AuthController(ILogger<AuthController> logger, IOidcProviders oidcProviders, IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, IOrchestrator orchestrator)
     {
         _logger = logger;
         _oidcProviders = oidcProviders;
         _authOptions = authOptions.Value;
         _tokenStorage = tokenStorage;
+        _orchestrator = orchestrator;
     }
 
     [HttpGet]
     [Route("/oidc/login")]
     public NextStep Login(
         [Required] string fe_url,
-        [Required] string return_url,
-        [Required] string type)
+        [Required] string return_url)
     {
         AuthState state = new AuthState()
         {
             FeUrl = fe_url,
-            ReturnUrl = return_url,
-            CustomerType = type
+            ReturnUrl = return_url
         };
 
         return _oidcProviders.CreateAuthorizationUri(state);
@@ -44,16 +48,36 @@ public class AuthController : ControllerBase
 
     [HttpGet]
     [Route("/oidc/login/callback")]
-    public NextStep Callback(
-        [Required] string code,
-        [Required] string state
-        )
+    public NextStep Callback(OidcCallbackParams oidcCallbackParams)
     {
-        AuthState authState = JsonSerializer.Deserialize<AuthState>(state)!;
+        AuthState? authState = new AuthState();
+
+        try
+        {
+            authState = JsonSerializer.Deserialize<AuthState>(oidcCallbackParams.State, new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            });
+        }
+        catch (Exception ex)
+        {
+            BadRequest(nameof(OidcCallbackParams.State) + " is not valid. Exception:" + ex);
+        }
+
+        if (_oidcProviders.isError(oidcCallbackParams))
+        {
+            var redirectlocation = _oidcProviders.OnOidcFlowFailed(authState, oidcCallbackParams);
+            //HttpContext.Response.Headers.Add("StatusCode", "307");
+            HttpContext.Response.Redirect(redirectlocation.NextUrl);
+        }
+
+        _orchestrator.Next(authState, oidcCallbackParams.Code);
 
         return new NextStep();
-
     }
+
+
+
 
     [HttpPost]
     [Route("/auth/logout")]

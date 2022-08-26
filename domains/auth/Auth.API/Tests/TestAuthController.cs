@@ -1,15 +1,20 @@
-using API.Services;
 using API.Configuration;
+using API.Controllers;
+using API.Controllers.dto;
+using API.Errors;
+using API.Models;
+using API.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using Xunit;
 using Xunit.Categories;
-using Moq;
-using API.Controllers;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System;
 
 namespace Tests.Controller;
 
@@ -65,4 +70,44 @@ public sealed class TestAuthController
         //Assert
         Assert.Equal(expectedExpiredCookie, authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
     }
+
+    [Theory]
+    [InlineData("error", true)]
+    [InlineData(null, false)]
+    public void OidcProviders_IsError(string error, bool expectedIsError)
+    {
+        var oidcServiceMock = new Mock<IOidcService>();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new HttpClient());
+
+        OidcCallbackParams oidcCallbackParams = new OidcCallbackParams() { Error = error };
+
+        Assert.Equal(expectedIsError, signaturGruppen.isError(oidcCallbackParams));
+    }
+
+    [Theory]
+    [InlineData("mitid_user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("foo", "bar?success=0&error_code=E0&error=Unknown%20error%20from%20Identity%20Provider")]
+    public void OidcProviders_OnOidcFlowFailed(string ErrorDescription, string expectedNextUrl)
+    {
+        var oidcServiceMock = new Mock<IOidcService>();
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new HttpClient());
+
+        var state = new AuthState
+        {
+            FeUrl = "foo",
+            ReturnUrl = "bar",
+        };
+
+        OidcCallbackParams oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription  };
+
+        var res = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
+
+        Assert.Equal(expectedNextUrl, res.NextUrl);
+    }
+
 }

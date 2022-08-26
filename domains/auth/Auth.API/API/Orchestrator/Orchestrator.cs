@@ -1,3 +1,4 @@
+using API.Configuration;
 using API.Models;
 using API.Services;
 
@@ -9,18 +10,24 @@ public class Orchestrator : IOrchestrator
     readonly IOidcService _oidcService;
     readonly IOidcProviders _oidcProviders;
     readonly ICryptographyService _cryptographyService;
-    public Orchestrator(ILogger<Orchestrator> logger, IOidcService service, ICryptographyService cryptography, IOidcProviders oidcProviders)
+    private readonly AuthOptions _authOptions;
+
+    public Orchestrator(ILogger<Orchestrator> logger, IOidcService service, ICryptographyService cryptography, IOidcProviders oidcProviders, AuthOptions authOptions)
     {
         _logger = logger;
         _oidcService = service;
         _cryptographyService = cryptography;
         _oidcProviders = oidcProviders;
+        _authOptions = authOptions;
     }
     public async void Next(AuthState state, string code)
     {
-        OidcTokenResponse oidcToken = await _oidcService.FetchToken(state, code);
 
-        IdTokenInfo rawIdToken = _cryptographyService.DecodeJwt<IdTokenInfo>(oidcToken.IdToken);
+        var redirectUri = _authOptions.ServiceUrl + _authOptions.OidcLoginCallbackPath;
+
+        OidcTokenResponse oidcToken = await _oidcService.FetchToken(state, code, redirectUri);
+
+        IdTokenInfo rawIdToken = _cryptographyService.DecodeJwtIdToken(oidcToken.IdToken);
 
         SignaturGruppenNemId userInfo;
 

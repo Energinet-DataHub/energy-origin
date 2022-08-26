@@ -1,12 +1,11 @@
 using API.Configuration;
+using API.Models;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using API.Models;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace API.Services;
 

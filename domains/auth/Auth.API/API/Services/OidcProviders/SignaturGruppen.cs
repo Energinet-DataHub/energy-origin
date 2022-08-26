@@ -1,8 +1,11 @@
 using API.Configuration;
+using API.Controllers.dto;
 using API.Models;
+using API.Errors;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using System.Net;
+using System.Text.Json;
 
 namespace API.Services;
 
@@ -25,25 +28,17 @@ public class SignaturGruppen : IOidcProviders
     {
         var query = _oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
 
-        if (state.CustomerType == "company")
-        {
-            var amrValues = new Dictionary<string, string>()
+        var amrValues = new Dictionary<string, string>()
         {
             { "amr_values", _authOptions.AmrValues }
         };
-            var nemId = new Dictionary<string, Dictionary<string, string>>()
+        var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
             { "nemid", amrValues }
         };
 
-            query.Add("idp_params", JsonSerializer.Serialize(nemId));
-            query.Add("private_to_business", "true");
-        }
-        else if (state.CustomerType == "private")
-        {
-            query.Add("scope", "mitid");
-        }
-
+        query.Add("idp_params", JsonSerializer.Serialize(nemId));
+        
         var authorizationUri = new NextStep() { NextUrl = _authOptions.AuthorityUrl + query.ToString() };
 
         return authorizationUri;
@@ -68,5 +63,39 @@ public class SignaturGruppen : IOidcProviders
         var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
 
         return data!;
+    }
+
+    public bool isError(OidcCallbackParams oidcCallbackParams)
+    {
+        return oidcCallbackParams.Error != null || oidcCallbackParams.ErrorDescription != null;
+    }
+
+    public NextStep OnOidcFlowFailed(AuthState authState, OidcCallbackParams oidcCallbackParams)
+    {
+        AuthError error = AuthError.UnknownErrorFromIdentityProvider;
+
+        if (oidcCallbackParams.ErrorDescription != null)
+        {
+            if (oidcCallbackParams.ErrorDescription == "mitid_user_aborted" || oidcCallbackParams.ErrorDescription == "user_aborted")
+            {
+                error = AuthError.UserInterrupted;
+            }
+        }
+
+        return BuildFailureUrl(authState, error);
+    }
+
+    private NextStep BuildFailureUrl(AuthState authState, AuthError error)
+    {
+         var query = new QueryBuilder
+        {
+            { "success", "0" },
+            { "error_code", error.ErrorCode },
+            { "error", error.ErrorDescription },
+        };
+
+        var errorUrl = new NextStep() { NextUrl = authState.ReturnUrl + query.ToString() };
+
+        return errorUrl;
     }
 }

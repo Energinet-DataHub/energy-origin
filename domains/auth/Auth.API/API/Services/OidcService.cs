@@ -1,9 +1,12 @@
 using API.Configuration;
+using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using System.Net;
+using System.Text;
+using System.Text.Json;
+using Jose;
 
 namespace API.Services;
 
@@ -26,13 +29,12 @@ public class OidcService : IOidcService
     {
         var serilizedJson = JsonSerializer.Serialize(state);
 
-
         var query = new QueryBuilder
         {
             { "response_type", responseType },
             { "client_id", _authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", "openid" },
+            { "scope", _authOptions.Scope},
             { "state", _cryptography.Encrypt(serilizedJson) },
             { "language", lang }
         };
@@ -40,30 +42,69 @@ public class OidcService : IOidcService
         return query;
     }
 
-    public async Task<OidcTokenResponse> FetchToken(AuthState state, string code)
+    public async Task<OidcTokenResponse> FetchToken(AuthState state, string code, string redirectUri)
     {
-        string uri = $"{_authOptions.AuthorityUrl}/connect/token";
+        string url = $"{_authOptions.AuthorityUrl}/connect/token";
 
-        OidcToken jsonData = new OidcToken()
+        var valueBytes = Encoding.UTF8.GetBytes($"{_authOptions.OidcClientId}:{_authOptions.OidcClientSecret}");
+        var authorization = Convert.ToBase64String(valueBytes);
+
+        var tokenRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        tokenRequest.Headers.Add("Authorization", $"Basic {authorization}");
+        tokenRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            GrantType = "authorization_code",
-            RedirectUrl = state.ReturnUrl,
-            Code = code,
-            ClientId = _authOptions.OidcClientId,
-            ClientSecret = _authOptions.OidcClientSecret
-        };
+            { "code", code },
+            { "grant_type", "authorization_code" },
+            { "redirect_uri", redirectUri }
+        });
+        var tokenResponse = await _httpClient.SendAsync(tokenRequest);
 
-        var res = await _httpClient.PostAsJsonAsync(uri, jsonData);
-
-        if (res.StatusCode != HttpStatusCode.OK)
+        if (tokenResponse.StatusCode != HttpStatusCode.OK)
         {
-            // This should be changes to have better logging
-            _logger.LogCritical(res.StatusCode.ToString());
-            throw new HttpRequestException(res.StatusCode.ToString());
+            _logger.LogDebug($"FetchToken: tokenResponse: {tokenResponse.StatusCode}");
+            _logger.LogDebug($"connect/token: authorization header: {tokenRequest.Headers}");
+            throw new HttpRequestException(tokenResponse.StatusCode.ToString());
         }
 
-        var data = JsonSerializer.Deserialize<OidcTokenResponse>(res.Content.ToString()!);
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var token = JsonDocument.Parse(tokenJson).RootElement;
+
+        var idTokenJwt = token.GetProperty("id_token").GetString()!;
+        var idTokenJson = idTokenJwt.GetJwtPayload();
+        var idToken = JsonDocument.Parse(idTokenJson).RootElement;
+
+
+
+
+
+        var data = JsonSerializer.Deserialize<OidcTokenResponse>(tokenResponse.Content.ToString()!);
 
         return data!;
     }
+
+    public string EncodeBase64(this string value)
+    {
+        var valueBytes = Encoding.UTF8.GetBytes(value);
+        return Convert.ToBase64String(valueBytes);
+    }
+
+    public async Task<string> GetJwkAsync()
+    {
+        var jwkResponse = await _httpClient.GetAsync($"{_authOptions.AuthorityUrl}/.well-known/openid-configuration/jwks");
+        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
+        var jwk = jwkSet.Keys.Single();
+
+
+        if (jwksResponse.StatusCode != HttpStatusCode.OK)
+        {
+            // This should be changes to have better logging
+            _logger.LogCritical(jwksResponse.StatusCode.ToString());
+            throw new HttpRequestException(jwksResponse.StatusCode.ToString());
+        }
+
+        var jwks = await jwksResponse.Content.ReadAsStringAsync();
+
+        return jwks;
+    }
+
 }

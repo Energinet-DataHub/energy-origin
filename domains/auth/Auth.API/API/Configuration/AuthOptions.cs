@@ -14,8 +14,10 @@ public class AuthOptions
     public string OidcClientId { get; set; }
     public string OidcClientSecret { get; set; }
 
-    // Base url
+    // Urls
     public string BaseUrl { get; set; }
+    public string ServiceUrl { get; set; }
+    public string OidcLoginCallbackPath { get; set; }
 
     // Cryptography
     public string SecretKey { get; set; }
