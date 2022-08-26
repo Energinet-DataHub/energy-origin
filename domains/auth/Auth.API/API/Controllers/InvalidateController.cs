@@ -12,12 +12,15 @@ namespace API.Controllers;
 [ApiController]
 public class InvalidateController : ControllerBase
 {
-    readonly IOidcService oidcService;
+    private readonly IOidcService oidcService;
     private readonly IValidator<AuthState?> validator;
     private readonly ICryptography cryptography;
 
-    public InvalidateController(IOidcService oidcService, ICryptography cryptography,
-        IValidator<AuthState> validator)
+    public InvalidateController(
+        IOidcService oidcService,
+        ICryptography cryptography,
+        IValidator<AuthState> validator
+    )
     {
         this.oidcService = oidcService;
         this.validator = validator;
@@ -25,7 +28,7 @@ public class InvalidateController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/invalidate")]
+    [Route("/auth/invalidate")]
     public async Task<IActionResult> Invalidate([FromQuery] string state)
     {
         AuthState? authState;

@@ -15,7 +15,7 @@ public class LoginController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/oidc/login")]
+    [Route("/auth/oidc/login")]
     public NextStep Login(
         [Required] string feUrl,
         [Required] string returnUrl)
