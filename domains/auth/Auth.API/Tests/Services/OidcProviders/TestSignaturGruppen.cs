@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using API.Configuration;
 using API.Helpers;
+using API.Models;
 using API.Services.OidcProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,10 +26,15 @@ public class TestSignaturGruppen
 
     public TestSignaturGruppen()
     {
-        mockAuthOptions.Setup(a => a.Value).Returns(new AuthOptions
-        {
-            OidcUrl = "http://localhost:8080"
-        });
+        mockAuthOptions
+            .Setup(x => x.Value)
+            .Returns(new AuthOptions
+            {
+                OidcClientId = "OIDCCLIENTID",
+                Scope = "SCOPE, SCOPE1",
+                OidcUrl = "http://localhost:8080",
+                AmrValues = "AMRVALUES"
+            });
 
         signaturGruppen = new SignaturGruppen(
             mockLogger.Object,
@@ -65,5 +71,29 @@ public class TestSignaturGruppen
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
             Times.Once);
+    }
+
+    [Fact]
+    public void RedirectSuccess()
+    {
+        //Arrange
+        const string expectedNextUrl =
+            "http://localhost:8080?response_type=code&client_id=OIDCCLIENTID&redirect_uri=http%3A%2F%2Ftest.energioprindelse.dk" +
+            "%2Fapi%2Fauth%2Foidc%2Flogin%2Fcallback&scope=SCOPE,%20SCOPE1&state=foo%3D42&language=en&" +
+            "idp_params=%7B%22nemid%22%3A%7B%22amr_values%22%3A%22AMRVALUES%22%7D%7D";
+
+        var state = new AuthState
+        {
+            FeUrl = "http://test.energioprindelse.dk",
+            ReturnUrl = "https://demo.energioprindelse.dk/dashboard"
+        };
+
+        cryptography
+            .Setup(x => x.Encrypt(It.IsAny<string>()))
+            .Returns("foo=42");
+
+        var res = signaturGruppen.CreateAuthorizationUri(state);
+
+        Assert.Equal(expectedNextUrl, res.NextUrl);
     }
 }

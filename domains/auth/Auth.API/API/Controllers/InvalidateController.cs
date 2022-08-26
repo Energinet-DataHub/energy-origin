@@ -1,54 +1,52 @@
-using API.Models;
-using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
+using API.Models;
 using API.Services.OidcProviders;
 using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 public class InvalidateController : ControllerBase
 {
-    readonly IOidcService _oidcService;
-    private readonly IValidator<AuthState?> _validator;
-    private readonly ICryptography _cryptography;
+    readonly IOidcService oidcService;
+    private readonly IValidator<AuthState?> validator;
+    private readonly ICryptography cryptography;
 
     public InvalidateController(IOidcService oidcService, ICryptography cryptography,
         IValidator<AuthState> validator)
     {
-        _oidcService = oidcService;
-        _validator = validator;
-        _cryptography = cryptography;
+        this.oidcService = oidcService;
+        this.validator = validator;
+        this.cryptography = cryptography;
     }
 
     [HttpPost]
     [Route("/invalidate")]
-    public IActionResult Invalidate([FromQuery] string state)
+    public async Task<IActionResult> Invalidate([FromQuery] string state)
     {
-        AuthState? authState = null;
+        AuthState? authState;
         try
         {
-            authState = JsonSerializer.Deserialize<AuthState>(
-                _cryptography.Decrypt(state),
-                new JsonSerializerOptions()
-                {
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                });
+            authState = cryptography.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
         catch (Exception e)
         {
-            return BadRequest("Cannot decrypt " + nameof(AuthState));
+            return BadRequest();
         }
 
-        var validationResult = _validator.Validate(authState);
+        var validationResult = await validator.ValidateAsync(authState);
+
         if (!validationResult.IsValid)
         {
-            return BadRequest(nameof(AuthState.IdToken) + " must not be null");
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
         }
 
-        _oidcService.Logout(authState.IdToken);
+        await oidcService.Logout(authState.IdToken);
         return Ok();
     }
 }

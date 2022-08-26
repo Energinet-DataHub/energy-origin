@@ -84,33 +84,4 @@ public class TestAuthController
         var response = await invalidateController.Invalidate(authStateAsString) as ObjectResult;
         Assert.IsType<ValidationProblemDetails>(response?.Value);
     }
-
-    [Theory]
-    [InlineData("Bearer foo")]
-    [InlineData(null)]
-    public void LogoutDeleteCookieSuccess(string? testToken)
-    {
-        var opaqueToken = "TestOpaqueToken";
-        var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-
-        var notExpiredCookie = new CookieOptions
-        {
-            Path = "/",
-            Domain = "energioprindelse.dk",
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = true,
-            Expires = DateTime.UtcNow.AddHours(6),
-        };
-
-        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
-
-        authController.Logout();
-
-        Assert.Equal(
-            expectedExpiredCookie,
-            authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
-        );
-    }
 }

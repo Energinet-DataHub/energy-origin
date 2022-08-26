@@ -10,18 +10,18 @@ namespace API.Controllers;
 public class LogoutController : ControllerBase
 {
     readonly ITokenStorage tokenStorage;
-    private readonly IOidcProviders oidcProviders;
+    private readonly IOidcService oidcService;
     private readonly AuthOptions authOptions;
 
     public LogoutController(
         ITokenStorage tokenStorage,
         IOptions<AuthOptions> authOptions,
-        IOidcProviders oidcProviders
+        IOidcService oidcService
         )
     {
         this.tokenStorage = tokenStorage;
         this.authOptions = authOptions.Value;
-        this.oidcProviders = oidcProviders;
+        this.oidcService = oidcService;
     }
 
     [HttpPost]
@@ -33,7 +33,7 @@ public class LogoutController : ControllerBase
         if (opaqueToken != null)
         {
             var idToken = tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);
-            await oidcProviders.Logout(idToken);
+            await oidcService.Logout(idToken);
             tokenStorage.DeleteByOpaqueToken(opaqueToken);
         }
 

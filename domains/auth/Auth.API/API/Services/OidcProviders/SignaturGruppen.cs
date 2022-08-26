@@ -2,8 +2,8 @@ using System.Text.Json;
 using API.Configuration;
 using API.Helpers;
 using API.Models;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace API.Services.OidcProviders;
 

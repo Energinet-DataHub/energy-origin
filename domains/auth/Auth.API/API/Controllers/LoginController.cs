@@ -7,11 +7,11 @@ namespace API.Controllers;
 
 public class LoginController : ControllerBase
 {
-    readonly IOidcService _oidcService;
+    readonly IOidcService oidcService;
 
     public LoginController(IOidcService oidcService)
     {
-        _oidcService = oidcService;
+        this.oidcService = oidcService;
     }
 
     [HttpGet]
@@ -20,12 +20,12 @@ public class LoginController : ControllerBase
         [Required] string feUrl,
         [Required] string returnUrl)
     {
-        AuthState state = new AuthState()
+        var state = new AuthState()
         {
             FeUrl = feUrl,
             ReturnUrl = returnUrl
         };
 
-        return _oidcService.CreateAuthorizationUri(state);
+        return oidcService.CreateAuthorizationUri(state);
     }
 }
