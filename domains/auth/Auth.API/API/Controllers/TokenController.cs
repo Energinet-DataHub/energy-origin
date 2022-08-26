@@ -11,13 +11,13 @@ namespace API.Controllers;
 
 
 [ApiController]
-public class AuthController : ControllerBase
+public class TokenController : ControllerBase
 {
     readonly ITokenStorage tokenStorage;
     readonly ICookies cookies;
     private readonly AuthOptions authOptions;
 
-    public AuthController(IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICookies cookies)
+    public TokenController(IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICookies cookies)
     {
         this.authOptions = authOptions.Value;
         this.tokenStorage = tokenStorage;
