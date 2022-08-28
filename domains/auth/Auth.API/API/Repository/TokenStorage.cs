@@ -1,53 +1,52 @@
 using API.Models;
 using API.Repository;
 
-namespace API.TokenStorage
+namespace API.TokenStorage;
+
+public class TokenStorage : ITokenStorage
 {
-    public class TokenStorage : ITokenStorage
+    public void DeleteByOpaqueToken(string token)
     {
-        public void DeleteByOpaqueToken(string token)
+        throw new NotImplementedException();
+    }
+
+    public string GetIdTokenByOpaqueToken(string token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool InternalTokenValidation(InternalToken internalToken)
+    {
+        if (internalToken == null)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
-        public string GetIdTokenByOpaqueToken(string token)
+        if (internalToken.Issued > DateTime.UtcNow || internalToken.Expires < DateTime.UtcNow)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
-        public bool InternalTokenValidation(InternalToken interalToken)
+        return true;
+    }
+
+    public InternalToken? GetInteralTokenByOpaqueToken(string token)
+    {
+        // TODO Get interalToken from DB
+
+        var internalToken = new InternalToken();
+        if (internalToken == null)
         {
-            if (interalToken == null)
-            {
-                return false;
-            }
-
-            if (interalToken.Issued > DateTime.UtcNow || interalToken.Expires < DateTime.UtcNow)
-            {
-                return false;
-            }
-
-            return true;
+            return null;
         }
 
-        public InternalToken? GetInteralTokenByOpaqueToken(string token)
+        var isValid = InternalTokenValidation(internalToken);
+
+        if (!isValid)
         {
-            // TODO Get interalToken from DB
-
-            var interalToken = new InternalToken();
-            if (interalToken == null)
-            {
-                return null;
-            }
-
-            var isValid = InternalTokenValidation(interalToken);
-
-            if (isValid != true)
-            {
-                return null;
-            }
-
-            return interalToken;
+            return null;
         }
+
+        return internalToken;
     }
 }
