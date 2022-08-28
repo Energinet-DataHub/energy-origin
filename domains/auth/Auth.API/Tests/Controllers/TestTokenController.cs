@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using API.Configuration;
 using API.Models;
+using API.Repository;
 using API.Services;
 using API.TokenStorage;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,6 @@ namespace API.Controllers;
 [UnitTest]
 public class TestTokenController
 {
-    private readonly Mock<ICookies> cookiesMock = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
 
@@ -31,8 +31,7 @@ public class TestTokenController
 
         tokenController = new TokenController(
             authOptionsMock.Object,
-            tokenStorage.Object,
-            cookiesMock.Object
+            tokenStorage.Object
         )
         {
             ControllerContext = new ControllerContext()

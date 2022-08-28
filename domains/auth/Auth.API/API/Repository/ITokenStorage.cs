@@ -1,12 +1,11 @@
 using API.Models;
 
-namespace API.TokenStorage
+namespace API.Repository;
+
+public interface ITokenStorage
 {
-    public interface ITokenStorage
-    {
-        void DeleteByOpaqueToken(string token);
-        string GetIdTokenByOpaqueToken(string token);
-        public bool InternalTokenValidation(InternalToken interalToken);
-        InternalToken? GetInteralTokenByOpaqueToken(string token);
-    }
+    void DeleteByOpaqueToken(string token);
+    string GetIdTokenByOpaqueToken(string token);
+    public bool InternalTokenValidation(InternalToken interalToken);
+    InternalToken? GetInteralTokenByOpaqueToken(string token);
 }

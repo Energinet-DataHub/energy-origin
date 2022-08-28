@@ -1,27 +1,22 @@
-using System.ComponentModel.DataAnnotations;
 using API.Configuration;
-using API.Models;
+using API.Repository;
 using API.Services;
-using API.Services.OidcProviders;
 using API.TokenStorage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
-
 [ApiController]
 public class TokenController : ControllerBase
 {
-    readonly ITokenStorage tokenStorage;
-    readonly ICookies cookies;
+    private readonly ITokenStorage tokenStorage;
     private readonly AuthOptions authOptions;
 
-    public TokenController(IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage, ICookies cookies)
+    public TokenController(IOptions<AuthOptions> authOptions, ITokenStorage tokenStorage)
     {
         this.authOptions = authOptions.Value;
         this.tokenStorage = tokenStorage;
-        this.cookies = cookies;
     }
 
     [HttpGet]
@@ -29,8 +24,7 @@ public class TokenController : ControllerBase
     public ActionResult ForwardAuth()
     {
         var opaqueToken = HttpContext.Request.Cookies[authOptions.CookieName];
-
-        if (opaqueToken == null || opaqueToken == "")
+        if (string.IsNullOrWhiteSpace(opaqueToken))
         {
             return Unauthorized();
         }
