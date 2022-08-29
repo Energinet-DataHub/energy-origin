@@ -24,4 +24,12 @@ public class AuthOptions
 
     // Cookies
     public string CookieName { get; set; }
+    public string CookieValue { get; set; }
+    public string CookiePath { get; set; }
+    public string CookieDomain { get; set; }
+    public string CookieHttpOnly { get; set; }
+    public string CookieSameSite { get; set; }
+    public string CookieSecure { get; set; }
+    public int CookieExpiresTimeDelta { get; set; }
+
 }

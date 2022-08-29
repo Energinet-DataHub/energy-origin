@@ -28,7 +28,13 @@
             "ServiceUrl": "https://localhost/api/auth",
             "OidcLoginCallbackPath": "'/oidc/login/callback'",
             "SecretKey": "mysmallkey123456",
-            "CookieName": "Authorization"
+            "CookieName": "Authorization",
+            "CookiePath": "/",
+            "CookieDomain": "localhost",
+            "CookieHttpOnly": "true",
+            "CookieSameSite": "Strict",
+            "CookieSecure": "true",
+            "CookieExpiresTimeDelta": "6"
         }
     },
     "IIS Express": {

@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 using System.Net.Http;
 using System.Text.Json;
 using API.Configuration;
@@ -7,8 +10,10 @@ using API.Controllers;
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
+using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
+using API.TokenStorage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,7 +30,7 @@ public class TestLogoutController
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
 
-    private LogoutController logoutController;
+    private readonly LogoutController logoutController;
 
     public TestLogoutController()
     {
@@ -47,33 +52,22 @@ public class TestLogoutController
         };
     }
 
-    [Theory]
-    [InlineData("Bearer foo")]
-    [InlineData(null)]
-    public void LogoutDeleteCookieSuccess(string? testToken)
+    public static IEnumerable<object[]> Cookie => new[]
     {
-        var opaqueToken = "TestOpaqueToken";
+        new object[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
+        new object[] { null },
+    };
+
+    [Theory, MemberData(nameof(Cookie))]
+    public async Task LogoutDeleteCookieReturnSuccess(string? testCookie)
+    {
         var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 
-        var notExpiredCookie = new CookieOptions
-        {
-            Path = "/",
-            Domain = "energioprindelse.dk",
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = true,
-            Expires = DateTime.UtcNow.AddHours(6),
-        };
+        logoutController.HttpContext.Request.Headers.Add("Cookie", testCookie);
 
-        logoutController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        logoutController.HttpContext.Request.Headers.Add("Authorization", testToken);
+        await logoutController.Logout();
 
-        logoutController.Logout();
-
-        Assert.Equal(
-            expectedExpiredCookie,
-            logoutController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
-        );
+        Assert.Equal(expectedExpiredCookie, logoutController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
     }
 
     [Theory]
@@ -114,5 +108,4 @@ public class TestLogoutController
 
         Assert.Equal(expectedNextUrl, res.NextUrl);
     }
-
 }
