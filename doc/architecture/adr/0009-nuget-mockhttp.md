@@ -38,8 +38,9 @@ handlerMock
     .Protected()
     .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.LocalPath == "/api/v1/session/logout"), ItExpr.IsAny<CancellationToken>())
     .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK });
+HttpClient client = new HttpClient(handlerMock.Object);
 
-// Inject the mock to the system-under-test and then act
+// Inject 'client' to the system-under-test and then act...
 
 handlerMock.Verify();
 ```
@@ -51,8 +52,9 @@ MockHttpMessageHandler handlerMock = new();
 handlerMock
     .Expect("/api/v1/session/logout")
     .Respond(HttpStatusCode.OK);
+HttpClient client = handlerMock.ToHttpClient();
 
-// Inject the mock to the system-under-test and then act
+// Inject 'client' to the system-under-test and then act...
 
 handlerMock.VerifyNoOutstandingExpectation()
 ```
