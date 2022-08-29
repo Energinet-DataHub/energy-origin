@@ -1,28 +1,37 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
 using API.Configuration;
 using API.Controllers.dto;
-using API.Models;
 using API.Errors;
+using API.Helpers;
+using API.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Text.Json;
-using System.Text;
 
-namespace API.Services;
+namespace API.Services.OidcProviders;
 
-public class SignaturGruppen : IOidcProviders
-{
-    readonly IOidcService _oidcService;
-    readonly AuthOptions _authOptions;
-    readonly ILogger<SignaturGruppen> _logger;
-    readonly HttpClient _httpClient;
+public class SignaturGruppen : IOidcService
 
-    public SignaturGruppen(ILogger<SignaturGruppen> logger, IOidcService oidcService, IOptions<AuthOptions> authOptions, HttpClient httpClient)
+    private readonly IOidcService oidcService;
+    private readonly AuthOptions authOptions;
+    private readonly ILogger<SignaturGruppen> logger;
+    private readonly HttpClient httpClient;
+    private readonly ICryptography cryptography;
+
+    public SignaturGruppen(
+        ILogger<SignaturGruppen> logger,
+        IOptions<AuthOptions> authOptions,
+        IOidcService oidcService,
+        HttpClient httpClient, 
+        ICryptography cryptography
+    )
     {
-        _logger = logger;
-        _oidcService = oidcService;
-        _authOptions = authOptions.Value;
-        _httpClient = httpClient;
+        this.logger = logger;
+        this.authOptions = authOptions.Value;
+        this.httpClient = httpClient;
+        this.cryptography = cryptography;
+        this.oidcService = oidcService
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -38,9 +47,11 @@ public class SignaturGruppen : IOidcProviders
             { "nemid", amrValues }
         };
 
+        var query = CreateAuthorizationRedirectUrl("code", state, "en");
+
         query.Add("idp_params", JsonSerializer.Serialize(nemId));
-        
-        var authorizationUri = new NextStep() { NextUrl = _authOptions.AuthorityUrl + query.ToString() };
+
+        var authorizationUri = new NextStep() { NextUrl = authOptions.OidcUrl + query };
 
         return authorizationUri;
     }
@@ -104,7 +115,7 @@ public class SignaturGruppen : IOidcProviders
 
     public NextStep OnOidcFlowFailed(AuthState authState, OidcCallbackParams oidcCallbackParams)
     {
-        AuthError error = AuthError.UnknownErrorFromIdentityProvider;
+        var error = AuthError.UnknownErrorFromIdentityProvider;
 
         if (oidcCallbackParams.ErrorDescription != null)
         {
@@ -129,5 +140,38 @@ public class SignaturGruppen : IOidcProviders
         var errorUrl = new NextStep() { NextUrl = authState.ReturnUrl + query.ToString() };
 
         return errorUrl;
+
+
+    public async Task Logout(string token)
+    {
+        var url = authOptions.OidcUrl;
+        httpClient.BaseAddress = new Uri(url);
+
+        var response = await httpClient.PostAsJsonAsync("/api/v1/session/logout", new { id_token = token });
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            logger.LogWarning("StatusCode: {StatusCode}, url: {Url}, content: {Content}",
+                response.StatusCode, response.RequestMessage?.RequestUri, content);
+        }
+    }
+
+    private QueryBuilder CreateAuthorizationRedirectUrl(string responseType, AuthState state, string lang)
+    {
+        var json = JsonSerializer.Serialize(state);
+
+        var query = new QueryBuilder
+        {
+            { "response_type", responseType },
+            { "client_id", authOptions.OidcClientId },
+            { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
+            { "scope", authOptions.Scope },
+            { "state", cryptography.Encrypt(json) },
+            { "language", lang }
+        };
+
+        return query;
+
     }
 }

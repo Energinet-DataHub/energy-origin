@@ -1,44 +1,57 @@
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using API.Configuration;
 using API.Controllers;
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
 using API.Services;
+using API.Services.OidcProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using Xunit;
 using Xunit.Categories;
 
-namespace Tests.Controller;
+namespace API.Controllers;
 
-
-[UnitTest]
-public sealed class TestAuthController
+public class TestLogoutController
 {
+    private readonly Mock<IOidcService> mockSignaturGruppen = new();
+    private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
+    private readonly Mock<ITokenStorage> tokenStorage = new();
 
-    [Theory]
-    [InlineData("Bearer foo")]
-    [InlineData(null)]
-    public void Logout_delete_cookie_success(string? testToken)
+    private LogoutController logoutController;
+
+    public TestLogoutController()
     {
-        //Arrange
-        var logger = new Mock<ILogger<AuthController>>();
-        var oidcProvider = new Mock<IOidcProviders>();
-        var tokenStorage = new Mock<ITokenStorage>();
-
-        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
         {
             CookieName = "Authorization",
         });
 
+        logoutController = new LogoutController(
+            tokenStorage.Object,
+            authOptionsMock.Object,
+            mockSignaturGruppen.Object
+        )
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+    }
+
+    [Theory]
+    [InlineData("Bearer foo")]
+    [InlineData(null)]
+    public void LogoutDeleteCookieSuccess(string? testToken)
+    {
         var opaqueToken = "TestOpaqueToken";
         var expectedExpiredCookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 
@@ -52,23 +65,15 @@ public sealed class TestAuthController
             Expires = DateTime.UtcNow.AddHours(6),
         };
 
-        //Act
+        logoutController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
+        logoutController.HttpContext.Request.Headers.Add("Authorization", testToken);
 
-        var authController = new AuthController(logger.Object, oidcProvider.Object, authOptionsMock.Object, tokenStorage.Object)
-        {
-            ControllerContext = new ControllerContext()
-            {
-                HttpContext = new DefaultHttpContext()
-            }
-        };
+        logoutController.Logout();
 
-        authController.HttpContext.Response.Cookies.Append("Authorization", opaqueToken, notExpiredCookie);
-        authController.HttpContext.Request.Headers.Add("Authorization", testToken);
-
-        authController.Logout();
-
-        //Assert
-        Assert.Equal(expectedExpiredCookie, authController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
+        Assert.Equal(
+            expectedExpiredCookie,
+            logoutController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString()
+        );
     }
 
     [Theory]

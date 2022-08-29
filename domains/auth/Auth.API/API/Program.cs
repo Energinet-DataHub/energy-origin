@@ -1,11 +1,16 @@
-using API.Configuration;
-using API.Orchestrator;
-using API.Services;
-using Serilog;
-using Serilog.Formatting.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.Configuration;
+using API.Helpers;
+using API.Models;
+using API.Orchestrator;
+using API.Services;
+using API.Services.OidcProviders;
+using FluentValidation;
+using Serilog;
+using Serilog.Formatting.Json;
+
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -33,10 +38,12 @@ builder.Services.AddHttpClient();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
 
+
 builder.Services.AddScoped<IOrchestrator, Orchestrator>();
-builder.Services.AddScoped<ICryptographyService, CryptographyService>();
+builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
 builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
 
 
