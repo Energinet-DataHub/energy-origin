@@ -1,6 +1,6 @@
 # Configuration in ASP.NET Core
 
-* Status: draft
+* Status: proposed
 * Deciders: TBD
 * Date: 2022-08-29
 
