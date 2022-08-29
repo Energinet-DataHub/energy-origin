@@ -1,4 +1,4 @@
-# Process for ADRs
+# Process for new ADRs
 
 We wish to document our decisions using ADRs and we want the process of approving new ADRs to be streamlined. Furthermore, we do not want Pull Requests to be blocked for days or weeks due to a missing approval of an ADR.
 
