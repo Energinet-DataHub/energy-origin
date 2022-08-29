@@ -12,8 +12,7 @@ using Microsoft.Extensions.Options;
 namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcService
-
-    private readonly IOidcService oidcService;
+{ 
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
@@ -22,7 +21,6 @@ public class SignaturGruppen : IOidcService
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
         IOptions<AuthOptions> authOptions,
-        IOidcService oidcService,
         HttpClient httpClient, 
         ICryptography cryptography
     )
@@ -31,16 +29,13 @@ public class SignaturGruppen : IOidcService
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
         this.cryptography = cryptography;
-        this.oidcService = oidcService
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
     {
-        var query = _oidcService.CreateAuthorizationRedirectUrl("code", state, "en");
-
         var amrValues = new Dictionary<string, string>()
         {
-            { "amr_values", _authOptions.AmrValues }
+            { "amr_values", authOptions.AmrValues }
         };
         var nemId = new Dictionary<string, Dictionary<string, string>>()
         {
@@ -59,16 +54,16 @@ public class SignaturGruppen : IOidcService
     // T makes sure we can pass a dynamic object type I.E NemID and MitID
     public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
     {
-        string uri = $"{_authOptions.AuthorityUrl}/connect/userinfo";
+        var uri = $"{authOptions.OidcUrl}/connect/userinfo";
 
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
 
-        var res = await _httpClient.GetAsync(uri);
+        var res = await httpClient.GetAsync(uri);
 
         if (res.StatusCode != HttpStatusCode.OK)
         {
             // This should be changes to have better logging
-            _logger.LogCritical(res.StatusCode.ToString());
+            logger.LogCritical(res.StatusCode.ToString());
             throw new HttpRequestException(res.StatusCode.ToString());
         }
 
@@ -78,9 +73,9 @@ public class SignaturGruppen : IOidcService
     }
     public async Task<JsonElement> FetchToken(AuthState state, string code, string redirectUri)
     {
-        string url = $"{_authOptions.AuthorityUrl}/connect/token";
+        var url = $"{authOptions.OidcUrl}/connect/token";
 
-        var valueBytes = Encoding.UTF8.GetBytes($"{_authOptions.OidcClientId}:{_authOptions.OidcClientSecret}");
+        var valueBytes = Encoding.UTF8.GetBytes($"{authOptions.OidcClientId}:{authOptions.OidcClientSecret}");
         var authorization = Convert.ToBase64String(valueBytes);
 
 
@@ -92,16 +87,14 @@ public class SignaturGruppen : IOidcService
             { "grant_type", "authorization_code" },
             { "redirect_uri", redirectUri }
         });
-        var tokenResponse = await _httpClient.SendAsync(tokenRequest);
-
+        var tokenResponse = await httpClient.SendAsync(tokenRequest);
 
         if (tokenResponse.StatusCode != HttpStatusCode.OK)
         {
-            _logger.LogDebug($"FetchToken: tokenResponse: {tokenResponse.StatusCode}");
-            _logger.LogDebug($"connect/token: authorization header: {tokenRequest.Headers}");
+            logger.LogDebug($"FetchToken: tokenResponse: {tokenResponse.StatusCode}");
+            logger.LogDebug($"connect/token: authorization header: {tokenRequest.Headers}");
             throw new HttpRequestException(tokenResponse.StatusCode.ToString());
         }
-
 
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
         var token = JsonDocument.Parse(tokenJson).RootElement;
@@ -140,7 +133,7 @@ public class SignaturGruppen : IOidcService
         var errorUrl = new NextStep() { NextUrl = authState.ReturnUrl + query.ToString() };
 
         return errorUrl;
-
+    }
 
     public async Task Logout(string token)
     {

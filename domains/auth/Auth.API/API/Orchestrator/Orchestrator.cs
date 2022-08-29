@@ -1,36 +1,36 @@
 using API.Configuration;
-using API.Helpers;
 using API.Models;
-using API.Services;
+using API.Services.OidcProviders;
 using Jose;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace API.Orchestrator;
 
 public class Orchestrator : IOrchestrator
 {
-    readonly ILogger _logger;
-    readonly IOidcService _oidcService;
-    readonly IOidcProviders _oidcProviders;
-    readonly ICryptographyService _cryptographyService;
-    private readonly AuthOptions _authOptions;
-    private readonly HttpClient _httpClient;
+    private readonly ILogger logger;
+    private readonly IOidcService oidcService;
+    private readonly AuthOptions authOptions;
+    private readonly HttpClient httpClient;
 
-    public Orchestrator(ILogger<Orchestrator> logger, IOidcService service, ICryptographyService cryptography, IOidcProviders oidcProviders, AuthOptions authOptions, HttpClient httpClient)
+    public Orchestrator(
+        ILogger<Orchestrator> logger,
+        IOidcService oidcService,
+        IOptions<AuthOptions> authOptions,
+        HttpClient httpClient
+    )
     {
-        _logger = logger;
-        _oidcService = service;
-        _cryptographyService = cryptography;
-        _oidcProviders = oidcProviders;
-        _authOptions = authOptions;
-        _httpClient = httpClient;
+        this.logger = logger;
+        this.oidcService = oidcService;
+        this.authOptions = authOptions.Value;
+        this.httpClient = httpClient;
     }
     public async void Next(AuthState state, string code)
     {
+        var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
 
-        var redirectUri = _authOptions.ServiceUrl + _authOptions.OidcLoginCallbackPath;
-
-        var oidcToken = await _oidcService.FetchToken(state, code, redirectUri);
+        var oidcToken = await oidcService.FetchToken(state, code, redirectUri);
 
         var rawIdToken = DecodeJwtIdToken(oidcToken);
 
@@ -84,6 +84,7 @@ public class Orchestrator : IOrchestrator
         // Store jwt in db
 
         // Create opaque token and return it
+        //return null;
     }
 
     private OidcTokenResponse DecodeJwtIdToken(JsonElement token)
@@ -91,7 +92,7 @@ public class Orchestrator : IOrchestrator
         var jwks = GetJwkAsync();
         var te = JWT.Decode(token.ToString(), jwks);
 
-        OidcTokenResponse idToken = new OidcTokenResponse()
+        var idToken = new OidcTokenResponse()
         {
             IdToken = token.GetProperty("id_token").GetString()!,
             AccessToken = token.GetProperty("access_token").GetString()!,
@@ -105,7 +106,7 @@ public class Orchestrator : IOrchestrator
 
     private async Task<Jwk> GetJwkAsync()
     {
-        var jwkResponse = await _httpClient.GetAsync($"{_authOptions.AuthorityUrl}/.well-known/openid-configuration/jwks");
+        var jwkResponse = await httpClient.GetAsync($"{authOptions.OidcUrl}/.well-known/openid-configuration/jwks");
         var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
         var jwks = jwkSet.Keys.Single();
 

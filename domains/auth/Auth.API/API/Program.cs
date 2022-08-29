@@ -38,11 +38,9 @@ builder.Services.AddHttpClient();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
 
-
 builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptography, Cryptography>();
-builder.Services.AddScoped<IOidcProviders, SignaturGruppen>();
-builder.Services.AddScoped<IOidcService, OidcService>();
+builder.Services.AddScoped<IOidcService, SignaturGruppen>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
 

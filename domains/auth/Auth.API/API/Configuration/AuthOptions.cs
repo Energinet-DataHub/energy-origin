@@ -10,7 +10,7 @@ public class AuthOptions
     // OIDC Related
     public string Scope { get; set; }
     public string AmrValues { get; set; }
-    public string AuthorityUrl { get; set; }
+    public string OidcUrl { get; set; }
     public string OidcClientId { get; set; }
     public string OidcClientSecret { get; set; }
 
