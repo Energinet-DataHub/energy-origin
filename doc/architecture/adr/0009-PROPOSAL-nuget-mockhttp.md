@@ -14,7 +14,7 @@ When testing a class that depends on `HttpClient` (or `IHttpClientFactory`) you 
 
 ## Considered Options
 
-* Use a library that mocks `HttpClient`. [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp) seems to be most popular
+* Use a library that mocks `HttpClient`. [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp) seems to be the most popular.
 * Using Moq (or write our own implementation) to replace HttpMessageHandler within HttpClient
 
 ---
@@ -29,6 +29,8 @@ Please note that the two options are not mutally exclusive as we are already usi
 ## Rationale
 
 Mocking `HttpClient` using Moq or by our own implementation requires some detailed knowledge about the workings of `HttpClient`. With a library this detailed knowledge is not needed.
+
+We found that of the libraries mocking `HttpClient` [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp) had highest number of stars on Github of the libraries. There has not been changes to [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp) in several years, but in this case this is a good thing as `HttpClient` is an old part of .NET.
 
 The tests becomes to easier read. An example of using Moq:
 
