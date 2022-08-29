@@ -1,8 +1,10 @@
-namespace API.Services
+using API.Models;
+
+namespace API.Repository;
+
+public interface ITokenStorage
 {
-    public interface ITokenStorage
-    {
-        void DeleteByOpaqueToken(string token);
-        string GetIdTokenByOpaqueToken(string token);
-    }
+    void DeleteByOpaqueToken(string token);
+    string GetIdTokenByOpaqueToken(string token);
+    InternalToken? GetInteralTokenByOpaqueToken(string token);
 }
