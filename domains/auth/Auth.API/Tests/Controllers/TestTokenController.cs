@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using API.Configuration;
 using API.Models;
 using API.Repository;
-using API.Services;
-using API.TokenStorage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

@@ -1,7 +1,5 @@
 using API.Configuration;
 using API.Repository;
-using API.Services;
-using API.TokenStorage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
