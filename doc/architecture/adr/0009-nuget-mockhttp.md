@@ -1,4 +1,4 @@
-# [short title of solved problem and solution]
+# Mocking HttpClient when testing
 
 * Status: Proposed
 * Deciders: TBD
@@ -8,27 +8,51 @@
 
 ## Context and Problem Statement
 
-When testing a class that depends on `HttpClient` (or `IHttpClientFactory`) you have to mock that. Since `HttpClient` does not implement an interface and has many methods that is not easy
+When testing a class that depends on `HttpClient` (or `IHttpClientFactory`) you have to mock that. Since `HttpClient` does not implement an interface and has many methods that is not easy. Furthermore, we want our tests to be easy to read.
 
 ---
 
-## Considered Options  <!-- optional -->
+## Considered Options
 
-* [option 1]
-* [option 2]
-* [option 3]
-* … <!-- numbers of options can vary -->
+* Use a library that mocks `HttpClient`. [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp) seems to be most popular
+* Using Moq (or write our own implementation) to replace HttpMessageHandler within HttpClient
 
 ---
 
 ## Decision Outcome
 
-[Chose option 1]
+We chose to use [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp).
+
+Please note that the two options are not mutally exclusive as we are already using Moq. If something is not possible to do using [richardszalay/mockhttp](https://github.com/richardszalay/mockhttp), we can fallback to using Moq.
+
 
 ## Rationale
 
-[justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force force | … | comes out best (see below)].
+Mocking `HttpClient` using Moq or by our own implementation requires some detailed knowledge about the workings of `HttpClient`. With a library this detailed knowledge is not needed.
 
-### Positive Consequences <!-- optional -->
+The tests becomes to easier read. An example of using Moq:
 
-### Negative Consequences <!-- optional -->
+```C#
+Mock<HttpMessageHandler> handlerMock = new(MockBehavior.Strict);
+handlerMock
+    .Protected()
+    .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.LocalPath == "/api/v1/session/logout"), ItExpr.IsAny<CancellationToken>())
+    .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK });
+
+// Inject the mock to the system-under-test and then act
+
+handlerMock.Verify();
+```
+
+When using richardszalay/mockhttp the following achieves the same and is more readable:
+
+```C#
+MockHttpMessageHandler handlerMock = new();
+handlerMock
+    .Expect("/api/v1/session/logout")
+    .Respond(HttpStatusCode.OK);
+
+// Inject the mock to the system-under-test and then act
+
+handlerMock.VerifyNoOutstandingExpectation()
+```
