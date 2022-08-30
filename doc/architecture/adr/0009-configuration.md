@@ -1,8 +1,8 @@
 # Configuration in ASP.NET Core
 
-* Status: proposed
-* Deciders: TBD
-* Date: 2022-08-29
+* Status: accepted
+* Deciders: @duizer, @endk-awo, @PeterAGY, @MartinSchmidt, @CodeReaper, @C-Christiansen, @ckr123, @robertrosborg
+* Date: 2022-08-30
 
 ---
 
