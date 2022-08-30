@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using System.Net;
 using System.Threading.Tasks;
+using VerifyXunit;
 using Xunit;
 
 namespace Tests.AppTests;
 
-public class SwaggerAppTests : IClassFixture<AuthApiWebApplicationFactory>
+public class SwaggerAppTests : VerifyBase, IClassFixture<AuthApiWebApplicationFactory>
 {
     private readonly AuthApiWebApplicationFactory factory;
 
-    public SwaggerAppTests(AuthApiWebApplicationFactory factory)
+    public SwaggerAppTests(AuthApiWebApplicationFactory factory) : base()
     {
         this.factory = factory;
     }
@@ -52,13 +53,13 @@ public class SwaggerAppTests : IClassFixture<AuthApiWebApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, swaggerDocResponse.StatusCode);
     }
 
-    //[Fact]
-    //public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
-    //{
-    //    var client = factory.CreateClient();
-    //    var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
+    [Fact]
+    public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
+    {
+        var client = factory.CreateClient();
+        var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
 
-    //    var stream = await swaggerDocResponse.Content.ReadAsStreamAsync();
-    //    await VerifyJson(stream);
-    //}
+        var stream = await swaggerDocResponse.Content.ReadAsStreamAsync();
+        await VerifyJson(stream);
+    }
 }
