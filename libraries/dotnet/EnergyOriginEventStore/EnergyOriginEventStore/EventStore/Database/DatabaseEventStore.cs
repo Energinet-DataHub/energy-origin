@@ -8,9 +8,9 @@ public class DatabaseEventStore : IEventStore
 {
     private DatabaseEventContext context;
 
-    public DatabaseEventStore(string connectionString)
+    public DatabaseEventStore(DatabaseEventContext context)
     {
-        context = new DatabaseEventContext(connectionString);
+        this.context = context;
     }
 
     #region IEventStore

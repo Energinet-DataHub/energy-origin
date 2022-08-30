@@ -16,7 +16,11 @@ public class DatabaseEventContext : DbContext
         this.connectionString = connectionString;
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(connectionString);
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.LogTo(Console.WriteLine); // FIXME: weeellll
+        optionsBuilder.UseNpgsql(connectionString);
+    }
 }
 
 [Index(nameof(Topic))]

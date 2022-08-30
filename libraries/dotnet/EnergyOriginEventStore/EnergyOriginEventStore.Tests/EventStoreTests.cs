@@ -1,19 +1,46 @@
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.Tests.Topics;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Configurations;
+using DotNet.Testcontainers.Containers;
+using EnergyOriginEventStore.EventStore.Memory;
+using EnergyOriginEventStore.EventStore.FlatFile;
+using EnergyOriginEventStore.EventStore.Database;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;
 
-public abstract class EventStoreTests
+[Collection("Database collection")]
+public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, IDisposable
 {
-    public abstract Task<IEventStore> buildStore();
+    #region Setup
 
-    public abstract bool canPersist();
+    private DatabaseFixture fixture;
 
-    [Fact]
-    public async Task EventStore_CanReceiveAMessage_Success()
+    public EventStoreTests(DatabaseFixture fixture)
     {
-        var eventStore = await buildStore();
+        this.fixture = fixture;
+    }
+
+    private static IEnumerable<object[]> Data()
+    {
+        return new List<object[]>
+        {
+            new object[] { new DatabaseBuilder(), true },
+            new object[] { new MemoryBuilder(), false },
+            new object[] { new FlatFileBuilder(), true }
+        };
+    }
+
+    #endregion
+
+    #region Tests
+
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_CanReceiveAMessage_Success(Builder builder, bool canPersist)
+    {
+        var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
         var message = new Said("Anton Actor", "I like to act!");
         await eventStore.Produce(message, "Gossip", "Tabloid");
@@ -28,7 +55,7 @@ public abstract class EventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.NotNull(receivedValue);
         Assert.Equal(message.Actor, receivedValue?.Actor);
@@ -37,10 +64,11 @@ public abstract class EventStoreTests
         consumer.Dispose();
     }
 
-    [Fact]
-    public async Task EventStore_CanResumeFromGivenPointer_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_CanResumeFromGivenPointer_Success(Builder builder, bool canPersist)
     {
-        if (!canPersist()) return;
+        if (!canPersist) return;
 
         string? pointer = null;
 
@@ -48,7 +76,7 @@ public abstract class EventStoreTests
         const string message2 = "I want another helicopter";
         const string message3 = "I feel poor, because i only have one yacht!";
 
-        using (var eventStore = await buildStore())
+        using (var eventStore = await builder.build(fixture))
         {
             var semaphore = new SemaphoreSlim(0);
 
@@ -73,30 +101,37 @@ public abstract class EventStoreTests
                 })
                 .Build();
 
-            await semaphore.WaitAsync(TimeSpan.FromMilliseconds(500));
+            await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
             Assert.NotNull(pointer);
         }
 
-        using (var eventStore = await buildStore())
+        using (var eventStore = await builder.build(fixture, false))
         {
+            var semaphore = new SemaphoreSlim(0);
+
             var received = new List<Said>();
 
             var consumer = eventStore
                 .GetBuilder("Gossip")
                 .ContinueFrom(pointer!)
-                .AddHandler<Said>(value => received.Add(value.EventModel))
+                .AddHandler<Said>(value =>
+                {
+                    semaphore.Release();
+                    received.Add(value.EventModel);
+                })
                 .Build();
 
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
             Assert.Single(received);
             Assert.Equal(message3, received.Single().Statement);
         }
     }
 
-    [Fact]
-    public async Task EventStore_CanResumeFromPointerUsingSingleStore_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_CanResumeFromPointerUsingSingleStore_Success(Builder builder, bool canPersist)
     {
         string? pointer = null;
 
@@ -104,7 +139,7 @@ public abstract class EventStoreTests
         const string message2 = "I want another helicopter";
         const string message3 = "I feel poor, because i only have one yacht!";
 
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
 
         var semaphore = new SemaphoreSlim(0);
 
@@ -132,7 +167,7 @@ public abstract class EventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.NotNull(pointer);
 
@@ -141,19 +176,24 @@ public abstract class EventStoreTests
         eventStore
             .GetBuilder("Gossip")
             .ContinueFrom(pointer!)
-            .AddHandler<Said>(value => received.Add(value.EventModel))
+            .AddHandler<Said>(value =>
+            {
+                received.Add(value.EventModel);
+                semaphore.Release();
+            })
             .Build();
 
-        await Task.Delay(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.Single(received);
         Assert.Equal(message3, received.Single().Statement);
     }
 
-    [Fact]
-    public async Task EventStore_EnsureExceptionHandlerIsCalled_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_EnsureExceptionHandlerIsCalled_Success(Builder builder, bool canPersist)
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
         var hadException = false;
 
@@ -170,15 +210,16 @@ public abstract class EventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.True(hadException);
     }
 
-    [Fact]
-    public async Task EventStore_VerifyExceptionsFromHandlersAreSwallowed_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_VerifyExceptionsFromHandlersAreSwallowed_Success(Builder builder, bool canPersist)
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
         var hasThrownException = false;
 
@@ -195,15 +236,16 @@ public abstract class EventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.True(hasThrownException);
     }
 
-    [Fact]
-    public async Task EventStore_EnsureCallExceptionHandlerWhenNoHandlerIsFound_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_EnsureCallExceptionHandlerWhenNoHandlerIsFound_Success(Builder builder, bool canPersist)
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
         var hadException = false;
 
@@ -220,15 +262,17 @@ public abstract class EventStoreTests
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.True(hadException);
     }
 
-    [Fact]
-    public async Task EventStore_CanFilterMessagesBasedOnTopics_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_CanFilterMessagesBasedOnTopics_Success(Builder builder, bool canPersist)
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
+        var semaphore = new SemaphoreSlim(0);
 
         var message = new Said("Samuel Salesman", "We have been trying to reach you about your cars extended warranty!");
         await eventStore.Produce(message, "Spam", "Advertisement", "Robocall");
@@ -236,18 +280,24 @@ public abstract class EventStoreTests
         var received = new List<Said>();
         eventStore
             .GetBuilder("Advertisement")
-            .AddHandler<Said>(value => received.Add(value.EventModel))
+            .AddHandler<Said>(value =>
+            {
+                received.Add(value.EventModel);
+                semaphore.Release();
+            })
             .Build();
 
-        await Task.Delay(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.Single(received);
     }
 
-    [Fact]
-    public async Task EventStore_CanSupportMultipleListeners_Success()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder, bool canPersist) // FIXME: failed
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
+        var semaphore = new SemaphoreSlim(0, 3);
 
         var received1 = new List<Said>();
         var received2 = new List<Said>();
@@ -257,32 +307,45 @@ public abstract class EventStoreTests
 
         eventStore
             .GetBuilder("Topical")
-            .AddHandler<Said>(value => received1.Add(value.EventModel))
+            .AddHandler<Said>(value =>
+            {
+                received1.Add(value.EventModel);
+                semaphore.Release();
+            })
             .Build();
 
         await eventStore.Produce(message, "Topical");
 
         eventStore
             .GetBuilder("Topical")
-            .AddHandler<Said>(value => received2.Add(value.EventModel))
+            .AddHandler<Said>(value =>
+            {
+                received2.Add(value.EventModel);
+                semaphore.Release();
+            })
             .Build();
 
         eventStore
             .GetBuilder("Topical")
-            .AddHandler<Said>(value => received3.Add(value.EventModel))
+            .AddHandler<Said>(value =>
+            {
+                received3.Add(value.EventModel);
+                semaphore.Release();
+            })
             .Build();
 
-        await Task.Delay(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.Single(received1);
         Assert.Single(received2);
         Assert.Single(received3);
     }
 
-    [Fact]
-    public async Task EventStore_EnsureEventFlow_Works()
+    [Theory]
+    [MemberData(nameof(Data))]
+    public async Task EventStore_EnsureEventFlow_Works(Builder builder, bool canPersist) // FIXME: failed
     {
-        var eventStore = await buildStore();
+        var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
         var ensureEventFlowIsExercised = false;
 
@@ -294,12 +357,98 @@ public abstract class EventStoreTests
                 semaphore.Release();
             })
             .Build();
-        await Task.Delay(TimeSpan.FromMilliseconds(50));
 
         var message = new Said("Internet Explorer", "Ringo Starr replaces Pete Best as Beatles' drummer.");
         await eventStore.Produce(message, "OldNews");
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(50));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.True(ensureEventFlowIsExercised);
     }
+
+    #endregion
+
+    #region Fixtures
+
+    public class DatabaseFixture : IAsyncLifetime, IDisposable
+    {
+        private static readonly TestcontainerDatabase testcontainers = new TestcontainersBuilder<PostgreSqlTestcontainer>()
+          .WithDatabase(new PostgreSqlTestcontainerConfiguration
+          {
+              Database = "db",
+              Username = "postgres",
+              Password = "postgres",
+          })
+          .Build();
+
+        public string ConnectionString() => testcontainers.ConnectionString;
+
+        public Task InitializeAsync()
+        {
+            return testcontainers.StartAsync();
+        }
+
+        public Task DisposeAsync()
+        {
+            return testcontainers.DisposeAsync().AsTask();
+        }
+
+        public void Dispose()
+        {
+            // FIXME: more?
+        }
+    }
+
+    #endregion
+
+    #region Builders
+
+    public interface Builder
+    {
+        Task<IEventStore> build(DatabaseFixture fixture, bool clean = true);
+    }
+
+    private class MemoryBuilder : Builder
+    {
+        public Task<IEventStore> build(DatabaseFixture fixture, bool clean = true) => Task.FromResult(new MemoryEventStore() as IEventStore);
+    }
+
+    private class FlatFileBuilder : Builder
+    {
+        public Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
+        {
+            if (clean && Directory.Exists("store"))
+            {
+                Directory.Delete("store", true);
+            }
+            return Task.FromResult(new FlatFileEventStore() as IEventStore);
+        }
+    }
+
+    private class DatabaseBuilder : Builder
+    {
+        public async Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
+        {
+            var context = new DatabaseEventContext(fixture.ConnectionString());
+            if (clean)
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+            }
+            return new DatabaseEventStore(context);
+        }
+    }
+
+    #endregion
+
+    #region Disposable
+
+    public void Dispose()
+    {
+        if (Directory.Exists("store"))
+        {
+            Directory.Delete("store", true);
+        }
+    }
+
+    #endregion
 }

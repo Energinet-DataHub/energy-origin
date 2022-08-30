@@ -12,7 +12,7 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly string topicPrefix;
     private readonly PeriodicTimer timer;
     private string? pointer;
-    private SemaphoreSlim semaphore = new(0, 1);
+    private SemaphoreSlim semaphore = new(1, 1);
 
     public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string? pointer)
     {
@@ -39,7 +39,7 @@ internal class DatabaseEventConsumer : IEventConsumer
         timer.Dispose();
     }
 
-    async Task Work() // FIXME: to be called on produce
+    async Task Work() // FIXME: to be called on produce, if needed
     {
         await semaphore.WaitAsync();
 
@@ -50,7 +50,7 @@ internal class DatabaseEventConsumer : IEventConsumer
         }
         query = query.Where(it => it.Topic.StartsWith(topicPrefix));
 
-        foreach (var message in query)
+        foreach (var message in query.ToList())
         {
             if (message == null) continue;
 
@@ -81,8 +81,8 @@ internal class DatabaseEventConsumer : IEventConsumer
                     exceptionHandler?.Invoke(typeString, exception);
                 }
             })));
-
-            semaphore.Release();
         }
+
+        semaphore.Release();
     }
 }
