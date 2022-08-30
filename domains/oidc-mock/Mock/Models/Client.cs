@@ -9,13 +9,17 @@ public record Client(string ClientId, string ClientSecret, string RedirectUri)
             return (false, "Invalid client_id");
         }
 
-        if (string.IsNullOrWhiteSpace(redirectUri) || !string.Equals(redirectUri, RedirectUri, StringComparison.InvariantCultureIgnoreCase))
+        if (string.IsNullOrWhiteSpace(redirectUri) || (!string.Equals(redirectUri, RedirectUri, StringComparison.InvariantCultureIgnoreCase) && !IsRedirectToLocalhost(redirectUri)))
         {
             return (false, "Invalid redirect_uri");
         }
 
         return (true, string.Empty);
     }
+
+    private static bool IsRedirectToLocalhost(string redirectUri) =>
+        redirectUri.StartsWith("http://localhost", StringComparison.InvariantCultureIgnoreCase) ||
+        redirectUri.StartsWith("https://localhost", StringComparison.InvariantCultureIgnoreCase);
 
     public (bool isValid, string validationError) Validate(string? clientId, string? clientSecret, string? redirectUri)
     {
