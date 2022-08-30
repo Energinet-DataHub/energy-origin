@@ -1,8 +1,7 @@
 using API.Models;
-using API.Repository;
 using FluentValidation;
 
-namespace API.TokenStorage;
+namespace API.Repository;
 
 public class TokenStorage : ITokenStorage
 {

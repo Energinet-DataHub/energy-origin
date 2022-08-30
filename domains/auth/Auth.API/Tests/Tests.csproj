@@ -9,6 +9,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.17.0" />
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.8" />
 	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
 	  <PackageReference Include="Moq" Version="4.17.2" />
 	  <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
