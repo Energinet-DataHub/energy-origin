@@ -43,7 +43,7 @@ public record IdTokenInfo
     [JsonPropertyName("loa")]
     public string Loa { get; init; }
 
-    [JsonPropertyName("Aal")]
+    [JsonPropertyName("aal")]
     public string Aal { get; init; }
 
     [JsonPropertyName("ial")]

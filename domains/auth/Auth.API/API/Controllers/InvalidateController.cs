@@ -19,7 +19,7 @@ public class InvalidateController : ControllerBase
     public InvalidateController(
         IOidcService oidcService,
         ICryptography cryptography,
-        IValidator<AuthState> validator
+        IValidator<AuthState?> validator
     )
     {
         this.oidcService = oidcService;

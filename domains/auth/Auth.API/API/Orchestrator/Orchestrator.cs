@@ -30,9 +30,12 @@ public class Orchestrator : IOrchestrator
     {
         var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
 
-        var oidcToken = await oidcService.FetchToken(state, code, redirectUri);
+        var oidcToken = await oidcService.FetchToken(state, code);
 
-        var rawIdToken = DecodeJwtIdToken(oidcToken);
+        //var rawIdToken = DecodeJwtIdToken(oidcToken);
+
+
+
 
         //SignaturGruppenNemId userInfo;
 
@@ -87,29 +90,5 @@ public class Orchestrator : IOrchestrator
         //return null;
     }
 
-    private OidcTokenResponse DecodeJwtIdToken(JsonElement token)
-    {
-        var jwks = GetJwkAsync();
-        var te = JWT.Decode(token.ToString(), jwks);
 
-        var idToken = new OidcTokenResponse()
-        {
-            IdToken = token.GetProperty("id_token").GetString()!,
-            AccessToken = token.GetProperty("access_token").GetString()!,
-            ExpiresIn = token.GetProperty("expires_in").GetString()!,
-            TokenType = token.GetProperty("token_type").GetString()!,
-            Scope = token.GetProperty("scope").GetString()!,
-        };
-
-        return idToken;
-    }
-
-    private async Task<Jwk> GetJwkAsync()
-    {
-        var jwkResponse = await httpClient.GetAsync($"{authOptions.OidcUrl}/.well-known/openid-configuration/jwks");
-        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
-        var jwks = jwkSet.Keys.Single();
-
-        return jwks;
-    }
 }

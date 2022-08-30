@@ -6,6 +6,7 @@ using API.Controllers.dto;
 using API.Errors;
 using API.Helpers;
 using API.Models;
+using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -21,9 +22,9 @@ public class SignaturGruppen : IOidcService
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
         IOptions<AuthOptions> authOptions,
-        HttpClient httpClient, 
+        HttpClient httpClient,
         ICryptography cryptography
-    )
+        )
     {
         this.logger = logger;
         this.authOptions = authOptions.Value;
@@ -51,28 +52,10 @@ public class SignaturGruppen : IOidcService
         return authorizationUri;
     }
 
-    // T makes sure we can pass a dynamic object type I.E NemID and MitID
-    public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
+    public async Task<OidcTokenResponse> FetchToken(AuthState state, string code)
     {
-        var uri = $"{authOptions.OidcUrl}/connect/userinfo";
+        var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
 
-        httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
-
-        var res = await httpClient.GetAsync(uri);
-
-        if (res.StatusCode != HttpStatusCode.OK)
-        {
-            // This should be changes to have better logging
-            logger.LogCritical(res.StatusCode.ToString());
-            throw new HttpRequestException(res.StatusCode.ToString());
-        }
-
-        var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
-
-        return data!;
-    }
-    public async Task<JsonElement> FetchToken(AuthState state, string code, string redirectUri)
-    {
         var url = $"{authOptions.OidcUrl}/connect/token";
 
         var valueBytes = Encoding.UTF8.GetBytes($"{authOptions.OidcClientId}:{authOptions.OidcClientSecret}");
@@ -98,7 +81,8 @@ public class SignaturGruppen : IOidcService
 
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
         var token = JsonDocument.Parse(tokenJson).RootElement;
-        return token;
+
+        return DecodeOidcResponse(token);
     }
 
     public bool isError(OidcCallbackParams oidcCallbackParams)
@@ -135,6 +119,27 @@ public class SignaturGruppen : IOidcService
         return errorUrl;
     }
 
+    // T makes sure we can pass a dynamic object type I.E NemID and MitID
+    public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
+    {
+        var uri = $"{authOptions.OidcUrl}/connect/userinfo";
+
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
+
+        var res = await httpClient.GetAsync(uri);
+
+        if (res.StatusCode != HttpStatusCode.OK)
+        {
+            // This should be changes to have better logging
+            logger.LogCritical(res.StatusCode.ToString());
+            throw new HttpRequestException(res.StatusCode.ToString());
+        }
+
+        var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
+
+        return data!;
+    }
+
     public async Task Logout(string token)
     {
         var url = authOptions.OidcUrl;
@@ -167,4 +172,30 @@ public class SignaturGruppen : IOidcService
         return query;
 
     }
+
+    private OidcTokenResponse DecodeOidcResponse(JsonElement token)
+    {
+        var jwks = GetJwkAsync();
+
+        var idTokenDecoded = new OidcTokenResponse()
+        {
+            IdToken = JWT.Decode(token.GetProperty("id_token").ToString(), jwks),
+            AccessToken = JWT.Decode(token.GetProperty("access_token").ToString(), jwks),
+            ExpiresIn = token.GetProperty("expires_in").ToString(),
+            TokenType = token.GetProperty("token_type").ToString(),
+            Scope = token.GetProperty("scope").ToString(),
+        };
+
+        return idTokenDecoded;
+    }
+
+    private async Task<Jwk> GetJwkAsync()
+    {
+        var jwkResponse = await httpClient.GetAsync($"{authOptions.OidcUrl}/.well-known/openid-configuration/jwks");
+        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
+        var jwks = jwkSet.Keys.Single();
+
+        return jwks;
+    }
+
 }

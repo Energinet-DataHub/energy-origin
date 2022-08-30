@@ -9,7 +9,7 @@ public interface IOidcService
 {
     NextStep CreateAuthorizationUri(AuthState state);
     Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken);
-    public Task<JsonElement> FetchToken(AuthState state, string code, string redirectUri);
+    Task<OidcTokenResponse> FetchToken(AuthState state, string code);
     bool isError(OidcCallbackParams oidcCallbackParams);
     NextStep OnOidcFlowFailed(AuthState authState, OidcCallbackParams oidcCallbackParams);
     NextStep BuildFailureUrl(AuthState authState, AuthError error);

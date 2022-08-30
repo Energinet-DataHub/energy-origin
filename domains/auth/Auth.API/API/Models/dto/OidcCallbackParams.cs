@@ -1,3 +1,5 @@
+using FluentValidation;
+
 namespace API.Controllers.dto
 {
     public record OidcCallbackParams
@@ -9,5 +11,13 @@ namespace API.Controllers.dto
         public string Error { get; init; }
         public string ErrorHint { get; init; }
         public string ErrorDescription { get; init; }
+    }
+    public class InvalidateAuthStateValidator : AbstractValidator<OidcCallbackParams>
+    {
+        public InvalidateAuthStateValidator()
+        {
+            RuleFor(x => x.Error).NotEmpty();
+            RuleFor(x => x.ErrorDescription).NotEmpty();
+        }
     }
 }
