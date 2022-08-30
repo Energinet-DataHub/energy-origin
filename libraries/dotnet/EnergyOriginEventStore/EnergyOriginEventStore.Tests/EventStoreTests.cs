@@ -30,6 +30,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     #region Tests
 
+#pragma warning disable IDE0060, xUnit1026
+
     [Theory]
     [MemberData(nameof(Data))]
     public async Task EventStore_CanReceiveAMessage_Success(Builder builder, bool canPersist)
@@ -358,6 +360,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
         Assert.True(ensureEventFlowIsExercised);
     }
+
+#pragma warning restore IDE0060, xUnit1026
 
     #endregion
 
