@@ -23,7 +23,7 @@ internal class DatabaseEventConsumerBuilder : IEventConsumerBuilder
 
         var list = handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
 
-        Action<Event<EventModel>> castedHandler = e => handler(new Event<T>((T)e.EventModel, e.Pointer));
+        void castedHandler(Event<EventModel> e) => handler(new Event<T>((T)e.EventModel, e.Pointer));
         handlers[type] = list.Append(castedHandler);
 
         return this;

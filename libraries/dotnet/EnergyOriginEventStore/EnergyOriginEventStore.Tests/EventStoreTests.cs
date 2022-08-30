@@ -15,22 +15,16 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 {
     #region Setup
 
-    private DatabaseFixture fixture;
+    private readonly DatabaseFixture fixture;
 
-    public EventStoreTests(DatabaseFixture fixture)
-    {
-        this.fixture = fixture;
-    }
+    public EventStoreTests(DatabaseFixture fixture) => this.fixture = fixture;
 
-    private static IEnumerable<object[]> Data()
-    {
-        return new List<object[]>
+    private static IEnumerable<object[]> Data() => new List<object[]>
         {
             new object[] { new DatabaseBuilder(), true },
             new object[] { new MemoryBuilder(), false },
             new object[] { new FlatFileBuilder(), true }
         };
-    }
 
     #endregion
 
@@ -343,7 +337,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(Data))]
-    public async Task EventStore_EnsureEventFlow_Works(Builder builder, bool canPersist) // FIXME: failed
+    public async Task EventStore_EnsureEventFlow_Works(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -380,22 +374,13 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
           })
           .Build();
 
-        public string ConnectionString() => testcontainers.ConnectionString;
+        public static string ConnectionString => testcontainers.ConnectionString;
 
-        public Task InitializeAsync()
-        {
-            return testcontainers.StartAsync();
-        }
+        public Task InitializeAsync() => testcontainers.StartAsync();
 
-        public Task DisposeAsync()
-        {
-            return testcontainers.DisposeAsync().AsTask();
-        }
+        Task IAsyncLifetime.DisposeAsync() => testcontainers.DisposeAsync().AsTask();
 
-        public void Dispose()
-        {
-            // FIXME: more?
-        }
+        public void Dispose() => GC.SuppressFinalize(this);
     }
 
     #endregion
@@ -428,11 +413,11 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     {
         public async Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
         {
-            var context = new DatabaseEventContext(fixture.ConnectionString());
+            var context = new DatabaseEventContext(DatabaseFixture.ConnectionString);
             if (clean)
             {
-                await context.Database.EnsureDeletedAsync();
-                await context.Database.EnsureCreatedAsync();
+                _ = await context.Database.EnsureDeletedAsync();
+                _ = await context.Database.EnsureCreatedAsync();
             }
             return new DatabaseEventStore(context);
         }
@@ -448,6 +433,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
         {
             Directory.Delete("store", true);
         }
+        GC.SuppressFinalize(this);
     }
 
     #endregion

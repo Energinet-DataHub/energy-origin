@@ -12,7 +12,7 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly string topicPrefix;
     private readonly PeriodicTimer timer;
     private string? pointer;
-    private SemaphoreSlim semaphore = new(1, 1);
+    private readonly SemaphoreSlim semaphore = new(1, 1);
 
     public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string? pointer)
     {
@@ -37,9 +37,10 @@ internal class DatabaseEventConsumer : IEventConsumer
     public void Dispose()
     {
         timer.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    async Task Work() // FIXME: to be called on produce, if needed
+    private async Task Work() // FIXME: to be called on produce, if needed
     {
         await semaphore.WaitAsync();
 
@@ -66,7 +67,7 @@ internal class DatabaseEventConsumer : IEventConsumer
             var handlers = this.handlers.GetValueOrDefault(type);
             if (handlers == null)
             {
-                exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type.ToString()}"));
+                exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type}"));
             }
 
             this.pointer = pointer;

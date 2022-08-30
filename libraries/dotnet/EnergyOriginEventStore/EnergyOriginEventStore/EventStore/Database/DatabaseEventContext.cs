@@ -9,12 +9,11 @@ public class DatabaseEventContext : DbContext
 {
     public DbSet<Message> Messages { get; set; }
 
-    private string connectionString;
+    private readonly string connectionString;
 
-    public DatabaseEventContext(string connectionString)
-    {
-        this.connectionString = connectionString;
-    }
+    public DatabaseEventContext(string connectionString) => this.connectionString = connectionString;
+
+    public DatabaseEventContext Clone => new(connectionString);
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -5,9 +5,9 @@ namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 public class FlatFileEventStore : IEventStore
 {
-    public string ROOT => "store";
-    public string TOPIC_SUFFIX => ".topic";
-    public string EVENT_SUFFIX => ".event";
+    public static string ROOT => "store";
+    public static string TOPIC_SUFFIX => ".topic";
+    public static string EVENT_SUFFIX => ".event";
 
     public FlatFileEventStore()
     {
@@ -33,15 +33,13 @@ public class FlatFileEventStore : IEventStore
         }
     }
 
-    public IEventConsumerBuilder GetBuilder(string topicPrefix)
-    {
-        return new FlatFileEventConsumerBuilder(this, topicPrefix);
-    }
+    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new FlatFileEventConsumerBuilder(this, topicPrefix);
 
     public event Action? DisposeEvent;
 
     public void Dispose()
     {
         DisposeEvent?.Invoke();
+        GC.SuppressFinalize(this);
     }
 }

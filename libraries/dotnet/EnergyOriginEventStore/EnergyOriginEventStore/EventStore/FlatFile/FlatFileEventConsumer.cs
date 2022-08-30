@@ -5,18 +5,16 @@ namespace EnergyOriginEventStore.EventStore.FlatFile;
 
 internal class FlatFileEventConsumer : IEventConsumer
 {
-    private readonly FlatFileEventStore fileStore;
     private readonly IUnpacker unpacker;
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
     private readonly long fromIssued;
     private readonly long fromFraction;
     private readonly FileSystemWatcher rootWatcher;
     private readonly List<FileSystemWatcher> watchers;
-    private Action<string, Exception> exceptionHandler;
+    private readonly Action<string, Exception> exceptionHandler;
 
-    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, FlatFileEventStore fileStore, string topicPrefix, string? pointer)
+    public FlatFileEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, string topicPrefix, string? pointer)
     {
-        this.fileStore = fileStore;
         this.unpacker = unpacker;
         this.handlers = handlers;
         this.exceptionHandler = exceptionHandler ?? ((type, exception) => Console.WriteLine($"Type: {type} - Message: {exception.Message}"));
@@ -35,12 +33,12 @@ internal class FlatFileEventConsumer : IEventConsumer
             }
         }
 
-        watchers = Directory.EnumerateDirectories(fileStore.ROOT)
-            .Where(it => it.StartsWith($"{fileStore.ROOT}/{topicPrefix}") && it.EndsWith(fileStore.TOPIC_SUFFIX))
+        watchers = Directory.EnumerateDirectories(FlatFileEventStore.ROOT)
+            .Where(it => it.StartsWith($"{FlatFileEventStore.ROOT}/{topicPrefix}") && it.EndsWith(FlatFileEventStore.TOPIC_SUFFIX))
             .Select(it => CreateWatcher(it))
             .ToList();
 
-        rootWatcher = new FileSystemWatcher(fileStore.ROOT, "*.topic");
+        rootWatcher = new FileSystemWatcher(FlatFileEventStore.ROOT, "*.topic");
         rootWatcher.Created += OnCreatedDirectory;
         rootWatcher.Error += OnError;
         rootWatcher.EnableRaisingEvents = true;
@@ -50,20 +48,17 @@ internal class FlatFileEventConsumer : IEventConsumer
 
     private void OnCreatedDirectory(object source, FileSystemEventArgs e) => watchers.Add(CreateWatcher(e.FullPath));
 
-    private void OnCreatedFile(object source, FileSystemEventArgs e)
-    {
-        Load(e.FullPath);
-    }
+    private void OnCreatedFile(object source, FileSystemEventArgs e) => Load(e.FullPath);
 
     private FileSystemWatcher CreateWatcher(string path)
     {
         Directory
             .GetFiles(path)
-            .Where(it => it.EndsWith(fileStore.EVENT_SUFFIX))
+            .Where(it => it.EndsWith(FlatFileEventStore.EVENT_SUFFIX))
             .ToList()
             .ForEach(Load);
 
-        var watcher = new FileSystemWatcher(path, $"*{fileStore.EVENT_SUFFIX}");
+        var watcher = new FileSystemWatcher(path, $"*{FlatFileEventStore.EVENT_SUFFIX}");
         watcher.Created += OnCreatedFile;
         watcher.Error += OnError;
         watcher.EnableRaisingEvents = true;

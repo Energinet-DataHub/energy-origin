@@ -8,7 +8,7 @@ public class MemoryEventStore : IEventStore
 {
     private readonly List<MessageEventArgs> messages = new();
     private readonly ConcurrentQueue<Action> actions = new();
-    private static SemaphoreSlim drainSemaphore = new SemaphoreSlim(1, 1);
+    private static readonly SemaphoreSlim drainSemaphore = new(1, 1);
 
     public MemoryEventStore() { }
 
@@ -23,16 +23,10 @@ public class MemoryEventStore : IEventStore
         {
             foreach (var message in messages)
             {
-                actions.Enqueue(() =>
-                {
-                    consumer.OnMessage(this, message);
-                });
+                actions.Enqueue(() => consumer.OnMessage(this, message));
             }
 
-            actions.Enqueue(() =>
-            {
-                OnMessage += consumer.OnMessage;
-            });
+            actions.Enqueue(() => OnMessage += consumer.OnMessage);
 
             await Drain().ConfigureAwait(false);
         });
@@ -65,6 +59,7 @@ public class MemoryEventStore : IEventStore
     public void Dispose()
     {
         actions.Clear();
+        GC.SuppressFinalize(this);
     }
 
     private async Task Drain()
@@ -73,8 +68,7 @@ public class MemoryEventStore : IEventStore
 
         drainSemaphore.Wait();
 
-        Action? item;
-        while (actions.TryDequeue(out item))
+        while (actions.TryDequeue(out var item))
         {
             item?.Invoke();
         }

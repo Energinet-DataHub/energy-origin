@@ -5,7 +5,6 @@ namespace EnergyOriginEventStore.EventStore.Memory;
 
 internal class MemoryEventConsumer : IEventConsumer
 {
-    private readonly MemoryEventStore store;
     private readonly IUnpacker unpacker;
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
     private readonly Action<string, Exception>? exceptionHandler;
@@ -14,7 +13,6 @@ internal class MemoryEventConsumer : IEventConsumer
 
     public MemoryEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, MemoryEventStore store, string topicPrefix, MemoryPointer? pointer)
     {
-        this.store = store;
         this.unpacker = unpacker;
         this.handlers = handlers;
         this.topicPrefix = topicPrefix;

@@ -6,12 +6,9 @@ namespace EnergyOriginEventStore.EventStore.Database;
 
 public class DatabaseEventStore : IEventStore
 {
-    private DatabaseEventContext context;
+    private readonly DatabaseEventContext context;
 
-    public DatabaseEventStore(DatabaseEventContext context)
-    {
-        this.context = context;
-    }
+    public DatabaseEventStore(DatabaseEventContext context) => this.context = context;
 
     #region IEventStore
 
@@ -28,9 +25,9 @@ public class DatabaseEventStore : IEventStore
         await context.SaveChangesAsync();
     }
 
-    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new DatabaseEventConsumerBuilder(context, topicPrefix);
+    public IEventConsumerBuilder GetBuilder(string topicPrefix) => new DatabaseEventConsumerBuilder(context.Clone, topicPrefix);
 
-    public void Dispose() { }
+    public void Dispose() => GC.SuppressFinalize(this);
 
     #endregion
 }

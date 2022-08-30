@@ -20,15 +20,9 @@ internal class Unpacker : IUnpacker
         }
     }
 
-    public InternalEvent UnpackEvent(string payload)
-    {
-        return JsonConvert.DeserializeObject<InternalEvent>(payload) ?? throw new Exception($"Payload could not be decoded: {payload}");
-    }
+    public InternalEvent UnpackEvent(string payload) => JsonConvert.DeserializeObject<InternalEvent>(payload) ?? throw new FormatException($"Payload could not be decoded: {payload}");
 
-    public T UnpackModel<T>(InternalEvent payload) where T : EventModel
-    {
-        return (T)UnpackModel(payload) ?? throw new InvalidCastException("Event not of correct type");
-    }
+    public T UnpackModel<T>(InternalEvent payload) where T : EventModel => (T)UnpackModel(payload) ?? throw new InvalidCastException("Event not of correct type");
 
     public EventModel UnpackModel(InternalEvent payload)
     {

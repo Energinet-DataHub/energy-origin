@@ -7,23 +7,23 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 {
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers = new();
 
-    private readonly FlatFileEventStore fileStore;
+    private readonly FlatFileEventStore store;
     private readonly string topicPrefix;
     private string? pointer;
     private Action<string, Exception>? exceptionHandler;
 
-    public FlatFileEventConsumerBuilder(FlatFileEventStore fileStore, string topicPrefix)
+    public FlatFileEventConsumerBuilder(FlatFileEventStore store, string topicPrefix)
     {
-        this.fileStore = fileStore;
+        this.store = store;
         this.topicPrefix = topicPrefix;
     }
 
     public IEventConsumer Build()
     {
         var unpacker = new Unpacker();
-        var consumer = new FlatFileEventConsumer(unpacker, handlers, exceptionHandler, fileStore, topicPrefix, pointer);
+        var consumer = new FlatFileEventConsumer(unpacker, handlers, exceptionHandler, topicPrefix, pointer);
 
-        fileStore.DisposeEvent += consumer.Dispose;
+        store.DisposeEvent += consumer.Dispose;
 
         return consumer;
     }
@@ -34,7 +34,7 @@ internal class FlatFileEventConsumerBuilder : IEventConsumerBuilder
 
         var list = handlers.GetValueOrDefault(type) ?? new List<Action<Event<EventModel>>>();
 
-        Action<Event<EventModel>> casted_handler = e => handler(new Event<T>((T)e.EventModel, e.Pointer));
+        void casted_handler(Event<EventModel> e) => handler(new Event<T>((T)e.EventModel, e.Pointer));
         handlers[type] = list.Append(casted_handler);
 
         return this;
