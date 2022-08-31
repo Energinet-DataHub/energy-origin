@@ -5,7 +5,7 @@ namespace EnergyOriginEventStore.EventStore.Database;
 
 #nullable disable
 
-public class DatabaseEventContext : DbContext
+public class DatabaseEventContext : DbContext // NOTE: dapper needs to be considered as alternative to EF
 {
     public DbSet<Message> Messages { get; set; }
 
@@ -15,11 +15,7 @@ public class DatabaseEventContext : DbContext
 
     public DatabaseEventContext Clone => new(connectionString);
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.LogTo(Console.WriteLine); // FIXME: weeellll
-        optionsBuilder.UseNpgsql(connectionString);
-    }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(connectionString);
 }
 
 [Index(nameof(Topic))]

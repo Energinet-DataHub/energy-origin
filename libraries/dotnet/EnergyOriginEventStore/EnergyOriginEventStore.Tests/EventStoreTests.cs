@@ -290,10 +290,12 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(Data))]
-    public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder, bool canPersist) // FIXME: failed
+    public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
-        var semaphore = new SemaphoreSlim(0, 3);
+        var semaphore1 = new SemaphoreSlim(0);
+        var semaphore2 = new SemaphoreSlim(0);
+        var semaphore3 = new SemaphoreSlim(0);
 
         var received1 = new List<Said>();
         var received2 = new List<Said>();
@@ -306,7 +308,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
             .AddHandler<Said>(value =>
             {
                 received1.Add(value.EventModel);
-                semaphore.Release();
+                semaphore1.Release();
             })
             .Build();
 
@@ -317,7 +319,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
             .AddHandler<Said>(value =>
             {
                 received2.Add(value.EventModel);
-                semaphore.Release();
+                semaphore2.Release();
             })
             .Build();
 
@@ -326,11 +328,13 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
             .AddHandler<Said>(value =>
             {
                 received3.Add(value.EventModel);
-                semaphore.Release();
+                semaphore3.Release();
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(1000));
+        await semaphore1.WaitAsync(TimeSpan.FromMilliseconds(1000));
+        await semaphore2.WaitAsync(TimeSpan.FromMilliseconds(1000));
+        await semaphore3.WaitAsync(TimeSpan.FromMilliseconds(1000));
 
         Assert.Single(received1);
         Assert.Single(received2);
@@ -380,7 +384,12 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
         public static string ConnectionString => testcontainers.ConnectionString;
 
-        public Task InitializeAsync() => testcontainers.StartAsync();
+        public async Task InitializeAsync()
+        {
+            await testcontainers.StartAsync();
+            var context = new DatabaseEventContext(testcontainers.ConnectionString);
+            await context.Database.EnsureCreatedAsync();
+        }
 
         Task IAsyncLifetime.DisposeAsync() => testcontainers.DisposeAsync().AsTask();
 
@@ -420,8 +429,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
             var context = new DatabaseEventContext(DatabaseFixture.ConnectionString);
             if (clean)
             {
-                _ = await context.Database.EnsureDeletedAsync();
-                _ = await context.Database.EnsureCreatedAsync();
+                context.Messages.RemoveRange(context.Messages);
+                await context.SaveChangesAsync();
             }
             return new DatabaseEventStore(context);
         }

@@ -40,7 +40,7 @@ internal class DatabaseEventConsumer : IEventConsumer
         GC.SuppressFinalize(this);
     }
 
-    private async Task Work() // FIXME: to be called on produce, if needed
+    private async Task Work()
     {
         await semaphore.WaitAsync();
 
