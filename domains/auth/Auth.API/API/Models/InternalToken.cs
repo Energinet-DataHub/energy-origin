@@ -1,8 +1,10 @@
 using FluentValidation;
 
 namespace API.Models;
+
 public record InternalToken
 {
+    public string OpaqueToken { get; init; }
     public DateTime Issued { get; init; }
     public DateTime Expires { get; init; }
     public string Actor { get; init; }
