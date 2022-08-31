@@ -1,21 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 using API.Configuration;
 using API.Controllers.dto;
 using API.Errors;
+using API.Helpers;
 using API.Models;
-using API.Helpers;
-using API.Orchestrator;
-using API.Services;
 using API.Services.OidcProviders;
-using Microsoft.AspNetCore.Mvc;
-using API.Helpers;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Linq;
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace API.Controllers;
 
@@ -106,38 +100,41 @@ public class LoginController : ControllerBase
 
     public IdTokenInfo ClaimToken(OidcTokenResponse oidcToken)
     {
-        var idTokenInfo = new IdTokenInfo();
-        var jwt = JwtExtensions.GetJwtPayload(oidcToken.IdToken);
-        var idToken = JsonDocument.Parse(jwt).RootElement;
-        idTokenInfo = new IdTokenInfo
-        {
-            Iss = idToken.GetProperty("iss").GetString(),
-            Nbf = idToken.GetProperty("nbf").GetInt32(),
-            Iat = idToken.GetProperty("iat").GetInt32(),
-            Exp = idToken.GetProperty("exp").GetInt32(),
-            Aud = idToken.GetProperty("aud").GetString(),
-            Amr = idToken.GetProperty("amr").ToString().ToList(),
-            Sub = idToken.GetProperty("sub").GetString(),
-            AuthTime = idToken.GetProperty("auth_time").GetInt32(),
-            Idp = idToken.GetProperty("idp").GetString(),
-            NebSid = idToken.GetProperty("neb_sid").GetString(),
-            Aal = idToken.GetProperty("aal").GetString(),
-            IdentityType = idToken.GetProperty("identity_type").GetString(),
-            TransactionId = idToken.GetProperty("transaction_id").GetString(),
-            IdpTransactionId = idToken.GetProperty("idp_transaction_id").GetString(),
-            SessionExpiry = idToken.GetProperty("session_expiry").GetString()
-        };
 
 
 
-        //var handler = new JwtSecurityTokenHandler();
-        //var token = handler.ReadToken(oidcToken.IdToken) as JwtSecurityToken;
+        //var idTokenInfo = new IdTokenInfo();
+        //var jwt = JwtExtensions.GetJwtPayload(oidcToken.IdToken);
+        //var idToken = JsonDocument.Parse(jwt).RootElement;
+        //idTokenInfo = new IdTokenInfo
+        //{
+        //    Iss = idToken.GetProperty("iss").GetString(),
+        //    Nbf = idToken.GetProperty("nbf").GetInt32(),
+        //    Iat = idToken.GetProperty("iat").GetInt32(),
+        //    Exp = idToken.GetProperty("exp").GetInt32(),
+        //    Aud = idToken.GetProperty("aud").GetString(),
+        //    Amr = idToken.GetProperty("amr").EnumerateArray(),
+        //    Sub = idToken.GetProperty("sub").GetString(),
+        //    AuthTime = idToken.GetProperty("auth_time").GetInt32(),
+        //    Idp = idToken.GetProperty("idp").GetString(),
+        //    NebSid = idToken.GetProperty("neb_sid").GetString(),
+        //    Aal = idToken.GetProperty("aal").GetString(),
+        //    IdentityType = idToken.GetProperty("identity_type").GetString(),
+        //    TransactionId = idToken.GetProperty("transaction_id").GetString(),
+        //    IdpTransactionId = idToken.GetProperty("idp_transaction_id").GetString(),
+        //    SessionExpiry = idToken.GetProperty("session_expiry").GetString()
+        //};
 
-        //var role = token.Claims.First(claim => claim.Type == "iss").Value;
+
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadToken(oidcToken.IdToken) as JwtSecurityToken;
+        var role = token.Claims.First(claim => claim.Type == "iss").Value;
+        var roles = token.Claims.First(claim => claim.Type == "nbf").Value;
+        // var role = token.Claims.First(claim => claim.Type == "iss").Value;
 
 
 
-        //var idTokenInfo = new IdTokenInfo()
+        //idTokenInfo = new IdTokenInfo()
         //{
         //    Iss = jwt.Claims.First(claim => claim.Type == "iss").Value,
         //    //Nbf = int.Parse(jwt.Claims.First(claim => claim.Type == "nbf").Value),
@@ -155,7 +152,7 @@ public class LoginController : ControllerBase
         //    //IdpTransactionId = jwt.Claims.First(claim => claim.Type == "idp_transaction_id").Value,
         //    //SessionExpiry = jwt.Claims.First(claim => claim.Type == "session_expiry").Value,
         //};
-
+        var idTokenInfo = new IdTokenInfo();
 
         return idTokenInfo;
     }
