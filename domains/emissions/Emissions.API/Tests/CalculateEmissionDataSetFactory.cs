@@ -52,13 +52,13 @@ internal static class CalculateEmissionDataSetFactory
         new Measurement(
             GSRN: "571313121223234323",
             DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23,0 ,0 , DateTimeKind.Utc).ToUnixTime(),
+            DateTo: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
             Quantity: 1234,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 23, 0 ,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
             DateTo: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
             Quantity: 242,
             Quality: Quality.Measured
@@ -77,7 +77,8 @@ internal static class CalculateEmissionDataSetFactory
             Quantity: 1800,
             Quality: Quality.Measured
             ),
-        };
+    };
+
     public static List<Measurement> CreateMeasurementsSecondMP() => new()
     {
         new Measurement(
