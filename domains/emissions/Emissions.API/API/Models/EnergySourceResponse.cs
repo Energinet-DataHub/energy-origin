@@ -1,12 +1,8 @@
-namespace API.Models
-{
-    public class EnergySourceResponse
-    {
-        public EnergySourceResponse(List<EnergySourceDeclaration> energySources)
-        {
-            EnergySources = energySources;
-        }
+namespace API.Models;
 
-        public List<EnergySourceDeclaration> EnergySources { get; }
-    }
+public class EnergySourceResponse
+{
+    public EnergySourceResponse(List<EnergySourceDeclaration> energySources) => EnergySources = energySources;
+
+    public List<EnergySourceDeclaration> EnergySources { get; }
 }

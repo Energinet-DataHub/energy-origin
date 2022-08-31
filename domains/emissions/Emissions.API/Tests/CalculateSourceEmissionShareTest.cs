@@ -10,7 +10,11 @@ namespace Tests
 {
     public sealed class CalculateSourceEmissionShareTest
     {
-        readonly SourceEmissionShareDataSetFactory dataSetFactory = new();
+        public CalculateSourceEmissionShareTest()
+        {
+            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
+            Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
+        }
 
         [Theory]
         [InlineData(Aggregation.Total)]
@@ -23,11 +27,9 @@ namespace Tests
         {
             // Arrange
             var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
-            var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-            var timeSeries = dataSetFactory.CreateTimeSeries();
-            var emissionShares = dataSetFactory.CreateEmissionsShares();
-            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
-            Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
+            var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
+            var timeSeries = SourceEmissionShareDataSetFactory.CreateTimeSeries();
+            var emissionShares = SourceEmissionShareDataSetFactory.CreateEmissionsShares();
 
             var calculator = new SourcesCalculator();
 
@@ -43,17 +45,34 @@ namespace Tests
             Assert.Equal(expected.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
         }
 
-        EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
+        [Theory]
+        [InlineData(Aggregation.Total)]
+        [InlineData(Aggregation.Actual)]
+        [InlineData(Aggregation.Hour)]
+        [InlineData(Aggregation.Day)]
+        [InlineData(Aggregation.Month)]
+        [InlineData(Aggregation.Year)]
+        public void CalculateSourceEmissions_GivenNoMeasurements_ReturnsEmptyList(Aggregation aggregation)
         {
-            switch (aggregation)
-            {
-                case Aggregation.Total:
-                case Aggregation.Month:
-                case Aggregation.Year:
-                    return new EnergySourceResponse(
+            // Arrange
+            var timeSeries = SourceEmissionShareDataSetFactory.CreateEmptyTimeSeries;
+            var emissionShares = SourceEmissionShareDataSetFactory.CreateEmissionsShares();
+            var calculator = new SourcesCalculator();
 
-                        new List<EnergySourceDeclaration>
-                        {
+            // Act
+            var result = calculator.CalculateSourceEmissions(timeSeries, emissionShares, aggregation);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.Empty(result.EnergySources);
+        }
+
+        private static EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo) => aggregation switch
+        {
+            Aggregation.Total or Aggregation.Month or Aggregation.Year => new EnergySourceResponse(
+
+                                    new List<EnergySourceDeclaration>
+                                    {
                             new(
                                 dateFrom.ToUnixTime(),
                                 dateTo.ToUnixTime(),
@@ -65,16 +84,14 @@ namespace Tests
                                     { "bioGas", 0.32m }
                                 }
                             )
-                        });
-                case Aggregation.Actual:
-                case Aggregation.Hour:
-                    return new EnergySourceResponse(
+                                    }),
+            Aggregation.Actual or Aggregation.Hour => new EnergySourceResponse(
 
-                        new List<EnergySourceDeclaration>
-                        {
+                    new List<EnergySourceDeclaration>
+                    {
                             new(
                                 dateFrom.ToUnixTime(),
-                                dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(1).ToUnixTime(),
                                 1,
                                 new()
                                 {
@@ -85,7 +102,7 @@ namespace Tests
                             ),
                             new(
                                 dateFrom.AddHours(1).ToUnixTime(),
-                                dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(2).ToUnixTime(),
                                 1,
                                 new()
                                 {
@@ -96,7 +113,7 @@ namespace Tests
                             ),
                             new(
                                 dateFrom.AddHours(2).ToUnixTime(),
-                                dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(3).ToUnixTime(),
                                 1,
                                 new()
                                 {
@@ -107,7 +124,7 @@ namespace Tests
                             ),
                             new(
                                 dateFrom.AddHours(3).ToUnixTime(),
-                                dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(4).ToUnixTime(),
                                 1,
                                 new()
                                 {
@@ -116,15 +133,14 @@ namespace Tests
                                     { "bioGas", 0.4m }
                                 }
                             )
-                        });
-                case Aggregation.Day:
-                    return new EnergySourceResponse(
+                    }),
+            Aggregation.Day => new EnergySourceResponse(
 
-                        new List<EnergySourceDeclaration>
-                        {
+                    new List<EnergySourceDeclaration>
+                    {
                             new(
                                 dateFrom.ToUnixTime(),
-                                dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(2).ToUnixTime(),
                                 0.99999m,
                                 new()
                                 {
@@ -135,7 +151,7 @@ namespace Tests
                             ),
                             new(
                                 dateFrom.AddHours(2).ToUnixTime(),
-                                dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                                dateFrom.AddHours(4).ToUnixTime(),
                                 1,
                                 new()
                                 {
@@ -144,12 +160,8 @@ namespace Tests
                                     { "bioGas", 0.4m }
                                 }
                             )
-                        });
-
-
-                default:
-                    return new EnergySourceResponse(new List<EnergySourceDeclaration>());
-            }
-        }
+                    }),
+            _ => throw new NotImplementedException(),
+        };
     }
 }

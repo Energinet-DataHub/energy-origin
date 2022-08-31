@@ -12,8 +12,8 @@ namespace API.Controllers;
 [Authorize]
 public class EmissionsController : AuthorizationController
 {
-    readonly IEmissionsService emissionsService;
-    readonly IValidator<EnergySourceRequest> validator;
+    private readonly IEmissionsService emissionsService;
+    private readonly IValidator<EnergySourceRequest> validator;
 
     public EmissionsController(IEmissionsService emissionsService, IValidator<EnergySourceRequest> validator)
     {
