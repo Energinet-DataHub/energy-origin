@@ -1,11 +1,11 @@
-using EnergyOriginEventStore.EventStore;
-using EnergyOriginEventStore.Tests.Topics;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
-using EnergyOriginEventStore.EventStore.Memory;
-using EnergyOriginEventStore.EventStore.FlatFile;
+using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Database;
+using EnergyOriginEventStore.EventStore.FlatFile;
+using EnergyOriginEventStore.EventStore.Memory;
+using EnergyOriginEventStore.Tests.Topics;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;
