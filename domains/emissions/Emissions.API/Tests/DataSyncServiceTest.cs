@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Models;
-using API.Services;
+using API.Shared.DataSync;
+using API.Shared.DataSync.Models;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Tests.Helpers;
 using Xunit;
-using Xunit.Categories;
 
 namespace Tests;
 
-[UnitTest]
 public sealed class DataSyncServiceTest
 {
     [Fact]
@@ -62,4 +57,6 @@ public sealed class DataSyncServiceTest
         Assert.Equal(1250L, res.First().Quantity);
         Assert.Equal(Quality.Measured, res.First().Quality);
     }
+
+
 }

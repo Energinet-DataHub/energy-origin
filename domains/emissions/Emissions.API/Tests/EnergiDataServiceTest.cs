@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using API.Services;
-using Microsoft.Extensions.Logging;
-using Moq;
+using API.Shared.EnergiDataService;
 using Tests.Helpers;
 using Xunit;
-using Xunit.Categories;
 
 namespace Tests;
 
-[UnitTest]
 public sealed class EnergiDataServiceTest
 {
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
-using API.Models;
+using API.Extensions;
+using API.Shared.DataSync.Models;
+using API.Shared.EnergiDataService.Models;
 using EnergyOriginDateTimeExtension;
 
 namespace Tests;
@@ -32,7 +34,6 @@ internal static class CalculateEmissionDataSetFactory
 
     public static List<TimeSeries> CreateEmptyTimeSeries => new();
 
-
     public static List<TimeSeries> CreateTimeSeriesForMismatchMeasurements() => new()
     {
         new TimeSeries
@@ -51,29 +52,29 @@ internal static class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T22:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1234,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
             Quantity: 242,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
             Quantity: 654,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T02:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1800,
             Quality: Quality.Measured
             ),
@@ -83,29 +84,29 @@ internal static class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T22:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
             Quantity: 789,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1212,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
             Quantity: 324,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T02:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1233,
             Quality: Quality.Measured
             )
@@ -115,36 +116,36 @@ internal static class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T22:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
             Quantity: 789,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-01T23:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1212,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T00:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
             Quantity: 324,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T01:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T02:00:00Z").ToUnixTimeSeconds(),
             Quantity: 1233,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 3, 0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: DateTimeOffset.Parse("2021-01-02T02:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2021-01-02T03:00:00Z").ToUnixTimeSeconds(),
             Quantity: 2140,
             Quality: Quality.Measured
             )
@@ -157,28 +158,28 @@ internal static class CalculateEmissionDataSetFactory
             gridArea: "DK1",
             nOXPerkWh: 0,
             cO2PerkWh: 124,
-            hourUTC: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc)
+            hourUTC: DateTimeOffset.Parse("2021-01-01T22:00:00Z")
         ),
         new EmissionRecord
         (
             gridArea: "DK1",
             nOXPerkWh: 0,
             cO2PerkWh: 234,
-            hourUTC: new DateTime(2021, 1, 1, 23, 0, 0, DateTimeKind.Utc)
+            hourUTC: DateTimeOffset.Parse("2021-01-01T23:00:00Z")
         ),
         new EmissionRecord
         (
             gridArea: "DK1",
             nOXPerkWh: 0,
             cO2PerkWh: 85,
-            hourUTC: new DateTime(2021, 1, 2, 0, 0, 0, DateTimeKind.Utc)
+            hourUTC: DateTimeOffset.Parse("2021-01-02T00:00:00Z")
         ),
         new EmissionRecord
         (
             gridArea: "DK1",
             nOXPerkWh: 0,
             cO2PerkWh: 120,
-            hourUTC: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc)
+            hourUTC: DateTimeOffset.Parse("2021-01-02T01:00:00Z")
         ),
     };
 

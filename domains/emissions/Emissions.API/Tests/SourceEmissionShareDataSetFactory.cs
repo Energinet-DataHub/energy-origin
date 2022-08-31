@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
-using API.Models;
+using API.Extensions;
+using API.Shared.DataSync.Models;
+using API.Shared.EnergiDataService.Models;
 using EnergyOriginDateTimeExtension;
 
 namespace Tests;
@@ -72,6 +74,5 @@ internal static class SourceEmissionShareDataSetFactory
         new MixRecord(20, new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc), "Final", "DK1", "Solar"),
         new MixRecord(40, new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc), "Final", "DK1", "WindOnshore"),
         new MixRecord(40, new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc), "Final", "DK1", "BioGas"),
-
     };
 }

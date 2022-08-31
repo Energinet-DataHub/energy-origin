@@ -1,8 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Helpers;
-using API.Models;
+using API.Extensions;
 using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Serilog;
@@ -26,7 +25,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<EnergySourceRequest.Validator>();
+builder.Services.AddValidatorsFromAssemblyContaining<API.Emissions.Models.Validator>();
+builder.Services.AddValidatorsFromAssemblyContaining<API.EnergySources.Models.Validator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -38,8 +38,11 @@ builder.Services.AddFluentValidationRulesToSwagger();
 
 builder.Services.AddHttpClient();
 builder.Services.AddCustomServices();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+app.MapHealthChecks("/health");
 
 // Configure the HTTP request pipeline.
 if (builder.Environment.IsDevelopment())
