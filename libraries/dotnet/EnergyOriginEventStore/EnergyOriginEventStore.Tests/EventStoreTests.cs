@@ -6,6 +6,8 @@ using EnergyOriginEventStore.EventStore.Database;
 using EnergyOriginEventStore.EventStore.FlatFile;
 using EnergyOriginEventStore.EventStore.Memory;
 using EnergyOriginEventStore.Tests.Topics;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;
@@ -373,6 +375,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     public class DatabaseFixture : IAsyncLifetime, IDisposable
     {
+        public readonly DatabaseEventContext MemoryDatabase = new SqliteDatabaseEventContext();
+
         private static readonly TestcontainerDatabase testcontainers = new TestcontainersBuilder<PostgreSqlTestcontainer>()
           .WithDatabase(new PostgreSqlTestcontainerConfiguration
           {
@@ -386,8 +390,9 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
         public async Task InitializeAsync()
         {
+            await MemoryDatabase.Database.EnsureCreatedAsync();
             await testcontainers.StartAsync();
-            var context = new DatabaseEventContext(testcontainers.ConnectionString);
+            var context = new PostgresDatabaseEventContext(testcontainers.ConnectionString) as DatabaseEventContext;
             await context.Database.EnsureCreatedAsync();
         }
 
@@ -426,7 +431,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     {
         public async Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
         {
-            var context = new DatabaseEventContext(DatabaseFixture.ConnectionString);
+
+            var context = fixture.MemoryDatabase; // new PostgresDatabaseEventContext(DatabaseFixture.ConnectionString) as DatabaseEventContext;
             if (clean)
             {
                 context.Messages.RemoveRange(context.Messages);
@@ -450,4 +456,22 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     #endregion
+}
+
+#nullable disable
+
+public class SqliteDatabaseEventContext : DbContext, DatabaseEventContext // NOTE: dapper needs to be considered as alternative to EF
+{
+    public DbSet<Message> Messages { get; set; }
+
+    public DatabaseEventContext Clone => this;
+
+    private readonly SqliteConnection connection = new("DataSource=:memory:");
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        connection.Open();
+        // optionsBuilder.LogTo(Console.WriteLine);
+        optionsBuilder.UseSqlite(connection);
+    }
 }

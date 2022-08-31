@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EnergyOriginEventStore\EnergyOriginEventStore.csproj" />
     <PackageReference Include="Testcontainers" Version="2.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.8" />
   </ItemGroup>
 
 </Project>
