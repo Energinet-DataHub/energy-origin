@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Models;
+using API.Emissions.Models;
 using API.Services;
+using API.Shared.Models;
 using EnergyOriginDateTimeExtension;
 using Xunit;
-using Xunit.Categories;
 
 namespace Tests;
 
-[UnitTest]
 public sealed class CalculateEmissionsTest
 {
-    readonly CalculateEmissionDataSetFactory dataSetFactory = new();
-
     [Theory]
     [InlineData(Aggregation.Total)]
     [InlineData(Aggregation.Actual)]
@@ -26,13 +23,11 @@ public sealed class CalculateEmissionsTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeries();
-        var emissions = dataSetFactory.CreateEmissions();
-
-        var calculator = new EmissionsCalculator();
+        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeries();
+        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
 
         // Act
-        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, aggregation).Emissions.ToArray();
+        var result = EmissionsService.CalculateEmission(emissions, timeSeries, aggregation).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);
@@ -55,13 +50,11 @@ public sealed class CalculateEmissionsTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeriesForMismatchMeasurements();
-        var emissions = dataSetFactory.CreateEmissions();
-
-        var calculator = new EmissionsCalculator();
+        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeriesForMismatchMeasurements();
+        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
 
         // Act
-        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, aggregation).Emissions.ToArray();
+        var result = EmissionsService.CalculateEmission(emissions, timeSeries, aggregation).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);
@@ -72,31 +65,45 @@ public sealed class CalculateEmissionsTest
         Assert.Equal(expected.Select(_ => _.DateTo), result.Select(_ => _.DateTo));
     }
 
-    [Fact]
-    public void EmissionsAndMeasurements_CalculateTotalEmission_HugeDateSet()
+    [Theory]
+    [InlineData(Aggregation.Total)]
+    [InlineData(Aggregation.Actual)]
+    [InlineData(Aggregation.Hour)]
+    [InlineData(Aggregation.Day)]
+    [InlineData(Aggregation.Month)]
+    [InlineData(Aggregation.Year)]
+    public void CalculateEmission_GivenNoMeasurements_ReturnsEmptyList(Aggregation aggregation)
     {
         // Arrange
-        var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
-        var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeriesHugeValues();
-        var emissions = dataSetFactory.CreateEmissions();
-
-        var calculator = new EmissionsCalculator();
+        var timeSeries = SourceEmissionShareDataSetFactory.CreateEmptyTimeSeries;
+        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
 
         // Act
-        var result = calculator.CalculateEmission(emissions, timeSeries, dateFrom, dateTo, Aggregation.Total).Emissions.ToArray();
+        var result = EmissionsService.CalculateEmission(emissions, timeSeries, aggregation);
+
+        //Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.Emissions);
+    }
+
+    [Fact]
+    public void EmissionsAndMeasurements_CalculateTotalEmission_LargeValues()
+    {
+        // Arrange
+        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeriesLargeValues();
+        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
+
+        // Act
+        var result = EmissionsService.CalculateEmission(emissions, timeSeries, Aggregation.Total).Emissions.ToArray();
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(864000000L, result.Single().Total.Value);
     }
 
-    IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
+    private static IEnumerable<API.Emissions.Models.EmissionRecord> GetExpectedEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo) => aggregation switch
     {
-        switch (aggregation)
-        {
-            case Aggregation.Total:
-                return new List<Emissions>()
+        Aggregation.Total => new List<API.Emissions.Models.EmissionRecord>()
                 {
                     new(
                         dateFrom.ToUnixTime(),
@@ -104,10 +111,8 @@ public sealed class CalculateEmissionsTest
                         new Quantity(1038.178m, QuantityUnit.g),
                         new Quantity(138.64557m, QuantityUnit.gPerkWh)
                         )
-                };
-            case Aggregation.Actual:
-            case Aggregation.Hour:
-                return new List<Emissions>()
+                },
+        Aggregation.Actual or Aggregation.Hour => new List<API.Emissions.Models.EmissionRecord>()
                 {
                     new(
                         dateFrom.ToUnixTime(),
@@ -133,9 +138,8 @@ public sealed class CalculateEmissionsTest
                         new Quantity(363.96m, QuantityUnit.g),
                         new Quantity(120m, QuantityUnit.gPerkWh)
                     ),
-                };
-            case Aggregation.Day:
-                return new List<Emissions>()
+                },
+        Aggregation.Day => new List<API.Emissions.Models.EmissionRecord>()
                 {
                     new(
                         dateFrom.ToUnixTime(),
@@ -150,10 +154,8 @@ public sealed class CalculateEmissionsTest
                         new Quantity(447.09m, QuantityUnit.g),
                         new Quantity(111.46597m, QuantityUnit.gPerkWh)
                     )
-                };
-            case Aggregation.Month:
-            case Aggregation.Year:
-                return new List<Emissions>()
+                },
+        Aggregation.Month or Aggregation.Year => new List<API.Emissions.Models.EmissionRecord>()
                 {
                     new(
                         dateFrom.ToUnixTime(),
@@ -161,9 +163,7 @@ public sealed class CalculateEmissionsTest
                         new Quantity(1038.178m, QuantityUnit.g),
                         new Quantity(138.64557m, QuantityUnit.gPerkWh)
                     )
-                };
-            default:
-                return new List<Emissions>();
-        }
-    }
+                },
+        _ => throw new NotImplementedException()
+    };
 }
