@@ -1,17 +1,9 @@
 {
-    "name": "Docker from Docker",
-    "dockerFile": "Dockerfile",
-    "runArgs": [
-        "--init"
-    ],
-    "mounts": [
-        "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-    ],
-    "overrideCommand": false,
-    "remoteEnv": {
-        "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    "name": "C# (.NET)",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
     },
-    "remoteUser": "vscode",
     "settings": {
         "editor.formatOnSave": true
     },
@@ -21,5 +13,7 @@
         "formulahendry.dotnet-test-explorer",
         "ryanluker.vscode-coverage-gutters",
         "ms-azuretools.vscode-docker"
-    ]
+    ],
+    "postCreateCommand": "dotnet restore",
+    "remoteUser": "vscode"
 }

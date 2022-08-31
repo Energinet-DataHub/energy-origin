@@ -1,13 +1,8 @@
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Database;
 using EnergyOriginEventStore.EventStore.FlatFile;
 using EnergyOriginEventStore.EventStore.Memory;
 using EnergyOriginEventStore.Tests.Topics;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace EnergyOriginEventStore.Tests;
@@ -375,28 +370,13 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     public class DatabaseFixture : IAsyncLifetime, IDisposable
     {
-        public readonly DatabaseEventContext MemoryDatabase = new SqliteDatabaseEventContext();
+        public readonly DatabaseEventContext Context = new SqliteDatabaseEventContext();
 
-        private static readonly TestcontainerDatabase testcontainers = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-          .WithDatabase(new PostgreSqlTestcontainerConfiguration
-          {
-              Database = "db",
-              Username = "postgres",
-              Password = "postgres",
-          })
-          .Build();
+        public SqliteDatabaseEventContext OriginalContext => (SqliteDatabaseEventContext)Context;
 
-        public static string ConnectionString => testcontainers.ConnectionString;
+        public async Task InitializeAsync() => await OriginalContext.Setup();
 
-        public async Task InitializeAsync()
-        {
-            await MemoryDatabase.Database.EnsureCreatedAsync();
-            await testcontainers.StartAsync();
-            var context = new PostgresDatabaseEventContext(testcontainers.ConnectionString) as DatabaseEventContext;
-            await context.Database.EnsureCreatedAsync();
-        }
-
-        Task IAsyncLifetime.DisposeAsync() => testcontainers.DisposeAsync().AsTask();
+        Task IAsyncLifetime.DisposeAsync() => Task.CompletedTask;
 
         public void Dispose() => GC.SuppressFinalize(this);
     }
@@ -431,14 +411,11 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     {
         public async Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
         {
-
-            var context = fixture.MemoryDatabase; // new PostgresDatabaseEventContext(DatabaseFixture.ConnectionString) as DatabaseEventContext;
             if (clean)
             {
-                context.Messages.RemoveRange(context.Messages);
-                await context.SaveChangesAsync();
+                await fixture.OriginalContext.Clean();
             }
-            return new DatabaseEventStore(context);
+            return new DatabaseEventStore(fixture.Context);
         }
     }
 
@@ -456,22 +433,4 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     #endregion
-}
-
-#nullable disable
-
-public class SqliteDatabaseEventContext : DbContext, DatabaseEventContext // NOTE: dapper needs to be considered as alternative to EF
-{
-    public DbSet<Message> Messages { get; set; }
-
-    public DatabaseEventContext Clone => this;
-
-    private readonly SqliteConnection connection = new("DataSource=:memory:");
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        connection.Open();
-        // optionsBuilder.LogTo(Console.WriteLine);
-        optionsBuilder.UseSqlite(connection);
-    }
 }

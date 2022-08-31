@@ -12,7 +12,7 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly string topicPrefix;
     private readonly PeriodicTimer timer;
     private string? pointer;
-    private readonly SemaphoreSlim semaphore = new(1, 1);
+    private readonly SemaphoreSlim semaphore = new(1);
 
     public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string? pointer)
     {
@@ -44,16 +44,23 @@ internal class DatabaseEventConsumer : IEventConsumer
     {
         await semaphore.WaitAsync();
 
-        IQueryable<Message> query = context.Messages.OrderBy(it => it.Id);
-        if (pointer != null)
+        while (true)
         {
-            query = query.Where(it => it.Id > long.Parse(pointer ?? ""));
-        }
-        query = query.Where(it => it.Topic.StartsWith(topicPrefix));
+            Message? message;
+            try
+            {
+                message = this.pointer != null ? await context.NextAfter(long.Parse(this.pointer ?? ""), topicPrefix) : await context.NextAfter(null, topicPrefix);
+            }
+            catch (Exception exception)
+            {
+                exceptionHandler?.Invoke("InternalErrorWhileFetchingNextMessage", exception);
+                break;
+            }
 
-        foreach (var message in query.ToList())
-        {
-            if (message == null) continue;
+            if (message == null)
+            {
+                break;
+            }
 
             var reconstructedEvent = unpacker.UnpackEvent(message.Payload);
             var reconstructed = unpacker.UnpackModel(reconstructedEvent);
