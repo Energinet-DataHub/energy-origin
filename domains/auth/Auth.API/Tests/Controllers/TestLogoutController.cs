@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Categories;
+using API.Helpers;
 
 namespace API.Controllers;
 
@@ -29,6 +30,7 @@ public class TestLogoutController
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
+    private readonly Mock<ICryptography> cryptography = new();
 
     private readonly LogoutController logoutController;
 
@@ -75,12 +77,12 @@ public class TestLogoutController
     [InlineData(null, false)]
     public void OidcProviders_IsError(string error, bool expectedIsError)
     {
-        var oidcServiceMock = new Mock<IOidcService>();
+
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new HttpClient());
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object);
 
-        OidcCallbackParams oidcCallbackParams = new OidcCallbackParams() { Error = error };
+        var oidcCallbackParams = new OidcCallbackParams() { Error = error };
 
         Assert.Equal(expectedIsError, signaturGruppen.isError(oidcCallbackParams));
     }
@@ -91,10 +93,10 @@ public class TestLogoutController
     [InlineData("foo", "bar?success=0&error_code=E0&error=Unknown%20error%20from%20Identity%20Provider")]
     public void OidcProviders_OnOidcFlowFailed(string ErrorDescription, string expectedNextUrl)
     {
-        var oidcServiceMock = new Mock<IOidcService>();
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+   
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, oidcServiceMock.Object, authOptionsMock.Object, new HttpClient());
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object);
 
         var state = new AuthState
         {
@@ -102,7 +104,7 @@ public class TestLogoutController
             ReturnUrl = "bar",
         };
 
-        OidcCallbackParams oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription  };
+        var oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription  };
 
         var res = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
 
