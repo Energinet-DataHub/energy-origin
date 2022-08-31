@@ -24,9 +24,8 @@ public sealed class EnergiDataServiceTest
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var logger = new Mock<ILogger<EnergiDataService>>();
 
-        var eds = new EnergiDataService(logger.Object, edsMock);
+        var eds = new EnergiDataService(edsMock);
 
         // Act
         var res = await eds.GetEmissionsPerHour(dateFrom, dateTo);
@@ -45,9 +44,8 @@ public sealed class EnergiDataServiceTest
 
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var logger = new Mock<ILogger<EnergiDataService>>();
 
-        var eds = new EnergiDataService(logger.Object, edsMock);
+        var eds = new EnergiDataService(edsMock);
 
         // Act
         var res = await eds.GetResidualMixPerHour(dateFrom, dateTo);

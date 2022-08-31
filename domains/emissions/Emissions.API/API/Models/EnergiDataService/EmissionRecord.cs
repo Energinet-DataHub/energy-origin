@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+namespace API.Models;
+
 public class EmissionRecord
 {
     [JsonPropertyName("priceArea")]

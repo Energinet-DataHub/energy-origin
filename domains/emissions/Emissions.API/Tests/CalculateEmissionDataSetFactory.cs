@@ -5,12 +5,10 @@ using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
-internal class CalculateEmissionDataSetFactory
+internal static class CalculateEmissionDataSetFactory
 {
-    public List<TimeSeries> CreateTimeSeries()
+    public static List<TimeSeries> CreateTimeSeries() => new()
     {
-        return new List<TimeSeries>
-        {
             new TimeSeries
             (
                 new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
@@ -22,25 +20,21 @@ internal class CalculateEmissionDataSetFactory
                 CreateMeasurementsSecondMP()
             )
         };
-    }
 
-    public List<TimeSeries> CreateTimeSeriesHugeValues()
+    public static List<TimeSeries> CreateTimeSeriesLargeValues() => new()
     {
-        return new List<TimeSeries>
-        {
             new TimeSeries
             (
                 new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
-                CreateMeasurementHugeNumbers()
+                CreateMeasurementLargeValues()
             )
         };
-    }
+
+    public static List<TimeSeries> CreateEmptyTimeSeries => new();
 
 
-    public List<TimeSeries> CreateTimeSeriesForMismatchMeasurements()
+    public static List<TimeSeries> CreateTimeSeriesForMismatchMeasurements() => new()
     {
-        return new List<TimeSeries>
-        {
             new TimeSeries
             (
                 new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
@@ -52,12 +46,9 @@ internal class CalculateEmissionDataSetFactory
                 CreateMeasurementsForMismatch()
             )
         };
-    }
 
-    public List<Measurement> CreateMeasurementsFirstMP()
+    public static List<Measurement> CreateMeasurementsFirstMP() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
@@ -87,11 +78,8 @@ internal class CalculateEmissionDataSetFactory
                 Quality: Quality.Measured
                 ),
         };
-    }
-    public List<Measurement> CreateMeasurementsSecondMP()
+    public static List<Measurement> CreateMeasurementsSecondMP() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234324",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
@@ -121,11 +109,8 @@ internal class CalculateEmissionDataSetFactory
                 Quality: Quality.Measured
                 )
         };
-    }
-    public List<Measurement> CreateMeasurementsForMismatch()
+    public static List<Measurement> CreateMeasurementsForMismatch() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234324",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
@@ -163,12 +148,9 @@ internal class CalculateEmissionDataSetFactory
                 )
 
         };
-    }
 
-    public List<EmissionRecord> CreateEmissions()
+    public static List<EmissionRecord> CreateEmissions() => new()
     {
-        return new List<EmissionRecord>
-        {
             new EmissionRecord
             (
                 gridArea: "DK1",
@@ -198,40 +180,36 @@ internal class CalculateEmissionDataSetFactory
                 hourUTC: new DateTime(2021, 1, 2, 1, 0, 0, DateTimeKind.Utc)
             ),
         };
-    }
 
-    public List<Measurement> CreateMeasurementHugeNumbers()
+    public static List<Measurement> CreateMeasurementLargeValues() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateTo: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
                 Quantity: 2000000000L,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
+                DateTo: new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
                 Quantity: 1500000000L,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateTo: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
                 Quantity: 1000000000L,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateTo: new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
                 Quantity: 1500000000L,
                 Quality: Quality.Measured
                 )
         };
-    }
 }

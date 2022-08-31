@@ -23,9 +23,7 @@ public sealed class DataSyncServiceTest
         var datasyncData = new List<string>(new string[] { "datasync_meteringpoints.json" });
         var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
 
-        var logger = new Mock<ILogger<DataSyncService>>();
-
-        var datasync = new DataSyncService(logger.Object, mockClient);
+        var datasync = new DataSyncService(mockClient);
 
         // Act
         var res = await datasync.GetListOfMeteringPoints(new AuthorizationContext("", "", ""));
@@ -48,9 +46,8 @@ public sealed class DataSyncServiceTest
 
         var dateFrom = 1609455600L;
         var dateTo = 1609459200L;
-        var logger = new Mock<ILogger<DataSyncService>>();
 
-        var datasync = new DataSyncService(logger.Object, mockClient);
+        var datasync = new DataSyncService(mockClient);
 
         // Act
         var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", new DateTime(), new DateTime());

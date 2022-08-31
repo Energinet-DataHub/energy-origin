@@ -5,45 +5,45 @@ namespace API.Models
     public enum QuantityUnit
     {
         [Description("Wh")]
-        Wh = 1,
+        Wh,
 
         [Description("kWh")]
-        kWh = 2,
+        kWh,
 
         [Description("MWh")]
-        MWh = 3,
+        MWh,
 
         [Description("GWh")]
-        GWh = 3,
+        GWh,
 
         [Description("kW")]
-        kW = 4,
+        kW,
 
         [Description("MW")]
-        MW = 5,
+        MW,
 
         [Description("GW")]
-        GW = 6,
+        GW,
 
         [Description("mg")]
-        mg = 7,
+        mg,
 
         [Description("g")]
-        g = 8,
+        g,
 
         [Description("kg")]
-        kg = 9,
+        kg,
 
         [Description("Mg")]
-        Mg = 10,
+        Mg,
 
         [Description("mg/kWh")]
-        mgPerkWh = 11,
+        mgPerkWh,
 
         [Description("g/kWh")]
-        gPerkWh = 12,
+        gPerkWh,
 
         [Description("kg/kWh")]
-        kgPerkWh = 13,
+        kgPerkWh,
     }
 }

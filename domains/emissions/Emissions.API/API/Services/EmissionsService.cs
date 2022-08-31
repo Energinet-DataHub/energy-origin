@@ -6,10 +6,10 @@ namespace API.Services;
 
 public class EmissionsService : IEmissionsService
 {
-    readonly IDataSyncService dataSyncService;
-    readonly IEnergiDataService energyDataService;
-    readonly IEmissionsCalculator emissionsCalculator;
-    readonly ISourcesCalculator sourcesCalculator;
+    private readonly IDataSyncService dataSyncService;
+    private readonly IEnergiDataService energyDataService;
+    private readonly IEmissionsCalculator emissionsCalculator;
+    private readonly ISourcesCalculator sourcesCalculator;
 
     public EmissionsService(
         IDataSyncService dataSyncService,
@@ -33,7 +33,7 @@ public class EmissionsService : IEmissionsService
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         //Calculate total emission
-        return emissionsCalculator.CalculateEmission(emissions, measurements, dateFrom, dateTo, aggregation);
+        return emissionsCalculator.CalculateEmission(emissions, measurements, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(
