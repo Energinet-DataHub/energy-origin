@@ -1,6 +1,6 @@
 using API.Configuration;
 using API.Models;
-using API.Services;
+using API.Repository;
 using API.Services.OidcProviders;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -28,8 +28,7 @@ public class LogoutController : ControllerBase
     [Route("/auth/logout")]
     public async Task<ActionResult<LogoutResponse>> Logout()
     {
-        var opaqueToken = HttpContext.Request.Headers[authOptions.CookieName].FirstOrDefault()?.Split(" ").Last();
-
+        var opaqueToken = HttpContext.Request.Cookies[authOptions.CookieName];
         if (opaqueToken != null)
         {
             var idToken = tokenStorage.GetIdTokenByOpaqueToken(opaqueToken);

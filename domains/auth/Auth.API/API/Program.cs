@@ -4,8 +4,10 @@ using System.Text.Json.Serialization;
 using API.Configuration;
 using API.Helpers;
 using API.Models;
+using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
+using API.TokenStorage;
 using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -36,11 +38,11 @@ builder.Services.AddHealthChecks();
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
-
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IOidcService, SignaturGruppen>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
-builder.Services.AddSingleton<ITokenStorage, TokenStorage>();
+builder.Services.AddScoped<ICookies, Cookies>();
+builder.Services.AddScoped<ITokenStorage, TokenStorage>();
 
 var app = builder.Build();
 
