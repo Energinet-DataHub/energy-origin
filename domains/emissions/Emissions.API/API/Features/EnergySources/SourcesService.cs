@@ -1,7 +1,7 @@
+using API.Configuration;
 using API.EnergySources.Models;
 using API.Extensions;
 using API.Features.EnergySources;
-using API.Helpers;
 using API.Shared.DataSync;
 using API.Shared.DataSync.Models;
 using API.Shared.EnergiDataService;
@@ -14,8 +14,8 @@ namespace API.Services;
 
 public class SourcesService : ISourcesService
 {
-    private static readonly IList<string> renewableSources = Configuration.GetRenewableSources();
-    private static readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
+    private static readonly IList<string> renewableSources = Configurations.GetRenewableSources();
+    private static readonly decimal wasteRenewableShare = Configurations.GetWasteRenewableShare();
     private const string waste = "waste";
 
 
@@ -56,7 +56,7 @@ public class SourcesService : ISourcesService
                 var sourcesWithPercentage = group
                     .SelectMany(list => list.record.Select(it => (it.ProductionType, Amount: it.ShareTotal * list.measurement.Quantity)))
                     .GroupBy(it => it.ProductionType)
-                    .ToDictionary(group => group.Key, group => Math.Round(group.Sum(tuple => tuple.Amount) / totalQuantityForGroup / 100, Configuration.DecimalPrecision));
+                    .ToDictionary(group => group.Key, group => Math.Round(group.Sum(tuple => tuple.Amount) / totalQuantityForGroup / 100, Configurations.DecimalPrecision));
 
                 var renewablePercentage = sourcesWithPercentage
                     .Where(a => renewableSources.Contains(a.Key))

@@ -1,8 +1,9 @@
 using System.Globalization;
 
-namespace API.Helpers
+namespace API.Configuration
 {
-    public static class Configuration
+    //TODO: Migrate to IOptions
+    public static class Configurations
     {
         private static readonly string dataSyncEndpoint = "DATASYNCENDPOINT";
         private static readonly string energiDataServiceEndpoint = "ENERGIDATASERVICEENDPOINT";
