@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 
 namespace API.Models;
-
+#nullable disable
 public record SignaturGruppenMitId
 {
     [JsonPropertyName("identity_type")]

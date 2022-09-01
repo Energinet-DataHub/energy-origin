@@ -36,7 +36,7 @@ public class InvalidateController : ControllerBase
         {
             authState = cryptography.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return BadRequest();
         }

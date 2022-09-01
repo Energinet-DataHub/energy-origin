@@ -4,6 +4,7 @@ using System.Net.Http;
 using API.Configuration;
 using API.Helpers;
 using API.Models;
+using API.Services;
 using API.Services.OidcProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,6 +22,7 @@ public class TestSignaturGruppen
     private readonly MockHttpMessageHandler handlerMock = new();
     private readonly Mock<IOptions<AuthOptions>> mockAuthOptions = new();
     private readonly Mock<ICryptography> cryptography = new();
+    private readonly Mock<IJwkService> jwkService = new();
 
     private SignaturGruppen signaturGruppen;
 
@@ -31,7 +33,6 @@ public class TestSignaturGruppen
             .Returns(new AuthOptions
             {
                 OidcClientId = "OIDCCLIENTID",
-                Scope = "SCOPE, SCOPE1",
                 OidcUrl = "http://localhost:8080",
                 AmrValues = "AMRVALUES"
             });
@@ -40,7 +41,8 @@ public class TestSignaturGruppen
             mockLogger.Object,
             mockAuthOptions.Object,
             new HttpClient(handlerMock),
-            cryptography.Object
+            cryptography.Object,
+            jwkService.Object
         );
     }
 

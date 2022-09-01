@@ -1,7 +1,7 @@
 using FluentValidation;
 
 namespace API.Models;
-
+#nullable disable
 public record AuthState
 {
     public string FeUrl { get; init; }

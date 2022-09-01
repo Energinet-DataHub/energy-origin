@@ -4,6 +4,6 @@ namespace API.Orchestrator
 {
     public interface IOrchestrator
     {
-        public void Next(AuthState state, string code);
+        public Task<NextStep> Next(AuthState state, User user, Company company);
     }
 }

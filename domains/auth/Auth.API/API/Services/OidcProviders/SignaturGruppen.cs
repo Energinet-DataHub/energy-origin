@@ -13,23 +13,26 @@ using Microsoft.Extensions.Options;
 namespace API.Services.OidcProviders;
 
 public class SignaturGruppen : IOidcService
-{ 
+{
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
     private readonly ICryptography cryptography;
+    private readonly IJwkService jwkService;
 
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
         IOptions<AuthOptions> authOptions,
         HttpClient httpClient,
-        ICryptography cryptography
+        ICryptography cryptography,
+        IJwkService jwkService
         )
     {
         this.logger = logger;
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
         this.cryptography = cryptography;
+        this.jwkService = jwkService;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -80,9 +83,10 @@ public class SignaturGruppen : IOidcService
         }
 
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
-        var token = JsonDocument.Parse(tokenJson).RootElement;
 
-        return DecodeOidcResponse(token);
+        var encoded = JsonSerializer.Deserialize<OidcTokenResponse>(tokenJson);
+
+        return encoded != null ? DecodeOidcResponse(encoded) : throw new FormatException();
     }
 
     public bool isError(OidcCallbackParams oidcCallbackParams)
@@ -164,7 +168,7 @@ public class SignaturGruppen : IOidcService
             { "response_type", responseType },
             { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", authOptions.Scope },
+            { "scope", "openid, mitid, nemid, userinfo_token" },
             { "state", cryptography.Encrypt(json) },
             { "language", lang }
         };
@@ -173,29 +177,17 @@ public class SignaturGruppen : IOidcService
 
     }
 
-    private OidcTokenResponse DecodeOidcResponse(JsonElement token)
+    private OidcTokenResponse DecodeOidcResponse(OidcTokenResponse token)
     {
-        var jwks = GetJwkAsync();
+        var jwks = jwkService.GetJwkAsync();
 
-        var idTokenDecoded = new OidcTokenResponse()
+        return new OidcTokenResponse()
         {
-            IdToken = JWT.Decode(token.GetProperty("id_token").ToString(), jwks),
-            AccessToken = JWT.Decode(token.GetProperty("access_token").ToString(), jwks),
-            ExpiresIn = token.GetProperty("expires_in").ToString(),
-            TokenType = token.GetProperty("token_type").ToString(),
-            Scope = token.GetProperty("scope").ToString(),
+            IdToken = JWT.Decode(token.IdToken, jwks),
+            AccessToken = JWT.Decode(token.AccessToken, jwks),
+            ExpiresIn = token.ExpiresIn,
+            TokenType = token.TokenType,
+            Scope = token.Scope,
         };
-
-        return idTokenDecoded;
     }
-
-    private async Task<Jwk> GetJwkAsync()
-    {
-        var jwkResponse = await httpClient.GetAsync($"{authOptions.OidcUrl}/.well-known/openid-configuration/jwks");
-        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
-        var jwks = jwkSet.Keys.Single();
-
-        return jwks;
-    }
-
 }

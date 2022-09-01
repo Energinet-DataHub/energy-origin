@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 using API.Configuration;
 using API.Controllers;
 using API.Controllers.dto;
 using API.Errors;
+using API.Helpers;
 using API.Models;
 using API.Repository;
 using API.Services;
@@ -21,7 +21,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Categories;
-using API.Helpers;
 
 namespace API.Controllers;
 
@@ -31,6 +30,7 @@ public class TestLogoutController
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
     private readonly Mock<ICryptography> cryptography = new();
+    private readonly Mock<IJwkService> jwkService = new();
 
     private readonly LogoutController logoutController;
 
@@ -54,10 +54,10 @@ public class TestLogoutController
         };
     }
 
-    public static IEnumerable<object[]> Cookie => new[]
+    public static IEnumerable<object?[]> Cookie => new[]
     {
-        new object[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
-        new object[] { null },
+        new object?[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
+        new object?[] { null },
     };
 
     [Theory, MemberData(nameof(Cookie))]
@@ -80,7 +80,7 @@ public class TestLogoutController
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object, jwkService.Object);
 
         var oidcCallbackParams = new OidcCallbackParams() { Error = error };
 
@@ -94,9 +94,9 @@ public class TestLogoutController
     public void OidcProviders_OnOidcFlowFailed(string ErrorDescription, string expectedNextUrl)
     {
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-   
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object);
+
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object, jwkService.Object);
 
         var state = new AuthState
         {
@@ -104,7 +104,7 @@ public class TestLogoutController
             ReturnUrl = "bar",
         };
 
-        var oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription  };
+        var oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription };
 
         var res = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
 

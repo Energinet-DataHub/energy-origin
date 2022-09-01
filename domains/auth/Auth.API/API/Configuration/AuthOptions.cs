@@ -1,5 +1,5 @@
 namespace API.Configuration;
-
+#nullable disable
 public class AuthOptions
 {
     // Token related
@@ -8,7 +8,6 @@ public class AuthOptions
     public string TokenExpiryTimeInDays { get; set; }
 
     // OIDC Related
-    public string Scope { get; set; }
     public string AmrValues { get; set; }
     public string OidcUrl { get; set; }
     public string OidcClientId { get; set; }

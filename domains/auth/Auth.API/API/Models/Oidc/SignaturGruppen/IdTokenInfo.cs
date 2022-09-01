@@ -1,13 +1,14 @@
 using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
 
 namespace API.Models;
-
+#nullable disable
 public record IdTokenInfo
 {
     [JsonPropertyName("iss")]
     public string Iss { get; init; }
 
-    [JsonPropertyName("npf")]
+    [JsonPropertyName("nbf")]
     public int Nbf { get; init; }
 
     [JsonPropertyName("iat")]

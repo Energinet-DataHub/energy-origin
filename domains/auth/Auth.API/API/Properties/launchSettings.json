@@ -19,7 +19,6 @@
             "ASPNETCORE_ENVIRONMENT": "Development",
             "InternalTokenSecret": "INTERNALTOKENSECRET",
             "TokenExpiryTime": "1",
-            "Scope": "SCOPE, SCOPE1",
             "AmrValues": "AMRVALUES",
             "OidcUrl": "https://pp.netseidbroker.dk/op",
             "OidcClientId": "OIDCCLIENTID",

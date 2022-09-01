@@ -59,6 +59,6 @@ public class Cryptography : ICryptography
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             }
-        );
+        ) ?? throw new FormatException();
     }
 }

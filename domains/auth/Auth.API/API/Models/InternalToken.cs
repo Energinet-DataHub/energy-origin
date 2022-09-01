@@ -2,6 +2,7 @@ using FluentValidation;
 
 namespace API.Models;
 
+#nullable disable
 public record InternalToken
 {
     public string OpaqueToken { get; init; }

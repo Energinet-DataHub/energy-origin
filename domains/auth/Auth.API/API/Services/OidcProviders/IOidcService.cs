@@ -1,7 +1,7 @@
+using System.Text.Json;
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
-using System.Text.Json;
 
 namespace API.Services.OidcProviders;
 

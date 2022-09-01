@@ -1,9 +1,7 @@
 using API.Configuration;
 using API.Models;
 using API.Services.OidcProviders;
-using Jose;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 namespace API.Orchestrator;
 
@@ -12,25 +10,25 @@ public class Orchestrator : IOrchestrator
     private readonly ILogger logger;
     private readonly IOidcService oidcService;
     private readonly AuthOptions authOptions;
-    private readonly HttpClient httpClient;
 
     public Orchestrator(
         ILogger<Orchestrator> logger,
         IOidcService oidcService,
-        IOptions<AuthOptions> authOptions,
-        HttpClient httpClient
+        IOptions<AuthOptions> authOptions
     )
     {
         this.logger = logger;
         this.oidcService = oidcService;
         this.authOptions = authOptions.Value;
-        this.httpClient = httpClient;
     }
-    public async void Next(AuthState state, string code)
-    {
-        var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
 
-        var oidcToken = await oidcService.FetchToken(state, code);
+    public async Task<NextStep> Next(AuthState state, User user, Company company)  // FIXME 
+    {
+
+
+        //var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
+
+        //var oidcToken = await oidcService.FetchToken(state, code);
 
         //var rawIdToken = DecodeJwtIdToken(oidcToken);
 
@@ -87,7 +85,8 @@ public class Orchestrator : IOrchestrator
         // Store jwt in db
 
         // Create opaque token and return it
-        //return null;
+        throw new NotImplementedException();
+
     }
 
 

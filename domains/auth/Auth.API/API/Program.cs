@@ -9,6 +9,8 @@ using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
 using API.TokenStorage;
+using EnergyOriginEventStore.EventStore;
+using EnergyOriginEventStore.EventStore.Memory;
 using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -38,6 +40,8 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptography, Cryptography>();
@@ -46,7 +50,8 @@ builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>(
 builder.Services.AddScoped<IValidator<InternalToken>, InternalTokenValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
-
+builder.Services.AddScoped<IJwkService, JwkService>();
+builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 var app = builder.Build();
 

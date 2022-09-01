@@ -1,0 +1,23 @@
+{
+    "iss": "https://pp.netseidbroker.dk/op",
+    "nbf": 1643290895,
+    "iat": 1643290895,
+    "exp": 1643291195,
+    "amr": [
+        "nemid.otp"
+    ],
+    "idp": "token_idp",
+    "nemid.ssn": "CVR:39315041-RID:35613330",
+    "nemid.common_name": "TEST - userinfo Token",
+    "nemid.dn": "CN=TEST - userinfo Token+SERIALNUMBER=CVR:39315041-RID:35613330,O=Energinet DataHub A/S // CVR:39315041,C=DK",
+    "#": null,
+    "noqa": "E501",
+    "nemid.rid": "35613330",
+    "nemid.company_name": "Energinet DataHub A/S ",
+    "nemid.cvr": "token_tin",
+    "identity_type": "professional",
+    "auth_time": "int(token_issued.timestamp())",
+    "sub": "token_subject",
+    "transaction_id": "token_transaction_id",
+    "aud": "token_aud"
+}
