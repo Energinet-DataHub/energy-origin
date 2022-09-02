@@ -4,7 +4,7 @@ using System.Text.Json;
 using API.Configuration;
 using API.Controllers.dto;
 using API.Errors;
-using API.Helpers;
+using API.Utilities;
 using API.Models;
 using Jose;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -17,7 +17,7 @@ public class SignaturGruppen : IOidcService
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
-    private readonly ICryptography cryptography;
+    private readonly ICryptography stateCryptography;
     private readonly IJwkService jwkService;
 
     public SignaturGruppen(
@@ -31,8 +31,8 @@ public class SignaturGruppen : IOidcService
         this.logger = logger;
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
-        this.cryptography = cryptography;
         this.jwkService = jwkService;
+        stateCryptography = cryptography;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -124,25 +124,25 @@ public class SignaturGruppen : IOidcService
     }
 
     // T makes sure we can pass a dynamic object type I.E NemID and MitID
-    public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
-    {
-        var uri = $"{authOptions.OidcUrl}/connect/userinfo";
+    //public async Task<T> FetchUserInfo<T>(OidcTokenResponse oidcToken)
+    //{
+    //    var uri = $"{authOptions.OidcUrl}/connect/userinfo";
 
-        httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
+    //    httpClient.DefaultRequestHeaders.Add("Authorization", $"{oidcToken.TokenType} {oidcToken.AccessToken}");
 
-        var res = await httpClient.GetAsync(uri);
+    //    var res = await httpClient.GetAsync(uri);
 
-        if (res.StatusCode != HttpStatusCode.OK)
-        {
-            // This should be changes to have better logging
-            logger.LogCritical(res.StatusCode.ToString());
-            throw new HttpRequestException(res.StatusCode.ToString());
-        }
+    //    if (res.StatusCode != HttpStatusCode.OK)
+    //    {
+    //        // This should be changes to have better logging
+    //        logger.LogCritical(res.StatusCode.ToString());
+    //        throw new HttpRequestException(res.StatusCode.ToString());
+    //    }
 
-        var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
+    //    var data = JsonSerializer.Deserialize<T>(res.Content.ToString()!);
 
-        return data!;
-    }
+    //    return data!;
+    //}
 
     public async Task Logout(string token)
     {
@@ -168,8 +168,8 @@ public class SignaturGruppen : IOidcService
             { "response_type", responseType },
             { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
-            { "scope", "openid, mitid, nemid, userinfo_token" },
-            { "state", cryptography.Encrypt(json) },
+            { "scope", "openid,mitid,nemid,userinfo_token" },
+            { "state", stateCryptography.Encrypt(json) },
             { "language", lang }
         };
 

@@ -3,11 +3,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using API.Controllers.dto;
 using API.Errors;
-using API.Helpers;
 using API.Models;
 using API.Orchestrator;
 using API.Repository;
 using API.Services.OidcProviders;
+using API.Utilities;
 using EnergyOriginEventStore.EventStore;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -18,21 +18,23 @@ public class LoginController : ControllerBase
 {
     private readonly IOidcService oidcService;
     private readonly IValidator<OidcCallbackParams> validator;
-    private readonly ICryptography cryptography;
+    private readonly ICryptography tokenCryptography;
+    private readonly ICryptography stateCryptography;
     private readonly IEventStore eventStore;
     private readonly IUserStorage userStorage;
     private readonly ICompanyStorage companyStorage;
     private readonly IOrchestrator orchestrator;
 
-    public LoginController(IOidcService oidcService, IValidator<OidcCallbackParams> validator, ICryptography cryptography, IEventStore eventStore, IUserStorage userStorage, ICompanyStorage companyStorage, IOrchestrator orchestrator)
+    public LoginController(IOidcService oidcService, IValidator<OidcCallbackParams> validator, ICryptographyFactory cryptographyFactory, IEventStore eventStore, IUserStorage userStorage, ICompanyStorage companyStorage, IOrchestrator orchestrator)
     {
         this.oidcService = oidcService;
         this.validator = validator;
-        this.cryptography = cryptography; // FIXME! We need two of these!
         this.eventStore = eventStore;
         this.userStorage = userStorage;
         this.companyStorage = companyStorage;
         this.orchestrator = orchestrator;
+        tokenCryptography = cryptographyFactory.IdTokenCryptography();
+        stateCryptography = cryptographyFactory.StateCryptography();
     }
 
     [HttpGet]
@@ -58,9 +60,10 @@ public class LoginController : ControllerBase
         IdTokenInfo oidcIdToken;
         UserInfoToken oidcUserInfoToken;
         OidcTokenResponse oidcToken;
+
         try
         {
-            authState = cryptography.Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
+            authState = stateCryptography.Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
 
         }
         catch (Exception)
@@ -95,23 +98,30 @@ public class LoginController : ControllerBase
             return Redirect(redirectUrl.NextUrl);
         }
 
-        authState = new AuthState
-        {
-            FeUrl = authState.FeUrl,
-            ReturnUrl = authState.ReturnUrl,
-            TermsAccepted = authState.TermsAccepted,
-            IdToken = cryptography.Encrypt(oidcToken.IdToken),
-            Tin = oidcUserInfoToken.NemidCvr,
-            IdentityProvider = oidcIdToken.Idp,
-            ExternalSubject = oidcIdToken.Sub,
-            CustomerType = authState.CustomerType
-        };
-
-
         var user = await userStorage.UserByOidcReferences(oidcIdToken.Sub, oidcIdToken.Idp);
         var company = (authState.Tin != null) ? await companyStorage.CompanyByTin(authState.Tin) : null;
 
-        return await orchestrator.Next(authState, user, company);
+        if (user == null)
+        {
+            var newAuthState = new AuthState
+            {
+                FeUrl = authState.FeUrl,
+                ReturnUrl = authState.ReturnUrl,
+                TermsAccepted = authState.TermsAccepted,
+                IdToken = tokenCryptography.Encrypt(oidcToken.IdToken),
+                Tin = oidcUserInfoToken.NemidCvr,
+                IdentityProvider = oidcIdToken.Idp,
+                ExternalSubject = oidcIdToken.Sub,
+                CustomerType = authState.CustomerType
+            };
+
+            var redirectUrlTerms = new NextStep { NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.Encrypt(newAuthState)}" };
+            return Redirect(redirectUrlTerms.NextUrl); 
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal T DeserializeToken<T>(string token)

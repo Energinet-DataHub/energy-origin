@@ -2,25 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using API.Configuration;
-using API.Controllers;
 using API.Controllers.dto;
-using API.Errors;
-using API.Helpers;
 using API.Models;
 using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
-using API.TokenStorage;
+using API.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using Xunit.Categories;
 
 namespace API.Controllers;
 
@@ -29,7 +24,7 @@ public class TestLogoutController
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
-    private readonly Mock<ICryptography> cryptography = new();
+    private readonly Mock<ICryptographyFactory> cryptographyFactory = new();
     private readonly Mock<IJwkService> jwkService = new();
 
     private readonly LogoutController logoutController;
@@ -80,7 +75,7 @@ public class TestLogoutController
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object, jwkService.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
 
         var oidcCallbackParams = new OidcCallbackParams() { Error = error };
 
@@ -96,7 +91,7 @@ public class TestLogoutController
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
 
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptography.Object, jwkService.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
 
         var state = new AuthState
         {

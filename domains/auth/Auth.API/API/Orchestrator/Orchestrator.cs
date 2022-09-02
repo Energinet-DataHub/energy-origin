@@ -1,7 +1,9 @@
 using API.Configuration;
 using API.Models;
 using API.Services.OidcProviders;
+using API.Utilities;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Orchestrator;
 
@@ -22,8 +24,21 @@ public class Orchestrator : IOrchestrator
         this.authOptions = authOptions.Value;
     }
 
-    public async Task<NextStep> Next(AuthState state, User user, Company company)  // FIXME 
+    public Task<NextStep> Next(AuthState authState, User? user, Company? company)  // FIXME 
     {
+        if (user == null)
+        {
+            var redirectUrl = new NextStep { NextUrl = authState.FeUrl + "/terms" };
+            
+            return Task.FromResult(redirectUrl);
+
+        }
+
+        if (user != null)
+        {
+            throw new NotImplementedException();
+        }
+
 
 
         //var redirectUri = authOptions.ServiceUrl + authOptions.OidcLoginCallbackPath;
@@ -85,7 +100,7 @@ public class Orchestrator : IOrchestrator
         // Store jwt in db
 
         // Create opaque token and return it
-        throw new NotImplementedException();
+         throw new NotImplementedException();
 
     }
 

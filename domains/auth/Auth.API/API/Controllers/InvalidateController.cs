@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Helpers;
 using API.Models;
 using API.Services.OidcProviders;
+using API.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +14,11 @@ public class InvalidateController : ControllerBase
 {
     private readonly IOidcService oidcService;
     private readonly IValidator<AuthState?> validator;
-    private readonly ICryptography cryptography;
+    private readonly ICryptographyFactory cryptography;
 
     public InvalidateController(
         IOidcService oidcService,
-        ICryptography cryptography,
+        ICryptographyFactory cryptography,
         IValidator<AuthState?> validator
     )
     {
@@ -34,13 +34,13 @@ public class InvalidateController : ControllerBase
         AuthState? authState;
         try
         {
-            authState = cryptography.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
+            authState = cryptography.StateCryptography().Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
         catch (Exception)
         {
             return BadRequest();
         }
-
+        
         var validationResult = await validator.ValidateAsync(authState);
 
         if (!validationResult.IsValid)
