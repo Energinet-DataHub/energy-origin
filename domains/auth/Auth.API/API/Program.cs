@@ -13,7 +13,8 @@ using Serilog;
 using Serilog.Formatting.Json;
 
 
-[assembly: InternalsVisibleTo("Tests")]
+[assembly: InternalsVisibleTo("UnitTests")]
+[assembly: InternalsVisibleTo("IntegrationTests")]
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
@@ -37,12 +38,20 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.Configure<AuthOptions>(options =>
+{
+    options.TermsMarkdownFolder = builder
+        .Configuration
+        .GetValue<string>("TERMS_MARKDOWN_FOLDER", string.Empty);
+});
+
 builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IOidcService, SignaturGruppen>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
+builder.Services.AddScoped<IPrivacyPolicyStorage, PrivacyPolicyStorage>();
 
 var app = builder.Build();
 
@@ -61,3 +70,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+//Make this a partial class in order to reference it in test project
+public partial class Program { }

@@ -29,4 +29,7 @@ public class AuthOptions
     public string CookieSecure { get; set; }
     public int CookieExpiresTimeDelta { get; set; }
 
+    // Terms
+    public string TermsMarkdownFolder { get; set; }
+
 }
