@@ -1,7 +1,4 @@
-using System.Text.Json;
-using API.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 using Xunit.Categories;
