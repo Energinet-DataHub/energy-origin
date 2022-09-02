@@ -1,7 +1,7 @@
 # Dapper
 
 * Status: proposed
-* Deciders: @codereaper
+* Deciders: @codereaper @martinschmidt
 * Date: 2022-08-31
 
 Issue: #729
@@ -29,4 +29,4 @@ We have chosen to use Dapper
 
 Dapper offers full control of what happens when and how while offering data mapping. Dapper can map using `record`s and is easier to create and implement an interface for.
 
-Entity Framework requires a lot of speciality knowledge to avoid pitfalls. EF requires adding the Postgresql license to aproved licenses and has a lot of functionality that is unneeded.
+Entity Framework requires a lot of specialty knowledge to avoid pitfalls. EF requires adding the Postgresql license to aproved licenses and has a lot of functionality that is unneeded.
