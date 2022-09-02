@@ -11,27 +11,20 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly Action<string, Exception>? exceptionHandler;
     private readonly string topicPrefix;
     private readonly PeriodicTimer timer;
-    private string? pointer;
-    private readonly SemaphoreSlim semaphore = new(1);
+    private long pointer;
 
-    public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string? pointer)
+    public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string pointer)
     {
         this.context = context;
         this.unpacker = unpacker;
         this.handlers = handlers;
         this.topicPrefix = topicPrefix;
-        this.pointer = pointer;
+        this.pointer = long.Parse(pointer);
         this.exceptionHandler = exceptionHandler;
 
         timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
 
-        Task.Run(async () =>
-        {
-            do
-            {
-                await Work();
-            } while (await timer.WaitForNextTickAsync());
-        });
+        Task.Run(async () => await Work());
     }
 
     public void Dispose()
@@ -42,14 +35,12 @@ internal class DatabaseEventConsumer : IEventConsumer
 
     private async Task Work()
     {
-        await semaphore.WaitAsync();
-
-        while (true)
+        do
         {
             Message? message;
             try
             {
-                message = this.pointer != null ? await context.NextAfter(long.Parse(this.pointer ?? ""), topicPrefix) : await context.NextAfter(null, topicPrefix);
+                message = await context.NextAfter(this.pointer, topicPrefix);
             }
             catch (Exception exception)
             {
@@ -57,7 +48,8 @@ internal class DatabaseEventConsumer : IEventConsumer
                 break;
             }
 
-            if (message == null)
+            var id = message?.Id;
+            if (message == null || id == null)
             {
                 break;
             }
@@ -65,7 +57,7 @@ internal class DatabaseEventConsumer : IEventConsumer
             var reconstructedEvent = unpacker.UnpackEvent(message.Payload);
             var reconstructed = unpacker.UnpackModel(reconstructedEvent);
 
-            var pointer = $"{message.Id}";
+            var pointer = $"{id}";
             var type = reconstructed.GetType();
             var typeString = type.ToString();
 
@@ -77,7 +69,7 @@ internal class DatabaseEventConsumer : IEventConsumer
                 exceptionHandler?.Invoke(typeString, new NotImplementedException($"No handler for event of type {type}"));
             }
 
-            this.pointer = pointer;
+            this.pointer = (long)id;
             await Task.WhenAll((handlers ?? Enumerable.Empty<Action<Event<EventModel>>>()).Select(it => Task.Run(() =>
             {
                 try
@@ -89,8 +81,6 @@ internal class DatabaseEventConsumer : IEventConsumer
                     exceptionHandler?.Invoke(typeString, exception);
                 }
             })));
-        }
-
-        semaphore.Release();
+        } while (await timer.WaitForNextTickAsync());
     }
 }

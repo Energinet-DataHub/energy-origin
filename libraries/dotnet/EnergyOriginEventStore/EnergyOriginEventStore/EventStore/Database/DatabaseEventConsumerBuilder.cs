@@ -9,7 +9,7 @@ internal class DatabaseEventConsumerBuilder : IEventConsumerBuilder
     private Action<string, Exception>? exceptionHandler;
     private readonly DatabaseEventContext context;
     private readonly string topicPrefix;
-    private string? pointer;
+    private string pointer = "0";
 
     public DatabaseEventConsumerBuilder(DatabaseEventContext context, string topicPrefix)
     {

@@ -16,11 +16,17 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     public EventStoreTests(DatabaseFixture fixture) => this.fixture = fixture;
 
-    private static IEnumerable<object[]> Data() => new List<object[]>
+    private static IEnumerable<object[]> AllBuilders() => new List<object[]>
         {
-            new object[] { new DatabaseBuilder(), true },
-            new object[] { new MemoryBuilder(), false },
-            new object[] { new FlatFileBuilder(), true }
+            new object[] { new DatabaseBuilder() },
+            new object[] { new MemoryBuilder() },
+            new object[] { new FlatFileBuilder() }
+        };
+
+    private static IEnumerable<object[]> PersistableBuilders() => new List<object[]>
+        {
+            new object[] { new DatabaseBuilder() },
+            new object[] { new FlatFileBuilder() }
         };
 
     #endregion
@@ -30,7 +36,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 #pragma warning disable IDE0060, xUnit1026
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_CanReceiveAMessage_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -58,11 +64,9 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
-    public async Task EventStore_CanResumeFromGivenPointer_Success(Builder builder, bool canPersist)
+    [MemberData(nameof(PersistableBuilders))]
+    public async Task EventStore_CanResumeFromGivenPointer_Success(Builder builder)
     {
-        if (!canPersist) return;
-
         string? pointer = null;
 
         const string message1 = "I like to act!";
@@ -123,7 +127,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_CanResumeFromPointerUsingSingleStore_Success(Builder builder, bool canPersist)
     {
         string? pointer = null;
@@ -183,7 +187,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_EnsureExceptionHandlerIsCalled_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -209,7 +213,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_VerifyExceptionsFromHandlersAreSwallowed_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -235,7 +239,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_EnsureCallExceptionHandlerWhenNoHandlerIsFound_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -261,7 +265,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_CanFilterMessagesBasedOnTopics_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -286,7 +290,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);
@@ -339,7 +343,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     }
 
     [Theory]
-    [MemberData(nameof(Data))]
+    [MemberData(nameof(AllBuilders))]
     public async Task EventStore_EnsureEventFlow_Works(Builder builder, bool canPersist)
     {
         var eventStore = await builder.build(fixture);

@@ -9,8 +9,6 @@ public class DatabaseEventStore : IEventStore
 
     public DatabaseEventStore(DatabaseEventContext context) => this.context = context;
 
-    #region IEventStore
-
     public async Task Produce(EventModel model, params string[] topics)
     {
         var message = InternalEvent.From(model);
@@ -26,6 +24,4 @@ public class DatabaseEventStore : IEventStore
     public IEventConsumerBuilder GetBuilder(string topicPrefix) => new DatabaseEventConsumerBuilder(context, topicPrefix);
 
     public void Dispose() => GC.SuppressFinalize(this);
-
-    #endregion
 }
