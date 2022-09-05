@@ -37,7 +37,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_CanReceiveAMessage_Success(Builder builder, bool canPersist)
+    public async Task EventStore_CanReceiveAMessage_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -128,7 +128,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_CanResumeFromPointerUsingSingleStore_Success(Builder builder, bool canPersist)
+    public async Task EventStore_CanResumeFromPointerUsingSingleStore_Success(Builder builder)
     {
         string? pointer = null;
 
@@ -188,7 +188,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_EnsureExceptionHandlerIsCalled_Success(Builder builder, bool canPersist)
+    public async Task EventStore_EnsureExceptionHandlerIsCalled_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -214,7 +214,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_VerifyExceptionsFromHandlersAreSwallowed_Success(Builder builder, bool canPersist)
+    public async Task EventStore_VerifyExceptionsFromHandlersAreSwallowed_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -240,7 +240,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_EnsureCallExceptionHandlerWhenNoHandlerIsFound_Success(Builder builder, bool canPersist)
+    public async Task EventStore_EnsureCallExceptionHandlerWhenNoHandlerIsFound_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -266,7 +266,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_CanFilterMessagesBasedOnTopics_Success(Builder builder, bool canPersist)
+    public async Task EventStore_CanFilterMessagesBasedOnTopics_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
@@ -291,7 +291,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder, bool canPersist)
+    public async Task EventStore_CanSupportMultipleListeners_Success(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore1 = new SemaphoreSlim(0);
@@ -344,7 +344,7 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
 
     [Theory]
     [MemberData(nameof(AllBuilders))]
-    public async Task EventStore_EnsureEventFlow_Works(Builder builder, bool canPersist)
+    public async Task EventStore_EnsureEventFlow_Works(Builder builder)
     {
         var eventStore = await builder.build(fixture);
         var semaphore = new SemaphoreSlim(0);
