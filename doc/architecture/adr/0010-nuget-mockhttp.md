@@ -1,8 +1,8 @@
 # Mocking HttpClient when testing
 
-* Status: Proposed
-* Deciders: TBD
-* Date: 2022-08-29
+* Status: Accepted
+* Deciders: @PeterAGY, @ckr123, @duizer, @CodeReaper, @C-Christiansen, @MartinSchmidt
+* Date: 2022-09-01
 
 ---
 
