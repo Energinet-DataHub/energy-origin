@@ -11,20 +11,20 @@ public class PrivacyPolicyStorage : IPrivacyPolicyStorage
 
     public PrivacyPolicyStorage(IOptions<AuthOptions> authOptions) => this.authOptions = authOptions.Value;
 
-    public async Task<PrivacyPolicy> Get()
+    public async Task<PrivacyPolicy> GetLatestVersion()
     {
         var directory = new DirectoryInfo(authOptions.TermsMarkdownFolder);
 
-        var newestFile = directory
+        var newestVersion = directory
             .GetFiles()
-            .OrderByDescending(f => f.LastWriteTime)
+            .OrderByDescending(f => f.Name)
             .First();
 
-        var markdown = await File.ReadAllTextAsync(newestFile.FullName);
+        var markdown = await File.ReadAllTextAsync(newestVersion.FullName);
 
         return new PrivacyPolicy(
             Markdown.ToHtml(markdown),
-            newestFile.Name.Split('.')[0],
+            newestVersion.Name.Split('.')[0],
             nameof(PrivacyPolicy)
         );
     }

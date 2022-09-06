@@ -6,10 +6,10 @@ namespace API.Controllers;
 
 public class TermsController : ControllerBase
 {
-    private readonly IPrivacyPolicyStorage privacyPolicyStorage;
+    private readonly IPrivacyPolicyStorage storage;
 
-    public TermsController(IPrivacyPolicyStorage privacyPolicyStorage) =>
-        this.privacyPolicyStorage = privacyPolicyStorage;
+    public TermsController(IPrivacyPolicyStorage storage) =>
+        this.storage = storage;
 
     [HttpGet]
     [Route("/auth/terms")]
@@ -17,7 +17,7 @@ public class TermsController : ControllerBase
     {
         try
         {
-            return Ok(await privacyPolicyStorage.Get());
+            return Ok(await storage.GetLatestVersion());
         }
         catch (Exception e)
         {

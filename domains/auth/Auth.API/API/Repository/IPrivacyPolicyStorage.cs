@@ -4,5 +4,5 @@ namespace API.Repository;
 
 public interface IPrivacyPolicyStorage
 {
-    Task<PrivacyPolicy> Get();
+    Task<PrivacyPolicy> GetLatestVersion();
 }

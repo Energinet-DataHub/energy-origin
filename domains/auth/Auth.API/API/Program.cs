@@ -12,9 +12,7 @@ using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
 
-
-[assembly: InternalsVisibleTo("UnitTests")]
-[assembly: InternalsVisibleTo("IntegrationTests")]
+[assembly: InternalsVisibleTo("Tests")]
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
@@ -37,13 +35,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
-
-builder.Services.Configure<AuthOptions>(options =>
-{
-    options.TermsMarkdownFolder = builder
-        .Configuration
-        .GetValue<string>("TERMS_MARKDOWN_FOLDER", string.Empty);
-});
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
 builder.Services.AddScoped<ICryptography, Cryptography>();
@@ -70,6 +61,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-//Make this a partial class in order to reference it in test project
-public partial class Program { }

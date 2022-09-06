@@ -31,5 +31,4 @@ public class AuthOptions
 
     // Terms
     public string TermsMarkdownFolder { get; set; }
-
 }

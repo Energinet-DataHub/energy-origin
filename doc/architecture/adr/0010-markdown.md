@@ -1,8 +1,8 @@
-# Monorepo
+# Markdown
 
-* Status: PROPOSAL
-* Deciders:
-* Date: 2022-09-02
+* Status: Accepted
+* Deciders: @duizer, @endk-awo, @PeterAGY, @MartinSchmidt, @C-Christiansen, @ckr123, @robertrosborg
+* Date: 2022-09-06
 
 ---
 
@@ -24,5 +24,5 @@ https://github.com/xoofx/markdig
 
 ## Rationale
 This seems to be the one repo with most recent work on and most stars.
-Even though it is in version 0.x.x and states that it is under construction, the other repo are using it.
+Even though it is in version 0.x.x and Markdig states that it is under construction, the other repo (Westwind.AspNetCore.Markdown) are using it.
 It also seems quite simple to use

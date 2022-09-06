@@ -12,7 +12,7 @@ public class TestPrivacyPolicyStorage
 {
     private readonly Mock<IOptions<AuthOptions>> fakeAuthOptions = new();
 
-    private readonly PrivacyPolicyStorage privacyPolicyStorage;
+    private readonly PrivacyPolicyStorage storage;
 
     public TestPrivacyPolicyStorage()
     {
@@ -25,13 +25,13 @@ public class TestPrivacyPolicyStorage
                 .FullName + "\\resources"
         });
 
-        privacyPolicyStorage = new PrivacyPolicyStorage(fakeAuthOptions.Object);
+        storage = new PrivacyPolicyStorage(fakeAuthOptions.Object);
     }
 
     [Fact]
     public async Task Get_PrivacyPolicy_TermsReturnsAsHtml()
     {
-        var privacyPolicy = await privacyPolicyStorage.Get();
+        var privacyPolicy = await storage.GetLatestVersion();
 
         Assert.True(
             privacyPolicy?.Terms.Contains("<h1>MOCK PRIVATLIVSPOLITIK - ELOVERBLIK OG ENERGIOPRINDELSE</h1>")

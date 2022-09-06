@@ -14,11 +14,11 @@ namespace API.Controllers;
 [UnitTest]
 public class TestTermsController
 {
-    private readonly Mock<IPrivacyPolicyStorage> fakePrivacyPolicyStorage = new();
+    private readonly Mock<IPrivacyPolicyStorage> fakeStorage = new();
 
     private readonly TermsController termsController;
 
-    public TestTermsController() => termsController = new(fakePrivacyPolicyStorage.Object);
+    public TestTermsController() => termsController = new(fakeStorage.Object);
 
     [Fact]
     public async Task Get_Terms_ReturnsPrivacyPolicy()
@@ -28,8 +28,8 @@ public class TestTermsController
             "v1",
             "PrivacyPolicy"
         );
-        fakePrivacyPolicyStorage
-            .Setup(p => p.Get())
+        fakeStorage
+            .Setup(p => p.GetLatestVersion())
             .ReturnsAsync(() => fakePrivacyPolicy);
 
         var response = await termsController.Get();
