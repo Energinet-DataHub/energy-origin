@@ -19,14 +19,12 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     private static IEnumerable<object[]> AllBuilders() => new List<object[]>
         {
             new object[] { new DatabaseBuilder() },
-            new object[] { new MemoryBuilder() },
-            new object[] { new FlatFileBuilder() }
+            new object[] { new MemoryBuilder() }
         };
 
     private static IEnumerable<object[]> PersistableBuilders() => new List<object[]>
         {
-            new object[] { new DatabaseBuilder() },
-            new object[] { new FlatFileBuilder() }
+            new object[] { new DatabaseBuilder() }
         };
 
     #endregion
@@ -114,8 +112,8 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
                 .ContinueFrom(pointer!)
                 .AddHandler<Said>(value =>
                 {
-                    semaphore.Release();
                     received.Add(value.EventModel);
+                    semaphore.Release();
                 })
                 .Build();
 

@@ -19,7 +19,7 @@ internal class MemoryEventConsumer : IEventConsumer
         this.pointer = pointer;
         this.exceptionHandler = exceptionHandler;
 
-        Task.Run(async () => await store.Attach(this).ConfigureAwait(false));
+        Task.Run(() => store.Attach(this));
     }
 
     internal void OnMessage(object? sender, MessageEventArgs e)

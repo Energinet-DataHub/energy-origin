@@ -10,7 +10,7 @@ internal class DatabaseEventConsumer : IEventConsumer
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers;
     private readonly Action<string, Exception>? exceptionHandler;
     private readonly string topicPrefix;
-    private readonly PeriodicTimer timer;
+    private readonly PeriodicTimer timer = new(TimeSpan.FromMilliseconds(100));
     private long pointer;
 
     public DatabaseEventConsumer(IUnpacker unpacker, Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers, Action<string, Exception>? exceptionHandler, DatabaseEventContext context, string topicPrefix, string pointer)
@@ -22,9 +22,10 @@ internal class DatabaseEventConsumer : IEventConsumer
         this.pointer = long.Parse(pointer);
         this.exceptionHandler = exceptionHandler;
 
-        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
-
-        Task.Run(async () => await Work());
+        Task.Run(async () =>
+        {
+            while (await timer.WaitForNextTickAsync()) await Work();
+        });
     }
 
     public void Dispose()
@@ -81,6 +82,6 @@ internal class DatabaseEventConsumer : IEventConsumer
                     exceptionHandler?.Invoke(typeString, exception);
                 }
             })));
-        } while (await timer.WaitForNextTickAsync());
+        } while (true);
     }
 }
