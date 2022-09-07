@@ -1,6 +1,5 @@
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Database;
-using EnergyOriginEventStore.EventStore.FlatFile;
 using EnergyOriginEventStore.EventStore.Memory;
 using EnergyOriginEventStore.Tests.Topics;
 using Xunit;
@@ -395,18 +394,6 @@ public class EventStoreTests : IClassFixture<EventStoreTests.DatabaseFixture>, I
     private class MemoryBuilder : Builder
     {
         public Task<IEventStore> build(DatabaseFixture fixture, bool clean = true) => Task.FromResult(new MemoryEventStore() as IEventStore);
-    }
-
-    private class FlatFileBuilder : Builder
-    {
-        public Task<IEventStore> build(DatabaseFixture fixture, bool clean = true)
-        {
-            if (clean && Directory.Exists("store"))
-            {
-                Directory.Delete("store", true);
-            }
-            return Task.FromResult(new FlatFileEventStore() as IEventStore);
-        }
     }
 
     private class DatabaseBuilder : Builder
