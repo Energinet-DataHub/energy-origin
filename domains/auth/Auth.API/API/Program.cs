@@ -15,7 +15,6 @@ using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
 
-
 [assembly: InternalsVisibleTo("Tests")]
 
 var logger = new LoggerConfiguration()
@@ -51,6 +50,7 @@ builder.Services.AddScoped<IValidator<InternalToken>, InternalTokenValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
+builder.Services.AddScoped<IPrivacyPolicyStorage, PrivacyPolicyStorage>();
 
 var app = builder.Build();
 
