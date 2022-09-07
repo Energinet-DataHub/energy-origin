@@ -22,7 +22,7 @@ public class TestPrivacyPolicyStorage
                 .GetParent(Directory.GetCurrentDirectory())?
                 .Parent?
                 .Parent?
-                .FullName + "\\resources"
+                .FullName + "/resources"
         });
 
         storage = new PrivacyPolicyStorage(fakeAuthOptions.Object);

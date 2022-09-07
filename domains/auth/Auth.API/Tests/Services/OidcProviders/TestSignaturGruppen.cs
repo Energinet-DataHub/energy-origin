@@ -102,7 +102,7 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public async void FetchToken_Succes()
+    public async void FetchTokensFromSignaturgruppen_Succes()
     {
         var expectedOidcTokenResponse = new OidcTokenResponse()
         {
@@ -128,7 +128,7 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public async Task FetchToken_ServerResponseWithBadrequest_FailAsync()
+    public async Task FetchTokenFromSignaturgruppen_ServerResponseWithBadrequest_FailAsync()
     {
         var code = "TESTCODE";
 
