@@ -14,7 +14,7 @@ using Xunit.Categories;
 namespace API.Controllers;
 
 [UnitTest]
-public class TestAuthController
+public class TestInvalidateController
 {
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
@@ -23,7 +23,7 @@ public class TestAuthController
 
     private InvalidateController invalidateController;
 
-    public TestAuthController()
+    public TestInvalidateController()
     {
         authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions
         {
