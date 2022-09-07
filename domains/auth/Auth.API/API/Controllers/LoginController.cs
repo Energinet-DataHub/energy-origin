@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
-using API.Orchestrator;
 using API.Repository;
+using API.Services;
 using API.Services.OidcProviders;
+using API.Services.OidcProviders.Models;
+using API.Services.OidcProviders.Models.SignaturGruppen;
 using API.Utilities;
 using EnergyOriginEventStore.EventStore;
 using FluentValidation;
@@ -18,23 +18,17 @@ public class LoginController : ControllerBase
 {
     private readonly IOidcService oidcService;
     private readonly IValidator<OidcCallbackParams> validator;
-    private readonly ICryptographyFactory tokenCryptography;
-    private readonly ICryptographyFactory stateCryptography;
     private readonly IEventStore eventStore;
-    private readonly IUserStorage userStorage;
-    private readonly ICompanyStorage companyStorage;
-    private readonly IOrchestrator orchestrator;
 
-    public LoginController(IOidcService oidcService, IValidator<OidcCallbackParams> validator, ICryptographyFactory tokenCryptography, ICryptographyFactory stateCryptography, IEventStore eventStore, IUserStorage userStorage, ICompanyStorage companyStorage, IOrchestrator orchestrator)
+    public LoginController(
+        IOidcService oidcService,
+        IValidator<OidcCallbackParams> validator,
+        IEventStore eventStore)
     {
         this.oidcService = oidcService;
         this.validator = validator;
         this.eventStore = eventStore;
-        this.userStorage = userStorage;
-        this.companyStorage = companyStorage;
-        this.orchestrator = orchestrator;
-        this.tokenCryptography = tokenCryptography;
-        this.stateCryptography = stateCryptography;
+
     }
 
     [HttpGet]
@@ -53,11 +47,13 @@ public class LoginController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/oidc/login/callback")]
+    [Route("/auth/oidc/login/callback")]
     public async Task<ActionResult<NextStep>> CallbackAsync(
         OidcCallbackParams oidcCallbackParams,
-        [FromServices] ICryptographyFactory stateCryptography,
-        [FromServices] ICryptographyFactory IdtokenCryptography
+        [FromServices] IUserStorage userStorage,
+        [FromServices] ICompanyStorage companyStorage,
+        [FromServices] ICryptographyFactory cryptographyFactory,
+        [FromServices] IJwtDeserializer jwtDeserializer
     )
     {
         AuthState authState;
@@ -67,7 +63,7 @@ public class LoginController : ControllerBase
 
         try
         {
-            authState = stateCryptography.StateCryptography().Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
+            authState = cryptographyFactory.StateCryptography().Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
 
         }
         catch (Exception)
@@ -86,8 +82,8 @@ public class LoginController : ControllerBase
         try
         {
             oidcToken = await oidcService.FetchToken(oidcCallbackParams.Code);
-            oidcIdToken = DeserializeToken<IdTokenInfo>(oidcToken.IdToken);
-            oidcUserInfoToken = DeserializeToken<UserInfoToken>(oidcToken.UserinfoToken);
+            oidcIdToken = jwtDeserializer.DeserializeJwt<IdTokenInfo>(oidcToken.IdToken);
+            oidcUserInfoToken = jwtDeserializer.DeserializeJwt<UserInfoToken>(oidcToken.UserinfoToken);
         }
         catch (Exception)
         {
@@ -95,7 +91,7 @@ public class LoginController : ControllerBase
             return Redirect(redirectUrl.NextUrl);
         }
 
-        if (oidcUserInfoToken.IsPrivate)
+        if (oidcUserInfoToken.IsPrivate())
         {
             await oidcService.Logout(authState.IdToken);
             var redirectUrl = oidcService.BuildFailureUrl(authState, AuthError.PrivateUsersNotAllowedToLogin);
@@ -112,7 +108,7 @@ public class LoginController : ControllerBase
                 FeUrl = authState.FeUrl,
                 ReturnUrl = authState.ReturnUrl,
                 TermsAccepted = authState.TermsAccepted,
-                IdToken = IdtokenCryptography.IdTokenCryptography().Encrypt(oidcToken.IdToken),
+                IdToken = cryptographyFactory.IdTokenCryptography().Encrypt(oidcToken.IdToken),
                 Tin = oidcUserInfoToken.NemidCvr,
                 IdentityProvider = oidcIdToken.Idp,
                 ExternalSubject = oidcIdToken.Sub,
@@ -121,7 +117,7 @@ public class LoginController : ControllerBase
 
             var redirectUrlTerms = new NextStep
             {
-                NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.StateCryptography().Encrypt(newAuthState)}"
+                NextUrl = newAuthState.FeUrl + $"/terms?state={cryptographyFactory.StateCryptography().Encrypt(newAuthState)}"
             };
             return Redirect(redirectUrlTerms.NextUrl);
         }
@@ -129,14 +125,5 @@ public class LoginController : ControllerBase
         {
             throw new NotImplementedException();
         }
-    }
-
-    internal T DeserializeToken<T>(string token)
-    {
-        var jwt = new JwtSecurityToken(token);
-        var json = jwt.Payload.SerializeToJson();
-        var info = JsonSerializer.Deserialize<T>(json);
-
-        return info ?? throw new FormatException();
     }
 }

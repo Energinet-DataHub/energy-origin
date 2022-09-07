@@ -26,7 +26,7 @@
             "OidcClientSecret": "OIDCCLIENTSECRET",
             "BaseUrl": "BASEURL",
             "ServiceUrl": "https://localhost/api/auth",
-            "OidcLoginCallbackPath": "'/oidc/login/callback'",
+            "OidcLoginCallbackPath": "/oidc/login/callback",
             "IdTokenSecretKey": "mysmallkey123456",
             "StateSecretKey": "mysmallkey123456",
             "CookieName": "Authorization",

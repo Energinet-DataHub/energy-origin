@@ -5,6 +5,7 @@ using API.Configuration;
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
+using API.Services.OidcProviders.Models;
 using API.Utilities;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,7 @@ public class SignaturGruppen : IOidcService
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
-    private readonly ICryptographyFactory stateCryptography;
+    private readonly ICryptographyFactory cryptography;
 
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
@@ -28,7 +29,7 @@ public class SignaturGruppen : IOidcService
         this.logger = logger;
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
-        stateCryptography = cryptography;
+        this.cryptography = cryptography;
     }
 
     public NextStep CreateAuthorizationUri(AuthState state)
@@ -83,8 +84,7 @@ public class SignaturGruppen : IOidcService
         var encoded = JsonSerializer.Deserialize<OidcTokenResponse>(tokenJson);
 
         return encoded != null ? encoded : throw new FormatException();
-
-        //return encoded != null ? DecodeOidcResponse(encoded) : throw new FormatException();  // FIXME Missing Verification of tokens with "/.well-known/openid-configuration/jwks";
+        // FIXME Missing Verification of tokens https://app.zenhub.com/workspaces/fenris---team-board-616bc40121d71900140955f8/issues/energinet-datahub/energy-origin-issues/817
     }
 
     public NextStep OnOidcFlowFailed(AuthState authState, OidcCallbackParams oidcCallbackParams)
@@ -141,7 +141,7 @@ public class SignaturGruppen : IOidcService
             { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
             { "scope", "openid,mitid,nemid,userinfo_token" },
-            { "state", stateCryptography.StateCryptography().Encrypt(json) },
+            { "state", cryptography.StateCryptography().Encrypt(json) },
             { "language", lang }
         };
 

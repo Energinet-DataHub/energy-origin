@@ -13,12 +13,11 @@ public record OidcCallbackParams
     public string ErrorHint { get; init; }
     public string ErrorDescription { get; init; }
 }
-public class InvalidateAuthStateValidator : AbstractValidator<OidcCallbackParams>
+public class OidcCallbackParamsValidator : AbstractValidator<OidcCallbackParams>
 {
-    public InvalidateAuthStateValidator()
+    public OidcCallbackParamsValidator()
     {
         RuleFor(x => x.Error).NotEmpty();
         RuleFor(x => x.ErrorDescription).NotEmpty();
     }
 }
-

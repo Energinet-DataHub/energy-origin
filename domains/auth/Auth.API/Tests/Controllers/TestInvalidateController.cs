@@ -18,7 +18,7 @@ public class TestInvalidateController
 {
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
-    private readonly Mock<ICryptographyFactory> cryptography = new();
+    private readonly Mock<ICryptography> stateCryptography = new();
     private readonly InvalidateAuthStateValidator validator = new();
 
     private InvalidateController invalidateController;
@@ -32,7 +32,7 @@ public class TestInvalidateController
 
         invalidateController = new InvalidateController(
             mockSignaturGruppen.Object,
-            cryptography.Object,
+            stateCryptography.Object,
             validator
         )
         {
@@ -53,8 +53,8 @@ public class TestInvalidateController
 
         var authStateAsString = JsonSerializer.Serialize(authState);
 
-        cryptography
-            .Setup(x => x.StateCryptography().Decrypt<AuthState>(It.IsAny<string>()))
+        stateCryptography
+            .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
         var response = await invalidateController.Invalidate(authStateAsString);
@@ -76,8 +76,9 @@ public class TestInvalidateController
     {
         var authState = new AuthState();
         var authStateAsString = JsonSerializer.Serialize(authState);
-        cryptography
-            .Setup(x => x.StateCryptography().Decrypt<AuthState>(It.IsAny<string>()))
+
+        stateCryptography
+            .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
         var response = await invalidateController.Invalidate(authStateAsString) as ObjectResult;

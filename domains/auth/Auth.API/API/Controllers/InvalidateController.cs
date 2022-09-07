@@ -12,17 +12,17 @@ public class InvalidateController : ControllerBase
 {
     private readonly IOidcService oidcService;
     private readonly IValidator<AuthState?> validator;
-    private readonly ICryptographyFactory cryptography;
+    private readonly ICryptography stateCryptography;
 
     public InvalidateController(
         IOidcService oidcService,
-        ICryptographyFactory cryptography,
+        ICryptography stateCryptography,
         IValidator<AuthState?> validator
     )
     {
         this.oidcService = oidcService;
         this.validator = validator;
-        this.cryptography = cryptography;
+        this.stateCryptography = stateCryptography;
     }
 
     [HttpPost]
@@ -32,7 +32,7 @@ public class InvalidateController : ControllerBase
         AuthState? authState;
         try
         {
-            authState = cryptography.StateCryptography().Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
+            authState = stateCryptography.Decrypt<AuthState>(state) ?? throw new InvalidOperationException();
         }
         catch (Exception)
         {

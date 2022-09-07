@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Configuration;
 using API.Models;
-using API.Orchestrator;
 using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
@@ -42,9 +41,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
 builder.Services.Configure<AuthOptions>(builder.Configuration);
-builder.Services.AddScoped<IOrchestrator, Orchestrator>();
 builder.Services.AddScoped<ICryptographyFactory, CryptographyFactory>();
 builder.Services.AddScoped<IOidcService, SignaturGruppen>();
+builder.Services.AddScoped<IJwtDeserializer, JwtDeserializer>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
 builder.Services.AddScoped<IValidator<InternalToken>, InternalTokenValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();

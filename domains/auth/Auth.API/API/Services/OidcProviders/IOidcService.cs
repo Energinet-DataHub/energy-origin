@@ -1,6 +1,7 @@
 using API.Controllers.dto;
 using API.Errors;
 using API.Models;
+using API.Services.OidcProviders.Models;
 
 namespace API.Services.OidcProviders;
 

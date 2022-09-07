@@ -13,6 +13,7 @@ using Moq;
 using RichardSzalay.MockHttp;
 using Xunit;
 using Xunit.Categories;
+using API.Services.OidcProviders.Models;
 
 namespace Tests.Services.OidcProviders;
 
@@ -103,7 +104,15 @@ public class TestSignaturGruppen
     [Fact]
     public async void FetchToken_Succes()
     {
-        var expectedOidcTokenResponse = new OidcTokenResponse() { IdToken = "Test_id_token", AccessToken = "sd", ExpiresIn = 3600, TokenType = "Bearer", Scope = "openid nemid mitiduserinfo_token", UserinfoToken = "TEST_userinfo_token" };
+        var expectedOidcTokenResponse = new OidcTokenResponse()
+        {
+            IdToken = "Test_id_token",
+            AccessToken = "sd",
+            ExpiresIn = 3600,
+            TokenType = "Bearer",
+            Scope = "openid nemid mitiduserinfo_token",
+            UserinfoToken = "TEST_userinfo_token"
+        };
 
         var code = "TESTCODE";
 
@@ -153,5 +162,28 @@ public class TestSignaturGruppen
         var nexturl = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
 
         Assert.Equal(expectedNextUrl, nexturl.NextUrl);
+    }
+
+    [Theory]
+    [InlineData("mitid_user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("foo", "bar?success=0&error_code=E0&error=Unknown%20error%20from%20Identity%20Provider")]
+    public void OidcProviders_OnOidcFlowFailed(string ErrorDescription, string expectedNextUrl)
+    {
+        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
+
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object);
+
+        var state = new AuthState
+        {
+            FeUrl = "foo",
+            ReturnUrl = "bar",
+        };
+
+        var oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = ErrorDescription };
+
+        var res = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
+
+        Assert.Equal(expectedNextUrl, res.NextUrl);
     }
 }
