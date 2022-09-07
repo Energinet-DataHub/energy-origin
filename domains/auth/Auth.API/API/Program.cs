@@ -50,7 +50,6 @@ builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>(
 builder.Services.AddScoped<IValidator<InternalToken>, InternalTokenValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
-builder.Services.AddScoped<IJwkService, JwkService>();
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 var app = builder.Build();

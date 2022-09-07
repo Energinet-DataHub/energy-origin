@@ -1,9 +1,7 @@
 using API.Configuration;
 using API.Models;
 using API.Services.OidcProviders;
-using API.Utilities;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Orchestrator;
 
@@ -29,7 +27,7 @@ public class Orchestrator : IOrchestrator
         if (user == null)
         {
             var redirectUrl = new NextStep { NextUrl = authState.FeUrl + "/terms" };
-            
+
             return Task.FromResult(redirectUrl);
 
         }
@@ -100,7 +98,7 @@ public class Orchestrator : IOrchestrator
         // Store jwt in db
 
         // Create opaque token and return it
-         throw new NotImplementedException();
+        throw new NotImplementedException();
 
     }
 

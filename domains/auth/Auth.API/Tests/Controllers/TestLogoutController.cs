@@ -68,28 +68,12 @@ public class TestLogoutController
     }
 
     [Theory]
-    [InlineData("error", true)]
-    [InlineData(null, false)]
-    public void OidcProviders_IsError(string error, bool expectedIsError)
-    {
-
-        var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
-
-        var oidcCallbackParams = new OidcCallbackParams() { Error = error };
-
-        Assert.Equal(expectedIsError, signaturGruppen.isError(oidcCallbackParams));
-    }
-
-    [Theory]
     [InlineData("mitid_user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
     [InlineData("user_aborted", "bar?success=0&error_code=E1&error=User%20interrupted")]
     [InlineData("foo", "bar?success=0&error_code=E0&error=Unknown%20error%20from%20Identity%20Provider")]
     public void OidcProviders_OnOidcFlowFailed(string ErrorDescription, string expectedNextUrl)
     {
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-
 
         var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
 

@@ -4,7 +4,7 @@ namespace API.Models;
 #nullable disable
 public record UserInfoToken
 {
-    [JsonPropertyName("Iss")]
+    [JsonPropertyName("iss")]
     public string Iss { get; init; }
 
     [JsonPropertyName("nbf")]
@@ -26,7 +26,7 @@ public record UserInfoToken
     public string NemidSsn { get; init; }
 
     [JsonPropertyName("nemid.common_name")]
-    public int NemidCommonName { get; init; }
+    public string NemidCommonName { get; init; }
 
     [JsonPropertyName("nemid.dn")]
     public string NemidDn { get; init; }

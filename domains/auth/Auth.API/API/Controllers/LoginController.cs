@@ -81,7 +81,7 @@ public class LoginController : ControllerBase
 
         try
         {
-            oidcToken = await oidcService.FetchToken(authState, oidcCallbackParams.Code);
+            oidcToken = await oidcService.FetchToken(oidcCallbackParams.Code);
             oidcIdToken = DeserializeToken<IdTokenInfo>(oidcToken.IdToken);
             oidcUserInfoToken = DeserializeToken<UserInfoToken>(oidcToken.UserinfoToken);
         }
@@ -116,7 +116,7 @@ public class LoginController : ControllerBase
             };
 
             var redirectUrlTerms = new NextStep { NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.Encrypt(newAuthState)}" };
-            return Redirect(redirectUrlTerms.NextUrl); 
+            return Redirect(redirectUrlTerms.NextUrl);
         }
         else
         {

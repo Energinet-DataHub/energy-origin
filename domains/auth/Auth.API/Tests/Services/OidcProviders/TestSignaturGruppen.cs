@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using API.Configuration;
+using API.Controllers.dto;
 using API.Models;
 using API.Services;
 using API.Services.OidcProviders;
@@ -32,7 +33,10 @@ public class TestSignaturGruppen
             .Setup(x => x.Value)
             .Returns(new AuthOptions
             {
+                ServiceUrl = "http://foobar.com",
+                OidcLoginCallbackPath = "/oidc/login/callback",
                 OidcClientId = "OIDCCLIENTID",
+                OidcClientSecret = "OIDCCLIENTSECRET",
                 OidcUrl = "http://localhost:8080",
                 AmrValues = "AMRVALUES"
             });
@@ -97,4 +101,57 @@ public class TestSignaturGruppen
 
         Assert.Equal(expectedNextUrl, res.NextUrl);
     }
+
+    [Fact]
+    public async void FetchToken_Succes()
+    {
+        var expectedOidcTokenResponse = new OidcTokenResponse() { IdToken = "Test_id_token", AccessToken = "sd", ExpiresIn = 3600, TokenType = "Bearer", Scope = "openid nemid mitiduserinfo_token", UserinfoToken = "TEST_userinfo_token" };
+
+        var code = "TESTCODE";
+
+        var content = "code";
+
+        handlerMock.When("/connect/token")
+            .WithPartialContent(content)
+            .Respond(HttpStatusCode.OK, "application/json", @"{""id_token"" : ""Test_id_token"",""access_token"" : ""sd"",""expires_in"" : 3600,""token_type"" : ""Bearer"",""scope"" : ""openid nemid mitid userinfo_token"",""userinfo_token"" : ""TEST_userinfo_token""}");
+
+        var responseToken = await signaturGruppen.FetchToken(code);
+
+        Assert.Equal(expectedOidcTokenResponse.IdToken, responseToken.IdToken);
+    }
+
+    [Fact]
+    public void FetchToken_ServerResponseWithBadrequest_Fail()
+    {
+        var expectedOidcTokenResponse = new OidcTokenResponse() { IdToken = "Test_id_token", AccessToken = "sd", ExpiresIn = 3600, TokenType = "Bearer", Scope = "openid nemid mitiduserinfo_token", UserinfoToken = "TEST_userinfo_token" };
+
+        var content = "code";
+
+        handlerMock.When("/connect/token")
+            .WithPartialContent(content)
+            .Respond(HttpStatusCode.BadRequest, "application/json", @"{""error"": ""invalid_grant""}");
+
+        //var responseToken = await signaturGruppen.FetchToken(code);
+        //Assert.Equal(HttpStatusCode.BadRequest.ToString(), await signaturGruppen.FetchToken(code).Result.ToString();
+    }
+
+    [Theory]
+    [InlineData("mitid_user_aborted", "https://bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("user_aborted", "https://bar?success=0&error_code=E1&error=User%20interrupted")]
+    [InlineData("unknow_error", "https://bar?success=0&error_code=E0&error=Unknown%20error%20from%20Identity%20Provider")]
+    public void OidcFlow_BuildNextUrlWhenUserAbortedOrUnknownError(string errorDescription, string expectedNextUrl)
+    {
+        var state = new AuthState
+        {
+            FeUrl = "https://foo",
+            ReturnUrl = "https://bar"
+        };
+
+        var oidcCallbackParams = new OidcCallbackParams() { ErrorDescription = errorDescription };
+
+        var nexturl = signaturGruppen.OnOidcFlowFailed(state, oidcCallbackParams);
+
+        Assert.Equal(expectedNextUrl, nexturl.NextUrl);
+    }
+
 }

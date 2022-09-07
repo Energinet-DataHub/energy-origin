@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using API.Models;
 using API.Services.OidcProviders;
 using API.Utilities;
@@ -40,7 +38,7 @@ public class InvalidateController : ControllerBase
         {
             return BadRequest();
         }
-        
+
         var validationResult = await validator.ValidateAsync(authState);
 
         if (!validationResult.IsValid)

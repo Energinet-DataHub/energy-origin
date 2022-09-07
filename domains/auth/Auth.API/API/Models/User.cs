@@ -1,4 +1,4 @@
 namespace API.Models
 {
-    public record User (string subject, string providerSubject);
+    public record User(string subject, string providerSubject);
 }
