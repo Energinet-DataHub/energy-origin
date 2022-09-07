@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using API.Configuration;
 using API.Controllers.dto;
 using API.Models;
@@ -119,9 +120,9 @@ public class TestSignaturGruppen
     }
 
     [Fact]
-    public void FetchToken_ServerResponseWithBadrequest_Fail()
+    public async Task FetchToken_ServerResponseWithBadrequest_FailAsync()
     {
-        var expectedOidcTokenResponse = new OidcTokenResponse() { IdToken = "Test_id_token", AccessToken = "sd", ExpiresIn = 3600, TokenType = "Bearer", Scope = "openid nemid mitiduserinfo_token", UserinfoToken = "TEST_userinfo_token" };
+        var code = "TESTCODE";
 
         var content = "code";
 
@@ -129,8 +130,11 @@ public class TestSignaturGruppen
             .WithPartialContent(content)
             .Respond(HttpStatusCode.BadRequest, "application/json", @"{""error"": ""invalid_grant""}");
 
-        //var responseToken = await signaturGruppen.FetchToken(code);
-        //Assert.Equal(HttpStatusCode.BadRequest.ToString(), await signaturGruppen.FetchToken(code).Result.ToString();
+        Func<Task> act = () => signaturGruppen.FetchToken(code);
+
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(act);
+
+        Assert.Equal("BadRequest", exception.Message);
     }
 
     [Theory]
@@ -151,5 +155,4 @@ public class TestSignaturGruppen
 
         Assert.Equal(expectedNextUrl, nexturl.NextUrl);
     }
-
 }
