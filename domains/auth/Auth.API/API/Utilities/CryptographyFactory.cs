@@ -9,7 +9,7 @@ public class CryptographyFactory : ICryptographyFactory
 
     public CryptographyFactory(IOptions<AuthOptions> authOptions) => this.authOptions = authOptions.Value;
 
-    public ICryptography IdTokenCryptography() => new Cryptography(authOptions.SecretKey);
+    public ICryptography IdTokenCryptography() => new Cryptography(authOptions.IdTokenSecretKey);
 
-    public ICryptography StateCryptography() => new Cryptography(authOptions.SecretKey);
+    public ICryptography StateCryptography() => new Cryptography(authOptions.StateSecretKey);
 }

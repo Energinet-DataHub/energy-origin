@@ -25,7 +25,6 @@ public class TestLogoutController
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
     private readonly Mock<ICryptographyFactory> cryptographyFactory = new();
-    private readonly Mock<IJwkService> jwkService = new();
 
     private readonly LogoutController logoutController;
 
@@ -75,7 +74,7 @@ public class TestLogoutController
     {
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
 
-        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
+        var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object);
 
         var state = new AuthState
         {

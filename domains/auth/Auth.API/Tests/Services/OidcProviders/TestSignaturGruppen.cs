@@ -22,8 +22,7 @@ public class TestSignaturGruppen
     private readonly Mock<ILogger<SignaturGruppen>> mockLogger = new();
     private readonly MockHttpMessageHandler handlerMock = new();
     private readonly Mock<IOptions<AuthOptions>> mockAuthOptions = new();
-    private readonly Mock<ICryptography> cryptography = new();
-    private readonly Mock<IJwkService> jwkService = new();
+    private readonly Mock<ICryptographyFactory> cryptographyFactory = new();
 
     private SignaturGruppen signaturGruppen;
 
@@ -45,8 +44,7 @@ public class TestSignaturGruppen
             mockLogger.Object,
             mockAuthOptions.Object,
             new HttpClient(handlerMock),
-            cryptography.Object,
-            jwkService.Object
+            cryptographyFactory.Object
         );
     }
 
@@ -93,8 +91,8 @@ public class TestSignaturGruppen
             ReturnUrl = "https://demo.energioprindelse.dk/dashboard"
         };
 
-        cryptography
-            .Setup(x => x.Encrypt(It.IsAny<string>()))
+        cryptographyFactory
+            .Setup(x => x.StateCryptography().Encrypt(It.IsAny<string>()))
             .Returns("foo=42");
 
         var res = signaturGruppen.CreateAuthorizationUri(state);

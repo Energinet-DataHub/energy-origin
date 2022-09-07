@@ -16,21 +16,18 @@ public class SignaturGruppen : IOidcService
     private readonly AuthOptions authOptions;
     private readonly ILogger<SignaturGruppen> logger;
     private readonly HttpClient httpClient;
-    private readonly ICryptography stateCryptography;
-    //private readonly IJwkService jwkService;
+    private readonly ICryptographyFactory stateCryptography;
 
     public SignaturGruppen(
         ILogger<SignaturGruppen> logger,
         IOptions<AuthOptions> authOptions,
         HttpClient httpClient,
-        ICryptography cryptography,
-        IJwkService jwkService
+        ICryptographyFactory cryptography
         )
     {
         this.logger = logger;
         this.authOptions = authOptions.Value;
         this.httpClient = httpClient;
-        //this.jwkService = jwkService;
         stateCryptography = cryptography;
     }
 
@@ -144,7 +141,7 @@ public class SignaturGruppen : IOidcService
             { "client_id", authOptions.OidcClientId },
             { "redirect_uri", $"{state.FeUrl}/api/auth/oidc/login/callback" },
             { "scope", "openid,mitid,nemid,userinfo_token" },
-            { "state", stateCryptography.Encrypt(json) },
+            { "state", stateCryptography.StateCryptography().Encrypt(json) },
             { "language", lang }
         };
 

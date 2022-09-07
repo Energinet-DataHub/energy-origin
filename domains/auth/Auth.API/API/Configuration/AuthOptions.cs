@@ -19,7 +19,8 @@ public class AuthOptions
     public string OidcLoginCallbackPath { get; set; }
 
     // Cryptography
-    public string SecretKey { get; set; }
+    public string IdTokenSecretKey { get; set; }
+    public string StateSecretKey { get; set; }
 
     // Cookies
     public string CookieName { get; set; }

@@ -25,7 +25,7 @@ public sealed class TestCryptographics
         };
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { StateSecretKey = "mysmallkey123456" });
 
         var cryptoService = new CryptographyFactory(authOptionsMock.Object).StateCryptography();
 
@@ -54,7 +54,7 @@ public sealed class TestCryptographics
         };
 
         var authOptionsMock = new Mock<IOptions<AuthOptions>>();
-        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { SecretKey = "mysmallkey123456" });
+        authOptionsMock.Setup(x => x.Value).Returns(new AuthOptions { StateSecretKey = "mysmallkey123456" });
 
         var cryptoService = new CryptographyFactory(authOptionsMock.Object).StateCryptography();
         var encryptedState = cryptoService.Encrypt(state);

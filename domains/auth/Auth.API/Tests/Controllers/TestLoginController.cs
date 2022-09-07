@@ -23,9 +23,9 @@ public class TestLoginController
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
-    private readonly Mock<ICryptographyFactory> cryptographyFactory = new();
+    private readonly Mock<ICryptographyFactory> stateCryptography = new();
+    private readonly Mock<ICryptographyFactory> idTokencryptography = new();
     private readonly Mock<IValidator<OidcCallbackParams>> validator = new();
-    private readonly Mock<IJwkService> jwkService = new();
     private readonly MemoryEventStore eventStore = new();
     private readonly Mock<IUserStorage> userStorage = new();
     private readonly Mock<ICompanyStorage> companyStorage = new();
@@ -43,7 +43,8 @@ public class TestLoginController
         loginController = new LoginController(
             mockSignaturGruppen.Object,
             validator.Object,
-            cryptographyFactory.Object,
+            stateCryptography.Object,
+            idTokencryptography.Object,
             eventStore,
             userStorage.Object,
             companyStorage.Object,

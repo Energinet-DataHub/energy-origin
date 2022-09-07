@@ -18,14 +18,14 @@ public class LoginController : ControllerBase
 {
     private readonly IOidcService oidcService;
     private readonly IValidator<OidcCallbackParams> validator;
-    private readonly ICryptography tokenCryptography;
-    private readonly ICryptography stateCryptography;
+    private readonly ICryptographyFactory tokenCryptography;
+    private readonly ICryptographyFactory stateCryptography;
     private readonly IEventStore eventStore;
     private readonly IUserStorage userStorage;
     private readonly ICompanyStorage companyStorage;
     private readonly IOrchestrator orchestrator;
 
-    public LoginController(IOidcService oidcService, IValidator<OidcCallbackParams> validator, ICryptographyFactory cryptographyFactory, IEventStore eventStore, IUserStorage userStorage, ICompanyStorage companyStorage, IOrchestrator orchestrator)
+    public LoginController(IOidcService oidcService, IValidator<OidcCallbackParams> validator, ICryptographyFactory tokenCryptography, ICryptographyFactory stateCryptography, IEventStore eventStore, IUserStorage userStorage, ICompanyStorage companyStorage, IOrchestrator orchestrator)
     {
         this.oidcService = oidcService;
         this.validator = validator;
@@ -33,8 +33,8 @@ public class LoginController : ControllerBase
         this.userStorage = userStorage;
         this.companyStorage = companyStorage;
         this.orchestrator = orchestrator;
-        tokenCryptography = cryptographyFactory.IdTokenCryptography();
-        stateCryptography = cryptographyFactory.StateCryptography();
+        this.tokenCryptography = tokenCryptography;
+        this.stateCryptography = stateCryptography;
     }
 
     [HttpGet]
@@ -54,7 +54,7 @@ public class LoginController : ControllerBase
 
     [HttpGet]
     [Route("/oidc/login/callback")]
-    public async Task<ActionResult<NextStep>> CallbackAsync(OidcCallbackParams oidcCallbackParams)
+    public async Task<ActionResult<NextStep>> CallbackAsync(OidcCallbackParams oidcCallbackParams, [FromServices] ICryptographyFactory stateCryptography, [FromServices] ICryptographyFactory IdtokenCryptography)
     {
         AuthState authState;
         IdTokenInfo oidcIdToken;
@@ -63,7 +63,7 @@ public class LoginController : ControllerBase
 
         try
         {
-            authState = stateCryptography.Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
+            authState = stateCryptography.StateCryptography().Decrypt<AuthState>(oidcCallbackParams.State) ?? throw new InvalidOperationException();
 
         }
         catch (Exception)
@@ -108,14 +108,14 @@ public class LoginController : ControllerBase
                 FeUrl = authState.FeUrl,
                 ReturnUrl = authState.ReturnUrl,
                 TermsAccepted = authState.TermsAccepted,
-                IdToken = tokenCryptography.Encrypt(oidcToken.IdToken),
+                IdToken = IdtokenCryptography.IdTokenCryptography().Encrypt(oidcToken.IdToken),
                 Tin = oidcUserInfoToken.NemidCvr,
                 IdentityProvider = oidcIdToken.Idp,
                 ExternalSubject = oidcIdToken.Sub,
                 CustomerType = authState.CustomerType
             };
 
-            var redirectUrlTerms = new NextStep { NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.Encrypt(newAuthState)}" };
+            var redirectUrlTerms = new NextStep { NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.StateCryptography().Encrypt(newAuthState)}" };
             return Redirect(redirectUrlTerms.NextUrl);
         }
         else
