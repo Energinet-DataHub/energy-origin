@@ -5,7 +5,6 @@ using API.Controllers.dto;
 using API.Models;
 using API.Orchestrator;
 using API.Repository;
-using API.Services;
 using API.Services.OidcProviders;
 using API.Utilities;
 using EnergyOriginEventStore.EventStore.Memory;
@@ -58,45 +57,6 @@ public class TestLoginController
             }
         };
     }
-
-    //[Fact]
-    //public void LoginCallback_DecodeOidcResponse()
-    //{
-
-    //    var oidcTokenResponse = new OidcTokenResponse
-    //    {
-    //        IdToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjA0ODA1OEJCNTlGNEQzMDA3MDQ1ODk2RkQ0ODhDRTgxRjRFQjQ5MjMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3BwLm5ldHNlaWRicm9rZXIuZGsvb3AiLCJuYmYiOjE2NjIzNjIxMTYsImlhdCI6MTY2MjM2MjExNiwiZXhwIjoxNjYyMzYyNDE2LCJhdWQiOiIwYTc3NWE4Ny04NzhjLTRiODMtYWJlMy1lZTI5YzcyMGMzZTciLCJhbXIiOlsiY29kZV9hcHAiXSwiYXRfaGFzaCI6Ii1SbklJOGFXQWxDXzJKRFlQcEp3SlEiLCJzdWIiOiIzZTRmOTNjZC02NDQ4LTQ4MGQtODg2OC04ZWZmOTExMjRmYzYiLCJhdXRoX3RpbWUiOjE2NjIzNjIwMTQsImlkcCI6Im1pdGlkIiwiYWNyIjoiaHR0cHM6Ly9kYXRhLmdvdi5kay9jb25jZXB0L2NvcmUvbnNpcy9TdWJzdGFudGlhbCIsIm5lYl9zaWQiOiIzYjFmMDFjNS05ZGRkLTQ3MzItODljMy0wZWYxNDU5ODAxN2MiLCJsb2EiOiJodHRwczovL2RhdGEuZ292LmRrL2NvbmNlcHQvY29yZS9uc2lzL1N1YnN0YW50aWFsIiwiYWFsIjoiaHR0cHM6Ly9kYXRhLmdvdi5kay9jb25jZXB0L2NvcmUvbnNpcy9TdWJzdGFudGlhbCIsImlhbCI6Imh0dHBzOi8vZGF0YS5nb3YuZGsvY29uY2VwdC9jb3JlL25zaXMvU3Vic3RhbnRpYWwiLCJpZGVudGl0eV90eXBlIjoicHJpdmF0ZSIsInRyYW5zYWN0aW9uX2lkIjoiMjM2NTMxNmEtMWYxYy00OGU2LTk4ZTctYWNmNmQ3ZWMzOGMxIiwiaWRwX3RyYW5zYWN0aW9uX2lkIjoiNDRhNDQyZWQtZDE0Mi00ZGQyLTkxNmYtNjY4MTQxMjE3ZjBmIiwic2Vzc2lvbl9leHBpcnkiOiIxNjYyMzc4MjExIn0.hE1PW3zMIxmokUcdWcYG6w-imu38Jk3OphDYVhbYKFqCkjTuKnrkinSZyWFopXnZsffQIxYRe3nh5391mxLpgfG0K_Kh-Ninsi2f3h4Vk5rligdfq2j_5aPJg3ku8bDH1X4Hy934E_zobceKSkp8P35ob4MJV6kwu3t6CIs_K-lAOT_mFuOd3HQOplCMS3gE-c2GSPeM3Buggz7WaZG2hXXT5n2w3iVwIF-DZmpkdAyByHaFD9cSPvICo0oyEdKhHz1XUtNhSDmz5tyiuXQER7XdSLVLqBrB-sJsWouKCEwyYUHIQYosL7Fcz8WQ0lfD0x69Rgt-gsVKjJoteeGhjw",
-    //        AccessToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjA0ODA1OEJCNTlGNEQzMDA3MDQ1ODk2RkQ0ODhDRTgxRjRFQjQ5MjMiLCJ0eXAiOiJhdCtqd3QifQ.eyJpc3MiOiJodHRwczovL3BwLm5ldHNlaWRicm9rZXIuZGsvb3AiLCJuYmYiOjE2NjIzNjIxMTYsImlhdCI6MTY2MjM2MjExNiwiZXhwIjoxNjYyMzY1NzE2LCJzY29wZSI6WyJvcGVuaWQiLCJtaXRpZCIsIm5lbWlkIiwidXNlcmluZm9fdG9rZW4iXSwiYW1yIjpbImNvZGVfYXBwIl0sImNsaWVudF9pZCI6IjBhNzc1YTg3LTg3OGMtNGI4My1hYmUzLWVlMjljNzIwYzNlNyIsInN1YiI6IjNlNGY5M2NkLTY0NDgtNDgwZC04ODY4LThlZmY5MTEyNGZjNiIsImF1dGhfdGltZSI6MTY2MjM2MjAxNCwiaWRwIjoibWl0aWQiLCJhY3IiOiJodHRwczovL2RhdGEuZ292LmRrL2NvbmNlcHQvY29yZS9uc2lzL1N1YnN0YW50aWFsIiwibmViX3NpZCI6IjNiMWYwMWM1LTlkZGQtNDczMi04OWMzLTBlZjE0NTk4MDE3YyIsImlkcF90cmFuc2FjdGlvbl9pZCI6IjQ0YTQ0MmVkLWQxNDItNGRkMi05MTZmLTY2ODE0MTIxN2YwZiIsInRyYW5zYWN0aW9uX2lkIjoiMjM2NTMxNmEtMWYxYy00OGU2LTk4ZTctYWNmNmQ3ZWMzOGMxIiwianRpIjoiMkZDRjQ0N0U1MzgxN0Y1M0Y4M0Y4REYyNEZDODNGMTUifQ.GKIly60ILu8-g_wnAGA1m5b4wxdVBymtr_LnGTPFE6v6PyX5g1KncFLcHUSQfiiysalNoyqqCjaWaReTnHj5TurTRB49YMPK9rNDiUHtLhENETaYe_R3xXn-wh1lx81NQxwxG2Fob4wRw7fG208bEMFjoFMGfFWFir_JP1b_9gFF-bUsFeItjhDAowj4wBuOYZXqPzIAXZ6M_iRJu2vBOU4r155ImmY1xUplQjBtctMvViiMHQKuESd6oy0_nAx3Z2iFT9Qq2qi9ZdxKFFIt7cE0QawWDoYBb4sZCW7qkMWMnnnro1dsH6N1DCo6ib666oF6pZoIP1OZc628pCWOMQ",
-    //        ExpiresIn = 3600,
-    //        TokenType = "Bearer",
-    //        Scope = "openid mitid nemid userinfo_token",
-    //        UserinfoToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjA0ODA1OEJCNTlGNEQzMDA3MDQ1ODk2RkQ0ODhDRTgxRjRFQjQ5MjMiLCJ0eXAiOiJhdCtqd3QifQ.eyJpc3MiOiJodHRwczovL3BwLm5ldHNlaWRicm9rZXIuZGsvb3AiLCJuYmYiOjE2NjIzNjIxMTYsImlhdCI6MTY2MjM2MjExNiwiZXhwIjoxNjYyMzYyNDE2LCJhbXIiOlsiY29kZV9hcHAiXSwibWl0aWQudXVpZCI6IjM0YjFhZDlhLWRiMGItNDFlYy1hYTlkLTI5MDkzMDgyNTNhOSIsIm1pdGlkLmFnZSI6IjM4IiwibWl0aWQuZGF0ZV9vZl9iaXJ0aCI6IjE5ODQtMDctMjgiLCJtaXRpZC5pZGVudGl0eV9uYW1lIjoiQXlhIEhhbnNlbiIsIm1pdGlkLnRyYW5zYWN0aW9uX2lkIjoiNDRhNDQyZWQtZDE0Mi00ZGQyLTkxNmYtNjY4MTQxMjE3ZjBmIiwibG9hIjoiaHR0cHM6Ly9kYXRhLmdvdi5kay9jb25jZXB0L2NvcmUvbnNpcy9TdWJzdGFudGlhbCIsImFjciI6Imh0dHBzOi8vZGF0YS5nb3YuZGsvY29uY2VwdC9jb3JlL25zaXMvU3Vic3RhbnRpYWwiLCJpYWwiOiJodHRwczovL2RhdGEuZ292LmRrL2NvbmNlcHQvY29yZS9uc2lzL1N1YnN0YW50aWFsIiwiYWFsIjoiaHR0cHM6Ly9kYXRhLmdvdi5kay9jb25jZXB0L2NvcmUvbnNpcy9TdWJzdGFudGlhbCIsImlkZW50aXR5X3R5cGUiOiJwcml2YXRlIiwiaWRwIjoibWl0aWQiLCJhdXRoX3RpbWUiOiIxNjYyMzYyMDE0Iiwic3ViIjoiM2U0ZjkzY2QtNjQ0OC00ODBkLTg4NjgtOGVmZjkxMTI0ZmM2IiwidHJhbnNhY3Rpb25faWQiOiIyMzY1MzE2YS0xZjFjLTQ4ZTYtOThlNy1hY2Y2ZDdlYzM4YzEiLCJhdWQiOiIwYTc3NWE4Ny04NzhjLTRiODMtYWJlMy1lZTI5YzcyMGMzZTcifQ.MBISWh11OxlsKDaaug8jMQotEB-aJn2jAFEmCOPc5zJUVcTBWZJ1FFAx2g7r1p_8-WK5Us69yeBk5yu1X-t2l7aqvdV0a6oKntAdARquV4bD35ezoXaPUpWe-crMuzA1mfQa9mzAc8FB837k5p1WOplAA-51GFCTylMw-D0FSxxwbtvMUIDpFaTZGZLIqZ-8N3QPyw0Ib7qO_vXvWd-z3UuCBMYPaV0NMbWoHdXYTNORD18i1kbOQFmgRDnXH6din2qfdv6QEBYTkxlorq24MjjEegwNQuJAzpXJy5LbbEz2wcDu06JNP-LnXYGVU_H_jjo_Lu_armuK55u0TcpFxg"
-    //    };
-
-    //    var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
-    //    var path = Path.Combine(directory, "../../../Resources/", "jwks.json");
-    //    var json = File.ReadAllText(path);
-
-    //    // var jwkSet = JwkSet.FromJson(json);
-    //    //var jwkSet = JwkSet.FromJson(json, new JsonMapper());
-    //    //var jwk = jwkSet.Keys.FirstOrDefault();
-
-
-    //    var jwkService = new Mock<IJwkService>();
-    //    jwkService.Setup(x => x.GetJwkAsync()).Returns(Task.FromResult(json));
-
-    //    var signaturGruppen = new SignaturGruppen(new Mock<ILogger<SignaturGruppen>>().Object, authOptionsMock.Object, new HttpClient(), cryptographyFactory.Object.StateCryptography(), jwkService.Object);
-
-
-    //    var deserializedIdToken = signaturGruppen.DecodeOidcResponse(oidcTokenResponse);
-
-
-
-    //    //Assert.Equal(JsonSerializer.Serialize(expectedDeserializedIdToken), JsonSerializer.Serialize(deserializedIdToken));
-    //}
-
-
-
 
     [Fact]
     public void LoginCallback_DeserializeUserIdToken_Succes()
@@ -162,5 +122,3 @@ public class TestLoginController
         Assert.Equal(JsonSerializer.Serialize(expectedDeserializedUserInfoToken), JsonSerializer.Serialize(deserializedIdToken));
     }
 }
-
-

@@ -54,7 +54,11 @@ public class LoginController : ControllerBase
 
     [HttpGet]
     [Route("/oidc/login/callback")]
-    public async Task<ActionResult<NextStep>> CallbackAsync(OidcCallbackParams oidcCallbackParams, [FromServices] ICryptographyFactory stateCryptography, [FromServices] ICryptographyFactory IdtokenCryptography)
+    public async Task<ActionResult<NextStep>> CallbackAsync(
+        OidcCallbackParams oidcCallbackParams,
+        [FromServices] ICryptographyFactory stateCryptography,
+        [FromServices] ICryptographyFactory IdtokenCryptography
+    )
     {
         AuthState authState;
         IdTokenInfo oidcIdToken;
@@ -115,7 +119,10 @@ public class LoginController : ControllerBase
                 CustomerType = authState.CustomerType
             };
 
-            var redirectUrlTerms = new NextStep { NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.StateCryptography().Encrypt(newAuthState)}" };
+            var redirectUrlTerms = new NextStep
+            {
+                NextUrl = newAuthState.FeUrl + $"/terms?state={stateCryptography.StateCryptography().Encrypt(newAuthState)}"
+            };
             return Redirect(redirectUrlTerms.NextUrl);
         }
         else
