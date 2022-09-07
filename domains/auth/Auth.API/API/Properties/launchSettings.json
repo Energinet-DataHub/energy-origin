@@ -17,6 +17,7 @@
       "applicationUrl": "https://localhost:7231;http://localhost:5231",
         "environmentVariables": {
             "ASPNETCORE_ENVIRONMENT": "Development",
+            "TermsMarkdownFolder": "A/beautiful/dir",
             "InternalTokenSecret": "INTERNALTOKENSECRET",
             "TokenExpiryTime": "1",
             "Scope": "SCOPE, SCOPE1",
