@@ -1,23 +1,26 @@
 namespace API.Configuration;
-
+#nullable disable
 public class AuthOptions
 {
     // Token related
     public string InternalTokenSecret { get; set; }
-    public string TokenExpiryTime { get; set; }
+
+    public string TokenExpiryTimeInDays { get; set; }
 
     // OIDC Related
-    public string Scope { get; set; }
     public string AmrValues { get; set; }
     public string OidcUrl { get; set; }
     public string OidcClientId { get; set; }
     public string OidcClientSecret { get; set; }
 
-    // Base url
+    // Urls
     public string BaseUrl { get; set; }
+    public string ServiceUrl { get; set; }
+    public string OidcLoginCallbackPath { get; set; }
 
     // Cryptography
-    public string SecretKey { get; set; }
+    public string IdTokenSecretKey { get; set; }
+    public string StateSecretKey { get; set; }
 
     // Cookies
     public string CookieName { get; set; }

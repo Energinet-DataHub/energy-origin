@@ -2,12 +2,14 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Configuration;
-using API.Helpers;
 using API.Models;
 using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
 using API.TokenStorage;
+using API.Utilities;
+using EnergyOriginEventStore.EventStore;
+using EnergyOriginEventStore.EventStore.Memory;
 using FluentValidation;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -36,12 +38,17 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.Configure<AuthOptions>(builder.Configuration);
-builder.Services.AddScoped<ICryptography, Cryptography>();
+builder.Services.AddScoped<ICryptographyFactory, CryptographyFactory>();
 builder.Services.AddScoped<IOidcService, SignaturGruppen>();
+builder.Services.AddScoped<IJwtDeserializer, JwtDeserializer>();
 builder.Services.AddScoped<IValidator<AuthState>, InvalidateAuthStateValidator>();
+builder.Services.AddScoped<IValidator<InternalToken>, InternalTokenValidator>();
 builder.Services.AddScoped<ICookies, Cookies>();
 builder.Services.AddScoped<ITokenStorage, TokenStorage>();
+builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 builder.Services.AddScoped<IPrivacyPolicyStorage, PrivacyPolicyStorage>();
 
 var app = builder.Build();
