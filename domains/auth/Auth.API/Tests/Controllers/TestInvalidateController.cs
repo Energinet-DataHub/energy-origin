@@ -18,6 +18,7 @@ public class TestInvalidateController
 {
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
+    private readonly Mock<ICryptographyFactory> cryptography = new();
     private readonly Mock<ICryptography> stateCryptography = new();
     private readonly InvalidateAuthStateValidator validator = new();
 
@@ -30,9 +31,11 @@ public class TestInvalidateController
             CookieName = "Authorization",
         });
 
+        cryptography.Setup(x => x.StateCryptography()).Returns(stateCryptography.Object);
+
         invalidateController = new InvalidateController(
             mockSignaturGruppen.Object,
-            stateCryptography.Object,
+            cryptography.Object,
             validator
         )
         {

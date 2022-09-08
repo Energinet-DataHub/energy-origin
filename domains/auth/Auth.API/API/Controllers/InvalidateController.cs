@@ -16,13 +16,13 @@ public class InvalidateController : ControllerBase
 
     public InvalidateController(
         IOidcService oidcService,
-        ICryptography stateCryptography,
+        ICryptographyFactory stateCryptography,
         IValidator<AuthState?> validator
     )
     {
         this.oidcService = oidcService;
         this.validator = validator;
-        this.stateCryptography = stateCryptography;
+        this.stateCryptography = stateCryptography.StateCryptography();
     }
 
     [HttpPost]
