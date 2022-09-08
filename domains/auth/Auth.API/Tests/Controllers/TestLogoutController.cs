@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using API.Configuration;
+using API.Controllers.dto;
 using API.Models;
 using API.Repository;
 using API.Services;
 using API.Services.OidcProviders;
-using API.TokenStorage;
+using API.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -22,6 +24,7 @@ public class TestLogoutController
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
     private readonly Mock<ITokenStorage> tokenStorage = new();
+    private readonly Mock<ICryptographyFactory> cryptographyFactory = new();
 
     private readonly LogoutController logoutController;
 
@@ -45,10 +48,10 @@ public class TestLogoutController
         };
     }
 
-    public static IEnumerable<object[]> Cookie => new[]
+    public static IEnumerable<object?[]> Cookie => new[]
     {
-        new object[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
-        new object[] { null },
+        new object?[] { $"Authorization=TestOpaqueToken;Path=/;Domain = energioprindelse.dk;HttpOnly = true; SameSite = SameSiteMode.Strict,Secure = true;Expires = {DateTime.UtcNow.AddHours(6)}" },
+        new object?[] { null },
     };
 
     [Theory, MemberData(nameof(Cookie))]
@@ -62,6 +65,4 @@ public class TestLogoutController
 
         Assert.Equal(expectedExpiredCookie, logoutController.HttpContext.Response.GetTypedHeaders().SetCookie.Single().ToString());
     }
-
-
 }

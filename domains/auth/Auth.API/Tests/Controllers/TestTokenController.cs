@@ -32,10 +32,7 @@ public class TestTokenController
             tokenStorage.Object
         )
         {
-            ControllerContext = new ControllerContext()
-            {
-                HttpContext = new DefaultHttpContext()
-            }
+            ControllerContext = new ControllerContext() { HttpContext = new DefaultHttpContext() }
         };
     }
 
