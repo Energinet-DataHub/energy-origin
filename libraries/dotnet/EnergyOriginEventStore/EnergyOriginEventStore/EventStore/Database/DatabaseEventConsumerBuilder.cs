@@ -1,19 +1,19 @@
 using EnergyOriginEventStore.EventStore.Internal;
 using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace EnergyOriginEventStore.EventStore.Memory;
+namespace EnergyOriginEventStore.EventStore.Database;
 
-internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
+internal class DatabaseEventConsumerBuilder : IEventConsumerBuilder
 {
     private readonly Dictionary<Type, IEnumerable<Action<Event<EventModel>>>> handlers = new();
     private Action<string, Exception>? exceptionHandler;
-    private readonly MemoryEventStore store;
+    private readonly DatabaseEventContext context;
     private readonly string topicPrefix;
-    private MemoryPointer? pointer;
+    private string pointer = "0";
 
-    public MemoryEventConsumerBuilder(MemoryEventStore store, string topicPrefix)
+    public DatabaseEventConsumerBuilder(DatabaseEventContext context, string topicPrefix)
     {
-        this.store = store;
+        this.context = context;
         this.topicPrefix = topicPrefix;
     }
 
@@ -37,9 +37,9 @@ internal class MemoryEventConsumerBuilder : IEventConsumerBuilder
 
     public IEventConsumerBuilder ContinueFrom(string pointer)
     {
-        this.pointer = new MemoryPointer(pointer);
+        this.pointer = pointer;
         return this;
     }
 
-    public IEventConsumer Build() => new MemoryEventConsumer(new Unpacker(), handlers, exceptionHandler, store, topicPrefix, pointer);
+    public IEventConsumer Build() => new DatabaseEventConsumer(new Unpacker(), handlers, exceptionHandler, context, topicPrefix, pointer);
 }

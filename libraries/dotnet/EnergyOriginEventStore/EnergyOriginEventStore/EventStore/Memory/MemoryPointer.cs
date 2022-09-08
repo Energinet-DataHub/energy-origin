@@ -14,10 +14,7 @@ internal class MemoryPointer
         Fraction = fraction;
     }
 
-    internal MemoryPointer(string pointer)
-    {
-        (Issued, Fraction) = Parse(pointer);
-    }
+    internal MemoryPointer(string pointer) => (Issued, Fraction) = Parse(pointer);
 
     internal MemoryPointer(InternalEvent model)
     {

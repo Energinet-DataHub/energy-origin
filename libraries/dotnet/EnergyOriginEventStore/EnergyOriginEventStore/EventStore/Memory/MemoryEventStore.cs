@@ -8,41 +8,30 @@ public class MemoryEventStore : IEventStore
 {
     private readonly List<MessageEventArgs> messages = new();
     private readonly ConcurrentQueue<Action> actions = new();
-    private static SemaphoreSlim drainSemaphore = new SemaphoreSlim(1, 1);
+    private readonly PeriodicTimer timer = new(TimeSpan.FromMilliseconds(100));
+    private static readonly SemaphoreSlim drainSemaphore = new(1, 1);
 
-    public MemoryEventStore() { }
+    public MemoryEventStore() => Task.Run(async () =>
+    {
+        while (await timer.WaitForNextTickAsync()) await Drain();
+    });
 
     internal event EventHandler<MessageEventArgs>? OnMessage;
 
-    internal async Task Attach(MemoryEventConsumer consumer)
-    {
-        // NOTE: The following will enqueue an action that in turn will enqueue an action for each known message and then an action to begin listening for new messages.
-        // By letting a queued action perform the message deliveries and actual attaching, we avoid dealing with new messages during attachment.
-
-        actions.Enqueue(async () =>
+    internal void Attach(MemoryEventConsumer consumer) => actions.Enqueue(() =>
         {
             foreach (var message in messages)
             {
-                actions.Enqueue(() =>
-                {
-                    consumer.OnMessage(this, message);
-                });
+                consumer.OnMessage(this, message);
             }
 
-            actions.Enqueue(() =>
-            {
-                OnMessage += consumer.OnMessage;
-            });
-
-            await Drain().ConfigureAwait(false);
-        });
-
-        await Drain().ConfigureAwait(false);
-    }
+            OnMessage += consumer.OnMessage;
+        }
+    );
 
     #region IEventStore
 
-    public async Task Produce(EventModel model, params string[] topics)
+    Task IEventStore.Produce(EventModel model, params string[] topics)
     {
         var message = InternalEvent.From(model);
 
@@ -57,7 +46,7 @@ public class MemoryEventStore : IEventStore
             });
         }
 
-        await Drain().ConfigureAwait(false);
+        return Task.CompletedTask;
     }
 
     public IEventConsumerBuilder GetBuilder(string topicPrefix) => new MemoryEventConsumerBuilder(this, topicPrefix);
@@ -65,16 +54,16 @@ public class MemoryEventStore : IEventStore
     public void Dispose()
     {
         actions.Clear();
+        GC.SuppressFinalize(this);
     }
 
     private async Task Drain()
     {
         if (drainSemaphore.CurrentCount == 0) return;
 
-        drainSemaphore.Wait();
+        await drainSemaphore.WaitAsync();
 
-        Action? item;
-        while (actions.TryDequeue(out item))
+        while (actions.TryDequeue(out var item))
         {
             item?.Invoke();
         }

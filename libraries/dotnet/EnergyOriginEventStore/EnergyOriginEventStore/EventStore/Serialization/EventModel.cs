@@ -16,14 +16,7 @@ public abstract record EventModel
     [JsonIgnore]
     public string Data => JsonConvert.SerializeObject(this);
 
-    protected EventModel()
-    {
-        attribute = GetType().GetCustomAttribute<EventModelVersionAttribute>(false) ??
-                     throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
-    }
+    protected EventModel() => attribute = GetType().GetCustomAttribute<EventModelVersionAttribute>(false) ?? throw new NotSupportedException("All classes extending from EventModel must specify EventModelVersionAttribute");
 
-    public virtual EventModel? NextVersion()
-    {
-        return null;
-    }
+    public virtual EventModel? NextVersion() => null;
 }
