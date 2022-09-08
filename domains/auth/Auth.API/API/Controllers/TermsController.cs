@@ -19,7 +19,7 @@ public class TermsController : ControllerBase
         {
             return Ok(await storage.GetLatestVersion());
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return Problem();
         }

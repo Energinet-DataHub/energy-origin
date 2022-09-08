@@ -11,7 +11,8 @@
         "EditorConfig.EditorConfig",
         "ms-dotnettools.csharp",
         "formulahendry.dotnet-test-explorer",
-        "ryanluker.vscode-coverage-gutters"
+        "ryanluker.vscode-coverage-gutters",
+        "ms-azuretools.vscode-docker"
     ],
     "postCreateCommand": "dotnet restore",
     "remoteUser": "vscode"

@@ -19,7 +19,7 @@ Newst case study is from 2018.
 
 A [case study](https://www.eventstore.com/case-studies/parcelvision) from 2015 mentions through-put of 50k/h.
 
-> Parcelvision can provide up to 50,000 quotations per hour, with each quotation generating multiple events. EventStoreDB easily handles all the events and quotations, freeing up their developers to focus on the business needs rather than the onerous maintenance of the database. 
+> Parcelvision can provide up to 50,000 quotations per hour, with each quotation generating multiple events. EventStoreDB easily handles all the events and quotations, freeing up their developers to focus on the business needs rather than the onerous maintenance of the database.
 
 
 
@@ -92,7 +92,7 @@ Potentially useful on:
 - multiple instances mounting a shared disk
 - instances mounting a ceph/rook
 
-_TODO: add diagram, if that makes sense_
+Note: The POC has been removed.
 
 ## Misc
 

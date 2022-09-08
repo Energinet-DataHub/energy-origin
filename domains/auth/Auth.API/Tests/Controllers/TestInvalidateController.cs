@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using API.Configuration;
-using API.Helpers;
 using API.Models;
 using API.Services.OidcProviders;
+using API.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -18,7 +18,8 @@ public class TestInvalidateController
 {
     private readonly Mock<IOidcService> mockSignaturGruppen = new();
     private readonly Mock<IOptions<AuthOptions>> authOptionsMock = new();
-    private readonly Mock<ICryptography> cryptography = new();
+    private readonly Mock<ICryptographyFactory> cryptography = new();
+    private readonly Mock<ICryptography> stateCryptography = new();
     private readonly InvalidateAuthStateValidator validator = new();
 
     private InvalidateController invalidateController;
@@ -29,6 +30,8 @@ public class TestInvalidateController
         {
             CookieName = "Authorization",
         });
+
+        cryptography.Setup(x => x.StateCryptography()).Returns(stateCryptography.Object);
 
         invalidateController = new InvalidateController(
             mockSignaturGruppen.Object,
@@ -53,7 +56,7 @@ public class TestInvalidateController
 
         var authStateAsString = JsonSerializer.Serialize(authState);
 
-        cryptography
+        stateCryptography
             .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
@@ -76,7 +79,8 @@ public class TestInvalidateController
     {
         var authState = new AuthState();
         var authStateAsString = JsonSerializer.Serialize(authState);
-        cryptography
+
+        stateCryptography
             .Setup(x => x.Decrypt<AuthState>(It.IsAny<string>()))
             .Returns(authState);
 
