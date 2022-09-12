@@ -14,10 +14,7 @@ namespace EnergyOriginAuthorization
             Token = token;
         }
 
-        public static AuthorizationContext? decode(string token)
-        {
-            return decode(token, Enumerable.Empty<string>());
-        }
+        public static AuthorizationContext? decode(string token) => decode(token, Enumerable.Empty<string>());
 
         public static AuthorizationContext? decode(string token, IEnumerable<string> requiredScopes)
         {
@@ -32,12 +29,9 @@ namespace EnergyOriginAuthorization
                 var subject = jwt.Payload.First(x => x.Key == "subject").Value as string;
                 var scopes = jwt.Payload.First(x => x.Key == "scope").Value as string ?? "";
 
-                if (!string.IsNullOrWhiteSpace(actor) && !string.IsNullOrWhiteSpace(subject) && requiredScopes.All(it => scopes.Contains(it)))
-                {
-                    return new AuthorizationContext(subject, actor, token);
-                }
-
-                return null;
+                return !string.IsNullOrWhiteSpace(actor) && !string.IsNullOrWhiteSpace(subject) && requiredScopes.All(it => scopes.Contains(it))
+                    ? new AuthorizationContext(subject, actor, token)
+                    : null;
             }
             catch
             {

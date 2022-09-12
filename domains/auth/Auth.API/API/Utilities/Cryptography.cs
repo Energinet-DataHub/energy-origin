@@ -2,25 +2,23 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Configuration;
-using Microsoft.Extensions.Options;
 
-namespace API.Helpers;
+namespace API.Utilities;
 
 public class Cryptography : ICryptography
 {
-    private readonly AuthOptions authOptions;
+    private readonly byte[] secret;
 
-    public Cryptography(IOptions<AuthOptions> authOptions)
+    public Cryptography(string secret)
     {
-        this.authOptions = authOptions.Value;
+        this.secret = Encoding.UTF8.GetBytes(secret);
     }
 
     public string Encrypt<T>(T state)
     {
         using var aes = Aes.Create();
 
-        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
+        aes.Key = secret;
         var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
         using var memoryStream = new MemoryStream();
         memoryStream.Write(aes.IV);
@@ -45,7 +43,7 @@ public class Cryptography : ICryptography
         memoryStream.Read(iv, 0, 16);
 
         using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(authOptions.SecretKey);
+        aes.Key = secret;
         aes.IV = iv;
 
         var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
@@ -59,6 +57,6 @@ public class Cryptography : ICryptography
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             }
-        );
+        ) ?? throw new FormatException();
     }
 }
