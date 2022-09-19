@@ -23,4 +23,14 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
+          command: monitor
+          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln"
+
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/dotnet@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
+        with:
+          command: code test
           args: "--file=domains/emissions/Emissions.API/Emissions.API.sln"
