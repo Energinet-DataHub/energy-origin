@@ -5,7 +5,6 @@ on: push
 jobs:
   security:
     runs-on: ubuntu-latest
-    working-directory: domains/emissions/Emissions.API/
     steps:
       - uses: actions/checkout@v3
 
@@ -16,6 +15,7 @@ jobs:
 
       - name: Restore
         shell: bash
+        working-directory: domains/emissions/Emissions.API/
         run: dotnet restore
 
       - name: monitor
@@ -24,7 +24,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
           command: monitor
-          args: "--file=Emissions.API.sln --project-name=Emissions"
+          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln --project-name=Emissions"
 
       - name: code test
         uses: snyk/actions/dotnet@master
