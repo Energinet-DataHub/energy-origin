@@ -18,19 +18,18 @@ jobs:
         working-directory: domains/emissions/Emissions.API/
         run: dotnet restore
 
-      - name: Run Snyk to check for vulnerabilities
+      - name: monitor
         uses: snyk/actions/dotnet@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
           command: monitor
-          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln"
+          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln --project-name=Emissions"
 
-
-      - name: Run Snyk to check for vulnerabilities
+      - name: code test
         uses: snyk/actions/dotnet@master
+        working-directory: domains/emissions/Emissions.API/
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
-          command: code test
-          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln"
+          command: "code test"
