@@ -10,4 +10,4 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
-          args: "--file=domains/emissions/Emissions.API/API/API.csproj"
+          args: "--file=domains/emissions/Emissions.API/Emissions.API.sln"
