@@ -1,10 +1,23 @@
 name: Example workflow for dotNET using Snyk
+
 on: push
+
 jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: 6.0.101
+
+    - name: Restore
+      shell: bash
+      working-directory: domains/emissions/Emissions.API/
+      run: dotnet restore
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/dotnet@master
         env:
