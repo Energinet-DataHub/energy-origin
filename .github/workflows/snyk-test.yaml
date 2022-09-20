@@ -18,10 +18,18 @@ jobs:
         working-directory: domains/emissions/Emissions.API/
         run: dotnet restore
 
-      - name: monitor
+      # - name: monitor
+      #   uses: snyk/actions/dotnet@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
+      #   with:
+      #     command: monitor
+      #     args: "--project-name-prefix=Emissions --org=6ec29e50-bb20-4486-81f0-b2b2f1b7731e --file=domains/emissions/Emissions.API/Emissions.API.sln"
+
+      - name: container monitor
         uses: snyk/actions/dotnet@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
-          command: monitor
-          args: "--project-name-prefix=Emissions --org=6ec29e50-bb20-4486-81f0-b2b2f1b7731e --file=domains/emissions/Emissions.API/Emissions.API.sln"
+          command: container monitor
+          args: --project-name-prefix=Emissions --org=6ec29e50-bb20-4486-81f0-b2b2f1b7731e --file=domains/emissions/Emissions.API/API/Dockerfile
