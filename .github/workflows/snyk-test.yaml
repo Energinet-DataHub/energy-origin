@@ -32,4 +32,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN_TMP }}
         with:
           command: container monitor
-          args: mcr.microsoft.com/dotnet/aspnet:6.0.7 --project-name-prefix=Emissions --org=6ec29e50-bb20-4486-81f0-b2b2f1b7731e
+          args: mcr.microsoft.com/dotnet/aspnet:6.0.7 --project-name=Emissions --org=6ec29e50-bb20-4486-81f0-b2b2f1b7731e
