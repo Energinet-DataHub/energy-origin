@@ -11,4 +11,4 @@ runs:
 
     - name: Install yamlpath
       shell: bash
-      run: pip install yamlpath
+      run: pip install yamlpath==3.6.5
