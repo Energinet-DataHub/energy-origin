@@ -28,7 +28,7 @@ runs:
 
     - name: Get Previous tag
       id: previous-tag
-      uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-get@main
       with:
         yaml_file: ${{ inputs.base-yaml-file || inputs.yaml-file }}
         yaml_path: ${{ inputs.base-yaml-path || inputs.yaml-path }}
@@ -53,7 +53,7 @@ runs:
 
     - name: Get current tag
       id: current-tag
-      uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-get@main
       with:
         yaml_file: ${{ inputs.yaml-file }}
         yaml_path: ${{ inputs.yaml-path }}

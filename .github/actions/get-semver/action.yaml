@@ -1,0 +1,57 @@
+name: Get semver plus pr
+description: |
+  Get semver from a path in a yaml file and if PR then append extra values.
+
+inputs:
+  yaml_file:
+    description: Path to the version file.
+    required: true
+  yaml_path:
+    description: Path inside the version file.
+    required: true
+  git_checkout_folder:
+    description: Folder to checkout main-branch inputs.
+    required: false
+    default: git-main
+
+outputs:
+  semver:
+    description: The resulting semver
+    value: ${{ steps.generate_semver.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Guard against non-supported events
+      if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('Only "push" and "pull_request" events are supported by this action.')
+    - uses: actions/checkout@v3
+      with:
+        path: ${{ inputs.git_checkout_folder }}
+        ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
+
+    - name: Get chart version
+      id: get_chart_version
+      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-get@main
+      with:
+        yaml_file: ${{ inputs.git_checkout_folder }}/${{ inputs.yaml_file }}
+        yaml_path: ${{ inputs.yaml_path }}
+
+    - name: Generate semver
+      id: generate_semver
+      shell: bash
+      run: |
+        cd ${{ inputs.git_checkout_folder }}
+        if ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        then
+          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}"
+        elif ${{ github.event_name == 'pull_request' }}
+        then
+          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short ${{ github.sha }})"
+        else
+          echo Not supported on push to branches other than main
+          exit 1
+        fi

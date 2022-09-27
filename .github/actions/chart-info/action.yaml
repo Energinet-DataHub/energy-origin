@@ -1,0 +1,37 @@
+name: Retrieve info from Chart file
+description: |
+  Retrieves info from Chart file
+inputs:
+  chart-folder:
+    description: Path to the folder containing 'Chart.yaml'.
+    required: true
+  chart-version:
+    description: Override the chart version to a specific version
+    required: true
+  include-image-name:
+    description: Add the name of the image to the name of a chart.
+    required: false
+    default: 'false'
+
+outputs:
+  chart-name:
+    description: The name of the chart.
+    value: ${{ steps.chart.outputs.name }}
+  tag-name:
+    description: A generated tag.
+    value: ${{ steps.chart.outputs.tag-name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get info from Chart.yaml
+      id: chart
+      shell: bash
+      run: |
+        NAME=$(grep ^"name: " ${{ inputs.chart-folder }}/Chart.yaml | cut -f2 -d' ')
+        echo ::set-output name=name::$NAME
+        if [ ${{ inputs.include-image-name }} = "true" ]; then
+          echo ::set-output name=tag-name::$NAME-${{ inputs.chart-version }}
+        else
+          echo ::set-output name=tag-name::${{ inputs.chart-version }}
+        fi

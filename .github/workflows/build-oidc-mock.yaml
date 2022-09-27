@@ -24,14 +24,14 @@ jobs:
     steps:
       - name: Resolve chart version
         id: resolve-chart
-        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        uses: ./actions/get-semver
         with:
           yaml_file: domains/oidc-mock/chart/Chart.yaml
           yaml_path: version
 
       - name: Resolve image version
         id: resolve-image
-        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        uses: ./actions/get-semver
         with:
           yaml_file: domains/oidc-mock/chart/values.yaml
           yaml_path: api.image.tag
@@ -44,12 +44,12 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Validate image
-        uses: ./.github/actions/dotnet-validate-domain
+        uses: ./actions/dotnet-validate-domain
         with:
           solution-file-folder: domains/oidc-mock/
 
       - name: Build image
-        uses: Energinet-DataHub/.github/.github/actions/build-and-push-container@main
+        uses: ./actions/build-and-push-container
         with:
           dockerfile: domains/oidc-mock/Mock/Dockerfile
           image-name: eo-oidc-mock
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Update image tag
-        uses: Energinet-DataHub/.github/.github/actions/yaml-set@main
+        uses: ./actions/yaml-set
         with:
           yaml_file: domains/oidc-mock/chart/values.yaml
           yaml_path: api.image.tag
@@ -75,7 +75,7 @@ jobs:
 
       - name: Release chart
         id: release-chart
-        uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
+        uses: ./actions/helm-release-chart
         with:
           chart_folder: domains/oidc-mock/chart
           chart_version: ${{ needs.resolve-versions.outputs.chart }}
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Update environment
-        uses: ./.github/actions/update-base-environment
+        uses: ./actions/update-base-environment
         with:
           env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
           app_name: ${{ needs.release-chart.outputs.chart-name }}

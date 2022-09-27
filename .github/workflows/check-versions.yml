@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Check Versions
-        uses: ./.github/actions/yaml-check-incremented-version
+        uses: ./actions/yaml-check-incremented-version
         with:
           yaml-file: ${{ matrix.configuration.yaml-file }}
           yaml-path: ${{ matrix.configuration.yaml-path }}

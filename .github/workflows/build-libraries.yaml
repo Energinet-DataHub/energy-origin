@@ -96,13 +96,13 @@ jobs:
 
       - name: Resolve version
         id: resolve-version
-        uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+        uses: ./actions/yaml-get
         with:
           yaml_file: ${{ steps.resolve-paths.outputs.solution }}/version.yaml
           yaml_path: version
 
       - name: Build library
-        uses: ./.github/actions/dotnet-publish-nuget-package
+        uses: ./actions/dotnet-publish-nuget-package
         with:
           solution-file-folder: ${{ steps.resolve-paths.outputs.solution }}
           project-name: ${{ steps.resolve-paths.outputs.project }}
