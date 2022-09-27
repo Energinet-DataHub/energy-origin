@@ -96,13 +96,13 @@ jobs:
 
       - name: Resolve version
         id: resolve-version
-        uses: ./actions/yaml-get
+        uses: ./.github/actions/yaml-get
         with:
           yaml_file: ${{ steps.resolve-paths.outputs.solution }}/version.yaml
           yaml_path: version
 
       - name: Build library
-        uses: ./actions/dotnet-publish-nuget-package
+        uses: ./.github/actions/dotnet-publish-nuget-package
         with:
           solution-file-folder: ${{ steps.resolve-paths.outputs.solution }}
           project-name: ${{ steps.resolve-paths.outputs.project }}
