@@ -1,0 +1,87 @@
+name: Package bundle and release helm chart
+description: |
+  Packages bundle and creates a release with the chart,
+  and commits chart into helm registry.
+
+inputs:
+  containers:
+    description: |
+      JSON string containing the containers to be built.
+      Example:
+      ```json
+      [
+        {
+          deployment_name: "app",
+          dockerfile: "app/Dockerfile",
+          image_name: 'eo-frontend-app',
+          image_tag: 'v1.2.3',
+          context: '.'
+        },
+        {
+          deployment_name: "api",
+          dockerfile: "api/Dockerfile",
+          image_name: 'eo-auth-api',
+          image_tag: 'v1.3.1'
+        }
+      ]
+      ```
+    required: true
+  chart-folder:
+    description: The path to the folder in the head (feature) branch containing the Helm charts for the services specified in `containers`.
+    required: true
+  chart-version:
+    description: "Optional: Override the Helm chart version to a specific version"
+    required: false
+  chart-repository:
+    description: "Optional: The repository to publish the chart."
+    required: false
+    default: ${{ github.repository_owner }}/helm-charts
+  include-image-name:
+    description: "Optional: Variable for deciding if the name of the image should be prepended to the name of a chart"
+    required: false
+    default: "false"
+  deploy-key:
+    description: |
+      The token used to create the release and
+      release the chart with a workflow dispatch to 'inputs.chart-repository'.
+    required: true
+  version_yaml_path_prefix:
+    description: "Prefix for version tag in values file."
+    required: false
+    default: "eo-base-helm-chart.deployments."
+
+outputs:
+  chart-name:
+    description: The name of the chart that was released.
+    value: ${{ steps.release-chart.outputs.chart-name }}
+  chart-version:
+    description: The version of the chart that was released.
+    value: ${{ steps.release-chart.outputs.chart-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install yamlpath
+      uses: Energinet-DataHub/.github/.github/actions/yamlpath-install@main
+
+    - name: If pr then override containers version in chart
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        JSON='${{ inputs.containers }}'
+        VALUES_FILE=${{ inputs.chart-folder }}/values.yaml
+        echo $JSON | jq -c '.[]' | while read i; do
+            DEPLOYMENT_NAME=$(echo $i | jq -r .deployment_name)
+            TAG=$(echo $i | jq -r .image_tag)
+            yaml-set --change ${{ inputs.version_yaml_path_prefix }}${DEPLOYMENT_NAME}.image.tag --value $TAG $VALUES_FILE
+        done
+
+    - name: Release helm chart
+      id: release-chart
+      uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
+      with:
+        deploy_key: ${{ inputs.deploy-key }}
+        chart_folder: ${{ inputs.chart-folder }}
+        chart_repository: ${{ inputs.chart-repository }}
+        chart_version: ${{ inputs.chart-version }}
+        include_image_name: ${{ inputs.include-image-name }}
