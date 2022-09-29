@@ -22,6 +22,8 @@ jobs:
       chart: ${{ steps.resolve-chart.outputs.semver }}
       image: ${{ steps.resolve-image.outputs.semver }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Resolve chart version
         id: resolve-chart
         uses: ./.github/actions/get-semver
