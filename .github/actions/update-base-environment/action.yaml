@@ -23,7 +23,6 @@ inputs:
     description: A deploy key that has access to the environment repository.
     required: true
 
-
 runs:
   using: composite
   steps:
@@ -59,7 +58,7 @@ runs:
         grep -v '^---' ${{ steps.simple-app.outputs.base-file }} >/dev/null
 
     - name: Update target revision
-      uses: Energinet-DataHub/.github/.github/actions/yaml-set@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-set@main
       with:
         yaml_file: base/${{ steps.simple-app.outputs.base-file }}
         yaml_path: helmCharts[name="${{ inputs.chart_name }}"].version

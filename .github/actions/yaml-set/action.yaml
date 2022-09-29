@@ -1,0 +1,23 @@
+name: Yaml set
+description: Sets the value in a yaml file.
+
+inputs:
+  yaml_file:
+    description: Path to the yaml file to modify
+    required: true
+  yaml_path:
+    description: Where the target value is found
+    required: true
+  value:
+    description: The new value to set the target to
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: install yamlpath
+      uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
+
+    - name: Set yaml value
+      shell: bash
+      run: yaml-set --change ${{ inputs.yaml_path }} --value ${{ inputs.value }} ${{ inputs.yaml_file }}

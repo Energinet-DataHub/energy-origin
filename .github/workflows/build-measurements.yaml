@@ -22,16 +22,18 @@ jobs:
       chart: ${{ steps.resolve-chart.outputs.semver }}
       image: ${{ steps.resolve-image.outputs.semver }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Resolve chart version
         id: resolve-chart
-        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        uses: ./.github/actions/get-semver
         with:
           yaml_file: domains/measurements/chart/Chart.yaml
           yaml_path: version
 
       - name: Resolve image version
         id: resolve-image
-        uses: Energinet-DataHub/.github/.github/actions/get-semver@main
+        uses: ./.github/actions/get-semver
         with:
           yaml_file: domains/measurements/chart/values.yaml
           yaml_path: api.image.tag
@@ -49,7 +51,7 @@ jobs:
           solution-file-folder: domains/measurements/Measurements.API/
 
       - name: Build image
-        uses: Energinet-DataHub/.github/.github/actions/build-and-push-container@main
+        uses: ./.github/actions/build-and-push-container
         with:
           dockerfile: domains/measurements/Measurements.API/API/Dockerfile
           image-name: eo-measurements
@@ -67,7 +69,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Update image tag
-        uses: Energinet-DataHub/.github/.github/actions/yaml-set@main
+        uses: ./.github/actions/yaml-set
         with:
           yaml_file: domains/measurements/chart/values.yaml
           yaml_path: api.image.tag
@@ -75,7 +77,7 @@ jobs:
 
       - name: Release chart
         id: release-chart
-        uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
+        uses: ./.github/actions/helm-release-chart
         with:
           chart_folder: domains/measurements/chart
           chart_version: ${{ needs.resolve-versions.outputs.chart }}
