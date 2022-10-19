@@ -4,22 +4,22 @@
         <name>src</name>
     </assembly>
     <members>
-        <member name="P:src.Controllers.Certificate.Start">
+        <member name="P:src.Models.Certificate.Start">
             <summary>
             Start timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:src.Controllers.Certificate.End">
+        <member name="P:src.Models.Certificate.End">
             <summary>
             End timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:src.Controllers.Certificate.Amount">
+        <member name="P:src.Models.Certificate.Amount">
             <summary>
             Amount of energy measured in Wh
             </summary>
         </member>
-        <member name="P:src.Controllers.Certificate.MeteringPointId">
+        <member name="P:src.Models.Certificate.MeteringPointId">
             <summary>
             Id for the metering point
             </summary>

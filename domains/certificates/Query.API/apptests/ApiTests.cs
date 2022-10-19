@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using src.Controllers;
+using src.Models;
 using Xunit;
 
 namespace apptests;
@@ -20,6 +21,6 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory.CreateClient();
         var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("v1/certificates");
         
-        Assert.Equal(5, certificatesResponse.Result.Count);
+        Assert.Equal(72, certificatesResponse.Result.Count);
     }
 }
