@@ -10,17 +10,23 @@ public class CertificatesController : ControllerBase
     public ActionResult<CertificateList> Get()
     {
         var now = DateTimeOffset.Now;
-        var n = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
+        var timestamp = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
 
-        var random = new Random(n.Year+n.Month+n.Day+n.Hour);
+        var random = new Random();
 
         return new CertificateList(
             Enumerable.Range(1, 5).Select(index => new Certificate(
-                    Start: n.AddHours(-index - 1),
-                    End: n.AddHours(-index),
-                    AmountWh: random.Next(1000, 10000),
-                    MeteringPoint: "123456"))
+                    Start: timestamp.AddHours(-index - 1).ToUnixTimeSeconds(),
+                    End: timestamp.AddHours(-index).ToUnixTimeSeconds(),
+                    Amount: random.Next(1000, 10000),
+                    MeteringPointId: "123456"))
                 .ToList()
         );
     }
 }
+
+// TODO: Document in swagger that unit for Amount is Wh
+public record Certificate(long Start, long End, int Amount, string MeteringPointId);
+
+public record CertificateList(List<Certificate> Result);
+
