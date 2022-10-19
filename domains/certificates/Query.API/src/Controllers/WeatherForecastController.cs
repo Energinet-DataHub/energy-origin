@@ -3,30 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace src.Controllers;
 
 [ApiController]
-[Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
+    [HttpGet]
+    [Route("v1/certificates")]
+    public ActionResult<CertificateList> Get()
     {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        var now = DateTimeOffset.Now;
+        var n = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
 
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
-    }
-
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
-    {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        return new CertificateList
         {
-            Date = DateTime.Now.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+            Result = Enumerable.Range(1, 5).Select(index => new Certificate
+            {
+                Start = n.AddHours(-index - 1),
+                End = n.AddHours(-index),
+                AmountWh = 42,
+                MeteringPoint = "123456"
+            }).ToList()
+        };
     }
 }
