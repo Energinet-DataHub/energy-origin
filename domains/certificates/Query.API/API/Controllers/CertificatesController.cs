@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
+using API.Models;
 using Microsoft.AspNetCore.Mvc;
-using src.Models;
 
-namespace src.Controllers;
+namespace API.Controllers;
 
 [ApiController]
 public class CertificatesController : ControllerBase

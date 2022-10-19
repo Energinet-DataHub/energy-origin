@@ -1,4 +1,4 @@
-namespace src.Models;
+namespace API.Models;
 
 public class Certificate
 {

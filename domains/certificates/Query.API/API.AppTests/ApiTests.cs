@@ -1,10 +1,9 @@
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using src.Controllers;
-using src.Models;
+using API.Models;
 using Xunit;
 
-namespace apptests;
+namespace API.AppTests;
 
 public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
 {

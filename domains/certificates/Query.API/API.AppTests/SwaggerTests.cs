@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
 using Xunit;
 
-namespace apptests;
+namespace API.AppTests;
 
 [UsesVerify]
 public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>

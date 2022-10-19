@@ -2,7 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace apptests;
+namespace API.AppTests;
 
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>
 {

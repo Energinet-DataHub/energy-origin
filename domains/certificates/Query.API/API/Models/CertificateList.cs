@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace src.Models;
+namespace API.Models;
 
 public class CertificateList
 {

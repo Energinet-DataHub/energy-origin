@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace apptests;
+namespace API.AppTests;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
