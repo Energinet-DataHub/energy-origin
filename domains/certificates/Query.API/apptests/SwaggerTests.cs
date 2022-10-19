@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Hosting;
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
+using VerifyXunit;
 using Xunit;
 
 namespace apptests;
 
+[UsesVerify]
 public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -51,13 +53,13 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, swaggerDocResponse.StatusCode);
     }
 
-    //[Fact]
-    //public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
-    //{
-    //    var client = factory.CreateClient();
-    //    var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
+    [Fact]
+    public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
+    {
+        var client = factory.CreateClient();
+        var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
 
-    //    var stream = await swaggerDocResponse.Content.ReadAsStreamAsync();
-    //    await VerifyJson(stream);
-    //}
+        var stream = await swaggerDocResponse.Content.ReadAsStreamAsync();
+        await Verifier.VerifyJson(stream);
+    }
 }
