@@ -1,0 +1,34 @@
+﻿{
+  result: [
+    {
+      amount: 9638,
+      end: 1666195200,
+      meteringPointId: 123456,
+      start: 1666191600
+    },
+    {
+      amount: 4306,
+      end: 1666191600,
+      meteringPointId: 123456,
+      start: 1666188000
+    },
+    {
+      amount: 6099,
+      end: 1666188000,
+      meteringPointId: 123456,
+      start: 1666184400
+    },
+    {
+      amount: 3585,
+      end: 1666184400,
+      meteringPointId: 123456,
+      start: 1666180800
+    },
+    {
+      amount: 3431,
+      end: 1666180800,
+      meteringPointId: 123456,
+      start: 1666177200
+    }
+  ]
+}
