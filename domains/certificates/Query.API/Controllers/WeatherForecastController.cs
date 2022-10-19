@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Certificates.Controllers;
+namespace Certificates.Query.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
