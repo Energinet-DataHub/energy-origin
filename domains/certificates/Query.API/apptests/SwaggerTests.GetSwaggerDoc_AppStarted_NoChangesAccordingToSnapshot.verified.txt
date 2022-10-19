@@ -1,66 +1,78 @@
 ﻿{
-  components: {
-    schemas: {
-      Certificate: {
-        additionalProperties: false,
-        properties: {
-          amount: {
-            format: int32,
-            type: integer
-          },
-          end: {
-            format: int64,
-            type: integer
-          },
-          meteringPointId: {
-            type: string
-          },
-          start: {
-            format: int64,
-            type: integer
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Certificates Query API",
+    "version": "v1"
+  },
+  "paths": {
+    "/v1/certificates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              }
+            }
           }
-        },
-        type: object
-      },
-      CertificateList: {
-        additionalProperties: false,
-        properties: {
-          result: {
-            items: null,
-            type: array
-          }
-        },
-        type: object
+        }
       }
     }
   },
-  info: {
-    title: Certificates Query API,
-    version: v1
-  },
-  openapi: 3.0.1,
-  paths: {
-    /v1/certificates: {
-      get: {
-        responses: {
-          200: {
-            content: {
-              application/json: {
-                schema: null
-              },
-              text/json: {
-                schema: null
-              },
-              text/plain: {
-                schema: null
-              }
-            },
-            description: Success
+  "components": {
+    "schemas": {
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer",
+            "description": "Start timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "End timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Amount of energy measured in Wh",
+            "format": "int32"
+          },
+          "meteringPointId": {
+            "type": "string",
+            "description": "Id for the metering point"
           }
         },
-        tags: [
-          Certificates
-        ]
+        "additionalProperties": false
+      },
+      "CertificateList": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Certificate"
+            }
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

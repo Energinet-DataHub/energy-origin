@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>src</name>
+    </assembly>
+    <members>
+        <member name="P:src.Controllers.Certificate.Start">
+            <summary>
+            Start timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:src.Controllers.Certificate.End">
+            <summary>
+            End timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:src.Controllers.Certificate.Amount">
+            <summary>
+            Amount of energy measured in Wh
+            </summary>
+        </member>
+        <member name="P:src.Controllers.Certificate.MeteringPointId">
+            <summary>
+            Id for the metering point
+            </summary>
+        </member>
+    </members>
+</doc>

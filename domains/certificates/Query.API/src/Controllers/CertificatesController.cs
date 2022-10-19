@@ -17,19 +17,45 @@ public class CertificatesController : ControllerBase
 
         var random = new Random();
 
-        return new CertificateList(
-            Enumerable.Range(1, 5).Select(index => new Certificate(
-                    Start: timestamp.AddHours(-index - 1).ToUnixTimeSeconds(),
-                    End: timestamp.AddHours(-index).ToUnixTimeSeconds(),
-                    Amount: random.Next(1000, 10000),
-                    MeteringPointId: "123456"))
-                .ToList()
-        );
+        return new CertificateList
+        {
+            Result =
+                Enumerable.Range(1, 5).Select(index => new Certificate
+                    {
+                        Start = timestamp.AddHours(-index - 1).ToUnixTimeSeconds(),
+                        End = timestamp.AddHours(-index).ToUnixTimeSeconds(),
+                        Amount = random.Next(1000, 10000),
+                        MeteringPointId = "123456"
+                    })
+                    .ToList()
+        };
     }
 }
 
-// TODO: Document in swagger that unit for Amount is Wh
-public record Certificate(long Start, long End, int Amount, string MeteringPointId);
+public class Certificate
+{
+    /// <summary>
+    /// Start timestamp for the certificate in Unix time
+    /// </summary>
+    public long Start { get; set; }
 
-public record CertificateList(List<Certificate> Result);
+    /// <summary>
+    /// End timestamp for the certificate in Unix time
+    /// </summary>
+    public long End { get; set; }
 
+    /// <summary>
+    /// Amount of energy measured in Wh
+    /// </summary>
+    public int Amount { get; set; }
+
+    /// <summary>
+    /// Id for the metering point
+    /// </summary>
+    public string MeteringPointId { get; set; }
+}
+
+public class CertificateList
+{
+    public List<Certificate> Result { get; set; }
+}

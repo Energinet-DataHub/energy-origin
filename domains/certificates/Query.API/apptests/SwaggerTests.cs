@@ -60,7 +60,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory.CreateClient();
         var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
 
-        var stream = await swaggerDocResponse.Content.ReadAsStreamAsync();
-        await Verifier.VerifyJson(stream);
+        var json = await swaggerDocResponse.Content.ReadAsStringAsync();
+        await Verifier.Verify(json);
     }
 }
