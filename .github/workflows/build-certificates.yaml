@@ -1,0 +1,102 @@
+name: Build - certificates
+
+on:
+  pull_request:
+    paths:
+      - domains/certificates/**
+  push:
+    branches:
+      - main
+    paths:
+      - domains/certificates/**
+
+concurrency:
+  group: ${{ github.ref }}-certificates
+  cancel-in-progress: false
+
+jobs:
+  resolve-versions:
+    name: Resolve versions
+    runs-on: ubuntu-latest
+    outputs:
+      chart: ${{ steps.resolve-chart.outputs.semver }}
+      image: ${{ steps.resolve-image.outputs.semver }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Resolve chart version
+        id: resolve-chart
+        uses: ./.github/actions/get-semver
+        with:
+          yaml_file: domains/certificates/chart/Chart.yaml
+          yaml_path: version
+
+      - name: Resolve image version
+        id: resolve-image
+        uses: ./.github/actions/get-semver
+        with:
+          yaml_file: domains/certificates/chart/values.yaml
+          yaml_path: api.image.tag
+
+  publish:
+    name: Publish container
+    needs: resolve-versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate image
+        uses: ./.github/actions/dotnet-validate-domain
+        with:
+          solution-file-folder: domains/certificates/
+
+      - name: Build image
+        uses: ./.github/actions/build-and-push-container
+        with:
+          dockerfile: domains/certificates/Query.API/Dockerfile
+          image-name: eo-certificates
+          image-tag: ${{ needs.resolve-versions.outputs.image }}
+          docker-context: domains/certificates/
+
+  release-chart:
+    name: Release chart
+    needs: [publish, resolve-versions]
+    runs-on: ubuntu-latest
+    outputs:
+      chart-name: ${{ steps.release-chart.outputs.chart_name }}
+      chart-version: ${{ steps.release-chart.outputs.chart_version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update image tag
+        uses: ./.github/actions/yaml-set
+        with:
+          yaml_file: domains/certificates/chart/values.yaml
+          yaml_path: api.image.tag
+          value: ${{ needs.resolve-versions.outputs.image }}
+
+      - name: Release chart
+        id: release-chart
+        uses: ./.github/actions/helm-release-chart
+        with:
+          chart_folder: domains/certificates/chart
+          chart_version: ${{ needs.resolve-versions.outputs.chart }}
+          include_image_name: true
+          deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+
+  update-environment:
+    name: Update preview environment
+    needs: [resolve-versions, release-chart]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update environment
+        uses: ./.github/actions/update-base-environment
+        with:
+          env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
+          app_name: ${{ needs.release-chart.outputs.chart-name }}
+          chart_name: ${{ needs.release-chart.outputs.chart-name }}
+          chart_version: ${{ needs.resolve-versions.outputs.chart }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
