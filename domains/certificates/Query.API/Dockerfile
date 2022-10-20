@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Query.API/Certificates.csproj", "source/"]
-RUN dotnet restore "source/Certificates.csproj"
+COPY ["Query.API/Certificates.csproj", "Query.API/"]
+RUN dotnet restore "Query.API/Certificates.csproj"
 COPY . .
-WORKDIR "/src/source"
+WORKDIR "/src/Query.API"
 RUN dotnet build "Certificates.csproj" -c Release -o /app/build
 
 FROM build AS publish
