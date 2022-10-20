@@ -15,7 +15,13 @@ public record EnergyMeasured(
 
 // cert created
 public record CertificateCreated(
+    string GSRN, // Metering Point ID
+    long DateFrom,
+    long DateTo,
+    long Quantity, // Wh
 ) : EventModel;
+
+// AIB
 
 // cert finalized
 
