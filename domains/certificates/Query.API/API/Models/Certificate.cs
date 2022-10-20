@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace API.Models;
 
 public class Certificate
@@ -5,20 +7,21 @@ public class Certificate
     /// <summary>
     /// Start timestamp for the certificate in Unix time
     /// </summary>
-    public long Start { get; set; }
+    public long DateFrom { get; set; }
 
     /// <summary>
     /// End timestamp for the certificate in Unix time
     /// </summary>
-    public long End { get; set; }
+    public long DateTo { get; set; }
 
     /// <summary>
-    /// Amount of energy measured in Wh
+    /// Quantity of energy measured in Wh
     /// </summary>
-    public int Amount { get; set; }
+    public long Quantity { get; set; }
 
     /// <summary>
-    /// Id for the metering point
+    /// Global Service Relation Number (GSRN) for the metering point
     /// </summary>
-    public string MeteringPointId { get; set; }
+    [JsonPropertyName("gsrn")]
+    public string GSRN { get; set; }
 }

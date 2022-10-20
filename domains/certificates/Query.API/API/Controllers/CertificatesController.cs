@@ -12,8 +12,13 @@ public class CertificatesController : ControllerBase
     [Route("v1/certificates")]
     public ActionResult<CertificateList> Get()
     {
-        var meteringPointIds = new[] { "123456", "654321", "162534" };
-        
+        var gsrns = new[]
+        {
+            "123456789000000000",
+            "987654321000000000",
+            "112233445566778899"
+        };
+
         var now = DateTimeOffset.Now;
         var timestamp = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
 
@@ -21,12 +26,12 @@ public class CertificatesController : ControllerBase
 
         var certificates = Enumerable.Range(1, 24)
             .SelectMany(hour =>
-                meteringPointIds.Select(mpid => new Certificate
+                gsrns.Select(gsrn => new Certificate
                 {
-                    Start = timestamp.AddHours(-hour - 1).ToUnixTimeSeconds(),
-                    End = timestamp.AddHours(-hour).ToUnixTimeSeconds(),
-                    Amount = random.Next(1000, 10000),
-                    MeteringPointId = mpid
+                    DateFrom = timestamp.AddHours(-hour - 1).ToUnixTimeSeconds(),
+                    DateTo = timestamp.AddHours(-hour).ToUnixTimeSeconds(),
+                    Quantity = random.Next(1000, 10000),
+                    GSRN = gsrn
                 }));
 
         return new CertificateList { Result = certificates.ToList() };

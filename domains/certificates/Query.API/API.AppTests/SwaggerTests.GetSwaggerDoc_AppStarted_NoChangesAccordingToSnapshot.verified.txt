@@ -40,24 +40,24 @@
       "Certificate": {
         "type": "object",
         "properties": {
-          "start": {
+          "dateFrom": {
             "type": "integer",
             "description": "Start timestamp for the certificate in Unix time",
             "format": "int64"
           },
-          "end": {
+          "dateTo": {
             "type": "integer",
             "description": "End timestamp for the certificate in Unix time",
             "format": "int64"
           },
-          "amount": {
+          "quantity": {
             "type": "integer",
-            "description": "Amount of energy measured in Wh",
-            "format": "int32"
+            "description": "Quantity of energy measured in Wh",
+            "format": "int64"
           },
-          "meteringPointId": {
+          "gsrn": {
             "type": "string",
-            "description": "Id for the metering point"
+            "description": "Global Service Relation Number (GSRN) for the metering point"
           }
         },
         "additionalProperties": false

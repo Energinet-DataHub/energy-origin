@@ -4,24 +4,24 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="P:API.Models.Certificate.Start">
+        <member name="P:API.Models.Certificate.DateFrom">
             <summary>
             Start timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.End">
+        <member name="P:API.Models.Certificate.DateTo">
             <summary>
             End timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.Amount">
+        <member name="P:API.Models.Certificate.Quantity">
             <summary>
-            Amount of energy measured in Wh
+            Quantity of energy measured in Wh
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.MeteringPointId">
+        <member name="P:API.Models.Certificate.GSRN">
             <summary>
-            Id for the metering point
+            Global Service Relation Number (GSRN) for the metering point
             </summary>
         </member>
     </members>
