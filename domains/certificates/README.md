@@ -22,6 +22,8 @@ public record MasterData(
 
 ### Registry
 
+Github repo: https://github.com/project-origin/registry/pulls. The branch of interest is `feature/electricity`. Below is copied from the Registry code and is what should be called by our RegistryConnector.
+
 ```cs
 // CommitmentParameters is defined in ProjectOrigin
 
