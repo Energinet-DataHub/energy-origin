@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace CertificatesEvents;
+namespace CertificateEvents;
 
 [EventModelVersion("CertificateCreated", 1)]
 public record CertificateCreated(

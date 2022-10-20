@@ -1,7 +1,7 @@
 using System;
 using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace CertificatesEvents;
+namespace CertificateEvents;
 
 [EventModelVersion("CertificateIssued", 1)]
 public record CertificateIssued(Guid CertificateId) : EventModel;

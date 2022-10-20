@@ -1,6 +1,6 @@
 using EnergyOriginEventStore.EventStore.Serialization;
 
-namespace CertificatesEvents;
+namespace CertificateEvents;
 
 [EventModelVersion("EnergyMeasured", 1)]
 public record EnergyMeasured(
