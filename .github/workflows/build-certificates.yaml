@@ -48,7 +48,7 @@ jobs:
       - name: Validate image
         uses: ./.github/actions/dotnet-validate-domain
         with:
-          solution-file-folder: domains/certificates/
+          solution-file-folder: domains/certificates/Query.API/
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container
