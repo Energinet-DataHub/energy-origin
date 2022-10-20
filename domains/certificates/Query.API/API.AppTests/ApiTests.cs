@@ -15,11 +15,15 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [Fact]
-    public async Task GetList_AppStarted_ReturnsFiveCertificates()
+    public async Task GetList_AppStarted_ReturnsCertificates()
     {
         var client = factory.CreateClient();
         var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("v1/certificates");
-        
-        Assert.Equal(72, certificatesResponse.Result.Count);
+
+        const int numberOfMeteringPoints = 3;
+        const int numberOfHours = 24;
+        const int expected = numberOfMeteringPoints * numberOfHours;
+
+        Assert.Equal(expected, certificatesResponse.Result.Count);
     }
 }
