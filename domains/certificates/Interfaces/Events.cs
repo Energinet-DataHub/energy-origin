@@ -1,3 +1,6 @@
+using System.Numerics;
+using Newtonsoft.Json;
+
 namespace Interfaces;
 
 
@@ -21,39 +24,44 @@ public record CertificateCreated(
     Period Period, // EnergyMeasured.DateFrom
     Technology Technology, // stamdata
     byte[] OwnerPublicKey, // stamdata - meterpoint owners key
-    ShieldedValue<string> ShieldedGSRN  //Group.commit(EnergyMeasured.GSRN)
-    ShieldedValue<long> Quantity //Group.commit(EnergyMeasured.Quantity)
-) : EventModel{
-    string GSRN { get => ShieldedGSRN.value; }
+    ShieldedValue<string> ShieldedGSRN,  //Group.commit(EnergyMeasured.GSRN)
+    ShieldedValue<long> ShieldedQuantity //Group.commit(EnergyMeasured.Quantity)
+) : EventModel
+{
+    [JsonIgnore]
+    public string GSRN => ShieldedGSRN.Value;
+
+    [JsonIgnore]
+    public long Quantity => ShieldedQuantity.Value;
 }
 
 public record Period(
     long DateFrom, // EnergyMeasured.DateFrom
-    long DateTo, // EnergyMeasured.DateTo
-)
+    long DateTo  // EnergyMeasured.DateTo
+);
 
 public record Technology(
     string FuelCode, // stamdata
-    string TechCode, // stamdata
-)
+    string TechCode  // stamdata
+);
 
 public record ShieldedValue<T>(
-    T value, // stamdata
-    BigInteger r, // group.RandomR()
-)
+    T Value, // stamdata
+    BigInteger r  // group.RandomR()
+);
 
 // cert finalized
 [EventModelVersion("CertificateIssued", 1)]
 public record CertificateIssued(
-    Guid CertificateId, // Guid.newGuid()
-)
+    Guid CertificateId // Guid.newGuid()
+);
 
 // cert rejected
 [EventModelVersion("CertificateRejected", 1)]
 public record CertificateRejected(
     Guid CertificateId, // Guid.newGuid()
     string Reason
-)
+);
 
 //Masterdataservice interface
 public interface IMasterService{
@@ -62,31 +70,34 @@ public interface IMasterService{
 
 public record MasterData(
     string GridArea, // stamdata ["DK1", "DK2"]
-    Type type, // enum (Production | Consumption)
+    Type Type, // enum (Production | Consumption)
     Technology Technology, // stamdata - https://www.aib-net.org/sites/default/files/assets/eecs/facts-sheets/AIB-2019-EECSFS-05%20EECS%20Rules%20Fact%20Sheet%2005%20-%20Types%20of%20Energy%20Inputs%20and%20Technologies%20-%20Release%207.7%20v5.pdf
-    byte[] OwnerPublicKey, // stamdata - meterpoint owners key
+    byte[] OwnerPublicKey // stamdata - meterpoint owners key
 );
 
 
 // ---- udgående besked til register ---  https://github.com/Energinet-DataHub/energy-origin/blob/main/domains/measurements/Measurements.API/API/Models/Measurement.cs
 
-    public record IssueProduction(
-        CommitmentParameters GsrnCommitmentParameters,
-        CommitmentParameters AmountCommitmentParameters,
-        ProductionIssued Event,
-        byte[] Signature  // sign with energinet key Ed25519 from config
-        );
+public record IssueProduction(
+    CommitmentParameters GsrnCommitmentParameters,
+    CommitmentParameters AmountCommitmentParameters,
+    ProductionIssued Event,
+    byte[] Signature  // sign with energinet key Ed25519 from config
+    );
 
-    public record ProductionIssued(
-        Guid CertificateId,
-        DateTimeOffset Start,
-        DateTimeOffset End,
-        string GridArea,
-        BigInteger GsrnCommitment,
-        BigInteger AmountCommitment,
-        string FuelCode,
-        string TechCode,
-        byte[] OwnerPublicKey,
-        CommitmentParameters? AmountParameters = null);
+public record ProductionIssued(
+    Guid CertificateId,
+    DateTimeOffset Start,
+    DateTimeOffset End,
+    string GridArea,
+    BigInteger GsrnCommitment,
+    BigInteger AmountCommitment,
+    string FuelCode,
+    string TechCode,
+    byte[] OwnerPublicKey,
+    CommitmentParameters? AmountParameters = null);
+
+public record CommitmentParameters(string Foo);  // Defined in ProjectOrigin
+
 // ---- end ---------
 
