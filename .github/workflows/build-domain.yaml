@@ -92,6 +92,7 @@ jobs:
           echo '${{ matrix.build }}'
           echo '${{ matrix.build.chart }}'
           echo '${{ matrix.build.projects }}'
+          echo '${{ toJSON(matrix.build.projects) }}'
 
   # resolve-versions:
   #   name: Resolve versions
