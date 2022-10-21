@@ -89,8 +89,9 @@ jobs:
         shell: bash
         run: |
           echo '${{ needs.define-domains.outputs.matrix }}'
-
           echo '${{ matrix.build }}'
+          echo '${{ matrix.build.chart }}'
+          echo '${{ matrix.build.projects }}'
 
   # resolve-versions:
   #   name: Resolve versions
