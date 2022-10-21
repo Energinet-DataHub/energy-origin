@@ -71,7 +71,7 @@ jobs:
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'
 
-  define-build:
+  define-builds:
     runs-on: ubuntu-latest
     needs: define-domains
     if: ${{ needs.define-domains.outputs.matrix != '[]' }}
@@ -99,11 +99,11 @@ jobs:
 
   build-domain:
     runs-on: ubuntu-latest
-    needs: define-domains
-    if: ${{ needs.define-domains.outputs.matrix != '[]' }}
+    needs: define-builds
+    if: ${{ needs.define-builds.outputs.matrix != '[]' }}
     strategy:
       matrix:
-        build: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
+        build: ${{ fromJson(needs.define-builds.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
 
