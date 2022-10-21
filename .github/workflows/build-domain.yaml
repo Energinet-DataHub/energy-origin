@@ -63,7 +63,11 @@ jobs:
             exit 0
           fi
 
-          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read directory; do printf '{"domain": "%s"}' "$directory"; done | jq -sc '.')
+          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
+            chart="$domain/chart"
+            projects=$(find "$domain" -mindepth 2 -maxdepth 2 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
+            printf '{"chart":"%s","projects":%s}' "$chart" "$projects"
+          done | jq -sc '.')
 
           echo "::set-output name=matrix::${matrix}"
 
@@ -71,48 +75,22 @@ jobs:
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'
 
-  define-builds:
+  build-domain:
     runs-on: ubuntu-latest
     needs: define-domains
     if: ${{ needs.define-domains.outputs.matrix != '[]' }}
-    outputs:
-      matrix: ${{ steps.define-parts.outputs.matrix }}
     strategy:
       matrix:
         build: ${{ fromJson(needs.define-domains.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Define parts
-        shell: bash
-        id: define-parts
-        run: |
-          chart='${{ matrix.build.domain }}/chart'
-          projects=$(find '${{ matrix.build.domain }}' -mindepth 2 -maxdepth 2 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
-
-          matrix=$(printf '{"chart":"%s","projects":%s}' "$chart" "$projects")
-          echo "::set-output name=matrix::${matrix}"
-
-          echo '::group::Matrix'
-          echo "$matrix"
-          echo "$matrix" | jq -r '.'
-          echo '::endgroup::'
-
-  build-domain:
-    runs-on: ubuntu-latest
-    needs: define-builds
-    if: ${{ needs.define-builds.outputs.matrix != '[]' }}
-    # strategy:
-    #   matrix:
-    #     build: ${{ fromJson(needs.define-builds.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v3
-
       - name: Show it
         shell: bash
         run: |
-          echo '${{ needs.define-builds.outputs.matrix }}'
-          # echo '${{ matrix.build.domain }}'
+          echo '${{ needs.define-domains.outputs.matrix }}'
+
+          echo '${{ matrix.build }}'
 
   # resolve-versions:
   #   name: Resolve versions
