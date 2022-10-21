@@ -24,6 +24,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         const int numberOfHours = 24;
         const int expected = numberOfMeteringPoints * numberOfHours;
 
+        Assert.NotNull(certificatesResponse);
         Assert.Equal(expected, certificatesResponse.Result.Count);
     }
 }

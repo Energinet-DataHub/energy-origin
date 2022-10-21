@@ -23,5 +23,5 @@ public class Certificate
     /// Global Service Relation Number (GSRN) for the metering point
     /// </summary>
     [JsonPropertyName("gsrn")]
-    public string GSRN { get; set; }
+    public string GSRN { get; set; } = "";
 }

@@ -4,5 +4,5 @@ namespace API.Models;
 
 public class CertificateList
 {
-    public List<Certificate> Result { get; set; }
+    public List<Certificate> Result { get; set; } = new();
 }
