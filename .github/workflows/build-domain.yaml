@@ -90,10 +90,11 @@ jobs:
           chart='${{ matrix.build.domain }}/chart'
           projects=$(find '${{ matrix.build.domain }}' -mindepth 2 -maxdepth 2 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
 
-          matrix=$(printf '{"chart":"%s", "projects":%s}' "$chart" "$projects")
+          matrix=$(printf '{"chart":"%s","projects":%s}' "$chart" "$projects")
           echo "::set-output name=matrix::${matrix}"
 
           echo '::group::Matrix'
+          echo "$matrix"
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'
 
@@ -101,16 +102,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: define-builds
     if: ${{ needs.define-builds.outputs.matrix != '[]' }}
-    strategy:
-      matrix:
-        build: ${{ fromJson(needs.define-builds.outputs.matrix) }}
+    # strategy:
+    #   matrix:
+    #     build: ${{ fromJson(needs.define-builds.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
 
       - name: Show it
         shell: bash
         run: |
-          echo '${{ matrix.build.domain }}'
+          echo '${{ needs.define-builds.outputs.matrix }}'
+          # echo '${{ matrix.build.domain }}'
 
   # resolve-versions:
   #   name: Resolve versions
