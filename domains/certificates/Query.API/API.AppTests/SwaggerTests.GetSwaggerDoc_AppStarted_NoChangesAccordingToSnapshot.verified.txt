@@ -1,0 +1,79 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Certificates Query API",
+    "version": "v1"
+  },
+  "paths": {
+    "/v1/certificates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "description": "Start timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "description": "End timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity of energy measured in Wh",
+            "format": "int64"
+          },
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CertificateList": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Certificate"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
