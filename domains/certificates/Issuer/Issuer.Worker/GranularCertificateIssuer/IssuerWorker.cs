@@ -1,13 +1,14 @@
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Serialization;
-using Issuer.Worker;
 
-public class Worker2 : BackgroundService
+namespace Issuer.Worker.GranularCertificateIssuer;
+
+public class IssuerWorker : BackgroundService
 {
-    private readonly ILogger<Worker2> logger;
+    private readonly ILogger<IssuerWorker> logger;
     private readonly IEventStore eventStore;
 
-    public Worker2(ILogger<Worker2> logger, IEventStore eventStore)
+    public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore)
     {
         this.logger = logger;
         this.eventStore = eventStore;
@@ -19,11 +20,11 @@ public class Worker2 : BackgroundService
             .GetBuilder("topic1")
             .AddHandler<SomethingHappened>(Handler)
             .Build();
-        
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("Worker2 Tick");
-            await Task.Delay(10000, stoppingToken);
+            //logger.LogInformation("Worker Tick");
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }
 

@@ -1,13 +1,13 @@
 using EnergyOriginEventStore.EventStore;
 
-namespace Issuer.Worker;
+namespace Issuer.Worker.DataSyncSyncer;
 
-public class Worker1 : BackgroundService
+public class DataSyncSyncerWorker : BackgroundService
 {
-    private readonly ILogger<Worker1> logger;
+    private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IEventStore eventStore;
 
-    public Worker1(ILogger<Worker1> logger, IEventStore eventStore)
+    public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore)
     {
         this.logger = logger;
         this.eventStore = eventStore;
@@ -17,9 +17,10 @@ public class Worker1 : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            //logger.LogInformation("Worker1: {time}", DateTimeOffset.Now);
+            //logger.LogInformation("Worker: {time}", DateTimeOffset.Now);
             await eventStore.Produce(new SomethingHappened(DateTimeOffset.Now.ToString()), "topic1");
-            await Task.Delay(1000, stoppingToken);
+
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }
 }

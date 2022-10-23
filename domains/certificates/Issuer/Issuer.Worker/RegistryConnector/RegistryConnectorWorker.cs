@@ -1,12 +1,13 @@
 using EnergyOriginEventStore.EventStore;
-using Issuer.Worker;
 
-public class Worker3 : BackgroundService
+namespace Issuer.Worker.RegistryConnector;
+
+public class RegistryConnectorWorker : BackgroundService
 {
-    private readonly ILogger<Worker3> logger;
+    private readonly ILogger<RegistryConnectorWorker> logger;
     private readonly IEventStore eventStore;
 
-    public Worker3(ILogger<Worker3> logger, IEventStore eventStore)
+    public RegistryConnectorWorker(ILogger<RegistryConnectorWorker> logger, IEventStore eventStore)
     {
         this.logger = logger;
         this.eventStore = eventStore;
@@ -21,8 +22,8 @@ public class Worker3 : BackgroundService
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            //logger.LogInformation("Worker3 Tick");
-            await Task.Delay(1000, stoppingToken);
+            //logger.LogInformation("Worker Tick");
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }
 }
