@@ -11,13 +11,13 @@ using Serilog;
 using Serilog.Formatting.Json;
 
 var host = Host.CreateDefaultBuilder(args)
-    .ConfigureLogging((h, builder) =>
+    .ConfigureLogging((context, builder) =>
     {
         builder.ClearProviders();
 
         var loggerConfiguration = new LoggerConfiguration();
-
-        loggerConfiguration = h.HostingEnvironment.IsEnvironment("development")
+        
+        loggerConfiguration = context.HostingEnvironment.IsDevelopment()
             ? loggerConfiguration.WriteTo.Console()
             : loggerConfiguration.WriteTo.Console(new JsonFormatter());
         
