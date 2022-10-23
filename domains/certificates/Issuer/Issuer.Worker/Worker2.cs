@@ -31,6 +31,7 @@ public class Worker2 : BackgroundService
     {
         logger.LogInformation($"Received: {e.EventModel.Foo}");
 
-        eventStore.Produce(new ThenThisHappened("bar bar"), "topic2").GetAwaiter().GetResult();
+        var produceTask = eventStore.Produce(new ThenThisHappened("bar bar"), "topic2");
+        produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
     }
 }
