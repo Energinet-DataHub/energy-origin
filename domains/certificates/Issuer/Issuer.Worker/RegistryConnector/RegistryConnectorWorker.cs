@@ -1,4 +1,9 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using EnergyOriginEventStore.EventStore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Issuer.Worker.RegistryConnector;
 
@@ -17,7 +22,7 @@ public class RegistryConnectorWorker : BackgroundService
     {
         using var consumer = eventStore
             .GetBuilder("topic2")
-            .AddHandler<ThenThisHappened>(e => logger.LogInformation($"Then this happened: {e.EventModel.Bar}"))
+            .AddHandler<ThenThisHappened>(e => logger.LogInformation("Then this happened: {thing}", e.EventModel.Bar))
             .Build();
         
         while (!stoppingToken.IsCancellationRequested)

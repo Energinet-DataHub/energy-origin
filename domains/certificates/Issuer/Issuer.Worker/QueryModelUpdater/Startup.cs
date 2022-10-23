@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Issuer.Worker.QueryModelUpdater;
 
 public static class Startup

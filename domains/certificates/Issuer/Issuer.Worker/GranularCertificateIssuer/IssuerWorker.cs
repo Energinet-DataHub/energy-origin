@@ -1,5 +1,10 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Serialization;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Issuer.Worker.GranularCertificateIssuer;
 

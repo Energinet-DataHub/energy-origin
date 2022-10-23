@@ -1,4 +1,5 @@
 using Issuer.Worker.DataSyncSyncer;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Issuer.Worker.RegistryConnector;
 
