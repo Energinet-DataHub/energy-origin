@@ -136,13 +136,13 @@ jobs:
         run: |
           project='${{ matrix.build }}'
           docker='${{ matrix.build }}/Dockerfile'
-          solution=$(dirname '${{ matrix.build }}')
-          domain=$(dirname "$solution")
-          overrides="${project}/chart-overrides.yaml"
+          service=$(dirname '${{ matrix.build }}')
+          domain=$(dirname "$service")
+          overrides="${service}/chart-overrides.yaml"
           version=$(sh ./.github/actions/yaml-semver/run.sh . "$overrides" version "${{ github.event.pull_request.number }}")
           name=$(dirname $(yaml-get --query name "$overrides"))
 
-          echo "solution=${solution}" >> $GITHUB_OUTPUT
+          echo "service=${service}" >> $GITHUB_OUTPUT
           echo "project=${project}" >> $GITHUB_OUTPUT
           echo "docker=${docker}" >> $GITHUB_OUTPUT
           echo "domain=${domain}" >> $GITHUB_OUTPUT
