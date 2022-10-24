@@ -44,5 +44,4 @@ await host.RunAsync();
  * - IEventConsumerBuilder does not have async support, so what will we do?
  * - Use the right events
  * - Switch to using Log.LogDebug statements
- * - Add Dockerfile
  */
