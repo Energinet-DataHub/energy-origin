@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API</name>
+    </assembly>
+    <members>
+        <member name="P:API.Models.Certificate.DateFrom">
+            <summary>
+            Start timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Models.Certificate.DateTo">
+            <summary>
+            End timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Models.Certificate.Quantity">
+            <summary>
+            Quantity of energy measured in Wh
+            </summary>
+        </member>
+        <member name="P:API.Models.Certificate.GSRN">
+            <summary>
+            Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+    </members>
+</doc>
