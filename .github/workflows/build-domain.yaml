@@ -90,7 +90,7 @@ jobs:
 
           matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
             domain="$domain"
-            projects=$(find "$domain" -mindepth 2 -maxdepth 2 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
             printf '{"domain":"%s","projects":%s}' "$domain" "$projects"
           done | jq -sc '.')
 
