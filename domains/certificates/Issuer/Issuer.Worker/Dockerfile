@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/runtime:6.0-alpine AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /src
 COPY ["Issuer/Issuer.Worker/Issuer.Worker.csproj", "Issuer/Issuer.Worker/"]
 RUN dotnet restore "Issuer/Issuer.Worker/Issuer.Worker.csproj"
