@@ -94,6 +94,10 @@ jobs:
             printf '{"domain":"%s","projects":%s}' "$domain" "$projects"
           done | jq -sc '.')
 
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
           domains=$(printf "$matrix" | jq '[.[].domain] | unique')
           echo "::set-output name=domains::${domains}"
 
