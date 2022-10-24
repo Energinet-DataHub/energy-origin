@@ -22,14 +22,14 @@ public class RegistryConnectorWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var consumer = eventStore
-            .GetBuilder(Topics.CertificatePrefix)
+            .GetBuilder(Topic.CertificatePrefix)
             .AddHandler<CertificateCreated>(e =>
             {
                 logger.LogInformation("RegistryConnectorWorker received: {event}", e.EventModel);
 
                 var @event = new CertificateIssued(e.EventModel.CertificateId);
 
-                var produceTask = eventStore.Produce(@event, Topics.Certificate(@event.CertificateId.ToString()));
+                var produceTask = eventStore.Produce(@event, Topic.For(@event));
                 produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
             })
             .Build();

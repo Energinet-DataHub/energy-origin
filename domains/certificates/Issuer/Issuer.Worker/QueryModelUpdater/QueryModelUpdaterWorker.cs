@@ -22,7 +22,7 @@ public class QueryModelUpdaterWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var consumer = eventStore
-            .GetBuilder(Topics.CertificatePrefix)
+            .GetBuilder(Topic.CertificatePrefix)
             .AddHandler<CertificateCreated>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
             .AddHandler<CertificateIssued>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
             .Build();

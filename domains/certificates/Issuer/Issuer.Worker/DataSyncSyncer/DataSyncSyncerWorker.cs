@@ -26,9 +26,9 @@ public class DataSyncSyncerWorker : BackgroundService
             logger.LogInformation("Produce energy measured event");
 
             var @event = new EnergyMeasured("gsrn", new(42, 50), 42, EnergyMeasurementQuality.Measured);
-            await eventStore.Produce(@event, Topics.Measurement(Guid.NewGuid().ToString()));
+            await eventStore.Produce(@event, Topic.For(@event));
 
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
 }

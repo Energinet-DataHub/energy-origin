@@ -23,7 +23,7 @@ public class IssuerWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var consumer = eventStore
-            .GetBuilder(Topics.MeasurementPrefix)
+            .GetBuilder(Topic.MeasurementPrefix)
             .AddHandler<EnergyMeasured>(e =>
             {
                 logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
@@ -37,7 +37,7 @@ public class IssuerWorker : BackgroundService
                     new ShieldedValue<string>(e.EventModel.GSRN, 42),
                     new ShieldedValue<long>(e.EventModel.Quantity, 42));
 
-                var produceTask = eventStore.Produce(@event, Topics.Certificate(@event.CertificateId.ToString()));
+                var produceTask = eventStore.Produce(@event, Topic.For(@event));
                 produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
             })
             .Build();
