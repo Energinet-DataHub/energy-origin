@@ -9,7 +9,7 @@ namespace API.Controllers;
 public class CertificatesController : ControllerBase
 {
     [HttpGet]
-    [Route("v1/certificates")]
+    [Route("certificates")]
     public ActionResult<CertificateList> Get()
     {
         var gsrns = new[]

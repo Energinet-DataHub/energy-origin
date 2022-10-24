@@ -18,7 +18,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetList_AppStarted_ReturnsCertificates()
     {
         var client = factory.CreateClient();
-        var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("v1/certificates");
+        var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("certificates");
 
         const int numberOfMeteringPoints = 3;
         const int numberOfHours = 24;
