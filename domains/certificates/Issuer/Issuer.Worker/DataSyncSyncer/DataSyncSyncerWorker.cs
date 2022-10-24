@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateEvents;
 using EnergyOriginEventStore.EventStore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,8 +23,10 @@ public class DataSyncSyncerWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            //logger.LogInformation("Worker: {time}", DateTimeOffset.Now);
-            await eventStore.Produce(new SomethingHappened(DateTimeOffset.Now.ToString()), "topic1");
+            logger.LogInformation("Produce energy measured event");
+
+            var @event = new EnergyMeasured("gsrn", new(42, 50), 42, EnergyMeasurementQuality.Measured);
+            await eventStore.Produce(@event, Topics.Measurement(Guid.NewGuid().ToString()));
 
             await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateEvents;
 using EnergyOriginEventStore.EventStore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,13 +22,20 @@ public class RegistryConnectorWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var consumer = eventStore
-            .GetBuilder("topic2")
-            .AddHandler<ThenThisHappened>(e => logger.LogInformation("Then this happened: {thing}", e.EventModel.Bar))
+            .GetBuilder(Topics.CertificatePrefix)
+            .AddHandler<CertificateCreated>(e =>
+            {
+                logger.LogInformation("RegistryConnectorWorker received: {event}", e.EventModel);
+
+                var @event = new CertificateIssued(e.EventModel.CertificateId);
+
+                var produceTask = eventStore.Produce(@event, Topics.Certificate(@event.CertificateId.ToString()));
+                produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
+            })
             .Build();
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            //logger.LogInformation("Worker Tick");
             await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }

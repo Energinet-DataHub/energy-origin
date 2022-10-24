@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateEvents;
 using EnergyOriginEventStore.EventStore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,9 +21,14 @@ public class QueryModelUpdaterWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var consumer = eventStore
+            .GetBuilder(Topics.CertificatePrefix)
+            .AddHandler<CertificateCreated>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .AddHandler<CertificateIssued>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .Build();
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            //logger.LogInformation("Worker Tick");
             await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }
