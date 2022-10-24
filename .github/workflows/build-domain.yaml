@@ -12,6 +12,8 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - name: Debug env
         shell: bash
         run: env
@@ -86,20 +88,20 @@ jobs:
             exit 0
           fi
 
-          domains=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
-            chart="$domain/chart"
+          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
+            domain="$domain"
             projects=$(find "$domain" -mindepth 2 -maxdepth 2 -name "*.csproj" -exec dirname {} \; | egrep -v '/Shared$' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
-            printf '{"chart":"%s","projects":%s}' "$chart" "$projects"
+            printf '{"domain":"%s","projects":%s}' "$domain" "$projects"
           done | jq -sc '.')
 
-          domains=$(printf "$domains" | jq '[.[].chart] | unique')
+          domains=$(printf "$matrix" | jq '[.[].domain] | unique')
           echo "::set-output name=domains::${domains}"
 
           echo '::group::Domains'
           echo "$domains" | jq -r '.'
           echo '::endgroup::'
 
-          projects=$(printf "$domains" | jq '.[].projects[]' | jq -scr '. | unique')
+          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
           echo "::set-output name=projects::${projects}"
 
           echo '::group::Projects'
