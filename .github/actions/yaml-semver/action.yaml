@@ -1,0 +1,39 @@
+name: Yaml - Get semver plus pr
+description: |
+  Get semver from a path in a yaml file and if PR then append extra values.
+
+inputs:
+  yaml-file:
+    description: Path to the version file.
+    required: true
+  yaml-path:
+    description: Path inside the version file.
+    required: true
+
+outputs:
+  semver:
+    description: The resulting semver
+    value: ${{ steps.output.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Guard against non-supported events
+      if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "::error:: Only "push" and "pull_request" events are supported by this action."
+        exit 1
+
+    - uses: actions/checkout@v3
+      with:
+        path: base
+        ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
+
+    - name: install yamlpath
+      uses: ./.github/actions/yamlpath-install
+
+    - name: Generate semver
+      id: output
+      shell: bash
+      run: ./.github/actions/yaml-semver/run.sh base "${{ inputs.yaml-file }}" "${{ inputs.yaml-path }}" "${{ github.event.pull_request.number }}"

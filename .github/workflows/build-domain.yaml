@@ -9,6 +9,19 @@ on:
       - main
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug env
+        shell: bash
+        run: env
+
+      - name: Debug semver
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: domains/certificates/chart/Chart.yaml
+          yaml-path: version
+
   define-matrices:
     runs-on: ubuntu-latest
     outputs:
@@ -38,6 +51,10 @@ jobs:
           #FIXME: validate files in directories?
           # domains/<>/chart/Chart.yaml
           # domains/<>/chart/values.yaml
+          # domains/<>/*.sln
+          # domains/<>/<>/chart-overrides.yaml
+          # domains/<>/.devcontainer/**
+          # domains/<>/.vscode/**
 
           echo 'Search pattern:'
           echo "$pattern"
@@ -115,7 +132,7 @@ jobs:
 
       - name: Resolve image version
         id: resolve-image
-        uses: ./.github/actions/get-semver
+        uses: ./.github/actions/yaml-semver
         with:
           yaml_file: ${{ steps.resolve-paths.outputs.project }}/chart-overrides.yaml
           yaml_path: version
@@ -132,13 +149,13 @@ jobs:
         with:
           solution-file-folder: ${{ steps.resolve-paths.outputs.solution }}
 
-      - name: Build image
-        uses: ./.github/actions/build-and-push-container
-        with:
-          dockerfile: ${{ steps.resolve-paths.outputs.docker }}
-          image-name: eo-certificates # FIXME
-          image-tag: ${{ steps.resolve-image.outputs.semver }}
-          docker-context: ${{ steps.resolve-paths.outputs.domain }}
+      # - name: Build image
+      #   uses: ./.github/actions/build-and-push-container
+      #   with:
+      #     dockerfile: ${{ steps.resolve-paths.outputs.docker }}
+      #     image-name: eo-certificates # FIXME
+      #     image-tag: ${{ steps.resolve-image.outputs.semver }}
+      #     docker-context: ${{ steps.resolve-paths.outputs.domain }}
 
   build-chart:
     runs-on: ubuntu-latest
@@ -183,53 +200,53 @@ jobs:
           yaml_file: ${{ steps.resolve-paths.outputs.chart }}/Chart.yaml
           yaml_path: version
 
-      - name: Release chart
-        id: release-chart
-        uses: ./.github/actions/helm-release-chart
-        with:
-          chart_folder: ${{ steps.resolve-paths.outputs.chart }}
-          chart_version: ${{ steps.resolve-chart.outputs.semver }}
-          include_image_name: true
-          deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+      # - name: Release chart
+      #   id: release-chart
+      #   uses: ./.github/actions/helm-release-chart
+      #   with:
+      #     chart_folder: ${{ steps.resolve-paths.outputs.chart }}
+      #     chart_version: ${{ steps.resolve-chart.outputs.semver }}
+      #     include_image_name: true
+      #     deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
-  update-environment:
-    runs-on: ubuntu-latest
-    needs:
-      - build-chart
-    if: ${{ needs.define-matrices.outputs.domains != '[]' }} && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
-    strategy:
-      matrix:
-        build: ${{ fromJson(needs.define-matrices.outputs.domains) }}
-    steps:
-      - uses: actions/checkout@v3
+  # update-environment:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build-chart
+  #   if: ${{ needs.define-matrices.outputs.domains != '[]' }} && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
+  #   strategy:
+  #     matrix:
+  #       build: ${{ fromJson(needs.define-matrices.outputs.domains) }}
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Resolve paths
-        shell: bash
-        id: resolve-paths
-        run: |
-          chart='${{ matrix.build }}/chart'
-          echo "chart=${chart}" >> $GITHUB_OUTPUT
+  #     - name: Resolve paths
+  #       shell: bash
+  #       id: resolve-paths
+  #       run: |
+  #         chart='${{ matrix.build }}/chart'
+  #         echo "chart=${chart}" >> $GITHUB_OUTPUT
 
-      - name: Resolve chart version
-        id: resolve-chart
-        uses: ./.github/actions/get-semver
-        with:
-          yaml_file: ${{ steps.resolve-paths.outputs.chart }}/Chart.yaml
-          yaml_path: version
+  #     - name: Resolve chart version
+  #       id: resolve-chart
+  #       uses: ./.github/actions/get-semver
+  #       with:
+  #         yaml_file: ${{ steps.resolve-paths.outputs.chart }}/Chart.yaml
+  #         yaml_path: version
 
-      - name: Get info from Chart.yaml
-        id: chart-info
-        uses: ./.github/actions/chart-info
-        with:
-          chart-folder: ${{ steps.resolve-paths.outputs.chart }}
-          chart-version: ${{ steps.resolve-chart.outputs.semver }}
-          include-image-name: true
+  #     - name: Get info from Chart.yaml
+  #       id: chart-info
+  #       uses: ./.github/actions/chart-info
+  #       with:
+  #         chart-folder: ${{ steps.resolve-paths.outputs.chart }}
+  #         chart-version: ${{ steps.resolve-chart.outputs.semver }}
+  #         include-image-name: true
 
-      - name: Update environment
-        uses: ./.github/actions/update-base-environment
-        with:
-          env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
-          app_name: ${{ steps.chart-info.outputs.chart-name }}
-          chart_name: ${{ steps.chart-info.outputs.chart-name }}
-          chart_version: ${{ steps.resolve-chart.outputs.semver }}
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+  #     - name: Update environment
+  #       uses: ./.github/actions/update-base-environment
+  #       with:
+  #         env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
+  #         app_name: ${{ steps.chart-info.outputs.chart-name }}
+  #         chart_name: ${{ steps.chart-info.outputs.chart-name }}
+  #         chart_version: ${{ steps.resolve-chart.outputs.semver }}
+  #         deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
