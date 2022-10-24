@@ -24,7 +24,7 @@ public class RegistryConnectorWorker : BackgroundService
             .GetBuilder("topic2")
             .AddHandler<ThenThisHappened>(e => logger.LogInformation("Then this happened: {thing}", e.EventModel.Bar))
             .Build();
-        
+
         while (!stoppingToken.IsCancellationRequested)
         {
             //logger.LogInformation("Worker Tick");

@@ -16,17 +16,17 @@ var host = Host.CreateDefaultBuilder(args)
         builder.ClearProviders();
 
         var loggerConfiguration = new LoggerConfiguration();
-        
+
         loggerConfiguration = context.HostingEnvironment.IsDevelopment()
             ? loggerConfiguration.WriteTo.Console()
             : loggerConfiguration.WriteTo.Console(new JsonFormatter());
-        
+
         builder.AddSerilog(loggerConfiguration.CreateLogger());
     })
     .ConfigureServices(services =>
     {
         services.AddSingleton<IEventStore, MemoryEventStore>();
-        
+
         services.AddDataSyncSyncer();
         services.AddGranularCertificateIssuer();
         services.AddRegistryConnector();
