@@ -140,7 +140,7 @@ jobs:
           domain=$(dirname "$service")
           overrides="${service}/chart-overrides.yaml"
           version=$(sh ./.github/actions/yaml-semver/run.sh . "$overrides" version "${{ github.event.pull_request.number }}")
-          name=$(dirname $(yaml-get --query name "$overrides"))
+          name=$(basename $(yaml-get --query name "$overrides"))
 
           echo "service=${service}" >> $GITHUB_OUTPUT
           echo "project=${project}" >> $GITHUB_OUTPUT
