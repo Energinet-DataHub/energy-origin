@@ -20,15 +20,20 @@ jobs:
 
       - name: Debug semver
         uses: ./.github/actions/yaml-semver
+        id: semver
         with:
           yaml-file: domains/certificates/chart/Chart.yaml
           yaml-path: version
+
+      - name: Debug semver output
+        shell: bash
+        run: echo "${{ steps.semver.outputs.semver }}"
 
   define-matrices:
     runs-on: ubuntu-latest
     outputs:
       domains: ${{ steps.define-matrices.outputs.domains }}
-      projects: ${{ steps.define-domains.outputs.projects }}
+      projects: ${{ steps.define-matrices.outputs.projects }}
 
     steps:
       - uses: actions/checkout@v3
