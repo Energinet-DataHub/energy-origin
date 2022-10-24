@@ -48,12 +48,12 @@ jobs:
       - name: Validate image
         uses: ./.github/actions/dotnet-validate-domain
         with:
-          solution-file-folder: domains/certificates/Query.API/
+          solution-file-folder: domains/certificates/
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container
         with:
-          dockerfile: domains/certificates/Query.API/Dockerfile
+          dockerfile: domains/certificates/Query.API/API/Dockerfile
           image-name: eo-certificates
           image-tag: ${{ needs.resolve-versions.outputs.image }}
           docker-context: domains/certificates/
