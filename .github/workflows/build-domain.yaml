@@ -122,17 +122,17 @@ jobs:
         shell: bash
         run: |
           echo '::group::Raw'
-          echo "${{ needs.define-matrices.outputs.domains }}"
+          printf '${{ needs.define-matrices.outputs.domains }}'
           echo '::endgroup::'
-          echo "$domains" | jq -r '.'
+          printf '${{ needs.define-matrices.outputs.domains }}' | jq -r '.'
 
       - name: Relevant projects
         shell: bash
         run: |
           echo '::group::Raw'
-          echo "${{ needs.define-matrices.outputs.projects }}"
+          printf '${{ needs.define-matrices.outputs.projects }}'
           echo '::endgroup::'
-          echo "$projects" | jq -r '.'
+          printf '${{ needs.define-matrices.outputs.projects }}' | jq -r '.'
 
   build-projects:
     runs-on: ubuntu-latest
