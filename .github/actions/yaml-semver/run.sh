@@ -1,15 +1,10 @@
-git=$1
-file=$2
-path=$3
-pr=$4
-
-cd "$git"
-version=$(yaml-get --query "$path" "$file")
+version=$1
+pr=$2
 if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_BASE_REF" = 'main' ]; then
-    echo "::set-output name=version::$version"
+    echo "$version"
 elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
-    echo "::set-output name=version::${version}-pr.${pr}-$(git rev-parse --short $GITHUB_SHA)"
+    echo "${version}-pr.${pr}-$(git rev-parse --short $GITHUB_SHA)"
 else
-    echo "::error:: Not supported on push to branches other than main"
+    >&2 echo "::error:: Not supported on push to branches other than main"
     exit 1
 fi

@@ -139,8 +139,10 @@ jobs:
           service=$(dirname '${{ matrix.build }}')
           domain=$(dirname "$service")
           overrides="${service}/chart-overrides.yaml"
-          version=$(sh ./.github/actions/yaml-semver/run.sh . "$overrides" version "${{ github.event.pull_request.number }}")
           name=$(basename $(yaml-get --query name "$overrides"))
+
+          version=$(yaml-get --query version "$overrides")
+          version=$(sh ./.github/actions/yaml-semver/run.sh "$version" "${{ github.event.pull_request.number }}")
 
           echo "service=${service}" >> $GITHUB_OUTPUT
           echo "project=${project}" >> $GITHUB_OUTPUT

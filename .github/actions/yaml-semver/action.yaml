@@ -36,4 +36,8 @@ runs:
     - name: Generate semver
       id: output
       shell: bash
-      run: ./.github/actions/yaml-semver/run.sh base "${{ inputs.yaml-file }}" "${{ inputs.yaml-path }}" "${{ github.event.pull_request.number }}"
+      run: |
+        cd base
+        version=$(yaml-get --query "${{ inputs.yaml-path }}" "${{ inputs.yaml-file }}")
+        version=$(sh ./.github/actions/yaml-semver/run.sh "$version" "${{ github.event.pull_request.number }}")
+        echo "version=${version}" >> $GITHUB_OUTPUT
