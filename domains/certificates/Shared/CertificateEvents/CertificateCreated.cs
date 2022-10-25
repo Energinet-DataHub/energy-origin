@@ -6,7 +6,7 @@ namespace CertificateEvents;
 
 [EventModelVersion("CertificateCreated", 1)]
 public record CertificateCreated(
-    Guid CertificateId,
+    Guid CertificateId, // Guid.newGuid()
     string GridArea, // stamdata
     Period Period,
     Technology Technology, // stamdata
