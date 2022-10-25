@@ -35,10 +35,3 @@ var host = Host.CreateDefaultBuilder(args)
     .Build();
 
 await host.RunAsync();
-
-/*
- * TODOS:
- * - BackgroundServices that subscribe to events currently ignores the pointer
- * - Add health checks and figure out how to configure k8s probes (http endpoint, file or ?) - maybe this is for different task?
- * - IEventConsumerBuilder does not have async support, so what will we do?
- */
