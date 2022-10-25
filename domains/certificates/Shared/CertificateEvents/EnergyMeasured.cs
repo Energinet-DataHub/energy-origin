@@ -9,6 +9,6 @@ public record EnergyMeasured(
     Period Period,
     long Quantity,
     EnergyMeasurementQuality Quality
-) : EventModel;
+) : MeasurementBaseEvent;
 
 public enum EnergyMeasurementQuality { Measured, Revised, Calculated, Estimated }

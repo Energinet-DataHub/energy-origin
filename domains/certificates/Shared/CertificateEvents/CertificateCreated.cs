@@ -13,4 +13,4 @@ public record CertificateCreated(
     byte[] OwnerPublicKey, // stamdata - meterpoint owners key
     ShieldedValue<string> ShieldedGSRN, //Group.commit(EnergyMeasured.GSRN)
     ShieldedValue<long> ShieldedQuantity //Group.commit(EnergyMeasured.Quantity)
-) : EventModel;
+) : CertificateBaseEvent;
