@@ -111,16 +111,28 @@ jobs:
           domains=$(printf "$matrix" | jq '[.[].domain] | unique')
           echo "::set-output name=domains::${domains}"
 
-          echo '::group::Domains'
-          echo "$domains" | jq -r '.'
-          echo '::endgroup::'
-
           projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
           echo "::set-output name=projects::${projects}"
 
-          echo '::group::Projects'
-          echo "$projects" | jq -r '.'
+  defined-matrices:
+    runs-on: ubuntu-latest
+    needs: define-matrices
+    steps:
+      - name: Relevant domains
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          echo "${{ needs.define-matrices.outputs.domains }}"
           echo '::endgroup::'
+          echo "$domains" | jq -r '.'
+
+      - name: Relevant projects
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          echo "${{ needs.define-matrices.outputs.projects }}"
+          echo '::endgroup::'
+          echo "$projects" | jq -r '.'
 
   build-projects:
     runs-on: ubuntu-latest
