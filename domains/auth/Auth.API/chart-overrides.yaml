@@ -1,0 +1,4 @@
+version: 0.0.12
+versionPath: api.image.tag
+name: ghcr.io/energinet-datahub/eo-auth
+namePath: api.image.name

@@ -6,19 +6,8 @@ inputs:
   chart_folder:
     description: Path to the folder containing the chart.
     required: true
-  chart_repository:
-    description: The repository containing the chart repository
-    default: ${{ github.repository_owner }}/helm-charts
-    required: false
   chart_version:
     description: Override the chart version to a specific version
-    required: true
-  chart_repository_branch:
-    description: The branch in which to add the chart.
-    required: false
-    default: "gh-pages"
-  deploy_key:
-    description: A deploy key that has access to the chart repository.
     required: true
   include_image_name:
     description: Add the name of the image to the name of a chart.
@@ -36,25 +25,13 @@ outputs:
 runs:
   using: composite
   steps:
-    - id: helm_directory
-      name: Add helm checkout directory to env
-      shell: bash
-      run: |
-        echo "helm-checkout-directory=helm-charts" >> $GITHUB_ENV
-
     - name: Get info from Chart.yaml
       id: chart-info
-      uses: Energinet-DataHub/energy-origin/.github/actions/chart-info@main
+      uses: ./.github/actions/chart-info #TODO: Energinet-DataHub/energy-origin/.github/actions/chart-info@main
       with:
         chart-folder: ${{ inputs.chart_folder }}
         chart-version: ${{ inputs.chart_version }}
         include-image-name: ${{ inputs.include_image_name }}
-
-    - id: generate_filename
-      name: Generate filename
-      shell: bash
-      run: |
-        echo ::set-output name=filename::${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz
 
     - name: Update chart dependencies
       shell: bash
@@ -79,44 +56,13 @@ runs:
         draft: false
         prerelease: ${{ github.ref_name != 'main' }}
 
-    - name: Add chart.tar to release
+    - name: Add tarball to release
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ steps.generate_filename.outputs.filename }}
-        asset_name: ${{ steps.generate_filename.outputs.filename }}
+        asset_path: ./${{ steps.chart-info.outputs.tarball-filename }}
+        asset_name: ${{ steps.chart-info.outputs.tarball-filename }}
         asset_content_type: application/zip
-
-    - name: Checkout chart repository
-      uses: actions/checkout@v3
-      with:
-        path: ${{ env.helm-checkout-directory }}
-        repository: ${{ inputs.chart_repository }}
-        ssh-key: ${{ inputs.deploy_key }}
-        ref: ${{ inputs.chart_repository_branch }}
-
-    - name: Download chart tarball
-      shell: bash
-      working-directory: ${{ env.helm-checkout-directory }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ steps.generate_filename.outputs.filename }}' --dir './'
-
-    - name: Update index file for helm registry
-      shell: bash
-      working-directory: ${{ env.helm-checkout-directory }}
-      run: helm repo index .
-
-    - name: Commit changes
-      uses: EndBug/add-and-commit@v9
-      with:
-        add: '["index.yaml", "${{ steps.generate_filename.outputs.filename }}"]'
-        message: Updated the helm registry with file ${{ steps.generate_filename.outputs.filename }}
-        push: --force
-        new_branch: ${{ inputs.chart_repository_branch }}
-        default_author: github_actions
-        cwd: ${{ env.helm-checkout-directory }}
