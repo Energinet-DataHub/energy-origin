@@ -258,11 +258,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          set -e
           domains='${{ needs.setup.outputs.domains }}'
-          changes=$(printf '%s' "$domains" | jq '.[]' | while read domain; do
+          changes=$(printf '%s' "$domains" | jq -r '.[]' | while read domain; do
             name=$(grep ^"name: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
             version=$(grep ^"version: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
-            version=$(sh ./.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
+            version=$(sh ../.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
 
             gh release download "$name-$version" --repo '${{ github.repository }}' --pattern "$name-$version.tgz" --dir './'
             printf '"%s"\n' "$name-$version.tgz"
