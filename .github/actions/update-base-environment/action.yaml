@@ -64,12 +64,12 @@ runs:
         yaml_path: helmCharts[name="${{ inputs.chart_name }}"].version
         value: ${{ inputs.chart_version }}
 
-    # - name: Branch - commit changes
-    #   uses: EndBug/add-and-commit@v9
-    #   with:
-    #     add: ${{ steps.simple-app.outputs.base-file }}
-    #     message: Bump ${{ inputs.app_name }} to new release ${{ inputs.chart_version }}
-    #     new_branch: ${{ inputs.env_branch }}
-    #     push: --force --set-upstream origin ${{ inputs.env_branch }}
-    #     default_author: github_actions
-    #     cwd: base
+    - name: Branch - commit changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: ${{ steps.simple-app.outputs.base-file }}
+        message: Bump ${{ inputs.app_name }} to new release ${{ inputs.chart_version }}
+        new_branch: ${{ inputs.env_branch }}
+        push: --force --set-upstream origin ${{ inputs.env_branch }}
+        default_author: github_actions
+        cwd: base
