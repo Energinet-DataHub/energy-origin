@@ -140,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: install yamlpath
+      - name: Install yamlpath
         uses: ./.github/actions/yamlpath-install
 
       - name: Resolve
