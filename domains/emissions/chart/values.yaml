@@ -1,8 +1,6 @@
 api:
   replicaCount: 3
-  image:
-    name: ghcr.io/energinet-datahub/eo-emissions
-    tag: 0.3.6
+  image: {}
   env:
     DATASYNCENDPOINT:
     ENERGIDATASERVICEENDPOINT:
