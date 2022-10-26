@@ -1,5 +1,3 @@
 api:
   replicaCount: 3
-  image:
-    name: ghcr.io/energinet-datahub/eo-auth
-    tag: 0.0.11
+  image: {}

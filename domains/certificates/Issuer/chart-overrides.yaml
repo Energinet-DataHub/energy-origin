@@ -1,0 +1,4 @@
+version: 0.0.0
+versionPath: issuer.image.tag
+name: ghcr.io/energinet-datahub/eo-certificates-issuer
+namePath: issuer.image.name
