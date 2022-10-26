@@ -254,7 +254,6 @@ jobs:
       - name: Download chart tarball
         id: download
         shell: bash
-        working-directory: helm-charts
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -263,9 +262,9 @@ jobs:
           changes=$(printf '%s' "$domains" | jq -r '.[]' | while read domain; do
             name=$(grep ^"name: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
             version=$(grep ^"version: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
-            version=$(sh ../.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
+            version=$(sh .github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
 
-            gh release download "$name-$version" --repo '${{ github.repository }}' --pattern "$name-$version.tgz" --dir './'
+            gh release download "$name-$version" --repo '${{ github.repository }}' --pattern "$name-$version.tgz" --dir './helm-charts/'
             printf '"%s"\n' "$name-$version.tgz"
           done | jq -sc '. + ["index.yaml"]')
           files=$(echo "$changes" | jq 'map(select(. != "index.yaml")) | join(", ")')
@@ -275,13 +274,12 @@ jobs:
 
       - name: Update index file for helm registry
         shell: bash
-        working-directory: helm-charts
-        run: helm repo index .
+        run: cd helm-charts && helm repo index .
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
-          add: "${{ steps.download.outputs.changes }}"
+          add: "'${{ steps.download.outputs.changes }}'"
           message: "Updated the helm registry with files: ${{ steps.download.outputs.files }}"
           push: --force
           new_branch: gh-pages
