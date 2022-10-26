@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using EnergyOriginEventStore.EventStore;
+using Issuer.Worker.MasterDataService;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,11 +14,13 @@ public class IssuerWorker : BackgroundService
 {
     private readonly ILogger<IssuerWorker> logger;
     private readonly IEventStore eventStore;
+    private readonly IMasterDataService masterDataService;
 
-    public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore)
+    public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore, IMasterDataService masterDataService)
     {
         this.logger = logger;
         this.eventStore = eventStore;
+        this.masterDataService = masterDataService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,12 +31,12 @@ public class IssuerWorker : BackgroundService
             {
                 logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
 
-                var @event = new CertificateCreated(
+                var @event = new ProductionCertificateCreated(
                     Guid.NewGuid(),
                     "gridArea",
                     e.EventModel.Period,
                     new("fuel", "tech"),
-                    Array.Empty<byte>(),
+                    "foo",
                     new ShieldedValue<string>(e.EventModel.GSRN, 42),
                     new ShieldedValue<long>(e.EventModel.Quantity, 42));
 
