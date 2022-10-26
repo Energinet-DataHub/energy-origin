@@ -16,7 +16,8 @@ public record MasterData(
     string GridArea, // stamdata ["DK1", "DK2"]
     MeteringPointType Type, // enum (Production | Consumption)
     Technology Technology, // stamdata - https://www.aib-net.org/sites/default/files/assets/eecs/facts-sheets/AIB-2019-EECSFS-05%20EECS%20Rules%20Fact%20Sheet%2005%20-%20Types%20of%20Energy%20Inputs%20and%20Technologies%20-%20Release%207.7%20v5.pdf
-    byte[] OwnerPublicKey // stamdata - meterpoint owners key
+    string MeteringPointOwner
+    //byte[] OwnerPublicKey // stamdata - meterpoint owners key
 );
 ```
 
