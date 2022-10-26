@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Issuer.Worker.MasterDataService;
 
-internal class MockMasterDataService : IMasterDataService 
+internal class MockMasterDataService : IMasterDataService
 {
     private readonly Dictionary<string, MasterData> data;
 

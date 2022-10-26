@@ -32,7 +32,7 @@ internal class DataSyncSyncerWorker : BackgroundService
         {
             logger.LogInformation("Produce energy measured event");
 
-            var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1,42), EnergyMeasurementQuality.Measured);
+            var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1, 42), EnergyMeasurementQuality.Measured);
             await eventStore.Produce(@event, Topic.For(@event));
 
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
