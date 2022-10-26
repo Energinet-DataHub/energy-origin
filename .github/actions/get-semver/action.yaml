@@ -22,6 +22,10 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use yaml-semver instead"
+
     - name: Guard against non-supported events
       if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
       uses: actions/github-script@v6
@@ -44,8 +48,6 @@ runs:
       id: generate_semver
       shell: bash
       run: |
-        echo "::warning::Using deprecated semver action, use yaml-semver instead"
-
         cd ${{ inputs.git_checkout_folder }}
         if ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         then
