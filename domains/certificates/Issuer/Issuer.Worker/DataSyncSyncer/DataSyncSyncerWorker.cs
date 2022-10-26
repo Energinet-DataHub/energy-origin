@@ -21,6 +21,8 @@ public class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken); //allow application to start before producing events
+
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("Produce energy measured event");

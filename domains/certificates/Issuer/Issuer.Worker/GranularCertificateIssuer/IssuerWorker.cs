@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using EnergyOriginEventStore.EventStore;
+using Issuer.Worker.MasterDataService;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,11 +14,13 @@ public class IssuerWorker : BackgroundService
 {
     private readonly ILogger<IssuerWorker> logger;
     private readonly IEventStore eventStore;
+    private readonly IMasterDataService masterDataService;
 
-    public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore)
+    public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore, IMasterDataService masterDataService)
     {
         this.logger = logger;
         this.eventStore = eventStore;
+        this.masterDataService = masterDataService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

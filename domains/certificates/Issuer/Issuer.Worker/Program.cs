@@ -2,6 +2,7 @@ using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using Issuer.Worker.DataSyncSyncer;
 using Issuer.Worker.GranularCertificateIssuer;
+using Issuer.Worker.MasterDataService;
 using Issuer.Worker.QueryModelUpdater;
 using Issuer.Worker.RegistryConnector;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,17 +17,18 @@ var host = Host.CreateDefaultBuilder(args)
         builder.ClearProviders();
 
         var loggerConfiguration = new LoggerConfiguration();
-
+        
         loggerConfiguration = context.HostingEnvironment.IsDevelopment()
             ? loggerConfiguration.WriteTo.Console()
             : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
         builder.AddSerilog(loggerConfiguration.CreateLogger());
     })
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
         services.AddSingleton<IEventStore, MemoryEventStore>();
 
+        services.AddMasterDataService(context.Configuration);
         services.AddDataSyncSyncer();
         services.AddGranularCertificateIssuer();
         services.AddRegistryConnector();

@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Issuer.Worker.MasterDataService;
 
-public class MockMasterDataService : IMasterDataService 
+internal class MockMasterDataService : IMasterDataService 
 {
     private readonly Dictionary<string, MasterData> data;
 
-    public MockMasterDataService(MasterDataCollection collection) => data = collection.Data.ToDictionary(d => d.GSRN, d => d);
+    public MockMasterDataService(MockMasterDataCollection collection) => data = collection.Data.ToDictionary(d => d.GSRN, d => d);
 
-    public MasterData? GetMasterData(string gsrn) => data.ContainsKey(gsrn) ? data[gsrn] : null;
+    public Task<MasterData?> GetMasterData(string gsrn) => Task.FromResult(data.ContainsKey(gsrn) ? data[gsrn] : null);
 }
