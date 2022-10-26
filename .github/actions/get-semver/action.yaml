@@ -44,6 +44,8 @@ runs:
       id: generate_semver
       shell: bash
       run: |
+        echo "::warning::Using deprecated semver action, use yaml-semver instead"
+
         cd ${{ inputs.git_checkout_folder }}
         if ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         then
