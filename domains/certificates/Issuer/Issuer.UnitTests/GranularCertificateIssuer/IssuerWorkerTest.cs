@@ -21,11 +21,11 @@ public class IssuerWorkerTest
     {
         using IEventStore eventStore = new MemoryEventStore();
         var semaphore = new SemaphoreSlim(0);
-        
+
         var worker = new IssuerWorker(eventStore, Mock.Of<IMasterDataService>(), Mock.Of<ILogger<IssuerWorker>>());
 
         await worker.StartAsync(CancellationToken.None);
-        
+
         var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         await eventStore.Produce(@event, Topic.For(@event));
 
