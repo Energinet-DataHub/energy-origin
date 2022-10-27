@@ -21,7 +21,7 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-builder.Services.AddHealthChecks().AddCheck<HealthCheckWorker>("HealthCheckWorker" );
+builder.Services.AddHealthChecks().AddCheck<HealthCheckWorker>("HealthCheckWorker");
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
