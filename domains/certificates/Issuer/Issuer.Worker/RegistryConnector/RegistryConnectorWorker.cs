@@ -10,26 +10,26 @@ namespace Issuer.Worker.RegistryConnector;
 
 public class RegistryConnectorWorker : BackgroundService
 {
-    private readonly ILogger<RegistryConnectorWorker> logger;
-    private readonly IEventStore eventStore;
+    private readonly ILogger<RegistryConnectorWorker> _logger;
+    private readonly IEventStore _eventStore;
 
     public RegistryConnectorWorker(ILogger<RegistryConnectorWorker> logger, IEventStore eventStore)
     {
-        this.logger = logger;
-        this.eventStore = eventStore;
+        _logger = logger;
+        _eventStore = eventStore;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var consumer = eventStore
+        using var consumer = _eventStore
             .GetBuilder(Topic.CertificatePrefix)
             .AddHandler<ProductionCertificateCreated>(e =>
             {
-                logger.LogInformation("RegistryConnectorWorker received: {event}", e.EventModel);
+                _logger.LogInformation("RegistryConnectorWorker received: {event}", e.EventModel);
 
                 var @event = new ProductionCertificateIssued(e.EventModel.CertificateId);
 
-                var produceTask = eventStore.Produce(@event, Topic.For(@event));
+                var produceTask = _eventStore.Produce(@event, Topic.For(@event));
                 produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
             })
             .Build();

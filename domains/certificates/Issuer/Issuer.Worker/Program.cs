@@ -5,35 +5,34 @@ using Issuer.Worker.GranularCertificateIssuer;
 using Issuer.Worker.MasterDataService;
 using Issuer.Worker.QueryModelUpdater;
 using Issuer.Worker.RegistryConnector;
+using Issuer.Worker.RegistryConnector.Health;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Json;
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureLogging((context, builder) =>
-    {
-        builder.ClearProviders();
+var builder = WebApplication.CreateBuilder(args);
+var logger = new LoggerConfiguration()
+    .WriteTo.Console(new JsonFormatter())
+    .CreateLogger();
 
-        var loggerConfiguration = new LoggerConfiguration();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
-        loggerConfiguration = context.HostingEnvironment.IsDevelopment()
-            ? loggerConfiguration.WriteTo.Console()
-            : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+builder.Services.AddHealthChecks().AddCheck<HealthCheckWorker>("HealthCheckWorker");
+builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
+builder.Services.AddMasterDataService(builder.Configuration);
+builder.Services.AddDataSyncSyncer();
+builder.Services.AddGranularCertificateIssuer();
+builder.Services.AddRegistryConnector();
+builder.Services.AddQueryModelUpdater();
 
-        builder.AddSerilog(loggerConfiguration.CreateLogger());
-    })
-    .ConfigureServices((context, services) =>
-    {
-        services.AddSingleton<IEventStore, MemoryEventStore>();
+builder.Services.AddHealthChecks();
 
-        services.AddMasterDataService(context.Configuration);
-        services.AddDataSyncSyncer();
-        services.AddGranularCertificateIssuer();
-        services.AddRegistryConnector();
-        services.AddQueryModelUpdater();
-    })
-    .Build();
+var app = builder.Build();
 
-await host.RunAsync();
+app.MapHealthChecks("/health");
+
+app.Run();
