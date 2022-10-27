@@ -23,8 +23,8 @@ public class QueryModelUpdaterWorker : BackgroundService
     {
         using var consumer = _eventStore
             .GetBuilder(Topic.CertificatePrefix)
-            .AddHandler<CertificateCreated>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
-            .AddHandler<CertificateIssued>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .AddHandler<ProductionCertificateCreated>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .AddHandler<ProductionCertificateIssued>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
             .Build();
 
         while (!stoppingToken.IsCancellationRequested)

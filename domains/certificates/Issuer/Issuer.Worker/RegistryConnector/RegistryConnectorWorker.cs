@@ -23,11 +23,11 @@ public class RegistryConnectorWorker : BackgroundService
     {
         using var consumer = _eventStore
             .GetBuilder(Topic.CertificatePrefix)
-            .AddHandler<CertificateCreated>(e =>
+            .AddHandler<ProductionCertificateCreated>(e =>
             {
                 _logger.LogInformation("RegistryConnectorWorker received: {event}", e.EventModel);
 
-                var @event = new CertificateIssued(e.EventModel.CertificateId);
+                var @event = new ProductionCertificateIssued(e.EventModel.CertificateId);
 
                 var produceTask = _eventStore.Produce(@event, Topic.For(@event));
                 produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers

@@ -28,12 +28,12 @@ public class IssuerWorker : BackgroundService
             {
                 _logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
 
-                var @event = new CertificateCreated(
+                var @event = new ProductionCertificateCreated(
                     Guid.NewGuid(),
                     "gridArea",
                     e.EventModel.Period,
                     new("fuel", "tech"),
-                    Array.Empty<byte>(),
+                    "foo",
                     new ShieldedValue<string>(e.EventModel.GSRN, 42),
                     new ShieldedValue<long>(e.EventModel.Quantity, 42));
 
