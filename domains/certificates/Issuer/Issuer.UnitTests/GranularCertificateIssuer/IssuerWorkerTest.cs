@@ -58,19 +58,7 @@ public class IssuerWorkerTest
 
         Assert.NotNull(producedEvent);
     }
-
-    [Fact]
-    public async Task Prod3()
-    {
-        using IEventStore eventStore = new MemoryEventStore();
-
-        var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
-
-        await worker.StartAsync(CancellationToken.None);
-
-        Assert.False(worker.ExecuteTask.IsCompleted);
-    }
-
+    
     [Fact]
     public async Task Prod4()
     {
@@ -78,9 +66,13 @@ public class IssuerWorkerTest
 
         var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
 
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-        await worker.StartAsync(cts.Token);
+        var tokenSource = new CancellationTokenSource();
+        
+        await worker.StartAsync(tokenSource.Token);
+
+        Assert.False(worker.ExecuteTask.IsCompleted);
+
+        tokenSource.Cancel();
 
         Assert.True(worker.ExecuteTask.IsCompleted);
     }
@@ -105,7 +97,7 @@ internal static class EventStoreExtensions
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromSeconds(1));
+        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(100));
 
         return producedEvent;
     }
