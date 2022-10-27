@@ -14,17 +14,16 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var loggerConfiguration = new LoggerConfiguration();
+var loggerConfiguration = new LoggerConfiguration()
+    .Filter
+    .ByExcluding("RequestPath like '/health%'");
+
 var logger = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger
-    .Filter
-    .ByExcluding("RequestPath like '/health%'")
-    .CreateLogger()
-);
+builder.Logging.AddSerilog(logger.CreateLogger());
 
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
