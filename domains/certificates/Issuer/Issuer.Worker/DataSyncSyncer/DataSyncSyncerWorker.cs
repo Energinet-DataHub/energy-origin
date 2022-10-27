@@ -12,15 +12,15 @@ namespace Issuer.Worker.DataSyncSyncer;
 
 internal class DataSyncSyncerWorker : BackgroundService
 {
-    private readonly ILogger<DataSyncSyncerWorker> _logger;
-    private readonly IEventStore _eventStore;
+    private readonly ILogger<DataSyncSyncerWorker> logger;
+    private readonly IEventStore eventStore;
     private readonly string? gsrn;
 
     public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
         MockMasterDataCollection collection)
     {
-        _logger = logger;
-        _eventStore = eventStore;
+        this.logger = logger;
+        this.eventStore = eventStore;
         var masterData = collection.Data.FirstOrDefault();
         gsrn = masterData?.GSRN ?? null;
     }
@@ -29,7 +29,7 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         if (string.IsNullOrWhiteSpace(gsrn))
         {
-            _logger.LogWarning("No master data loaded. Will not produce any events");
+            logger.LogWarning("No master data loaded. Will not produce any events");
         }
 
         await Task.Delay(TimeSpan.FromMilliseconds(500),
@@ -40,11 +40,11 @@ internal class DataSyncSyncerWorker : BackgroundService
         {
             if (!string.IsNullOrWhiteSpace(gsrn))
             {
-                _logger.LogInformation("Produce energy measured event");
+                logger.LogInformation("Produce energy measured event");
 
                 var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1, 42),
                     EnergyMeasurementQuality.Measured);
-                await _eventStore.Produce(@event, Topic.For(@event));
+                await eventStore.Produce(@event, Topic.For(@event));
             }
 
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);

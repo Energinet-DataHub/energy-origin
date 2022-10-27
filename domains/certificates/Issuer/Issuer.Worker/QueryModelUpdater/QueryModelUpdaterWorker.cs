@@ -10,21 +10,21 @@ namespace Issuer.Worker.QueryModelUpdater;
 
 public class QueryModelUpdaterWorker : BackgroundService
 {
-    private readonly ILogger<QueryModelUpdaterWorker> _logger;
-    private readonly IEventStore _eventStore;
+    private readonly ILogger<QueryModelUpdaterWorker> logger;
+    private readonly IEventStore eventStore;
 
     public QueryModelUpdaterWorker(ILogger<QueryModelUpdaterWorker> logger, IEventStore eventStore)
     {
-        _logger = logger;
-        _eventStore = eventStore;
+        this.logger = logger;
+        this.eventStore = eventStore;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var consumer = _eventStore
+        using var consumer = eventStore
             .GetBuilder(Topic.CertificatePrefix)
-            .AddHandler<ProductionCertificateCreated>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
-            .AddHandler<ProductionCertificateIssued>(e => _logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .AddHandler<ProductionCertificateCreated>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
+            .AddHandler<ProductionCertificateIssued>(e => logger.LogInformation("QueryModelUpdaterWorker received: {event}", e.EventModel))
             .Build();
 
         while (!stoppingToken.IsCancellationRequested)
