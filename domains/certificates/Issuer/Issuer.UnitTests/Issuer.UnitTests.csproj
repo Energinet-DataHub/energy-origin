@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="GranualarCertificateIssuer\" />
+    <Folder Include="GranularCertificateIssuer\" />
   </ItemGroup>
 
 </Project>

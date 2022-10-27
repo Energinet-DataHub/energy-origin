@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Issuer.UnitTests.GranualarCertificateIssuer;
+namespace Issuer.UnitTests.GranularCertificateIssuer;
 
 public class IssuerWorkerTest
 {
