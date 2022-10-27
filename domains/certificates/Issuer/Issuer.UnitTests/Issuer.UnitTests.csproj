@@ -26,8 +26,4 @@
     <ProjectReference Include="..\Issuer.Worker\Issuer.Worker.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="GranularCertificateIssuer\" />
-  </ItemGroup>
-
 </Project>

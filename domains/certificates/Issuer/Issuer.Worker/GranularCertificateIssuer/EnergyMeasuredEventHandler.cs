@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Issuer.Worker.GranularCertificateIssuer;
 
-public class CertificateService : ICertificateService
+public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
 {
     private readonly IMasterDataService masterDataService;
-    private readonly ILogger<CertificateService> logger;
+    private readonly ILogger<EnergyMeasuredEventHandler> logger;
 
-    public CertificateService(IMasterDataService masterDataService, ILogger<CertificateService> logger)
+    public EnergyMeasuredEventHandler(IMasterDataService masterDataService, ILogger<EnergyMeasuredEventHandler> logger)
     {
         this.masterDataService = masterDataService;
         this.logger = logger;
@@ -41,6 +41,7 @@ public class CertificateService : ICertificateService
     }
 }
 
-public interface ICertificateService
+public interface IEnergyMeasuredEventHandler
 {
+    Task<ProductionCertificateCreated?> Handle(EnergyMeasured @event);
 }

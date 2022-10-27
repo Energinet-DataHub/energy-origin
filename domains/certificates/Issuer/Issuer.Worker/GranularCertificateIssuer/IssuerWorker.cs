@@ -2,9 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CertificateEvents;
-using CertificateEvents.Primitives;
 using EnergyOriginEventStore.EventStore;
-using Issuer.Worker.MasterDataService;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,14 +11,14 @@ namespace Issuer.Worker.GranularCertificateIssuer;
 public class IssuerWorker : BackgroundService
 {
     private readonly IEventStore eventStore;
-    private readonly IMasterDataService masterDataService;
+    private readonly IEnergyMeasuredEventHandler eventHandler;
     private readonly ILogger<IssuerWorker> logger;
 
-    public IssuerWorker(IEventStore eventStore, IMasterDataService masterDataService, ILogger<IssuerWorker> logger)
+    public IssuerWorker(IEventStore eventStore, IEnergyMeasuredEventHandler energyMeasuredEventHandler, ILogger<IssuerWorker> logger)
     {
         this.logger = logger;
         this.eventStore = eventStore;
-        this.masterDataService = masterDataService;
+        eventHandler = energyMeasuredEventHandler;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,17 +29,15 @@ public class IssuerWorker : BackgroundService
             {
                 logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
 
-                var @event = new ProductionCertificateCreated(
-                    Guid.NewGuid(),
-                    "gridArea",
-                    e.EventModel.Period,
-                    new("fuel", "tech"),
-                    "foo",
-                    new ShieldedValue<string>(e.EventModel.GSRN, 42),
-                    new ShieldedValue<long>(e.EventModel.Quantity, 42));
+                var handleTask = eventHandler.Handle(e.EventModel);
+                var productionCertificateCreatedEvent = handleTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
 
-                var produceTask = eventStore.Produce(@event, Topic.For(@event));
-                produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
+                if (productionCertificateCreatedEvent != null)
+                {
+                    var topic = Topic.For(productionCertificateCreatedEvent);
+                    var produceTask = eventStore.Produce(productionCertificateCreatedEvent, topic);
+                    produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
+                }
             })
             .Build();
 

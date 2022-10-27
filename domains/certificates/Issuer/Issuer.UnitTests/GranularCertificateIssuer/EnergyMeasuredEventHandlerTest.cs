@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Issuer.UnitTests.GranularCertificateIssuer;
 
-public class CertificateServiceTest
+public class EnergyMeasuredEventHandlerTest
 {
     private readonly MasterData validMasterData = new(
         "gsrn",
@@ -26,10 +26,10 @@ public class CertificateServiceTest
         masterDataServiceMock.Setup(m => m.GetMasterData("gsrn"))
             .ReturnsAsync(null as MasterData);
 
-        var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
 
         var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await service.Handle(@event);
+        var producedEvent = await handler.Handle(@event);
 
         Assert.Null(producedEvent);
     }
@@ -44,10 +44,10 @@ public class CertificateServiceTest
             .Setup(m => m.GetMasterData(masterDataForConsumptionPoint.GSRN))
             .ReturnsAsync(masterDataForConsumptionPoint);
 
-        var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
 
         var @event = new EnergyMeasured(masterDataForConsumptionPoint.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await service.Handle(@event);
+        var producedEvent = await handler.Handle(@event);
 
         Assert.Null(producedEvent);
     }
@@ -62,10 +62,10 @@ public class CertificateServiceTest
             .Setup(m => m.GetMasterData(masterDataForNotOnboarded.GSRN))
             .ReturnsAsync(masterDataForNotOnboarded);
 
-        var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
 
         var @event = new EnergyMeasured(masterDataForNotOnboarded.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await service.Handle(@event);
+        var producedEvent = await handler.Handle(@event);
 
         Assert.Null(producedEvent);
     }
@@ -78,10 +78,10 @@ public class CertificateServiceTest
             .Setup(m => m.GetMasterData(validMasterData.GSRN))
             .ReturnsAsync(validMasterData);
 
-        var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
 
         var @event = new EnergyMeasured(validMasterData.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await service.Handle(@event);
+        var producedEvent = await handler.Handle(@event);
 
         Assert.NotNull(producedEvent);
 
