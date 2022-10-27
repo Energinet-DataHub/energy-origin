@@ -40,10 +40,14 @@ public class IssuerWorkerTest
     {
         using IEventStore eventStore = new MemoryEventStore();
 
+        var productionCertificateCreated = new ProductionCertificateCreated(Guid.NewGuid(), "gridArea", new Period(1, 42),
+            new Technology("F00000000", "T010000"), "meteringPointOwner", new ShieldedValue<string>("gsrn", 42),
+            new ShieldedValue<long>(42, 42));
+
         var eventHandlerMock = new Mock<IEnergyMeasuredEventHandler>();
         eventHandlerMock
             .Setup(m => m.Handle(It.IsAny<EnergyMeasured>()))
-            .ReturnsAsync(null as ProductionCertificateCreated);
+            .ReturnsAsync(productionCertificateCreated);
 
         var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
 
@@ -52,8 +56,33 @@ public class IssuerWorkerTest
         var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         var producedEvent = await eventStore.Test<ProductionCertificateCreated>(@event, Topic.For(@event), Topic.CertificatePrefix);
 
-        Assert.Null(producedEvent);
-        Assert.False(true);
+        Assert.NotNull(producedEvent);
+    }
+
+    [Fact]
+    public async Task Prod3()
+    {
+        using IEventStore eventStore = new MemoryEventStore();
+
+        var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
+
+        await worker.StartAsync(CancellationToken.None);
+
+        Assert.False(worker.ExecuteTask.IsCompleted);
+    }
+
+    [Fact]
+    public async Task Prod4()
+    {
+        using IEventStore eventStore = new MemoryEventStore();
+
+        var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        await worker.StartAsync(cts.Token);
+
+        Assert.True(worker.ExecuteTask.IsCompleted);
     }
 }
 
