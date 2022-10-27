@@ -11,22 +11,22 @@ namespace Issuer.Worker.GranularCertificateIssuer;
 
 public class IssuerWorker : BackgroundService
 {
-    private readonly ILogger<IssuerWorker> logger;
-    private readonly IEventStore eventStore;
+    private readonly ILogger<IssuerWorker> _logger;
+    private readonly IEventStore _eventStore;
 
     public IssuerWorker(ILogger<IssuerWorker> logger, IEventStore eventStore)
     {
-        this.logger = logger;
-        this.eventStore = eventStore;
+        _logger = logger;
+        _eventStore = eventStore;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var consumer = eventStore
+        using var consumer = _eventStore
             .GetBuilder(Topic.MeasurementPrefix)
             .AddHandler<EnergyMeasured>(e =>
             {
-                logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
+                _logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
 
                 var @event = new CertificateCreated(
                     Guid.NewGuid(),
@@ -37,7 +37,7 @@ public class IssuerWorker : BackgroundService
                     new ShieldedValue<string>(e.EventModel.GSRN, 42),
                     new ShieldedValue<long>(e.EventModel.Quantity, 42));
 
-                var produceTask = eventStore.Produce(@event, Topic.For(@event));
+                var produceTask = _eventStore.Produce(@event, Topic.For(@event));
                 produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
             })
             .Build();
