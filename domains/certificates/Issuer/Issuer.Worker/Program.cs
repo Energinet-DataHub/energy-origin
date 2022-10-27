@@ -14,12 +14,14 @@ using Serilog;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-var logger = new LoggerConfiguration()
-    .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
+
+var loggerConfiguration = new LoggerConfiguration();
+var logger = builder.Environment.IsDevelopment()
+    ? loggerConfiguration.WriteTo.Console()
+    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger);
+builder.Logging.AddSerilog(logger.CreateLogger());
 
 builder.Services.AddHealthChecks().AddCheck<HealthCheckWorker>("HealthCheckWorker");
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
