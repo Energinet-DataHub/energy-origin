@@ -27,6 +27,9 @@ public class CertificateService : ICertificateService
         if (masterData.Type != MeteringPointType.Production)
             return null;
 
+        if (!masterData.MeteringPointOnboarded)
+            return null;
+
         return new ProductionCertificateCreated(
             Guid.NewGuid(),
             masterData.GridArea,

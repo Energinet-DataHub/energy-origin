@@ -16,7 +16,8 @@ public class CertificateServiceTest
         "gridArea",
         MeteringPointType.Production,
         new Technology("F00000000", "T010000"),
-        "meteringPointOwner");
+        "meteringPointOwner",
+        true);
 
     [Fact]
     public async Task Handle_NoMasterData_NoProducedEvent()
@@ -51,24 +52,24 @@ public class CertificateServiceTest
         Assert.Null(producedEvent);
     }
 
-    //[Fact]
-    //public async Task Handle_MeteringPointNotOnboarded_NoProducedEvent()
-    //{
-    //    var masterDataForConsumptionPoint = validMasterData with { Type = MeteringPointType.Consumption };
+    [Fact]
+    public async Task Handle_MeteringPointNotOnboarded_NoProducedEvent()
+    {
+        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
 
-    //    var masterDataServiceMock = new Mock<IMasterDataService>();
-    //    masterDataServiceMock
-    //        .Setup(m => m.GetMasterData(masterDataForConsumptionPoint.GSRN))
-    //        .ReturnsAsync(masterDataForConsumptionPoint);
+        var masterDataServiceMock = new Mock<IMasterDataService>();
+        masterDataServiceMock
+            .Setup(m => m.GetMasterData(masterDataForNotOnboarded.GSRN))
+            .ReturnsAsync(masterDataForNotOnboarded);
 
-    //    var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
+        var service = new CertificateService(masterDataServiceMock.Object, Mock.Of<ILogger<CertificateService>>());
 
-    //    var @event = new EnergyMeasured(masterDataForConsumptionPoint.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-    //    var producedEvent = await service.Handle(@event);
+        var @event = new EnergyMeasured(masterDataForNotOnboarded.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
+        var producedEvent = await service.Handle(@event);
 
-    //    Assert.Null(producedEvent);
-    //}
-    
+        Assert.Null(producedEvent);
+    }
+
     [Fact]
     public async Task Handle_ProductionPoint_NoProducedEvent()
     {
