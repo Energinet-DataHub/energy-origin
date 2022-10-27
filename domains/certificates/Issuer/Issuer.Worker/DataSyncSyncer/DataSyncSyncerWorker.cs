@@ -16,7 +16,8 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly IEventStore eventStore;
     private readonly string? gsrn;
 
-    public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore, MockMasterDataCollection collection)
+    public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
+        MockMasterDataCollection collection)
     {
         this.logger = logger;
         this.eventStore = eventStore;
@@ -31,7 +32,8 @@ internal class DataSyncSyncerWorker : BackgroundService
             logger.LogWarning("No master data loaded. Will not produce any events");
         }
 
-        await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken); //allow application to start before producing events
+        await Task.Delay(TimeSpan.FromMilliseconds(500),
+            stoppingToken); //allow application to start before producing events
         var random = new Random();
 
         while (!stoppingToken.IsCancellationRequested)

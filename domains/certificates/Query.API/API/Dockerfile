@@ -3,6 +3,9 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+RUN apk add curl
+HEALTHCHECK --retries=1 CMD curl --fail http://localhost/health || exit 1
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /src
 COPY ["Query.API/API/API.csproj", "Query.API/API/"]
