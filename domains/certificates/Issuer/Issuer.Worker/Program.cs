@@ -20,7 +20,11 @@ var logger = builder.Environment.IsDevelopment()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger.CreateLogger());
+builder.Logging.AddSerilog(logger
+    .Filter
+    .ByExcluding("RequestPath like '/health%'")
+    .CreateLogger()
+);
 
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
