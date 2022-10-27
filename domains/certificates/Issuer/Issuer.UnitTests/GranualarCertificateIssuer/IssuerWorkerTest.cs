@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using EnergyOriginEventStore.EventStore;
@@ -14,14 +15,14 @@ namespace Issuer.UnitTests.GranualarCertificateIssuer;
 public class IssuerWorkerTest
 {
     [Fact]
-    public void Prod1()
+    public async Task Prod1()
     {
         var logger = Mock.Of<ILogger<IssuerWorker>>();
         var eventStoreMock = new Mock<IEventStore>();
 
         var worker = new IssuerWorker(logger, eventStoreMock.Object);
 
-        worker.StartAsync(CancellationToken.None);
+        await worker.StartAsync(CancellationToken.None);
 
         var consumerBuilderMock = new Mock<IEventConsumerBuilder>();
         eventStoreMock.Setup(m => m.GetBuilder(It.IsAny<string>())).Returns(consumerBuilderMock.Object);
