@@ -7,17 +7,17 @@ namespace API.AppTests;
 
 public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
 {
-    private readonly QueryApiWebApplicationFactory factory;
+    private readonly QueryApiWebApplicationFactory _factory;
 
     public ApiTests(QueryApiWebApplicationFactory factory)
     {
-        this.factory = factory;
+        this._factory = factory;
     }
 
     [Fact]
     public async Task GetList_AppStarted_ReturnsCertificates()
     {
-        var client = factory.CreateClient();
+        var client = _factory.CreateClient();
         var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("certificates");
 
         const int numberOfMeteringPoints = 3;

@@ -12,24 +12,24 @@ namespace Issuer.Worker.DataSyncSyncer;
 
 internal class DataSyncSyncerWorker : BackgroundService
 {
-    private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IEventStore eventStore;
-    private readonly string? gsrn;
+    private readonly ILogger<DataSyncSyncerWorker> _logger;
+    private readonly IEventStore _eventStore;
+    private readonly string? _gsrn;
 
     public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
         MockMasterDataCollection collection)
     {
-        this.logger = logger;
-        this.eventStore = eventStore;
+        this._logger = logger;
+        this._eventStore = eventStore;
         var masterData = collection.Data.FirstOrDefault();
-        gsrn = masterData?.GSRN ?? null;
+        _gsrn = masterData?.GSRN ?? null;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrWhiteSpace(gsrn))
+        if (string.IsNullOrWhiteSpace(_gsrn))
         {
-            logger.LogWarning("No master data loaded. Will not produce any events");
+            _logger.LogWarning("No master data loaded. Will not produce any events");
         }
 
         await Task.Delay(TimeSpan.FromMilliseconds(500),
@@ -38,13 +38,13 @@ internal class DataSyncSyncerWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!string.IsNullOrWhiteSpace(gsrn))
+            if (!string.IsNullOrWhiteSpace(_gsrn))
             {
-                logger.LogInformation("Produce energy measured event");
+                _logger.LogInformation("Produce energy measured event");
 
-                var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1, 42),
+                var @event = new EnergyMeasured(_gsrn, new(42, 50), random.NextInt64(1, 42),
                     EnergyMeasurementQuality.Measured);
-                await eventStore.Produce(@event, Topic.For(@event));
+                await _eventStore.Produce(@event, Topic.For(@event));
             }
 
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);

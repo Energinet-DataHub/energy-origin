@@ -6,17 +6,17 @@ namespace API.AppTests;
 
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>
 {
-    private readonly QueryApiWebApplicationFactory factory;
+    private readonly QueryApiWebApplicationFactory _factory;
 
     public HealthTests(QueryApiWebApplicationFactory factory)
     {
-        this.factory = factory;
+        this._factory = factory;
     }
 
     [Fact]
     public async Task Health_IsCalled_ReturnsOk()
     {
-        var client = factory.CreateClient();
+        var client = _factory.CreateClient();
         var healthResponse = await client.GetAsync("health");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
