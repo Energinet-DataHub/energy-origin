@@ -6,9 +6,9 @@ namespace Issuer.Worker.MasterDataService;
 
 internal class MockMasterDataService : IMasterDataService
 {
-    private readonly Dictionary<string, MasterData> data;
+    private readonly Dictionary<string, MasterData> _data;
 
-    public MockMasterDataService(MockMasterDataCollection collection) => data = collection.Data.ToDictionary(d => d.GSRN, d => d);
+    public MockMasterDataService(MockMasterDataCollection collection) => _data = collection.Data.ToDictionary(d => d.GSRN, d => d);
 
-    public Task<MasterData?> GetMasterData(string gsrn) => Task.FromResult(data.ContainsKey(gsrn) ? data[gsrn] : null);
+    public Task<MasterData?> GetMasterData(string gsrn) => Task.FromResult(_data.ContainsKey(gsrn) ? _data[gsrn] : null);
 }

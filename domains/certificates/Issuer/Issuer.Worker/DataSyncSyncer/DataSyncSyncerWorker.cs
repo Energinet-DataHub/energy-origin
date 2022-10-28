@@ -19,8 +19,8 @@ internal class DataSyncSyncerWorker : BackgroundService
     public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
         MockMasterDataCollection collection)
     {
-        this._logger = logger;
-        this._eventStore = eventStore;
+        _logger = logger;
+        _eventStore = eventStore;
         var masterData = collection.Data.FirstOrDefault();
         _gsrn = masterData?.GSRN ?? null;
     }

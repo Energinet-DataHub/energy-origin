@@ -11,7 +11,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
 
     public ApiTests(QueryApiWebApplicationFactory factory)
     {
-        this._factory = factory;
+        _factory = factory;
     }
 
     [Fact]

@@ -15,8 +15,8 @@ public class QueryModelUpdaterWorker : BackgroundService
 
     public QueryModelUpdaterWorker(ILogger<QueryModelUpdaterWorker> logger, IEventStore eventStore)
     {
-        this._logger = logger;
-        this._eventStore = eventStore;
+        _logger = logger;
+        _eventStore = eventStore;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

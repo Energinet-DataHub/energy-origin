@@ -15,8 +15,8 @@ public class RegistryConnectorWorker : BackgroundService
 
     public RegistryConnectorWorker(ILogger<RegistryConnectorWorker> logger, IEventStore eventStore)
     {
-        this._logger = logger;
-        this._eventStore = eventStore;
+        _logger = logger;
+        _eventStore = eventStore;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

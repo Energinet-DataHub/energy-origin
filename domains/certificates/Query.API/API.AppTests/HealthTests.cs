@@ -10,7 +10,7 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>
 
     public HealthTests(QueryApiWebApplicationFactory factory)
     {
-        this._factory = factory;
+        _factory = factory;
     }
 
     [Fact]
