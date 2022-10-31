@@ -130,6 +130,10 @@ jobs:
           echo '::endgroup::'
           printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
 
+      - name: Env
+        shell: bash
+        run: env
+
   build-projects:
     runs-on: ubuntu-latest
     needs: setup
@@ -146,19 +150,21 @@ jobs:
       - name: Resolve
         shell: bash
         id: resolver
+        env:
+          PROJECT: ${{ matrix.build }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
-          project='${{ matrix.build }}'
-          docker='${{ matrix.build }}/Dockerfile'
-          service=$(dirname '${{ matrix.build }}')
+          docker="$PROJECT/Dockerfile"
+          service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
           overrides="${service}/chart-overrides.yaml"
           name=$(basename $(yaml-get --query name "$overrides"))
 
           version=$(yaml-get --query version "$overrides")
-          version=$(sh ./.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
+          version=$(sh ./.github/tooling/semver.sh "$version" "$PR")
 
           echo "service=${service}" >> $GITHUB_OUTPUT
-          echo "project=${project}" >> $GITHUB_OUTPUT
+          echo "project=${PROJECT}" >> $GITHUB_OUTPUT
           echo "docker=${docker}" >> $GITHUB_OUTPUT
           echo "domain=${domain}" >> $GITHUB_OUTPUT
           echo "version=${version}" >> $GITHUB_OUTPUT
@@ -192,10 +198,11 @@ jobs:
       - name: Resolve paths
         shell: bash
         id: resolve-paths
+        env:
+          DOMAIN: ${{ matrix.build }}
         run: |
-          domain='${{ matrix.build }}'
-          chart='${{ matrix.build }}/chart'
-          echo "domain=${domain}" >> $GITHUB_OUTPUT
+          chart="$DOMAIN/chart"
+          echo "domain=${DOMAIN}" >> $GITHUB_OUTPUT
           echo "chart=${chart}" >> $GITHUB_OUTPUT
 
       - name: Install yamlpath
@@ -203,14 +210,14 @@ jobs:
 
       - name: Apply chart overrides
         shell: bash
+        env:
+          DOMAIN: ${{ steps.resolve-paths.outputs.domain }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
-          domain='${{ steps.resolve-paths.outputs.domain }}'
-          pr='${{ github.event.pull_request.number }}'
-
-          output="$domain/chart/values.yaml"
-          find "$domain" -name 'chart-overrides.yaml' | while read input; do
+          output="$DOMAIN/chart/values.yaml"
+          find "$DOMAIN" -name 'chart-overrides.yaml' | while read input; do
               value=$(yaml-get --query version "$input")
-              value=$(sh ./.github/tooling/semver.sh "$value" "$pr")
+              value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
               path=$(yaml-get --query versionPath "$input")
               yaml-set --change "$path" --value "$value" "$output"
 
@@ -234,12 +241,11 @@ jobs:
           chart_version: ${{ steps.resolve-chart.outputs.semver }}
           include_image_name: true
 
-  update-indices:
+  update-indices: #FIXME: handle data-sync too (frontend making it three!)
     runs-on: ubuntu-latest
     needs:
       - setup
       - build-chart
-    if: ${{ needs.setup.outputs.domains != '[]' }} && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
     steps:
       - uses: actions/checkout@v3
 
@@ -256,15 +262,17 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          DOMAINS: ${{ needs.setup.outputs.domains }}
         run: |
           set -e
-          domains='${{ needs.setup.outputs.domains }}'
-          changes=$(printf '%s' "$domains" | jq -r '.[]' | while read domain; do
+          changes=$(printf '%s' "$DOMAINS" | jq -r '.[]' | while read domain; do
             name=$(grep ^"name: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
             version=$(grep ^"version: " "$domain/chart/Chart.yaml" | cut -f2 -d' ')
-            version=$(sh .github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
+            version=$(sh .github/tooling/semver.sh "$version" "$PR")
 
-            gh release download "$name-$version" --repo '${{ github.repository }}' --pattern "$name-$version.tgz" --dir './helm-charts/'
+            gh release download "$name-$version" --repo '$REPO' --pattern "*.tgz" --dir './helm-charts/'
             printf '"%s"\n' "$name-$version.tgz"
           done | jq -sc '. + ["index.yaml"]')
           files=$(echo "$changes" | jq 'map(select(. != "index.yaml")) | join(", ")')
@@ -277,6 +285,7 @@ jobs:
         run: cd helm-charts && helm repo index .
 
       - name: Commit changes
+        id: commit
         uses: EndBug/add-and-commit@v9
         with:
           add: "'${{ steps.download.outputs.changes }}'"
@@ -286,6 +295,13 @@ jobs:
           default_author: github_actions
           cwd: helm-charts
 
+      - name: Verify changes were pushed
+        shell: bash
+        if: ${{ steps.commit.outputs.pushed }} == 'false'
+        run: |
+          echo "::error::Nothing was committed or pushed"
+          exit 1
+
   update-environment:
     runs-on: ubuntu-latest
     needs:
@@ -293,15 +309,17 @@ jobs:
       - update-indices
     strategy:
       matrix:
-        build: ${{ fromJson(needs.setup.outputs.domains) }}
+        build: ${{ fromJson(needs.setup.outputs.domains) }} #FIXME: avoid matrix -> bundle this | update the old one to forward to bundle?
     steps:
       - uses: actions/checkout@v3
 
       - name: Resolve paths
         shell: bash
         id: resolve-paths
+        env:
+          DOMAIN: ${{ matrix.build }}
         run: |
-          chart='${{ matrix.build }}/chart'
+          chart="$DOMAIN/chart"
           echo "chart=${chart}" >> $GITHUB_OUTPUT
 
       - name: Resolve chart version
@@ -321,6 +339,7 @@ jobs:
 
       - name: Update environment
         uses: ./.github/actions/update-base-environment
+        if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
         with:
           env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
           app_name: ${{ steps.chart-info.outputs.chart-name }}

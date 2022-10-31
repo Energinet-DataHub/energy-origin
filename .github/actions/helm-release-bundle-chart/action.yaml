@@ -1,3 +1,5 @@
+#FIXME: delete me?
+
 name: Package bundle and release helm chart
 description: |
   Packages bundle and creates a release with the chart,
