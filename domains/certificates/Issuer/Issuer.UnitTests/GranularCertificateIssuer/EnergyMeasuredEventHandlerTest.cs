@@ -4,7 +4,6 @@ using CertificateEvents;
 using CertificateEvents.Primitives;
 using Issuer.Worker.GranularCertificateIssuer;
 using Issuer.Worker.MasterDataService;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 

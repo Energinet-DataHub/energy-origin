@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using CertificateEvents;
@@ -40,9 +41,11 @@ public class IssuerWorkerTest
     {
         using IEventStore eventStore = new MemoryEventStore();
 
-        var productionCertificateCreated = new ProductionCertificateCreated(Guid.NewGuid(), "gridArea", new Period(1, 42),
-            new Technology("F00000000", "T010000"), "meteringPointOwner", new ShieldedValue<string>("gsrn", 42),
-            new ShieldedValue<long>(42, 42));
+        var productionCertificateCreated = new ProductionCertificateCreated(Guid.NewGuid(), "gridArea",
+            new Period(1, 42),
+            new Technology("F00000000", "T010000"), "meteringPointOwner",
+            new ShieldedValue<string>("gsrn", BigInteger.Zero),
+            new ShieldedValue<long>(42, BigInteger.Zero));
 
         var eventHandlerMock = new Mock<IEnergyMeasuredEventHandler>();
         eventHandlerMock
