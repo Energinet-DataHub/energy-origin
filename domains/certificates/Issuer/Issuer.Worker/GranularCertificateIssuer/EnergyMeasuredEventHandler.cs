@@ -4,20 +4,14 @@ using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using Issuer.Worker.MasterDataService;
-using Microsoft.Extensions.Logging;
 
 namespace Issuer.Worker.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
 {
     private readonly IMasterDataService masterDataService;
-    private readonly ILogger<EnergyMeasuredEventHandler> logger;
 
-    public EnergyMeasuredEventHandler(IMasterDataService masterDataService, ILogger<EnergyMeasuredEventHandler> logger)
-    {
-        this.masterDataService = masterDataService;
-        this.logger = logger;
-    }
+    public EnergyMeasuredEventHandler(IMasterDataService masterDataService) => this.masterDataService = masterDataService;
 
     public async Task<ProductionCertificateCreated?> Handle(EnergyMeasured @event)
     {
@@ -40,9 +34,4 @@ public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
             new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
             new ShieldedValue<long>(@event.Quantity,  BigInteger.Zero));
     }
-}
-
-public interface IEnergyMeasuredEventHandler
-{
-    Task<ProductionCertificateCreated?> Handle(EnergyMeasured @event);
 }

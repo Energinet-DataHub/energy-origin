@@ -27,7 +27,7 @@ public class EnergyMeasuredEventHandlerTest
         masterDataServiceMock.Setup(m => m.GetMasterData("gsrn"))
             .ReturnsAsync(null as MasterData);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
         var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         var producedEvent = await handler.Handle(@event);
@@ -45,7 +45,7 @@ public class EnergyMeasuredEventHandlerTest
             .Setup(m => m.GetMasterData(masterDataForConsumptionPoint.GSRN))
             .ReturnsAsync(masterDataForConsumptionPoint);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
         var @event = new EnergyMeasured(masterDataForConsumptionPoint.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         var producedEvent = await handler.Handle(@event);
@@ -63,7 +63,7 @@ public class EnergyMeasuredEventHandlerTest
             .Setup(m => m.GetMasterData(masterDataForNotOnboarded.GSRN))
             .ReturnsAsync(masterDataForNotOnboarded);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
         var @event = new EnergyMeasured(masterDataForNotOnboarded.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         var producedEvent = await handler.Handle(@event);
@@ -79,7 +79,7 @@ public class EnergyMeasuredEventHandlerTest
             .Setup(m => m.GetMasterData(validMasterData.GSRN))
             .ReturnsAsync(validMasterData);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object, Mock.Of<ILogger<EnergyMeasuredEventHandler>>());
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
         var @event = new EnergyMeasured(validMasterData.GSRN, new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
         var producedEvent = await handler.Handle(@event);

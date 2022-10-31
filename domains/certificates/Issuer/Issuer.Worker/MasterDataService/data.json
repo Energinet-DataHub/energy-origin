@@ -2,7 +2,7 @@
     {
         "gsrn": "112233445566778899",
         "gridArea": "DK1",
-        "type": "Consumption",
+        "type": "Production",
         "technology": {
             "fuelCode": "F00000000",
             "techCode": "T010000"
