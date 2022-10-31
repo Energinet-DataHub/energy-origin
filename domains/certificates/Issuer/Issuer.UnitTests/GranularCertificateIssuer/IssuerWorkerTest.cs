@@ -16,7 +16,7 @@ namespace Issuer.UnitTests.GranularCertificateIssuer;
 public class IssuerWorkerTest
 {
     [Fact]
-    public async Task Prod1()
+    public async Task Worker_NoEventFromHandler_NoEventProduced()
     {
         using IEventStore eventStore = new MemoryEventStore();
 
@@ -25,18 +25,18 @@ public class IssuerWorkerTest
             .Setup(m => m.Handle(It.IsAny<EnergyMeasured>()))
             .ReturnsAsync(null as ProductionCertificateCreated);
 
-        var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
 
         await worker.StartAsync(CancellationToken.None);
 
-        var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await eventStore.Test<ProductionCertificateCreated>(@event, Topic.For(@event), Topic.CertificatePrefix);
+        var energyMeasuredEvent = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
+        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore, energyMeasuredEvent, Topic.For(energyMeasuredEvent), Topic.CertificatePrefix);
 
         Assert.Null(producedEvent);
     }
 
     [Fact]
-    public async Task Prod2()
+    public async Task Worker_EventFromHandler_ProducesEventToEventStore()
     {
         using IEventStore eventStore = new MemoryEventStore();
 
@@ -49,22 +49,22 @@ public class IssuerWorkerTest
             .Setup(m => m.Handle(It.IsAny<EnergyMeasured>()))
             .ReturnsAsync(productionCertificateCreated);
 
-        var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
 
         await worker.StartAsync(CancellationToken.None);
 
         var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await eventStore.Test<ProductionCertificateCreated>(@event, Topic.For(@event), Topic.CertificatePrefix);
+        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore, @event, Topic.For(@event), Topic.CertificatePrefix);
 
         Assert.NotNull(producedEvent);
     }
     
     [Fact]
-    public async Task Prod4()
+    public async Task Worker_CancellationTokenCancelled_WorkerCompletes()
     {
         using IEventStore eventStore = new MemoryEventStore();
 
-        var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
 
         var tokenSource = new CancellationTokenSource();
         
@@ -76,11 +76,8 @@ public class IssuerWorkerTest
 
         Assert.True(worker.ExecuteTask.IsCompleted);
     }
-}
 
-internal static class EventStoreExtensions
-{
-    public static async Task<T?> Test<T>(this IEventStore eventStore, EventModel @event, string topic, string topicPrefix) where T : EventModel
+    private static async Task<T?> GetProducedEvent<T>(IEventStore eventStore, EventModel @event, string topic, string topicPrefix) where T : EventModel
     {
         var semaphore = new SemaphoreSlim(0);
 

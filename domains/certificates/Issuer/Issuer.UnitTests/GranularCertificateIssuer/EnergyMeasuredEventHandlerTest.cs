@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
@@ -20,7 +21,7 @@ public class EnergyMeasuredEventHandlerTest
         true);
 
     [Fact]
-    public async Task Handle_NoMasterData_NoProducedEvent()
+    public async Task Handle_NoMasterData_NoEvent()
     {
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock.Setup(m => m.GetMasterData("gsrn"))
@@ -35,7 +36,7 @@ public class EnergyMeasuredEventHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ConsumptionPoint_NoProducedEvent()
+    public async Task Handle_ConsumptionPoint_NoEvent()
     {
         var masterDataForConsumptionPoint = validMasterData with { Type = MeteringPointType.Consumption };
 
@@ -53,7 +54,7 @@ public class EnergyMeasuredEventHandlerTest
     }
 
     [Fact]
-    public async Task Handle_MeteringPointNotOnboarded_NoProducedEvent()
+    public async Task Handle_MeteringPointNotOnboarded_NoEvent()
     {
         var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
 
@@ -71,7 +72,7 @@ public class EnergyMeasuredEventHandlerTest
     }
 
     [Fact]
-    public async Task Handle_ProductionPoint_NoProducedEvent()
+    public async Task Handle_ProductionPoint_ProducesAnEvent()
     {
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock
@@ -91,8 +92,8 @@ public class EnergyMeasuredEventHandlerTest
             @event.Period,
             validMasterData.Technology,
             validMasterData.MeteringPointOwner,
-            new ShieldedValue<string>(@event.GSRN, 42),
-            new ShieldedValue<long>(@event.Quantity, 42));
+            new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
+            new ShieldedValue<long>(@event.Quantity, BigInteger.Zero));
 
         Assert.Equal(expected, producedEvent);
     }

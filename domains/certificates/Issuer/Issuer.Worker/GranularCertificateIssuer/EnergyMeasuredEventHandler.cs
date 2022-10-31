@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using CertificateEvents;
 using CertificateEvents.Primitives;
@@ -36,8 +37,8 @@ public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
             @event.Period,
             masterData.Technology,
             masterData.MeteringPointOwner,
-            new ShieldedValue<string>(@event.GSRN, 42),
-            new ShieldedValue<long>(@event.Quantity, 42));
+            new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
+            new ShieldedValue<long>(@event.Quantity,  BigInteger.Zero));
     }
 }
 
