@@ -32,6 +32,6 @@ public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
             masterData.Technology,
             masterData.MeteringPointOwner,
             new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
-            new ShieldedValue<long>(@event.Quantity,  BigInteger.Zero));
+            new ShieldedValue<long>(@event.Quantity, BigInteger.Zero));
     }
 }

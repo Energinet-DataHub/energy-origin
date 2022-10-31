@@ -61,7 +61,7 @@ public class IssuerWorkerTest
 
         Assert.NotNull(producedEvent);
     }
-    
+
     [Fact]
     public async Task Worker_CancellationTokenCancelled_WorkerCompletes()
     {
@@ -70,7 +70,7 @@ public class IssuerWorkerTest
         using var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
 
         var tokenSource = new CancellationTokenSource();
-        
+
         await worker.StartAsync(tokenSource.Token);
 
         Assert.False(worker.ExecuteTask.IsCompleted);
