@@ -241,7 +241,7 @@ jobs:
           chart_version: ${{ steps.resolve-chart.outputs.semver }}
           include_image_name: true
 
-  update-indices: #FIXME: handle data-sync too (frontend making it three!)
+  update-indices:
     runs-on: ubuntu-latest
     needs:
       - setup
@@ -308,8 +308,9 @@ jobs:
       - setup
       - update-indices
     strategy:
+      max-parallel: 1
       matrix:
-        build: ${{ fromJson(needs.setup.outputs.domains) }} #FIXME: avoid matrix -> bundle this | update the old one to forward to bundle?
+        build: ${{ fromJson(needs.setup.outputs.domains) }}
     steps:
       - uses: actions/checkout@v3
 
