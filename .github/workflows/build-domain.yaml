@@ -1,5 +1,5 @@
 name: Build domain
-#FIXME: concurrency flag?
+
 on:
   pull_request:
     branches:
@@ -189,6 +189,7 @@ jobs:
       - setup
       - build-projects
     if: ${{ needs.setup.outputs.domains != '[]' }}
+    concurrency: commits-charts
     strategy:
       max-parallel: 1
       matrix:
@@ -248,6 +249,7 @@ jobs:
     needs:
       - setup
       - build-chart
+    concurrency: commits-base-environment
     strategy:
       max-parallel: 1
       matrix:
