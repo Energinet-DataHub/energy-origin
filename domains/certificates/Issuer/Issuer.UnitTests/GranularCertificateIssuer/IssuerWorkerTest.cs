@@ -23,17 +23,22 @@ public class IssuerWorkerTest
 
         var eventHandlerMock = new Mock<IEnergyMeasuredEventHandler>();
         eventHandlerMock
-            .Setup(m => m.Handle(It.IsAny<EnergyMeasured>()))
-            .ReturnsAsync(null as ProductionCertificateCreated);
+            .Setup(expression: m => m.Handle(It.IsAny<EnergyMeasured>()))
+            .ReturnsAsync(value: null as ProductionCertificateCreated);
 
-        using var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore: eventStore, energyMeasuredEventHandler: eventHandlerMock.Object, logger: Mock.Of<ILogger<IssuerWorker>>());
 
-        await worker.StartAsync(CancellationToken.None);
+        await worker.StartAsync(cancellationToken: CancellationToken.None);
 
-        var energyMeasuredEvent = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore, energyMeasuredEvent, Topic.For(energyMeasuredEvent), Topic.CertificatePrefix);
+        var energyMeasuredEvent = new EnergyMeasured(
+            GSRN: "gsrn",
+            Period: new Period(DateFrom: 1, DateTo: 42),
+            Quantity: 42,
+            Quality: EnergyMeasurementQuality.Measured);
 
-        Assert.Null(producedEvent);
+        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore: eventStore, @event: energyMeasuredEvent, topic: Topic.For(@event: energyMeasuredEvent), topicPrefix: Topic.CertificatePrefix);
+
+        Assert.Null(@object: producedEvent);
     }
 
     [Fact]
@@ -41,25 +46,33 @@ public class IssuerWorkerTest
     {
         using IEventStore eventStore = new MemoryEventStore();
 
-        var productionCertificateCreated = new ProductionCertificateCreated(Guid.NewGuid(), "gridArea",
-            new Period(1, 42),
-            new Technology("F00000000", "T010000"), "meteringPointOwner",
-            new ShieldedValue<string>("gsrn", BigInteger.Zero),
-            new ShieldedValue<long>(42, BigInteger.Zero));
+        var productionCertificateCreated = new ProductionCertificateCreated(
+            CertificateId: Guid.NewGuid(),
+            GridArea: "gridArea",
+            Period: new Period(DateFrom: 1, DateTo: 42),
+            Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
+            MeteringPointOwner: "meteringPointOwner",
+            ShieldedGSRN: new ShieldedValue<string>(Value: "gsrn", R: BigInteger.Zero),
+            ShieldedQuantity: new ShieldedValue<long>(Value: 42, R: BigInteger.Zero));
 
         var eventHandlerMock = new Mock<IEnergyMeasuredEventHandler>();
         eventHandlerMock
-            .Setup(m => m.Handle(It.IsAny<EnergyMeasured>()))
-            .ReturnsAsync(productionCertificateCreated);
+            .Setup(expression: m => m.Handle(It.IsAny<EnergyMeasured>()))
+            .ReturnsAsync(value: productionCertificateCreated);
 
-        using var worker = new IssuerWorker(eventStore, eventHandlerMock.Object, Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore: eventStore, energyMeasuredEventHandler: eventHandlerMock.Object, logger: Mock.Of<ILogger<IssuerWorker>>());
 
-        await worker.StartAsync(CancellationToken.None);
+        await worker.StartAsync(cancellationToken: CancellationToken.None);
 
-        var @event = new EnergyMeasured("gsrn", new Period(1, 42), 42, EnergyMeasurementQuality.Measured);
-        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore, @event, Topic.For(@event), Topic.CertificatePrefix);
+        var @event = new EnergyMeasured(
+            GSRN: "gsrn",
+            Period: new Period(DateFrom: 1, DateTo: 42),
+            Quantity: 42,
+            Quality: EnergyMeasurementQuality.Measured);
 
-        Assert.NotNull(producedEvent);
+        var producedEvent = await GetProducedEvent<ProductionCertificateCreated>(eventStore: eventStore, @event: @event, topic: Topic.For(@event: @event), topicPrefix: Topic.CertificatePrefix);
+
+        Assert.NotNull(@object: producedEvent);
     }
 
     [Fact]
@@ -67,37 +80,37 @@ public class IssuerWorkerTest
     {
         using IEventStore eventStore = new MemoryEventStore();
 
-        using var worker = new IssuerWorker(eventStore, Mock.Of<IEnergyMeasuredEventHandler>(), Mock.Of<ILogger<IssuerWorker>>());
+        using var worker = new IssuerWorker(eventStore: eventStore, energyMeasuredEventHandler: Mock.Of<IEnergyMeasuredEventHandler>(), logger: Mock.Of<ILogger<IssuerWorker>>());
 
         var tokenSource = new CancellationTokenSource();
 
-        await worker.StartAsync(tokenSource.Token);
+        await worker.StartAsync(cancellationToken: tokenSource.Token);
 
-        Assert.False(worker.ExecuteTask.IsCompleted);
+        Assert.False(condition: worker.ExecuteTask.IsCompleted);
 
         tokenSource.Cancel();
 
-        Assert.True(worker.ExecuteTask.IsCompleted);
+        Assert.True(condition: worker.ExecuteTask.IsCompleted);
     }
 
     private static async Task<T?> GetProducedEvent<T>(IEventStore eventStore, EventModel @event, string topic, string topicPrefix) where T : EventModel
     {
-        var semaphore = new SemaphoreSlim(0);
+        var semaphore = new SemaphoreSlim(initialCount: 0);
 
-        await eventStore.Produce(@event, topic);
+        await eventStore.Produce(model: @event, topic);
 
         T? producedEvent = null;
 
         using var consumer = eventStore
-            .GetBuilder(topicPrefix)
-            .AddHandler<T>(e =>
+            .GetBuilder(topicPrefix: topicPrefix)
+            .AddHandler<T>(handler: e =>
             {
                 producedEvent = e.EventModel;
                 semaphore.Release();
             })
             .Build();
 
-        await semaphore.WaitAsync(TimeSpan.FromMilliseconds(100));
+        await semaphore.WaitAsync(timeout: TimeSpan.FromMilliseconds(value: 100));
 
         return producedEvent;
     }
