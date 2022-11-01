@@ -1,4 +1,11 @@
 using System.IO;
+using API.DataSyncSyncer;
+using API.GranularCertificateIssuer;
+using API.MasterDataService;
+using API.QueryModelUpdater;
+using API.RegistryConnector;
+using EnergyOriginEventStore.EventStore.Memory;
+using EnergyOriginEventStore.EventStore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,12 +16,16 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var logger = new LoggerConfiguration()
-    .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
+var loggerConfiguration = new LoggerConfiguration()
+    .Filter
+    .ByExcluding("RequestPath like '/health%'");
+
+loggerConfiguration = builder.Environment.IsDevelopment()
+    ? loggerConfiguration.WriteTo.Console()
+    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger);
+builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddControllers();
 
@@ -31,6 +42,14 @@ builder.Services.AddSwaggerGen(o =>
 });
 
 builder.Services.AddHealthChecks();
+
+builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
+
+builder.Services.AddMasterDataService(builder.Configuration);
+builder.Services.AddDataSyncSyncer();
+builder.Services.AddGranularCertificateIssuer();
+builder.Services.AddRegistryConnector();
+builder.Services.AddQueryModelUpdater();
 
 var app = builder.Build();
 
