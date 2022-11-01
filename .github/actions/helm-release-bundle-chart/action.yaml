@@ -1,3 +1,5 @@
+#FIXME: delete me?
+
 name: Package bundle and release helm chart
 description: |
   Packages bundle and creates a release with the chart,
@@ -61,6 +63,10 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, migrate workflow towards newer release actions."
+
     - name: Install yamlpath
       uses: Energinet-DataHub/.github/.github/actions/yamlpath-install@main
 
@@ -80,8 +86,45 @@ runs:
       id: release-chart
       uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
       with:
-        deploy_key: ${{ inputs.deploy-key }}
         chart_folder: ${{ inputs.chart-folder }}
-        chart_repository: ${{ inputs.chart-repository }}
         chart_version: ${{ inputs.chart-version }}
         include_image_name: ${{ inputs.include-image-name }}
+
+    - name: Get info from Chart.yaml
+      id: chart-info
+      uses: Energinet-DataHub/energy-origin/.github/actions/chart-info@main
+      with:
+        chart-folder: ${{ inputs.chart-folder }}
+        chart-version: ${{ inputs.chart-version }}
+        include-image-name: ${{ inputs.include-image-name }}
+
+    - name: Checkout chart repository
+      uses: actions/checkout@v3
+      with:
+        path: helm-charts
+        repository: ${{ inputs.chart-repository }}
+        ssh-key: ${{ inputs.deploy-key }}
+        ref: ${{ inputs.chart-repository-branch }}
+
+    - name: Download chart tarball
+      shell: bash
+      working-directory: helm-charts
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ steps.chart-info.outputs.tarball-filename }}' --dir './'
+
+    - name: Update index file for helm registry
+      shell: bash
+      working-directory: helm-charts
+      run: helm repo index .
+
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: '["index.yaml", "${{ steps.chart-info.outputs.tarball-filename }}"]'
+        message: Updated the helm registry with file ${{ steps.chart-info.outputs.tarball-filename }}
+        push: --force
+        new_branch: ${{ inputs.chart-repository-branch }}
+        default_author: github_actions
+        cwd: helm-charts

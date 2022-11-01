@@ -113,6 +113,7 @@ runs:
 
     - name: Commit changes
       uses: EndBug/add-and-commit@v9
+      id: commit
       with:
         add: '["index.yaml", "${{ steps.generate_filename.outputs.filename }}"]'
         message: Updated the helm registry with file ${{ steps.generate_filename.outputs.filename }}
@@ -120,3 +121,11 @@ runs:
         new_branch: ${{ inputs.chart_repository_branch }}
         default_author: github_actions
         cwd: ${{ env.helm-checkout-directory }}
+
+    - name: Verify changes were pushed
+      shell: bash
+      if: ${{ steps.commit.outputs.pushed == 'false' }}
+      run: |
+        echo "::error::Nothing was committed or pushed"
+        echo "based on ${{ steps.commit.outputs.pushed }}"
+        # exit 1

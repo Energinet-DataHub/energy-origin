@@ -22,6 +22,10 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use yaml-semver instead"
+
     - name: Guard against non-supported events
       if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
       uses: actions/github-script@v6
