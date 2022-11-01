@@ -23,10 +23,10 @@ public class EnergyMeasuredEventHandlerTest
     public async Task Handle_NoMasterData_NoEvent()
     {
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(expression: m => m.GetMasterData("gsrn"))
-            .ReturnsAsync(value: null as MasterData);
+        masterDataServiceMock.Setup(m => m.GetMasterData("gsrn"))
+            .ReturnsAsync(value: null);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataService: masterDataServiceMock.Object);
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
         var @event = new EnergyMeasured(
             GSRN: "gsrn",
@@ -34,9 +34,9 @@ public class EnergyMeasuredEventHandlerTest
             Quantity: 42,
             Quality: EnergyMeasurementQuality.Measured);
 
-        var producedEvent = await handler.Handle(@event: @event);
+        var producedEvent = await handler.Handle(@event);
 
-        Assert.Null(@object: producedEvent);
+        Assert.Null(producedEvent);
     }
 
     [Fact]
@@ -46,19 +46,20 @@ public class EnergyMeasuredEventHandlerTest
 
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock
-            .Setup(expression: m => m.GetMasterData(masterDataForConsumptionPoint.GSRN))
-            .ReturnsAsync(value: masterDataForConsumptionPoint);
+            .Setup(m => m.GetMasterData(masterDataForConsumptionPoint.GSRN))
+            .ReturnsAsync(masterDataForConsumptionPoint);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataService: masterDataServiceMock.Object);
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
-        var @event = new EnergyMeasured(GSRN: masterDataForConsumptionPoint.GSRN,
+        var @event = new EnergyMeasured(
+            GSRN: masterDataForConsumptionPoint.GSRN,
             Period: new Period(DateFrom: 1, DateTo: 42),
             Quantity: 42,
             Quality: EnergyMeasurementQuality.Measured);
 
-        var producedEvent = await handler.Handle(@event: @event);
+        var producedEvent = await handler.Handle(@event);
 
-        Assert.Null(@object: producedEvent);
+        Assert.Null(producedEvent);
     }
 
     [Fact]
@@ -68,19 +69,20 @@ public class EnergyMeasuredEventHandlerTest
 
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock
-            .Setup(expression: m => m.GetMasterData(masterDataForNotOnboarded.GSRN))
+            .Setup(m => m.GetMasterData(masterDataForNotOnboarded.GSRN))
             .ReturnsAsync(value: masterDataForNotOnboarded);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataService: masterDataServiceMock.Object);
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
-        var @event = new EnergyMeasured(GSRN: masterDataForNotOnboarded.GSRN,
+        var @event = new EnergyMeasured(
+            GSRN: masterDataForNotOnboarded.GSRN,
             Period: new Period(DateFrom: 1, DateTo: 42),
             Quantity: 42,
             Quality: EnergyMeasurementQuality.Measured);
 
-        var producedEvent = await handler.Handle(@event: @event);
+        var producedEvent = await handler.Handle(@event);
 
-        Assert.Null(@object: producedEvent);
+        Assert.Null(producedEvent);
     }
 
     [Fact]
@@ -88,19 +90,20 @@ public class EnergyMeasuredEventHandlerTest
     {
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock
-            .Setup(expression: m => m.GetMasterData(validMasterData.GSRN))
+            .Setup(m => m.GetMasterData(validMasterData.GSRN))
             .ReturnsAsync(value: validMasterData);
 
-        var handler = new EnergyMeasuredEventHandler(masterDataService: masterDataServiceMock.Object);
+        var handler = new EnergyMeasuredEventHandler(masterDataServiceMock.Object);
 
-        var @event = new EnergyMeasured(GSRN: validMasterData.GSRN,
+        var @event = new EnergyMeasured(
+            GSRN: validMasterData.GSRN,
             Period: new Period(DateFrom: 1, DateTo: 42),
             Quantity: 42,
             Quality: EnergyMeasurementQuality.Measured);
 
-        var producedEvent = await handler.Handle(@event: @event);
+        var producedEvent = await handler.Handle(@event);
 
-        Assert.NotNull(@object: producedEvent);
+        Assert.NotNull(producedEvent);
 
         var expected = new ProductionCertificateCreated(
             CertificateId: producedEvent!.CertificateId,
@@ -111,6 +114,6 @@ public class EnergyMeasuredEventHandlerTest
             ShieldedGSRN: new ShieldedValue<string>(Value: @event.GSRN, R: BigInteger.Zero),
             ShieldedQuantity: new ShieldedValue<long>(Value: @event.Quantity, R: BigInteger.Zero));
 
-        Assert.Equal(expected: expected, actual: producedEvent);
+        Assert.Equal(expected, producedEvent);
     }
 }
