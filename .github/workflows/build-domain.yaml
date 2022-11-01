@@ -216,7 +216,7 @@ jobs:
           DOMAIN: ${{ steps.resolve-paths.outputs.domain }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          output="$DOMAIN/chart/values.yaml"
+          output="$DOMAIN/chart/values.yaml" #FIXME: needs to be based on which projects that was actually built
           find "$DOMAIN" -name 'chart-overrides.yaml' | while read input; do
               value=$(yaml-get --query version "$input")
               value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
