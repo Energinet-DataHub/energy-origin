@@ -127,5 +127,4 @@ runs:
       if: ${{ steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
-        echo "based on ${{ steps.commit.outputs.pushed }}"
-        # exit 1
+        exit 1

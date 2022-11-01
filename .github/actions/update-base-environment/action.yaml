@@ -77,7 +77,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ steps.commit.outputs.pushed }} == 'false'
+      if: ${{ steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
