@@ -30,13 +30,13 @@ public class IssuerWorker : BackgroundService
                 logger.LogInformation("GranularCertificateIssuer received: {event}", e.EventModel);
 
                 var handleTask = eventHandler.Handle(e.EventModel);
-                var productionCertificateCreatedEvent = handleTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
+                var productionCertificateCreatedEvent = handleTask.GetAwaiter().GetResult(); // Forced to do blocking call here. IEventConsumerBuilder does not currently support async handlers
 
                 if (productionCertificateCreatedEvent != null)
                 {
                     var topic = Topic.For(productionCertificateCreatedEvent);
                     var produceTask = eventStore.Produce(productionCertificateCreatedEvent, topic);
-                    produceTask.GetAwaiter().GetResult(); // IEventConsumerBuilder does not currently support async handlers
+                    produceTask.GetAwaiter().GetResult(); // Forced to do blocking call here. IEventConsumerBuilder does not currently support async handlers
                 }
             })
             .Build();
