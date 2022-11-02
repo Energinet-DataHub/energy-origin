@@ -7,7 +7,7 @@ using EnergyOriginEventStore.EventStore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Issuer.Worker.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer;
 
 public class IssuerWorker : BackgroundService
 {

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Issuer.Worker.DataSyncSyncer;
+namespace API.DataSyncSyncer;
 
 public static class Startup
 {

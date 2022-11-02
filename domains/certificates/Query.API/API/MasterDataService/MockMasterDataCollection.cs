@@ -1,3 +1,3 @@
-namespace Issuer.Worker.MasterDataService;
+namespace API.MasterDataService;
 
 internal record MockMasterDataCollection(MasterData[] Data);

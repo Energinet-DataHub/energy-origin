@@ -2,13 +2,13 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.MasterDataService;
 using CertificateEvents;
 using EnergyOriginEventStore.EventStore;
-using Issuer.Worker.MasterDataService;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Issuer.Worker.DataSyncSyncer;
+namespace API.DataSyncSyncer;
 
 internal class DataSyncSyncerWorker : BackgroundService
 {

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Issuer.Worker.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer;
 
 public static class Startup
 {
