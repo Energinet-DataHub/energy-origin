@@ -4,7 +4,7 @@
         "yaml-path": "version"
     },
     {
-        "yaml-file": "domains/auth/chart/values.yaml",
-        "yaml-path": "api.image.tag"
+        "yaml-file": "domains/auth/Auth.API/chart-overrides.yaml",
+        "yaml-path": "version"
     }
 ]

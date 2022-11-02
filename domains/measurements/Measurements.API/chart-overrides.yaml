@@ -1,4 +1,4 @@
-version: 0.1.8
+version: 0.1.9
 versionPath: api.image.tag
 name: ghcr.io/energinet-datahub/eo-measurements
 namePath: api.image.name
