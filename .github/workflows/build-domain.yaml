@@ -1,0 +1,290 @@
+name: Build domain
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      domains: ${{ steps.define-matrices.outputs.domains }}
+      projects: ${{ steps.define-matrices.outputs.projects }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Validate required domain structure
+        shell: bash
+        run: |
+          function required_folder {
+            [ -d "$1" ] || { printf '::error title=Missing folder::%s\n' "$1"; exit 1; }
+          }
+
+          function required_file {
+            [ -f "$1" ] || { printf '::error title=Missing file::%s\n' "$1"; exit 1; }
+          }
+
+          find domains -mindepth 1 -maxdepth 1 -type d | while read domain; do
+            required_folder "$domain/.devcontainer"
+            required_file "$domain/.devcontainer/Dockerfile"
+            required_file "$domain/.devcontainer/devcontainer.json"
+
+            required_folder "$domain/.vscode"
+            required_file "$domain/.vscode/settings.json"
+            required_file "$domain/.vscode/extensions.json"
+
+            required_file "$domain"/*.sln
+
+            required_folder "$domain/chart"
+            required_file "$domain/chart/Chart.yaml"
+            required_file "$domain/chart/values.yaml"
+
+            find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read project; do
+              location=$(dirname "$project")
+              required_file "$location/chart-overrides.yaml"
+            done
+
+          done
+
+      - name: Ensure main branch is known
+        shell: bash
+        run: |
+          git fetch
+          git checkout main
+          git checkout -
+
+      - name: Find relevant domains
+        id: define-matrices
+        shell: bash
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          pattern=$(find domains -mindepth 1 -maxdepth 1 -type d -exec printf '^%s|' {} \; | sed 's/|$//g')
+
+          echo 'Search pattern:'
+          echo "$pattern"
+
+          echo '::group::Change set'
+          if [ "$REF" = "refs/heads/main" ]; then
+            git show --stat=10000 main
+          else
+            git diff --stat=10000 main
+          fi
+          git diff --stat=10000 main
+          echo '::endgroup::'
+
+          set +e
+          if [ "$REF" = "refs/heads/main" ]; then
+            pattern=$(git show --stat=10000 main | egrep '^ [^ ]' | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
+          else
+            pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
+          fi
+          set -e
+
+          echo 'Relevance pattern:'
+          echo "$pattern"
+
+          if [ -z "$pattern" ]; then
+            echo 'Relevance pattern is empty, emitting empty matrices.'
+            echo '::set-output name=domains::[]'
+            echo '::set-output name=projects::[]'
+            exit 0
+          fi
+
+          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
+            domain="$domain"
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
+            printf '{"domain":"%s","projects":%s}' "$domain" "$projects"
+          done | jq -sc '.')
+
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
+          domains=$(printf "$matrix" | jq -cr '[.[].domain] | unique')
+          echo "::set-output name=domains::${domains}"
+
+          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
+          echo "::set-output name=projects::${projects}"
+
+      - name: Relevant domains
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ steps.define-matrices.outputs.domains }}\n'
+          echo '::endgroup::'
+          printf '${{ steps.define-matrices.outputs.domains }}' | jq -r '.'
+
+      - name: Relevant projects
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ steps.define-matrices.outputs.projects }}\n'
+          echo '::endgroup::'
+          printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
+
+  build-projects:
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.projects != '[]' }}
+    strategy:
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.projects) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install yamlpath
+        uses: ./.github/actions/yamlpath-install
+
+      - name: Resolve
+        shell: bash
+        id: resolver
+        env:
+          PROJECT: ${{ matrix.build }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          docker="$PROJECT/Dockerfile"
+          service=$(dirname "$PROJECT")
+          domain=$(dirname "$service")
+          overrides="${service}/chart-overrides.yaml"
+          name=$(basename $(yaml-get --query name "$overrides"))
+
+          version=$(yaml-get --query version "$overrides")
+          version=$(sh ./.github/tooling/semver.sh "$version" "$PR")
+
+          echo "service=${service}" >> $GITHUB_OUTPUT
+          echo "project=${PROJECT}" >> $GITHUB_OUTPUT
+          echo "docker=${docker}" >> $GITHUB_OUTPUT
+          echo "domain=${domain}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "name=${name}" >> $GITHUB_OUTPUT
+
+      - name: Validate image
+        uses: ./.github/actions/dotnet-validate-domain
+        with:
+          solution-file-folder: ${{ steps.resolver.outputs.project }}
+
+      - name: Build image
+        uses: ./.github/actions/build-and-push-container
+        with:
+          dockerfile: ${{ steps.resolver.outputs.docker }}
+          image-name: ${{ steps.resolver.outputs.name }}
+          image-tag: ${{ steps.resolver.outputs.version }}
+          docker-context: ${{ steps.resolver.outputs.domain }}
+
+  build-chart:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - build-projects
+    if: ${{ needs.setup.outputs.domains != '[]' }}
+    concurrency: commits-charts
+    strategy:
+      max-parallel: 1
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.domains) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Resolve paths
+        shell: bash
+        id: resolve-paths
+        env:
+          DOMAIN: ${{ matrix.build }}
+        run: |
+          chart="$DOMAIN/chart"
+          echo "domain=${DOMAIN}" >> $GITHUB_OUTPUT
+          echo "chart=${chart}" >> $GITHUB_OUTPUT
+
+      - name: Install yamlpath
+        uses: ./.github/actions/yamlpath-install
+
+      - name: Apply chart overrides
+        shell: bash
+        env:
+          DOMAIN: ${{ steps.resolve-paths.outputs.domain }}
+          PROJECTS: ${{ needs.setup.outputs.projects }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          output="$DOMAIN/chart/values.yaml"
+          printf '%s' "$PROJECTS" | jq -r '.[]' | while read project; do
+              input="$project/../chart-overrides.yaml"
+              value=$(yaml-get --query version "$input")
+              value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
+              path=$(yaml-get --query versionPath "$input")
+              yaml-set --change "$path" --value "$value" "$output"
+
+              value=$(yaml-get --query name "$input")
+              path=$(yaml-get --query namePath "$input")
+              yaml-set --change "$path" --value "$value" "$output"
+          done
+
+      - name: Resolve chart version
+        id: resolve-chart
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ steps.resolve-paths.outputs.chart }}/Chart.yaml
+          yaml-path: version
+
+      - name: Release chart
+        id: release-chart
+        uses: ./.github/actions/helm-release-chart
+        with:
+          chart_folder: ${{ steps.resolve-paths.outputs.chart }}
+          chart_version: ${{ steps.resolve-chart.outputs.semver }}
+          include_image_name: true
+          deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+
+  update-environment:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - build-chart
+    concurrency: commits-base-environment
+    strategy:
+      max-parallel: 1
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.domains) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Resolve paths
+        shell: bash
+        id: resolve-paths
+        env:
+          DOMAIN: ${{ matrix.build }}
+        run: |
+          chart="$DOMAIN/chart"
+          echo "chart=${chart}" >> $GITHUB_OUTPUT
+
+      - name: Resolve chart version
+        id: resolve-chart
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ steps.resolve-paths.outputs.chart }}/Chart.yaml
+          yaml-path: version
+
+      - name: Get info from Chart.yaml
+        id: chart-info
+        uses: ./.github/actions/chart-info
+        with:
+          chart-folder: ${{ steps.resolve-paths.outputs.chart }}
+          chart-version: ${{ steps.resolve-chart.outputs.semver }}
+          include-image-name: true
+
+      - name: Update environment
+        uses: ./.github/actions/update-base-environment
+        if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
+        with:
+          env_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
+          app_name: ${{ steps.chart-info.outputs.chart-name }}
+          chart_name: ${{ steps.chart-info.outputs.chart-name }}
+          chart_version: ${{ steps.resolve-chart.outputs.semver }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}

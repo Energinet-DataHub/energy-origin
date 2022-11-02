@@ -6,6 +6,7 @@ using API.Configuration;
 using API.Controllers.dto;
 using API.Models;
 using API.Services.OidcProviders;
+using API.Services.OidcProviders.Models;
 using API.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,6 @@ using Moq;
 using RichardSzalay.MockHttp;
 using Xunit;
 using Xunit.Categories;
-using API.Services.OidcProviders.Models;
 
 namespace Tests.Services.OidcProviders;
 
