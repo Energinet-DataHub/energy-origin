@@ -16,22 +16,30 @@ public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
     public async Task<ProductionCertificateCreated?> Handle(EnergyMeasured @event)
     {
         var masterData = await masterDataService.GetMasterData(@event.GSRN);
+
+        return ShouldEventBeProduced(masterData)
+            ? new ProductionCertificateCreated(
+                CertificateId: Guid.NewGuid(),
+                GridArea: masterData.GridArea,
+                Period: @event.Period,
+                Technology: masterData.Technology,
+                MeteringPointOwner: masterData.MeteringPointOwner,
+                ShieldedGSRN: new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
+                ShieldedQuantity: new ShieldedValue<long>(@event.Quantity, BigInteger.Zero))
+            : null;
+    }
+
+    private static bool ShouldEventBeProduced(MasterData? masterData)
+    {
         if (masterData is null)
-            return null;
+            return false;
 
         if (masterData.Type != MeteringPointType.Production)
-            return null;
+            return false;
 
         if (!masterData.MeteringPointOnboarded)
-            return null;
+            return false;
 
-        return new ProductionCertificateCreated(
-            Guid.NewGuid(),
-            masterData.GridArea,
-            @event.Period,
-            masterData.Technology,
-            masterData.MeteringPointOwner,
-            new ShieldedValue<string>(@event.GSRN, BigInteger.Zero),
-            new ShieldedValue<long>(@event.Quantity, BigInteger.Zero));
+        return true;
     }
 }
