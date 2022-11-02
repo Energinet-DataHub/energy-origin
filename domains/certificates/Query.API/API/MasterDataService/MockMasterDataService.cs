@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Issuer.Worker.MasterDataService;
+namespace API.MasterDataService;
 
 internal class MockMasterDataService : IMasterDataService
 {
