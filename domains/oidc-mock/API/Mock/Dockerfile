@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Mock/Oidc.Mock.csproj", "Mock/"]
-RUN dotnet restore "Mock/Oidc.Mock.csproj"
+COPY ["API/Mock/Oidc.Mock.csproj", "API/Mock/"]
+RUN dotnet restore "API/Mock/Oidc.Mock.csproj"
 COPY . .
-WORKDIR "/src/Mock"
+WORKDIR "/src/API/Mock"
 RUN dotnet build "Oidc.Mock.csproj" -c Release -o /app/build
 
 FROM build AS publish

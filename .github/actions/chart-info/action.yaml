@@ -11,7 +11,7 @@ inputs:
   include-image-name:
     description: Add the name of the image to the name of a chart.
     required: false
-    default: 'false'
+    default: "false"
 
 outputs:
   chart-name:
@@ -20,6 +20,9 @@ outputs:
   tag-name:
     description: A generated tag.
     value: ${{ steps.chart.outputs.tag-name }}
+  tarball-filename:
+    description: A filename for a tarball constructed using name and tag.
+    value: ${{ steps.chart.outputs.file-name }}
 
 runs:
   using: composite
@@ -29,9 +32,12 @@ runs:
       shell: bash
       run: |
         NAME=$(grep ^"name: " ${{ inputs.chart-folder }}/Chart.yaml | cut -f2 -d' ')
-        echo ::set-output name=name::$NAME
         if [ ${{ inputs.include-image-name }} = "true" ]; then
-          echo ::set-output name=tag-name::$NAME-${{ inputs.chart-version }}
+          VERSION=$NAME-${{ inputs.chart-version }}
         else
-          echo ::set-output name=tag-name::${{ inputs.chart-version }}
+          VERSION=${{ inputs.chart-version }}
         fi
+
+        echo ::set-output name=name::$NAME
+        echo ::set-output name=tag-name::$VERSION
+        echo ::set-output name=file-name::$NAME-${{ inputs.chart-version }}.tgz

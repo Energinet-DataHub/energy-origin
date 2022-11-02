@@ -4,7 +4,7 @@
         "yaml-path": "version"
     },
     {
-        "yaml-file": "domains/oidc-mock/chart/values.yaml",
-        "yaml-path": "api.image.tag"
+        "yaml-file": "domains/oidc-mock/API/chart-overrides.yaml",
+        "yaml-path": "version"
     }
 ]
