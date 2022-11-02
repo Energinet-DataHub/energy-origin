@@ -130,10 +130,6 @@ jobs:
           echo '::endgroup::'
           printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
 
-      - name: Env
-        shell: bash
-        run: env
-
   build-projects:
     runs-on: ubuntu-latest
     needs: setup
@@ -214,10 +210,12 @@ jobs:
         shell: bash
         env:
           DOMAIN: ${{ steps.resolve-paths.outputs.domain }}
+          PROJECTS: ${{ needs.setup.outputs.projects }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          output="$DOMAIN/chart/values.yaml" #FIXME: needs to be based on which projects that was actually built
-          find "$DOMAIN" -name 'chart-overrides.yaml' | while read input; do
+          output="$DOMAIN/chart/values.yaml"
+          printf '%s' "$PROJECTS" | jq -r '.[]' | while read project; do
+              input="$project/chart-overrides.yaml"
               value=$(yaml-get --query version "$input")
               value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
               path=$(yaml-get --query versionPath "$input")
