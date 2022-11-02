@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Issuer.Worker.QueryModelUpdater;
+namespace API.QueryModelUpdater;
 
 public static class Startup
 {

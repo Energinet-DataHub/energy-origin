@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Issuer.Worker.MasterDataService;
+namespace API.MasterDataService;
 
 public interface IMasterDataService
 {
