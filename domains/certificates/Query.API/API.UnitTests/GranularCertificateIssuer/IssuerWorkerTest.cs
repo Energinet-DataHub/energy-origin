@@ -2,17 +2,17 @@ using System;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using API.GranularCertificateIssuer;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using EnergyOriginEventStore.EventStore.Serialization;
-using Issuer.Worker.GranularCertificateIssuer;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Issuer.UnitTests.GranularCertificateIssuer;
+namespace API.UnitTests.GranularCertificateIssuer;
 
 public class IssuerWorkerTest
 {

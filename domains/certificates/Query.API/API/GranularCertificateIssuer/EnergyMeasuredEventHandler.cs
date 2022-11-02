@@ -1,11 +1,11 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
-using Issuer.Worker.MasterDataService;
 
-namespace Issuer.Worker.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
 {

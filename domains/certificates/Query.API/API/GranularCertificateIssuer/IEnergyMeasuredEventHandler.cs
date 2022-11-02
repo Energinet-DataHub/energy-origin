@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using CertificateEvents;
 
-namespace Issuer.Worker.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer;
 
 public interface IEnergyMeasuredEventHandler
 {

@@ -1,13 +1,13 @@
 using System.Numerics;
 using System.Threading.Tasks;
+using API.GranularCertificateIssuer;
+using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
-using Issuer.Worker.GranularCertificateIssuer;
-using Issuer.Worker.MasterDataService;
 using Moq;
 using Xunit;
 
-namespace Issuer.UnitTests.GranularCertificateIssuer;
+namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandlerTest
 {
