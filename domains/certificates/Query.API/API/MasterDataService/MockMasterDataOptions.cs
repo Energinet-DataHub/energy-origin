@@ -1,4 +1,4 @@
-namespace Issuer.Worker.MasterDataService;
+namespace API.MasterDataService;
 
 public class MockMasterDataOptions
 {

@@ -1,6 +1,6 @@
 using CertificateEvents.Primitives;
 
-namespace Issuer.Worker.MasterDataService;
+namespace API.MasterDataService;
 
 public record MasterData(string GSRN, string GridArea, MeteringPointType Type, Technology Technology,
     string MeteringPointOwner, bool MeteringPointOnboarded);

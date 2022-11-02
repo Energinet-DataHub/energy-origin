@@ -6,7 +6,7 @@ using EnergyOriginEventStore.EventStore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Issuer.Worker.RegistryConnector;
+namespace API.RegistryConnector;
 
 public class RegistryConnectorWorker : BackgroundService
 {
