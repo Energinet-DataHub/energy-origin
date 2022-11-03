@@ -2,7 +2,3 @@ api:
   replicaCount: 1
   image: {}
   env: {}
-issuer:
-  replicaCount: 1
-  image: {}
-  env: {}
