@@ -10,6 +10,7 @@ on:
 
 jobs:
   setup:
+    name: Setup
     runs-on: ubuntu-latest
     outputs:
       domains: ${{ steps.define-matrices.outputs.domains }}
@@ -129,6 +130,7 @@ jobs:
           printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
 
   build-projects:
+    name: Build projects
     runs-on: ubuntu-latest
     needs: setup
     if: ${{ needs.setup.outputs.projects != '[]' }}
@@ -164,10 +166,10 @@ jobs:
           echo "version=${version}" >> $GITHUB_OUTPUT
           echo "name=${name}" >> $GITHUB_OUTPUT
 
-      - name: Validate image
+      - name: Test and lint image
         uses: ./.github/actions/dotnet-validate-domain
         with:
-          solution-file-folder: ${{ steps.resolver.outputs.project }}
+          solution-file-folder: ${{ steps.resolver.outputs.service }}
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container
@@ -178,6 +180,7 @@ jobs:
           docker-context: ${{ steps.resolver.outputs.domain }}
 
   build-chart:
+    name: Build chart
     runs-on: ubuntu-latest
     needs:
       - setup
@@ -241,6 +244,7 @@ jobs:
           deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
 
   update-environment:
+    name: Update environment
     runs-on: ubuntu-latest
     needs:
       - setup

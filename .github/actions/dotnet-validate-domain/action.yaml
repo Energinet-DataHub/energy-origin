@@ -23,6 +23,18 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    - name: Ensure solution or project exists
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: |
+        compgen -G "*.sln" >/dev/null && exit 0
+        compgen -G "*.csproj" >/dev/null && exit 0
+
+        dotnet new sln
+        find . -name "*.csproj" -exec dotnet sln add {} \;
+
+        dotnet sln list | grep csproj >/dev/null || { printf '::error::No solution or projects found\n'; exit 1; }
+
     - name: Restore
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
