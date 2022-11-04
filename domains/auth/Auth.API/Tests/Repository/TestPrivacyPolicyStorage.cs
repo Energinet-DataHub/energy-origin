@@ -18,11 +18,7 @@ public class TestPrivacyPolicyStorage
     {
         fakeAuthOptions.Setup(x => x.Value).Returns(new AuthOptions
         {
-            TermsMarkdownFolder = Directory
-                .GetParent(Directory.GetCurrentDirectory())?
-                .Parent?
-                .Parent?
-                .FullName + "/resources"
+            TermsMarkdownFolder = Directory.GetCurrentDirectory() + "/Resources"
         });
 
         storage = new PrivacyPolicyStorage(fakeAuthOptions.Object);
