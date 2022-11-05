@@ -2,5 +2,6 @@ api:
   replicaCount: 1
   image:
     name: ghcr.io/energinet-datahub/eo-certificates
-    tag: 0.0.6
-  env: {}
+    tag: 0.0.7
+  env:
+    foo: bar
