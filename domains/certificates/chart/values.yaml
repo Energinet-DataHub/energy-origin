@@ -4,4 +4,4 @@ api:
     name: ghcr.io/energinet-datahub/eo-certificates
     tag: 0.0.7
   env:
-    foo: bar
+    MOCKMASTERDATA__JSONFILEPATH:
