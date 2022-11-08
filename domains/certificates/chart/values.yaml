@@ -1,4 +1,5 @@
 api:
   replicaCount: 1
   image: {}
-  env: {}
+  env:
+    MOCKMASTERDATA__JSONFILEPATH:
