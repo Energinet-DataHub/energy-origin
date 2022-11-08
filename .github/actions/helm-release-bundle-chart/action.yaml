@@ -61,6 +61,10 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, migrate workflow towards newer release actions."
+
     - name: Install yamlpath
       uses: Energinet-DataHub/.github/.github/actions/yamlpath-install@main
 
@@ -80,8 +84,6 @@ runs:
       id: release-chart
       uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
       with:
-        deploy_key: ${{ inputs.deploy-key }}
         chart_folder: ${{ inputs.chart-folder }}
-        chart_repository: ${{ inputs.chart-repository }}
         chart_version: ${{ inputs.chart-version }}
         include_image_name: ${{ inputs.include-image-name }}
