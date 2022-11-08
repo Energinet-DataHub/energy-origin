@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,10 +23,8 @@ public class CertificatesController : ControllerBase
     [Route("certificates")]
     public ActionResult<CertificateList> Get()
     {
-        var claims = User.Claims
-            .Select(c => c.ToString())
-            .ToArray();
-        logger.LogInformation("User claims {claims}", string.Join(";", claims));
+        var subject = User.FindFirstValue("subject");
+        logger.LogInformation("User subject: {subject}", subject);
 
         var gsrns = new[]
         {
