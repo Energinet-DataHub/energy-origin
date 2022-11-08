@@ -3,6 +3,7 @@ using System.Linq;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace API.Controllers;
 
@@ -10,12 +11,22 @@ namespace API.Controllers;
 [ApiController]
 public class CertificatesController : ControllerBase
 {
+    private readonly ILogger<CertificatesController> logger;
+
+    public CertificatesController(ILogger<CertificatesController> logger)
+    {
+        this.logger = logger;
+    }
+
     [HttpGet]
     [Route("certificates")]
     public ActionResult<CertificateList> Get()
     {
-        //TODO: Read authenticated user
-
+        var claims = User.Claims
+            .Select(c => c.ToString())
+            .ToArray();
+        logger.LogInformation("User claims {claims}", string.Join(";", claims));
+        
         var gsrns = new[]
         {
             "123456789000000000",
