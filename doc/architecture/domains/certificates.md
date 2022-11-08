@@ -7,23 +7,21 @@ The diagrams below are divided into:
 
 The reason for this split is certain constraints. The constraints are:
 
-* The Event Store is currently only available as an in-memory implmentation
 * Registry is under development
-* Not possible to build more than one project within a domain. Will be fixed in [this issue](https://app.zenhub.com/workspace/o/energinet-datahub/energy-origin-issues/issues/948)
-
+* Integration Event Bus does not exist and the inter-domain events are not defined
 
 ## Current architecture
 
 ### Container diagram
 ![Container diagram](../diagrams/certificates.current.container.drawio.svg)
 
-## Component diagram: Query.API
+## Component diagram: Certificate API
 
-The component diagram shows a first iteration which is based on an in-memory implementation of EventStore. A consequence of using the in-memory implementation is that all components that is dependent the EventStore must be in same container.
+The component diagram shows a first iteration which is based on an in-memory integration event bus. A consequence of using the in-memory implementation is that all components that is dependent on the integration event bus must be in same container.
 
 Components that is used for mocking and will be replaced or discarded at a later are marked with its own color in the diagram.
 
-![Issuer component diagram](../diagrams/certificates.current.component.query.api.drawio.svg)
+![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
 
 ## Target architecture
@@ -31,6 +29,3 @@ Components that is used for mocking and will be replaced or discarded at a later
 ### Container diagram
 ![Container diagram](../diagrams/certificates.target.container.drawio.svg)
 
-## Component diagram: Query
-
-![Issuer component diagram](../diagrams/certificates.target.component.query.drawio.svg)
