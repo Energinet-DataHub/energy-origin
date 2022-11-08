@@ -8,7 +8,7 @@ The diagrams below are divided into:
 The reason for this split is certain constraints. The constraints are:
 
 * Registry is under development
-* Integration Event Bus does not exist
+* Integration Event Bus does not exist and the inter-domain events are not defined
 
 ## Current architecture
 
