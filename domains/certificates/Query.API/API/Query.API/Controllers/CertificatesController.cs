@@ -12,6 +12,8 @@ public class CertificatesController : ControllerBase
     [Route("certificates")]
     public ActionResult<CertificateList> Get()
     {
+        //TODO: Read authenticated user
+
         var gsrns = new[]
         {
             "123456789000000000",
