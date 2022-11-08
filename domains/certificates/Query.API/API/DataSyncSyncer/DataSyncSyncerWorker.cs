@@ -38,9 +38,10 @@ internal class DataSyncSyncerWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
 
-        var period = GetPeriod();
         while (!stoppingToken.IsCancellationRequested)
         {
+            var period = GetPeriod();
+
             foreach (var data in masterData.Where(it => !string.IsNullOrWhiteSpace(it.GSRN)))
             {
                 var measurement = await dataSync.GetMeasurement(data.GSRN, period);

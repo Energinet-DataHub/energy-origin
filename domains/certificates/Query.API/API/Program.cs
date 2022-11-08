@@ -1,6 +1,5 @@
 using System.IO;
 using API.DataSyncSyncer;
-using API.DataSyncSyncer.Service.Datasync.Configurations;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
 using API.QueryModelUpdater;
@@ -47,14 +46,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddMasterDataService(builder.Configuration);
-builder.Services.AddDataSyncSyncer();
+builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
-
-builder.Services.Configure<DatasyncOptions>(
-    builder.Configuration.GetSection(DatasyncOptions.Datasync)
-);
 
 var app = builder.Build();
 

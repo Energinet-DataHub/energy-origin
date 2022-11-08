@@ -19,7 +19,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "Datasync": {
-          "url": "somecoolurl"
+          "url": "http://somecoolurl:8081"
       }
     },
     "IIS Express": {
