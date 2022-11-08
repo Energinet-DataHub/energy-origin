@@ -17,6 +17,9 @@
       "applicationUrl": "https://localhost:7277;http://localhost:5043",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "Datasync": {
+          "url": "somecoolurl"
       }
     },
     "IIS Express": {

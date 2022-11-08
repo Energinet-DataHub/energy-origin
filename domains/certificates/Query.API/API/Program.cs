@@ -1,5 +1,6 @@
 using System.IO;
 using API.DataSyncSyncer;
+using API.DataSyncSyncer.Service.Datasync.Configurations;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
 using API.QueryModelUpdater;
@@ -51,6 +52,10 @@ builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
 
+builder.Services.Configure<DatasyncOptions>(
+    builder.Configuration.GetSection(DatasyncOptions.Datasync)
+);
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -69,4 +74,6 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

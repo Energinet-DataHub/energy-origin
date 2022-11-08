@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Channels;
 using API.DataSyncSyncer.Service;
-using API.DataSyncSyncer.Service.IntegrationService;
+using API.DataSyncSyncer.Service.Datasync;
+using API.DataSyncSyncer.Service.Integration;
 using API.MasterDataService;
+using CertificateEvents;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.DataSyncSyncer;
@@ -13,13 +15,11 @@ public static class Startup
     {
         services.AddHttpClient();
 
-        services.AddSingleton(Channel.CreateUnbounded<List<MasterData>>());
-        services.AddTransient(svc => svc.GetRequiredService<Channel<List<MasterData>>>().Reader);
-        services.AddTransient(svc => svc.GetRequiredService<Channel<List<MasterData>>>().Writer);
+        services.AddSingleton(Channel.CreateUnbounded<EnergyMeasuredIntegrationEvent>());
+        services.AddTransient(svc => svc.GetRequiredService<Channel<EnergyMeasuredIntegrationEvent>>().Writer);
 
-        services.AddTransient<IAwesomeQueue, AwesomeQueue>();
-        services.AddTransient<IDataSyncProvider, DataSyncProvider>();
-
+        services.AddTransient<IIntegrationEventBus, IntegrationEventBus>();
+        services.AddTransient<IDataSync, DataSync>();
         services.AddHostedService<DataSyncSyncerWorker>();
     }
 }
