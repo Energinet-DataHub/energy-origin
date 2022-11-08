@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
@@ -60,7 +61,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
 
