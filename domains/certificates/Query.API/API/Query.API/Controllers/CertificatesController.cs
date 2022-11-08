@@ -14,10 +14,7 @@ public class CertificatesController : ControllerBase
 {
     private readonly ILogger<CertificatesController> logger;
 
-    public CertificatesController(ILogger<CertificatesController> logger)
-    {
-        this.logger = logger;
-    }
+    public CertificatesController(ILogger<CertificatesController> logger) => this.logger = logger;
 
     [HttpGet]
     [Route("certificates")]
