@@ -1,5 +1,6 @@
 using System.IO;
 using API.DataSyncSyncer;
+using API.DataSyncSyncer.Service.Configurations;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
 using API.QueryModelUpdater;
@@ -40,6 +41,10 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Certificates Query API"
     });
 });
+
+builder.Services.Configure<DatasyncOptions>(
+    builder.Configuration.GetSection(DatasyncOptions.Datasync)
+);
 
 builder.Services.AddHealthChecks();
 

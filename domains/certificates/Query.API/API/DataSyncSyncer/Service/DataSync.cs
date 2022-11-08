@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Service.Datasync.Configurations;
+using API.DataSyncSyncer.Service.Configurations;
 using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;

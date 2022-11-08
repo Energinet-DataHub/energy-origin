@@ -1,6 +1,6 @@
 using System.Threading.Channels;
+using API.DataSyncSyncer.Service.Configurations;
 using API.DataSyncSyncer.Service.Datasync;
-using API.DataSyncSyncer.Service.Datasync.Configurations;
 using API.DataSyncSyncer.Service.Integration;
 using CertificateEvents;
 using Microsoft.Extensions.Configuration;
