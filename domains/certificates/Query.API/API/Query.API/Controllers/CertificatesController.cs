@@ -26,7 +26,7 @@ public class CertificatesController : ControllerBase
             .Select(c => c.ToString())
             .ToArray();
         logger.LogInformation("User claims {claims}", string.Join(";", claims));
-        
+
         var gsrns = new[]
         {
             "123456789000000000",
