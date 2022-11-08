@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Authorize]
 [ApiController]
 public class CertificatesController : ControllerBase
 {
