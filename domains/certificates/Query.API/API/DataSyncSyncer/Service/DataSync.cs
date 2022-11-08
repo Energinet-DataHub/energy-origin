@@ -43,12 +43,8 @@ public class DataSync : IDataSync
 
         var response = await httpClient.GetAsync(url);
 
-        if (response == null || !response.IsSuccessStatusCode)
-        {
-            throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
-        }
-
-        return await response.Content.ReadFromJsonAsync<EnergyMeasuredIntegrationEvent>();
+        return await response.Content.ReadFromJsonAsync<EnergyMeasuredIntegrationEvent>()
+               ?? throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
     }
 
     public static string GenerateToken()
