@@ -1,6 +1,6 @@
 version=$1
 pr=$2
-if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_BASE_REF" = 'main' ]; then
+if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
     echo "$version"
 elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
     echo "${version}-pr.${pr}-$(git rev-parse --short $GITHUB_SHA)"
