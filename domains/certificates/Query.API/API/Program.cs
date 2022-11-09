@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -110,6 +111,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Middleware to change authentication schema from "Bearer:" to "Bearer". Please note that this is a hack
+app.Use(async (context, next) =>
+{
+    if (context.Request.Headers.ContainsKey("Authorization"))
+    {
+        var authorizationHeader = context.Request.Headers.Authorization;
+        var cleanedValues = authorizationHeader
+            .Select(s => s.Replace("Bearer:", "Bearer", StringComparison.CurrentCultureIgnoreCase))
+            .ToArray();
+
+        context.Request.Headers.Authorization = new StringValues(cleanedValues);
+    }
+
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
