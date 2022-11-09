@@ -87,7 +87,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     logger.Information("OnChallenge - HandleResponse");
                     context.HandleResponse();
                 }
-                
+
                 return Task.CompletedTask;
             },
             OnAuthenticationFailed = context =>
