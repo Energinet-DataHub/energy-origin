@@ -2,7 +2,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
@@ -12,7 +11,6 @@ using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -33,8 +31,7 @@ loggerConfiguration = builder.Environment.IsDevelopment()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-var logger = loggerConfiguration.CreateLogger();
-builder.Logging.AddSerilog(logger);
+builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddControllers();
 
@@ -68,35 +65,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,
+            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
             ValidateLifetime = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-        o.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
-                logger.Information("OnMessageReceived - Token: {token}", context.Token);
-                logger.Information("OnMessageReceived - Auth header: {requestAuth}", headersAuthorization);
-                return Task.CompletedTask;
-            },
-            //OnChallenge = context =>
-            //{
-            //    var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
-            //    logger.Information("OnChallenge - header: {requestAuth}", headersAuthorization);
-            //    if (headersAuthorization.Any(h => h.StartsWith("bearer", StringComparison.InvariantCultureIgnoreCase)))
-            //    {
-            //        logger.Information("OnChallenge - HandleResponse");
-            //        context.HandleResponse();
-            //    }
-
-            //    return Task.CompletedTask;
-            //},
-            OnAuthenticationFailed = context =>
-            {
-                logger.Information("OnAuthenticationFailed - Exception: {exception}", context.Exception);
-                return Task.CompletedTask;
-            }
         };
     });
 
@@ -112,14 +83,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Middleware to change authentication schema from "Bearer:" to "Bearer". Please note that this is a hack
+// Middleware to change authentication schema from "Bearer:" to "Bearer".
+// This is a hack to work-around how the auth service sets the Authorization header
 app.Use(async (context, next) =>
 {
     if (context.Request.Headers.ContainsKey("Authorization"))
     {
         var authorizationHeader = context.Request.Headers.Authorization;
         var cleanedValues = authorizationHeader
-            .Select(s => s.Replace("Bearer:", "Bearer", StringComparison.CurrentCultureIgnoreCase))
+            .Select(s => s.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
             .ToArray();
 
         context.Request.Headers.Authorization = new StringValues(cleanedValues);
