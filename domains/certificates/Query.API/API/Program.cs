@@ -1,5 +1,7 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
@@ -76,8 +78,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 logger.Information("OnMessageReceived - Auth header: {requestAuth}", headersAuthorization);
                 return Task.CompletedTask;
             },
-            //OnChallenge = context => Task.CompletedTask,
-
+            OnChallenge = context =>
+            {
+                var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
+                logger.Information("OnChallenge - header: {requestAuth}", headersAuthorization);
+                if (headersAuthorization.Any(h => h.StartsWith("bearer", StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    logger.Information("OnChallenge - HandleResponse");
+                    context.HandleResponse();
+                }
+                
+                return Task.CompletedTask;
+            },
             OnAuthenticationFailed = context =>
             {
                 logger.Information("OnAuthenticationFailed - Exception: {exception}", context.Exception);
