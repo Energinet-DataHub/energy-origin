@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
@@ -9,6 +10,7 @@ using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -28,7 +30,8 @@ loggerConfiguration = builder.Environment.IsDevelopment()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+var logger = loggerConfiguration.CreateLogger();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddControllers();
 
@@ -63,6 +66,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
+        };
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
+                logger.Information("OnMessageReceived - Token: {token}", context.Token);
+                logger.Information("OnMessageReceived - Auth header: {requestAuth}", headersAuthorization);
+                return Task.CompletedTask;
+            },
+            //OnChallenge = context => Task.CompletedTask,
+
+            OnAuthenticationFailed = context =>
+            {
+                logger.Information("OnAuthenticationFailed - Exception: {exception}", context.Exception);
+                return Task.CompletedTask;
+            }
         };
     });
 
