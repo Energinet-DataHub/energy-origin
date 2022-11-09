@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
@@ -6,10 +8,13 @@ using API.QueryModelUpdater;
 using API.RegistryConnector;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -25,7 +30,8 @@ loggerConfiguration = builder.Environment.IsDevelopment()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+var logger = loggerConfiguration.CreateLogger();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddControllers();
 
@@ -51,6 +57,35 @@ builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = false,
+            ValidateAudience = false,
+            SignatureValidator = (token, _) => new JwtSecurityToken(token)
+        };
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
+                logger.Information("OnMessageReceived - Token: {token}", context.Token);
+                logger.Information("OnMessageReceived - Auth header: {requestAuth}", headersAuthorization);
+                return Task.CompletedTask;
+            },
+            //OnChallenge = context => Task.CompletedTask,
+
+            OnAuthenticationFailed = context =>
+            {
+                logger.Information("OnAuthenticationFailed - Exception: {exception}", context.Exception);
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -63,6 +98,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
