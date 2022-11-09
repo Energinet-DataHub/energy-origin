@@ -6,13 +6,16 @@ using API.QueryModelUpdater;
 using API.RegistryConnector;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using Marten;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +42,13 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Title = "Certificates Query API"
     });
+});
+
+builder.Services.AddMarten(options =>
+{
+    options.Connection(builder.Configuration.GetConnectionString("PLACEHOLDER"));
+
+    options.AutoCreateSchemaObjects = AutoCreate.All;
 });
 
 builder.Services.AddHealthChecks();
