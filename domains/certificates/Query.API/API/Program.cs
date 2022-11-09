@@ -83,18 +83,18 @@ builder.Services.AddAuthentication(x =>
                 logger.Information("OnMessageReceived - Auth header: {requestAuth}", headersAuthorization);
                 return Task.CompletedTask;
             },
-            OnChallenge = context =>
-            {
-                var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
-                logger.Information("OnChallenge - header: {requestAuth}", headersAuthorization);
-                if (headersAuthorization.Any(h => h.StartsWith("bearer", StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    logger.Information("OnChallenge - HandleResponse");
-                    context.HandleResponse();
-                }
+            //OnChallenge = context =>
+            //{
+            //    var headersAuthorization = context.Request.GetTypedHeaders().Headers.Authorization;
+            //    logger.Information("OnChallenge - header: {requestAuth}", headersAuthorization);
+            //    if (headersAuthorization.Any(h => h.StartsWith("bearer", StringComparison.InvariantCultureIgnoreCase)))
+            //    {
+            //        logger.Information("OnChallenge - HandleResponse");
+            //        context.HandleResponse();
+            //    }
 
-                return Task.CompletedTask;
-            },
+            //    return Task.CompletedTask;
+            //},
             OnAuthenticationFailed = context =>
             {
                 logger.Information("OnAuthenticationFailed - Exception: {exception}", context.Exception);
