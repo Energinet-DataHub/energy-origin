@@ -8,5 +8,5 @@ namespace API.DataSyncSyncer.Service.Integration;
 
 public interface IIntegrationEventBus
 {
-    Task Produce(CancellationToken stoppingToken, EnergyMeasuredIntegrationEvent data);
+    Task Produce(CancellationToken stoppingToken, List<EnergyMeasuredIntegrationEvent> data);
 }

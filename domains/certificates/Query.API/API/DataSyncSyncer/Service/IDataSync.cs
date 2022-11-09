@@ -9,5 +9,5 @@ namespace API.DataSyncSyncer.Service.Datasync;
 
 public interface IDataSync
 {
-    Task<EnergyMeasuredIntegrationEvent> GetMeasurement(string gsrn, Period period);
+    Task<List<DataSyncDto>> GetMeasurement(string gsrn, Period period, string meteringPointOwner);
 }

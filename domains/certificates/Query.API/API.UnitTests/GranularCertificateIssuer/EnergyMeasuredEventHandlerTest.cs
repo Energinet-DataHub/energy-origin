@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using API.GranularCertificateIssuer;
@@ -17,7 +18,7 @@ public class EnergyMeasuredEventHandlerTest
         Type: MeteringPointType.Production,
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboarded: true);
+        MeteringPointOnboardedStartDate: DateTimeOffset.Now);
 
     [Fact]
     public async Task Handle_NoMasterData_NoEvent()
@@ -65,7 +66,7 @@ public class EnergyMeasuredEventHandlerTest
     [Fact]
     public async Task Handle_MeteringPointNotOnboarded_NoEvent()
     {
-        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
+        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboardedStartDate = default };
 
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock

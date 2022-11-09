@@ -37,7 +37,7 @@ public class EnergyMeasuredEventHandler : IEnergyMeasuredEventHandler
         if (masterData.Type != MeteringPointType.Production)
             return false;
 
-        if (!masterData.MeteringPointOnboarded)
+        if (masterData.MeteringPointOnboardedStartDate.Equals(default))
             return false;
 
         return true;

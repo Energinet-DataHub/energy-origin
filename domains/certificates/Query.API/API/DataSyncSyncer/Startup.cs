@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Channels;
 using API.DataSyncSyncer.Service.Configurations;
 using API.DataSyncSyncer.Service.Datasync;
@@ -12,11 +13,8 @@ public static class Startup
 {
     public static void AddDataSyncSyncer(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHttpClient();
-
-        services.Configure<DatasyncOptions>(
-            configuration.GetSection(DatasyncOptions.Datasync)
-        );
+        var datasyncUrl = configuration.GetSection(DatasyncOptions.Datasync).Value;
+        services.AddHttpClient<IDataSync, DataSync>(client => client.BaseAddress = new Uri(datasyncUrl));
 
         services.AddSingleton(Channel.CreateUnbounded<EnergyMeasuredIntegrationEvent>());
         services.AddTransient(svc => svc.GetRequiredService<Channel<EnergyMeasuredIntegrationEvent>>().Writer);

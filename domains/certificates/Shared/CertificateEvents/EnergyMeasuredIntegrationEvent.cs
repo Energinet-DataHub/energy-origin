@@ -1,10 +1,12 @@
+using System;
 using CertificateEvents.Primitives;
 
 namespace CertificateEvents;
 
 public record EnergyMeasuredIntegrationEvent(
     string GSRN,
-    Period Period,
+    long DateFrom,
+    long DateTo,
     long Quantity,
     EnergyMeasurementQuality Quality
 );

@@ -6,14 +6,9 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Service.Configurations;
-using API.MasterDataService;
-using CertificateEvents;
 using CertificateEvents.Primitives;
-using EnergyOriginDateTimeExtension;
 using IdentityModel.Client;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.DataSyncSyncer.Service.Datasync;
@@ -21,38 +16,39 @@ namespace API.DataSyncSyncer.Service.Datasync;
 public class DataSync : IDataSync
 {
     private readonly HttpClient httpClient;
-    private readonly DatasyncOptions options;
     private readonly ILogger<DataSync> logger;
 
-    public DataSync(HttpClient httpClient, IOptions<DatasyncOptions> options, ILogger<DataSync> logger)
+    public DataSync(HttpClient httpClient, ILogger<DataSync> logger)
     {
         this.logger = logger;
         this.httpClient = httpClient;
-        this.options = options.Value;
     }
 
-    public async Task<EnergyMeasuredIntegrationEvent> GetMeasurement(string gsrn, Period period)
+    public async Task<List<DataSyncDto>> GetMeasurement(string gsrn, Period period, string meteringPointOwner)
     {
         logger.LogInformation(
             "Fetching data in period from {from} to: {to}", period.DateFrom, period.DateTo
         );
 
-        var url = $"{options.Url}/measurements?gsrn={gsrn}&dateFrom={period.DateFrom}&dateTo={period.DateTo}";
+        var url = $"measurements?gsrn={gsrn}&dateFrom={period.DateFrom}&dateTo={period.DateTo}";
 
-        httpClient.SetBearerToken(GenerateToken());
+        httpClient.SetBearerToken(GenerateToken(meteringPointOwner));
 
         var response = await httpClient.GetAsync(url);
 
-        return await response.Content.ReadFromJsonAsync<EnergyMeasuredIntegrationEvent>()
+        return await response.Content.ReadFromJsonAsync<List<DataSyncDto>>()
                ?? throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
     }
 
-    public static string GenerateToken()
+    public static string GenerateToken(string meteringPointOwner)
     {
         var claims = new Claim[]
         {
             new(JwtRegisteredClaimNames.UniqueName, "username"),
-            new(JwtRegisteredClaimNames.NameId, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.NameId, Guid.NewGuid().ToString()),
+            new("subject",  meteringPointOwner),
+            new("actor",  "actor"),
+            new("scope",  "scope"),
         };
 
         SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("test test test test test"));
