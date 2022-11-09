@@ -1,5 +1,6 @@
 using System.IO;
 using API.DataSyncSyncer;
+using API.DataSyncSyncer.Service.Configurations;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
 using API.QueryModelUpdater;
@@ -41,12 +42,16 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
+builder.Services.Configure<DatasyncOptions>(
+    builder.Configuration.GetSection(DatasyncOptions.Datasync)
+);
+
 builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddMasterDataService(builder.Configuration);
-builder.Services.AddDataSyncSyncer();
+builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
@@ -69,4 +74,6 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

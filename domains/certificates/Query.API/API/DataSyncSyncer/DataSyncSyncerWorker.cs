@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer.Service.Datasync;
+using API.DataSyncSyncer.Service.Integration;
 using API.MasterDataService;
 using CertificateEvents;
-using EnergyOriginEventStore.EventStore;
+using CertificateEvents.Primitives;
+using IdentityServer4.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,41 +17,94 @@ namespace API.DataSyncSyncer;
 internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IEventStore eventStore;
-    private readonly string? gsrn;
+    private readonly IIntegrationEventBus integrationEventBus;
+    private readonly IDataSync dataSync;
+    private readonly List<MasterData> masterData;
+    private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary;
 
-    public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
-        MockMasterDataCollection collection)
+    public DataSyncSyncerWorker(
+        ILogger<DataSyncSyncerWorker> logger,
+        MockMasterDataCollection collection,
+        IIntegrationEventBus queue,
+        IDataSync dataSync
+    )
     {
         this.logger = logger;
-        this.eventStore = eventStore;
-        var masterData = collection.Data.FirstOrDefault();
-        gsrn = masterData?.GSRN ?? null;
+        masterData = collection.Data.ToList();
+        integrationEventBus = queue;
+        this.dataSync = dataSync;
+        periodStartTimeDictionary = masterData
+            .Where(it => !string.IsNullOrWhiteSpace(it.GSRN))
+            .ToDictionary(m => m.GSRN, m => m.MeteringPointOnboardedStartDate);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrWhiteSpace(gsrn))
-        {
-            logger.LogWarning("No master data loaded. Will not produce any events");
-        }
-
-        await Task.Delay(TimeSpan.FromMilliseconds(500),
-            stoppingToken); //allow application to start before producing events
-        var random = new Random();
-
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!string.IsNullOrWhiteSpace(gsrn))
+            await SleepToNearestHour(stoppingToken);
+
+            foreach (var data in masterData)
             {
+                var measurements = await FetchMeasurements(data.GSRN, data.MeteringPointOwner);
+                SetNextPeriodStartTime(measurements, data.GSRN);
+
+                var integrationsEvents = MapToIntegrationEvents(measurements);
+                await integrationEventBus.Produce(stoppingToken, integrationsEvents);
                 logger.LogInformation("Produce energy measured event");
-
-                var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1, 42),
-                    EnergyMeasurementQuality.Measured);
-                await eventStore.Produce(@event, Topic.For(@event));
             }
-
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
+    }
+
+    private async Task SleepToNearestHour(CancellationToken stoppingToken)
+    {
+        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        logger.LogInformation("Minutes to next hour {minutesToNextHour}", minutesToNextHour);
+        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), stoppingToken);
+    }
+
+    private async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner)
+    {
+        var dateFrom = periodStartTimeDictionary[GSRN].ToUnixTimeSeconds();
+
+        var now = DateTimeOffset.UtcNow;
+        var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        if (dateFrom < midnight)
+        {
+            return await dataSync.GetMeasurement(
+                GSRN,
+                new Period(
+                    DateFrom: dateFrom,
+                    DateTo: midnight
+                ),
+                meteringPointOwner
+            );
+        }
+
+        return new List<DataSyncDto>();
+    }
+
+    private void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
+    {
+        if (measurements.IsNullOrEmpty())
+        {
+            return;
+        }
+        var newestMeasurement = measurements.Max(m => m.DateTo);
+        periodStartTimeDictionary[GSRN] = DateTimeOffset.FromUnixTimeSeconds(newestMeasurement);
+    }
+
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements)
+    {
+        return measurements
+            .Select(it => new EnergyMeasuredIntegrationEvent(
+                    GSRN: it.GSRN,
+                    DateFrom: it.DateFrom,
+                    DateTo: it.DateTo,
+                    Quantity: it.Quantity,
+                    Quality: it.Quality
+                )
+            )
+            .ToList();
     }
 }

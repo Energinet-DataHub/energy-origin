@@ -10,5 +10,3 @@ public record EnergyMeasured(
     long Quantity,
     EnergyMeasurementQuality Quality
 ) : MeasurementBaseEvent;
-
-public enum EnergyMeasurementQuality { Measured, Revised, Calculated, Estimated }

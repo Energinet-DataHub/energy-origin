@@ -3,3 +3,4 @@ api:
   image: {}
   env:
     MOCKMASTERDATA__JSONFILEPATH:
+    DATASYNC__URL:
