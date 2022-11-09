@@ -3,3 +3,20 @@ api:
   image: {}
   env:
     MOCKMASTERDATA__JSONFILEPATH:
+postgres:
+  replicaCount: 1
+  image:
+    name: exobitt/postgres14-plv8
+    tag: latest
+  env:
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_DB: marten
+pgadmin:
+  replicaCount: 1
+  image:
+    name: dpage/pgadmin4
+    tag: 6.15
+  env:
+    PGADMIN_DEFAULT_EMAIL: admin@admin.com
+    PGADMIN_DEFAULT_PASSWORD: root
