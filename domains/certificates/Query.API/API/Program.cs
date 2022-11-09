@@ -83,8 +83,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Middleware to change authentication schema from "Bearer:" to "Bearer".
-// This is a hack to work-around how the auth service sets the Authorization header
+// Middleware to change authentication schema from "Bearer:" to "Bearer"
+// This is a hack/work-around to handle how the auth service sets the Authorization header
 app.Use(async (context, next) =>
 {
     if (context.Request.Headers.ContainsKey("Authorization"))
