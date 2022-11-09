@@ -59,12 +59,7 @@ builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
 
-builder.Services.AddAuthentication(x =>
-    {
-        x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
         o.TokenValidationParameters = new TokenValidationParameters
@@ -72,6 +67,7 @@ builder.Services.AddAuthentication(x =>
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,
+            ValidateLifetime = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
         o.Events = new JwtBearerEvents
