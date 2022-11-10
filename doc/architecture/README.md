@@ -17,6 +17,8 @@ called EnergyOrigin.
 This chapter describes the background of our architecture, its purposes,
 constraints and high level architecture.
 
+Diagrams below are documented based on [C4 model]https://c4model.com)
+
 ### Motivation
 
 As part of the Green transition in the energy sector Granular Certificates are
@@ -69,24 +71,7 @@ of normal users and OIDC to existing IAM for administrative users.
 
 ## Design Decisions
 
-- [ADR-0001 Cloud Native First](adr/0001-cloud-native.md)
-- [ADR-0002 IaC & GitOps](adr/0002-gitops.md)
-- [ADR-0003 Event store and CQRS](adr/0003-event-store.md)
-- [ADR-0004 Domains](adr/0004-domains.md)
-- [ADR-0005 Delegate](adr/0005-delegation.md)
-- [ADR-0006 Authentication](adr/0006-authentication.md)
-- [ADR-0007 Secrets](adr/0007-secret-storage.md)
-- [ADR-0008 Monorepo](adr/0008-monorepo.md)
-
-### Design Patterns & Principles
-
-Event sourcing and [CQRS](https://martinfowler.com/bliki/CQRS.html) (Command Query Responsibility Segregation)
-are at the core of the platform.
-The design is to store data as events in a shared Event Store shared between domains.
-Individual domains can then be added, updated and removed with low coupling.
-
-A new domain can be created and brought up to speed based on the Event Store.
-This removes the need for inter domain calls to pull and migrate data from other domains when domains are added or updated.
+[See more here](adr/README.md)
 
 ---
 
@@ -99,31 +84,16 @@ All manual tests will be regarded as tech-debt.
 
 ---
 
-## Architecture overview
-
-The diagrams below are documented based on [arc42](https://docs.arc42.org/section-5/)
-
-### High Level context diagram
+## High Level context diagram
 
 Context diagram, high level overview of the system that will be part of the Danish deployment.
 
-The blue is the platform itself.
-Green are systems that has been integrated to.
-Yellow are expected future integrations.
-
-![Overview of the different systems integrating](diagrams/context.drawio.png)
-
-## EnergyOrigin internals
-
-This view explores how the different components that the platform is built from
-integrates with each other.
-
-![Exploded view of EnergyOrigin](diagrams/level1.drawio.png)
+![Overview of the different systems integrating](diagrams/context.drawio.svg)
 
 ## Domains
 
-Below is a list of the domains and a reference to their documentation.
+[See more about the domains in the system](domains/README.md)
 
-*TODO: document missing domains.*
+## Hosting platform
 
-- [Measurement](domains/measurements.md)
+[See more about the Cloud native hosting platform](hosting.md)
