@@ -1,4 +1,4 @@
-# Event store and CQRS
+# Central Event store and CQRS
 
 * Status: Deprecated by [0015 Domains are responsible for their persistance](0015-domains-responsible-for-persistance.md)
 * Deciders: @MartinSchmidt
