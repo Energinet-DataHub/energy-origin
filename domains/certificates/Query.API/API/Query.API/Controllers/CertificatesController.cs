@@ -1,11 +1,16 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
 using API.Query.API.Projections;
 using Marten;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace API.Controllers;
 
+[Authorize]
 [ApiController]
 public class CertificatesController : ControllerBase
 {
