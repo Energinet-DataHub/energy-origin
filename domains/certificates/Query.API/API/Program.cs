@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
@@ -6,6 +7,7 @@ using API.QueryModelUpdater;
 using API.RegistryConnector;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,10 +45,28 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    // By default, sagas are in-memory, but should be changed to a durable
+    // saga repository.
+    //o.SetInMemorySagaRepositoryProvider();
+
+    var entryAssembly = Assembly.GetEntryAssembly();
+
+    o.AddConsumers(entryAssembly);
+    //o.AddSagaStateMachines(entryAssembly);
+    //o.AddSagas(entryAssembly);
+    //o.AddActivities(entryAssembly);
+
+    o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
+});
+
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddMasterDataService(builder.Configuration);
-builder.Services.AddDataSyncSyncer();
+//builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
