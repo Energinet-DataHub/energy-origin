@@ -1,12 +1,10 @@
-using System;
-using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Models;
 using API.Query.API.Projections;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace API.Controllers;
 
@@ -18,7 +16,8 @@ public class CertificatesController : ControllerBase
     [Route("certificates")]
     public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
     {
-        var projection = await querySession.LoadAsync<CertificateListProj>("ab20f689-36c2-4b50-aac2-ce93490b8702");
+        var meteringPointOwner = User.FindFirstValue("subject");
+        var projection = await querySession.LoadAsync<CertificateListProj>(meteringPointOwner);
         return projection != null ? projection.ToApiModel() : NoContent();
     }
 }

@@ -46,7 +46,8 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
 
 public class CertificateListProj
 {
-    [Identity] public string MeteringPointOwner { get; set; } = "";
+    [Identity]
+    public string MeteringPointOwner { get; set; } = "";
 
     public Dictionary<Guid, Cert> Certificates { get; set; } = new();
 
@@ -76,7 +77,7 @@ public class Cert
     public long DateFrom { get; set; }
     public long DateTo { get; set; }
     public long Quantity { get; set; }
-    public string GSRN { get; set; }
+    public string GSRN { get; set; } = "";
     public CertificateStatus TodoStatus { get; set; }
 }
 
