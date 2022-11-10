@@ -34,7 +34,7 @@ internal class DummyEnergyMeasProducer : BackgroundService
             var measurement = new Measurement(gsrn, new Period(1, 42), random.NextInt64(1, 42), EnergyMeasurementQuality.Measured);
             await bus.Publish(measurement, stoppingToken);
 
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
     }
 }

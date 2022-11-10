@@ -33,8 +33,10 @@ public class EnergyMeasConsumer : IConsumer<Measurement>
             return;
         }
 
+        var certificateId = Guid.NewGuid();
+
         var event1 = new ProductionCertificateCreated(
-            CertificateId: Guid.NewGuid(),
+            CertificateId: certificateId,
             GridArea: masterData!.GridArea,
             Period: message.Period,
             Technology: masterData.Technology,
@@ -44,8 +46,9 @@ public class EnergyMeasConsumer : IConsumer<Measurement>
 
         var event2 = new ProductionCertificateIssued(event1.CertificateId);
 
-        session.Events.StartStream(event1, event2);
-        await session.SaveChangesAsync(); //TODO: Use context.CancellationToken ?
+        session.Events.StartStream(certificateId, event1, event2);
+        await session.SaveChangesAsync(context.CancellationToken);
+        logger.LogInformation("Saved events");
     }
 
     private static bool ShouldEventBeProduced(MasterData? masterData)
