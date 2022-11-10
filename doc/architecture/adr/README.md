@@ -2,6 +2,8 @@
 
 ## Active
 
+All current valid ADR.
+
 - [ADR-0001 Cloud Native First](0001-cloud-native.md)
 - [ADR-0002 IaC & GitOps](0002-gitops.md)
 - [ADR-0004 Domains](0004-domains.md)
@@ -17,5 +19,7 @@
 - [ADR-0016 Interdomain communication through intergration events](0016-interdomain-integration-events.md)
 
 ## Deprecated
+
+ADR that has been deprecated by new ADR.
 
 - [ADR-0003 Central Event store and CQRS](0003-event-store.md)
