@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using API.Models;
 using CertificateEvents;
+using Marten;
 using Marten.Events.Projections;
 using Marten.Schema;
 
@@ -46,6 +49,26 @@ public class CertificateListProj
     [Identity] public string MeteringPointOwner { get; set; } = "";
 
     public Dictionary<Guid, Cert> Certificates { get; set; } = new();
+
+    public CertificateList ToApiModel()
+    {
+        var certificates = Certificates.Values
+            .Select(c => new Certificate
+            {
+                GSRN = c.GSRN,
+                DateFrom = c.DateFrom,
+                DateTo = c.DateTo,
+                Quantity = c.Quantity
+            });
+
+        return new CertificateList
+        {
+            Result = certificates
+                .OrderByDescending(c => c.DateFrom)
+                .ThenBy(c => c.GSRN)
+                .ToArray()
+        };
+    }
 }
 
 public class Cert
