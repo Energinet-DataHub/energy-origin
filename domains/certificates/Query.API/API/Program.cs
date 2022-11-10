@@ -46,7 +46,7 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddMarten(options =>
 {
-    options.Connection(builder.Configuration.GetConnectionString("PLACEHOLDER"));
+    options.Connection(builder.Configuration.GetConnectionString("MARTEN_CONNECTION_STRING"));
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
 });
