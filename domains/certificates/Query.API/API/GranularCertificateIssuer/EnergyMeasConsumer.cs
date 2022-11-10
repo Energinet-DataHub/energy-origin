@@ -33,6 +33,7 @@ public class EnergyMeasConsumer : IConsumer<Measurement>
             return;
         }
 
+        // TODO: Is this the best choice for an ID?
         var certificateId = Guid.NewGuid();
 
         var event1 = new ProductionCertificateCreated(

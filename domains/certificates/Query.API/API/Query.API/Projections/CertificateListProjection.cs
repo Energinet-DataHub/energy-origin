@@ -24,19 +24,21 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
             DateTo = @event.Period.DateTo,
             Quantity = @event.ShieldedQuantity.Value,
             GSRN = @event.ShieldedGSRN.Value,
-            TodoStatus = 1
+            TodoStatus = CertificateStatus.Creating
         };
     }
 
     public void Apply(ProductionCertificateIssued @event, CertificateListProj view)
     {
-        view.Certificates[@event.CertificateId].TodoStatus = 2;
+        view.Certificates[@event.CertificateId].TodoStatus = CertificateStatus.Issued;
     }
 
     public void Apply(ProductionCertificateRejected @event, CertificateListProj view)
     {
-        view.Certificates[@event.CertificateId].TodoStatus = 3;
+        view.Certificates[@event.CertificateId].TodoStatus = CertificateStatus.Rejected;
     }
+
+    // TODO: Maybe there should be a delete part in some of the Apply()-methods, so old certificates are pruned
 }
 
 public class CertificateListProj
@@ -52,5 +54,12 @@ public class Cert
     public long DateTo { get; set; }
     public long Quantity { get; set; }
     public string GSRN { get; set; }
-    public int TodoStatus { get; set; }
+    public CertificateStatus TodoStatus { get; set; }
 }
+
+public enum CertificateStatus
+{
+    Creating = 1,
+    Issued = 2,
+    Rejected = 3
+};
