@@ -6,8 +6,8 @@ api:
 postgres:
   replicaCount: 1
   image:
-    name: exobitt/postgres14-plv8
-    tag: latest
+    name: sibedge/postgres-plv8
+    tag: 15.0-3.1.4-alpine
   env:
     POSTGRES_PASSWORD: postgres
     POSTGRES_USER: postgres
@@ -17,6 +17,7 @@ pgadmin:
   image:
     name: dpage/pgadmin4
     tag: 6.15
+  enabled: false
   env:
     PGADMIN_DEFAULT_EMAIL: admin@admin.com
     PGADMIN_DEFAULT_PASSWORD: root
