@@ -1,7 +1,7 @@
 # Snapshot testing with Verify.Xunit
 
-* Status: Proposed
-* Deciders:
+* Status: Accepted
+* Deciders: @CodeReaper, @duizer, @exobitt, @martinSchmidt, @endk-awo
 * Date: 2022-10-20
 
 ---
