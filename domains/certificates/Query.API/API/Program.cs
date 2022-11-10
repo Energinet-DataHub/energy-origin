@@ -1,20 +1,20 @@
 using System.IO;
 using System.Reflection;
-using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
-using API.QueryModelUpdater;
-using API.RegistryConnector;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using Marten;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +45,14 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddMarten(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("MartenDB");
+    options.Connection(connectionString);
+
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+});
+
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
@@ -68,8 +76,6 @@ builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 builder.Services.AddMasterDataService(builder.Configuration);
 //builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
-builder.Services.AddRegistryConnector();
-builder.Services.AddQueryModelUpdater();
 
 var app = builder.Build();
 

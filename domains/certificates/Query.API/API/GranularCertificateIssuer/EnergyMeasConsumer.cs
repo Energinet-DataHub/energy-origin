@@ -1,4 +1,10 @@
+using System;
+using System.Numerics;
 using System.Threading.Tasks;
+using API.MasterDataService;
+using CertificateEvents;
+using CertificateEvents.Primitives;
+using Marten;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -7,15 +13,52 @@ namespace API.GranularCertificateIssuer;
 public class EnergyMeasConsumer : IConsumer<Measurement>
 {
     private readonly ILogger<EnergyMeasConsumer> logger;
+    private readonly IDocumentSession session;
+    private readonly IMasterDataService masterDataService;
 
-    public EnergyMeasConsumer(ILogger<EnergyMeasConsumer> logger)
+    public EnergyMeasConsumer(ILogger<EnergyMeasConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
     {
         this.logger = logger;
+        this.session = session;
+        this.masterDataService = masterDataService;
     }
 
-    public Task Consume(ConsumeContext<Measurement> context)
+    public async Task Consume(ConsumeContext<Measurement> context)
     {
-        logger.LogInformation("Got {meas}", context.Message);
-        return Task.CompletedTask;
+        var message = context.Message;
+        logger.LogInformation("Got {meas}", message);
+        var masterData = await masterDataService.GetMasterData(message.GSRN);
+        if (!ShouldEventBeProduced(masterData))
+        {
+            return;
+        }
+
+        var event1 = new ProductionCertificateCreated(
+            CertificateId: Guid.NewGuid(),
+            GridArea: masterData!.GridArea,
+            Period: message.Period,
+            Technology: masterData.Technology,
+            MeteringPointOwner: masterData.MeteringPointOwner,
+            ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
+            ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
+
+        var event2 = new ProductionCertificateIssued(event1.CertificateId);
+
+        session.Events.StartStream(event1, event2);
+        await session.SaveChangesAsync(); //TODO: Use context.CancellationToken ?
+    }
+
+    private static bool ShouldEventBeProduced(MasterData? masterData)
+    {
+        if (masterData is null)
+            return false;
+
+        if (masterData.Type != MeteringPointType.Production)
+            return false;
+
+        if (!masterData.MeteringPointOnboarded)
+            return false;
+
+        return true;
     }
 }
