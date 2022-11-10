@@ -1,4 +1,4 @@
-# Bespoke timeseries domain
+# Measurements domain holds data
 
 * Status: Accepted
 * Deciders: @MartinSchmidt, @CodeReaper, @duizer, @Exobitt, @endk-awo
@@ -25,7 +25,7 @@ amount of time.
 
 1. To continue to store all measurements in an central event store, and rehydrate query models in other domains from it.
 
-2. To create a seperate TimeSeries domain, with the responsibility to store and persist meter data. Further it should have APIs to quickly be able to return aggregated or raw data for a number of meters, and expose and posibility for other domains to subscribe to measurements for specific meters and periods.
+2. Give measurements domain the responsibility to store and persist meter data. Further it should have APIs to quickly be able to return aggregated or raw data for a number of meters, and expose and posibility for other domains to subscribe to measurements for specific meters and periods.
 
 ---
 
@@ -35,4 +35,4 @@ We chose to go with **option 2**.
 
 ## Rationale
 
-With a bespoke TimeSeries domain that can use best in class datestore to store the data, we centralize were timeseries data is stored within the system, and gain a way to restore from a failure without having to rehydrate the full state from a central eventstore which would take days.
+With measurements stored in a single domain, we can use best in class datestore to store the data, and gain a way to restore from a failure without having to rehydrate the full state from a central eventstore which would take days.
