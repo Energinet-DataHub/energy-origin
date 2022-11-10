@@ -12,7 +12,7 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
     {
         Identity<ProductionCertificateCreated>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateIssued>(e => e.MeteringPointOwner);
-        //Identity<ProductionCertificateRejected>(e => e.MeteringPointOwner);
+        Identity<ProductionCertificateRejected>(e => e.MeteringPointOwner);
     }
 
     public void Apply(ProductionCertificateCreated @event, CertificateListProj view)
@@ -23,6 +23,7 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
             DateFrom = @event.Period.DateFrom,
             DateTo = @event.Period.DateTo,
             Quantity = @event.ShieldedQuantity.Value,
+            GSRN = @event.ShieldedGSRN.Value,
             TodoStatus = 1
         };
     }
@@ -30,6 +31,11 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
     public void Apply(ProductionCertificateIssued @event, CertificateListProj view)
     {
         view.Certificates[@event.CertificateId].TodoStatus = 2;
+    }
+
+    public void Apply(ProductionCertificateRejected @event, CertificateListProj view)
+    {
+        view.Certificates[@event.CertificateId].TodoStatus = 3;
     }
 }
 
@@ -45,5 +51,6 @@ public class Cert
     public long DateFrom { get; set; }
     public long DateTo { get; set; }
     public long Quantity { get; set; }
+    public string GSRN { get; set; }
     public int TodoStatus { get; set; }
 }

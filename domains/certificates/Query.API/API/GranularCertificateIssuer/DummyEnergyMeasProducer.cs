@@ -31,7 +31,9 @@ internal class DummyEnergyMeasProducer : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var measurement = new Measurement(gsrn, new Period(1, 42), random.NextInt64(1, 42), EnergyMeasurementQuality.Measured);
+            var now = DateTimeOffset.UtcNow;
+
+            var measurement = new Measurement(gsrn, new Period(now.AddHours(-1).ToUnixTimeSeconds(), now.ToUnixTimeSeconds()), random.NextInt64(1, 42), EnergyMeasurementQuality.Measured);
             await bus.Publish(measurement, stoppingToken);
 
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);

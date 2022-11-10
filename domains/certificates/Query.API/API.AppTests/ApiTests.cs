@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.Models;
@@ -25,6 +26,6 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         const int expected = numberOfMeteringPoints * numberOfHours;
 
         Assert.NotNull(certificatesResponse);
-        Assert.Equal(expected, certificatesResponse.Result.Count);
+        Assert.Equal(expected, certificatesResponse.Result.Count());
     }
 }
