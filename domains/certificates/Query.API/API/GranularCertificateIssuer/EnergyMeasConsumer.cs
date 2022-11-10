@@ -44,7 +44,7 @@ public class EnergyMeasConsumer : IConsumer<Measurement>
             ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
             ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
 
-        var event2 = new ProductionCertificateIssued(event1.CertificateId);
+        var event2 = new ProductionCertificateIssued(event1.CertificateId, event1.MeteringPointOwner, event1.ShieldedGSRN.Value);
 
         session.Events.StartStream(certificateId, event1, event2);
         await session.SaveChangesAsync(context.CancellationToken);

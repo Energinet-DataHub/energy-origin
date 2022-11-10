@@ -3,4 +3,4 @@ using System;
 namespace CertificateEvents;
 
 
-public record ProductionCertificateRejected(Guid CertificateId, string Reason);
+public record ProductionCertificateRejected(Guid CertificateId, string Reason, string MeteringPointOwner, string GSRN);

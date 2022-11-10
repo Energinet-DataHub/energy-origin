@@ -2,9 +2,11 @@ using System.IO;
 using System.Reflection;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
+using API.Query.API.Projections;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using Marten;
+using Marten.Events.Projections;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -47,10 +49,11 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddMarten(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("MartenDB");
-    options.Connection(connectionString);
+    options.Connection(builder.Configuration.GetConnectionString("MartenDB"));
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    options.Projections.Add<CertificateListProjection>(ProjectionLifecycle.Inline);
 });
 
 builder.Services.AddMassTransit(o =>
