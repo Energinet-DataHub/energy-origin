@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
+using API.IntegrationEventBus;
 using API.MasterDataService;
-using API.QueryModelUpdater;
-using API.RegistryConnector;
-using EnergyOriginEventStore.EventStore;
-using EnergyOriginEventStore.EventStore.Memory;
+using API.Query.API.Projections;
+using Marten;
+using Marten.Events.Projections;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,13 +51,19 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
+builder.Services.AddMarten(options =>
+{
+    options.Connection(builder.Configuration.GetConnectionString("MartenDB"));
 
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
+});
+
+builder.Services.AddIntegrationEventBus();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
-builder.Services.AddRegistryConnector();
-builder.Services.AddQueryModelUpdater();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
