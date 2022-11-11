@@ -7,8 +7,6 @@ using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.MasterDataService;
 using API.Query.API.Projections;
-using EnergyOriginEventStore.EventStore;
-using EnergyOriginEventStore.EventStore.Memory;
 using Marten;
 using Marten.Events.Projections;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,8 +59,6 @@ builder.Services.AddMarten(options =>
 
     options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
 });
-
-builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddIntegrationEventBus();
 builder.Services.AddMasterDataService(builder.Configuration);
