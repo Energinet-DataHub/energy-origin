@@ -84,6 +84,7 @@ runs:
       id: release-chart
       uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
       with:
+        deploy_key: ${{ inputs.deploy-key }}
         chart_folder: ${{ inputs.chart-folder }}
         chart_version: ${{ inputs.chart-version }}
         include_image_name: ${{ inputs.include-image-name }}
