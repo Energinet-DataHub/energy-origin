@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.Models;
+namespace API.Query.API.ApiModels;
 
 public class Certificate
 {
