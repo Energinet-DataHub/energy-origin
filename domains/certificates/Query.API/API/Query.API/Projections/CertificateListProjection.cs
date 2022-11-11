@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using CertificateEvents;
-using Marten;
 using Marten.Events.Projections;
 using Marten.Schema;
 
 namespace API.Query.API.Projections;
 
-public class CertificateListProjection : MultiStreamAggregation<CertificateListProj, string>
+public class CertificateListProjection : MultiStreamAggregation<CertificateListProj, string> //TODO: Rename to be more precise like CertificatesByOwnerProjection
 {
     public CertificateListProjection()
     {
@@ -47,7 +46,7 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
 public class CertificateListProj
 {
     [Identity]
-    public string MeteringPointOwner { get; set; } = "";
+    public string MeteringPointOwner { get; set; } = ""; //TODO: Should this be named something else? Maybe just Owner?
 
     public Dictionary<Guid, Cert> Certificates { get; set; } = new();
 

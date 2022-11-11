@@ -1,12 +1,12 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CertificateEvents.Primitives;
+using API.MasterDataService;
 using CertificateEvents;
+using CertificateEvents.Primitives;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
-using API.MasterDataService;
-using System.Linq;
 
 namespace API.GranularCertificateIssuer;
 
@@ -26,7 +26,7 @@ internal class DummyEnergyMeasProducer : BackgroundService
     {
         if (string.IsNullOrEmpty(gsrn))
             return;
-        
+
         var random = new Random();
 
         while (!stoppingToken.IsCancellationRequested)
