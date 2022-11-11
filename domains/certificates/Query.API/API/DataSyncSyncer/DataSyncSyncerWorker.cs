@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MasterDataService;
-using CertificateEvents;
-using EnergyOriginEventStore.EventStore;
+using IntegrationEvents;
+using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,15 +12,14 @@ namespace API.DataSyncSyncer;
 
 internal class DataSyncSyncerWorker : BackgroundService
 {
+    private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IEventStore eventStore;
     private readonly string? gsrn;
 
-    public DataSyncSyncerWorker(ILogger<DataSyncSyncerWorker> logger, IEventStore eventStore,
-        MockMasterDataCollection collection)
+    public DataSyncSyncerWorker(IBus bus, MockMasterDataCollection collection, ILogger<DataSyncSyncerWorker> logger)
     {
+        this.bus = bus;
         this.logger = logger;
-        this.eventStore = eventStore;
         var masterData = collection.Data.FirstOrDefault();
         gsrn = masterData?.GSRN ?? null;
     }
@@ -30,24 +29,21 @@ internal class DataSyncSyncerWorker : BackgroundService
         if (string.IsNullOrWhiteSpace(gsrn))
         {
             logger.LogWarning("No master data loaded. Will not produce any events");
+            return;
         }
 
-        await Task.Delay(TimeSpan.FromMilliseconds(500),
-            stoppingToken); //allow application to start before producing events
         var random = new Random();
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!string.IsNullOrWhiteSpace(gsrn))
-            {
-                logger.LogInformation("Produce energy measured event");
+            var now = DateTimeOffset.UtcNow;
 
-                var @event = new EnergyMeasured(gsrn, new(42, 50), random.NextInt64(1, 42),
-                    EnergyMeasurementQuality.Measured);
-                await eventStore.Produce(@event, Topic.For(@event));
-            }
+            var measurement = new EnergyMeasuredIntegrationEvent(gsrn, now.AddHours(-1).ToUnixTimeSeconds(), now.ToUnixTimeSeconds(), random.NextInt64(1, 42), MeasurementQuality.Measured);
+            await bus.Publish(measurement, stoppingToken);
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            logger.LogInformation("publish");
+
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
     }
 }
