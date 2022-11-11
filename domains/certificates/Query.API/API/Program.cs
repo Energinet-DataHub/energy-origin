@@ -6,9 +6,8 @@ using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.MasterDataService;
-using API.Query.API.Projections;
+using API.Query.API;
 using Marten;
-using Marten.Events.Projections;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +40,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SupportNonNullableReferenceTypes();
-    o.IncludeXmlComments(Path.Combine(System.AppContext.BaseDirectory, "documentation.xml"));
+    o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
     o.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -56,11 +55,10 @@ builder.Services.AddMarten(options =>
     options.Connection(builder.Configuration.GetConnectionString("MartenDB"));
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
-
-    options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
 });
 
 builder.Services.AddIntegrationEventBus();
+builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
