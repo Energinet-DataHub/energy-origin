@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-postgres
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.postgres.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgres
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-postgres
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-postgres
+          image: '{{ .Values.postgres.image.name }}:{{ .Values.postgres.image.tag}}'
+          volumeMounts:
+          {{- if or (.Files.Glob "docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
+            - name: custom-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/
+          {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 2
+            periodSeconds: 2
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 2
+            periodSeconds: 2
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+              name: postgres-protocol
+              protocol: TCP
