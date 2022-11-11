@@ -41,7 +41,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             var measurement = new EnergyMeasuredIntegrationEvent(gsrn, now.AddHours(-1).ToUnixTimeSeconds(), now.ToUnixTimeSeconds(), random.NextInt64(1, 42), MeasurementQuality.Measured);
             await bus.Publish(measurement, stoppingToken);
 
-            logger.LogInformation("publish");
+            logger.LogInformation("Publish EnergyMeasuredIntegrationEvent");
 
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }

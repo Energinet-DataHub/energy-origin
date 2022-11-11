@@ -28,12 +28,11 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var message = context.Message;
 
-        logger.LogInformation("Got {meas}", message);
-
         var masterData = await masterDataService.GetMasterData(message.GSRN);
 
         if (!ShouldEventBeProduced(masterData))
         {
+            logger.LogInformation("No production certificate event stream started for {message}", message);
             return;
         }
 
@@ -54,7 +53,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         session.Events.StartStream(certificateId, createdEvent, issuedEvent);
         await session.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation("Saved events");
+        logger.LogInformation("Created production certificate event stream for {message}", message);
     }
 
     private static bool ShouldEventBeProduced(MasterData? masterData)

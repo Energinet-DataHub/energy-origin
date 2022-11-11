@@ -32,8 +32,7 @@ public class EnergyMeasuredConsumerTest
         var documentSessionMock = new Mock<IDocumentSession>();
 
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
-            .ReturnsAsync(value: null);
+        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(value: null);
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: "gsrn",
@@ -52,8 +51,7 @@ public class EnergyMeasuredConsumerTest
     {
         var masterDataForConsumptionPoint = validMasterData with { Type = MeteringPointType.Consumption };
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
-            .ReturnsAsync(masterDataForConsumptionPoint);
+        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(masterDataForConsumptionPoint);
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
@@ -74,8 +72,7 @@ public class EnergyMeasuredConsumerTest
     {
         var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
-            .ReturnsAsync(masterDataForNotOnboarded);
+        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(masterDataForNotOnboarded);
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
@@ -95,12 +92,10 @@ public class EnergyMeasuredConsumerTest
     public async Task Consume_ProductionPoint_EventsSaved()
     {
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
-            .ReturnsAsync(validMasterData);
+        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(validMasterData);
 
         var documentSessionMock = new Mock<IDocumentSession>();
-        documentSessionMock.Setup(m => m.Events)
-            .Returns(Mock.Of<IEventStore>());
+        documentSessionMock.Setup(m => m.Events).Returns(Mock.Of<IEventStore>());
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: validMasterData.GSRN,
