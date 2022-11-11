@@ -2,15 +2,14 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using API.GranularCertificateIssuer;
+using API.IntegrationEventBus;
 using API.MasterDataService;
 using API.Query.API.Projections;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
 using Marten;
 using Marten.Events.Projections;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -62,18 +61,9 @@ builder.Services.AddMarten(options =>
     options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
 });
 
-builder.Services.AddMassTransit(o =>
-{
-    o.SetKebabCaseEndpointNameFormatter();
-
-    var entryAssembly = Assembly.GetEntryAssembly();
-    o.AddConsumers(entryAssembly);
-
-    o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
-});
-
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
+builder.Services.AddIntegrationEventBus();
 builder.Services.AddMasterDataService(builder.Configuration);
 //builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();

@@ -26,9 +26,16 @@ public class CertificatesByOwnerProjectionTest
                 ShieldedGSRN: new ShieldedValue<string>(Value: "gsrn", R: BigInteger.Zero),
                 ShieldedQuantity: new ShieldedValue<long>(Value: 42, R: BigInteger.Zero));
 
-            var issuedEvent = new ProductionCertificateIssued(certificateId, "meteringPointOwner", "gsrn");
+            var issuedEvent = new ProductionCertificateIssued(
+                CertificateId: certificateId,
+                MeteringPointOwner: "meteringPointOwner",
+                GSRN: "gsrn");
 
-            var rejectedEvent = new ProductionCertificateRejected(certificateId, "foo", "meteringPointOwner", "gsrn");
+            var rejectedEvent = new ProductionCertificateRejected(
+                CertificateId: certificateId,
+                Reason: "foo",
+                MeteringPointOwner: "meteringPointOwner",
+                GSRN: "gsrn");
 
             return new List<object[]>
             {
