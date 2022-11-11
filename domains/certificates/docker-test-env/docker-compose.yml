@@ -27,7 +27,7 @@ services:
     networks:
       - postgres
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_EMAIL: admin@admin.admin
       PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
       - martendb
