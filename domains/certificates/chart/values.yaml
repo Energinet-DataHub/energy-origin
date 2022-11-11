@@ -1,5 +1,8 @@
 api:
   replicaCount: 1
   image: {}
-  env:
-    MOCKMASTERDATA__JSONFILEPATH:
+postgres:
+  replicaCount: 1
+  image:
+    name: sibedge/postgres-plv8
+    tag: 15.0-3.1.4-alpine
