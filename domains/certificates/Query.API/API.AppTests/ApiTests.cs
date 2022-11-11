@@ -2,7 +2,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Models;
+using API.Query.API.ApiModels;
 using Xunit;
 
 namespace API.AppTests;

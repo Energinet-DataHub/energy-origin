@@ -4,6 +4,7 @@ using API.GranularCertificateIssuer;
 using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
+using FluentAssertions;
 using Marten;
 using Marten.Events;
 using MassTransit;
@@ -122,6 +123,6 @@ public class EnergyMeasuredConsumerTest
 
         await harness.Bus.Publish(message);
 
-        Assert.True(await harness.Consumed.Any<Measurement>());
+        (await harness.Consumed.Any<Measurement>()).Should().BeTrue();
     }
 }
