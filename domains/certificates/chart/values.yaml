@@ -1,23 +1,8 @@
 api:
   replicaCount: 1
   image: {}
-  env:
-    MOCKMASTERDATA__JSONFILEPATH:
 postgres:
   replicaCount: 1
   image:
     name: sibedge/postgres-plv8
     tag: 15.0-3.1.4-alpine
-  env:
-    POSTGRES_PASSWORD: postgres
-    POSTGRES_USER: postgres
-    POSTGRES_DB: marten
-pgadmin:
-  replicaCount: 1
-  image:
-    name: dpage/pgadmin4
-    tag: 6.15
-  enabled: false
-  env:
-    PGADMIN_DEFAULT_EMAIL: admin@admin.com
-    PGADMIN_DEFAULT_PASSWORD: root

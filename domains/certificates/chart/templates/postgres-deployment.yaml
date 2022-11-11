@@ -38,13 +38,3 @@ spec:
               hostPort: 5432
               name: postgres-protocol
               protocol: TCP
-          env:
-          {{- if .Values.postgres.env}}
-          {{- range $name, $value := .Values.postgres.env }}
-            - name: {{ $name }}
-              value: {{ $value | quote }}
-          {{- end}}
-          {{- end}}
-
-
-
