@@ -8,19 +8,19 @@ using Marten.Schema;
 
 namespace API.Query.API.Projections;
 
-public class CertificateListProjection : MultiStreamAggregation<CertificateListProj, string> //TODO: Rename to be more precise like CertificatesByOwnerProjection
+public class CertificatesByOwnerProjection : MultiStreamAggregation<CertificatesByOwnerView, string>
 {
-    public CertificateListProjection()
+    public CertificatesByOwnerProjection()
     {
         Identity<ProductionCertificateCreated>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateIssued>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateRejected>(e => e.MeteringPointOwner);
     }
 
-    public void Apply(ProductionCertificateCreated @event, CertificateListProj view)
+    public void Apply(ProductionCertificateCreated @event, CertificatesByOwnerView view)
     {
-        view.MeteringPointOwner = @event.MeteringPointOwner;
-        view.Certificates[@event.CertificateId] = new Cert
+        view.Owner = @event.MeteringPointOwner;
+        view.Certificates[@event.CertificateId] = new CertificateView
         {
             DateFrom = @event.Period.DateFrom,
             DateTo = @event.Period.DateTo,
@@ -30,12 +30,12 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
         };
     }
 
-    public void Apply(ProductionCertificateIssued @event, CertificateListProj view)
+    public void Apply(ProductionCertificateIssued @event, CertificatesByOwnerView view)
     {
         view.Certificates[@event.CertificateId].TodoStatus = CertificateStatus.Issued;
     }
 
-    public void Apply(ProductionCertificateRejected @event, CertificateListProj view)
+    public void Apply(ProductionCertificateRejected @event, CertificatesByOwnerView view)
     {
         view.Certificates[@event.CertificateId].TodoStatus = CertificateStatus.Rejected;
     }
@@ -43,12 +43,12 @@ public class CertificateListProjection : MultiStreamAggregation<CertificateListP
     // TODO: Maybe there should be a delete part in some of the Apply()-methods, so old certificates are pruned
 }
 
-public class CertificateListProj
+public class CertificatesByOwnerView
 {
     [Identity]
-    public string MeteringPointOwner { get; set; } = ""; //TODO: Should this be named something else? Maybe just Owner?
+    public string Owner { get; set; } = "";
 
-    public Dictionary<Guid, Cert> Certificates { get; set; } = new();
+    public Dictionary<Guid, CertificateView> Certificates { get; set; } = new();
 
     public CertificateList ToApiModel()
     {
@@ -71,7 +71,7 @@ public class CertificateListProj
     }
 }
 
-public class Cert
+public class CertificateView
 {
     public long DateFrom { get; set; }
     public long DateTo { get; set; }

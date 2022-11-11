@@ -59,7 +59,7 @@ builder.Services.AddMarten(options =>
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
 
-    options.Projections.Add<CertificateListProjection>(ProjectionLifecycle.Inline);
+    options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
 });
 
 builder.Services.AddMassTransit(o =>

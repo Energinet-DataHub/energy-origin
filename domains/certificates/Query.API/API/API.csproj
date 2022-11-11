@@ -30,8 +30,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Query.API\Projections\" />
-  </ItemGroup>
-
 </Project>
