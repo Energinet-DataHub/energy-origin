@@ -4,22 +4,22 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="P:API.Models.Certificate.DateFrom">
+        <member name="P:API.Query.API.ApiModels.Certificate.DateFrom">
             <summary>
             Start timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.DateTo">
+        <member name="P:API.Query.API.ApiModels.Certificate.DateTo">
             <summary>
             End timestamp for the certificate in Unix time
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.Quantity">
+        <member name="P:API.Query.API.ApiModels.Certificate.Quantity">
             <summary>
             Quantity of energy measured in Wh
             </summary>
         </member>
-        <member name="P:API.Models.Certificate.GSRN">
+        <member name="P:API.Query.API.ApiModels.Certificate.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
