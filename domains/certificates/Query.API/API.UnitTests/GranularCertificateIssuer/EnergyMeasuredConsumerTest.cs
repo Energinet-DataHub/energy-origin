@@ -5,6 +5,7 @@ using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using FluentAssertions;
+using IntegrationEvents;
 using Marten;
 using Marten.Events;
 using MassTransit;
@@ -34,11 +35,12 @@ public class EnergyMeasuredConsumerTest
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
             .ReturnsAsync(value: null);
 
-        var message = new Measurement(
+        var message = new EnergyMeasuredIntegrationEvent(
             GSRN: "gsrn",
-            Period: new Period(1, 42),
+            DateFrom: 1,
+            DateTo: 42,
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured);
+            Quality: MeasurementQuality.Measured);
 
         await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
 
@@ -55,11 +57,12 @@ public class EnergyMeasuredConsumerTest
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
-        var message = new Measurement(
+        var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForConsumptionPoint.GSRN,
-            Period: new Period(1, 42),
+            DateFrom: 1,
+            DateTo: 42,
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured);
+            Quality: MeasurementQuality.Measured);
 
         await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
 
@@ -76,11 +79,12 @@ public class EnergyMeasuredConsumerTest
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
-        var message = new Measurement(
+        var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForNotOnboarded.GSRN,
-            Period: new Period(1, 42),
+            DateFrom: 1,
+            DateTo: 42,
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured);
+            Quality: MeasurementQuality.Measured);
 
         await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
 
@@ -98,18 +102,19 @@ public class EnergyMeasuredConsumerTest
         documentSessionMock.Setup(m => m.Events)
             .Returns(Mock.Of<IEventStore>());
 
-        var message = new Measurement(
+        var message = new EnergyMeasuredIntegrationEvent(
             GSRN: validMasterData.GSRN,
-            Period: new Period(1, 42),
+            DateFrom: 1,
+            DateTo: 42,
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured);
+            Quality: MeasurementQuality.Measured);
 
         await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
 
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    private static async Task PublishAndConsumeMessage(Measurement message, IDocumentSession documentSession, IMasterDataService masterDataService)
+    private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message, IDocumentSession documentSession, IMasterDataService masterDataService)
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredConsumer>())
@@ -123,6 +128,6 @@ public class EnergyMeasuredConsumerTest
 
         await harness.Bus.Publish(message);
 
-        (await harness.Consumed.Any<Measurement>()).Should().BeTrue();
+        (await harness.Consumed.Any<EnergyMeasuredIntegrationEvent>()).Should().BeTrue();
     }
 }

@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
+using IntegrationEvents;
 using Marten;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class EnergyMeasuredConsumer : IConsumer<Measurement>
+public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IDocumentSession session;
@@ -23,11 +24,14 @@ public class EnergyMeasuredConsumer : IConsumer<Measurement>
         this.masterDataService = masterDataService;
     }
 
-    public async Task Consume(ConsumeContext<Measurement> context)
+    public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
+
         logger.LogInformation("Got {meas}", message);
+
         var masterData = await masterDataService.GetMasterData(message.GSRN);
+
         if (!ShouldEventBeProduced(masterData))
         {
             return;
@@ -36,19 +40,20 @@ public class EnergyMeasuredConsumer : IConsumer<Measurement>
         // TODO: Is this the best choice for an ID?
         var certificateId = Guid.NewGuid();
 
-        var event1 = new ProductionCertificateCreated(
+        var createdEvent = new ProductionCertificateCreated(
             CertificateId: certificateId,
             GridArea: masterData!.GridArea,
-            Period: message.Period,
+            Period: new Period(message.DateFrom, message.DateTo),
             Technology: masterData.Technology,
             MeteringPointOwner: masterData.MeteringPointOwner,
             ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
             ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
 
-        var event2 = new ProductionCertificateIssued(event1.CertificateId, event1.MeteringPointOwner, event1.ShieldedGSRN.Value);
+        var issuedEvent = new ProductionCertificateIssued(createdEvent.CertificateId, createdEvent.MeteringPointOwner, createdEvent.ShieldedGSRN.Value);
 
-        session.Events.StartStream(certificateId, event1, event2);
+        session.Events.StartStream(certificateId, createdEvent, issuedEvent);
         await session.SaveChangesAsync(context.CancellationToken);
+
         logger.LogInformation("Saved events");
     }
 

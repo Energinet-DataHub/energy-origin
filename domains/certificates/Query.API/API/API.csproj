@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
+    <ProjectReference Include="..\..\Shared\IntegrationEvents\IntegrationEvents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

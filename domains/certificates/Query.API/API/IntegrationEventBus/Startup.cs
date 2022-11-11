@@ -6,8 +6,7 @@ namespace API.IntegrationEventBus;
 
 public static class Startup
 {
-    public static void AddIntegrationEventBus(this IServiceCollection services)
-    {
+    public static void AddIntegrationEventBus(this IServiceCollection services) =>
         services.AddMassTransit(o =>
         {
             o.SetKebabCaseEndpointNameFormatter();
@@ -17,5 +16,4 @@ public static class Startup
 
             o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
         });
-    }
 }

@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.MasterDataService;
@@ -65,7 +66,7 @@ builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddIntegrationEventBus();
 builder.Services.AddMasterDataService(builder.Configuration);
-//builder.Services.AddDataSyncSyncer();
+builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
