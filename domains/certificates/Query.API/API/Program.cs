@@ -2,15 +2,18 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using API.DataSyncSyncer;
+using System.Reflection;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
-using API.QueryModelUpdater;
-using API.RegistryConnector;
+using API.Query.API.Projections;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using Marten;
+using Marten.Events.Projections;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,6 +22,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,13 +53,38 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddMarten(options =>
+{
+    options.Connection(builder.Configuration.GetConnectionString("MartenDB"));
+
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    options.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
+});
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    // By default, sagas are in-memory, but should be changed to a durable
+    // saga repository.
+    //o.SetInMemorySagaRepositoryProvider();
+
+    var entryAssembly = Assembly.GetEntryAssembly();
+
+    o.AddConsumers(entryAssembly);
+    //o.AddSagaStateMachines(entryAssembly);
+    //o.AddSagas(entryAssembly);
+    //o.AddActivities(entryAssembly);
+
+    o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
+});
+
 builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
 
 builder.Services.AddMasterDataService(builder.Configuration);
-builder.Services.AddDataSyncSyncer();
+//builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
-builder.Services.AddRegistryConnector();
-builder.Services.AddQueryModelUpdater();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
