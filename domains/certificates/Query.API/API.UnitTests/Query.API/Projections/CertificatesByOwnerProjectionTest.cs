@@ -7,7 +7,7 @@ using CertificateEvents.Primitives;
 using FluentAssertions;
 using Xunit;
 
-namespace API.UnitTests.Query.API;
+namespace API.UnitTests.Query.API.Projections;
 
 public class CertificatesByOwnerProjectionTest
 {
