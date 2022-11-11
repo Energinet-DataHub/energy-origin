@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  martendb:
+    image: sibedge/postgres-plv8
+    container_name: marten
+    restart: unless-stopped
+    ports:
+      - "54320:5432"
+    volumes:
+      - ./postgres-init-data/001-plv8.sql:/docker-entrypoint-initdb.d/001-plv8.sql
+      - ./sql:/sql
+    networks:
+      - postgres
+    environment:
+      POSTGRES_DB: marten
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - martendb
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  martendb:
+  pgadmin:
