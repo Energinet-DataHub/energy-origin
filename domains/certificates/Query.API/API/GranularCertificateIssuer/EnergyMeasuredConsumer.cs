@@ -10,13 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class EnergyMeasConsumer : IConsumer<Measurement>
+public class EnergyMeasuredConsumer : IConsumer<Measurement>
 {
-    private readonly ILogger<EnergyMeasConsumer> logger;
+    private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IDocumentSession session;
     private readonly IMasterDataService masterDataService;
 
-    public EnergyMeasConsumer(ILogger<EnergyMeasConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
+    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
     {
         this.logger = logger;
         this.session = session;

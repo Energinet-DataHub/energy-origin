@@ -65,18 +65,10 @@ builder.Services.AddMarten(options =>
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
-
-    // By default, sagas are in-memory, but should be changed to a durable
-    // saga repository.
-    //o.SetInMemorySagaRepositoryProvider();
-
+    
     var entryAssembly = Assembly.GetEntryAssembly();
-
     o.AddConsumers(entryAssembly);
-    //o.AddSagaStateMachines(entryAssembly);
-    //o.AddSagas(entryAssembly);
-    //o.AddActivities(entryAssembly);
-
+    
     o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
 });
 
