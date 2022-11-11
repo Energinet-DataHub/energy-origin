@@ -15,14 +15,17 @@ spec:
       labels:
         app: {{ .Release.Name }}-postgres
     spec:
+      volumes:
+        - name: postgres-vm
+          configMap:
+            name: postgres-init-cm
       containers:
         - name: {{ .Release.Name }}-postgres
           image: '{{ .Values.postgres.image.name }}:{{ .Values.postgres.image.tag}}'
           volumeMounts:
-          {{- if or (.Files.Glob "docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
-            - name: custom-init-scripts
+            - name: postgres-vm
               mountPath: /docker-entrypoint-initdb.d/
-          {{- end }}
+              readOnly: true
           readinessProbe:
             tcpSocket:
               port: 5000
