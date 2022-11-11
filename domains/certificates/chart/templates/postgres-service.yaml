@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
-    - name: postgres-protocol
+    - name: pgsql
       port: 5432
       protocol: TCP
       targetPort: 5432
