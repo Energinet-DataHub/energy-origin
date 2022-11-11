@@ -28,12 +28,12 @@ spec:
               readOnly: true
           readinessProbe:
             tcpSocket:
-              port: 5000
+              port: 5432
             initialDelaySeconds: 2
             periodSeconds: 2
           livenessProbe:
             tcpSocket:
-              port: 5000
+              port: 5432
             initialDelaySeconds: 2
             periodSeconds: 2
           ports:
