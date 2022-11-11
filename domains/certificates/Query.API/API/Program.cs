@@ -65,10 +65,10 @@ builder.Services.AddMarten(options =>
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
-    
+
     var entryAssembly = Assembly.GetEntryAssembly();
     o.AddConsumers(entryAssembly);
-    
+
     o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
 });
 
