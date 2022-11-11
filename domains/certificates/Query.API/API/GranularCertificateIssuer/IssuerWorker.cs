@@ -32,12 +32,12 @@ public class IssuerWorker : BackgroundService
                 var handleTask = eventHandler.Handle(e.EventModel);
                 var productionCertificateCreatedEvent = handleTask.GetAwaiter().GetResult(); // Forced to do blocking call here. IEventConsumerBuilder does not currently support async handlers
 
-                if (productionCertificateCreatedEvent != null)
-                {
-                    var topic = Topic.For(productionCertificateCreatedEvent);
-                    var produceTask = eventStore.Produce(productionCertificateCreatedEvent, topic);
-                    produceTask.GetAwaiter().GetResult(); // Forced to do blocking call here. IEventConsumerBuilder does not currently support async handlers
-                }
+                //if (productionCertificateCreatedEvent != null)
+                //{
+                //    var topic = Topic.For(productionCertificateCreatedEvent);
+                //    var produceTask = eventStore.Produce(productionCertificateCreatedEvent, topic);
+                //    produceTask.GetAwaiter().GetResult(); // Forced to do blocking call here. IEventConsumerBuilder does not currently support async handlers
+                //}
             })
             .Build();
 
