@@ -24,7 +24,6 @@ public class EnergyMeasuredConsumerTest
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointOnboarded: true);
 
-
     [Fact]
     public async Task Consume_NoMasterData_NoEventsSaved()
     {
@@ -34,29 +33,15 @@ public class EnergyMeasuredConsumerTest
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
             .ReturnsAsync(value: null);
 
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddConsumer<EnergyMeasuredConsumer>();
-            })
-            .AddSingleton(documentSessionMock.Object)
-            .AddSingleton(masterDataServiceMock.Object)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(new Measurement(
+        var message = new Measurement(
             GSRN: "gsrn",
             Period: new Period(1, 42),
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured));
+            Quality: EnergyMeasurementQuality.Measured);
 
-        Assert.True(await harness.Consumed.Any<Measurement>());
+        await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
+
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-
-        await harness.Stop();
     }
 
     [Fact]
@@ -69,29 +54,15 @@ public class EnergyMeasuredConsumerTest
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddConsumer<EnergyMeasuredConsumer>();
-            })
-            .AddSingleton(documentSessionMock.Object)
-            .AddSingleton(masterDataServiceMock.Object)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(new Measurement(
+        var message = new Measurement(
             GSRN: masterDataForConsumptionPoint.GSRN,
             Period: new Period(1, 42),
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured));
+            Quality: EnergyMeasurementQuality.Measured);
 
-        Assert.True(await harness.Consumed.Any<Measurement>());
+        await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
+
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-
-        await harness.Stop();
     }
 
     [Fact]
@@ -104,29 +75,15 @@ public class EnergyMeasuredConsumerTest
 
         var documentSessionMock = new Mock<IDocumentSession>();
 
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddConsumer<EnergyMeasuredConsumer>();
-            })
-            .AddSingleton(documentSessionMock.Object)
-            .AddSingleton(masterDataServiceMock.Object)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(new Measurement(
+        var message = new Measurement(
             GSRN: masterDataForNotOnboarded.GSRN,
             Period: new Period(1, 42),
             Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured));
+            Quality: EnergyMeasurementQuality.Measured);
 
-        Assert.True(await harness.Consumed.Any<Measurement>());
+        await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
+
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-
-        await harness.Stop();
     }
 
     [Fact]
@@ -140,29 +97,31 @@ public class EnergyMeasuredConsumerTest
         documentSessionMock.Setup(m => m.Events)
             .Returns(Mock.Of<IEventStore>());
 
+        var message = new Measurement(
+            GSRN: validMasterData.GSRN,
+            Period: new Period(1, 42),
+            Quantity: 42,
+            Quality: EnergyMeasurementQuality.Measured);
+
+        await PublishAndConsumeMessage(message, documentSessionMock.Object, masterDataServiceMock.Object);
+
+        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private static async Task PublishAndConsumeMessage(Measurement message, IDocumentSession documentSession, IMasterDataService masterDataService)
+    {
         await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddConsumer<EnergyMeasuredConsumer>();
-            })
-            .AddSingleton(documentSessionMock.Object)
-            .AddSingleton(masterDataServiceMock.Object)
+            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredConsumer>())
+            .AddSingleton(documentSession)
+            .AddSingleton(masterDataService)
             .BuildServiceProvider(true);
 
         var harness = provider.GetRequiredService<ITestHarness>();
 
         await harness.Start();
 
-        await harness.Bus.Publish(new Measurement(
-            GSRN: validMasterData.GSRN,
-            Period: new Period(1, 42),
-            Quantity: 42,
-            Quality: EnergyMeasurementQuality.Measured));
+        await harness.Bus.Publish(message);
 
         Assert.True(await harness.Consumed.Any<Measurement>());
-        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-
-        await harness.Stop();
     }
-
 }
