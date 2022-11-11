@@ -35,8 +35,6 @@ public class CertificatesByOwnerProjection : MultiStreamAggregation<Certificates
 
     public void Apply(ProductionCertificateRejected @event, CertificatesByOwnerView view)
         => view.Certificates[@event.CertificateId].Status = CertificateStatus.Rejected;
-
-    // TODO: Maybe there should be a delete part in some of the Apply()-methods, so old certificates are pruned
 }
 
 public class CertificatesByOwnerView

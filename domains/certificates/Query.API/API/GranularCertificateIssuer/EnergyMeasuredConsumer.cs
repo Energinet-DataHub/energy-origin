@@ -36,7 +36,6 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             return;
         }
 
-        // TODO: Is this the best choice for an ID?
         var certificateId = Guid.NewGuid();
 
         var createdEvent = new ProductionCertificateCreated(
@@ -48,7 +47,10 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
             ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
 
-        var issuedEvent = new ProductionCertificateIssued(createdEvent.CertificateId, createdEvent.MeteringPointOwner, createdEvent.ShieldedGSRN.Value);
+        var issuedEvent = new ProductionCertificateIssued(
+            CertificateId: createdEvent.CertificateId,
+            MeteringPointOwner: createdEvent.MeteringPointOwner,
+            GSRN: createdEvent.ShieldedGSRN.Value);
 
         session.Events.StartStream(certificateId, createdEvent, issuedEvent);
         await session.SaveChangesAsync(context.CancellationToken);
