@@ -2,14 +2,11 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using API;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
+using API.IntegrationEventBus;
 using API.MasterDataService;
-using API.QueryModelUpdater;
-using API.RegistryConnector;
-using EnergyOriginEventStore.EventStore;
-using EnergyOriginEventStore.EventStore.Memory;
+using API.Query.API;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -43,7 +40,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SupportNonNullableReferenceTypes();
-    o.IncludeXmlComments(Path.Combine(System.AppContext.BaseDirectory, "documentation.xml"));
+    o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
     o.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -51,30 +48,20 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
-builder.Services.AddMarten(provider =>
+builder.Services.AddMarten(options =>
 {
-    var logger = provider.GetRequiredService<ILogger<Program>>();
-    var connectionString = builder.Configuration.GetConnectionString("Marten");
+    options.Connection(builder.Configuration.GetConnectionString("Marten"));
 
-    logger.LogInformation("ConnectionString: {connectionString}", connectionString);
-
-    var store = new StoreOptions();
-    store.Connection(connectionString);
-    store.AutoCreateSchemaObjects = AutoCreate.All;
-    return store;
+    options.AutoCreateSchemaObjects = AutoCreate.All;
 });
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddSingleton<IEventStore, MemoryEventStore>();
-
+builder.Services.AddIntegrationEventBus();
+builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
-builder.Services.AddRegistryConnector();
-builder.Services.AddQueryModelUpdater();
-
-builder.Services.AddHostedService<DeleteThisDatabaseCheckLaterWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
