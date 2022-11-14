@@ -9,8 +9,10 @@ using API.QueryModelUpdater;
 using API.RegistryConnector;
 using EnergyOriginEventStore.EventStore;
 using EnergyOriginEventStore.EventStore.Memory;
+using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +48,19 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Title = "Certificates Query API"
     });
+});
+
+builder.Services.AddMarten(provider =>
+{
+    var logger = provider.GetRequiredService<ILogger<Program>>();
+    var connectionString = builder.Configuration.GetConnectionString("Marten");
+
+    logger.LogInformation("ConnectionString: {connectionString}", connectionString);
+
+    var store = new StoreOptions();
+    store.Connection(connectionString);
+    store.AutoCreateSchemaObjects = AutoCreate.All;
+    return store;
 });
 
 builder.Services.AddHealthChecks();
