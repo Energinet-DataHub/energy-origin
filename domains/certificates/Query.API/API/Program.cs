@@ -61,7 +61,7 @@ builder.Services.AddMarten(provider =>
     store.Connection(connectionString);
     store.AutoCreateSchemaObjects = AutoCreate.All;
     return store;
-}).ApplyAllDatabaseChangesOnStartup();
+});
 
 builder.Services.AddHealthChecks();
 
