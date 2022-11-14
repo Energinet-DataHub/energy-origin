@@ -52,7 +52,7 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddMarten(options =>
 {
-    options.Connection(builder.Configuration.GetConnectionString("MARTEN_CONNECTION_STRING"));
+    options.Connection(builder.Configuration.GetConnectionString("Marten"));
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
 });
