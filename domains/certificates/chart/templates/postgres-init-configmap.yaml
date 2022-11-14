@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-cm
+data:
+  001-plv8.sql: |
+    CREATE EXTENSION plv8;

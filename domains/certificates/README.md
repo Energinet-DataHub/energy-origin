@@ -32,3 +32,14 @@ public record ProductionIssued(
     CommitmentParameters? AmountParameters = null);
 
 ```
+
+### For local development
+In-order to test and develop locally, enter the docker-test-env and run:
+```
+docker-compose up
+```
+When shutting down, run:
+```
+docker-compose down --volumes
+```
+
