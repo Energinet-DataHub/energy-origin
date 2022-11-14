@@ -50,12 +50,18 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
-builder.Services.AddMarten(options =>
+builder.Services.AddMarten(provider =>
 {
-    options.Connection(builder.Configuration.GetConnectionString("Marten"));
+    var logger = provider.GetRequiredService<ILogger<Program>>();
+    var connectionString = builder.Configuration.GetConnectionString("Marten");
 
-    options.AutoCreateSchemaObjects = AutoCreate.All;
-});
+    logger.LogInformation("ConnectionString: {connectionString}", connectionString);
+
+    var store = new StoreOptions();
+    store.Connection(connectionString);
+    store.AutoCreateSchemaObjects = AutoCreate.All;
+    return store;
+}).ApplyAllDatabaseChangesOnStartup();
 
 builder.Services.AddHealthChecks();
 
