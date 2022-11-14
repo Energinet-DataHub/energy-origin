@@ -17,7 +17,7 @@ internal class DeleteThisDatabaseCheckLaterWorker : BackgroundService
         this.store = store;
         this.logger = logger;
     }
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
