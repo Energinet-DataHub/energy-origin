@@ -1,7 +1,8 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Models;
+using API.Query.API.ApiModels;
 using Xunit;
 
 namespace API.AppTests;
@@ -10,10 +11,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public ApiTests(QueryApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public ApiTests(QueryApiWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
@@ -24,7 +22,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "Skip until postgres with MartenDB can be started by the factory, see https://github.com/Energinet-DataHub/energy-origin-issues/issues/1023")]
     public async Task GetList_AuthenticatedUser_ReturnsCertificates()
     {
         var client = factory.CreateAuthenticatedClient();
@@ -35,6 +33,6 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         const int expected = numberOfMeteringPoints * numberOfHours;
 
         Assert.NotNull(certificatesResponse);
-        Assert.Equal(expected, certificatesResponse.Result.Count);
+        Assert.Equal(expected, certificatesResponse.Result.Count());
     }
 }
