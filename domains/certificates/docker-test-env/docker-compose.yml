@@ -5,7 +5,7 @@ services:
     container_name: marten
     restart: unless-stopped
     ports:
-      - "54320:5432"
+      - "5432:5432"
     volumes:
       - ./postgres-init-data/001-plv8.sql:/docker-entrypoint-initdb.d/001-plv8.sql
       - ./sql:/sql
