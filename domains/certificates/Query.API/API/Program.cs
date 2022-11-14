@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
@@ -48,6 +49,19 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
+builder.Services.AddMarten(provider =>
+{
+    var logger = provider.GetRequiredService<ILogger<Program>>();
+    var connectionString = builder.Configuration.GetConnectionString("Marten");
+
+    logger.LogInformation("ConnectionString: {connectionString}", connectionString);
+
+    var store = new StoreOptions();
+    store.Connection(connectionString);
+    store.AutoCreateSchemaObjects = AutoCreate.All;
+    return store;
+});
+
 builder.Services.AddHealthChecks();
 
 builder.Services.AddMarten(options =>
@@ -62,6 +76,8 @@ builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
+
+builder.Services.AddHostedService<DeleteThisDatabaseCheckLaterWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
