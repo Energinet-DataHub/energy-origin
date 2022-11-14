@@ -22,7 +22,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
 
-    [Fact(Skip = "Skip until postgres with MartenDB can be started by the factory")]
+    [Fact(Skip = "Skip until postgres with MartenDB can be started by the factory, see https://github.com/Energinet-DataHub/energy-origin-issues/issues/1023")]
     public async Task GetList_AuthenticatedUser_ReturnsCertificates()
     {
         var client = factory.CreateAuthenticatedClient();
