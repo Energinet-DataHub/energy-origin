@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
@@ -72,6 +73,8 @@ builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddRegistryConnector();
 builder.Services.AddQueryModelUpdater();
+
+builder.Services.AddHostedService<DeleteThisDatabaseCheckLaterWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
