@@ -51,7 +51,7 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, Status = CertificateStatus.Creating
+                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Creating
                                 }
                             }
                         }
@@ -73,7 +73,7 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, Status = CertificateStatus.Issued
+                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Issued
                                 }
                             }
                         }
@@ -95,7 +95,7 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, Status = CertificateStatus.Rejected
+                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Rejected
                                 }
                             }
                         }

@@ -26,6 +26,8 @@ public class CertificatesByOwnerProjection : MultiStreamAggregation<Certificates
             DateTo = @event.Period.DateTo,
             Quantity = @event.ShieldedQuantity.Value,
             GSRN = @event.ShieldedGSRN.Value,
+            TechCode = @event.Technology.TechCode,
+            FuelCode = @event.Technology.FuelCode,
             Status = CertificateStatus.Creating
         };
     }
@@ -52,7 +54,9 @@ public class CertificatesByOwnerView
                 GSRN = c.GSRN,
                 DateFrom = c.DateFrom,
                 DateTo = c.DateTo,
-                Quantity = c.Quantity
+                Quantity = c.Quantity,
+                TechCode = c.TechCode,
+                FuelCode = c.FuelCode
             });
 
         return new CertificateList
@@ -71,6 +75,8 @@ public class CertificateView
     public long DateTo { get; set; }
     public long Quantity { get; set; }
     public string GSRN { get; set; } = "";
+    public string TechCode { get; set; } = "";
+    public string FuelCode { get; set; } = "";
     public CertificateStatus Status { get; set; }
 }
 

@@ -30,6 +30,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "Success"
           }
         }
       }
@@ -58,6 +61,14 @@
           "gsrn": {
             "type": "string",
             "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "techCode": {
+            "type": "string",
+            "description": "The technology of the production device as specified in EECS Rules Fact Sheet 5"
+          },
+          "fuelCode": {
+            "type": "string",
+            "description": "The energy source for the production device as specified in EECS Rules Fact Sheet 5"
           }
         },
         "additionalProperties": false
