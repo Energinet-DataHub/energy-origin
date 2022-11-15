@@ -29,7 +29,7 @@ public class Certificate
     /// The technology of the production device as specified in EECS Rules Fact Sheet 5
     /// </summary>
     public string TechCode { get; set; } = "";
-    
+
     /// <summary>
     /// The energy source for the production device as specified in EECS Rules Fact Sheet 5
     /// </summary>
