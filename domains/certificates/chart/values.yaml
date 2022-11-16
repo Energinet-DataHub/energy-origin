@@ -1,6 +1,9 @@
 api:
   replicaCount: 1
   image: {}
+  env:
+    MOCKMASTERDATA__JSONFILEPATH:
+    DATASYNC__URL:
 postgres:
   replicaCount: 1
   image:
