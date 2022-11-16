@@ -51,7 +51,8 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Creating
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    Status = CertificateStatus.Creating
                                 }
                             }
                         }
@@ -73,7 +74,8 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Issued
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    Status = CertificateStatus.Issued
                                 }
                             }
                         }
@@ -95,7 +97,8 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    DateFrom = 1, DateTo = 42, GSRN = "gsrn", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000", Status = CertificateStatus.Rejected
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    Status = CertificateStatus.Rejected
                                 }
                             }
                         }

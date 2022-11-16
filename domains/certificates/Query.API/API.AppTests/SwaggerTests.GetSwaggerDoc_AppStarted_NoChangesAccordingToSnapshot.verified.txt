@@ -43,6 +43,11 @@
       "Certificate": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Certificate ID",
+            "format": "uuid"
+          },
           "dateFrom": {
             "type": "integer",
             "description": "Start timestamp for the certificate in Unix time",
@@ -61,6 +66,10 @@
           "gsrn": {
             "type": "string",
             "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "gridArea": {
+            "type": "string",
+            "description": "Grid area for the metering point"
           },
           "techCode": {
             "type": "string",
