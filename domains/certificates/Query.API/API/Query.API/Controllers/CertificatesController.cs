@@ -13,6 +13,8 @@ namespace API.Query.API.Controllers;
 public class CertificatesController : ControllerBase
 {
     [HttpGet]
+    [ProducesResponseType(typeof(CertificateList), 200)]
+    [ProducesResponseType(204)]
     [Route("certificates")]
     public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
     {

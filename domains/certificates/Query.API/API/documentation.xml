@@ -4,6 +4,11 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="P:API.Query.API.ApiModels.Certificate.Id">
+            <summary>
+            Certificate ID
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Certificate.DateFrom">
             <summary>
             Start timestamp for the certificate in Unix time
@@ -22,6 +27,21 @@
         <member name="P:API.Query.API.ApiModels.Certificate.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Certificate.GridArea">
+            <summary>
+            Grid area for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Certificate.TechCode">
+            <summary>
+            The technology of the production device as specified in EECS Rules Fact Sheet 5
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Certificate.FuelCode">
+            <summary>
+            The energy source for the production device as specified in EECS Rules Fact Sheet 5
             </summary>
         </member>
     </members>
