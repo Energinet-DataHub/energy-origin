@@ -9,6 +9,8 @@ using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using IdentityServer4.Extensions;
+using IntegrationEvents;
+using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -16,6 +18,7 @@ namespace API.DataSyncSyncer;
 
 internal class DataSyncSyncerWorker : BackgroundService
 {
+    private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IIntegrationEventBus integrationEventBus;
     private readonly IDataSync dataSync;
@@ -25,13 +28,13 @@ internal class DataSyncSyncerWorker : BackgroundService
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         MockMasterDataCollection collection,
-        IIntegrationEventBus queue,
+        IBus bus,
         IDataSync dataSync
     )
     {
+        this.bus = bus;
         this.logger = logger;
         masterData = collection.Data.ToList();
-        integrationEventBus = queue;
         this.dataSync = dataSync;
         periodStartTimeDictionary = masterData
             .Where(it => !string.IsNullOrWhiteSpace(it.GSRN))
