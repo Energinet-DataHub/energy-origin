@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
@@ -10,6 +11,7 @@ using API.Query.API;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,8 +20,15 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Core;
 using Serilog.Formatting.Json;
 using Weasel.Core;
+
+Task LogMessage(Logger? logger1, MessageReceivedContext messageReceivedContext)
+{
+    logger1?.Information("Auth header: {authHeader}", messageReceivedContext.Request.GetTypedHeaders().Headers.Authorization);
+    return Task.CompletedTask;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +41,8 @@ loggerConfiguration = builder.Environment.IsDevelopment()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+var logger = loggerConfiguration.CreateLogger();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddControllers();
 
@@ -74,6 +84,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
             ValidateLifetime = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
+        };
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context => LogMessage(logger, context)
         };
     });
 
