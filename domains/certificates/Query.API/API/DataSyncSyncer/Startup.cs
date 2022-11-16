@@ -1,9 +1,5 @@
 using System;
-using System.Threading.Channels;
-using API.DataSyncSyncer.Service.Configurations;
-using API.DataSyncSyncer.Service.Datasync;
-using API.DataSyncSyncer.Service.Integration;
-using CertificateEvents;
+using API.DataSyncSyncer.Configurations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,10 +12,6 @@ public static class Startup
         var datasyncUrl = configuration.GetSection(DatasyncOptions.Datasync).Value;
         services.AddHttpClient<IDataSync, DataSync>(client => client.BaseAddress = new Uri(datasyncUrl));
 
-        services.AddSingleton(Channel.CreateUnbounded<EnergyMeasuredIntegrationEvent>());
-        services.AddTransient(svc => svc.GetRequiredService<Channel<EnergyMeasuredIntegrationEvent>>().Writer);
-
-        services.AddSingleton<IIntegrationEventBus, IntegrationEventBus>();
         services.AddTransient<IDataSync, DataSync>();
         services.AddHostedService<DataSyncSyncerWorker>();
     }

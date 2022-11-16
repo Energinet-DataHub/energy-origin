@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Service.Datasync;
-using API.DataSyncSyncer.Service.Integration;
+using API.DataSyncSyncer.Dto;
 using API.MasterDataService;
-using CertificateEvents;
 using CertificateEvents.Primitives;
-using IdentityServer4.Extensions;
 using IntegrationEvents;
+using Marten;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,7 +18,6 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IIntegrationEventBus integrationEventBus;
     private readonly IDataSync dataSync;
     private readonly List<MasterData> masterData;
     private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary;
@@ -41,32 +38,31 @@ internal class DataSyncSyncerWorker : BackgroundService
             .ToDictionary(m => m.GSRN, m => m.MeteringPointOnboardedStartDate);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            await SleepToNearestHour(stoppingToken);
+            await SleepToNearestHour(cancellationToken);
 
             foreach (var data in masterData)
             {
-                var measurements = await FetchMeasurements(data.GSRN, data.MeteringPointOwner);
+                var measurements = await FetchMeasurements(data.GSRN, data.MeteringPointOwner, cancellationToken);
                 SetNextPeriodStartTime(measurements, data.GSRN);
 
                 var integrationsEvents = MapToIntegrationEvents(measurements);
-                await integrationEventBus.Produce(stoppingToken, integrationsEvents);
-                logger.LogInformation("Produce energy measured event");
+                await bus.Publish(integrationsEvents, cancellationToken);
             }
         }
     }
 
-    private async Task SleepToNearestHour(CancellationToken stoppingToken)
+    private async Task SleepToNearestHour(CancellationToken cancellationToken)
     {
         var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
-        logger.LogInformation("Minutes to next hour {minutesToNextHour}", minutesToNextHour);
-        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), stoppingToken);
+        logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
+        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
     }
 
-    private async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner)
+    private async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner, CancellationToken cancellationToken)
     {
         var dateFrom = periodStartTimeDictionary[GSRN].ToUnixTimeSeconds();
 
@@ -80,7 +76,8 @@ internal class DataSyncSyncerWorker : BackgroundService
                     DateFrom: dateFrom,
                     DateTo: midnight
                 ),
-                meteringPointOwner
+                meteringPointOwner,
+                cancellationToken
             );
         }
 
@@ -89,7 +86,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     private void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
     {
-        if (measurements.IsNullOrEmpty())
+        if (measurements.IsEmpty())
         {
             return;
         }

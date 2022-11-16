@@ -1,7 +1,6 @@
-using CertificateEvents;
 using IntegrationEvents;
 
-namespace API.DataSyncSyncer.Service.Datasync;
+namespace API.DataSyncSyncer.Dto;
 
 public record DataSyncDto(
     string GSRN,

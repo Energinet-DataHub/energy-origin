@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using API.DataSyncSyncer;
-using API.DataSyncSyncer.Service.Configurations;
+using API.DataSyncSyncer.Configurations;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.MasterDataService;
@@ -48,10 +48,6 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Certificates Query API"
     });
 });
-
-builder.Services.Configure<DatasyncOptions>(
-    builder.Configuration.GetSection(DatasyncOptions.Datasync)
-);
 
 builder.Services.AddMarten(options =>
 {

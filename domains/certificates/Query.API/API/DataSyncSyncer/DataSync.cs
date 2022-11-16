@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer.Dto;
 using CertificateEvents.Primitives;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.DataSyncSyncer.Service.Datasync;
+namespace API.DataSyncSyncer;
 
 public class DataSync : IDataSync
 {
@@ -24,20 +27,21 @@ public class DataSync : IDataSync
         this.httpClient = httpClient;
     }
 
-    public async Task<List<DataSyncDto>> GetMeasurement(string gsrn, Period period, string meteringPointOwner)
+    public async Task<List<DataSyncDto>> GetMeasurement(string gsrn, Period period, string meteringPointOwner,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Fetching data in period from {from} to: {to}", period.DateFrom, period.DateTo
+            "Fetching data in period from {from} to: {to}", period.DateFrom.ToString("s"), period.DateTo.ToString("s")
         );
 
         var url = $"measurements?gsrn={gsrn}&dateFrom={period.DateFrom}&dateTo={period.DateTo}";
         httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(meteringPointOwner));
 
-        var response = await httpClient.GetAsync(url);
+        var response = await httpClient.GetAsync(url, cancellationToken);
 
-        return await response.Content.ReadFromJsonAsync<List<DataSyncDto>>()
-               ?? throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
+        return await response.Content.ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken)
+               ?? new List<DataSyncDto>();
     }
 
     public static string GenerateToken(string meteringPointOwner)
@@ -46,9 +50,9 @@ public class DataSync : IDataSync
         {
             new(JwtRegisteredClaimNames.UniqueName, "username"),
             new(JwtRegisteredClaimNames.NameId, Guid.NewGuid().ToString()),
-            new("subject",  meteringPointOwner),
-            new("actor",  "actor"),
-            new("scope",  "scope"),
+            new("subject", meteringPointOwner),
+            new("actor", "actor"),
+            new("scope", "scope"),
         };
 
         SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("test test test test test"));
