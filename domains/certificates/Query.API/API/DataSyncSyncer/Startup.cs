@@ -10,9 +10,9 @@ public static class Startup
     public static void AddDataSyncSyncer(this IServiceCollection services, IConfiguration configuration)
     {
         var datasyncUrl = configuration.GetSection(DatasyncOptions.Datasync).Value;
-        services.AddHttpClient<IDataSync, DataSync>(client => client.BaseAddress = new Uri(datasyncUrl));
+        services.AddHttpClient<DataSyncService>(client => client.BaseAddress = new Uri(datasyncUrl));
 
-        services.AddTransient<IDataSync, DataSync>();
+        services.AddTransient<DataSyncService>();
         services.AddHostedService<DataSyncSyncerWorker>();
     }
 }
