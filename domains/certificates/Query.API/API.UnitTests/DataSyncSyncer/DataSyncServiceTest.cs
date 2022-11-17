@@ -57,6 +57,14 @@ public class DataSyncServiceTest
         fakeHttpClient.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task GetMeasurements_MeteringPointOnboarded_DateFromUpdated()
+    {
+        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-2);
+        var service = SetupService(meteringPointOnboarded);
+
+        await AssertDateFromQueryParamIsUpdated(meteringPointOnboarded, service);
+    }
 
     [Fact]
     public async Task GetMeasurements_MeteringPointNotOnboarded_NoDataFetched()
@@ -89,6 +97,42 @@ public class DataSyncServiceTest
         fakeHttpClient.VerifyNoOutstandingExpectation();
 
         Assert.Empty(response);
+    }
+
+    private async Task AssertDateFromQueryParamIsUpdated(DateTimeOffset meteringPointOnboarded, DataSyncService service)
+    {
+        var fakeResponseList = new List<DataSyncDto>
+        {
+            new(
+                GSRN: validMasterData.GSRN,
+                DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
+                DateTo: DateTimeOffset.Now.AddDays(-1).ToUnixTimeSeconds(),
+                Quantity: 5,
+                Quality: MeasurementQuality.Measured
+            )
+        };
+
+        fakeHttpClient
+            .Expect("/measurements")
+            .WithQueryString("gsrn", validMasterData.GSRN)
+            .WithQueryString("dateFrom", meteringPointOnboarded.ToUnixTimeSeconds().ToString())
+            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
+
+        await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+            CancellationToken.None);
+
+        fakeHttpClient.VerifyNoOutstandingExpectation();
+        fakeHttpClient.Clear();
+
+        fakeHttpClient
+            .Expect("/measurements")
+            .WithQueryString("gsrn", validMasterData.GSRN)
+            .WithQueryString("dateFrom", fakeResponseList[0].DateTo.ToString())
+            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
+        await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+            CancellationToken.None);
+
+        fakeHttpClient.VerifyNoOutstandingExpectation();
     }
 
     private DataSyncService SetupService(DateTimeOffset meteringPointOnboardedStartDate)
