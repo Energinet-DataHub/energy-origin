@@ -60,13 +60,14 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
     private static bool ShouldEventBeProduced(MasterData? masterData)
     {
+        var now = DateTime.Now;
         if (masterData is null)
             return false;
 
         if (masterData.Type != MeteringPointType.Production)
             return false;
 
-        if (!masterData.MeteringPointOnboarded)
+        if (now < masterData.MeteringPointOnboardedStartDate)
             return false;
 
         return true;
