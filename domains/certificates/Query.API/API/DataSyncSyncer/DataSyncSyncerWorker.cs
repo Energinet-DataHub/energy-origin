@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Dto;
+using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
 using CertificateEvents.Primitives;
 using IntegrationEvents;

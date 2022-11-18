@@ -1,6 +1,6 @@
 using IntegrationEvents;
 
-namespace API.DataSyncSyncer.Dto;
+namespace API.DataSyncSyncer.Client.Dto;
 
 public record DataSyncDto(
     string GSRN,

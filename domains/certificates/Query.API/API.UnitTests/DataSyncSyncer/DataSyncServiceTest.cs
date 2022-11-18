@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Dto;
+using API.DataSyncSyncer.Client;
+using API.DataSyncSyncer.Client.Dto;
+using API.DataSyncSyncer.Persistence;
 using API.MasterDataService;
 using CertificateEvents.Primitives;
 using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
-using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace API.DataSyncSyncer;
@@ -26,8 +24,8 @@ public class DataSyncServiceTest
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
 
+    private readonly Mock<IDataSyncClient> fakeClient = new();
     private readonly Mock<ILogger<DataSyncService>> fakeLogger = new();
-    private readonly MockHttpMessageHandler fakeHttpClient = new();
 
     [Fact]
     public async Task GetMeasurements_MeteringPointOnboarded_DataFetched()
@@ -43,26 +41,49 @@ public class DataSyncServiceTest
                 Quality: MeasurementQuality.Measured
             )
         };
+        fakeClient.Setup(it => it.RequestAsync(
+            validMasterData.GSRN, new Period(
+                meteringPointOnboarded.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds()
+            ),
+            validMasterData.MeteringPointOwner, CancellationToken.None)).ReturnsAsync(() => fakeResponseList);
 
         var service = SetupService(meteringPointOnboarded);
 
-        fakeHttpClient
-            .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
-            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
-
-        await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
             CancellationToken.None);
-        fakeHttpClient.VerifyNoOutstandingExpectation();
+
+        Assert.NotEmpty(response);
+        Assert.All(response,
+            item =>
+            {
+                Assert.Equal(fakeResponseList[0].GSRN, item.GSRN);
+                Assert.Equal(fakeResponseList[0].DateFrom, item.DateFrom);
+                Assert.Equal(fakeResponseList[0].DateTo, item.DateTo);
+                Assert.Equal(fakeResponseList[0].Quantity, item.Quantity);
+                Assert.Equal(fakeResponseList[0].Quality, item.Quality);
+            }
+        );
     }
 
     [Fact]
-    public async Task GetMeasurements_MeteringPointOnboarded_DateFromUpdated()
+    public async Task GetMeasurements_MeteringPointOnboarded_NoDataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-2);
+        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
+        fakeClient.Setup(it => it.RequestAsync(
+            validMasterData.GSRN, new Period(
+                meteringPointOnboarded.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds()
+            ),
+            validMasterData.MeteringPointOwner, CancellationToken.None)).ReturnsAsync(() => new List<DataSyncDto>());
+
         var service = SetupService(meteringPointOnboarded);
 
-        await AssertDateFromQueryParamIsUpdated(meteringPointOnboarded, service);
+        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+            CancellationToken.None);
+
+        Assert.Empty(response);
+        fakeClient.Verify(
+            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -76,87 +97,22 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         Assert.Empty(response);
-    }
-
-    [Fact]
-    public async Task GetMeasurements_ErrorFromDatahub_NoDataFetched()
-    {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
-
-        var service = SetupService(meteringPointOnboarded);
-
-        fakeHttpClient
-            .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
-            .Respond(HttpStatusCode.InternalServerError);
-
-        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
-            CancellationToken.None);
-
-        fakeHttpClient.VerifyNoOutstandingExpectation();
-
-        Assert.Empty(response);
-    }
-
-    private async Task AssertDateFromQueryParamIsUpdated(DateTimeOffset meteringPointOnboarded, DataSyncService service)
-    {
-        var fakeResponseList = new List<DataSyncDto>
-        {
-            new(
-                GSRN: validMasterData.GSRN,
-                DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
-                DateTo: DateTimeOffset.Now.AddDays(-1).ToUnixTimeSeconds(),
-                Quantity: 5,
-                Quality: MeasurementQuality.Measured
-            )
-        };
-
-        fakeHttpClient
-            .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
-            .WithQueryString("dateFrom", meteringPointOnboarded.ToUnixTimeSeconds().ToString())
-            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
-
-        await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
-            CancellationToken.None);
-
-        fakeHttpClient.VerifyNoOutstandingExpectation();
-        fakeHttpClient.Clear();
-
-        fakeHttpClient
-            .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
-            .WithQueryString("dateFrom", fakeResponseList[0].DateTo.ToString())
-            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
-        await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
-            CancellationToken.None);
-
-        fakeHttpClient.VerifyNoOutstandingExpectation();
+        fakeClient.Verify(
+            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private DataSyncService SetupService(DateTimeOffset meteringPointOnboardedStartDate)
     {
-        var client = fakeHttpClient.ToHttpClient();
-        client.BaseAddress = new Uri("http://localhost:8080");
-
-        var masterDataList = new List<MasterData>
-        {
-            validMasterData with
-            {
-                MeteringPointOnboardedStartDate = meteringPointOnboardedStartDate
-            }
-        };
-
+        Mock<IState> fakeState = new();
+        fakeState.Setup(s => s.GetPeriodStartTime(validMasterData.GSRN))
+            .Returns(meteringPointOnboardedStartDate.ToUnixTimeSeconds);
 
         var service = new DataSyncService(
-            httpClient: client,
-            logger: fakeLogger.Object
+            client: fakeClient.Object,
+            logger: fakeLogger.Object,
+            state: fakeState.Object
         );
-        var state = masterDataList
-            .Where(it => !string.IsNullOrWhiteSpace(it.GSRN))
-            .ToDictionary(m => m.GSRN, m => m.MeteringPointOnboardedStartDate);
-
-        service.SetState(state);
 
         return service;
     }

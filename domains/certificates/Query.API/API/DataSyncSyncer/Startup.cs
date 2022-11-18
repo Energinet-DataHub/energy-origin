@@ -1,5 +1,7 @@
 using System;
+using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Configurations;
+using API.DataSyncSyncer.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +15,9 @@ public static class Startup
         services.AddHttpClient<DataSyncService>(client => client.BaseAddress = new Uri(datasyncUrl));
 
         services.AddTransient<DataSyncService>();
+        services.AddTransient<IDataSyncClient, DataSyncClient>();
+        services.AddTransient<IState, State>();
+
         services.AddHostedService<DataSyncSyncerWorker>();
     }
 }
