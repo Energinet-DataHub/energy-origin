@@ -16,7 +16,8 @@ namespace API.AppTests;
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.ConfigureTestServices(services => {
+        builder.ConfigureTestServices(services =>
+        {
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
