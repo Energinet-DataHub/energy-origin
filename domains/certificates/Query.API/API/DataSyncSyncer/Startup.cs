@@ -11,8 +11,9 @@ public static class Startup
 {
     public static void AddDataSyncSyncer(this IServiceCollection services, IConfiguration configuration)
     {
-        var datasyncUrl = configuration.GetSection(DatasyncOptions.Datasync).Value;
-        services.AddHttpClient<DataSyncService>(client => client.BaseAddress = new Uri(datasyncUrl));
+        DatasyncOptions options = new();
+        configuration.GetRequiredSection(DatasyncOptions.Datasync).Bind(options);
+        services.AddHttpClient<DataSyncService>(client => client.BaseAddress = new Uri(options.Url));
 
         services.AddSingleton<DataSyncService>();
         services.AddTransient<IDataSyncClient, DataSyncClient>();
