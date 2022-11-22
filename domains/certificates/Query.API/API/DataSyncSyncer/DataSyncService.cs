@@ -15,26 +15,26 @@ namespace API.DataSyncSyncer;
 public class DataSyncService
 {
     private readonly IDataSyncClient client;
-    private readonly IState state;
+    private readonly ISyncState syncState;
     private readonly ILogger<DataSyncService> logger;
     private Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
 
-    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, IState state)
+    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, ISyncState syncState)
     {
         this.client = client;
         this.logger = logger;
-        this.state = state;
+        this.syncState = syncState;
     }
 
     public void SetState(Dictionary<string, DateTimeOffset> state)
     {
-        this.state.SetState(state);
+        syncState.SetState(state);
     }
 
     public async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner,
         CancellationToken cancellationToken)
     {
-        var dateFrom = state.GetPeriodStartTime(GSRN);
+        var dateFrom = syncState.GetPeriodStartTime(GSRN);
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
@@ -60,7 +60,7 @@ public class DataSyncService
             }
         }
 
-        state.SetNextPeriodStartTime(result, GSRN);
+        syncState.SetNextPeriodStartTime(result, GSRN);
         return result;
     }
 }

@@ -4,7 +4,7 @@ using API.DataSyncSyncer.Client.Dto;
 
 namespace API.DataSyncSyncer.Persistence;
 
-public interface IState
+public interface ISyncState
 {
     void SetState(Dictionary<string, DateTimeOffset> state);
     void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN);

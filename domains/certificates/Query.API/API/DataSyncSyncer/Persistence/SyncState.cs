@@ -6,7 +6,7 @@ using Marten;
 
 namespace API.DataSyncSyncer.Persistence;
 
-public class State : IState
+public class SyncState : ISyncState
 {
     private Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
 

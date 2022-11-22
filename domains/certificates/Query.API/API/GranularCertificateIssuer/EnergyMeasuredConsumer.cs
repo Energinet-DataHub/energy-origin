@@ -30,7 +30,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
         var masterData = await masterDataService.GetMasterData(message.GSRN);
 
-        if (!ShouldEventBeProduced(masterData))
+        if (!ShouldEventBeProduced(masterData, message))
         {
             logger.LogInformation("No production certificate event stream started for {message}", message);
             return;
@@ -58,18 +58,19 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         logger.LogInformation("Created production certificate event stream for {message}", message);
     }
 
-    private static bool ShouldEventBeProduced(MasterData? masterData)
+    private static bool ShouldEventBeProduced(MasterData? masterData,
+        EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
-        var now = DateTimeOffset.Now;
         if (masterData is null)
             return false;
 
         if (masterData.Type != MeteringPointType.Production)
             return false;
 
-        if (now < masterData.MeteringPointOnboardedStartDate)
+        if (energyMeasuredIntegrationEvent.DateFrom < masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds())
             return false;
 
         return true;
     }
+
 }

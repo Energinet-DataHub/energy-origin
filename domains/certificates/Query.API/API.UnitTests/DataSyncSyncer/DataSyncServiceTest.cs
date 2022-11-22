@@ -109,14 +109,14 @@ public class DataSyncServiceTest
 
     private DataSyncService SetupService(DateTimeOffset meteringPointOnboardedStartDate)
     {
-        Mock<IState> fakeState = new();
+        Mock<ISyncState> fakeState = new();
         fakeState.Setup(s => s.GetPeriodStartTime(validMasterData.GSRN))
             .Returns(meteringPointOnboardedStartDate.ToUnixTimeSeconds);
 
         var service = new DataSyncService(
             client: fakeClient.Object,
             logger: fakeLogger.Object,
-            state: fakeState.Object
+            syncState: fakeState.Object
         );
 
         return service;
