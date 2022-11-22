@@ -1,16 +1,26 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using API.DataSyncSyncer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.AppTests;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
+    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        builder.ConfigureTestServices(services => {
+            //Remove DataSyncSyncerWorker
+            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+        });
+
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient()

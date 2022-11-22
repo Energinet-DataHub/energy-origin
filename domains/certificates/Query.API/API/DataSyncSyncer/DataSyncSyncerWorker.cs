@@ -43,8 +43,6 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await SleepToNearestHour(cancellationToken);
-
             foreach (var data in masterData)
             {
                 var measurements = await dataSyncService.FetchMeasurements(data.GSRN, data.MeteringPointOwner,
@@ -56,6 +54,9 @@ internal class DataSyncSyncerWorker : BackgroundService
                     await bus.Publish(integrationsEvents, cancellationToken);
                 }
             }
+
+            //TODO: This is moved because I do not want to wait
+            await SleepToNearestHour(cancellationToken);
         }
     }
 
