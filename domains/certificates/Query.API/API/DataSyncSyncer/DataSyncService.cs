@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents.Primitives;
-using Marten;
 using Microsoft.Extensions.Logging;
 
 namespace API.DataSyncSyncer;
@@ -17,7 +15,6 @@ public class DataSyncService
     private readonly IDataSyncClient client;
     private readonly ISyncState syncState;
     private readonly ILogger<DataSyncService> logger;
-    private Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
 
     public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, ISyncState syncState)
     {
