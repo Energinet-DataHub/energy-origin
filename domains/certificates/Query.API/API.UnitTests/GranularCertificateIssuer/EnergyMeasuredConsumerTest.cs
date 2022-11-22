@@ -18,15 +18,15 @@ namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredConsumerTest
 {
+    private static readonly DateTimeOffset now = DateTimeOffset.Now;
+
     private readonly MasterData validMasterData = new(
         GSRN: "gsrn",
         GridArea: "gridArea",
         Type: MeteringPointType.Production,
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
-
-    private readonly DateTimeOffset now = DateTimeOffset.Now;
+        MeteringPointOnboardedStartDate: now.AddDays(-1));
 
     [Fact]
     public async Task Consume_NoMasterData_NoEventsSaved()
@@ -39,7 +39,7 @@ public class EnergyMeasuredConsumerTest
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: "gsrn",
             DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: 42,
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
@@ -61,7 +61,7 @@ public class EnergyMeasuredConsumerTest
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForConsumptionPoint.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: 42,
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
@@ -87,7 +87,7 @@ public class EnergyMeasuredConsumerTest
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForNotOnboarded.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: 42,
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
@@ -107,7 +107,7 @@ public class EnergyMeasuredConsumerTest
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: validMasterData.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: 42,
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 

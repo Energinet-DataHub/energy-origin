@@ -16,7 +16,7 @@ public static class Startup
 
         services.AddSingleton<DataSyncService>();
         services.AddTransient<IDataSyncClient, DataSyncClient>();
-        services.AddSingleton<ISyncState, SyncState>();
+        // services.AddSingleton<ISyncStateFactory, SyncStateFactory>();
 
         services.AddHostedService<DataSyncSyncerWorker>();
     }

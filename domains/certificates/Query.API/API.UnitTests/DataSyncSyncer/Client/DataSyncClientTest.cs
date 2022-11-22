@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
 using CertificateEvents.Primitives;
+using FluentAssertions;
 using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -30,7 +31,7 @@ public class DataSyncClientTest
     private readonly Mock<ILogger<DataSyncClient>> fakeLogger = new();
 
 
-    public DataSyncClient Setup()
+    private DataSyncClient Setup()
     {
         var client = fakeHttpHandler.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost:8080");
@@ -42,9 +43,9 @@ public class DataSyncClientTest
     }
 
     [Fact]
-    public async Task GetMeasurements_ErrorFromDatahub_ExceptionIsThrown()
+    public async Task RequestAsync_ErrorFromDatahub_ExceptionIsThrown()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
+        var date = DateTimeOffset.Now.AddDays(-1);
 
         fakeHttpHandler
             .Expect("/measurements")
@@ -56,8 +57,8 @@ public class DataSyncClientTest
         await Assert.ThrowsAsync<HttpRequestException>(() => dataSyncClient.RequestAsync(
             GSRN: validMasterData.GSRN,
             period: new Period(
-                DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
-                DateTo: meteringPointOnboarded.AddDays(1).ToUnixTimeSeconds()
+                DateFrom: date.ToUnixTimeSeconds(),
+                DateTo: date.AddDays(1).ToUnixTimeSeconds()
             ),
             meteringPointOwner: validMasterData.MeteringPointOwner,
             cancellationToken: CancellationToken.None
@@ -67,15 +68,15 @@ public class DataSyncClientTest
     }
 
     [Fact]
-    public async Task GetMeasurements_FromDatahub_DataFetched()
+    public async Task RequestAsync_FromDatahub_DataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
+        var date = DateTimeOffset.Now.AddDays(-1);
 
         var fakeResponseList = new List<DataSyncDto>
         {
             new(
                 GSRN: validMasterData.GSRN,
-                DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
+                DateFrom: date.ToUnixTimeSeconds(),
                 DateTo: DateTimeOffset.Now.AddDays(-1).ToUnixTimeSeconds(),
                 Quantity: 5,
                 Quality: MeasurementQuality.Measured
@@ -91,8 +92,8 @@ public class DataSyncClientTest
 
         var response = await dataSyncClient.RequestAsync(
             GSRN: validMasterData.GSRN,
-            period: new Period(meteringPointOnboarded.ToUnixTimeSeconds(),
-                meteringPointOnboarded.AddDays(1).ToUnixTimeSeconds()),
+            period: new Period(date.ToUnixTimeSeconds(),
+                date.AddDays(1).ToUnixTimeSeconds()),
             meteringPointOwner: validMasterData.MeteringPointOwner,
             CancellationToken.None
         );
@@ -100,15 +101,6 @@ public class DataSyncClientTest
         fakeHttpHandler.VerifyNoOutstandingExpectation();
 
         Assert.NotEmpty(response);
-        Assert.All(response,
-            item =>
-            {
-                Assert.Equal(fakeResponseList[0].GSRN, item.GSRN);
-                Assert.Equal(fakeResponseList[0].DateFrom, item.DateFrom);
-                Assert.Equal(fakeResponseList[0].DateTo, item.DateTo);
-                Assert.Equal(fakeResponseList[0].Quantity, item.Quantity);
-                Assert.Equal(fakeResponseList[0].Quality, item.Quality);
-            }
-        );
+        response.Should().Equal(fakeResponseList);
     }
 }

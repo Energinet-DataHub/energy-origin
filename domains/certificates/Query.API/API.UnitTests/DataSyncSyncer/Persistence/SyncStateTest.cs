@@ -6,20 +6,18 @@ using Xunit;
 
 namespace API.DataSyncSyncer.Persistence;
 
-public class StateTest
+public class SyncStateTest
 {
     private readonly SyncState syncState;
 
-    public StateTest()
+    public SyncStateTest()
     {
         Dictionary<string, DateTimeOffset> dict = new() { { "gsrn", DateTimeOffset.Now.AddDays(-1) } };
-
-        syncState = new SyncState();
-        syncState.SetState(dict);
+        syncState = new SyncState(dict);
     }
 
     [Fact]
-    public void GetMeasurement_StateUpdated()
+    public void SetNextPeriodStartTime_StateUpdated()
     {
         var currentStartTime = syncState.GetPeriodStartTime("gsrn");
         var newStartTime = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();

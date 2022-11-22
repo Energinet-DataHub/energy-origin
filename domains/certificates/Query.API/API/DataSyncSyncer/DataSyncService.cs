@@ -7,7 +7,6 @@ using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents.Primitives;
-using Marten;
 using Microsoft.Extensions.Logging;
 
 namespace API.DataSyncSyncer;
@@ -15,26 +14,25 @@ namespace API.DataSyncSyncer;
 public class DataSyncService
 {
     private readonly IDataSyncClient client;
-    private readonly ISyncState syncState;
-    private readonly ILogger<DataSyncService> logger;
-    private Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
+    private ISyncState? syncState;
 
-    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, ISyncState syncState)
+    private readonly ILogger<DataSyncService> logger;
+
+    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger)
     {
         this.client = client;
         this.logger = logger;
-        this.syncState = syncState;
     }
 
     public void SetState(Dictionary<string, DateTimeOffset> state)
     {
-        syncState.SetState(state);
+        syncState = SyncStateFactory.CreateSyncState(state);
     }
 
     public async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner,
         CancellationToken cancellationToken)
     {
-        var dateFrom = syncState.GetPeriodStartTime(GSRN);
+        var dateFrom = syncState!.GetPeriodStartTime(GSRN);
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
