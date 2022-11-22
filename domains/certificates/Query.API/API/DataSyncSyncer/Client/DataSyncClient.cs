@@ -6,6 +6,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
@@ -43,13 +45,14 @@ public class DataSyncClient : IDataSyncClient
 
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        logger.LogInformation("raw content:");
-        logger.LogInformation(content);
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+        };
 
         return (await response.Content
-            .ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
+            .ReadFromJsonAsync<List<DataSyncDto>>(jsonSerializerOptions, cancellationToken: cancellationToken))!;
     }
 
     private static string GenerateToken(string meteringPointOwner)
