@@ -52,8 +52,11 @@ internal class DataSyncSyncerWorker : BackgroundService
                 var measurements = await dataSyncService.FetchMeasurements(data.GSRN, data.MeteringPointOwner,
                     cancellationToken);
 
-                var integrationsEvents = MapToIntegrationEvents(measurements);
-                await bus.Publish(integrationsEvents, cancellationToken);
+                if (measurements.Any())
+                {
+                    var integrationsEvents = MapToIntegrationEvents(measurements);
+                    await bus.Publish(integrationsEvents, cancellationToken);
+                }
             }
         }
     }

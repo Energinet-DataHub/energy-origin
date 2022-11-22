@@ -31,6 +31,7 @@ public class DataSyncServiceTest
     public async Task GetMeasurements_MeteringPointOnboarded_DataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
+
         var fakeResponseList = new List<DataSyncDto>
         {
             new(
@@ -42,10 +43,12 @@ public class DataSyncServiceTest
             )
         };
         fakeClient.Setup(it => it.RequestAsync(
-            validMasterData.GSRN, new Period(
-                meteringPointOnboarded.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds()
-            ),
-            validMasterData.MeteringPointOwner, CancellationToken.None)).ReturnsAsync(() => fakeResponseList);
+                validMasterData.GSRN,
+                It.IsAny<Period>(),
+                validMasterData.MeteringPointOwner,
+                CancellationToken.None)
+            )
+            .ReturnsAsync(() => fakeResponseList);
 
         var service = SetupService(meteringPointOnboarded);
 
@@ -70,10 +73,12 @@ public class DataSyncServiceTest
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
         fakeClient.Setup(it => it.RequestAsync(
-            validMasterData.GSRN, new Period(
-                meteringPointOnboarded.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds()
-            ),
-            validMasterData.MeteringPointOwner, CancellationToken.None)).ReturnsAsync(() => new List<DataSyncDto>());
+                validMasterData.GSRN,
+                It.IsAny<Period>(),
+                validMasterData.MeteringPointOwner,
+                CancellationToken.None)
+            )
+            .ReturnsAsync(() => new List<DataSyncDto>());
 
         var service = SetupService(meteringPointOnboarded);
 
