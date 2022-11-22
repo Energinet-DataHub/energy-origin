@@ -44,7 +44,7 @@ public class DataSyncClient : IDataSyncClient
         return (await response.EnsureSuccessStatusCode().Content
             .ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
     }
-    
+
     private static string GenerateToken(string meteringPointOwner)
     {
         var now = DateTimeOffset.UtcNow;
@@ -59,7 +59,7 @@ public class DataSyncClient : IDataSyncClient
             new("scope", "meteringpoints.read"),
             new("scope", "measurements.read"),
         };
-        
+
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
         var tokenDescriptor = new SecurityTokenDescriptor
