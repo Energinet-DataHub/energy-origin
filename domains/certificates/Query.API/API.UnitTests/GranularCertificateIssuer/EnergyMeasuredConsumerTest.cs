@@ -68,7 +68,7 @@ public class EnergyMeasuredConsumerTest
     }
 
     [Fact]
-    public async Task Consume_MeteringPointNotOnboarded_NoEventsSaved()
+    public async Task Consume_OneDayBeforeIssuanceStartDate_NoEventsSaved()
     {
         var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboardedStartDate = DateTimeOffset.Now.AddDays(1) };
         var masterDataServiceMock = new Mock<IMasterDataService>();

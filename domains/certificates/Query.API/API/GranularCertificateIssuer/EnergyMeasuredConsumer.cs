@@ -60,7 +60,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
     private static bool ShouldEventBeProduced(MasterData? masterData)
     {
-        var now = DateTime.Now;
+        var now = DateTimeOffset.Now;
         if (masterData is null)
             return false;
 

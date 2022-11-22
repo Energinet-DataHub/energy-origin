@@ -31,8 +31,8 @@ public class DataSyncClient : IDataSyncClient
     {
         logger.LogInformation(
             "Fetching data in period from {from} to: {to}",
-            DateTimeOffset.FromUnixTimeSeconds(period.DateFrom).ToString("MM/dd/yy H:mm:ss"),
-            DateTimeOffset.FromUnixTimeSeconds(period.DateTo).ToString("MM/dd/yy H:mm:ss")
+            DateTimeOffset.FromUnixTimeSeconds(period.DateFrom).ToString("o"),
+            DateTimeOffset.FromUnixTimeSeconds(period.DateTo).ToString("o")
         );
 
         var url = $"measurements?gsrn={GSRN}&dateFrom={period.DateFrom}&dateTo={period.DateTo}";
@@ -47,21 +47,24 @@ public class DataSyncClient : IDataSyncClient
 
     private static string GenerateToken(string meteringPointOwner)
     {
+        var expires = DateTime.Now.AddMinutes(3);
         var claims = new Claim[]
         {
-            new(JwtRegisteredClaimNames.UniqueName, "username"),
-            new(JwtRegisteredClaimNames.NameId, Guid.NewGuid().ToString()),
             new("subject", meteringPointOwner),
-            new("actor", "actor"),
-            new("scope", "scope"),
+            new("actor", meteringPointOwner),
+            new("issued", DateTimeOffset.Now.ToString()),
+            new("expires", ((DateTimeOffset) expires).ToString()),
+            new("scope", "meteringpoints.read"),
+            new("scope", "measurements.read"),
         };
+
 
         SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("test test test test test"));
         var token = new JwtSecurityToken(
             issuer: "energinet",
             audience: "energinet",
             claims: claims,
-            expires: DateTime.Now.AddMinutes(3),
+            expires: expires,
             signingCredentials: new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
         );
 
