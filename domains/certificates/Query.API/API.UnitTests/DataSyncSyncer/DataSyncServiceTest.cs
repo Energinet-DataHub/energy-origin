@@ -7,7 +7,6 @@ using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
 using API.MasterDataService;
 using CertificateEvents.Primitives;
-using FluentAssertions;
 using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,10 +26,9 @@ public class DataSyncServiceTest
 
     private readonly Mock<IDataSyncClient> fakeClient = new();
     private readonly Mock<ILogger<DataSyncService>> fakeLogger = new();
-    private readonly Mock<ISyncStateFactory> fakeSyncStateFactory = new();
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointOnboarded_DataFetched()
+    public async Task GetMeasurements_MeteringPointOnboarded_DataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
 
@@ -58,11 +56,20 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         Assert.NotEmpty(response);
-        response.Should().Equal(fakeResponseList);
+        Assert.All(response,
+            item =>
+            {
+                Assert.Equal(fakeResponseList[0].GSRN, item.GSRN);
+                Assert.Equal(fakeResponseList[0].DateFrom, item.DateFrom);
+                Assert.Equal(fakeResponseList[0].DateTo, item.DateTo);
+                Assert.Equal(fakeResponseList[0].Quantity, item.Quantity);
+                Assert.Equal(fakeResponseList[0].Quality, item.Quality);
+            }
+        );
     }
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointOnboarded_NoDataFetched()
+    public async Task GetMeasurements_MeteringPointOnboarded_NoDataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
         fakeClient.Setup(it => it.RequestAsync(
@@ -85,7 +92,7 @@ public class DataSyncServiceTest
     }
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointNotOnboarded_NoDataFetched()
+    public async Task GetMeasurements_MeteringPointNotOnboarded_NoDataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
 
@@ -102,22 +109,15 @@ public class DataSyncServiceTest
 
     private DataSyncService SetupService(DateTimeOffset meteringPointOnboardedStartDate)
     {
-        var fakeState = new Dictionary<string, DateTimeOffset>
-        {
-            { validMasterData.GSRN, meteringPointOnboardedStartDate }
-        };
-
-        fakeSyncStateFactory
-            .Setup(it => it.CreateSyncState(It.IsAny<Dictionary<string, DateTimeOffset>>())).r
-            .Returns(new SyncState(fakeState));
+        Mock<ISyncState> fakeState = new();
+        fakeState.Setup(s => s.GetPeriodStartTime(validMasterData.GSRN))
+            .Returns(meteringPointOnboardedStartDate.ToUnixTimeSeconds);
 
         var service = new DataSyncService(
             client: fakeClient.Object,
             logger: fakeLogger.Object,
-            syncStateFactory: fakeSyncStateFactory.Object
+            syncState: fakeState.Object
         );
-
-        service.SetState(fakeState);
 
         return service;
     }

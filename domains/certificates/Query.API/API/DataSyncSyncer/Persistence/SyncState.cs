@@ -8,12 +8,9 @@ namespace API.DataSyncSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
+    private Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
 
-    public SyncState(Dictionary<string, DateTimeOffset> periodStartTimeDictionary)
-    {
-        this.periodStartTimeDictionary = periodStartTimeDictionary;
-    }
+    public void SetState(Dictionary<string, DateTimeOffset> state) => periodStartTimeDictionary = state;
 
     public void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
     {

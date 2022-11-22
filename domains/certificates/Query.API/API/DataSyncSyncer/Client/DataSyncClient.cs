@@ -41,9 +41,8 @@ public class DataSyncClient : IDataSyncClient
 
         var response = await httpClient.GetAsync(url, cancellationToken);
 
-        response.EnsureSuccessStatusCode();
-
-        return (await response.Content.ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
+        return (await response.EnsureSuccessStatusCode().Content
+            .ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
     }
 
     private static string GenerateToken(string meteringPointOwner)
@@ -54,7 +53,7 @@ public class DataSyncClient : IDataSyncClient
             new("subject", meteringPointOwner),
             new("actor", meteringPointOwner),
             new("issued", DateTimeOffset.Now.ToString()),
-            new("expires", ((DateTimeOffset)expires).ToString()),
+            new("expires", ((DateTimeOffset) expires).ToString()),
             new("scope", "meteringpoints.read"),
             new("scope", "measurements.read"),
         };
