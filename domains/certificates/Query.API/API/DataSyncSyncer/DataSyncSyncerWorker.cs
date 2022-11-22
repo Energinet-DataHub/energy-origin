@@ -61,7 +61,8 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
     {
-        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        //var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        var minutesToNextHour = 1;
         logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
         await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
     }
