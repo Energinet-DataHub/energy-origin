@@ -41,7 +41,14 @@ public class DataSyncClient : IDataSyncClient
 
         var response = await httpClient.GetAsync(url, cancellationToken);
 
-        return (await response.EnsureSuccessStatusCode().Content
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        logger.LogInformation("raw content:");
+        logger.LogInformation(content);
+
+        return (await response.Content
             .ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
     }
 
