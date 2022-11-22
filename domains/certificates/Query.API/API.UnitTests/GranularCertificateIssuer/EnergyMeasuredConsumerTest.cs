@@ -1,8 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
-using CertificateEvents;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
@@ -24,19 +24,21 @@ public class EnergyMeasuredConsumerTest
         Type: MeteringPointType.Production,
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboarded: true);
+        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
+
+    private readonly DateTimeOffset now = DateTimeOffset.Now;
 
     [Fact]
     public async Task Consume_NoMasterData_NoEventsSaved()
     {
-        var documentSessionMock = new Mock<IDocumentSession>();
+        var documentSessionMock = GetDocumentSessionMock();
 
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(value: null);
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: "gsrn",
-            DateFrom: 1,
+            DateFrom: now.ToUnixTimeSeconds(),
             DateTo: 42,
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
@@ -51,13 +53,14 @@ public class EnergyMeasuredConsumerTest
     {
         var masterDataForConsumptionPoint = validMasterData with { Type = MeteringPointType.Consumption };
         var masterDataServiceMock = new Mock<IMasterDataService>();
-        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(masterDataForConsumptionPoint);
+        masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>()))
+            .ReturnsAsync(masterDataForConsumptionPoint);
 
-        var documentSessionMock = new Mock<IDocumentSession>();
+        var documentSessionMock = GetDocumentSessionMock();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForConsumptionPoint.GSRN,
-            DateFrom: 1,
+            DateFrom: now.ToUnixTimeSeconds(),
             DateTo: 42,
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
@@ -67,18 +70,23 @@ public class EnergyMeasuredConsumerTest
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Fact]
-    public async Task Consume_MeteringPointNotOnboarded_NoEventsSaved()
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(0, 1)]
+    public async Task Consume_StartDateInTheFuture_NoEventsSaved(int days, int seconds)
     {
-        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
+        var masterDataForNotOnboarded = validMasterData with
+        {
+            MeteringPointOnboardedStartDate = now.AddDays(days).AddSeconds(seconds)
+        };
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(masterDataForNotOnboarded);
 
-        var documentSessionMock = new Mock<IDocumentSession>();
+        var documentSessionMock = GetDocumentSessionMock();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: masterDataForNotOnboarded.GSRN,
-            DateFrom: 1,
+            DateFrom: now.ToUnixTimeSeconds(),
             DateTo: 42,
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
@@ -94,12 +102,11 @@ public class EnergyMeasuredConsumerTest
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(validMasterData);
 
-        var documentSessionMock = new Mock<IDocumentSession>();
-        documentSessionMock.Setup(m => m.Events).Returns(Mock.Of<IEventStore>());
+        var documentSessionMock = GetDocumentSessionMock();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: validMasterData.GSRN,
-            DateFrom: 1,
+            DateFrom: now.ToUnixTimeSeconds(),
             DateTo: 42,
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
@@ -109,7 +116,15 @@ public class EnergyMeasuredConsumerTest
         documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message, IDocumentSession documentSession, IMasterDataService masterDataService)
+    private static Mock<IDocumentSession> GetDocumentSessionMock()
+    {
+        var documentSessionMock = new Mock<IDocumentSession>();
+        documentSessionMock.Setup(m => m.Events).Returns(Mock.Of<IEventStore>());
+        return documentSessionMock;
+    }
+
+    private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,
+        IDocumentSession documentSession, IMasterDataService masterDataService)
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredConsumer>())
