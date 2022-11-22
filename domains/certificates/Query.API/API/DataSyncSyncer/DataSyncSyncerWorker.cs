@@ -19,7 +19,6 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly List<MasterData> masterData;
-    private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary;
     private readonly DataSyncService dataSyncService;
 
     public DataSyncSyncerWorker(
@@ -34,15 +33,14 @@ internal class DataSyncSyncerWorker : BackgroundService
         this.dataSyncService = dataSyncService;
 
         masterData = collection.Data.ToList();
-        periodStartTimeDictionary = collection.Data.ToList()
+        var periodStartTimeDictionary = masterData
             .Where(it => !string.IsNullOrWhiteSpace(it.GSRN))
             .ToDictionary(m => m.GSRN, m => m.MeteringPointOnboardedStartDate);
+        dataSyncService.SetState(periodStartTimeDictionary);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        dataSyncService.SetState(periodStartTimeDictionary);
-
         while (!cancellationToken.IsCancellationRequested)
         {
             await SleepToNearestHour(cancellationToken);

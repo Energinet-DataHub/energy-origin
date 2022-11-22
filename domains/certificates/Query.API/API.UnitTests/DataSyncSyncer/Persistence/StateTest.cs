@@ -12,8 +12,7 @@ public class StateTest
 
     public StateTest()
     {
-        Dictionary<string, DateTimeOffset> dict = new();
-        dict.Add("gsrn", DateTimeOffset.Now.AddDays(-1));
+        Dictionary<string, DateTimeOffset> dict = new() { { "gsrn", DateTimeOffset.Now.AddDays(-1) } };
 
         state = new State();
         state.SetState(dict);
