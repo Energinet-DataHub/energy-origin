@@ -1,8 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.GranularCertificateIssuer;
 using API.MasterDataService;
-using CertificateEvents;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
@@ -24,7 +24,7 @@ public class EnergyMeasuredConsumerTest
         Type: MeteringPointType.Production,
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboarded: true);
+        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
 
     [Fact]
     public async Task Consume_NoMasterData_NoEventsSaved()
@@ -68,9 +68,9 @@ public class EnergyMeasuredConsumerTest
     }
 
     [Fact]
-    public async Task Consume_MeteringPointNotOnboarded_NoEventsSaved()
+    public async Task Consume_OneDayBeforeIssuanceStartDate_NoEventsSaved()
     {
-        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboarded = false };
+        var masterDataForNotOnboarded = validMasterData with { MeteringPointOnboardedStartDate = DateTimeOffset.Now.AddDays(1) };
         var masterDataServiceMock = new Mock<IMasterDataService>();
         masterDataServiceMock.Setup(m => m.GetMasterData(It.IsAny<string>())).ReturnsAsync(masterDataForNotOnboarded);
 
