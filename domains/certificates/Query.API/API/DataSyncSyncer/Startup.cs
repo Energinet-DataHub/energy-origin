@@ -12,7 +12,7 @@ public static class Startup
     public static void AddDataSyncSyncer(this IServiceCollection services, IConfiguration configuration)
     {
         DatasyncOptions options = new();
-        configuration.GetRequiredSection(DatasyncOptions.Datasync).Bind(options);
+        configuration.GetSection(DatasyncOptions.Datasync).Bind(options);
         services.AddHttpClient<DataSyncService>(client => client.BaseAddress = new Uri(options.Url));
 
         services.AddSingleton<DataSyncService>();
