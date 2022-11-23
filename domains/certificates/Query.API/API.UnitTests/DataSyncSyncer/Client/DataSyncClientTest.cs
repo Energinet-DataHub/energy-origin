@@ -12,6 +12,7 @@ using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -82,11 +83,12 @@ public class DataSyncClientTest
                 Quality: MeasurementQuality.Measured
             )
         };
+        var json = JsonConvert.SerializeObject(fakeResponseList, new StringEnumConverter());
 
         fakeHttpHandler
             .Expect("/measurements")
             .WithQueryString("gsrn", validMasterData.GSRN)
-            .Respond("application/json", JsonConvert.SerializeObject(fakeResponseList));
+            .Respond("application/json", json);
 
         var dataSyncClient = Setup();
 

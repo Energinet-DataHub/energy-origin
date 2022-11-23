@@ -6,6 +6,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
@@ -43,34 +45,40 @@ public class DataSyncClient : IDataSyncClient
 
         response.EnsureSuccessStatusCode();
 
-        return (await response.Content.ReadFromJsonAsync<List<DataSyncDto>>(cancellationToken: cancellationToken))!;
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+        };
+
+        return (await response.Content
+            .ReadFromJsonAsync<List<DataSyncDto>>(jsonSerializerOptions, cancellationToken: cancellationToken))!;
     }
 
     private static string GenerateToken(string meteringPointOwner)
     {
-        var expires = DateTime.Now.AddMinutes(3);
+        var now = DateTimeOffset.UtcNow;
+        var expires = now.AddMinutes(3);
+
         var claims = new Claim[]
         {
             new("subject", meteringPointOwner),
             new("actor", meteringPointOwner),
-            new("issued", DateTimeOffset.Now.ToString()),
-            new("expires", ((DateTimeOffset)expires).ToString()),
+            new("issued", now.ToString("o")),
+            new("expires", expires.ToString("o")),
             new("scope", "meteringpoints.read"),
             new("scope", "measurements.read"),
         };
 
-
-        SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("test test test test test"));
-        var token = new JwtSecurityToken(
-            issuer: "energinet",
-            audience: "energinet",
-            claims: claims,
-            expires: expires,
-            signingCredentials: new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
-        );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return Convert.ToBase64String(Encoding.UTF8.GetBytes(jwt));
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires.DateTime,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }
