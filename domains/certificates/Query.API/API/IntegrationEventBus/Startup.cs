@@ -12,7 +12,7 @@ public static class Startup
             o.SetKebabCaseEndpointNameFormatter();
 
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
-            
+
             o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
         });
 }
