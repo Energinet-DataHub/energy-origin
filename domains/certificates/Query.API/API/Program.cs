@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
@@ -62,6 +63,9 @@ builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
+
+builder.Services.AddHttpClient<AuthCallWorker>();
+builder.Services.AddHostedService<AuthCallWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
