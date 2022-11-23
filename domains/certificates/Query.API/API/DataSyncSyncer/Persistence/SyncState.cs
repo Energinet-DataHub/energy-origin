@@ -8,12 +8,7 @@ namespace API.DataSyncSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary;
-
-    public SyncState()
-    {
-        periodStartTimeDictionary = new Dictionary<string, DateTimeOffset>();
-    }
+    private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary = new();
 
     public void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
     {
