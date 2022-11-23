@@ -18,7 +18,7 @@ public class AuthCallWorker : BackgroundService
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var uri = "http://eo-auth/user/uuid?cvr=12345678";
+        var uri = "http://eo-auth/user/uuid?cvr=12121212";
 
         logger.LogInformation("uri: {uri}", uri);
 
