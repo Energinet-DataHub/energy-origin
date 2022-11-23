@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
 using IntegrationEvents;
 using MassTransit;
@@ -14,36 +16,61 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly string? gsrn;
+    private readonly List<MasterData> masterData;
+    private readonly DataSyncService dataSyncService;
 
-    public DataSyncSyncerWorker(IBus bus, MockMasterDataCollection collection, ILogger<DataSyncSyncerWorker> logger)
+    public DataSyncSyncerWorker(
+        ILogger<DataSyncSyncerWorker> logger,
+        MockMasterDataCollection collection,
+        IBus bus,
+        DataSyncService dataSyncService
+    )
     {
         this.bus = bus;
         this.logger = logger;
-        var masterData = collection.Data.FirstOrDefault();
-        gsrn = masterData?.GSRN ?? null;
+        this.dataSyncService = dataSyncService;
+
+        masterData = collection.Data.ToList();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(gsrn))
+        while (!cancellationToken.IsCancellationRequested)
         {
-            logger.LogWarning("No master data loaded. Will not produce any events");
-            return;
+            await SleepToNearestHour(cancellationToken);
+
+            foreach (var data in masterData)
+            {
+                var measurements = await dataSyncService.FetchMeasurements(data,
+                    cancellationToken);
+
+                if (measurements.Any())
+                {
+                    var integrationsEvents = MapToIntegrationEvents(measurements);
+                    await bus.Publish(integrationsEvents, cancellationToken);
+                }
+            }
         }
+    }
 
-        var random = new Random();
+    private async Task SleepToNearestHour(CancellationToken cancellationToken)
+    {
+        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
+        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
+    }
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var now = DateTimeOffset.UtcNow;
-
-            var measurement = new EnergyMeasuredIntegrationEvent(gsrn, now.AddHours(-1).ToUnixTimeSeconds(), now.ToUnixTimeSeconds(), random.NextInt64(1, 42), MeasurementQuality.Measured);
-            await bus.Publish(measurement, stoppingToken);
-
-            logger.LogInformation("Publish EnergyMeasuredIntegrationEvent");
-
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-        }
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements)
+    {
+        return measurements
+            .Select(it => new EnergyMeasuredIntegrationEvent(
+                    GSRN: it.GSRN,
+                    DateFrom: it.DateFrom,
+                    DateTo: it.DateTo,
+                    Quantity: it.Quantity,
+                    Quality: it.Quality
+                )
+            )
+            .ToList();
     }
 }
