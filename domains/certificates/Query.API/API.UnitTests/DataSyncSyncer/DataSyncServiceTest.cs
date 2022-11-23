@@ -27,7 +27,7 @@ public class DataSyncServiceTest
 
     private readonly Mock<IDataSyncClient> fakeClient = new();
     private readonly Mock<ILogger<DataSyncService>> fakeLogger = new();
-    private readonly Mock<ISyncStateFactory> fakeSyncStateFactory = new();
+    private readonly Mock<ISyncState> fakeSyncState = new();
 
     [Fact]
     public async Task FetchMeasurements_MeteringPointOnboarded_DataFetched()
@@ -54,7 +54,7 @@ public class DataSyncServiceTest
 
         var service = SetupService(meteringPointOnboarded);
 
-        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner, meteringPointOnboarded,
             CancellationToken.None);
 
         Assert.NotEmpty(response);
@@ -75,7 +75,7 @@ public class DataSyncServiceTest
 
         var service = SetupService(meteringPointOnboarded);
 
-        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner, meteringPointOnboarded,
             CancellationToken.None);
 
         Assert.Empty(response);
@@ -91,7 +91,7 @@ public class DataSyncServiceTest
 
         var service = SetupService(meteringPointOnboarded);
 
-        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner,
+        var response = await service.FetchMeasurements(validMasterData.GSRN, validMasterData.MeteringPointOwner, meteringPointOnboarded,
             CancellationToken.None);
 
         Assert.Empty(response);
@@ -102,22 +102,11 @@ public class DataSyncServiceTest
 
     private DataSyncService SetupService(DateTimeOffset meteringPointOnboardedStartDate)
     {
-        var fakeState = new Dictionary<string, DateTimeOffset>
-        {
-            { validMasterData.GSRN, meteringPointOnboardedStartDate }
-        };
-
-        fakeSyncStateFactory
-            .Setup(it => it.CreateSyncState(It.IsAny<Dictionary<string, DateTimeOffset>>())).r
-            .Returns(new SyncState(fakeState));
-
         var service = new DataSyncService(
             client: fakeClient.Object,
             logger: fakeLogger.Object,
-            syncStateFactory: fakeSyncStateFactory.Object
+            syncState: fakeSyncState.Object
         );
-
-        service.SetState(fakeState);
 
         return service;
     }

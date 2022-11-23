@@ -8,11 +8,11 @@ namespace API.DataSyncSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly Dictionary<string, DateTimeOffset>? periodStartTimeDictionary;
+    private readonly Dictionary<string, DateTimeOffset> periodStartTimeDictionary;
 
-    public SyncState(Dictionary<string, DateTimeOffset> periodStartTimeDictionary)
+    public SyncState()
     {
-        this.periodStartTimeDictionary = periodStartTimeDictionary;
+        periodStartTimeDictionary = new Dictionary<string, DateTimeOffset>();
     }
 
     public void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
@@ -26,5 +26,13 @@ public class SyncState : ISyncState
         periodStartTimeDictionary![GSRN] = DateTimeOffset.FromUnixTimeSeconds(newestMeasurement);
     }
 
-    public long GetPeriodStartTime(string GSRN) => periodStartTimeDictionary![GSRN].ToUnixTimeSeconds();
+    public long GetPeriodStartTime(string GSRN, DateTimeOffset meteringPointOnboardedStartDate)
+    {
+        if (periodStartTimeDictionary.TryGetValue(GSRN, out var periodStart))
+        {
+            return periodStart.ToUnixTimeSeconds();
+        }
+        periodStartTimeDictionary.Add(GSRN, meteringPointOnboardedStartDate);
+        return meteringPointOnboardedStartDate.ToUnixTimeSeconds();
+    }
 }

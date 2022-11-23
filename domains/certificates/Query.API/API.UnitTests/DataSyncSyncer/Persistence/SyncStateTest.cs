@@ -12,28 +12,37 @@ public class SyncStateTest
 
     public SyncStateTest()
     {
-        Dictionary<string, DateTimeOffset> dict = new() { { "gsrn", DateTimeOffset.Now.AddDays(-1) } };
-        syncState = new SyncState(dict);
+        syncState = new SyncState();
+    }
+
+    [Fact]
+    public void GetPeriodStartTime_GetTime()
+    {
+        var now = DateTimeOffset.Now;
+        var currentStartTime = syncState.GetPeriodStartTime("gsrn", now);
+        Assert.Equal(now.ToUnixTimeSeconds(), currentStartTime);
     }
 
     [Fact]
     public void SetNextPeriodStartTime_StateUpdated()
     {
-        var currentStartTime = syncState.GetPeriodStartTime("gsrn");
-        var newStartTime = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
+        var currentStartTime = syncState.GetPeriodStartTime("gsrn", DateTimeOffset.Now);
+        var newStartTime = DateTimeOffset.Now.AddDays(1);
 
         var fakeMeasurements = new List<DataSyncDto>()
         {
             new(
                 "gsrn",
                 currentStartTime,
-                newStartTime,
+                newStartTime.ToUnixTimeSeconds(),
                 5,
                 MeasurementQuality.Measured
             )
         };
 
         syncState.SetNextPeriodStartTime(fakeMeasurements, "gsrn");
-        Assert.Equal(newStartTime, syncState.GetPeriodStartTime("gsrn"));
+
+        Assert.NotEqual(newStartTime.ToUnixTimeSeconds(), currentStartTime);
+        Assert.Equal(newStartTime.ToUnixTimeSeconds(), syncState.GetPeriodStartTime("gsrn", newStartTime));
     }
 }

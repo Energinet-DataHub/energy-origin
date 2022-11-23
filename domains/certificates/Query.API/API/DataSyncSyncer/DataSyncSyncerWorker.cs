@@ -31,10 +31,6 @@ internal class DataSyncSyncerWorker : BackgroundService
         this.dataSyncService = dataSyncService;
 
         masterData = collection.Data.ToList();
-        var periodStartTimeDictionary = masterData
-            .Where(it => !string.IsNullOrWhiteSpace(it.GSRN))
-            .ToDictionary(m => m.GSRN, m => m.MeteringPointOnboardedStartDate);
-        dataSyncService.SetState(periodStartTimeDictionary);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -45,7 +41,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
             foreach (var data in masterData)
             {
-                var measurements = await dataSyncService.FetchMeasurements(data.GSRN, data.MeteringPointOwner,
+                var measurements = await dataSyncService.FetchMeasurements(data.GSRN, data.MeteringPointOwner, data.MeteringPointOnboardedStartDate,
                     cancellationToken);
 
                 if (measurements.Any())

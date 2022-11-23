@@ -14,25 +14,21 @@ namespace API.DataSyncSyncer;
 public class DataSyncService
 {
     private readonly IDataSyncClient client;
-    private ISyncState? syncState;
+    private readonly ISyncState syncState;
 
     private readonly ILogger<DataSyncService> logger;
 
-    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger)
+    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, ISyncState syncState)
     {
         this.client = client;
         this.logger = logger;
+        this.syncState = syncState;
     }
 
-    public void SetState(Dictionary<string, DateTimeOffset> state)
-    {
-        syncState = SyncStateFactory.CreateSyncState(state);
-    }
-
-    public async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner,
+    public async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner, DateTimeOffset meteringPointOnboardedStartDate,
         CancellationToken cancellationToken)
     {
-        var dateFrom = syncState!.GetPeriodStartTime(GSRN);
+        var dateFrom = syncState.GetPeriodStartTime(GSRN, meteringPointOnboardedStartDate);
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();

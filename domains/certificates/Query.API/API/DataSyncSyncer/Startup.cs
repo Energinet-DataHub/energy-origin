@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Configurations;
 using API.DataSyncSyncer.Persistence;
+using API.MasterDataService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +18,7 @@ public static class Startup
 
         services.AddSingleton<DataSyncService>();
         services.AddTransient<IDataSyncClient, DataSyncClient>();
-        // services.AddSingleton<ISyncStateFactory, SyncStateFactory>();
+        services.AddSingleton<ISyncState, SyncState>();
 
         services.AddHostedService<DataSyncSyncerWorker>();
     }

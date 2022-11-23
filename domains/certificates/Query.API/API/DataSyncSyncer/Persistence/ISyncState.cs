@@ -7,5 +7,5 @@ namespace API.DataSyncSyncer.Persistence;
 public interface ISyncState
 {
     void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN);
-    long GetPeriodStartTime(string GSRN);
+    long GetPeriodStartTime(string GSRN, DateTimeOffset meteringPointOnboardedStartDate);
 }
