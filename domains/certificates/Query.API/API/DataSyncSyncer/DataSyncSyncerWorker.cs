@@ -41,7 +41,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
             foreach (var data in masterData)
             {
-                var measurements = await dataSyncService.FetchMeasurements(data.GSRN, data.MeteringPointOwner, data.MeteringPointOnboardedStartDate,
+                var measurements = await dataSyncService.FetchMeasurements(data,
                     cancellationToken);
 
                 if (measurements.Any())

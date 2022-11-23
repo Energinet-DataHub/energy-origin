@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
+using API.MasterDataService;
 using CertificateEvents.Primitives;
 using Microsoft.Extensions.Logging;
 
@@ -25,10 +26,10 @@ public class DataSyncService
         this.syncState = syncState;
     }
 
-    public async Task<List<DataSyncDto>> FetchMeasurements(string GSRN, string meteringPointOwner, DateTimeOffset meteringPointOnboardedStartDate,
+    public async Task<List<DataSyncDto>> FetchMeasurements(MasterData masterData,
         CancellationToken cancellationToken)
     {
-        var dateFrom = syncState.GetPeriodStartTime(GSRN, meteringPointOnboardedStartDate);
+        var dateFrom = syncState.GetPeriodStartTime(masterData.GSRN, masterData.MeteringPointOnboardedStartDate);
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
@@ -39,12 +40,12 @@ public class DataSyncService
             try
             {
                 result = await client.RequestAsync(
-                    GSRN,
+                    masterData.GSRN,
                     new Period(
                         DateFrom: dateFrom,
                         DateTo: midnight
                     ),
-                    meteringPointOwner,
+                    masterData.MeteringPointOwner,
                     cancellationToken
                 );
             }
@@ -54,7 +55,7 @@ public class DataSyncService
             }
         }
 
-        syncState.SetNextPeriodStartTime(result, GSRN);
+        syncState.SetNextPeriodStartTime(result, masterData.GSRN);
         return result;
     }
 }

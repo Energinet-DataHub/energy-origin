@@ -23,7 +23,7 @@ public class SyncState : ISyncState
         }
 
         var newestMeasurement = measurements.Max(m => m.DateTo);
-        periodStartTimeDictionary![GSRN] = DateTimeOffset.FromUnixTimeSeconds(newestMeasurement);
+        periodStartTimeDictionary[GSRN] = DateTimeOffset.FromUnixTimeSeconds(newestMeasurement);
     }
 
     public long GetPeriodStartTime(string GSRN, DateTimeOffset meteringPointOnboardedStartDate)
