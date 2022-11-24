@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
 using CertificateEvents.Primitives;
@@ -16,7 +17,7 @@ using Newtonsoft.Json.Converters;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace API.DataSyncSyncer.Client;
+namespace API.UnitTests.DataSyncSyncer.Client;
 
 public class DataSyncClientTest
 {
@@ -102,7 +103,6 @@ public class DataSyncClientTest
 
         fakeHttpHandler.VerifyNoOutstandingExpectation();
 
-        Assert.NotEmpty(response);
         response.Should().Equal(fakeResponseList);
     }
 }
