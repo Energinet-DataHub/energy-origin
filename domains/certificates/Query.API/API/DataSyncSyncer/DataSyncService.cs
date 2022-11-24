@@ -49,9 +49,10 @@ public class DataSyncService
                     cancellationToken
                 );
                 logger.LogInformation(
-                    "Successfully fetched {numberOfMeasurements} measurements in period from {from} to: {to}",
+                    "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                     result.Count,
-                        DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
+                    masterData.GSRN,
+                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o")
                 );
             }
