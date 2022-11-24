@@ -41,9 +41,7 @@ public class SyncState : ISyncState
                 .DefaultIfEmpty(0)
                 .Max();
 
-            return maxDateTo > 0
-                ? maxDateTo
-                : masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds();
+            return Math.Max(maxDateTo, masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds());
         }
         catch (Exception e)
         {
