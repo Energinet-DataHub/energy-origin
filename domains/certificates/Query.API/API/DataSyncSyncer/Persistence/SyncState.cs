@@ -18,7 +18,7 @@ public class SyncState : ISyncState
         this.documentStore = documentStore;
         this.logger = logger;
     }
-    
+
     public async Task<long?> GetPeriodStartTime(MasterData masterData)
     {
         try
