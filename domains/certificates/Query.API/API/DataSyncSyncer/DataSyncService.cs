@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
@@ -29,7 +28,13 @@ public class DataSyncService
     public async Task<List<DataSyncDto>> FetchMeasurements(MasterData masterData,
         CancellationToken cancellationToken)
     {
-        var dateFrom = syncState.GetPeriodStartTime(masterData.GSRN, masterData.MeteringPointOnboardedStartDate);
+        var dateFrom = await syncState.GetPeriodStartTime(masterData);
+
+        if (dateFrom == null)
+        {
+            logger.LogInformation("Not possible to get dateFrom from sync state for {masterData}", masterData);
+            return new();
+        }
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
@@ -42,7 +47,7 @@ public class DataSyncService
                 result = await client.RequestAsync(
                     masterData.GSRN,
                     new Period(
-                        DateFrom: dateFrom,
+                        DateFrom: dateFrom.Value,
                         DateTo: midnight
                     ),
                     masterData.MeteringPointOwner,
