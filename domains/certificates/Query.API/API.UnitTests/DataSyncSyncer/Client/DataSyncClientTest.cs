@@ -103,7 +103,6 @@ public class DataSyncClientTest
 
         fakeHttpHandler.VerifyNoOutstandingExpectation();
 
-        Assert.NotEmpty(response);
         response.Should().Equal(fakeResponseList);
     }
 }
