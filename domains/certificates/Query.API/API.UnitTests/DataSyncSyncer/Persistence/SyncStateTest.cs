@@ -37,12 +37,15 @@ public class SyncStateTest
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsMeteringPointOnboardedStartDate()
+    public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
     {
         var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+
         var start = masterData.MeteringPointOnboardedStartDate;
+
         var certDateFrom = start.ToUnixTimeSeconds();
         var certDateTo = start.AddHours(1).ToUnixTimeSeconds();
+
         view.Certificates.Add(Guid.NewGuid(),
             new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = masterData.GSRN });
 
@@ -56,9 +59,10 @@ public class SyncStateTest
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeOnboardedStartDate_ReturnsDataMaxDate()
+    public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeOnboardedStartDate_ReturnsMeteringPointOnboardedStartDate()
     {
         var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+
         view.Certificates.Add(Guid.NewGuid(),
             new CertificateView { DateFrom = 1000, DateTo = 2000, GSRN = masterData.GSRN });
 
@@ -72,9 +76,10 @@ public class SyncStateTest
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_TwoCertificatesInStore_ReturnsDataMaxDate()
+    public async Task GetPeriodStartTime_TwoCertificatesInStore_ReturnsNewestDate()
     {
         var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+
         var start = masterData.MeteringPointOnboardedStartDate;
 
         var cert1DateFrom = start.ToUnixTimeSeconds();
@@ -100,9 +105,12 @@ public class SyncStateTest
     public async Task GetPeriodStartTime_NoCertificatesForThatGsrnInStore_ReturnsMeteringPointOnboardedStartDate()
     {
         var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+
         var start = masterData.MeteringPointOnboardedStartDate;
+
         var certDateFrom = start.ToUnixTimeSeconds();
         var certDateTo = start.AddHours(1).ToUnixTimeSeconds();
+
         view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = "someOtherGsrn" });
 
         var storeMock = CreateStoreMock(view);
