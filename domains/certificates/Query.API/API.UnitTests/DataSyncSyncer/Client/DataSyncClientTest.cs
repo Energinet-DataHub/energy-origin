@@ -31,7 +31,6 @@ public class DataSyncClientTest
     private readonly MockHttpMessageHandler fakeHttpHandler = new();
     private readonly Mock<ILogger<DataSyncClient>> fakeLogger = new();
 
-
     private DataSyncClient Setup()
     {
         var client = fakeHttpHandler.ToHttpClient();
