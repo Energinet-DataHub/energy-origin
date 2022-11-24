@@ -84,7 +84,7 @@ public class SyncStateTest
 
         var cert2DateFrom = start.AddHours(1).ToUnixTimeSeconds();
         var cert2DateTo = start.AddHours(2).ToUnixTimeSeconds();
-        
+
         view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert2DateFrom, DateTo = cert2DateTo, GSRN = masterData.GSRN });
 
         var storeMock = CreateStoreMock(view);
@@ -121,7 +121,7 @@ public class SyncStateTest
         storeMock.Setup(m => m.QuerySession())
             .Throws<Exception>()
             .Verifiable();
-                                 
+
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
