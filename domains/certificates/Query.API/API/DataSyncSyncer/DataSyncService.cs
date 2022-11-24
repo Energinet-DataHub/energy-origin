@@ -32,7 +32,7 @@ public class DataSyncService
 
         if (dateFrom == null)
         {
-            logger.LogInformation("Not possible to get dateFrom from sync state for {masterData}", masterData);
+            logger.LogInformation("Not possible to get start date from sync state for {masterData}", masterData);
             return new();
         }
 
