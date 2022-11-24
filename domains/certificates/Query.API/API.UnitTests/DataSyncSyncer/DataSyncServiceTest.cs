@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace API.DataSyncSyncer;
+namespace API.UnitTests.DataSyncSyncer;
 
 public class DataSyncServiceTest
 {
@@ -35,8 +36,8 @@ public class DataSyncServiceTest
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
         var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData.GSRN, meteringPointOnboarded))
-            .Returns(meteringPointOnboarded.ToUnixTimeSeconds);
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
 
         var fakeResponseList = new List<DataSyncDto>
         {
@@ -62,7 +63,6 @@ public class DataSyncServiceTest
         var response = await service.FetchMeasurements(masterData,
             CancellationToken.None);
 
-        Assert.NotEmpty(response);
         response.Should().Equal(fakeResponseList);
     }
 
@@ -72,8 +72,8 @@ public class DataSyncServiceTest
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
         var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData.GSRN, meteringPointOnboarded))
-            .Returns(meteringPointOnboarded.ToUnixTimeSeconds);
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
 
         fakeClient.Setup(it => it.RequestAsync(
                 masterData.GSRN,
@@ -88,7 +88,7 @@ public class DataSyncServiceTest
         var response = await service.FetchMeasurements(masterData,
             CancellationToken.None);
 
-        Assert.Empty(response);
+        response.Should().BeEmpty();
         fakeClient.Verify(
             c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
                 It.IsAny<CancellationToken>()), Times.Once);
@@ -100,14 +100,33 @@ public class DataSyncServiceTest
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
         var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData.GSRN, meteringPointOnboarded))
-            .Returns(meteringPointOnboarded.ToUnixTimeSeconds);
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
         var service = SetupService();
 
         var response = await service.FetchMeasurements(masterData,
             CancellationToken.None);
 
-        Assert.Empty(response);
+        response.Should().BeEmpty();
+        fakeClient.Verify(
+            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task FetchMeasurements_NoPeriodStartTimeInSyncState_NoDataFetched()
+    {
+        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
+        var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
+
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+            .ReturnsAsync((long?)null);
+        var service = SetupService();
+
+        var response = await service.FetchMeasurements(masterData,
+            CancellationToken.None);
+
+        response.Should().BeEmpty();
         fakeClient.Verify(
             c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
                 It.IsAny<CancellationToken>()), Times.Never);
