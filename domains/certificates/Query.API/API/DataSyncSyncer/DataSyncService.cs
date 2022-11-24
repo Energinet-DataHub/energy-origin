@@ -48,6 +48,13 @@ public class DataSyncService
                     masterData.MeteringPointOwner,
                     cancellationToken
                 );
+                logger.LogInformation(
+                    "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
+                    result.Count,
+                    masterData.GSRN,
+                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
+                    DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o")
+                );
             }
             catch (Exception e)
             {

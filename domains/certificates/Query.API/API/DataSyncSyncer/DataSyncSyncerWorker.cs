@@ -55,6 +55,10 @@ internal class DataSyncSyncerWorker : BackgroundService
     private async Task PublishIntegrationEvents(CancellationToken cancellationToken, List<DataSyncDto> measurements)
     {
         var integrationsEvents = MapToIntegrationEvents(measurements);
+        logger.LogInformation(
+            "Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
+            integrationsEvents.Count
+        );
         foreach (var @event in integrationsEvents)
         {
             await bus.Publish(@event, cancellationToken);
