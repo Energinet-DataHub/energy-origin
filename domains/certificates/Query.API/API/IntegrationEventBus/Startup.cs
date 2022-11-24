@@ -1,4 +1,4 @@
-using System.Reflection;
+using API.GranularCertificateIssuer;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,8 +11,7 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            var entryAssembly = Assembly.GetEntryAssembly();
-            o.AddConsumers(entryAssembly);
+            o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
 
             o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
         });
