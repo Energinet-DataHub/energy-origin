@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
 using API.Query.API.Projections;
 using Marten;
@@ -20,11 +18,7 @@ public class SyncState : ISyncState
         this.documentStore = documentStore;
         this.logger = logger;
     }
-
-    public void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN)
-    {
-    }
-
+    
     public async Task<long?> GetPeriodStartTime(MasterData masterData)
     {
         try

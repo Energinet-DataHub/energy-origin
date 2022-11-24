@@ -38,13 +38,12 @@ public class DataSyncService
 
         var now = DateTimeOffset.UtcNow;
         var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
-        var result = new List<DataSyncDto>();
 
         if (dateFrom < midnight)
         {
             try
             {
-                result = await client.RequestAsync(
+                return await client.RequestAsync(
                     masterData.GSRN,
                     new Period(
                         DateFrom: dateFrom.Value,
@@ -60,7 +59,6 @@ public class DataSyncService
             }
         }
 
-        syncState.SetNextPeriodStartTime(result, masterData.GSRN);
-        return result;
+        return new();
     }
 }
