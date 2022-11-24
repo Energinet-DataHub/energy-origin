@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using API.DataSyncSyncer.Client.Dto;
+using System.Threading.Tasks;
+using API.MasterDataService;
 
 namespace API.DataSyncSyncer.Persistence;
 
 public interface ISyncState
 {
-    void SetNextPeriodStartTime(List<DataSyncDto> measurements, string GSRN);
-    long GetPeriodStartTime(string GSRN, DateTimeOffset meteringPointOnboardedStartDate);
+    Task<long?> GetPeriodStartTime(MasterData masterData);
 }
