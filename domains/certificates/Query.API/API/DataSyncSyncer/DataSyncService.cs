@@ -43,7 +43,7 @@ public class DataSyncService
         {
             try
             {
-                return await client.RequestAsync(
+                var result = await client.RequestAsync(
                     masterData.GSRN,
                     new Period(
                         DateFrom: dateFrom.Value,
@@ -52,13 +52,15 @@ public class DataSyncService
                     masterData.MeteringPointOwner,
                     cancellationToken
                 );
+
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                     result.Count,
                     masterData.GSRN,
-                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
-                    DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o")
-                );
+                    DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
+                    DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o"));
+
+                return result;
             }
             catch (Exception e)
             {
