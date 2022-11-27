@@ -17,24 +17,22 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
+    private readonly MasterDataMockInputCollection collection;
     private readonly DataSyncService dataSyncService;
     private readonly IMasterDataService masterDataService;
-    private readonly string[] gsrns;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         MasterDataMockInputCollection collection,
         IMasterDataService masterDataService,
         IBus bus,
-        DataSyncService dataSyncService
-    )
+        DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
+        this.collection = collection;
         this.dataSyncService = dataSyncService;
         this.masterDataService = masterDataService;
-
-        gsrns = collection.GetAllGsrns().ToArray();
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -43,7 +41,7 @@ internal class DataSyncSyncerWorker : BackgroundService
         {
             await SleepToNearestHour(cancellationToken);
 
-            foreach (var gsrn in gsrns)
+            foreach (var gsrn in collection.GetAllGsrns())
             {
                 var masterData = await masterDataService.GetMasterData(gsrn);
 
