@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
+using API.MasterDataService.MockInput;
 using IntegrationEvents;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
@@ -16,12 +17,14 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly List<MasterData> masterData;
     private readonly DataSyncService dataSyncService;
+    private readonly IMasterDataService masterDataService;
+    private readonly string[] gsrns;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        MockMasterDataCollection collection,
+        MasterDataMockInputCollection collection,
+        IMasterDataService masterDataService,
         IBus bus,
         DataSyncService dataSyncService
     )
@@ -29,19 +32,26 @@ internal class DataSyncSyncerWorker : BackgroundService
         this.bus = bus;
         this.logger = logger;
         this.dataSyncService = dataSyncService;
+        this.masterDataService = masterDataService;
 
-        masterData = collection.Data.ToList();
+        gsrns = collection.GetAllGsrns().ToArray();
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await SleepToNearestHour(cancellationToken);
-
-            foreach (var data in masterData)
+            foreach (var gsrn in gsrns)
             {
-                var measurements = await dataSyncService.FetchMeasurements(data,
+                var masterData = await masterDataService.GetMasterData(gsrn);
+
+                if (masterData == null)
+                {
+                    logger.LogInformation("No master data for {gsrn}", gsrn);
+                    continue;
+                }
+
+                var measurements = await dataSyncService.FetchMeasurements(masterData,
                     cancellationToken);
 
                 if (measurements.Any())
@@ -49,6 +59,8 @@ internal class DataSyncSyncerWorker : BackgroundService
                     await PublishIntegrationEvents(cancellationToken, measurements);
                 }
             }
+
+            await SleepToNearestHour(cancellationToken); // TODO: Move back
         }
     }
 
