@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace API.MasterDataService.AuthService;
+namespace API.MasterDataService.Clients;
 
 public class AuthServiceClientFactory
 {

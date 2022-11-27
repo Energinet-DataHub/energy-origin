@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.MasterDataService.AuthService;
+using API.MasterDataService.Clients;
 using API.MasterDataService.MockInput;
 using Microsoft.Extensions.Logging;
 

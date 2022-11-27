@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.MasterDataService.AuthService;
+using API.MasterDataService.Clients;
 using API.MasterDataService.MockInput;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

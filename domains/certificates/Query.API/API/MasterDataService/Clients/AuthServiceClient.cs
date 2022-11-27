@@ -8,24 +8,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace API.MasterDataService.AuthService;
+namespace API.MasterDataService.Clients;
 
 public class AuthServiceClient
 {
     private readonly HttpClient client;
     private readonly ILogger<AuthServiceClient> logger;
-    private readonly JsonSerializerOptions jsonSerializerOptions;
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+    };
 
     public AuthServiceClient(HttpClient client, ILogger<AuthServiceClient> logger)
     {
         this.client = client;
         this.logger = logger;
-
-        jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
-        };
     }
 
     public async Task<string> GetUuidForCompany(string cvr)
