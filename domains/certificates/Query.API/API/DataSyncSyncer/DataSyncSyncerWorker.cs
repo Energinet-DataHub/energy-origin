@@ -40,13 +40,15 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await SleepToNearestHour(cancellationToken);
-
             foreach (var gsrn in gsrns)
             {
                 var masterData = await masterDataService.GetMasterData(gsrn);
 
-                if (masterData == null) continue;
+                if (masterData == null)
+                {
+                    logger.LogInformation("No master data for {gsrn}", gsrn);
+                    continue;
+                }
 
                 var measurements = await dataSyncService.FetchMeasurements(masterData,
                     cancellationToken);
@@ -56,6 +58,8 @@ internal class DataSyncSyncerWorker : BackgroundService
                     await PublishIntegrationEvents(cancellationToken, measurements);
                 }
             }
+
+            await SleepToNearestHour(cancellationToken); // TODO: Move back
         }
     }
 

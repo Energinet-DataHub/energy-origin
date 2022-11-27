@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.MasterDataService.AuthService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,14 @@ public static class Startup
     public static void AddMasterDataService(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<MockMasterDataOptions>(configuration.GetSection(MockMasterDataOptions.Prefix));
+
+        services.AddHttpClient<AuthServiceClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MockMasterDataOptions>>().Value;
+            client.BaseAddress = new Uri(options.AuthServiceUrl);
+        });
+        services.AddSingleton<AuthServiceClientFactory>();
+
         services.AddSingleton<MockMasterDataCollection>(sp =>
         {
             try
@@ -43,6 +52,7 @@ public static class Startup
                 return new(Array.Empty<MockMasterData>());
             }
         });
+
         services.AddSingleton<IMasterDataService, MockMasterDataService>();
     }
 }
