@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
+using API.MasterDataService.MockInput;
 using IntegrationEvents;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
@@ -16,21 +17,22 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly List<MasterData> masterData;
+    private readonly MasterDataMockInputCollection collection;
     private readonly DataSyncService dataSyncService;
+    private readonly IMasterDataService masterDataService;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        MockMasterDataCollection collection,
+        MasterDataMockInputCollection collection,
+        IMasterDataService masterDataService,
         IBus bus,
-        DataSyncService dataSyncService
-    )
+        DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
+        this.collection = collection;
         this.dataSyncService = dataSyncService;
-
-        masterData = collection.Data.ToList();
+        this.masterDataService = masterDataService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -39,9 +41,17 @@ internal class DataSyncSyncerWorker : BackgroundService
         {
             await SleepToNearestHour(cancellationToken);
 
-            foreach (var data in masterData)
+            foreach (var gsrn in collection.GetAllGsrns())
             {
-                var measurements = await dataSyncService.FetchMeasurements(data,
+                var masterData = await masterDataService.GetMasterData(gsrn);
+
+                if (masterData == null)
+                {
+                    logger.LogInformation("No master data for {gsrn}", gsrn);
+                    continue;
+                }
+
+                var measurements = await dataSyncService.FetchMeasurements(masterData,
                     cancellationToken);
 
                 if (measurements.Any())
