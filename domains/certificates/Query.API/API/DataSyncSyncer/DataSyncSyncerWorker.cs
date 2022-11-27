@@ -56,13 +56,13 @@ internal class DataSyncSyncerWorker : BackgroundService
 
                 if (measurements.Any())
                 {
-                    await PublishIntegrationEvents(cancellationToken, measurements);
+                    await PublishIntegrationEvents(measurements, cancellationToken);
                 }
             }
         }
     }
 
-    private async Task PublishIntegrationEvents(CancellationToken cancellationToken, List<DataSyncDto> measurements)
+    private async Task PublishIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
     {
         var integrationsEvents = MapToIntegrationEvents(measurements);
         logger.LogInformation(

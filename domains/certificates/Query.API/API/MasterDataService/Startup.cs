@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace API.MasterDataService;
 
@@ -17,6 +18,7 @@ public static class Startup
     {
         services.Configure<MockMasterDataOptions>(configuration.GetSection(MockMasterDataOptions.Prefix));
 
+        services.AddSingleton<AuthServiceClientFactory>();
         services.AddHttpClient<AuthServiceClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<MockMasterDataOptions>>().Value;
@@ -27,8 +29,13 @@ public static class Startup
             }
 
             client.BaseAddress = new Uri(options.AuthServiceUrl);
-        });
-        services.AddSingleton<AuthServiceClientFactory>();
+        }).AddTransientHttpErrorPolicy(policy =>
+            policy.WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10)
+            }));
 
         services.AddSingleton<MasterDataMockInputCollection>(sp =>
         {
