@@ -17,7 +17,6 @@ public static class Startup
         services.AddHttpClient<IDataSyncClient, DataSyncClient>(client => client.BaseAddress = new Uri(options.Url));
 
         services.AddSingleton<DataSyncService>();
-        services.AddTransient<IDataSyncClient, DataSyncClient>();
         services.AddSingleton<ISyncState, SyncState>();
 
         services.AddHostedService<DataSyncSyncerWorker>();
