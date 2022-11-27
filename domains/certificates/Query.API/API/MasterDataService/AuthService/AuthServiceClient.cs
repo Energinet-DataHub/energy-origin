@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -31,12 +32,27 @@ public class AuthServiceClient
     {
         try
         {
-            var queryBuilder = new QueryBuilder { { "cvr", cvr } };
-            var uri = $"company/uuid{queryBuilder}";
+            var uri = $"company/uuid{new QueryBuilder { { "cvr", cvr } }}";
 
-            var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions);
+            var response = await client.GetAsync(uri);
 
-            return response?.Uuid ?? string.Empty;
+            // The auth service will return 404 if the CVR is not known.
+            // This situation is not explicitly handled here and it will be reported as unsuccessful
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                logger.LogWarning("Calling auth service was unsuccessful. Response: {response}", response);
+                return string.Empty;
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<CompanyUuidResponse>(jsonSerializerOptions);
+
+            if (content == null)
+            {
+                logger.LogWarning("Deserializing JSON response from auth service was not successful. Content: {content}", await response.Content.ReadAsStringAsync());
+                return string.Empty;
+            }
+
+            return content.Uuid;
         }
         catch (Exception e)
         {
