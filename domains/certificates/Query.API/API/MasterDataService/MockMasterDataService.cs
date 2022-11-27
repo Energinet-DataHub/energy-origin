@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.MasterDataService.AuthService;
+using API.MasterDataService.MockInput;
 using Microsoft.Extensions.Logging;
 
 namespace API.MasterDataService;
@@ -12,28 +13,28 @@ internal class MockMasterDataService : IMasterDataService
 {
     private readonly AuthServiceClientFactory clientFactory;
     private readonly ILogger<MockMasterDataService> logger;
-    private readonly Dictionary<string, MockMasterData> data;
+    private readonly Dictionary<string, MasterDataMockInput> mockInputs;
     private readonly ConcurrentDictionary<string, string> cvrToMeteringPointOwner = new();
 
-    public MockMasterDataService(MockMasterDataCollection collection, AuthServiceClientFactory clientFactory, ILogger<MockMasterDataService> logger)
+    public MockMasterDataService(MasterDataMockInputCollection collection, AuthServiceClientFactory clientFactory, ILogger<MockMasterDataService> logger)
     {
         this.clientFactory = clientFactory;
         this.logger = logger;
 
-        data = collection.Data.ToDictionary(d => d.GSRN, d => d);
+        mockInputs = collection.Data.ToDictionary(d => d.GSRN, d => d);
     }
 
     public async Task<MasterData?> GetMasterData(string gsrn)
     {
-        var mockMasterData = data.ContainsKey(gsrn) ? data[gsrn] : null;
-        if (mockMasterData == null)
+        var mockInput = mockInputs.ContainsKey(gsrn) ? mockInputs[gsrn] : null;
+        if (mockInput == null)
             return null;
 
         string meteringPointOwner;
 
         try
         {
-            meteringPointOwner = await GetMeteringPointOwner(mockMasterData);
+            meteringPointOwner = await GetMeteringPointOwner(mockInput);
         }
         catch (Exception e)
         {
@@ -41,13 +42,18 @@ internal class MockMasterDataService : IMasterDataService
             return null;
         }
 
-        return new MasterData(mockMasterData.GSRN, mockMasterData.GridArea, mockMasterData.Type,
-            mockMasterData.Technology, meteringPointOwner, mockMasterData.MeteringPointOnboardedStartDate);
+        return new MasterData(
+            mockInput.GSRN,
+            mockInput.GridArea,
+            mockInput.Type,
+            mockInput.Technology,
+            meteringPointOwner,
+            mockInput.MeteringPointOnboardedStartDate);
     }
 
-    private async Task<string> GetMeteringPointOwner(MockMasterData mockMasterData)
+    private async Task<string> GetMeteringPointOwner(MasterDataMockInput masterDataMockInput)
     {
-        var cvr = mockMasterData.CVR;
+        var cvr = masterDataMockInput.CVR;
         if (cvrToMeteringPointOwner.ContainsKey(cvr))
         {
             logger.LogInformation("Result from cache. {cvr} -> {meteringPointOwner}", cvr, cvrToMeteringPointOwner[cvr]);

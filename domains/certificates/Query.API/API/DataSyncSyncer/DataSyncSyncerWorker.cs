@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using API.MasterDataService;
+using API.MasterDataService.MockInput;
 using IntegrationEvents;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
@@ -22,7 +23,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        MockMasterDataCollection collection,
+        MasterDataMockInputCollection collection,
         IMasterDataService masterDataService,
         IBus bus,
         DataSyncService dataSyncService
