@@ -27,20 +27,20 @@ public static class Startup
 
                 using var reader = new StreamReader(options.JsonFilePath);
                 var json = reader.ReadToEnd();
-                var result = JsonSerializer.Deserialize<MasterData[]>(json,
+                var result = JsonSerializer.Deserialize<MockMasterData[]>(json,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
                         Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
                     });
 
-                return new(result ?? Array.Empty<MasterData>());
+                return new(result ?? Array.Empty<MockMasterData>());
             }
             catch (Exception e)
             {
                 var logger = sp.GetService<ILogger<MockMasterDataCollection>>();
                 logger?.LogWarning("Did not load mock master data. Exception: {exception}", e);
-                return new(Array.Empty<MasterData>());
+                return new(Array.Empty<MockMasterData>());
             }
         });
         services.AddSingleton<IMasterDataService, MockMasterDataService>();
