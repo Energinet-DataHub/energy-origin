@@ -38,7 +38,7 @@ internal class MockMasterDataService : IMasterDataService
             logger.LogWarning("Exception {e}", e);
             return null;
         }
-        
+
         return new MasterData(mockMasterData.GSRN, mockMasterData.GridArea, mockMasterData.Type,
             mockMasterData.Technology, meteringPointOwner, mockMasterData.MeteringPointOnboardedStartDate);
     }
