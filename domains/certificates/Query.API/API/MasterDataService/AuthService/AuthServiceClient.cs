@@ -5,17 +5,21 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace API.MasterDataService.AuthService;
 
 public class AuthServiceClient
 {
     private readonly HttpClient client;
+    private readonly ILogger<AuthServiceClient> logger;
     private readonly JsonSerializerOptions jsonSerializerOptions;
 
-    public AuthServiceClient(HttpClient client)
+    public AuthServiceClient(HttpClient client, ILogger<AuthServiceClient> logger)
     {
         this.client = client;
+        this.logger = logger;
+
         jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -26,12 +30,12 @@ public class AuthServiceClient
     public async Task<string> GetUuid(string cvr)
     {
         var queryBuilder = new QueryBuilder { { "cvr", cvr } };
-        var uriBuilder = new UriBuilder("company/uuid")
-        {
-            Query = queryBuilder.ToString()
-        };
+        var uri = $"company/uuid{queryBuilder}";
 
-        var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uriBuilder.Uri, jsonSerializerOptions);
+        logger.LogInformation("Requesting {uri}", uri);
+        var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions);
+        logger.LogInformation("Response: {response}", response);
+
         return response?.Uuid ?? "todo"; //TODO: Do better here
     }
 
