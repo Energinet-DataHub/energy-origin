@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.MasterDataService.AuthService;
+using API.MasterDataService.MockInput;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +16,21 @@ public static class Startup
     public static void AddMasterDataService(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<MockMasterDataOptions>(configuration.GetSection(MockMasterDataOptions.Prefix));
-        services.AddSingleton<MockMasterDataCollection>(sp =>
+
+        services.AddHttpClient<AuthServiceClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MockMasterDataOptions>>().Value;
+
+            if (string.IsNullOrWhiteSpace(options.AuthServiceUrl))
+            {
+                throw new Exception("No AuthServiceUrl");
+            }
+
+            client.BaseAddress = new Uri(options.AuthServiceUrl);
+        });
+        services.AddSingleton<AuthServiceClientFactory>();
+
+        services.AddSingleton<MasterDataMockInputCollection>(sp =>
         {
             try
             {
@@ -27,22 +43,23 @@ public static class Startup
 
                 using var reader = new StreamReader(options.JsonFilePath);
                 var json = reader.ReadToEnd();
-                var result = JsonSerializer.Deserialize<MasterData[]>(json,
+                var result = JsonSerializer.Deserialize<MasterDataMockInput[]>(json,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
                         Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
                     });
 
-                return new(result ?? Array.Empty<MasterData>());
+                return new(result ?? Array.Empty<MasterDataMockInput>());
             }
             catch (Exception e)
             {
-                var logger = sp.GetService<ILogger<MockMasterDataCollection>>();
+                var logger = sp.GetService<ILogger<MasterDataMockInputCollection>>();
                 logger?.LogWarning("Did not load mock master data. Exception: {exception}", e);
-                return new(Array.Empty<MasterData>());
+                return new(Array.Empty<MasterDataMockInput>());
             }
         });
+
         services.AddSingleton<IMasterDataService, MockMasterDataService>();
     }
 }
