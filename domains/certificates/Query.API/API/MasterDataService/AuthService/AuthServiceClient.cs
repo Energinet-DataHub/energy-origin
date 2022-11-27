@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -33,7 +32,7 @@ public class AuthServiceClient
         var uri = $"company/uuid{queryBuilder}";
 
         logger.LogInformation("Requesting {uri}", uri);
-        var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions);
+        var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions); //TODO: Maybe we want to test for status code = 404 as this means that company is not found
         logger.LogInformation("Response: {response}", response);
 
         return response?.Uuid ?? "todo"; //TODO: Do better here

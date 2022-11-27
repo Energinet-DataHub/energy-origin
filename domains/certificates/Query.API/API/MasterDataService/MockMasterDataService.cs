@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ internal class MockMasterDataService : IMasterDataService
     private readonly AuthServiceClientFactory clientFactory;
     private readonly ILogger<MockMasterDataService> logger;
     private readonly Dictionary<string, MockMasterData> data;
+    private readonly ConcurrentDictionary<string, string> cvrToMeteringPointOwner = new();
 
     public MockMasterDataService(MockMasterDataCollection collection, AuthServiceClientFactory clientFactory, ILogger<MockMasterDataService> logger)
     {
@@ -45,7 +47,20 @@ internal class MockMasterDataService : IMasterDataService
 
     private async Task<string> GetMeteringPointOwner(MockMasterData mockMasterData)
     {
+        var cvr = mockMasterData.CVR;
+        if (cvrToMeteringPointOwner.ContainsKey(cvr))
+        {
+            logger.LogInformation("Result from cache. {cvr} -> {meteringPointOwner}", cvr, cvrToMeteringPointOwner[cvr]);
+            return cvrToMeteringPointOwner[cvr];
+        }
+
         var authServiceClient = clientFactory.CreateClient();
-        return await authServiceClient.GetUuid(mockMasterData.CVR);
+        var meteringPointOwner = await authServiceClient.GetUuid(cvr);
+
+        cvrToMeteringPointOwner.TryAdd(cvr, meteringPointOwner);
+
+        logger.LogInformation("Result from auth service. {cvr} -> {meteringPointOwner}", cvr, cvrToMeteringPointOwner[cvr]);
+
+        return meteringPointOwner;
     }
 }
