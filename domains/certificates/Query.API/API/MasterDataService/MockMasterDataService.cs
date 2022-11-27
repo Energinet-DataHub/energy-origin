@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,10 @@ internal class MockMasterDataService : IMasterDataService
     private readonly Dictionary<string, MasterDataMockInput> mockInputs;
     private readonly ConcurrentDictionary<string, string> cvrToMeteringPointOwner = new();
 
-    public MockMasterDataService(MasterDataMockInputCollection collection, AuthServiceClientFactory clientFactory, ILogger<MockMasterDataService> logger)
+    public MockMasterDataService(
+        MasterDataMockInputCollection collection,
+        AuthServiceClientFactory clientFactory,
+        ILogger<MockMasterDataService> logger)
     {
         this.clientFactory = clientFactory;
         this.logger = logger;
@@ -30,15 +32,11 @@ internal class MockMasterDataService : IMasterDataService
         if (mockInput == null)
             return null;
 
-        string meteringPointOwner;
+        var meteringPointOwner = await GetMeteringPointOwner(mockInput);
 
-        try
+        if (string.IsNullOrWhiteSpace(meteringPointOwner))
         {
-            meteringPointOwner = await GetMeteringPointOwner(mockInput);
-        }
-        catch (Exception e)
-        {
-            logger.LogWarning("Exception {e}", e);
+            logger.LogInformation("Could not determine meteringPointOwner for {input}", mockInput);
             return null;
         }
 
@@ -54,18 +52,13 @@ internal class MockMasterDataService : IMasterDataService
     private async Task<string> GetMeteringPointOwner(MasterDataMockInput masterDataMockInput)
     {
         var cvr = masterDataMockInput.CVR;
-        if (cvrToMeteringPointOwner.ContainsKey(cvr))
-        {
-            logger.LogInformation("Result from cache. {cvr} -> {meteringPointOwner}", cvr, cvrToMeteringPointOwner[cvr]);
-            return cvrToMeteringPointOwner[cvr];
-        }
 
-        var authServiceClient = clientFactory.CreateClient();
-        var meteringPointOwner = await authServiceClient.GetUuid(cvr);
+        if (cvrToMeteringPointOwner.ContainsKey(cvr))
+            return cvrToMeteringPointOwner[cvr];
+
+        var meteringPointOwner = await clientFactory.CreateClient().GetUuidForCompany(cvr);
 
         cvrToMeteringPointOwner.TryAdd(cvr, meteringPointOwner);
-
-        logger.LogInformation("Result from auth service. {cvr} -> {meteringPointOwner}", cvr, cvrToMeteringPointOwner[cvr]);
 
         return meteringPointOwner;
     }

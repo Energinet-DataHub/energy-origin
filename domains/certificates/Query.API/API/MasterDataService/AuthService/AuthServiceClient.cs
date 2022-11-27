@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -26,16 +27,22 @@ public class AuthServiceClient
         };
     }
 
-    public async Task<string> GetUuid(string cvr)
+    public async Task<string> GetUuidForCompany(string cvr)
     {
-        var queryBuilder = new QueryBuilder { { "cvr", cvr } };
-        var uri = $"company/uuid{queryBuilder}";
+        try
+        {
+            var queryBuilder = new QueryBuilder { { "cvr", cvr } };
+            var uri = $"company/uuid{queryBuilder}";
 
-        logger.LogInformation("Requesting {uri}", uri);
-        var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions); //TODO: Maybe we want to test for status code = 404 as this means that company is not found
-        logger.LogInformation("Response: {response}", response);
+            var response = await client.GetFromJsonAsync<CompanyUuidResponse>(uri, jsonSerializerOptions);
 
-        return response?.Uuid ?? "todo"; //TODO: Do better here
+            return response?.Uuid ?? string.Empty;
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning("Calling auth service failed. Exception: {e}", e);
+            return string.Empty;
+        }
     }
 
     private record CompanyUuidResponse(string Uuid);
