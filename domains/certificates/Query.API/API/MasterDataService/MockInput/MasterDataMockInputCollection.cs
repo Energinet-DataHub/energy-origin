@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace API.MasterDataService.MockInput;
 
-internal record MasterDataMockInputCollection(MasterDataMockInput[] Data)
+internal record MasterDataMockInputCollection(MasterDataMockInput[] Inputs)
 {
-    public IEnumerable<string> GetAllGsrns() => Data.Select(d => d.GSRN);
+    public IEnumerable<string> GetAllGsrns() => Inputs.Select(d => d.GSRN);
 };

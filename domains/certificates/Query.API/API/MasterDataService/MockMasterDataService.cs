@@ -23,7 +23,7 @@ internal class MockMasterDataService : IMasterDataService
         this.clientFactory = clientFactory;
         this.logger = logger;
 
-        mockInputs = collection.Data.ToDictionary(d => d.GSRN, d => d);
+        mockInputs = collection.Inputs.ToDictionary(d => d.GSRN, d => d);
     }
 
     public async Task<MasterData?> GetMasterData(string gsrn)
