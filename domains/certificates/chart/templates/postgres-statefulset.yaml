@@ -27,6 +27,11 @@ spec:
               hostPort: 5432
               name: pgsql
               protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 2
+            periodSeconds: 2
           livenessProbe:
             failureThreshold: 6
             initialDelaySeconds: 30
@@ -41,9 +46,6 @@ spec:
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
-            #- name: postgres-vm
-            #  mountPath: /docker-entrypoint-initdb.d/
-            #  readOnly: true
       volumes:
         - name: dshm
           emptyDir:
