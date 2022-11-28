@@ -46,10 +46,16 @@ spec:
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
+            - name: postgres-vm
+              mountPath: /docker-entrypoint-initdb.d/
+              readOnly: true
       volumes:
         - name: dshm
           emptyDir:
             medium: Memory
+        - name: postgres-vm
+          configMap:
+            name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
         name: data
