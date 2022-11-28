@@ -38,11 +38,6 @@ spec:
                 - /bin/sh
                 - -c
                 - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
-          readinessProbe:
-            tcpSocket:
-              port: 5432
-              initialDelaySeconds: 2
-              periodSeconds: 2
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
