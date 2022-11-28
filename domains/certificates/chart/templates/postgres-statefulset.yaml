@@ -3,8 +3,8 @@ kind: StatefulSet
 metadata:
   labels:
     app: {{ .Release.Name }}-postgres
-    name: {{ .Release.Name }}-postgres
-    namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.postgres.replicaCount }}
   serviceName: {{ .Release.Name }}-postgres
