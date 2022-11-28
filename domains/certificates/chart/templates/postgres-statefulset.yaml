@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: {{ .Release.Name }}-postgres
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.postgres.replicaCount }}
+  serviceName: {{ .Release.Name }}-postgres
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgres
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-postgres
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-postgres
+          image: '{{ .Values.postgres.image.name }}:{{ .Values.postgres.image.tag}}'
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+              name: pgsql
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 2
+            periodSeconds: 2
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: postgres-vm
+              mountPath: /docker-entrypoint-initdb.d/
+              readOnly: true
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: postgres-vm
+          configMap:
+            name: postgres-init-cm
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ .Values.postgres.size }}
