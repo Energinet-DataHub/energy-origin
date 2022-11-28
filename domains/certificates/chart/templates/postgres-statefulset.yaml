@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   labels:
     app: {{ .Release.Name }}-postgres
@@ -7,6 +7,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.postgres.replicaCount }}
+  serviceName: {{ .Release.Name }}-postgres
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ .Release.Name }}-postgres
@@ -15,17 +19,14 @@ spec:
       labels:
         app: {{ .Release.Name }}-postgres
     spec:
-      volumes:
-        - name: postgres-vm
-          configMap:
-            name: postgres-init-cm
       containers:
         - name: {{ .Release.Name }}-postgres
           image: '{{ .Values.postgres.image.name }}:{{ .Values.postgres.image.tag}}'
-          volumeMounts:
-            - name: postgres-vm
-              mountPath: /docker-entrypoint-initdb.d/
-              readOnly: true
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+              name: pgsql
+              protocol: TCP
           readinessProbe:
             tcpSocket:
               port: 5432
@@ -42,8 +43,19 @@ spec:
                 - /bin/sh
                 - -c
                 - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
-          ports:
-            - containerPort: 5432
-              hostPort: 5432
-              name: pgsql
-              protocol: TCP
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ .Values.postgres.size }}
