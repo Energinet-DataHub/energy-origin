@@ -39,8 +39,6 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            //await SleepToNearestHour(cancellationToken);
-
             foreach (var gsrn in collection.GetAllGsrns())
             {
                 var masterData = await masterDataService.GetMasterData(gsrn);
@@ -60,7 +58,6 @@ internal class DataSyncSyncerWorker : BackgroundService
                 }
             }
 
-            // TOOD: move?
             await SleepToNearestHour(cancellationToken);
         }
     }
