@@ -39,7 +39,7 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await SleepToNearestHour(cancellationToken);
+            //await SleepToNearestHour(cancellationToken);
 
             foreach (var gsrn in collection.GetAllGsrns())
             {
@@ -59,6 +59,9 @@ internal class DataSyncSyncerWorker : BackgroundService
                     await PublishIntegrationEvents(measurements, cancellationToken);
                 }
             }
+
+            // TOOD: move?
+            await SleepToNearestHour(cancellationToken);
         }
     }
 
