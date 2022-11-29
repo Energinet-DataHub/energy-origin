@@ -58,10 +58,11 @@ spec:
             name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
-        name: data
+        name: dshm
       spec:
         accessModes:
           - "ReadWriteOnce"
+        storageClassName: "postgres-persistent-volume-claim"
         resources:
           requests:
             storage: {{ .Values.postgres.size }}
