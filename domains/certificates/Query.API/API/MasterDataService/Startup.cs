@@ -22,12 +22,6 @@ public static class Startup
         services.AddHttpClient<AuthServiceClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<MockMasterDataOptions>>().Value;
-
-            if (string.IsNullOrWhiteSpace(options.AuthServiceUrl))
-            {
-                throw new Exception("No AuthServiceUrl");
-            }
-
             client.BaseAddress = new Uri(options.AuthServiceUrl);
         }).AddTransientHttpErrorPolicy(policy =>
             policy.WaitAndRetryAsync(new[]

@@ -134,8 +134,11 @@ public class DataSyncServiceTest
 
     private DataSyncService SetupService()
     {
+        var fakeFactory = new Mock<IDataSyncClientFactory>();
+        fakeFactory.Setup(it => it.CreateClient()).Returns(fakeClient.Object);
+
         var service = new DataSyncService(
-            client: fakeClient.Object,
+            factory: fakeFactory.Object,
             logger: fakeLogger.Object,
             syncState: fakeSyncState.Object
         );
