@@ -20,7 +20,7 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
         });
-        
+
         services.AddSingleton<DataSyncService>();
         services.AddSingleton<ISyncState, SyncState>();
 

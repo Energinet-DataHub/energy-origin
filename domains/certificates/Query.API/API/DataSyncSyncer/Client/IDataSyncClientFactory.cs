@@ -1,4 +1,4 @@
-﻿namespace API.DataSyncSyncer.Client;
+namespace API.DataSyncSyncer.Client;
 
 public interface IDataSyncClientFactory
 {
