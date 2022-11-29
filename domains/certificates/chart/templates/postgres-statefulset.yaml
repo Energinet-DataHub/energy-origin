@@ -22,6 +22,8 @@ spec:
       containers:
         - name: {{ .Release.Name }}-postgres
           image: '{{ .Values.postgres.image.name }}:{{ .Values.postgres.image.tag}}'
+          environment:
+            PGDATA: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
               hostPort: 5432
@@ -44,21 +46,21 @@ spec:
                 - -c
                 - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
           volumeMounts:
-            - name: dshm
-              mountPath: /dev/shm
+            - name: postgres-pvc
+              mountPath: /var/lib/postgresql/data
             - name: postgres-vm
               mountPath: /docker-entrypoint-initdb.d/
               readOnly: true
       volumes:
-        - name: dshm
-          emptyDir:
-            medium: Memory
+        - name: postgres-pvc
+          persistentVolumeClaim:
+            claimName: postgres-pvc
         - name: postgres-vm
           configMap:
             name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
-        name: data
+        name: postgres-pvc
       spec:
         accessModes:
           - "ReadWriteOnce"
