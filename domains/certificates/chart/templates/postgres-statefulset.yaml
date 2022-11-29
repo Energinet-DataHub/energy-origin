@@ -60,13 +60,13 @@ spec:
             medium: Memory
         - name: postgres-pvc
           persistentVolumeClaim:
-            claimName: data
+            claimName: somename-pvc
         - name: postgres-vm
           configMap:
             name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
-        name: data
+        name: somename-pvc
       spec:
         accessModes:
           - "ReadWriteOnce"
