@@ -47,25 +47,29 @@ spec:
                 - -c
                 - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
           volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data
             - name: postgres-vm
               mountPath: /docker-entrypoint-initdb.d/
               readOnly: true
       volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
         - name: postgres-pvc
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: data
         - name: postgres-vm
           configMap:
             name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
-        name: postgres-pvc
+        name: data
       spec:
         accessModes:
           - "ReadWriteOnce"
         resources:
           requests:
             storage: {{ .Values.postgres.size }}
-
