@@ -49,7 +49,7 @@ spec:
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
-            - name: postgres-pvc
+            - name: data
               mountPath: /var/lib/postgresql/data
             - name: postgres-vm
               mountPath: /docker-entrypoint-initdb.d/
@@ -58,15 +58,12 @@ spec:
         - name: dshm
           emptyDir:
             medium: Memory
-        - name: postgres-pvc
-          persistentVolumeClaim:
-            claimName: somename-pvc
         - name: postgres-vm
           configMap:
             name: postgres-init-cm
   volumeClaimTemplates:
     - metadata:
-        name: somename-pvc
+        name: data
       spec:
         accessModes:
           - "ReadWriteOnce"
