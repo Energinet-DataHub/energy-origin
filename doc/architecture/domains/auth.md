@@ -11,10 +11,10 @@ There is a description of the current endpoints available at [Auth API](../../ap
 ## Tokens
 
 It is important to understand there is one token meant for outside the cluster and one meant for inside the cluster.
-Both these tokens are made by the Auth domain. The inner tokens relays user details and related information to each domain,
-so they never has to ask for additional information. The outer tokens relays user settings to the frontend.
+Both these tokens are made by the Auth domain. The back-facing tokens relays user details and related information to each domain,
+so they never has to ask for additional information. The front-facing tokens relays user settings to the frontend.
 
-**Outer token**: Frontend-oriented roles/features/capabilities
+**Front-facing token**: Frontend-oriented roles/features/capabilities
 ```jsonc
 {
   "sub": "1234567890",
@@ -27,7 +27,7 @@ so they never has to ask for additional information. The outer tokens relays use
 }
 ```
 
-**Inner token**: Backend-oriented where more sensitive data is permissiable
+**Back-facing token**: Backend-oriented where more sensitive data is permissiable
 ```jsonc
 {
   "sub": "1234567890",
@@ -37,6 +37,15 @@ so they never has to ask for additional information. The outer tokens relays use
   //...
 }
 ```
+
+## Terms
+
+Terms are defined in the base environment. These will be used both in the frontend domain and the auth domain.
+
+The frontend domain will present the HTML and to do so will have the latest terms markdown convert into HTML and placed in an agreed upon location.
+
+The auth domain will be configured with the latest version and can check if a user has accepted the latest version or not.
+Based on this the claim relating to terms for the front-facing token can be calculated.
 
 ## New endpoints
 
@@ -80,7 +89,7 @@ GET /api/auth/oidc/callback
 #### Response
 
 HTTP 200 OK with [meta refresh](https://stackoverflow.com/a/64216367/190599) with header:
-- cooke: Authentication={outer token}
+- cookie: Authentication={Front-facing token}
 
 ---
 
@@ -137,12 +146,4 @@ GET /api/auth/token/forward-auth
 #### Response
 
 HTTP 200 OK with header:
-- Authentication: Bearer {inner token}
-
-## Mising Coordination
-
-How do we inform frontend when regenerating tokens?
-
-How do we provide the frontend with latest terms?
-
-Define currently required claims for frontend, like terms-not-accepted etc.
+- X-Updated-Authentication: Bearer {Back-facing token}
