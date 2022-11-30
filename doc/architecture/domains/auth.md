@@ -38,6 +38,10 @@ so they never has to ask for additional information. The front-facing tokens rel
 }
 ```
 
+The front-facing token is exclusively used by the frontend.
+
+Neither developer tokens nor OIDC PKCE type tokens are included in the current description.
+
 ## Terms
 
 Terms are defined in the base environment. These will be used both in the frontend domain and the auth domain.
@@ -49,77 +53,59 @@ Based on this the claim relating to terms for the front-facing token can be calc
 
 ## New endpoints
 
----
 
-### Login
+
+### `GET /api/auth/login`
+---
 
 Starts the login flow with OIDC provider.
 
-#### Request
-
-```text
-GET /api/auth/login
-```
-
-#### Response
+**Response**
 
 HTTP 307 redirect
 
+### `GET /api/auth/oidc/callback`
 ---
-
-### Login Callback
 
 Handle callback from OIDC provider by redirecting to:
 - landing page
 - login failure page with error code
 
-#### Request
-
-```text
-GET /api/auth/oidc/callback
-```
-
-#### Query Parameters
+**Query Parameters**
 
 - state: State provided when starting flow
 - code: Code for retrieving tokens
 - error: Error response
 - error_description: Text description of the error
 
-#### Response
+**Response**
 
-HTTP 200 OK with [meta refresh](https://stackoverflow.com/a/64216367/190599) with header:
+HTTP 200 OK with header:
 - cookie: Authentication={Front-facing token}
+```html
+<html>
+<head>
+<meta http-equiv="refresh" content="0;URL='{landing-page/login-failure-page}'"/>
+</head>
+<body />
+</html>
+```
 
+### `GET /api/auth/logout`
 ---
-
-### Logout
 
 Starts the logout flow with OIDC provider.
 
-#### Request
-
-```text
-GET /api/auth/logout
-```
-
-#### Response
+**Response**
 
 HTTP 307 redirect
 
+### `PUT /api/auth/terms/accept`
 ---
-
-### Accept terms
 
 Stores an accept of specific terms for a user
 
-#### Request
-
-```text
-PUT /api/auth/terms/accept
-```
-
-#### Body
+**Body**
 
 ```json
 {
@@ -127,23 +113,36 @@ PUT /api/auth/terms/accept
 }
 ```
 
-#### Response
+**Response**
 
 HTTP 204 No content
 
+### `GET /api/auth/token`
 ---
 
-### Forward auth
+Will re-create your front-facing token. Useful for renewing a token that is about to expire or to get updated claims.
+
+**Response**
+
+HTTP 200 OK
+```jsonc
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022,
+  "features": "certificates fun jokes",
+  "roles": "admin",
+  "capabilities": "view"
+  //...
+}
+```
+
+### `GET /api/auth/token/forward-auth`
+---
 
 [ForwardAuth endpoint](https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/) for Træfik.
 
-#### Request
-
-```text
-GET /api/auth/token/forward-auth
-```
-
-#### Response
+**Response**
 
 HTTP 200 OK with header:
-- X-Updated-Authentication: Bearer {Back-facing token}
+- Authentication: Bearer {Back-facing token}
