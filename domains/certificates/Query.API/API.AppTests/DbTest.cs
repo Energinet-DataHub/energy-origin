@@ -106,13 +106,6 @@ public class DbTest : IClassFixture<MyApplicationFactory>
         
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        //await Task.Delay(TimeSpan.FromMilliseconds(10000));
-
-        //var response2 = await client.GetAsync("certificates");
-        //Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
-        //var certificateList = await response2.Content.ReadFromJsonAsync<CertificateList>();
-        //Assert.Equal(1, certificateList?.Result.Count());
-
         HttpResponseMessage apiResponse;
         do
         {
