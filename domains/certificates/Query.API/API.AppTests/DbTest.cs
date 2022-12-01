@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
@@ -15,6 +16,7 @@ using CertificateEvents.Primitives;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
+using FluentAssertions;
 using IntegrationEvents;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +25,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace API.AppTests;
 
@@ -31,8 +32,7 @@ public class MartenFixture : IAsyncLifetime
 {
     private readonly PostgreSqlTestcontainer testContainer;
 
-    public MartenFixture()
-    {
+    public MartenFixture() =>
         testContainer = new TestcontainersBuilder<PostgreSqlTestcontainer>()
             //.WithCleanUp(true)
             .WithDatabase(new PostgreSqlTestcontainerConfiguration
@@ -43,7 +43,6 @@ public class MartenFixture : IAsyncLifetime
             })
             .WithImage("sibedge/postgres-plv8")
             .Build();
-    }
 
     public string ConnectionString => testContainer.ConnectionString;
 
@@ -61,16 +60,37 @@ public class MartenFixture : IAsyncLifetime
     public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
 }
 
+public static class HttpClientExtensions
+{
+    public static async Task<HttpResponseMessage> RepeatedlyGetUntil(this HttpClient client, string requestUri, Func<HttpResponseMessage, bool> condition, TimeSpan? timeLimit = null)
+    {
+        if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
+            throw new ArgumentException($"{nameof(timeLimit)} must be a positive time span");
+
+        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
+
+        var response = await client.GetAsync(requestUri);
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        while (!condition(response) && stopwatch.Elapsed < limit)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            response = await client.GetAsync(requestUri);
+        }
+
+        return stopwatch.Elapsed >= limit
+            ? throw new Exception($"Condition for uri '{requestUri}' not met within time limit ({limit.TotalSeconds} seconds)")
+            : response;
+    } 
+}
+
 public class DbTest : IClassFixture<MyApplicationFactory>
 {
     private readonly MyApplicationFactory factory;
-    private readonly ITestOutputHelper testOutputHelper;
 
-    public DbTest(MyApplicationFactory factory, ITestOutputHelper testOutputHelper)
-    {
-        this.factory = factory;
-        this.testOutputHelper = testOutputHelper;
-    }
+    public DbTest(MyApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task NoData()
@@ -79,7 +99,7 @@ public class DbTest : IClassFixture<MyApplicationFactory>
 
         var response = await client.GetAsync("certificates");
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -106,17 +126,9 @@ public class DbTest : IClassFixture<MyApplicationFactory>
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        HttpResponseMessage apiResponse;
-        do
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
-            apiResponse = await client.GetAsync("certificates");
-            testOutputHelper.WriteLine("Call GetAsync");
-        } while (apiResponse.StatusCode == HttpStatusCode.NoContent);
-
-        Assert.Equal(HttpStatusCode.OK, apiResponse.StatusCode);
+        var apiResponse = await client.RepeatedlyGetUntil("certificates", res => res.StatusCode == HttpStatusCode.OK);
         var certificateList = await apiResponse.Content.ReadFromJsonAsync<CertificateList>();
-        Assert.Equal(1, certificateList?.Result.Count());
+        certificateList?.Result.Should().HaveCount(1);
     }
 }
 
