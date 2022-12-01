@@ -83,7 +83,7 @@ public static class HttpClientExtensions
         return stopwatch.Elapsed >= limit
             ? throw new Exception($"Condition for uri '{requestUri}' not met within time limit ({limit.TotalSeconds} seconds)")
             : response;
-    } 
+    }
 }
 
 public class DbTest : IClassFixture<MyApplicationFactory>
