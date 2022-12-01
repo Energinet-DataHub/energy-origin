@@ -103,7 +103,7 @@ public class DbTest : IClassFixture<MyApplicationFactory>
             DateTo: DateTimeOffset.Now.ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured));
-        
+
         using var client = factory.CreateAuthenticatedClient(subject);
 
         HttpResponseMessage apiResponse;
