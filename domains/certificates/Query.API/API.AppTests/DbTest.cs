@@ -4,10 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
+using API.Query.API.ApiModels;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -63,21 +65,28 @@ public class DbTest : IClassFixture<MyApplicationFactory>
     }
 
     [Fact]
-    public async Task ExecuteCommand()
+    public async Task NoData()
     {
-        var client = factory.CreateAuthenticatedClient();
+        using var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var response = await client.GetAsync("certificates");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        //using var connection = new NpgsqlConnection(factory.ConnectionString);
-        //using var command = new NpgsqlCommand();
-        //connection.Open();
-        //command.Connection = connection;
-        //command.CommandText = "SELECT 1";
-        //var dataReader = command.ExecuteReader();
+    }
 
-        //Assert.True(dataReader.HasRows);
+    [Fact]
+    public async Task HasData()
+    {
+        using var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+
+        var createCertRes = await client.GetAsync("createcert");
+
+        Assert.Equal(HttpStatusCode.OK, createCertRes.StatusCode);
+
+        var response2 = await client.GetAsync("certificates");
+        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+        var certificateList = await response2.Content.ReadFromJsonAsync<CertificateList>();
+        Assert.Equal(1, certificateList?.Result.Count());
     }
 }
 
@@ -103,10 +112,10 @@ public class MyApplicationFactory : WebApplicationFactory<Program>, IAsyncLifeti
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient()
+    public HttpClient CreateAuthenticatedClient(string subject)
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateToken());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
 
         return client;
     }
