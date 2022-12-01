@@ -30,7 +30,7 @@ public class DbTest : IAsyncLifetime
         command.CommandText = "SELECT 1";
         var dataReader = command.ExecuteReader();
 
-        Assert.True(dataReader.HasRows);
+        Assert.False(dataReader.HasRows);
     }
 
     public async Task InitializeAsync()
