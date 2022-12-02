@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using API.AppTests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
 using Xunit;
