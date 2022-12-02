@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
@@ -20,14 +19,6 @@ namespace API.AppTests;
 public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
-
-    MasterData masterDataTemplate = new(
-        GSRN: "GSRN",
-        GridArea: "GridArea",
-        Type: MeteringPointType.Production,
-        Technology: new Technology("foo", "bar"),
-        MeteringPointOwner: "",
-        MeteringPointOnboardedStartDate: DateTimeOffset.Parse("2022-01-01T00:00Z"));
 
     public ApiTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
     {
@@ -62,7 +53,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         var subject = Guid.NewGuid().ToString();
         var gsrn = Guid.NewGuid().ToString();
 
-        factory.AddMasterData(masterDataTemplate with { MeteringPointOwner = subject, GSRN = gsrn});
+        factory.AddMasterData(CreateMasterData(subject, gsrn));
 
         var bus = factory.GetMassTransitBus();
 
@@ -75,8 +66,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var apiResponse = await client.RepeatedlyGetUntil("certificates", res => res.StatusCode == HttpStatusCode.OK);
-        var certificateList = await apiResponse.Content.ReadFromJsonAsync<CertificateList>();
+        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Any());
         await Verifier.Verify(certificateList);
     }
 
@@ -86,7 +76,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         var subject = Guid.NewGuid().ToString();
         var gsrn = Guid.NewGuid().ToString();
 
-        factory.AddMasterData(masterDataTemplate with { MeteringPointOwner = subject, GSRN = gsrn });
+        factory.AddMasterData(CreateMasterData(subject, gsrn));
 
         var bus = factory.GetMassTransitBus();
 
@@ -96,7 +86,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
                 GSRN: gsrn,
                 DateFrom: dateStart.AddHours(i).ToUnixTimeSeconds(),
                 DateTo: dateStart.AddHours(i + 1).ToUnixTimeSeconds(),
-                Quantity: 42+i,
+                Quantity: 42 + i,
                 Quality: MeasurementQuality.Measured))
             .ToList();
 
@@ -107,4 +97,13 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Count() == 5);
         await Verifier.Verify(certificateList);
     }
+
+    private static MasterData CreateMasterData(string owner, string gsrn) => new(
+        GSRN: gsrn,
+        GridArea: "GridArea",
+        Type: MeteringPointType.Production,
+        Technology: new Technology("foo", "bar"),
+        MeteringPointOwner: owner,
+        MeteringPointOnboardedStartDate: DateTimeOffset.Parse("2022-01-01T00:00Z"));
+
 }
