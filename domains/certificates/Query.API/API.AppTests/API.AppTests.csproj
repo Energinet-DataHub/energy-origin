@@ -29,9 +29,4 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-    <Folder Include="Infrastructure\" />
-  </ItemGroup>
-
 </Project>
