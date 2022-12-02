@@ -1,100 +1,27 @@
 using System;
-using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using API.DataSyncSyncer;
+using API.AppTests.Extensions;
+using API.AppTests.Infrastructure;
 using API.MasterDataService;
 using API.Query.API.ApiModels;
 using CertificateEvents.Primitives;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using IntegrationEvents;
-using MassTransit;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace API.AppTests;
 
-public class MartenFixture : IAsyncLifetime
+public class DbTest : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
 {
-    private readonly PostgreSqlTestcontainer testContainer;
+    private readonly QueryApiWebApplicationFactory factory;
 
-    public MartenFixture() =>
-        testContainer = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            //.WithCleanUp(true)
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "marten",
-                Username = "postgres",
-                Password = "postgres",
-            })
-            .WithImage("sibedge/postgres-plv8")
-            .Build();
-
-    public string ConnectionString => testContainer.ConnectionString;
-
-    public async Task InitializeAsync()
-    {
-        await testContainer.StartAsync();
-
-        await testContainer.ExecAsync(new[]
-        {
-            "/bin/sh", "-c",
-            "psql -U postgres -c \"CREATE EXTENSION plv8; SELECT extversion FROM pg_extension WHERE extname = 'plv8';\""
-        });
-    }
-
-    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
-}
-
-public static class HttpClientExtensions
-{
-    public static async Task<HttpResponseMessage> RepeatedlyGetUntil(this HttpClient client, string requestUri, Func<HttpResponseMessage, bool> condition, TimeSpan? timeLimit = null)
-    {
-        if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
-            throw new ArgumentException($"{nameof(timeLimit)} must be a positive time span");
-
-        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
-
-        var response = await client.GetAsync(requestUri);
-
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-
-        while (!condition(response) && stopwatch.Elapsed < limit)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
-            response = await client.GetAsync(requestUri);
-        }
-
-        return stopwatch.Elapsed >= limit
-            ? throw new Exception($"Condition for uri '{requestUri}' not met within time limit ({limit.TotalSeconds} seconds)")
-            : response;
-    }
-}
-
-public class DbTest : IClassFixture<MyApplicationFactory>, IClassFixture<MartenFixture>
-{
-    private readonly MyApplicationFactory factory;
-
-    public DbTest(MyApplicationFactory factory, MartenFixture martenFixture)
+    public DbTest(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
     {
         this.factory = factory;
 
-        this.factory.MartenConnectionString = martenFixture.ConnectionString;
+        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
     }
 
     [Fact]
@@ -112,7 +39,7 @@ public class DbTest : IClassFixture<MyApplicationFactory>, IClassFixture<MartenF
     {
         var subject = Guid.NewGuid().ToString();
 
-        factory.SetMasterData(new MasterData(
+        factory.AddMasterData(new MasterData(
             GSRN: "GSRN",
             GridArea: "GridArea",
             Type: MeteringPointType.Production,
@@ -134,78 +61,5 @@ public class DbTest : IClassFixture<MyApplicationFactory>, IClassFixture<MartenF
         var apiResponse = await client.RepeatedlyGetUntil("certificates", res => res.StatusCode == HttpStatusCode.OK);
         var certificateList = await apiResponse.Content.ReadFromJsonAsync<CertificateList>();
         certificateList?.Result.Should().HaveCount(1);
-    }
-}
-
-public class AnotherMock : IMasterDataService
-{
-    private MasterData? masterData;
-
-    public Task<MasterData?> GetMasterData(string gsrn) => Task.FromResult(masterData);
-
-    public void Set(MasterData data) => masterData = data;
-}
-
-public class MyApplicationFactory : WebApplicationFactory<Program>
-{
-    private readonly AnotherMock masterDataServiceMock;
-
-    public MyApplicationFactory() => masterDataServiceMock = new AnotherMock();
-
-    public string MartenConnectionString { get; set; } = "";
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
-
-        builder.ConfigureTestServices(services =>
-        {
-            // Remove DataSyncSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
-
-            // Replace IMasterDataService
-            services.Remove(services.First(s => s.ServiceType == typeof(IMasterDataService)));
-            services.AddSingleton<IMasterDataService>(masterDataServiceMock);
-        });
-    }
-
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
-
-    public HttpClient CreateAuthenticatedClient(string subject)
-    {
-        var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
-
-        return client;
-    }
-
-    public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
-
-    public void SetMasterData(MasterData data) => masterDataServiceMock.Set(data);
-
-    private static string GenerateToken(
-        string scope = "",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string subject = "bdcb3287-3dd3-44cd-8423-1f94437648cc")
-    {
-        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
-
-        var claims = new[]
-        {
-            new Claim("subject", subject),
-            new Claim("scope", scope),
-            new Claim("actor", actor)
-        };
-
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
     }
 }
