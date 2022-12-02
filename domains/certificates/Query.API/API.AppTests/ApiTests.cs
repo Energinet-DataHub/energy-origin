@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.AppTests.Infrastructure;
 using API.Query.API.ApiModels;
 using Xunit;
 
@@ -25,7 +27,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>
     [Fact(Skip = "Skip until postgres with MartenDB can be started by the factory, see https://github.com/Energinet-DataHub/energy-origin-issues/issues/1023")]
     public async Task GetList_AuthenticatedUser_ReturnsCertificates()
     {
-        var client = factory.CreateAuthenticatedClient();
+        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
         var certificatesResponse = await client.GetFromJsonAsync<CertificateList>("certificates");
 
         const int numberOfMeteringPoints = 3;
