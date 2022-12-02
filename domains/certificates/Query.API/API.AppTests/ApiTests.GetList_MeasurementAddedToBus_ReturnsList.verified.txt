@@ -5,7 +5,7 @@
       DateFrom: 1654041600,
       DateTo: 1654045200,
       Quantity: 42,
-      GSRN: Guid_2,
+      GSRN: GSRN-1,
       GridArea: GridArea,
       TechCode: bar,
       FuelCode: foo

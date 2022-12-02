@@ -51,7 +51,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = Guid.NewGuid().ToString();
+        const string gsrn = "GSRN-1";
 
         factory.AddMasterData(CreateMasterData(subject, gsrn));
 
@@ -75,7 +75,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = Guid.NewGuid().ToString();
+        const string gsrn = "GSRN-2";
 
         factory.AddMasterData(CreateMasterData(subject, gsrn));
 
