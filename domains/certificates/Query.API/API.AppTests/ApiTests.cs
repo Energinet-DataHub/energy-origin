@@ -78,7 +78,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         var gsrn = Guid.NewGuid().ToString();
 
         factory.AddMasterData(CreateMasterData(subject, gsrn));
-        
+
         var dateStart = DateTimeOffset.Parse("2022-06-01T00:00Z");
         var measurements = Enumerable.Range(0, 5)
             .Select(i => new EnergyMeasuredIntegrationEvent(
