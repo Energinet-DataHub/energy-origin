@@ -1,0 +1,14 @@
+﻿{
+  Result: [
+    {
+      Id: Guid_1,
+      DateFrom: 1654041600,
+      DateTo: 1654045200,
+      Quantity: 42,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    }
+  ]
+}
