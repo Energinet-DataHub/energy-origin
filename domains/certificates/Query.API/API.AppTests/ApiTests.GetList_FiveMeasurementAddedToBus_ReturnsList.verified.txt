@@ -1,0 +1,54 @@
+﻿{
+  Result: [
+    {
+      Id: Guid_1,
+      DateFrom: 1654056000,
+      DateTo: 1654059600,
+      Quantity: 46,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    },
+    {
+      Id: Guid_3,
+      DateFrom: 1654052400,
+      DateTo: 1654056000,
+      Quantity: 45,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    },
+    {
+      Id: Guid_4,
+      DateFrom: 1654048800,
+      DateTo: 1654052400,
+      Quantity: 44,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    },
+    {
+      Id: Guid_5,
+      DateFrom: 1654045200,
+      DateTo: 1654048800,
+      Quantity: 43,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    },
+    {
+      Id: Guid_6,
+      DateFrom: 1654041600,
+      DateTo: 1654045200,
+      Quantity: 42,
+      GSRN: Guid_2,
+      GridArea: GridArea,
+      TechCode: bar,
+      FuelCode: foo
+    }
+  ]
+}
