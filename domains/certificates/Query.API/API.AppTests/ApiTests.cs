@@ -55,18 +55,19 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         factory.AddMasterData(CreateMasterData(subject, gsrn));
 
-        var bus = factory.GetMassTransitBus();
-
-        await bus.Publish(new EnergyMeasuredIntegrationEvent(
+        var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
             DateFrom: DateTimeOffset.Parse("2022-06-01T00:00Z").ToUnixTimeSeconds(),
             DateTo: DateTimeOffset.Parse("2022-06-01T01:00Z").ToUnixTimeSeconds(),
             Quantity: 42,
-            Quality: MeasurementQuality.Measured));
+            Quality: MeasurementQuality.Measured);
+
+        await factory.GetMassTransitBus().Publish(measurement);
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Any());
+
         await Verifier.Verify(certificateList);
     }
 
@@ -77,24 +78,23 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         var gsrn = Guid.NewGuid().ToString();
 
         factory.AddMasterData(CreateMasterData(subject, gsrn));
-
-        var bus = factory.GetMassTransitBus();
-
+        
         var dateStart = DateTimeOffset.Parse("2022-06-01T00:00Z");
-        var list = Enumerable.Range(0, 5)
+        var measurements = Enumerable.Range(0, 5)
             .Select(i => new EnergyMeasuredIntegrationEvent(
                 GSRN: gsrn,
                 DateFrom: dateStart.AddHours(i).ToUnixTimeSeconds(),
                 DateTo: dateStart.AddHours(i + 1).ToUnixTimeSeconds(),
                 Quantity: 42 + i,
                 Quality: MeasurementQuality.Measured))
-            .ToList();
+            .ToArray();
 
-        await bus.PublishBatch(list);
+        await factory.GetMassTransitBus().PublishBatch(measurements);
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Count() == 5);
+
         await Verifier.Verify(certificateList);
     }
 
