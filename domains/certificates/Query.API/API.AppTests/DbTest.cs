@@ -50,7 +50,7 @@ public class MartenFixture : IAsyncLifetime
     {
         await testContainer.StartAsync();
 
-        var result = await testContainer.ExecAsync(new[]
+        await testContainer.ExecAsync(new[]
         {
             "/bin/sh", "-c",
             "psql -U postgres -c \"CREATE EXTENSION plv8; SELECT extversion FROM pg_extension WHERE extname = 'plv8';\""
@@ -86,11 +86,16 @@ public static class HttpClientExtensions
     }
 }
 
-public class DbTest : IClassFixture<MyApplicationFactory>
+public class DbTest : IClassFixture<MyApplicationFactory>, IClassFixture<MartenFixture>
 {
     private readonly MyApplicationFactory factory;
 
-    public DbTest(MyApplicationFactory factory) => this.factory = factory;
+    public DbTest(MyApplicationFactory factory, MartenFixture martenFixture)
+    {
+        this.factory = factory;
+
+        this.factory.MartenConnectionString = martenFixture.ConnectionString;
+    }
 
     [Fact]
     public async Task NoData()
@@ -141,20 +146,17 @@ public class AnotherMock : IMasterDataService
     public void Set(MasterData data) => masterData = data;
 }
 
-public class MyApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class MyApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly MartenFixture martenFixture;
     private readonly AnotherMock masterDataServiceMock;
 
-    public MyApplicationFactory()
-    {
-        martenFixture = new MartenFixture();
-        masterDataServiceMock = new AnotherMock();
-    }
+    public MyApplicationFactory() => masterDataServiceMock = new AnotherMock();
+
+    public string MartenConnectionString { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("ConnectionStrings:Marten", martenFixture.ConnectionString);
+        builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
 
         builder.ConfigureTestServices(services =>
         {
@@ -206,8 +208,4 @@ public class MyApplicationFactory : WebApplicationFactory<Program>, IAsyncLifeti
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
-    public Task InitializeAsync() => martenFixture.InitializeAsync();
-
-    Task IAsyncLifetime.DisposeAsync() => martenFixture.DisposeAsync();
 }
