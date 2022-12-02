@@ -12,7 +12,6 @@ public class MartenDbContainer : IAsyncLifetime
 
     public MartenDbContainer() =>
         testContainer = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            //.WithCleanUp(true)
             .WithDatabase(new PostgreSqlTestcontainerConfiguration
             {
                 Database = "marten",
