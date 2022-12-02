@@ -13,14 +13,13 @@ namespace API.DataSyncSyncer;
 
 public class DataSyncService
 {
-    private readonly IDataSyncClient client;
+    private readonly IDataSyncClientFactory factory;
     private readonly ISyncState syncState;
-
     private readonly ILogger<DataSyncService> logger;
 
-    public DataSyncService(IDataSyncClient client, ILogger<DataSyncService> logger, ISyncState syncState)
+    public DataSyncService(IDataSyncClientFactory factory, ILogger<DataSyncService> logger, ISyncState syncState)
     {
-        this.client = client;
+        this.factory = factory;
         this.logger = logger;
         this.syncState = syncState;
     }
@@ -43,6 +42,7 @@ public class DataSyncService
         {
             try
             {
+                var client = factory.CreateClient();
                 var result = await client.RequestAsync(
                     masterData.GSRN,
                     new Period(
