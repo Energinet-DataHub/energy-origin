@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -9,13 +10,24 @@ using API.Query.API.ApiModels;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
+using MassTransit;
+using VerifyXunit;
 using Xunit;
 
 namespace API.AppTests;
 
+[UsesVerify]
 public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
+
+    MasterData masterDataTemplate = new(
+        GSRN: "GSRN",
+        GridArea: "GridArea",
+        Type: MeteringPointType.Production,
+        Technology: new Technology("foo", "bar"),
+        MeteringPointOwner: "",
+        MeteringPointOnboardedStartDate: DateTimeOffset.Parse("2022-01-01T00:00Z"));
 
     public ApiTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
     {
@@ -48,21 +60,16 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
+        var gsrn = Guid.NewGuid().ToString();
 
-        factory.AddMasterData(new MasterData(
-            GSRN: "GSRN",
-            GridArea: "GridArea",
-            Type: MeteringPointType.Production,
-            Technology: new Technology("foo", "bar"),
-            MeteringPointOwner: subject,
-            MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddYears(-1)));
+        factory.AddMasterData(masterDataTemplate with { MeteringPointOwner = subject, GSRN = gsrn});
 
         var bus = factory.GetMassTransitBus();
 
         await bus.Publish(new EnergyMeasuredIntegrationEvent(
-            GSRN: "GSRN",
-            DateFrom: DateTimeOffset.Now.AddHours(-1).ToUnixTimeSeconds(),
-            DateTo: DateTimeOffset.Now.ToUnixTimeSeconds(),
+            GSRN: gsrn,
+            DateFrom: DateTimeOffset.Parse("2022-06-01T00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("2022-06-01T01:00Z").ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured));
 
@@ -70,6 +77,34 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         var apiResponse = await client.RepeatedlyGetUntil("certificates", res => res.StatusCode == HttpStatusCode.OK);
         var certificateList = await apiResponse.Content.ReadFromJsonAsync<CertificateList>();
-        certificateList?.Result.Should().HaveCount(1);
+        await Verifier.Verify(certificateList);
+    }
+
+    [Fact]
+    public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
+    {
+        var subject = Guid.NewGuid().ToString();
+        var gsrn = Guid.NewGuid().ToString();
+
+        factory.AddMasterData(masterDataTemplate with { MeteringPointOwner = subject, GSRN = gsrn });
+
+        var bus = factory.GetMassTransitBus();
+
+        var dateStart = DateTimeOffset.Parse("2022-06-01T00:00Z");
+        var list = Enumerable.Range(0, 5)
+            .Select(i => new EnergyMeasuredIntegrationEvent(
+                GSRN: gsrn,
+                DateFrom: dateStart.AddHours(i).ToUnixTimeSeconds(),
+                DateTo: dateStart.AddHours(i + 1).ToUnixTimeSeconds(),
+                Quantity: 42+i,
+                Quality: MeasurementQuality.Measured))
+            .ToList();
+
+        await bus.PublishBatch(list);
+
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Count() == 5);
+        await Verifier.Verify(certificateList);
     }
 }
