@@ -9,7 +9,8 @@
     },
     "extensions": [
         "EditorConfig.EditorConfig",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "hediet.vscode-drawio"
     ],
     "postCreateCommand": "",
     "remoteUser": "vscode",
