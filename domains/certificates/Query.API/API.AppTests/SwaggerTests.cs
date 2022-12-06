@@ -48,7 +48,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
     {
         var client = factory.CreateClient();
-        var swaggerDocResponse = await client.GetAsync("docs/certificates/v1/swagger.json");
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
         swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -59,7 +59,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        var swaggerDocResponse = await client.GetAsync("docs/certificates/v1/swagger.json");
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
         swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -68,7 +68,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
     {
         var client = factory.CreateClient();
-        var swaggerDocResponse = await client.GetAsync("docs/certificates/v1/swagger.json");
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
         var json = await swaggerDocResponse.Content.ReadAsStringAsync();
         await Verifier.Verify(json);
