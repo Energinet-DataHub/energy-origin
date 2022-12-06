@@ -17,9 +17,7 @@ Tokens relays both user details and related information to each domain, so no do
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
-  "features": "certificates fun jokes",
-  "roles": "admin",
-  "capabilities": "view"
+  "scope": "certificates fun jokes",
   //...
 }
 ```
@@ -112,9 +110,7 @@ HTTP 200 OK
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
-  "features": "certificates fun jokes",
-  "roles": "admin",
-  "capabilities": "view"
+  "scope": "certificates fun jokes",
   //...
 }
 ```
