@@ -82,10 +82,12 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
+//app.UseSwagger();
+app.UseSwagger(o => o.RouteTemplate = "docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/docs/certificates/v1/swagger.json", "API v1"));
+    //app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
