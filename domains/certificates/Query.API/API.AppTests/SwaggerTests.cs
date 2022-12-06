@@ -1,6 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
+using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
 using Xunit;
@@ -12,10 +13,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public SwaggerTests(QueryApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public SwaggerTests(QueryApiWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
@@ -23,7 +21,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory.CreateClient();
         var swaggerUiResponse = await client.GetAsync("swagger");
 
-        Assert.Equal(HttpStatusCode.OK, swaggerUiResponse.StatusCode);
+        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -32,7 +30,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory.CreateClient();
         var swaggerUiResponse = await client.GetAsync("swagger");
 
-        Assert.Equal("text/html", swaggerUiResponse.Content.Headers.ContentType!.MediaType);
+        swaggerUiResponse.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
     }
 
     [Fact]
@@ -43,7 +41,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
             .CreateClient();
         var swaggerUiResponse = await client.GetAsync("swagger");
 
-        Assert.Equal(HttpStatusCode.NotFound, swaggerUiResponse.StatusCode);
+        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -52,7 +50,18 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
         var client = factory.CreateClient();
         var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
-        Assert.Equal(HttpStatusCode.OK, swaggerDocResponse.StatusCode);
+        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetSwaggerDoc_AppEnvironmentIsProduction_ReturnsOk()
+    {
+        var client = factory
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
+            .CreateClient();
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
+
+        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
