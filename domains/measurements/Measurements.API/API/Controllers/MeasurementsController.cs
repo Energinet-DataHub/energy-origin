@@ -23,7 +23,7 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [Route("measurements/consumption")]
+    [Route("api/measurements/consumption")]
     public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
     {
         var validateResult = await validator.ValidateAsync(request);
@@ -42,7 +42,7 @@ public class MeasurementsController : AuthorizationController
     }
 
     [HttpGet]
-    [Route("measurements/production")]
+    [Route("api/measurements/production")]
     public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
     {
         var validateResult = await validator.ValidateAsync(request);
