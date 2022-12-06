@@ -30,7 +30,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
     {
         var client = factory.CreateUnauthenticatedClient();
-        var certificatesResponse = await client.GetAsync("certificates");
+        var certificatesResponse = await client.GetAsync("api/certificates");
 
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
@@ -42,7 +42,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var response = await client.GetAsync("certificates");
+        var response = await client.GetAsync("api/certificates");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -66,7 +66,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Any());
+        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
         await Verifier.Verify(certificateList);
     }
@@ -93,7 +93,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("certificates", res => res.Result.Count() == 5);
+        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
 
         await Verifier.Verify(certificateList);
     }
