@@ -50,7 +50,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
     {
         var client = factory.CreateClient();
-        var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
         Assert.Equal(HttpStatusCode.OK, swaggerDocResponse.StatusCode);
     }
@@ -59,7 +59,7 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
     {
         var client = factory.CreateClient();
-        var swaggerDocResponse = await client.GetAsync("swagger/v1/swagger.json");
+        var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
         var json = await swaggerDocResponse.Content.ReadAsStringAsync();
         await Verifier.Verify(json);
