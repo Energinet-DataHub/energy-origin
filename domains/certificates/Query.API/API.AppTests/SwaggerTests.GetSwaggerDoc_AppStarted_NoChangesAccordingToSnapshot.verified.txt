@@ -5,7 +5,7 @@
     "version": "v1"
   },
   "paths": {
-    "/certificates": {
+    "/api/certificates": {
       "get": {
         "tags": [
           "Certificates"
