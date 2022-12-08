@@ -1,6 +1,6 @@
 using System.Net;
-using Oidc.Mock;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Oidc.Mock;
 using Xunit;
 
 namespace Tests;
