@@ -15,7 +15,7 @@ public class CertificatesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(CertificateList), 200)]
     [ProducesResponseType(204)]
-    [Route("certificates")]
+    [Route("api/certificates")]
     public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
