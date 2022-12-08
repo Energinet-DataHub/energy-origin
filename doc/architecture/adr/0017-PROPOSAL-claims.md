@@ -1,7 +1,7 @@
 # Claims
 
 * Status: proposed
-* Deciders: @CodeReaper, @duizer
+* Deciders: @CodeReaper, @duizer, @MartinSchmidt
 * Date: 2022-11-29
 
 ---
@@ -12,6 +12,7 @@ Once a user is logged in, the frontend needs to know additional information like
 - What roles the user has
 - Which features to show
 - Which capabilities the user has
+- When the token expires
 
 Note this need is very similiar to the needs of each domain where we are using JWTs with claims.
 
@@ -20,45 +21,36 @@ Note this need is very similiar to the needs of each domain where we are using J
 ## Considered Options
 
 * Separate API calls for user roles/features/capabilities
-* Front/Back-facing JWT token
+* JWT tokens
 
 ---
 
 ## Decision Outcome
 
-We chose to use front-facing JWT tokens.
-
-**Front-facing**: Frontend-oriented roles/features/capabilities
+We chose to use JWT tokens with scope claim for adherence to (RFC 8693)[https://www.rfc-editor.org/rfc/rfc8693.html]:
 ```jsonc
 {
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
   "exp": 1516240822,
-  "opaque": "9ecacb93-36ea-411b-96f0-7a84dba41202",
-  "features": "certificates fun jokes",
-  "roles": "admin",
-  "capabilities": "view"
-  //...
-}
-```
-
-**Back-facing**: Backend-oriented where more sensitive data is permissiable
-```jsonc
-{
-  "sub": "1234567890",
-  "name": "John Doe",
-  "iat": 1516239022,
-  "exp": 1516240822,
-  "meters": "571369256606002442 57131300000000003"
+  "scope": "certificates fun jokes",
   //...
 }
 ```
 
 ## Rationale
 
-We will not have to add and maintain a separate API for roles/features/capabilities.
+JWTs is the simpler solution since the information about the user can be baked into the token and there is a lot of builtin support for JWTs.
 
-The opaque token (ID) used to look up the (back-facing) JWT could just be a claim in the front-facing token.
+### Positive Consequences
 
-The frontend will always be in-sync with what the user can do based on the roles/features/capabilities.
+There is no need for a separate API for roles/features/capabilities.
+
+The JWT will continue to work even if the auth domain is down.
+
+The frontend will always be in-sync with what the user can do based on the scopes.
+
+### Negative Consequences
+
+If the backend requires information to be present in the JWT, the frontend (and externals) can read it too.

@@ -10,35 +10,17 @@ There is a description of the current endpoints available at [Auth API](../../ap
 
 ## Tokens
 
-It is important to understand there is one token meant for outside the cluster and one meant for inside the cluster.
-Both these tokens are made by the Auth domain. The back-facing tokens relays user details and related information to each domain,
-so they never has to ask for additional information. The front-facing tokens relays user settings to the frontend.
+Tokens relays both user details and related information to each domain, so no domain has to ask for additional information.
 
-**Front-facing token**: Frontend-oriented roles/features/capabilities
 ```jsonc
 {
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
-  "features": "certificates fun jokes",
-  "roles": "admin",
-  "capabilities": "view"
+  "scope": "certificates fun jokes",
   //...
 }
 ```
-
-**Back-facing token**: Backend-oriented where more sensitive data is permissiable
-```jsonc
-{
-  "sub": "1234567890",
-  "name": "John Doe",
-  "iat": 1516239022,
-  "meters": "571369256606002442 57131300000000003"
-  //...
-}
-```
-
-The front-facing token is exclusively used by the frontend.
 
 Neither developer tokens nor OIDC PKCE type tokens are included in the current description.
 
@@ -52,8 +34,6 @@ The auth domain will be configured with the latest version and can check if a us
 Based on this the claim relating to terms for the front-facing token can be calculated.
 
 ## New endpoints
-
-
 
 ### `GET /api/auth/login`
 ---
@@ -81,7 +61,7 @@ Handle callback from OIDC provider by redirecting to:
 **Response**
 
 HTTP 200 OK with header:
-- cookie: Authentication={Front-facing token}
+- cookie: Authentication={token}
 ```html
 <html>
 <head>
@@ -120,7 +100,7 @@ HTTP 204 No content
 ### `GET /api/auth/token`
 ---
 
-Will re-create your front-facing token. Useful for renewing a token that is about to expire or to get updated claims.
+Will re-create your token. Useful for renewing a token that is about to expire or to get updated claims.
 
 **Response**
 
@@ -130,19 +110,7 @@ HTTP 200 OK
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
-  "features": "certificates fun jokes",
-  "roles": "admin",
-  "capabilities": "view"
+  "scope": "certificates fun jokes",
   //...
 }
 ```
-
-### `GET /api/auth/token/forward-auth`
----
-
-[ForwardAuth endpoint](https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/) for Træfik.
-
-**Response**
-
-HTTP 200 OK with header:
-- Authentication: Bearer {Back-facing token}
