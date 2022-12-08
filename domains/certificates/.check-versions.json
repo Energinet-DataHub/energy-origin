@@ -1,0 +1,10 @@
+[
+    {
+        "yaml-file": "domains/certificates/chart/Chart.yaml",
+        "yaml-path": "version"
+    },
+    {
+        "yaml-file": "domains/certificates/Query.API/chart-overrides.yaml",
+        "yaml-path": "version"
+    }
+]

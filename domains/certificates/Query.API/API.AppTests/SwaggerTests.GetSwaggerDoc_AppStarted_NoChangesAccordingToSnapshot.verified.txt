@@ -1,0 +1,99 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Certificates Query API",
+    "version": "v1"
+  },
+  "paths": {
+    "/certificates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateList"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Success"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Certificate ID",
+            "format": "uuid"
+          },
+          "dateFrom": {
+            "type": "integer",
+            "description": "Start timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "description": "End timestamp for the certificate in Unix time",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity of energy measured in Wh",
+            "format": "int64"
+          },
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "gridArea": {
+            "type": "string",
+            "description": "Grid area for the metering point"
+          },
+          "techCode": {
+            "type": "string",
+            "description": "The technology of the production device as specified in EECS Rules Fact Sheet 5"
+          },
+          "fuelCode": {
+            "type": "string",
+            "description": "The energy source for the production device as specified in EECS Rules Fact Sheet 5"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CertificateList": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Certificate"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

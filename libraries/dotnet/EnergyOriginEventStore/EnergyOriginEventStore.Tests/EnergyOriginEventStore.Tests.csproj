@@ -23,8 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EnergyOriginEventStore\EnergyOriginEventStore.csproj" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="EnergyOriginDateTimeExtension" Version="1.1.3" />
+    <PackageReference Include="Dapper.Extensions.SQLite" Version="4.0.5" />
   </ItemGroup>
 
 </Project>

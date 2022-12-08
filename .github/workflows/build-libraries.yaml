@@ -96,7 +96,7 @@ jobs:
 
       - name: Resolve version
         id: resolve-version
-        uses: Energinet-Datahub/.github/.github/actions/yaml-get@main
+        uses: ./.github/actions/yaml-get
         with:
           yaml_file: ${{ steps.resolve-paths.outputs.solution }}/version.yaml
           yaml_path: version

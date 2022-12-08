@@ -1,17 +1,17 @@
-using System.Linq;
-using Xunit;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Xunit;
 
 namespace EnergyOriginAuthorization.Tests
 {
     public class AuthorizeAttributeTests
     {
-        private string GenerateToken(
+        private static string GenerateToken(
             string scope = "",
             string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
             string subject = "bdcb3287-3dd3-44cd-8423-1f94437648cc",
@@ -34,9 +34,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken();
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.True(result);
         }
@@ -46,9 +44,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(actorKey: "name");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.False(result);
         }
@@ -58,9 +54,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(actor: "");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.False(result);
         }
@@ -70,9 +64,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(actorKey: "Actor");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.False(result);
         }
@@ -82,9 +74,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = "";
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.False(result);
         }
@@ -94,9 +84,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = "sdfkljhfdsjklghs";
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.False(result);
         }
@@ -106,9 +94,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "needed-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope" });
 
             Assert.True(result);
         }
@@ -118,9 +104,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "some-other-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope" });
 
             Assert.False(result);
         }
@@ -130,9 +114,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "NEEDED-SCOPE");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope" });
 
             Assert.False(result);
         }
@@ -142,9 +124,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope" });
 
             Assert.False(result);
         }
@@ -155,9 +135,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "needed-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, Enumerable.Empty<string>());
+            var result = AuthorizeAttribute.ValidateToken(jwt, Enumerable.Empty<string>());
 
             Assert.True(result);
         }
@@ -167,9 +145,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "needed-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope", "other-needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope", "other-needed-scope" });
 
             Assert.False(result);
         }
@@ -179,9 +155,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "needed-scope some-other-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope" });
 
             Assert.True(result);
         }
@@ -192,9 +166,7 @@ namespace EnergyOriginAuthorization.Tests
         {
             var jwt = GenerateToken(scope: "needed-scope other-needed-scope");
 
-            var authorize = new AuthorizeAttribute();
-
-            var result = authorize.ValidateToken(jwt, new List<string> { "needed-scope", "other-needed-scope" });
+            var result = AuthorizeAttribute.ValidateToken(jwt, new List<string> { "needed-scope", "other-needed-scope" });
 
             Assert.True(result);
         }

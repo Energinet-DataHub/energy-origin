@@ -1,0 +1,4 @@
+version: 0.3.7
+versionPath: api.image.tag
+name: ghcr.io/energinet-datahub/eo-emissions
+namePath: api.image.name

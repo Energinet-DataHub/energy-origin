@@ -1,4 +1,7 @@
+using FluentValidation;
+
 namespace API.Models;
+#nullable disable
 public record AuthState
 {
     public string FeUrl { get; init; }
@@ -9,4 +12,13 @@ public record AuthState
     public string Tin { get; init; }
     public string IdentityProvider { get; init; }
     public string ExternalSubject { get; init; }
+    public string CustomerType { get; init; }
+}
+
+public class InvalidateAuthStateValidator : AbstractValidator<AuthState>
+{
+    public InvalidateAuthStateValidator()
+    {
+        RuleFor(x => x.IdToken).NotEmpty();
+    }
 }
