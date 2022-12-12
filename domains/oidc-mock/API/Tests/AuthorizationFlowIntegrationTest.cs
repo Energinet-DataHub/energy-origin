@@ -22,13 +22,13 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
     public AuthorizationFlowIntegrationTest()
     {
-        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "test-users.json");
-        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, clientId);
-        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, clientSecret);
-        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, redirectUri);
-
         factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
+            .WithWebHostBuilder(builder => builder
+                .UseEnvironment("Test")
+                .UseSetting(Configuration.UsersFilePathKey, "test-users.json")
+                .UseSetting(Configuration.ClientIdKey, clientId)
+                .UseSetting(Configuration.ClientSecretKey, clientSecret)
+                .UseSetting(Configuration.ClientRedirectUriKey, redirectUri));
     }
 
     [Fact]
@@ -127,11 +127,6 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(Configuration.UsersFilePathKey, "");
-        Environment.SetEnvironmentVariable(Configuration.ClientIdKey, "");
-        Environment.SetEnvironmentVariable(Configuration.ClientSecretKey, "");
-        Environment.SetEnvironmentVariable(Configuration.ClientRedirectUriKey, "");
-
         factory.Dispose();
     }
 }
