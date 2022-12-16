@@ -2,7 +2,8 @@ name: Check Licenses
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   define-matrix:
@@ -15,41 +16,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure main branch is known
-        shell: bash
-        run: |
-          git fetch
-          git checkout main
-          git checkout -
+      - uses: CodeReaper/find-diff-action@v1
+        id: diff
+        with:
+          paths: domains libraries/dotnet
+          type: directories
+          minimumDepth: 1
+          maximumDepth: 1
 
       - name: Find relevant projects
         id: define-matrix
         shell: bash
+        env:
+          PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          pattern=$(find domains libraries/dotnet -mindepth 1 -maxdepth 1 -type d -exec printf '^%s|' {} \; | sed 's/|$//g')
-
-          echo 'Search pattern:'
-          echo "$pattern"
-
-          echo '::group::Change set'
-          git diff --stat=10000 main
-          echo '::endgroup::'
-
-          set +e
-          pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          set -e
-
-          echo 'Relevance pattern:'
-          echo "$pattern"
-
-          if [ -z "$pattern" ]; then
+          if [ -z "$PATTERN" ]; then
             echo 'Relevance pattern is empty, emitting empty matrix.'
             echo '::set-output name=matrix::[]'
             exit 0
           fi
 
           # TODO: re-enable checking Tests projects
-          matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$pattern" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
+          matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
           echo "::set-output name=matrix::${matrix}"
 
