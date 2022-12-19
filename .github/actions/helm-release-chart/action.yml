@@ -24,6 +24,10 @@ inputs:
     description: Add the name of the image to the name of a chart.
     required: false
     default: "false"
+  dry_run:
+    description: Perform all actions but without committing changes
+    required: false
+    default: "false"
 
 outputs:
   chart_name:
@@ -70,6 +74,7 @@ runs:
 
     - name: Create Release
       id: create_release
+      if: ${{ inputs.dry_run != 'true' }}
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -81,6 +86,7 @@ runs:
 
     - name: Add chart.tar to release
       id: upload-release-asset
+      if: ${{ inputs.dry_run != 'true' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -91,6 +97,7 @@ runs:
         asset_content_type: application/zip
 
     - name: Checkout chart repository
+      if: ${{ inputs.dry_run != 'true' }}
       uses: actions/checkout@v3
       with:
         path: ${{ env.helm-checkout-directory }}
@@ -99,6 +106,7 @@ runs:
         ref: ${{ inputs.chart_repository_branch }}
 
     - name: Download chart tarball
+      if: ${{ inputs.dry_run != 'true' }}
       shell: bash
       working-directory: ${{ env.helm-checkout-directory }}
       env:
@@ -107,13 +115,15 @@ runs:
         gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ steps.generate_filename.outputs.filename }}' --dir './'
 
     - name: Update index file for helm registry
+      if: ${{ inputs.dry_run != 'true' }}
       shell: bash
       working-directory: ${{ env.helm-checkout-directory }}
       run: helm repo index .
 
     - name: Commit changes
-      uses: EndBug/add-and-commit@v9
+      if: ${{ inputs.dry_run != 'true' }}
       id: commit
+      uses: EndBug/add-and-commit@v9
       with:
         add: '["index.yaml", "${{ steps.generate_filename.outputs.filename }}"]'
         message: Updated the helm registry with file ${{ steps.generate_filename.outputs.filename }}
@@ -124,7 +134,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ steps.commit.outputs.pushed == 'false' }}
+      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
