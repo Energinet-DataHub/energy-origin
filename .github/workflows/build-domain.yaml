@@ -114,10 +114,13 @@ jobs:
           echo "::set-output name=projects::${projects}"
 
           new=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
-            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
             [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
             echo '{"draft": false}' > "$domain/.default.domain.json"
-            settings=$(jq -srec '.[0] * .[1] | .name=$name' --arg name "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
+            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
+
+            draft=$(printf '%s' "$settings" | jq -rce '.draft')
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s"}' "$directory" "$draft"; done | jq -sc '.')
+
             printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
           done | jq -sc '.')
 
