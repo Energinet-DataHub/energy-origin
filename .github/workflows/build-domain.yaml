@@ -222,7 +222,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           output="$DOMAIN/chart/values.yaml"
-          printf '%s' "$PROJECTS" | jq -r '.[]' | grep ^$DOMAIN | while read project; do
+          printf '%s' "$PROJECTS" | jq -r '.[].path' | grep ^$DOMAIN | while read project; do
               input="$project/../chart-overrides.yaml"
               value=$(yaml-get --query version "$input")
               value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
