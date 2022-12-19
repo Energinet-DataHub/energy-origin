@@ -134,7 +134,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ inputs.dry_run != 'true' }} && ${{ steps.commit.outputs.pushed == 'false' }}
+      if: ${{ inputs.dry_run == 'false' }} && ${{ steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
