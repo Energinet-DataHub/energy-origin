@@ -10,6 +10,10 @@ inputs:
     description: The branch on the environment repository to target.
     required: false
     default: main
+  dry_run:
+    description: Perform all actions but without committing changes
+    required: false
+    default: "false"
   app_name:
     description: The name of the app in the environment.
     required: true
@@ -66,6 +70,7 @@ runs:
 
     - name: Branch - commit changes
       id: commit
+      if: ${{ input.dry_run != 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
         add: ${{ steps.simple-app.outputs.base-file }}
@@ -77,7 +82,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ steps.commit.outputs.pushed == 'false' }}
+      if: ${{ input.dry_run != 'true' }} && ${{ steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1

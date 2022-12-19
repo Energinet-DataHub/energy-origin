@@ -113,6 +113,21 @@ jobs:
           projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
           echo "::set-output name=projects::${projects}"
 
+          new=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
+            [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
+            echo '{"draft": false}' > "$domain/.default.domain.json"
+            settings=$(jq -srec '.[0] * .[1] | .name=$name' --arg name "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
+            printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
+          done | jq -sc '.')
+
+          echo '::group::New'
+          echo "$new" | jq -r '.'
+          echo '::endgroup::'
+
+          exit 1
+          # printf "pattern=%s\n" "$PATTERN" >> "$GITHUB_OUTPUT"
+
       - name: Relevant domains
         shell: bash
         run: |
