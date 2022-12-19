@@ -70,7 +70,7 @@ runs:
 
     - name: Branch - commit changes
       id: commit
-      if: ${{ input.dry_run != 'true' }}
+      if: ${{ inputs.dry_run != 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
         add: ${{ steps.simple-app.outputs.base-file }}
@@ -82,7 +82,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ input.dry_run != 'true' }} && ${{ steps.commit.outputs.pushed == 'false' }}
+      if: ${{ inputs.dry_run != 'true' }} && ${{ steps.commit.outputs.pushed == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1

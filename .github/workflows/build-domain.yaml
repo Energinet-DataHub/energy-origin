@@ -184,7 +184,7 @@ jobs:
           image-name: ${{ steps.resolver.outputs.name }}
           image-tag: ${{ steps.resolver.outputs.version }}
           docker-context: ${{ steps.resolver.outputs.domain }}
-          dry_run: ${{ matrix.build.draft }}
+          dry-run: ${{ matrix.build.draft }}
 
   build-chart:
     name: Build chart

@@ -16,7 +16,7 @@ inputs:
     description: The path for the docker build context, defaults to '.'
     required: false
     default: .
-  dry_run:
+  dry-run:
     description: Perform all actions but without committing changes
     required: false
     default: "false"
@@ -47,5 +47,5 @@ runs:
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
-        push: ${{ input.dry_run != 'true' }}
+        push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ steps.image-name.outputs.lowercase }}:${{ inputs.image-tag }}
