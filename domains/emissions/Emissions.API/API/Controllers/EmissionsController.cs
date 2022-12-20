@@ -22,7 +22,7 @@ public class EmissionsController : AuthorizationController
     }
 
     [HttpGet]
-    [Route("emissions")]
+    [Route("api/emissions")]
     public async Task<ActionResult<EmissionsResponse>> GetEmissions([FromQuery] EnergySourceRequest request)
     {
         var result = await validator.ValidateAsync(request);
@@ -39,7 +39,7 @@ public class EmissionsController : AuthorizationController
     }
 
     [HttpGet]
-    [Route("sources")]
+    [Route("api/sources")]
     public async Task<ActionResult<EnergySourceResponse>> GetEnergySources([FromQuery] EnergySourceRequest request)
     {
         var result = await validator.ValidateAsync(request);
