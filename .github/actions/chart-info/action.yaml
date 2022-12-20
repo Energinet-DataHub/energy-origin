@@ -38,6 +38,6 @@ runs:
           VERSION=${{ inputs.chart-version }}
         fi
 
-        echo ::set-output name=name::$NAME
-        echo ::set-output name=tag-name::$VERSION
-        echo ::set-output name=file-name::$NAME-${{ inputs.chart-version }}.tgz
+        printf "name=%s\n" "$NAME" >> "$GITHUB_OUTPUT"
+        printf "tag-name=%s\n" "$VERSION" >> "$GITHUB_OUTPUT"
+        printf "file-name=%s\n" "$NAME-${{ inputs.chart-version }}.tgz" >> "$GITHUB_OUTPUT"
