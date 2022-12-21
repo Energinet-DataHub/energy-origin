@@ -55,7 +55,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v1
         id: diff
         with:
-          paths: libraries/dotnet
+          paths: domains
           type: directories
           minimumDepth: 1
           maximumDepth: 1
