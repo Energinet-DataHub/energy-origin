@@ -26,16 +26,11 @@ jobs:
 
       - name: Find relevant projects
         id: define-matrix
+        if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          if [ -z "$PATTERN" ]; then
-            echo 'Relevance pattern is empty, emitting empty matrix.'
-            echo '::set-output name=matrix::[]'
-            exit 0
-          fi
-
           # TODO: re-enable checking Tests projects
           matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
