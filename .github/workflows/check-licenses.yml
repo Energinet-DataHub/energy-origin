@@ -9,7 +9,7 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.define-matrix.outputs.matrix }}
+      matrix: ${{ env.matrix }}
 
     steps:
       - uses: actions/checkout@v3
@@ -24,8 +24,12 @@ jobs:
           minimumDepth: 1
           maximumDepth: 1
 
-      - name: Find relevant projects
-        id: define-matrix
+      - name: Set default matrix
+        shell: bash
+        run: |
+          echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
@@ -34,7 +38,7 @@ jobs:
           # TODO: re-enable checking Tests projects
           matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
-          echo "::set-output name=matrix::${matrix}"
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
 
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
