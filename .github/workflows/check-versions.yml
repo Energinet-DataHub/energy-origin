@@ -9,12 +9,10 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.define-matrix.outputs.matrix }}
+      matrix: ${{ env.matrix }}
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - uses: CodeReaper/find-diff-action@v1
         id: diff
@@ -24,8 +22,12 @@ jobs:
           minimumDepth: 1
           maximumDepth: 1
 
-      - name: Find relevant version checks
-        id: define-matrix
+      - name: Set default matrix
+        shell: bash
+        run: |
+          echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - name: Build relevant version matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
@@ -33,7 +35,7 @@ jobs:
         run: |
           matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$PATTERN" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
 
-          echo "::set-output name=matrix::${matrix}"
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
 
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
