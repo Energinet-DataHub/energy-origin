@@ -66,7 +66,7 @@ jobs:
           echo "domains=[]" >> "$GITHUB_ENV"
           echo "projects=[]" >> "$GITHUB_ENV"
 
-      - name: Find relevant domains
+      - name: Build relevant domain/project matrices
         if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:

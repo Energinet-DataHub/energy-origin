@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "matrix=[]" >> "$GITHUB_ENV"
 
-      - name: Find relevant projects
+      - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
