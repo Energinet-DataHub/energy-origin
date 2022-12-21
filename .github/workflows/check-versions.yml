@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: CodeReaper/find-diff-action@allow-no-matches
+      - uses: CodeReaper/find-diff-action@v1
         id: diff
         with:
           paths: domains libraries/dotnet
