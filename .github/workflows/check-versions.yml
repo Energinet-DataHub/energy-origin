@@ -2,55 +2,40 @@ name: Check Versions
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.define-matrix.outputs.matrix }}
+      matrix: ${{ env.matrix }}
 
     steps:
       - uses: actions/checkout@v3
+
+      - uses: CodeReaper/find-diff-action@v1
+        id: diff
         with:
-          fetch-depth: 0
+          paths: domains libraries/dotnet
+          type: directories
+          minimumDepth: 1
+          maximumDepth: 1
 
-      - name: Ensure main branch is known
+      - name: Set default matrix
         shell: bash
         run: |
-          git fetch
-          git checkout main
-          git checkout -
+          echo "matrix=[]" >> "$GITHUB_ENV"
 
-      - name: Find relevant version checks
-        id: define-matrix
+      - name: Build relevant version matrix
+        if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
+        env:
+          PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          pattern=$(find domains libraries/dotnet -mindepth 1 -maxdepth 1 -type d -exec printf '^%s|' {} \; | sed 's/|$//g')
+          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$PATTERN" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
 
-          echo 'Search pattern:'
-          echo "$pattern"
-
-          echo '::group::Change set'
-          git diff --stat=10000 main
-          echo '::endgroup::'
-
-          set +e
-          pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          set -e
-
-          echo 'Relevance pattern:'
-          echo "$pattern"
-
-          if [ -z "$pattern" ]; then
-            echo 'Relevance pattern is empty, emitting empty matrix.'
-            echo '::set-output name=matrix::[]'
-            exit 0
-          fi
-
-          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$pattern" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
-
-          echo "::set-output name=matrix::${matrix}"
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
 
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
