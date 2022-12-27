@@ -5,7 +5,10 @@ on:
     paths:
       - domains/certificates/**
     paths-ignore:
-      - domains/**
+      - domains/auth/**
+      - domains/emissions/**
+      - domains/measurements/**
+      - domains/oidc-mock/**
   push:
     branches:
       - main
