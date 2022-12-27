@@ -13,8 +13,8 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      domains: ${{ steps.define-matrices.outputs.domains }}
-      projects: ${{ steps.define-matrices.outputs.projects }}
+      domains: ${{ env.domains }}
+      projects: ${{ env.projects }}
 
     steps:
       - uses: actions/checkout@v3
@@ -54,53 +54,35 @@ jobs:
 
           done
 
-      - name: Ensure main branch is known
+      - uses: CodeReaper/find-diff-action@v1
+        id: diff
+        with:
+          paths: domains
+          type: directories
+          minimumDepth: 1
+          maximumDepth: 1
+
+      - name: Set default matrices
         shell: bash
         run: |
-          git fetch
-          git checkout main
-          git checkout -
+          echo "domains=[]" >> "$GITHUB_ENV"
+          echo "projects=[]" >> "$GITHUB_ENV"
 
-      - name: Find relevant domains
-        id: define-matrices
+      - name: Build relevant domain/project matrices
+        if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
-          REF: ${{ github.ref }}
+          PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          pattern=$(find domains -mindepth 1 -maxdepth 1 -type d -exec printf '^%s|' {} \; | sed 's/|$//g')
+          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
+            [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
+            echo '{"draft": false}' > "$domain/.default.domain.json"
+            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
 
-          echo 'Search pattern:'
-          echo "$pattern"
+            draft=$(printf '%s' "$settings" | jq -rce '.draft')
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s"}' "$directory" "$draft"; done | jq -sc '.')
 
-          echo '::group::Change set'
-          if [ "$REF" = "refs/heads/main" ]; then
-            git show --stat=10000 main
-          else
-            git diff --stat=10000 main
-          fi
-          echo '::endgroup::'
-
-          set +e
-          if [ "$REF" = "refs/heads/main" ]; then
-            pattern=$(git show --stat=10000 main | egrep '^ [^ ]' | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          else
-            pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          fi
-          set -e
-
-          echo 'Relevance pattern:'
-          echo "$pattern"
-
-          if [ -z "$pattern" ]; then
-            echo 'Relevance pattern is empty, emitting empty matrices.'
-            echo '::set-output name=domains::[]'
-            echo '::set-output name=projects::[]'
-            exit 0
-          fi
-
-          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
-            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '"%s"' "$directory"; done | jq -sc '.')
-            printf '{"domain":"%s","projects":%s}' "$domain" "$projects"
+            printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
           done | jq -sc '.')
 
           echo '::group::Matrix'
@@ -108,26 +90,26 @@ jobs:
           echo '::endgroup::'
 
           domains=$(printf "$matrix" | jq -cr '[.[].domain] | unique')
-          echo "::set-output name=domains::${domains}"
+          echo "domains=$domains" >> "$GITHUB_ENV"
 
           projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
-          echo "::set-output name=projects::${projects}"
+          echo "projects=$projects" >> "$GITHUB_ENV"
 
       - name: Relevant domains
         shell: bash
         run: |
           echo '::group::Raw'
-          printf '${{ steps.define-matrices.outputs.domains }}\n'
+          printf '${{ env.domains }}\n'
           echo '::endgroup::'
-          printf '${{ steps.define-matrices.outputs.domains }}' | jq -r '.'
+          printf '${{ env.domains }}' | jq -r '.'
 
       - name: Relevant projects
         shell: bash
         run: |
           echo '::group::Raw'
-          printf '${{ steps.define-matrices.outputs.projects }}\n'
+          printf '${{ env.projects }}\n'
           echo '::endgroup::'
-          printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
+          printf '${{ env.projects }}' | jq -r '.'
 
   build-projects:
     name: Build projects
@@ -147,7 +129,7 @@ jobs:
         shell: bash
         id: resolver
         env:
-          PROJECT: ${{ matrix.build }}
+          PROJECT: ${{ matrix.build.path }}
           PR: ${{ github.event.pull_request.number }}
         run: |
           docker="$PROJECT/Dockerfile"
@@ -178,6 +160,7 @@ jobs:
           image-name: ${{ steps.resolver.outputs.name }}
           image-tag: ${{ steps.resolver.outputs.version }}
           docker-context: ${{ steps.resolver.outputs.domain }}
+          dry-run: ${{ matrix.build.draft }}
 
   build-chart:
     name: Build chart
@@ -198,7 +181,7 @@ jobs:
         shell: bash
         id: resolve-paths
         env:
-          DOMAIN: ${{ matrix.build }}
+          DOMAIN: ${{ matrix.build.path }}
         run: |
           chart="$DOMAIN/chart"
           echo "domain=${DOMAIN}" >> $GITHUB_OUTPUT
@@ -215,7 +198,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           output="$DOMAIN/chart/values.yaml"
-          printf '%s' "$PROJECTS" | jq -r '.[]' | grep ^$DOMAIN | while read project; do
+          printf '%s' "$PROJECTS" | jq -r '.[].path' | grep ^$DOMAIN | while read project; do
               input="$project/../chart-overrides.yaml"
               value=$(yaml-get --query version "$input")
               value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
@@ -242,6 +225,7 @@ jobs:
           chart_version: ${{ steps.resolve-chart.outputs.semver }}
           include_image_name: true
           deploy_key: ${{ secrets.DEPLOY_KEY_HELM_CHARTS }}
+          dry_run: ${{ matrix.build.draft }}
 
   update-environment:
     name: Update environment
@@ -261,7 +245,7 @@ jobs:
         shell: bash
         id: resolve-paths
         env:
-          DOMAIN: ${{ matrix.build }}
+          DOMAIN: ${{ matrix.build.path }}
         run: |
           chart="$DOMAIN/chart"
           echo "chart=${chart}" >> $GITHUB_OUTPUT
@@ -290,3 +274,4 @@ jobs:
           chart_name: ${{ steps.chart-info.outputs.chart-name }}
           chart_version: ${{ steps.resolve-chart.outputs.semver }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ matrix.build.draft }}
