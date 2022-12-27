@@ -43,7 +43,6 @@ When shutting down, run:
 docker-compose down --volumes
 ```
 
-
 ## Domain decisions / DDR (Domain-decision-records)
 
 * Use MassTransit to have an abstraction on top of message transports such as RabbitMQ. It can also use Marten for saga persistence. For now it is used as in-memory bus for integration events.
