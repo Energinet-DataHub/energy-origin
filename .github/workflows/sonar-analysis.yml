@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - domains/certificates/**
+    paths-ignore:
+      - domains/**
   push:
     branches:
       - main
