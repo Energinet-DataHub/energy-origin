@@ -6,6 +6,7 @@ on:
       - domains/emissions/**
       - domains/measurements/**
       - domains/oidc-mock/**
+      - domains/certificates/**
 jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
