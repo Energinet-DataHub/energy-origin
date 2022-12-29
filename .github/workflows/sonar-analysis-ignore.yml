@@ -11,4 +11,4 @@ jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
     steps:
-      - run: 'echo "No SonarCloud scan required"'
+      - run: 'echo "No SonarCloud scan requied"'
