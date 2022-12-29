@@ -4,11 +4,6 @@ on:
   pull_request:
     paths:
       - domains/certificates/**
-#    paths-ignore:
-#      - domains/auth/**
-#      - domains/emissions/**
-#      - domains/measurements/**
-#      - domains/oidc-mock/**
   push:
     branches:
       - main

@@ -2,7 +2,10 @@ name: SonarCloud
 on:
   pull_request:
     paths-ignore:
-      - 'domains/**'
+      - domains/auth/**
+      - domains/emissions/**
+      - domains/measurements/**
+      - domains/oidc-mock/**
 jobs:
   build:
     runs-on: ubuntu-latest
