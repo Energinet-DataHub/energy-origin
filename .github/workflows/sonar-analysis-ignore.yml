@@ -1,0 +1,10 @@
+name: SonarCloud
+on:
+  pull_request:
+    paths-ignore:
+      - 'domains/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No SonarCloud required"'
