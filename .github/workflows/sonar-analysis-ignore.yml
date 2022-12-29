@@ -7,7 +7,7 @@ on:
       - domains/measurements/**
       - domains/oidc-mock/**
 jobs:
-  build:
+  sonar-analysis:
     runs-on: ubuntu-latest
     steps:
-      - run: 'echo "No SonarCloud required"'
+      - run: 'echo "No SonarCloud scan required"'
