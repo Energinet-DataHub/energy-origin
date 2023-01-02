@@ -16,3 +16,17 @@ The following lists the working assumptions. The design/architecture used needs 
   * Note from XPTDU: Not really sure about this. What will the registry do if the same command is sent multiple times?
 * No locking mechanism for commands against a certificate exists. So if two commands are sent at the same time, only one is expected to win.
   * Observation point from XPTDU: If a certificate needs to be locked, then it must be done in Energy Origin (or by the Energy Origin API client)
+
+## Events for communication - Choreography
+
+Below is an example of how we could do event driven communication based on choreography. A box should be seen as something that consumes and/or sends an event to the message broker.
+
+![Events - choreography](../diagrams/certificates.events.choreography.drawio.svg)
+
+The bottom part shows the flow of events.
+
+"Validator" could be left out or be a part of Command API. "Validator" can do some validation of the request/command before RegistryConnector sends a command to Project Origin Registry. The validation could e.g. be a check if the slice exists or if the calling user has the needed rights.
+
+## Events for communication - Orchestration
+
+TODO...
