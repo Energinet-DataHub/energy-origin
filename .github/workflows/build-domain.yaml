@@ -13,8 +13,8 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      domains: ${{ steps.define-matrices.outputs.domains }}
-      projects: ${{ steps.define-matrices.outputs.projects }}
+      domains: ${{ env.domains }}
+      projects: ${{ env.projects }}
 
     steps:
       - uses: actions/checkout@v3
@@ -54,51 +54,27 @@ jobs:
 
           done
 
-      - name: Ensure main branch is known
+      - uses: CodeReaper/find-diff-action@v1
+        id: diff
+        with:
+          paths: domains
+          type: directories
+          minimumDepth: 1
+          maximumDepth: 1
+
+      - name: Set default matrices
         shell: bash
         run: |
-          git fetch
-          git checkout main
-          git checkout -
+          echo "domains=[]" >> "$GITHUB_ENV"
+          echo "projects=[]" >> "$GITHUB_ENV"
 
-      - name: Find relevant domains
-        id: define-matrices
+      - name: Build relevant domain/project matrices
+        if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
         env:
-          REF: ${{ github.ref }}
+          PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          pattern=$(find domains -mindepth 1 -maxdepth 1 -type d -exec printf '^%s|' {} \; | sed 's/|$//g')
-
-          echo 'Search pattern:'
-          echo "$pattern"
-
-          echo '::group::Change set'
-          if [ "$REF" = "refs/heads/main" ]; then
-            git show --stat=10000 main
-          else
-            git diff --stat=10000 main
-          fi
-          echo '::endgroup::'
-
-          set +e
-          if [ "$REF" = "refs/heads/main" ]; then
-            pattern=$(git show --stat=10000 main | egrep '^ [^ ]' | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          else
-            pattern=$(git diff --stat=10000 main | grep '|' | sed 's/^ *//g' | egrep -o "$pattern" | sort -u | xargs -r printf '^%s|' | sed 's/|$//g')
-          fi
-          set -e
-
-          echo 'Relevance pattern:'
-          echo "$pattern"
-
-          if [ -z "$pattern" ]; then
-            echo 'Relevance pattern is empty, emitting empty matrices.'
-            printf "domains=[]\n" >> "$GITHUB_OUTPUT"
-            printf "projects=[]\n" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$pattern" | while read domain; do
+          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
             [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
             echo '{"draft": false}' > "$domain/.default.domain.json"
             settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
@@ -114,26 +90,26 @@ jobs:
           echo '::endgroup::'
 
           domains=$(printf "$matrix" | jq -cr '[.[].domain] | unique')
-          printf "domains=%s\n" "$domains" >> "$GITHUB_OUTPUT"
+          echo "domains=$domains" >> "$GITHUB_ENV"
 
           projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
-          printf "projects=%s\n" "$projects" >> "$GITHUB_OUTPUT"
+          echo "projects=$projects" >> "$GITHUB_ENV"
 
       - name: Relevant domains
         shell: bash
         run: |
           echo '::group::Raw'
-          printf '${{ steps.define-matrices.outputs.domains }}\n'
+          printf '${{ env.domains }}\n'
           echo '::endgroup::'
-          printf '${{ steps.define-matrices.outputs.domains }}' | jq -r '.'
+          printf '${{ env.domains }}' | jq -r '.'
 
       - name: Relevant projects
         shell: bash
         run: |
           echo '::group::Raw'
-          printf '${{ steps.define-matrices.outputs.projects }}\n'
+          printf '${{ env.projects }}\n'
           echo '::endgroup::'
-          printf '${{ steps.define-matrices.outputs.projects }}' | jq -r '.'
+          printf '${{ env.projects }}' | jq -r '.'
 
   build-projects:
     name: Build projects
