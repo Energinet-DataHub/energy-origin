@@ -19,9 +19,9 @@ The following lists the working assumptions. The design/architecture used needs 
 
 ## Events for communication - Choreography
 
-Below is an example of how we could do event driven communication based on choreography. A box should be seen as something that consumes and/or sends an event to the message broker.
+Below is an example of how we could do event driven communication based on choreography for a transfer slice command. A box should be seen as something that consumes and/or sends an event to the message broker.
 
-![Events - choreography](../diagrams/certificates.events.choreography.drawio.svg)
+![Events for transfer slice - choreography](../diagrams/certificates.events.choreography.drawio.svg)
 
 The bottom part shows the flow of events.
 
