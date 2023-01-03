@@ -77,3 +77,10 @@ The bottom part shows the flow of events.
 For difference between choreography and orchestration see https://codeopinion.com/event-choreography-orchestration-sagas/
 
 TODO...
+
+## Tasks
+
+* Which Message Broker to use? Kafka? RabbitMQ?
+  * Ask Jakob J. about input from infrastructure
+* PoC on RegistryConnector (use Project Origin client library) - Ask Martin Schmidt for a Docker Image (see zenhub epic #1183)
+* PoC for event driven architecture using MassTransit+RabbitMQ
