@@ -28,7 +28,33 @@ The following lists the working assumptions. The design/architecture used needs 
 
 ## Synchronous approach
 
-TODO...
+Below is "C#'ish" code handling a request for transfering a slice in a synchronous manner:
+
+```cs
+// Validate the request
+var result = validator.validate(transferSliceRequest);
+if (result.Invalid)
+    return BadRequest();
+
+// Send command to Project Origin Registry
+var command = new TransferSliceCommand(...);
+registryConnector.Execute(command);
+
+// Append event to MartenDB in certifcates domain
+martenDbSession.AppendEvent(new SliceTransferred());
+
+return Ok();
+```
+
+The downsides are:
+
+* The request will fail in case of a transient error in communication with the Project Origin Registry
+* The client library for the registry is asynchronous and it is not checked if the command was successful
+* If appending event to marten db fails there will be misalignment between the models
+* It is not easy to implement retries
+* The calls to Project Origin Registry and MartenDB are temporally coupled
+
+If the `registryConnector` is changed to work synchronously, then the response time for the request will increase significantly.
 
 ## Event driven approach - Choreography
 
@@ -36,7 +62,7 @@ For difference between choreography and orchestration see https://codeopinion.co
 
 Below is an example of how we could do event driven communication based on choreography for a transfer slice command. A box should be seen as something that consumes and/or sends an event to the message broker.
 
-![Events for transfer slice - choreography](../diagrams/certificates.events.choreography.drawio.svg)
+![Events for transfer slice - choreography](../diagrams/certificates.events.transferslice.choreography.drawio.svg)
 
 The bottom part shows the flow of events.
 
