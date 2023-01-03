@@ -52,15 +52,19 @@ The downsides are:
 * The client library for the registry is asynchronous and it is not checked if the command was successful
 * If appending event to marten db fails there will be misalignment between the models
 * It is not easy to implement retries
-* The calls to Project Origin Registry and MartenDB are temporally coupled
+* The calls to Project Origin Registry and MartenDB are temporal coupled
 
 If the `registryConnector` is changed to work synchronously, then the response time for the request will increase significantly.
+
+## Note on messages in event driven approach
+
+When using a message broker in an event driven architecture, then the messages can be divided into two main types: commands and events. See e.g. https://masstransit-project.com/usage/messages.html#message-names for more info. Commands tells a service to do something, and events signifies that something has happened.
 
 ## Event driven approach - Choreography
 
 For difference between choreography and orchestration see https://codeopinion.com/event-choreography-orchestration-sagas/
 
-Below is an example of how we could do event driven communication based on choreography for a transfer slice command. A box should be seen as something that consumes and/or sends an event to the message broker.
+Below is an example of how we could do event driven communication based on choreography for a transfer slice command (called `TransferSlice`). A box should be seen as something that consumes and/or sends a message to the message broker.
 
 ![Events for transfer slice - choreography](../diagrams/certificates.events.transferslice.choreography.drawio.svg)
 
