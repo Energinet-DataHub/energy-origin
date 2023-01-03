@@ -82,5 +82,6 @@ TODO...
 
 * Which Message Broker to use? Kafka? RabbitMQ?
   * Ask Jakob J. about input from infrastructure
+  * In case of RabbitMQ, then libraries like NServiceBus, MassTransit, Rebus and Wolverine/Jasper could be investigated.
 * PoC on RegistryConnector (use Project Origin client library) - Ask Martin Schmidt for a Docker Image (see zenhub epic #1183)
 * PoC for event driven architecture using MassTransit+RabbitMQ
