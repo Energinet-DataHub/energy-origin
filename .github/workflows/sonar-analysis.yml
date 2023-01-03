@@ -15,6 +15,7 @@ env:
 
 jobs:
   sonar-analysis:
+    name: sonar-analysis
     runs-on: ubuntu-latest
     env:
       SOLUTION_NAME: "energinet-datahub_energy-origin_certificates"
