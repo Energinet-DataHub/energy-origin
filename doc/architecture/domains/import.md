@@ -1,4 +1,4 @@
-# Import Domain
+# Import Domain (proposal)
 
 This is a **proposal** of how data could be imported from DataHub2.
 
@@ -30,6 +30,8 @@ The scheduler could be registered as a receiver in the data washer/delivery syst
 The importer (container) contains a public/private key pair that is used for authentication. The container could be run on as CRON job or with an internal reoccuring job.
 
 The importers job is to download and archive new data. Downloading could be authenticated by public/private key signing a message containing the `token` value and sending that message as a header when downloading the given `uri`.
+
+The importer should create archives where the data from the data washer/delivery systems are saved in a format that is suited for mass-importing into the time-series domain.
 
 ### Bus
 
