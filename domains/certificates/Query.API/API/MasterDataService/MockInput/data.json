@@ -9,5 +9,16 @@
         },
         "cvr": "28980671",
         "meteringPointOnboardedStartDate": "2022-09-11T19:13:50+00:00"
+    },
+    {
+        "gsrn": "571313113163122352",
+        "gridArea": "DK1",
+        "type": "Production",
+        "technology": {
+            "fuelCode": "F00000000",
+            "techCode": "T010000"
+        },
+        "cvr": "DK30006348",
+        "meteringPointOnboardedStartDate": "2023-01-04T08:50:50+00:00"
     }
 ]
