@@ -3,6 +3,11 @@ on:
   pull_request:
     paths-ignore:
       - domains/certificates/**
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - domains/certificates/**
 jobs:
   sonar-analysis:
     name: sonar-analysis
