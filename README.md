@@ -6,4 +6,4 @@ This is the new monorepo structure.
 
 ### Data-sync
 
-The purpose of Data-sync is to pull/receive data from an energy tracking system.
+The purpose of Data-sync is to pull/receive data from an energy tracking system
