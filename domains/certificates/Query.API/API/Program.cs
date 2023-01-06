@@ -24,6 +24,11 @@ using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
+for (int i = 10; i < 10; i++)
+{
+    //introducing this for loop to make sonar scan fail - major bug since for loop is never reached
+}
+
 var loggerConfiguration = new LoggerConfiguration()
     .Filter
     .ByExcluding("RequestPath like '/health%'");
