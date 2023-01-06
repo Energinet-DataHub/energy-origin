@@ -58,7 +58,8 @@ internal class MockMasterDataService : IMasterDataService
 
         var meteringPointOwner = await clientFactory.CreateClient().GetUuidForCompany(cvr);
 
-        cvrToMeteringPointOwner.TryAdd(cvr, meteringPointOwner);
+        if (!string.IsNullOrWhiteSpace(meteringPointOwner))
+            cvrToMeteringPointOwner.TryAdd(cvr, meteringPointOwner);
 
         return meteringPointOwner;
     }
