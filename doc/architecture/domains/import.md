@@ -27,7 +27,7 @@ The scheduler could be registered as a receiver in the data washer/delivery syst
 
 ### Importer
 
-The importer (container) contains a public/private key pair that is used for authentication. The container could be run on as CRON job or with an internal reoccuring job.
+The importer (container) contains a public/private key pair that is used for authentication. The container could be run on as CRON job or with an internal recurring job.
 
 The importers job is to download and archive new data. Downloading could be authenticated by public/private key signing a message containing the `token` value and sending that message as a header when downloading the given `uri`.
 
