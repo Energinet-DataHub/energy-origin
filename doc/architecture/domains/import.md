@@ -35,4 +35,4 @@ The importer should create archives where the data from the data washer/delivery
 
 ### Bus
 
-The purpose of the Bu container is to inform every domain that needs to know, that new data is available.
+The purpose of the Bus container is to inform every domain that needs to know, that new data is available.
