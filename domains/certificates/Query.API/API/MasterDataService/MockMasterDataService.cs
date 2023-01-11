@@ -10,17 +10,17 @@ namespace API.MasterDataService;
 
 internal class MockMasterDataService : IMasterDataService
 {
-    private readonly AuthServiceClientFactory clientFactoryChange;
+    private readonly AuthServiceClientFactory clientFactory;
     private readonly ILogger<MockMasterDataService> logger;
     private readonly Dictionary<string, MasterDataMockInput> mockInputs;
     private readonly ConcurrentDictionary<string, string> cvrToMeteringPointOwner = new();
 
     public MockMasterDataService(
         MasterDataMockInputCollection collection,
-        AuthServiceClientFactory clientFactoryChange,
+        AuthServiceClientFactory clientFactory,
         ILogger<MockMasterDataService> logger)
     {
-        this.clientFactoryChange = clientFactoryChange;
+        this.clientFactory = clientFactory;
         this.logger = logger;
 
         mockInputs = collection.Inputs.ToDictionary(d => d.GSRN, d => d);
@@ -56,7 +56,7 @@ internal class MockMasterDataService : IMasterDataService
         if (cvrToMeteringPointOwner.ContainsKey(cvr))
             return cvrToMeteringPointOwner[cvr];
 
-        var meteringPointOwner = await clientFactoryChange.CreateClient().GetUuidForCompany(cvr);
+        var meteringPointOwner = await clientFactory.CreateClient().GetUuidForCompany(cvr);
 
         if (!string.IsNullOrWhiteSpace(meteringPointOwner))
             cvrToMeteringPointOwner.TryAdd(cvr, meteringPointOwner);
