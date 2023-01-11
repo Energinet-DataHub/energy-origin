@@ -19,7 +19,7 @@ public class CertificatesController : ControllerBase
     public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
-        var projection = await querySession.LoadAsync<CertificatesByOwnerView>(meteringPointOwner);
-        return projection != null ? projection.ToApiModel() : NoContent();
+        var proj = await querySession.LoadAsync<CertificatesByOwnerView>(meteringPointOwner);
+        return proj != null ? proj.ToApiModel() : NoContent();
     }
 }
