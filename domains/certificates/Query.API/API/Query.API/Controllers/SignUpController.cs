@@ -30,3 +30,5 @@ public class SignUpController : ControllerBase
 }
 
 public record CreateSignup(string Gsrn, long StartDate);
+//TODO: Can GSRN be a long or other type?
+//TODO: How does datasyncsyncer handle start times not on an even hour?
