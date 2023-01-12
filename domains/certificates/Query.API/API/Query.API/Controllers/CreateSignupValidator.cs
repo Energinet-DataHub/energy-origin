@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,12 @@ public class CreateSignupValidator : AbstractValidator<CreateSignup>
         this.httpClientFactory = httpClientFactory;
 
         RuleFor(cs => cs.StartDate)
-            .Must(l => l > 100);
+            .Must(l =>
+            {
+                var now = DateTimeOffset.UtcNow;
+                var utcMidnight = now.Subtract(now.TimeOfDay);
+                return l >= utcMidnight.ToUnixTimeSeconds();
+            });
 
         RuleFor(cs => cs.Gsrn)
             .Cascade(CascadeMode.Stop)

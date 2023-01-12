@@ -2,6 +2,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,12 @@ public class SignUpController : ControllerBase
         var meteringPointOwner = User.FindFirstValue("subject");
         Guid.Parse(meteringPointOwner);
 
-        await validator.ValidateAsync(createSignup);
+        var validationResult = await validator.ValidateAsync(createSignup);
+        if (!validationResult.IsValid)
+        {
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
+        }
 
         //var exists = querySession.Events.QueryAllRawEvents()
         //    .Where(x => x.StreamId == Guid.Parse(meteringPointOwner))
