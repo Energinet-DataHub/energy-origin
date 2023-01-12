@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.AppTests", "Query.API\API.AppTests\API.AppTests.csproj", "{ADF34BB7-0A83-4E56-AC27-0F712F1B7BAF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{50B52CB7-AA59-483B-8C89-46A681B3E01F}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\CertificateSignupEvents.cs = Shared\CertificateSignupEvents.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertificateEvents", "Shared\CertificateEvents\CertificateEvents.csproj", "{E9D8231A-D022-4CBE-986C-0879BB530552}"
 EndProject
