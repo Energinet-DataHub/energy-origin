@@ -18,7 +18,6 @@ public class SignUpController : ControllerBase
     public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
-        Guid.Parse(meteringPointOwner);
 
         //var exists = querySession.Events.QueryAllRawEvents()
         //    .Where(x => x.StreamId == Guid.Parse(meteringPointOwner))
