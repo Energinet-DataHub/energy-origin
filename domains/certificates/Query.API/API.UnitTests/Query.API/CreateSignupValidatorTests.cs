@@ -10,7 +10,7 @@ public class CreateSignupValidatorTests
     [Fact]
     public async Task Test1()
     {
-        var sut = new CreateSignupValidator();
+        var sut = new CreateSignupValidator(null);
 
         var result = await sut.TestValidateAsync(new CreateSignup("12345678901", 10));
 

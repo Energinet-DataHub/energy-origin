@@ -1,6 +1,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentValidation;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,12 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(302)]
     [Route("api/signup")]
-    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup)
+    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
         Guid.Parse(meteringPointOwner);
+
+        await validator.ValidateAsync(createSignup);
 
         //var exists = querySession.Events.QueryAllRawEvents()
         //    .Where(x => x.StreamId == Guid.Parse(meteringPointOwner))
