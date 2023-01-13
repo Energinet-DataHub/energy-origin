@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using API.Query.API.ApiModels.Requests;
 using API.Query.API.Controllers;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -14,7 +15,8 @@ public class CreateSignupValidatorTests
         var validator = new CreateSignupValidator();
 
         var now = DateTimeOffset.UtcNow;
-        var result = await validator.TestValidateAsync(new CreateSignup("123456789032432", now.ToUnixTimeSeconds()));
+        var result = await validator.TestValidateAsync(new CreateSignup
+            { GSRN = "123456789032432", StartDate = now.ToUnixTimeSeconds() });
 
         result.ShouldNotHaveValidationErrorFor(signup => signup.StartDate);
     }
@@ -27,7 +29,8 @@ public class CreateSignupValidatorTests
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        var result = await validator.TestValidateAsync(new CreateSignup("123456789032432", utcMidnight.ToUnixTimeSeconds()));
+        var result = await validator.TestValidateAsync(new CreateSignup
+            { GSRN = "123456789032432", StartDate = utcMidnight.ToUnixTimeSeconds() });
 
         result.ShouldNotHaveValidationErrorFor(signup => signup.StartDate);
     }
@@ -41,7 +44,8 @@ public class CreateSignupValidatorTests
         var justBeforeUtcMidnight = now.Subtract(now.TimeOfDay).AddSeconds(-1);
 
         var result =
-            await validator.TestValidateAsync(new CreateSignup("123456789032432", justBeforeUtcMidnight.ToUnixTimeSeconds()));
+            await validator.TestValidateAsync(new CreateSignup
+                { GSRN = "123456789032432", StartDate = justBeforeUtcMidnight.ToUnixTimeSeconds() });
 
         result.ShouldHaveValidationErrorFor(signup => signup.StartDate);
     }
@@ -57,9 +61,10 @@ public class CreateSignupValidatorTests
     {
         var validator = new CreateSignupValidator();
 
-        var result = await validator.TestValidateAsync(new CreateSignup(invalidGsrn, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+        var result = await validator.TestValidateAsync(new CreateSignup
+            { GSRN = invalidGsrn, StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
-        result.ShouldHaveValidationErrorFor(signup => signup.Gsrn);
+        result.ShouldHaveValidationErrorFor(signup => signup.GSRN);
     }
 
     [Theory]
@@ -70,20 +75,9 @@ public class CreateSignupValidatorTests
     {
         var validator = new CreateSignupValidator();
 
-        var result = await validator.TestValidateAsync(new CreateSignup(validGsrn, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+        var result = await validator.TestValidateAsync(new CreateSignup
+            { GSRN = validGsrn, StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
-        result.ShouldNotHaveValidationErrorFor(signup => signup.Gsrn);
+        result.ShouldNotHaveValidationErrorFor(signup => signup.GSRN);
     }
-
-    //private static (CreateSignupValidator validator, MockHttpMessageHandler fakeHttpHandler) CreateValidator()
-    //{
-    //    var mock = new Mock<IHttpClientFactory>();
-    //    var fakeHttpHandler = new MockHttpMessageHandler();
-    //    var client = fakeHttpHandler.ToHttpClient();
-    //    client.BaseAddress = new Uri("http://localhost:5000");
-    //    mock.Setup(m => m.CreateClient("DataSync")).Returns(client);
-
-    //    var validator = new CreateSignupValidator(mock.Object);
-    //    return (validator, fakeHttpHandler);
-    //}
 }

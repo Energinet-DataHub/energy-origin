@@ -2,7 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using FluentValidation;
 
-namespace API.Query.API.Controllers;
+namespace API.Query.API.ApiModels.Requests;
 
 public class CreateSignupValidator : AbstractValidator<CreateSignup>
 {
@@ -14,7 +14,7 @@ public class CreateSignupValidator : AbstractValidator<CreateSignup>
         RuleFor(cs => cs.StartDate)
             .GreaterThanOrEqualTo(_ => utcMidnight);
 
-        RuleFor(cs => cs.Gsrn)
+        RuleFor(cs => cs.GSRN)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
             .Must(gsrn => Regex.IsMatch(gsrn.Trim(), "^\\d{18}$")).WithMessage("Invalid GSRN. Must be 18 digits");

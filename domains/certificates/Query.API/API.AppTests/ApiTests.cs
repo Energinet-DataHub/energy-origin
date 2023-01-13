@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
 using API.MasterDataService;
-using API.Query.API.ApiModels;
+using API.Query.API.ApiModels.Responses;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;

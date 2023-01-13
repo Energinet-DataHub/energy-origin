@@ -38,7 +38,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 
     public async Task<MeteringPointsResponse?> GetMeteringPoints(string owner, CancellationToken cancellationToken)
     {
-        var subject = httpContextAccessor.HttpContext.User.FindFirstValue("subject");
+        var subject = httpContextAccessor.HttpContext?.User.FindFirstValue("subject") ?? string.Empty;
         if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
             throw new HttpRequestException("Owner must match subject");
 

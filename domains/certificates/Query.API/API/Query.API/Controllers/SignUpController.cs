@@ -2,6 +2,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Query.API.ApiModels.Requests;
 using API.Query.API.Clients;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -33,11 +34,11 @@ public class SignUpController : ControllerBase
 
         // Check ownership and if it is production type of GSRN in datahub
         var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
-        var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == createSignup.Gsrn);
+        var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == createSignup.GSRN);
         if (matchingMeteringPoint == null)
-            return BadRequest($"GSRN {createSignup.Gsrn} not found");
+            return BadRequest($"GSRN {createSignup.GSRN} not found");
         if (matchingMeteringPoint.Type != MeterType.Production)
-            return BadRequest($"GSRN {createSignup.Gsrn} is not a production metering point");
+            return BadRequest($"GSRN {createSignup.GSRN} is not a production metering point");
 
         // Check if GSRN is already signed up
         // Save
@@ -45,7 +46,3 @@ public class SignUpController : ControllerBase
         return Ok();
     }
 }
-
-public record CreateSignup(string Gsrn, long StartDate);
-//TODO: Can GSRN be a long or other type? GSRN is a fixed 18 digits number
-//TODO: How does datasyncsyncer handle start times not on an even hour?

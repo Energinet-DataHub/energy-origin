@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Query.API.ApiModels;
+using API.Query.API.ApiModels.Responses;
 using CertificateEvents;
 using Marten.Events.Projections;
 using Marten.Schema;

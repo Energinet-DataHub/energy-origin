@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http.Headers;
 using API.DataSyncSyncer.Configurations;
+using API.Query.API.ApiModels.Requests;
 using API.Query.API.Clients;
 using API.Query.API.Controllers;
 using API.Query.API.Projections;

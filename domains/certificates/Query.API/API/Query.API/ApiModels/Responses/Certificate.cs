@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace API.Query.API.ApiModels;
+namespace API.Query.API.ApiModels.Responses;
 
 public class Certificate
 {
