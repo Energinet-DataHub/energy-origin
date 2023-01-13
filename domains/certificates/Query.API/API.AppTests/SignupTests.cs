@@ -14,17 +14,19 @@ namespace API.AppTests;
 public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
+    private const string dataSyncUrl = "http://localhost:9001/";
 
     public SignupTests(QueryApiWebApplicationFactory factory/*, MartenDbContainer martenDbContainer*/) //Leaving out Marten for now as it takes some time to load and we need to agree on the api interface first
     {
         this.factory = factory;
+
+        factory.DataSyncUrl = dataSyncUrl;
     }
 
     [Fact]
     public async Task GetSomething()
     {
-        var datasyncUrl = "http://localhost:8000/";
-        using var wireMockServer = WireMockServer.Start(datasyncUrl);
+        using var wireMockServer = WireMockServer.Start(dataSyncUrl);
 
         wireMockServer
             .Given(Request.Create().WithPath("/meteringPoints"))
