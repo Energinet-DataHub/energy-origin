@@ -17,6 +17,6 @@ public class CreateSignupValidator : AbstractValidator<CreateSignup>
         RuleFor(cs => cs.GSRN)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .Must(gsrn => Regex.IsMatch(gsrn.Trim(), "^\\d{18}$")).WithMessage("Invalid GSRN. Must be 18 digits");
+            .Must(gsrn => Regex.IsMatch(gsrn.Trim(), "^\\d{18}$", RegexOptions.None, TimeSpan.FromSeconds(1))).WithMessage("Invalid GSRN. Must be 18 digits");
     }
 }
