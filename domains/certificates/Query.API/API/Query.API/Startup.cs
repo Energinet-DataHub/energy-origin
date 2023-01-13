@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http.Headers;
 using API.DataSyncSyncer.Configurations;
+using API.Query.API.Clients;
 using API.Query.API.Controllers;
 using API.Query.API.Projections;
 using FluentValidation;
@@ -25,7 +26,9 @@ public static class Startup
 
         services.AddValidatorsFromAssemblyContaining<CreateSignupValidator>();
 
-        services.AddHttpClient("DataSync", (sp, client) =>
+        services.AddScoped<MeteringPointsClient>();
+
+        services.AddHttpClient<MeteringPointsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value; //TODO: Stealing this from DataSyncSyncer
             client.BaseAddress = new Uri("http://localhost:8081/");

@@ -1,9 +1,5 @@
 using System;
-using System.Net.Http;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentValidation;
 
 namespace API.Query.API.Controllers;

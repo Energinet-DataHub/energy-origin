@@ -1,6 +1,8 @@
 using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
+using API.Query.API.Clients;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Marten;
@@ -17,9 +19,11 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(302)]
     [Route("api/signup")]
-    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator)
+    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] MeteringPointsClient client, CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
+
+        var x = await client.GetMeteringPoints(cancellationToken);
 
         // Validate CreateSignup
         var validationResult = await validator.ValidateAsync(createSignup);
