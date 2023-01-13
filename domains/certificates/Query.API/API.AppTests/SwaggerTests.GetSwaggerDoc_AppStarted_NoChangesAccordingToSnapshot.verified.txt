@@ -36,6 +36,40 @@
           }
         }
       }
+    },
+    "/api/signup": {
+      "post": {
+        "tags": [
+          "SignUp"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignup"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignup"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignup"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "302": {
+            "description": "Redirect"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -90,6 +124,21 @@
             "items": {
               "$ref": "#/components/schemas/Certificate"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSignup": {
+        "type": "object",
+        "properties": {
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "startDate": {
+            "type": "integer",
+            "description": "Starting date for generation of certificates in Unix time",
+            "format": "int64"
           }
         },
         "additionalProperties": false

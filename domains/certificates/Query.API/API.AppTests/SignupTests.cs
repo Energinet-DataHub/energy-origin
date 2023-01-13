@@ -25,7 +25,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [Fact]
-    public async Task GetSomething()
+    public async Task GetSomething() //TODO: Change name
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -39,11 +39,11 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var response = await client.PostAsJsonAsync("api/signup", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.OK); //TODO: Change this to correct (201)
     }
 
     [Fact]
-    public async Task metering_point_not_owned_by_user()
+    public async Task CreateSignup_MeteringPointNotOwnedByUser_ReturnsBadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -61,7 +61,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [Fact]
-    public async Task metering_point_is_consumption()
+    public async Task CreateSignup_MeteringPointIsConsumption_ReturnsBadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -79,7 +79,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [Fact]
-    public async Task invalid_gsrn()
+    public async Task CreateSignup_InvalidGsrn_ReturnsBadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock

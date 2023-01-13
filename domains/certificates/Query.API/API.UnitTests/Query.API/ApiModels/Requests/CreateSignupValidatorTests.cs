@@ -9,7 +9,7 @@ namespace API.UnitTests.Query.API.ApiModels.Requests;
 public class CreateSignupValidatorTests
 {
     [Fact]
-    public async Task start_date_now()
+    public async Task Validate_StartDateNow_NoValidationError()
     {
         var validator = new CreateSignupValidator();
 
@@ -21,7 +21,7 @@ public class CreateSignupValidatorTests
     }
 
     [Fact]
-    public async Task start_date_on_midnight()
+    public async Task Validate_StartDateOnMidnight_NoValidationError()
     {
         var validator = new CreateSignupValidator();
 
@@ -35,7 +35,7 @@ public class CreateSignupValidatorTests
     }
 
     [Fact]
-    public async Task start_date_just_before_midnight()
+    public async Task Validate_StartDateJustBeforeMidnight_HaveValidationError()
     {
         var validator = new CreateSignupValidator();
 
@@ -56,7 +56,7 @@ public class CreateSignupValidatorTests
     [InlineData("12345678901234567")]
     [InlineData("1234567890123456789")]
     [InlineData("1234567890 12345678")]
-    public async Task gsrn_not_valid(string invalidGsrn)
+    public async Task Validate_InvalidGsrn_HaveValidationError(string invalidGsrn)
     {
         var validator = new CreateSignupValidator();
 
@@ -70,7 +70,7 @@ public class CreateSignupValidatorTests
     [InlineData("123456789012345678")]
     [InlineData("123456789012345678 ")]
     [InlineData(" 123456789012345678")]
-    public async Task gsrn_valid(string validGsrn)
+    public async Task Validate_ValidGsrn_NoValidationError(string validGsrn)
     {
         var validator = new CreateSignupValidator();
 

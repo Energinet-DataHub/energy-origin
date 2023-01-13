@@ -15,5 +15,5 @@ public class CreateSignup
     /// </summary>
     public long StartDate { get; init; }
 }
-//TODO: Can GSRN be a long or other type? GSRN is a fixed 18 digits number
+//TODO: Can GSRN be a long or other type? GSRN is a fixed 18 digits number. Not sure if 1st number can be 0
 //TODO: How does datasyncsyncer handle start times not on an even hour?
