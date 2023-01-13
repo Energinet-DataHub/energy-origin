@@ -15,7 +15,7 @@ public class MeteringPointsClient
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        //Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
     };
 
     public MeteringPointsClient(HttpClient httpClient)
@@ -24,24 +24,7 @@ public class MeteringPointsClient
     }
 
     public async Task<MeteringPointsResponse?> GetMeteringPoints(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var meteringPointsResponse = await httpClient.GetFromJsonAsync<MeteringPointsResponse>("meteringPoints", cancellationToken: cancellationToken, options: jsonSerializerOptions);
-            return meteringPointsResponse;
-
-            var res = await httpClient.GetAsync("meteringPoints", cancellationToken);
-            //var str = await res.Content.ReadAsStringAsync(cancellationToken);
-            var content = await res.Content.ReadFromJsonAsync<MeteringPointsResponse>(jsonSerializerOptions, cancellationToken: cancellationToken); //jsonSerializerOptions
-            return content;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-        
-    }
+        => await httpClient.GetFromJsonAsync<MeteringPointsResponse>("meteringPoints", cancellationToken: cancellationToken, options: jsonSerializerOptions);
 }
 
 public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);

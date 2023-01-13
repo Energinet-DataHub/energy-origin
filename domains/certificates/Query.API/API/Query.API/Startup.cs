@@ -31,7 +31,7 @@ public static class Startup
         services.AddHttpClient<MeteringPointsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value; //TODO: Stealing this from DataSyncSyncer
-            client.BaseAddress = new Uri("http://localhost:8081/");
+            client.BaseAddress = new Uri("http://localhost:8000/");
 
             var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
             var headersAuthorization = httpContextAccessor.HttpContext.Request.Headers.Authorization;
