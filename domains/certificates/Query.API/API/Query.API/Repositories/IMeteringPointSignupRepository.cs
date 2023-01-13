@@ -7,9 +7,9 @@ namespace API.Query.API.Repositories;
 
 public interface IMeteringPointSignupRepository
 {
-    Task SaveSignup(MeteringPointSignup meteringPointSignup);
+    Task Save(MeteringPointSignup meteringPointSignup);
 
-    Task<MeteringPointSignup?> GetByGsrn(string gsrn);
+    Task<MeteringPointSignup?> GetByGsrn(long gsrn);
     Task<IEnumerable<MeteringPointSignup>> GetAll(); //To be used by DataSync
     Task<IEnumerable<MeteringPointSignup>> GetByMeteringPointOwner(string meteringPointOwner);
 }
