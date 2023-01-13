@@ -20,8 +20,8 @@ public class SignUpController : ControllerBase
     public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
-        Guid.Parse(meteringPointOwner);
 
+        // Validate CreateSignup
         var validationResult = await validator.ValidateAsync(createSignup);
         if (!validationResult.IsValid)
         {
@@ -29,10 +29,10 @@ public class SignUpController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        //var exists = querySession.Events.QueryAllRawEvents()
-        //    .Where(x => x.StreamId == Guid.Parse(meteringPointOwner))
-        //    .OrderBy(x => x.Sequence)
-        //    .ToList();
+        // Check ownership and if it is production type of GSRN in datahub
+
+        // Check if GSRN is already signed up
+        // Save
 
         return Ok();
     }
