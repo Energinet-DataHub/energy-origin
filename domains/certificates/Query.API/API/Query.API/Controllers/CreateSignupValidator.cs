@@ -1,5 +1,7 @@
 using System;
 using System.Net.Http;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -8,36 +10,17 @@ namespace API.Query.API.Controllers;
 
 public class CreateSignupValidator : AbstractValidator<CreateSignup>
 {
-    private readonly IHttpClientFactory httpClientFactory;
-
-    public CreateSignupValidator(IHttpClientFactory httpClientFactory)
+    public CreateSignupValidator()
     {
-        this.httpClientFactory = httpClientFactory;
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay).ToUnixTimeSeconds();
 
         RuleFor(cs => cs.StartDate)
-            .Must(startDate =>
-            {
-                var now = DateTimeOffset.UtcNow;
-                var utcMidnight = now.Subtract(now.TimeOfDay);
-                return startDate >= utcMidnight.ToUnixTimeSeconds();
-            });
+            .GreaterThanOrEqualTo(_ => utcMidnight);
 
         RuleFor(cs => cs.Gsrn)
             .Cascade(CascadeMode.Stop)
-            .Must(Predicate0)
-            .MustAsync(Predicate1);
-    }
-
-    private bool Predicate0(CreateSignup arg1, string s)
-    {
-        return s.Length > 10;
-    }
-
-    private async Task<bool> Predicate1(string arg1, CancellationToken cancellationToken)
-    {
-        var dataSyncHttpClient = httpClientFactory.CreateClient("DataSync");
-        var res = await dataSyncHttpClient.GetAsync("meteringPoints", cancellationToken);
-
-        return true;
+            .NotEmpty()
+            .Must(gsrn => Regex.IsMatch(gsrn, "^\\d{18}$")).WithMessage("Invalid GSRN. Must be 18 digits");
     }
 }

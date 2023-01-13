@@ -23,7 +23,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new { gsrn = "123451234512345", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
+        var body = new { gsrn = "123456789012345678", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
         
         var response = await client.PostAsJsonAsync("api/signup", body);
 
