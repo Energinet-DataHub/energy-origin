@@ -19,10 +19,12 @@ public class SignUpController : ControllerBase
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        //var exists = querySession.Events.QueryAllRawEvents()
-        //    .Where(x => x.StreamId == Guid.Parse(meteringPointOwner))
-        //    .OrderBy(x => x.Sequence)
-        //    .ToList();
+        // Validate CreateSignup
+
+        // Check ownership and if it is production type of GSRN in datahub
+
+        // Check if GSRN is already signed up
+        // Save
 
         return Ok();
     }
