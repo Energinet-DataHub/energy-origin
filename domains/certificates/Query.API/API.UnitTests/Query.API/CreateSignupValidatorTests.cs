@@ -70,7 +70,7 @@ public class CreateSignupValidatorTests
     {
         var validator = new CreateSignupValidator();
 
-        var result = await validator.TestValidateAsync(new CreateSignup("123456789012345678", DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+        var result = await validator.TestValidateAsync(new CreateSignup(validGsrn, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
 
         result.ShouldNotHaveValidationErrorFor(signup => signup.Gsrn);
     }

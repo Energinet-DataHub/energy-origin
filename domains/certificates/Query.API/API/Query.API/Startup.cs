@@ -32,11 +32,6 @@ public static class Startup
         {
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value; //TODO: Stealing this from DataSyncSyncer
             client.BaseAddress = new Uri(options.Url);
-
-            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-            var headersAuthorization = httpContextAccessor.HttpContext.Request.Headers.Authorization;
-
-            client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(headersAuthorization);
         });
     }
 }

@@ -32,7 +32,7 @@ public class SignUpController : ControllerBase
         }
 
         // Check ownership and if it is production type of GSRN in datahub
-        var meteringPoints = await client.GetMeteringPoints(cancellationToken);
+        var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == createSignup.Gsrn);
         if (matchingMeteringPoint == null)
             return BadRequest($"GSRN {createSignup.Gsrn} not found");

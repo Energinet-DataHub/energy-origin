@@ -27,7 +27,6 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task GetSomething()
     {
         using var wireMockServer = WireMockServer.Start(dataSyncUrl);
-
         wireMockServer
             .Given(Request.Create().WithPath("/meteringPoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody("{\"meteringPoints\":[{\"gsrn\": \"123456789012345678\",\"gridArea\": \"DK1\",\"type\": \"production\"}]}"));
