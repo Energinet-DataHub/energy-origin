@@ -1,4 +1,4 @@
-﻿namespace CertificateSignupEvents;
+namespace CertificateSignupEvents;
 
 public record CertificateSignup(
     Guid MeteringPointOwner,

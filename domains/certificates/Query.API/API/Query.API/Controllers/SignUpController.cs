@@ -23,7 +23,7 @@ public class SignUpController : ControllerBase
     public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] MeteringPointsClient client, CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
-        
+
         // Validate CreateSignup
         var validationResult = await validator.ValidateAsync(createSignup, cancellationToken);
         if (!validationResult.IsValid)

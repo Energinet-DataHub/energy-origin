@@ -31,12 +31,12 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
         dataSyncMock
             .Given(Request.Create().WithPath("/meteringPoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse()));
-        
+
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var body = new { gsrn = validGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
-        
+
         var response = await client.PostAsJsonAsync("api/signup", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -49,7 +49,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
         dataSyncMock
             .Given(Request.Create().WithPath("/meteringPoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "111111111111111111")));
-        
+
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
@@ -96,6 +96,6 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type="production")
+    private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type = "production")
         => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
 }
