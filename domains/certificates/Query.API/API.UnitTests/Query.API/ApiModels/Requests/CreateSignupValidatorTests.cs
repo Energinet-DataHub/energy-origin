@@ -56,6 +56,8 @@ public class CreateSignupValidatorTests
     [InlineData("12345678901234567")]
     [InlineData("1234567890123456789")]
     [InlineData("1234567890 12345678")]
+    [InlineData("123456789012345678 ")]
+    [InlineData(" 123456789012345678")]
     public async Task Validate_InvalidGsrn_HaveValidationError(string invalidGsrn)
     {
         var validator = new CreateSignupValidator();
@@ -68,8 +70,6 @@ public class CreateSignupValidatorTests
 
     [Theory]
     [InlineData("123456789012345678")]
-    [InlineData("123456789012345678 ")]
-    [InlineData(" 123456789012345678")]
     public async Task Validate_ValidGsrn_NoValidationError(string validGsrn)
     {
         var validator = new CreateSignupValidator();
