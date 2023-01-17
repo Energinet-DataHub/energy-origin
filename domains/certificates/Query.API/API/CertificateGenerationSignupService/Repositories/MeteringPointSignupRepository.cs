@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -31,6 +32,6 @@ internal class MeteringPointSignupRepository : IMeteringPointSignupRepository
         .Where(x => x.MeteringPointOwner == owner)
         .ToListAsync();
 
-    public Task<MeteringPointSignup?> GetByDocumentId(string documentId, CancellationToken cancellationToken) => session
+    public Task<MeteringPointSignup?> GetByDocumentId(Guid documentId, CancellationToken cancellationToken) => session
         .LoadAsync<MeteringPointSignup>(documentId, cancellationToken);
 }

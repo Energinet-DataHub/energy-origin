@@ -41,6 +41,8 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         var response = await client.PostAsJsonAsync("api/signup", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        response.Headers.Location.Should().NotBeNull();
     }
 
     [Fact]

@@ -26,7 +26,11 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/signup")]
-    public async Task<ActionResult> SignUp([FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] ICertificateGenerationSignupService service, CancellationToken cancellationToken)
+    public async Task<ActionResult> SignUp(
+        [FromBody] CreateSignup createSignup,
+        [FromServices] IValidator<CreateSignup> validator,
+        [FromServices] ICertificateGenerationSignupService service,
+        CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 
@@ -37,14 +41,15 @@ public class SignUpController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.Create(createSignup.GSRN, meteringPointOwner, DateTimeOffset.FromUnixTimeSeconds(createSignup.StartDate), cancellationToken);
+        var result = await service.Create(createSignup.GSRN, meteringPointOwner,
+            DateTimeOffset.FromUnixTimeSeconds(createSignup.StartDate), cancellationToken);
 
         return result switch
         {
             GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
             SignupAlreadyExists => Conflict(),
-            Success => StatusCode(201),
+            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { documentId = createdSignup.Id }, createdSignup),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpController)}")
         };
     }
@@ -70,9 +75,9 @@ public class SignUpController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
-    [Route("api/signup")]
-    public async Task<ActionResult> GetSignUpDocument([FromServices] IDocumentSession session, string documentId, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(void), 404)]
+    [Route("api/signup/{documentId}", Name = "GetSignUpDocument")]
+    public async Task<ActionResult> GetSignUpDocument([FromServices] IDocumentSession session, [FromRoute] Guid documentId, CancellationToken cancellationToken)
     {
         var documentStoreHandler = new MeteringPointSignupRepository(session);
         var document = await documentStoreHandler.GetByDocumentId(documentId, cancellationToken);
