@@ -11,35 +11,46 @@ using Xunit;
 
 namespace API.AppTests;
 
-public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>
+public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private const string dataSyncUrl = "http://localhost:9001/";
     private const string validGsrn = "123456789012345678";
+    private readonly MartenDbContainer marten;
 
-    public SignupTests(QueryApiWebApplicationFactory factory/*, MartenDbContainer martenDbContainer*/) //Leaving out Marten for now as it takes some time to load and we need to agree on the api interface first
+    public SignupTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
         this.factory = factory;
-
-        factory.DataSyncUrl = dataSyncUrl;
+        this.marten = marten;
+        this.factory.MartenConnectionString = marten.ConnectionString;
     }
 
     [Fact]
-    public async Task GetSomething() //TODO: Change name
+    public async Task CreateSignUp_SignUpGsrn_Created()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse()));
-
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new { gsrn = validGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
+        var body = new { gsrn = "111111111111111111", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
         var response = await client.PostAsJsonAsync("api/signup", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK); //TODO: Change this to correct (201)
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateSignUp_GsrnAlreadyExistsInDb_Conflict()
+    {
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var body = new { gsrn = "222222222222222222", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
+
+        var response = await client.PostAsJsonAsync("api/signup", body);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        response = await client.PostAsJsonAsync("api/signup", body);
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]
