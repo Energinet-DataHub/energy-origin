@@ -42,7 +42,7 @@
         "tags": [
           "SignUp"
         ],
-        "summary": "Signs up a metering point for granular certificate generation.",
+        "summary": "Signs up a metering point for granular certificate generation",
         "requestBody": {
           "content": {
             "application/json": {
@@ -88,6 +88,22 @@
           },
           "409": {
             "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/signups": {
+      "get": {
+        "tags": [
+          "SignUp"
+        ],
+        "summary": "Returns all metering points signed up for granular certificate generation",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success"
           }
         }
       }

@@ -146,6 +146,6 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var response = await client.GetAsync("api/signups");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }
