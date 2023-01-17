@@ -55,6 +55,7 @@ public class CreateSignupValidatorTests
     [InlineData("42")]
     [InlineData("12345678901234567")]
     [InlineData("1234567890123456789")]
+    [InlineData("Some18CharsLongStr")]
     [InlineData("1234567890 12345678")]
     [InlineData("123456789012345678 ")]
     [InlineData(" 123456789012345678")]
