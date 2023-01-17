@@ -2,8 +2,8 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API.CertificateGenerationSignUpService;
 using API.DataSyncSyncer;
-using API.DataSyncSyncer.Configurations;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.MasterDataService;
@@ -61,6 +61,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddIntegrationEventBus();
 builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
+builder.Services.AddCertificateGenerationSignUpService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 
