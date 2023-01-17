@@ -117,9 +117,6 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type = "production")
-        => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
-
     [Fact]
     public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_Success()
     {
@@ -148,4 +145,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         var response = await client.GetAsync("api/signups");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type = "production")
+        => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
 }
