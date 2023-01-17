@@ -19,9 +19,13 @@ namespace API.Query.API.Controllers;
 [ApiController]
 public class SignUpController : ControllerBase
 {
+    /// <summary>
+    /// Signs up a metering point for granular certificate generation.
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
-    [ProducesResponseType(302)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(typeof(void), 409)]
     [Route("api/signup")]
     public async Task<ActionResult> SignUp([FromServices] IDocumentSession session, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] IMeteringPointsClient client, CancellationToken cancellationToken)
     {
