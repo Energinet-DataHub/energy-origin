@@ -98,7 +98,24 @@
         "summary": "Returns all metering points signed up for granular certificate generation",
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpList"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpList"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpList"
+                }
+              }
+            }
           },
           "204": {
             "description": "Success"
@@ -126,7 +143,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUp"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUp"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUp"
+                }
+              }
+            }
           },
           "404": {
             "description": "Not Found"
@@ -202,6 +236,42 @@
             "type": "integer",
             "description": "Starting date for generation of certificates in Unix time",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignUp": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "startDate": {
+            "type": "integer",
+            "description": "Starting date for generation of certificates in Unix time",
+            "format": "int64"
+          },
+          "created": {
+            "type": "integer",
+            "description": "Date for the sign up",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignUpList": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignUp"
+            }
           }
         },
         "additionalProperties": false

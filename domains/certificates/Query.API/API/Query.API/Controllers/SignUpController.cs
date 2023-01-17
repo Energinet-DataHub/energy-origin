@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.CertificateGenerationSignupService;
 using API.CertificateGenerationSignupService.Repositories;
 using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Responses;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Marten;
@@ -49,8 +51,10 @@ public class SignUpController : ControllerBase
             GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
             SignupAlreadyExists => Conflict(),
-            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { id = createdSignup.Id },
-                createdSignup),
+            Success(var createdSignup) => CreatedAtRoute(
+                "GetSignUpDocument",
+                new { id = createdSignup.Id },
+                ApiModels.Responses.SignUp.CreateFrom(createdSignup)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpController)}")
         };
     }
@@ -59,19 +63,19 @@ public class SignUpController : ControllerBase
     /// Returns all metering points signed up for granular certificate generation
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(SignUpList), 200)]
     [ProducesResponseType(204)]
     [Route("api/signups")]
-    public async Task<ActionResult> GetAllSignUps([FromServices] IDocumentSession session)
+    public async Task<ActionResult<SignUpList>> GetAllSignUps([FromServices] IDocumentSession session)
     {
         var documentStoreHandler = new MeteringPointSignupRepository(session);
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var document = await documentStoreHandler.GetAllMeteringPointOwnerSignUps(meteringPointOwner);
+        var signUps = await documentStoreHandler.GetAllMeteringPointOwnerSignUps(meteringPointOwner);
 
-        return document.IsEmpty()
+        return signUps.IsEmpty()
             ? NoContent()
-            : Ok(document);
+            : Ok(new SignUpList { Result = signUps.Select(ApiModels.Responses.SignUp.CreateFrom) });
     }
 
 
@@ -79,24 +83,24 @@ public class SignUpController : ControllerBase
     /// Returns sign up based on the id
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(typeof(void), 403)]
+    [ProducesResponseType(typeof(SignUp), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [Route("api/signups/{id}", Name = "GetSignUpDocument")]
-    public async Task<ActionResult> GetSignUpDocument(
+    public async Task<ActionResult<SignUp>> GetSignUpDocument(
         [FromRoute] Guid id,
         [FromServices] IDocumentSession session,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
         var documentStoreHandler = new MeteringPointSignupRepository(session);
-        var document = await documentStoreHandler.GetByDocumentId(id, cancellationToken);
+        var signUp = await documentStoreHandler.GetByDocumentId(id, cancellationToken);
 
-        if (document == null || document?.MeteringPointOwner.Trim() != meteringPointOwner.Trim())
-        {
+        if (signUp == null)
             return NotFound();
-        }
 
-        return Ok(document);
+        if (signUp.MeteringPointOwner.Trim() != meteringPointOwner.Trim())
+            return NotFound();
+
+        return Ok(ApiModels.Responses.SignUp.CreateFrom(signUp));
     }
 }
