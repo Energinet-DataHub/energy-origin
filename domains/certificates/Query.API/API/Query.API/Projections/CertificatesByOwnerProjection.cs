@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Query.API.ApiModels;
+using API.Query.API.ApiModels.Responses;
 using CertificateEvents;
 using Marten.Events.Projections;
 using Marten.Schema;
@@ -48,7 +48,7 @@ public class CertificatesByOwnerView
 
     public Dictionary<Guid, CertificateView> Certificates { get; set; } = new();
 
-    public CertificateList ToApiModel()
+    public ListResult<Certificate> ToApiModel()
     {
         var certificates = Certificates.Values
             .Select(c => new Certificate
@@ -63,7 +63,7 @@ public class CertificatesByOwnerView
                 FuelCode = c.FuelCode
             });
 
-        return new CertificateList
+        return new ListResult<Certificate>
         {
             Result = certificates
                 .OrderByDescending(c => c.DateFrom)
