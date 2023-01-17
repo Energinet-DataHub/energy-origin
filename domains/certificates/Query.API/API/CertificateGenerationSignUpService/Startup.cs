@@ -9,7 +9,7 @@ namespace API.CertificateGenerationSignUpService;
 
 public static class Startup
 {
-    public static void AddCertificateGenerationSignupService(this IServiceCollection services)
+    public static void AddCertificateGenerationSignUpService(this IServiceCollection services)
     {
         services.AddScoped<ICertificateGenerationSignUpService, CertificateGenerationSignUpServiceImpl>();
 

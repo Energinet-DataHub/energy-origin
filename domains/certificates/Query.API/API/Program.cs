@@ -61,7 +61,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddIntegrationEventBus();
 builder.Services.AddQueryApi();
 builder.Services.AddMasterDataService(builder.Configuration);
-builder.Services.AddCertificateGenerationSignupService();
+builder.Services.AddCertificateGenerationSignUpService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 
