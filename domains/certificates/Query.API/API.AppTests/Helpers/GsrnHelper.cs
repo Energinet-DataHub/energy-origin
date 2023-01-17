@@ -5,7 +5,7 @@ namespace API.AppTests.Helpers;
 
 public static class GsrnHelper
 {
-    public static string Generate()
+    public static string GenerateRandom()
     {
         var rand = new Random();
         var sb = new StringBuilder();

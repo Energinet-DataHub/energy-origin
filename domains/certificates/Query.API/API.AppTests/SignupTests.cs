@@ -28,7 +28,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task CreateSignUp_SignUpGsrn_Created()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
         var subject = Guid.NewGuid().ToString();
@@ -50,7 +50,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task CreateSignUp_GsrnAlreadyExistsInDb_Conflict()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
         var subject = Guid.NewGuid().ToString();
@@ -68,8 +68,8 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task CreateSignUp_MeteringPointNotOwnedByUser_BadRequest()
     {
-        var gsrn1 = GsrnHelper.Generate();
-        var gsrn2 = GsrnHelper.Generate();
+        var gsrn1 = GsrnHelper.GenerateRandom();
+        var gsrn2 = GsrnHelper.GenerateRandom();
 
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn1);
 
@@ -86,7 +86,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task CreateSignUp_MeteringPointIsConsumption_BadRequest()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn, type: "consumption");
 
         var subject = Guid.NewGuid().ToString();
@@ -102,7 +102,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task CreateSignUp_InvalidGsrn_BadRequest()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         var invalidGsrn = "invalid GSRN";
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
@@ -119,7 +119,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_Success()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
         var subject = Guid.NewGuid().ToString();
@@ -156,7 +156,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     [Fact]
     public async Task GetSpecificSignUp_UserIsNotOwner_NotFound()
     {
-        var gsrn = GsrnHelper.Generate();
+        var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
         var subject1 = Guid.NewGuid().ToString();
