@@ -3,36 +3,33 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
+using API.AppTests.Mocks;
 using FluentAssertions;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
 using Xunit;
 
 namespace API.AppTests;
 
-public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
+public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
-    private const string dataSyncUrl = "http://localhost:9001/";
+    private readonly DataSyncWireMock dataSyncWireMock;
     private const string validGsrn = "123456789012345678";
 
     public SignUpTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
-        this.factory = factory;
+        const string dataSyncUrl = "http://localhost:9001/";
+        dataSyncWireMock = new DataSyncWireMock(dataSyncUrl);
 
         factory.MartenConnectionString = marten.ConnectionString;
         factory.DataSyncUrl = dataSyncUrl;
+        this.factory = factory;
     }
 
     [Fact]
     public async Task CreateSignUp_SignUpGsrn_Created()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "111111111111111111")));
-
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "111111111111111111");
+        
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
@@ -52,10 +49,7 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignUp_GsrnAlreadyExistsInDb_Conflict()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "222222222222222222")));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "222222222222222222");
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -72,10 +66,7 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignUp_MeteringPointNotOwnedByUser_BadRequest()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "111111111111111111")));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "111111111111111111");
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -90,10 +81,7 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignUp_MeteringPointIsConsumption_BadRequest()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(type: "consumption")));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: validGsrn, type: "consumption");
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -108,10 +96,7 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignUp_InvalidGsrn_BadRequest()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse()));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "111111111111111111");
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -126,10 +111,7 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_Success()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "999999999999999999")));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "999999999999999999");
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -165,30 +147,26 @@ public class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task GetSpecificSignUp_UserIsNotOwner_NotFound()
     {
-        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
-        dataSyncMock
-            .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "333333333333333333")));
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: "333333333333333333");
 
-        var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject);
+        var subject1 = Guid.NewGuid().ToString();
+        using var client1 = factory.CreateAuthenticatedClient(subject1);
 
         var body = new { gsrn = "333333333333333333", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client1.PostAsJsonAsync("api/signUps", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdSignUpUri = response.Headers.Location;
 
-        var otherSubject = Guid.NewGuid().ToString();
-        using var otherClient = factory.CreateAuthenticatedClient(otherSubject);
+        var subject2 = Guid.NewGuid().ToString();
+        using var client2 = factory.CreateAuthenticatedClient(subject2);
 
-        var createdSignUpResponse = await otherClient.GetAsync(createdSignUpUri);
+        var getSpecificSignUpResponse = await client2.GetAsync(createdSignUpUri);
 
-        createdSignUpResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getSpecificSignUpResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type = "production")
-        => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
+    
+    public void Dispose() => dataSyncWireMock.Dispose();
 }
