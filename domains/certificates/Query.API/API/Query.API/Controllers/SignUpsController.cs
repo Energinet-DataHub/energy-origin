@@ -63,10 +63,10 @@ public class SignUpsController : ControllerBase
     /// Returns all metering points signed up for granular certificate generation
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(ListResult<SignUp>), 200)]
+    [ProducesResponseType(typeof(SignUpList), 200)]
     [ProducesResponseType(204)]
     [Route("api/signUps")]
-    public async Task<ActionResult<ListResult<SignUp>>> GetAllSignUps([FromServices] IDocumentSession session)
+    public async Task<ActionResult<SignUpList>> GetAllSignUps([FromServices] IDocumentSession session)
     {
         var documentStoreHandler = new MeteringPointSignupRepository(session);
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -75,7 +75,7 @@ public class SignUpsController : ControllerBase
 
         return signUps.IsEmpty()
             ? NoContent()
-            : Ok(new ListResult<SignUp> { Result = signUps.Select(ApiModels.Responses.SignUp.CreateFrom) });
+            : Ok(new SignUpList { Result = signUps.Select(ApiModels.Responses.SignUp.CreateFrom) });
     }
 
 

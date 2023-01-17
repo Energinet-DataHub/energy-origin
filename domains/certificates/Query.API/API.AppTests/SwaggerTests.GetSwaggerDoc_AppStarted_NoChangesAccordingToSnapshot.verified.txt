@@ -16,17 +16,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CertificateListResult"
+                  "$ref": "#/components/schemas/CertificateList"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CertificateListResult"
+                  "$ref": "#/components/schemas/CertificateList"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CertificateListResult"
+                  "$ref": "#/components/schemas/CertificateList"
                 }
               }
             }
@@ -102,17 +102,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpListResult"
+                  "$ref": "#/components/schemas/SignUpList"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpListResult"
+                  "$ref": "#/components/schemas/SignUpList"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpListResult"
+                  "$ref": "#/components/schemas/SignUpList"
                 }
               }
             }
@@ -213,7 +213,7 @@
         },
         "additionalProperties": false
       },
-      "CertificateListResult": {
+      "CertificateList": {
         "type": "object",
         "properties": {
           "result": {
@@ -264,7 +264,7 @@
         },
         "additionalProperties": false
       },
-      "SignUpListResult": {
+      "SignUpList": {
         "type": "object",
         "properties": {
           "result": {

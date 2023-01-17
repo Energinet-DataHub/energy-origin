@@ -48,7 +48,7 @@ public class CertificatesByOwnerView
 
     public Dictionary<Guid, CertificateView> Certificates { get; set; } = new();
 
-    public ListResult<Certificate> ToApiModel()
+    public CertificateList ToApiModel()
     {
         var certificates = Certificates.Values
             .Select(c => new Certificate
@@ -63,7 +63,7 @@ public class CertificatesByOwnerView
                 FuelCode = c.FuelCode
             });
 
-        return new ListResult<Certificate>
+        return new CertificateList
         {
             Result = certificates
                 .OrderByDescending(c => c.DateFrom)
