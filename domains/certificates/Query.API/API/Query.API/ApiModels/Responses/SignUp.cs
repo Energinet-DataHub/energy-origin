@@ -29,7 +29,7 @@ public class SignUp
         {
             Id = signUp.Id,
             GSRN = signUp.GSRN,
-            StartDate = signUp.SignupStartDate.ToUnixTimeSeconds(),
+            StartDate = signUp.SignUpStartDate.ToUnixTimeSeconds(),
             Created = signUp.Created.ToUnixTimeSeconds()
         };
 }

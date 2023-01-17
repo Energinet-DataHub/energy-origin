@@ -51,7 +51,7 @@ internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSi
             GSRN = gsrn,
             MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
-            SignupStartDate = startDate,
+            SignUpStartDate = startDate,
             Created = DateTimeOffset.UtcNow
         };
         await repository.Save(userObject);
