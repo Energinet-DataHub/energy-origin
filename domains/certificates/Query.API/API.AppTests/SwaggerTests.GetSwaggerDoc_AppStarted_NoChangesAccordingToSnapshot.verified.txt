@@ -129,7 +129,7 @@
           "SignUps"
         ],
         "summary": "Returns sign up based on the id",
-        "operationId": "GetSignUpDocument",
+        "operationId": "GetSignUp",
         "parameters": [
           {
             "name": "id",
