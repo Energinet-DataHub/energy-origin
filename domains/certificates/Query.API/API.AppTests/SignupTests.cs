@@ -16,17 +16,17 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     private readonly QueryApiWebApplicationFactory factory;
     private const string dataSyncUrl = "http://localhost:9001/";
     private const string validGsrn = "123456789012345678";
-    private readonly MartenDbContainer marten;
 
     public SignupTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
         this.factory = factory;
-        this.marten = marten;
-        this.factory.MartenConnectionString = marten.ConnectionString;
+
+        factory.MartenConnectionString = marten.ConnectionString;
+        factory.DataSyncUrl = dataSyncUrl;
     }
 
     [Fact]
-    public async Task CreateSignUp_SignUpGsrn_Created()
+    public async Task CreateSignup_SignUpGsrn_Created()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -39,7 +39,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task CreateSignUp_GsrnAlreadyExistsInDb_Conflict()
+    public async Task CreateSignup_GsrnAlreadyExistsInDb_Conflict()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
@@ -54,7 +54,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task CreateSignup_MeteringPointNotOwnedByUser_ReturnsBadRequest()
+    public async Task CreateSignup_MeteringPointNotOwnedByUser_BadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -72,7 +72,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task CreateSignup_MeteringPointIsConsumption_ReturnsBadRequest()
+    public async Task CreateSignup_MeteringPointIsConsumption_BadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -90,7 +90,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task CreateSignup_InvalidGsrn_ReturnsBadRequest()
+    public async Task CreateSignup_InvalidGsrn_BadRequest()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
