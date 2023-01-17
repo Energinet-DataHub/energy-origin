@@ -66,7 +66,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+        var certificateList = await client.RepeatedlyGetUntil<ListResult<Certificate>>("api/certificates", res => res.Result.Any());
 
         await Verifier.Verify(certificateList);
     }
@@ -93,7 +93,7 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
+        var certificateList = await client.RepeatedlyGetUntil<ListResult<Certificate>>("api/certificates", res => res.Result.Count() == 5);
 
         await Verifier.Verify(certificateList);
     }
