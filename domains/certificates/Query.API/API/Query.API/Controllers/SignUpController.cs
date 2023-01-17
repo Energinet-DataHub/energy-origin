@@ -49,7 +49,8 @@ public class SignUpController : ControllerBase
             GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
             SignupAlreadyExists => Conflict(),
-            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { id = createdSignup.Id }, createdSignup),
+            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { id = createdSignup.Id },
+                createdSignup),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpController)}")
         };
     }
@@ -79,6 +80,7 @@ public class SignUpController : ControllerBase
     /// </summary>
     [HttpGet]
     [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(void), 403)]
     [ProducesResponseType(typeof(void), 404)]
     [Route("api/signup/{id}", Name = "GetSignUpDocument")]
     public async Task<ActionResult> GetSignUpDocument(
@@ -86,15 +88,15 @@ public class SignUpController : ControllerBase
         [FromServices] IDocumentSession session,
         CancellationToken cancellationToken)
     {
+        var meteringPointOwner = User.FindFirstValue("subject");
         var documentStoreHandler = new MeteringPointSignupRepository(session);
         var document = await documentStoreHandler.GetByDocumentId(id, cancellationToken);
 
-        if (document == null)
+        if (document == null || document?.MeteringPointOwner.Trim() != meteringPointOwner.Trim())
         {
             return NotFound();
         }
 
         return Ok(document);
-
     }
 }
