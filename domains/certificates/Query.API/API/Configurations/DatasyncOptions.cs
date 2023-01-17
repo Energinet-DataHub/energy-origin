@@ -1,4 +1,4 @@
-namespace API.DataSyncSyncer.Client.Configurations;
+namespace API.Configurations;
 
 public class DatasyncOptions
 {

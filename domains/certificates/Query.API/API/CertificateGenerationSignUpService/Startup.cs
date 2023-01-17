@@ -1,7 +1,7 @@
 using System;
 using API.CertificateGenerationSignUpService.Clients;
 using API.CertificateGenerationSignUpService.Repositories;
-using API.DataSyncSyncer.Client.Configurations;
+using API.Configurations;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -21,11 +21,11 @@ public static class Startup
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
-        services.AddScoped<ICertificateGenerationSignUpRepository, CertificateGenerationSignUpRepository>(); //TODO: For this to work for DataSyncWorker, it needs to work as a singleton
+        services.AddScoped<ICertificateGenerationSignUpRepository, CertificateGenerationSignUpRepository>();
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {
-            var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value; //TODO: Stealing this from DataSyncSyncer
+            var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
         });
     }
