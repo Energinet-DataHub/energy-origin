@@ -30,7 +30,7 @@ public class SignUpsController : ControllerBase
     public async Task<ActionResult> CreateSignUp(
         [FromBody] CreateSignup createSignup,
         [FromServices] IValidator<CreateSignup> validator,
-        [FromServices] ICertificateGenerationSignupService service,
+        [FromServices] ICertificateGenerationSignUpService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -66,7 +66,7 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(204)]
     [Route("api/signUps")]
     public async Task<ActionResult<SignUpList>> GetAllSignUps(
-        [FromServices] ICertificateGenerationSignupService service,
+        [FromServices] ICertificateGenerationSignUpService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -87,7 +87,7 @@ public class SignUpsController : ControllerBase
     [Route("api/signUps/{id}", Name = "GetSignUp")]
     public async Task<ActionResult<SignUp>> GetSignUp(
         [FromRoute] Guid id,
-        [FromServices] ICertificateGenerationSignupService service,
+        [FromServices] ICertificateGenerationSignUpService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");

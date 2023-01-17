@@ -3,7 +3,7 @@ using API.MasterDataService;
 
 namespace API.CertificateGenerationSignupService;
 
-public class MeteringPointSignup
+public class CertificateGenerationSignUp
 {
     public Guid Id { get; set; }
     public string GSRN { get; set; } = "";

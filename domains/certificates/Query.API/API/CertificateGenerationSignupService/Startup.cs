@@ -11,11 +11,11 @@ public static class Startup
 {
     public static void AddCertificateGenerationSignupService(this IServiceCollection services)
     {
-        services.AddScoped<ICertificateGenerationSignupService, CertificateGenerationSignupServiceImpl>();
+        services.AddScoped<ICertificateGenerationSignUpService, CertificateGenerationSignUpServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
-        services.AddScoped<IMeteringPointSignupRepository, MeteringPointSignupRepository>(); //TODO: For this to work for DataSyncWorker, it needs to work as a singleton
+        services.AddScoped<ICertificateGenerationSignUpRepository, CertificateGenerationSignUpRepository>(); //TODO: For this to work for DataSyncWorker, it needs to work as a singleton
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {

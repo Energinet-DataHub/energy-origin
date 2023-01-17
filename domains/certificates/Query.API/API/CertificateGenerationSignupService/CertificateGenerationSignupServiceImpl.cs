@@ -6,17 +6,16 @@ using System.Threading.Tasks;
 using API.CertificateGenerationSignupService.Clients;
 using API.CertificateGenerationSignupService.Repositories;
 using API.MasterDataService;
-using API.Query.API.ApiModels.Responses;
 using static API.CertificateGenerationSignupService.CreateSignupResult;
 
 namespace API.CertificateGenerationSignupService;
 
-internal class CertificateGenerationSignupServiceImpl : ICertificateGenerationSignupService
+internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSignUpService
 {
     private readonly IMeteringPointsClient client;
-    private readonly IMeteringPointSignupRepository repository;
+    private readonly ICertificateGenerationSignUpRepository repository;
 
-    public CertificateGenerationSignupServiceImpl(IMeteringPointsClient client, IMeteringPointSignupRepository repository)
+    public CertificateGenerationSignUpServiceImpl(IMeteringPointsClient client, ICertificateGenerationSignUpRepository repository)
     {
         this.client = client;
         this.repository = repository;
@@ -46,7 +45,7 @@ internal class CertificateGenerationSignupServiceImpl : ICertificateGenerationSi
         }
 
         // Save
-        var userObject = new MeteringPointSignup
+        var userObject = new CertificateGenerationSignUp
         {
             Id = Guid.Empty,
             GSRN = gsrn,
@@ -60,10 +59,10 @@ internal class CertificateGenerationSignupServiceImpl : ICertificateGenerationSi
         return new Success(userObject);
     }
 
-    public Task<IReadOnlyList<MeteringPointSignup>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<CertificateGenerationSignUp>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
         => repository.GetAllMeteringPointOwnerSignUps(meteringPointOwner, cancellationToken);
 
-    public async Task<MeteringPointSignup?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
+    public async Task<CertificateGenerationSignUp?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
     {
         var signUp = await repository.GetById(id, cancellationToken);
 

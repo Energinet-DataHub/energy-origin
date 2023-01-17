@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace API.CertificateGenerationSignupService;
 
-public interface ICertificateGenerationSignupService
+public interface ICertificateGenerationSignUpService
 {
     Task<CreateSignupResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<MeteringPointSignup>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
+    Task<IReadOnlyList<CertificateGenerationSignUp>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
 
-    Task<MeteringPointSignup?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken);
+    Task<CertificateGenerationSignUp?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken);
 }
