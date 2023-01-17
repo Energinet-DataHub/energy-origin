@@ -115,9 +115,6 @@ app.MapControllers();
 
 app.Run();
 
-namespace API
+public partial class Program
 {
-    public partial class Program
-    {
-    }
 }
