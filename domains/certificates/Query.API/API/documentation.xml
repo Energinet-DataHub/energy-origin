@@ -54,5 +54,10 @@
             The energy source for the production device as specified in EECS Rules Fact Sheet 5
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.SignUpController.SignUp(Marten.IDocumentSession,API.Query.API.ApiModels.Requests.CreateSignup,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignup},API.Query.API.Clients.IMeteringPointsClient,System.Threading.CancellationToken)">
+            <summary>
+            Signs up a metering point for granular certificate generation 
+            </summary>
+        </member>
     </members>
 </doc>

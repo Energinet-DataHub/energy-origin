@@ -19,6 +19,9 @@ namespace API.Query.API.Controllers;
 [ApiController]
 public class SignUpController : ControllerBase
 {
+    /// <summary>
+    /// Signs up a metering point for granular certificate generation.
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
     [ProducesResponseType(302)]
