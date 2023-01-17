@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace API.Query.API.Clients;
+namespace API.CertificateGenerationSignupService.Clients;
 
 public class MeteringPointsClient : IMeteringPointsClient
 {

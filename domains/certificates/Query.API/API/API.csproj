@@ -36,9 +36,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Query.API\ApiModels\Requests\" />
-    <Folder Include="Query.API\ApiModels\Responses\" />
-  </ItemGroup>
-
 </Project>
