@@ -1,4 +1,4 @@
-using API.Query.API.Repositories;
+using API.CertificateGenerationSignupService.Repositories;
 
 namespace API.CertificateGenerationSignupService;
 

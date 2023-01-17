@@ -1,7 +1,7 @@
 using System;
 using API.CertificateGenerationSignupService.Clients;
+using API.CertificateGenerationSignupService.Repositories;
 using API.DataSyncSyncer.Configurations;
-using API.Query.API.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 

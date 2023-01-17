@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Marten;
 
-namespace API.Query.API.Repositories;
+namespace API.CertificateGenerationSignupService.Repositories;
 
-public class MeteringPointSignupRepository : IMeteringPointSignupRepository
+internal class MeteringPointSignupRepository : IMeteringPointSignupRepository
 {
     private readonly IDocumentSession session;
 

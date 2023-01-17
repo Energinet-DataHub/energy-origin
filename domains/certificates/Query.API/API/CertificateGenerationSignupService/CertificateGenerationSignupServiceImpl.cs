@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.CertificateGenerationSignupService.Clients;
+using API.CertificateGenerationSignupService.Repositories;
 using API.MasterDataService;
-using API.Query.API.Repositories;
 using static API.CertificateGenerationSignupService.CreateSignupResult;
 
 namespace API.CertificateGenerationSignupService;
