@@ -93,7 +93,7 @@ public class SignUpsController : ControllerBase
     {
         var meteringPointOwner = User.FindFirstValue("subject");
         var documentStoreHandler = new MeteringPointSignupRepository(session);
-        var signUp = await documentStoreHandler.GetByDocumentId(id, cancellationToken);
+        var signUp = await documentStoreHandler.GetById(id, cancellationToken);
 
         if (signUp == null)
             return NotFound();

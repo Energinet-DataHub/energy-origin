@@ -32,6 +32,6 @@ internal class MeteringPointSignupRepository : IMeteringPointSignupRepository
         .Where(x => x.MeteringPointOwner == meteringPointOwner)
         .ToListAsync();
 
-    public Task<MeteringPointSignup?> GetByDocumentId(Guid documentId, CancellationToken cancellationToken) => session
-        .LoadAsync<MeteringPointSignup>(documentId, cancellationToken);
+    public Task<MeteringPointSignup?> GetById(Guid id, CancellationToken cancellationToken) => session
+        .LoadAsync<MeteringPointSignup>(id, cancellationToken);
 }
