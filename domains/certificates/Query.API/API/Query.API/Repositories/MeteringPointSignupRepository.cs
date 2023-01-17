@@ -20,10 +20,15 @@ public class MeteringPointSignupRepository : IMeteringPointSignupRepository
         return session.SaveChangesAsync();
     }
 
-    public Task<MeteringPointSignup?> GetByGsrn(string gsrn)
-    {
-        return session.Query<MeteringPointSignup>().Where(x => x.GSRN == gsrn).SingleOrDefaultAsync();
-    }
+    public Task<MeteringPointSignup?> GetByGsrn(string gsrn) => session
+        .Query<MeteringPointSignup>()
+        .Where(x => x.GSRN == gsrn)
+        .SingleOrDefaultAsync();
+
+    public Task<IReadOnlyList<MeteringPointSignup>> GetAllSignUps(string owner) => session
+        .Query<MeteringPointSignup>()
+        .Where(x => x.MeteringPointOwner == owner)
+        .ToListAsync();
 
     public Task<IEnumerable<MeteringPointSignup>> GetAll() => throw new System.NotImplementedException();
 

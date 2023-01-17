@@ -119,4 +119,33 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
     private static string BuildMeteringPointsResponse(string gsrn = validGsrn, string type = "production")
         => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
+
+    [Fact]
+    public async Task GetAllSignUps_QueryAllSignUps_Success()
+    {
+        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
+        dataSyncMock
+            .Given(Request.Create().WithPath("/meteringPoints"))
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "999999999999999999")));
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var body = new { gsrn = "999999999999999999", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
+        await client.PostAsJsonAsync("api/signup", body);
+
+        var response = await client.GetAsync("api/signups");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+    }
+
+    [Fact]
+    public async Task GetAllSignUps_QueryAllSignUps_NotFound()
+    {
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var response = await client.GetAsync("api/signups");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

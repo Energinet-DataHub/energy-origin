@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Query.API.Controllers;
 
+// /api/signups -> All signups
+// api/signups/<guid>
+
 [Authorize]
 [ApiController]
 public class SignUpController : ControllerBase
@@ -70,4 +73,25 @@ public class SignUpController : ControllerBase
 
         return StatusCode(201);
     }
+
+    [HttpGet]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [Route("api/signups")]
+    public async Task<ActionResult> GetAllSignUps([FromServices] IDocumentSession session)
+    {
+        var documentStoreHandler = new MeteringPointSignupRepository(session);
+        var meteringPointOwner = User.FindFirstValue("subject");
+
+        var document = await documentStoreHandler.GetAllSignUps(meteringPointOwner);
+
+        if (document.IsEmpty())
+        {
+            return NotFound();
+        }
+
+        return Ok(document);
+    }
+
+
 }
