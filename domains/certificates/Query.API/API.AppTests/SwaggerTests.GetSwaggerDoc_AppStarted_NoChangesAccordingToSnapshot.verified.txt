@@ -37,7 +37,7 @@
         }
       }
     },
-    "/api/signup": {
+    "/api/signups": {
       "post": {
         "tags": [
           "SignUp"
@@ -90,9 +90,7 @@
             "description": "Conflict"
           }
         }
-      }
-    },
-    "/api/signups": {
+      },
       "get": {
         "tags": [
           "SignUp"
@@ -108,7 +106,7 @@
         }
       }
     },
-    "/api/signup/{id}": {
+    "/api/signups/{id}": {
       "get": {
         "tags": [
           "SignUp"
