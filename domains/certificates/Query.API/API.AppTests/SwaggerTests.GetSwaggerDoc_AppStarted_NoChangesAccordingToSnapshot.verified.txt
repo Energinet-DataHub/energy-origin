@@ -108,15 +108,16 @@
         }
       }
     },
-    "/api/signup/{documentId}": {
+    "/api/signup/{id}": {
       "get": {
         "tags": [
           "SignUp"
         ],
+        "summary": "Returns sign up based on the id",
         "operationId": "GetSignUpDocument",
         "parameters": [
           {
-            "name": "documentId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {

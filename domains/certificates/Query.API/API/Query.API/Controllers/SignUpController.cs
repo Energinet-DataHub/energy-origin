@@ -49,7 +49,7 @@ public class SignUpController : ControllerBase
             GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
             SignupAlreadyExists => Conflict(),
-            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { documentId = createdSignup.Id }, createdSignup),
+            Success(var createdSignup) => CreatedAtRoute("GetSignUpDocument", new { id = createdSignup.Id }, createdSignup),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpController)}")
         };
     }
@@ -73,14 +73,21 @@ public class SignUpController : ControllerBase
             : Ok(document);
     }
 
+
+    /// <summary>
+    /// Returns sign up based on the id
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/signup/{documentId}", Name = "GetSignUpDocument")]
-    public async Task<ActionResult> GetSignUpDocument([FromServices] IDocumentSession session, [FromRoute] Guid documentId, CancellationToken cancellationToken)
+    [Route("api/signup/{id}", Name = "GetSignUpDocument")]
+    public async Task<ActionResult> GetSignUpDocument(
+        [FromRoute] Guid id,
+        [FromServices] IDocumentSession session,
+        CancellationToken cancellationToken)
     {
         var documentStoreHandler = new MeteringPointSignupRepository(session);
-        var document = await documentStoreHandler.GetByDocumentId(documentId, cancellationToken);
+        var document = await documentStoreHandler.GetByDocumentId(id, cancellationToken);
 
         if (document == null)
         {
