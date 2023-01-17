@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Query.API.ApiModels;
+using API.Query.API.ApiModels.Responses;
 using API.Query.API.Projections;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +13,10 @@ namespace API.Query.API.Controllers;
 public class CertificatesController : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType(typeof(CertificateList), 200)]
+    [ProducesResponseType(typeof(ListResult<Certificate>), 200)]
     [ProducesResponseType(204)]
     [Route("api/certificates")]
-    public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
+    public async Task<ActionResult<ListResult<Certificate>>> Get([FromServices] IQuerySession querySession)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
         var projection = await querySession.LoadAsync<CertificatesByOwnerView>(meteringPointOwner);
