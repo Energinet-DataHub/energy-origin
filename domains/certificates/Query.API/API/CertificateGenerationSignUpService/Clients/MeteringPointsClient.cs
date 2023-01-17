@@ -50,6 +50,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);
 
 public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address);
+
 public enum MeterType { Consumption, Production, Child }
 
 public record Address(string Address1, string? Address2, string? Locality, string City, string PostalCode,
