@@ -83,7 +83,7 @@ public class SignUpController : ControllerBase
         var documentStoreHandler = new MeteringPointSignupRepository(session);
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var document = await documentStoreHandler.GetAllSignUps(meteringPointOwner);
+        var document = await documentStoreHandler.GetAllMeteringPointOwnerSignUps(meteringPointOwner);
 
         if (document.IsEmpty())
         {
@@ -91,6 +91,24 @@ public class SignUpController : ControllerBase
         }
 
         return Ok(document);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    [Route("api/signup")]
+    public async Task<ActionResult> GetSignUpDocument([FromServices] IDocumentSession session, string documentId, CancellationToken cancellationToken)
+    {
+        var documentStoreHandler = new MeteringPointSignupRepository(session);
+        var document = await documentStoreHandler.GetByDocumentId(documentId, cancellationToken);
+
+        if (document == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(document);
+
     }
 
 

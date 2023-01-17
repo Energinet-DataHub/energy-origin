@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Marten;
 
@@ -25,12 +26,11 @@ public class MeteringPointSignupRepository : IMeteringPointSignupRepository
         .Where(x => x.GSRN == gsrn)
         .SingleOrDefaultAsync();
 
-    public Task<IReadOnlyList<MeteringPointSignup>> GetAllSignUps(string owner) => session
+    public Task<IReadOnlyList<MeteringPointSignup>> GetAllMeteringPointOwnerSignUps(string owner) => session
         .Query<MeteringPointSignup>()
         .Where(x => x.MeteringPointOwner == owner)
         .ToListAsync();
 
-    public Task<IEnumerable<MeteringPointSignup>> GetAll() => throw new System.NotImplementedException();
-
-    public Task<IEnumerable<MeteringPointSignup>> GetByMeteringPointOwner(string meteringPointOwner) => throw new System.NotImplementedException();
+    public Task<MeteringPointSignup?> GetByDocumentId(string documentId, CancellationToken cancellationToken) => session
+        .LoadAsync<MeteringPointSignup>(documentId, cancellationToken);
 }

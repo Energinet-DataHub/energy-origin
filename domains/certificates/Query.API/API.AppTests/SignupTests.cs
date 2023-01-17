@@ -121,7 +121,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";
 
     [Fact]
-    public async Task GetAllSignUps_QueryAllSignUps_Success()
+    public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_Success()
     {
         using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
         dataSyncMock
@@ -140,7 +140,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task GetAllSignUps_QueryAllSignUps_NotFound()
+    public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_NotFound()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
