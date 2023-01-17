@@ -140,12 +140,12 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     }
 
     [Fact]
-    public async Task GetAllSignUps_QueryAllSignUps_NotFound()
+    public async Task GetAllSignUps_QueryAllSignUps_NoContent()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var response = await client.GetAsync("api/signups");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }
