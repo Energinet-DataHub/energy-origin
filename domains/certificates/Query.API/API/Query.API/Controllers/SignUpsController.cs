@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.CertificateGenerationSignupService;
-using API.CertificateGenerationSignupService.Repositories;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using FluentValidation;
@@ -66,18 +65,18 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(typeof(SignUpList), 200)]
     [ProducesResponseType(204)]
     [Route("api/signUps")]
-    public async Task<ActionResult<SignUpList>> GetAllSignUps([FromServices] IDocumentSession session)
+    public async Task<ActionResult<SignUpList>> GetAllSignUps(
+        [FromServices] ICertificateGenerationSignupService service,
+        CancellationToken cancellationToken)
     {
-        var documentStoreHandler = new MeteringPointSignupRepository(session);
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var signUps = await documentStoreHandler.GetAllMeteringPointOwnerSignUps(meteringPointOwner);
+        var signUps = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
         return signUps.IsEmpty()
             ? NoContent()
             : Ok(new SignUpList { Result = signUps.Select(SignUp.CreateFrom) });
     }
-
 
     /// <summary>
     /// Returns sign up based on the id
@@ -88,19 +87,15 @@ public class SignUpsController : ControllerBase
     [Route("api/signUps/{id}", Name = "GetSignUp")]
     public async Task<ActionResult<SignUp>> GetSignUp(
         [FromRoute] Guid id,
-        [FromServices] IDocumentSession session,
+        [FromServices] ICertificateGenerationSignupService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
-        var documentStoreHandler = new MeteringPointSignupRepository(session);
-        var signUp = await documentStoreHandler.GetById(id, cancellationToken);
 
-        if (signUp == null)
-            return NotFound();
+        var signUp = await service.GetById(id, meteringPointOwner, cancellationToken);
 
-        if (signUp.MeteringPointOwner.Trim() != meteringPointOwner.Trim())
-            return NotFound();
-
-        return Ok(SignUp.CreateFrom(signUp));
+        return signUp == null
+            ? NotFound()
+            : Ok(SignUp.CreateFrom(signUp));
     }
 }

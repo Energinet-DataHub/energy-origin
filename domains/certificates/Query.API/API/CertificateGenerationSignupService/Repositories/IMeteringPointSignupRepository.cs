@@ -9,6 +9,6 @@ public interface IMeteringPointSignupRepository
 {
     Task Save(MeteringPointSignup meteringPointSignup);
     Task<MeteringPointSignup?> GetByGsrn(string gsrn);
-    Task<IReadOnlyList<MeteringPointSignup>> GetAllMeteringPointOwnerSignUps(string meteringPointOwner);
+    Task<IReadOnlyList<MeteringPointSignup>> GetAllMeteringPointOwnerSignUps(string meteringPointOwner, CancellationToken cancellationToken);
     Task<MeteringPointSignup?> GetById(Guid id, CancellationToken cancellationToken);
 }

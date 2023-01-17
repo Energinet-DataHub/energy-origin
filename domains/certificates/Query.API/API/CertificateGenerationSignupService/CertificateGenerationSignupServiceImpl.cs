@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.CertificateGenerationSignupService.Clients;
 using API.CertificateGenerationSignupService.Repositories;
 using API.MasterDataService;
+using API.Query.API.ApiModels.Responses;
 using static API.CertificateGenerationSignupService.CreateSignupResult;
 
 namespace API.CertificateGenerationSignupService;
@@ -56,5 +58,20 @@ internal class CertificateGenerationSignupServiceImpl : ICertificateGenerationSi
         await repository.Save(userObject);
 
         return new Success(userObject);
+    }
+
+    public Task<IReadOnlyList<MeteringPointSignup>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
+        => repository.GetAllMeteringPointOwnerSignUps(meteringPointOwner, cancellationToken);
+
+    public async Task<MeteringPointSignup?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
+    {
+        var signUp = await repository.GetById(id, cancellationToken);
+
+        if (signUp == null)
+            return null;
+
+        return signUp.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
+            ? null
+            : signUp;
     }
 }

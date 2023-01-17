@@ -27,10 +27,10 @@ internal class MeteringPointSignupRepository : IMeteringPointSignupRepository
         .Where(x => x.GSRN == gsrn)
         .SingleOrDefaultAsync();
 
-    public Task<IReadOnlyList<MeteringPointSignup>> GetAllMeteringPointOwnerSignUps(string meteringPointOwner) => session
+    public Task<IReadOnlyList<MeteringPointSignup>> GetAllMeteringPointOwnerSignUps(string meteringPointOwner, CancellationToken cancellationToken) => session
         .Query<MeteringPointSignup>()
         .Where(x => x.MeteringPointOwner == meteringPointOwner)
-        .ToListAsync();
+        .ToListAsync(cancellationToken);
 
     public Task<MeteringPointSignup?> GetById(Guid id, CancellationToken cancellationToken) => session
         .LoadAsync<MeteringPointSignup>(id, cancellationToken);
