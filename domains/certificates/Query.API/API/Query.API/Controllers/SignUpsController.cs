@@ -28,32 +28,32 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/signUps")]
     public async Task<ActionResult> CreateSignUp(
-        [FromBody] CreateSignup createSignup,
-        [FromServices] IValidator<CreateSignup> validator,
+        [FromBody] CreateSignUp createSignUp,
+        [FromServices] IValidator<CreateSignUp> validator,
         [FromServices] ICertificateGenerationSignUpService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var validationResult = await validator.ValidateAsync(createSignup, cancellationToken);
+        var validationResult = await validator.ValidateAsync(createSignUp, cancellationToken);
         if (!validationResult.IsValid)
         {
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.Create(createSignup.GSRN, meteringPointOwner,
-            DateTimeOffset.FromUnixTimeSeconds(createSignup.StartDate), cancellationToken);
+        var result = await service.Create(createSignUp.GSRN, meteringPointOwner,
+            DateTimeOffset.FromUnixTimeSeconds(createSignUp.StartDate), cancellationToken);
 
         return result switch
         {
-            GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
-            NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
+            GsrnNotFound => BadRequest($"GSRN {createSignUp.GSRN} not found"),
+            NotProductionMeteringPoint => BadRequest($"GSRN {createSignUp.GSRN} is not a production metering point"),
             SignUpAlreadyExists => Conflict(),
-            Success(var createdSignup) => CreatedAtRoute(
+            Success(var createdSignUp) => CreatedAtRoute(
                 "GetSignUp",
-                new { id = createdSignup.Id },
-                SignUp.CreateFrom(createdSignup)),
+                new { id = createdSignUp.Id },
+                SignUp.CreateFrom(createdSignUp)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpsController)}")
         };
     }

@@ -4,12 +4,12 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="P:API.Query.API.ApiModels.Requests.CreateSignup.GSRN">
+        <member name="P:API.Query.API.ApiModels.Requests.CreateSignUp.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.CreateSignup.StartDate">
+        <member name="P:API.Query.API.ApiModels.Requests.CreateSignUp.StartDate">
             <summary>
             Starting date for generation of certificates in Unix time
             </summary>
@@ -69,7 +69,7 @@
             Date for the sign up
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.CreateSignUp(API.Query.API.ApiModels.Requests.CreateSignup,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignup},API.CertificateGenerationSignUpService.ICertificateGenerationSignUpService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.CreateSignUp(API.Query.API.ApiModels.Requests.CreateSignUp,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignUp},API.CertificateGenerationSignUpService.ICertificateGenerationSignUpService,System.Threading.CancellationToken)">
             <summary>
             Signs up a metering point for granular certificate generation
             </summary>

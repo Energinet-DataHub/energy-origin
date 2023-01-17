@@ -18,6 +18,6 @@ public static class Startup
 
         services.AddHttpContextAccessor();
 
-        services.AddValidatorsFromAssemblyContaining<CreateSignupValidator>();
+        services.AddValidatorsFromAssemblyContaining<CreateSignUpValidator>();
     }
 }

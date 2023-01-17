@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace API.Query.API.ApiModels.Requests;
 
-public class CreateSignup
+public class CreateSignUp
 {
     /// <summary>
     /// Global Service Relation Number (GSRN) for the metering point
