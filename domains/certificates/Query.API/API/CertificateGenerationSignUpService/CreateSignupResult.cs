@@ -1,14 +1,14 @@
 namespace API.CertificateGenerationSignUpService;
 
-public abstract record CreateSignupResult
+public abstract record CreateSignUpResult
 {
-    public record Success(CertificateGenerationSignUp CertificateGenerationSignUp) : CreateSignupResult;
+    public record Success(CertificateGenerationSignUp CertificateGenerationSignUp) : CreateSignUpResult;
 
-    public record GsrnNotFound : CreateSignupResult;
+    public record GsrnNotFound : CreateSignUpResult;
 
-    public record NotProductionMeteringPoint : CreateSignupResult;
+    public record NotProductionMeteringPoint : CreateSignUpResult;
 
-    public record SignupAlreadyExists(CertificateGenerationSignUp Existing) : CreateSignupResult;
+    public record SignUpAlreadyExists(CertificateGenerationSignUp Existing) : CreateSignUpResult;
 
-    private CreateSignupResult() { }
+    private CreateSignUpResult() { }
 }

@@ -11,7 +11,7 @@ using FluentValidation.AspNetCore;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static API.CertificateGenerationSignUpService.CreateSignupResult;
+using static API.CertificateGenerationSignUpService.CreateSignUpResult;
 
 namespace API.Query.API.Controllers;
 
@@ -49,7 +49,7 @@ public class SignUpsController : ControllerBase
         {
             GsrnNotFound => BadRequest($"GSRN {createSignup.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
-            SignupAlreadyExists => Conflict(),
+            SignUpAlreadyExists => Conflict(),
             Success(var createdSignup) => CreatedAtRoute(
                 "GetSignUp",
                 new { id = createdSignup.Id },

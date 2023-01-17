@@ -7,7 +7,7 @@ namespace API.CertificateGenerationSignUpService;
 
 public interface ICertificateGenerationSignUpService
 {
-    Task<CreateSignupResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken);
+    Task<CreateSignUpResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<CertificateGenerationSignUp>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
 
