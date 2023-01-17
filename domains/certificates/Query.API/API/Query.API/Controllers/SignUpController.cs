@@ -20,7 +20,7 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(302)]
     [Route("api/signup")]
-    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] MeteringPointsClient client, CancellationToken cancellationToken)
+    public async Task<ActionResult> SignUp([FromServices] IQuerySession querySession, [FromBody] CreateSignup createSignup, [FromServices] IValidator<CreateSignup> validator, [FromServices] IMeteringPointsClient client, CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 

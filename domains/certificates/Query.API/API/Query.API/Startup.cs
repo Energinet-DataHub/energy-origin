@@ -1,14 +1,11 @@
 using System;
-using System.Net.Http.Headers;
 using API.DataSyncSyncer.Configurations;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.Clients;
-using API.Query.API.Controllers;
 using API.Query.API.Projections;
 using FluentValidation;
 using Marten;
 using Marten.Events.Projections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -27,9 +24,9 @@ public static class Startup
 
         services.AddValidatorsFromAssemblyContaining<CreateSignupValidator>();
 
-        services.AddScoped<MeteringPointsClient>();
+        services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
-        services.AddHttpClient<MeteringPointsClient>((sp, client) =>
+        services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value; //TODO: Stealing this from DataSyncSyncer
             client.BaseAddress = new Uri(options.Url);
