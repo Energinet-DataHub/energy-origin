@@ -47,17 +47,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignup"
+                "$ref": "#/components/schemas/CreateSignUp"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignup"
+                "$ref": "#/components/schemas/CreateSignUp"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignup"
+                "$ref": "#/components/schemas/CreateSignUp"
               }
             }
           }
@@ -225,7 +225,7 @@
         },
         "additionalProperties": false
       },
-      "CreateSignup": {
+      "CreateSignUp": {
         "type": "object",
         "properties": {
           "gsrn": {
