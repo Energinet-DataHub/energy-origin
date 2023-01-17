@@ -46,7 +46,7 @@ internal class CertificateGenerationSignupServiceImpl : ICertificateGenerationSi
         // Save
         var userObject = new MeteringPointSignup
         {
-            Id = new Guid(),
+            Id = Guid.Empty,
             GSRN = gsrn,
             MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
