@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace API.Query.API.ApiModels;
+namespace API.Query.API.ApiModels.Responses;
 
 public class CertificateList
 {
