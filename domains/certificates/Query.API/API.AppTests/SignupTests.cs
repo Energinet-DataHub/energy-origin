@@ -38,7 +38,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         var body = new { gsrn = "111111111111111111", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signup", body);
+        var response = await client.PostAsJsonAsync("api/signups", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -58,10 +58,10 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         var body = new { gsrn = "222222222222222222", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signup", body);
+        var response = await client.PostAsJsonAsync("api/signups", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        response = await client.PostAsJsonAsync("api/signup", body);
+        response = await client.PostAsJsonAsync("api/signups", body);
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -78,7 +78,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         var body = new { gsrn = validGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signup", body);
+        var response = await client.PostAsJsonAsync("api/signups", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -96,7 +96,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         var body = new { gsrn = validGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signup", body);
+        var response = await client.PostAsJsonAsync("api/signups", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -114,7 +114,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         var body = new { gsrn = "invalid GSRN", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signup", body);
+        var response = await client.PostAsJsonAsync("api/signups", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -131,7 +131,7 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var body = new { gsrn = "999999999999999999", startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
-        await client.PostAsJsonAsync("api/signup", body);
+        await client.PostAsJsonAsync("api/signups", body);
 
         var response = await client.GetAsync("api/signups");
         response.StatusCode.Should().Be(HttpStatusCode.OK);

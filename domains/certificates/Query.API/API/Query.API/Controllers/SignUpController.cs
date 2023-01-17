@@ -25,7 +25,7 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 409)]
-    [Route("api/signup")]
+    [Route("api/signups")]
     public async Task<ActionResult> SignUp(
         [FromBody] CreateSignup createSignup,
         [FromServices] IValidator<CreateSignup> validator,
@@ -80,7 +80,7 @@ public class SignUpController : ControllerBase
     [HttpGet]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/signup/{id}", Name = "GetSignUpDocument")]
+    [Route("api/signups/{id}", Name = "GetSignUpDocument")]
     public async Task<ActionResult> GetSignUpDocument(
         [FromRoute] Guid id,
         [FromServices] IDocumentSession session,
