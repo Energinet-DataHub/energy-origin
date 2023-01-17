@@ -28,9 +28,9 @@ public class SignUpController : ControllerBase
         // Check ownership and if it is production type of GSRN in datahub
 
         // Check if GSRN is already signed up
-        var document = documentStoreHandler.GetByGsrn(createSignup.Gsrn);
+        var document = await documentStoreHandler.GetByGsrn(createSignup.Gsrn);
 
-        if (!document.IsFaulted || document.Result != null)
+        if (document != null)
         {
             return Conflict();
         }
@@ -45,13 +45,9 @@ public class SignUpController : ControllerBase
             SignupStartDate = DateTimeOffset.UtcNow, // Also needs change
             Created = DateTimeOffset.UtcNow
         };
-        var documentSaved = documentStoreHandler.Save(userObject);
-        if (documentSaved.IsFaulted)
-        {
-            return Problem();
-        }
-        
-        return Ok();
+        await documentStoreHandler.Save(userObject);
+
+        return StatusCode(201);
     }
 }
 
