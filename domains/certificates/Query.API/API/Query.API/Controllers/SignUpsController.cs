@@ -18,7 +18,7 @@ namespace API.Query.API.Controllers;
 
 [Authorize]
 [ApiController]
-public class SignUpController : ControllerBase
+public class SignUpsController : ControllerBase
 {
     /// <summary>
     /// Signs up a metering point for granular certificate generation
@@ -27,7 +27,7 @@ public class SignUpController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 409)]
-    [Route("api/signups")]
+    [Route("api/signUps")]
     public async Task<ActionResult> SignUp(
         [FromBody] CreateSignup createSignup,
         [FromServices] IValidator<CreateSignup> validator,
@@ -55,7 +55,7 @@ public class SignUpController : ControllerBase
                 "GetSignUpDocument",
                 new { id = createdSignup.Id },
                 ApiModels.Responses.SignUp.CreateFrom(createdSignup)),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpController)}")
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpsController)}")
         };
     }
 
@@ -65,7 +65,7 @@ public class SignUpController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ListResult<SignUp>), 200)]
     [ProducesResponseType(204)]
-    [Route("api/signups")]
+    [Route("api/signUps")]
     public async Task<ActionResult<ListResult<SignUp>>> GetAllSignUps([FromServices] IDocumentSession session)
     {
         var documentStoreHandler = new MeteringPointSignupRepository(session);
@@ -85,7 +85,7 @@ public class SignUpController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(SignUp), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/signups/{id}", Name = "GetSignUpDocument")]
+    [Route("api/signUps/{id}", Name = "GetSignUpDocument")]
     public async Task<ActionResult<SignUp>> GetSignUpDocument(
         [FromRoute] Guid id,
         [FromServices] IDocumentSession session,
