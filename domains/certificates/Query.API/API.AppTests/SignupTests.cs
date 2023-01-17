@@ -28,6 +28,11 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignup_SignUpGsrn_Created()
     {
+        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
+        dataSyncMock
+            .Given(Request.Create().WithPath("/meteringPoints"))
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "111111111111111111")));
+
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
@@ -41,6 +46,11 @@ public class SignupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task CreateSignup_GsrnAlreadyExistsInDb_Conflict()
     {
+        using var dataSyncMock = WireMockServer.Start(dataSyncUrl);
+        dataSyncMock
+            .Given(Request.Create().WithPath("/meteringPoints"))
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn: "222222222222222222")));
+
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
