@@ -1,11 +1,11 @@
 using System;
-using API.CertificateGenerationSignupService.Clients;
-using API.CertificateGenerationSignupService.Repositories;
-using API.DataSyncSyncer.Configurations;
+using API.CertificateGenerationSignupServiceBla.Clients;
+using API.CertificateGenerationSignupServiceBla.Repositories;
+using API.DataSyncSyncer.Client.Configurations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace API.CertificateGenerationSignupService;
+namespace API.CertificateGenerationSignupServiceBla;
 
 public static class Startup
 {

@@ -2,7 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using API.CertificateGenerationSignupService;
+using API.CertificateGenerationSignupServiceBla;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
@@ -115,6 +115,9 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program
+namespace API
 {
+    public partial class Program
+    {
+    }
 }

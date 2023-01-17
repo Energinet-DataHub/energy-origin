@@ -1,6 +1,4 @@
-using API.CertificateGenerationSignupService.Repositories;
-
-namespace API.CertificateGenerationSignupService;
+namespace API.CertificateGenerationSignupServiceBla;
 
 public abstract record CreateSignupResult
 {

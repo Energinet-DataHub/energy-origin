@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace API.CertificateGenerationSignupService;
+namespace API.CertificateGenerationSignupServiceBla;
 
 public interface ICertificateGenerationSignUpService
 {

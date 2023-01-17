@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using API.CertificateGenerationSignupService;
+using API.CertificateGenerationSignupServiceBla;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using FluentValidation;
@@ -11,7 +11,7 @@ using FluentValidation.AspNetCore;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static API.CertificateGenerationSignupService.CreateSignupResult;
+using static API.CertificateGenerationSignupServiceBla.CreateSignupResult;
 
 namespace API.Query.API.Controllers;
 
