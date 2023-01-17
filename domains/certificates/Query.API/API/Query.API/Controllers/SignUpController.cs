@@ -45,7 +45,7 @@ public class SignUpController : ControllerBase
             return BadRequest($"GSRN {createSignup.GSRN} is not a production metering point");
 
         // Check if GSRN is already signed up
-        var document = await documentStoreHandler.GetByGsrn(long.Parse(createSignup.GSRN)); //TODO: Should be string
+        var document = await documentStoreHandler.GetByGsrn(createSignup.GSRN); //TODO: Should be string
 
         if (document != null)
         {
@@ -53,10 +53,10 @@ public class SignUpController : ControllerBase
         }
 
         // Save
-        var userObject = new MeteringPointSignup()
+        var userObject = new MeteringPointSignup
         {
             Id = new Guid(),
-            GSRN = long.Parse(createSignup.GSRN), //TODO: Should be string
+            GSRN = createSignup.GSRN,
             MeteringPointType = MeteringPointType.Production, // This needs to change, when we have data from datasync
             MeteringPointOwner = meteringPointOwner,
             SignupStartDate = DateTimeOffset.UtcNow, // Also needs change

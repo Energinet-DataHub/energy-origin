@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Marten;
@@ -20,7 +20,7 @@ public class MeteringPointSignupRepository : IMeteringPointSignupRepository
         return session.SaveChangesAsync();
     }
 
-    public Task<MeteringPointSignup?> GetByGsrn(long gsrn)
+    public Task<MeteringPointSignup?> GetByGsrn(string gsrn)
     {
         return session.Query<MeteringPointSignup>().Where(x => x.GSRN == gsrn).SingleOrDefaultAsync();
     }
