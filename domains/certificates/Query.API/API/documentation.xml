@@ -56,7 +56,12 @@
         </member>
         <member name="M:API.Query.API.Controllers.SignUpController.SignUp(API.Query.API.ApiModels.Requests.CreateSignup,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignup},API.CertificateGenerationSignupService.ICertificateGenerationSignupService,System.Threading.CancellationToken)">
             <summary>
-            Signs up a metering point for granular certificate generation.
+            Signs up a metering point for granular certificate generation
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.SignUpController.GetAllSignUps(Marten.IDocumentSession)">
+            <summary>
+            Returns all metering points signed up for granular certificate generation
             </summary>
         </member>
     </members>

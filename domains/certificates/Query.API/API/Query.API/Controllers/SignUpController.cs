@@ -14,15 +14,12 @@ using static API.CertificateGenerationSignupService.CreateSignupResult;
 
 namespace API.Query.API.Controllers;
 
-// /api/signups -> All signups
-// api/signups/<guid>
-
 [Authorize]
 [ApiController]
 public class SignUpController : ControllerBase
 {
     /// <summary>
-    /// Signs up a metering point for granular certificate generation.
+    /// Signs up a metering point for granular certificate generation
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
@@ -52,9 +49,12 @@ public class SignUpController : ControllerBase
         };
     }
 
+    /// <summary>
+    /// Returns all metering points signed up for granular certificate generation
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
+    [ProducesResponseType(204)]
     [Route("api/signups")]
     public async Task<ActionResult> GetAllSignUps([FromServices] IDocumentSession session)
     {
@@ -63,11 +63,8 @@ public class SignUpController : ControllerBase
 
         var document = await documentStoreHandler.GetAllSignUps(meteringPointOwner);
 
-        if (document.IsEmpty())
-        {
-            return NotFound();
-        }
-
-        return Ok(document);
+        return document.IsEmpty()
+            ? NoContent()
+            : Ok(document);
     }
 }
