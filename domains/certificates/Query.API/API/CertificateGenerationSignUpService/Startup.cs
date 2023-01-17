@@ -2,6 +2,7 @@ using System;
 using API.CertificateGenerationSignUpService.Clients;
 using API.CertificateGenerationSignUpService.Repositories;
 using API.DataSyncSyncer.Client.Configurations;
+using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -11,6 +12,11 @@ public static class Startup
 {
     public static void AddCertificateGenerationSignUpService(this IServiceCollection services)
     {
+        services.ConfigureMarten(o =>
+        {
+            o.Schema.For<CertificateGenerationSignUp>();
+        });
+
         services.AddScoped<ICertificateGenerationSignUpService, CertificateGenerationSignUpServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
