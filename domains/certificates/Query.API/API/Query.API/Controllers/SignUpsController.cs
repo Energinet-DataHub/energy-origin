@@ -28,7 +28,7 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/signUps")]
-    public async Task<ActionResult> SignUp(
+    public async Task<ActionResult> CreateSignUp(
         [FromBody] CreateSignup createSignup,
         [FromServices] IValidator<CreateSignup> validator,
         [FromServices] ICertificateGenerationSignupService service,
@@ -52,9 +52,9 @@ public class SignUpsController : ControllerBase
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignup.GSRN} is not a production metering point"),
             SignupAlreadyExists => Conflict(),
             Success(var createdSignup) => CreatedAtRoute(
-                "GetSignUpDocument",
+                "GetSignUp",
                 new { id = createdSignup.Id },
-                ApiModels.Responses.SignUp.CreateFrom(createdSignup)),
+                SignUp.CreateFrom(createdSignup)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpsController)}")
         };
     }
@@ -75,7 +75,7 @@ public class SignUpsController : ControllerBase
 
         return signUps.IsEmpty()
             ? NoContent()
-            : Ok(new SignUpList { Result = signUps.Select(ApiModels.Responses.SignUp.CreateFrom) });
+            : Ok(new SignUpList { Result = signUps.Select(SignUp.CreateFrom) });
     }
 
 
@@ -85,8 +85,8 @@ public class SignUpsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(SignUp), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/signUps/{id}", Name = "GetSignUpDocument")]
-    public async Task<ActionResult<SignUp>> GetSignUpDocument(
+    [Route("api/signUps/{id}", Name = "GetSignUp")]
+    public async Task<ActionResult<SignUp>> GetSignUp(
         [FromRoute] Guid id,
         [FromServices] IDocumentSession session,
         CancellationToken cancellationToken)
@@ -101,6 +101,6 @@ public class SignUpsController : ControllerBase
         if (signUp.MeteringPointOwner.Trim() != meteringPointOwner.Trim())
             return NotFound();
 
-        return Ok(ApiModels.Responses.SignUp.CreateFrom(signUp));
+        return Ok(SignUp.CreateFrom(signUp));
     }
 }

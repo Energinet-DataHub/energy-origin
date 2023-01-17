@@ -69,7 +69,7 @@
             Date for the sign up
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.SignUp(API.Query.API.ApiModels.Requests.CreateSignup,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignup},API.CertificateGenerationSignupService.ICertificateGenerationSignupService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.CreateSignUp(API.Query.API.ApiModels.Requests.CreateSignup,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignup},API.CertificateGenerationSignupService.ICertificateGenerationSignupService,System.Threading.CancellationToken)">
             <summary>
             Signs up a metering point for granular certificate generation
             </summary>
@@ -79,7 +79,7 @@
             Returns all metering points signed up for granular certificate generation
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.GetSignUpDocument(System.Guid,Marten.IDocumentSession,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.GetSignUp(System.Guid,Marten.IDocumentSession,System.Threading.CancellationToken)">
             <summary>
             Returns sign up based on the id
             </summary>
