@@ -57,9 +57,9 @@ public class SignUpController : ControllerBase
         {
             Id = new Guid(),
             GSRN = createSignup.GSRN,
-            MeteringPointType = MeteringPointType.Production, // This needs to change, when we have data from datasync
+            MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
-            SignupStartDate = DateTimeOffset.UtcNow, // Also needs change
+            SignupStartDate = DateTimeOffset.FromUnixTimeSeconds(createSignup.StartDate),
             Created = DateTimeOffset.UtcNow
         };
         await documentStoreHandler.Save(userObject);
