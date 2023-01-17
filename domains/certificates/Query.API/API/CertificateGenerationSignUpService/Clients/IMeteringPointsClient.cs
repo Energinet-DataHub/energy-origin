@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace API.CertificateGenerationSignupServiceBla.Clients;
+namespace API.CertificateGenerationSignUpService.Clients;
 
 public interface IMeteringPointsClient
 {

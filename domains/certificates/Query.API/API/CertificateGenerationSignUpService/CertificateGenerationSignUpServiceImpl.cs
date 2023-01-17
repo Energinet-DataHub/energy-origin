@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.CertificateGenerationSignupServiceBla.Clients;
-using API.CertificateGenerationSignupServiceBla.Repositories;
+using API.CertificateGenerationSignUpService.Clients;
+using API.CertificateGenerationSignUpService.Repositories;
 using API.MasterDataService;
-using static API.CertificateGenerationSignupServiceBla.CreateSignupResult;
+using static API.CertificateGenerationSignUpService.CreateSignupResult;
 
-namespace API.CertificateGenerationSignupServiceBla;
+namespace API.CertificateGenerationSignUpService;
 
 internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSignUpService
 {
