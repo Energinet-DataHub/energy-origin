@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
 using API.MasterDataService;
-using static API.ContractService.CreateSignUpResult;
+using static API.ContractService.CreateContractResult;
 
 namespace API.ContractService;
 
-internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSignUpService
+internal class ContractServiceImpl : IContractService
 {
     private readonly IMeteringPointsClient client;
     private readonly ICertificateIssuingContractRepository repository;
 
-    public CertificateGenerationSignUpServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository)
+    public ContractServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository)
     {
         this.client = client;
         this.repository = repository;
     }
 
-    public async Task<CreateSignUpResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken)
     {
         var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == gsrn);
@@ -41,7 +41,7 @@ internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSi
 
         if (document != null)
         {
-            return new SignUpAlreadyExists(document);
+            return new ContractAlreadyExists(document);
         }
 
         // Save

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace API.ContractService;
 
-public interface ICertificateGenerationSignUpService
+public interface IContractService
 {
-    Task<CreateSignUpResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken);
+    Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
 

@@ -69,17 +69,17 @@
             Date for the sign up
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.CreateSignUp(API.Query.API.ApiModels.Requests.CreateSignUp,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignUp},API.CertificateGenerationSignUpService.ICertificateGenerationSignUpService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.CreateSignUp(API.Query.API.ApiModels.Requests.CreateSignUp,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateSignUp},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Signs up a metering point for granular certificate generation
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.GetAllSignUps(API.CertificateGenerationSignUpService.ICertificateGenerationSignUpService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.GetAllSignUps(API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Returns all metering points signed up for granular certificate generation
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SignUpsController.GetSignUp(System.Guid,API.CertificateGenerationSignUpService.ICertificateGenerationSignUpService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.SignUpsController.GetSignUp(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Returns sign up based on the id
             </summary>

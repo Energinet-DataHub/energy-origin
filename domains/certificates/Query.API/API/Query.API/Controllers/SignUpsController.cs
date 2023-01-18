@@ -11,7 +11,7 @@ using FluentValidation.AspNetCore;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static API.ContractService.CreateSignUpResult;
+using static API.ContractService.CreateContractResult;
 
 namespace API.Query.API.Controllers;
 
@@ -30,7 +30,7 @@ public class SignUpsController : ControllerBase
     public async Task<ActionResult> CreateSignUp(
         [FromBody] CreateSignUp createSignUp,
         [FromServices] IValidator<CreateSignUp> validator,
-        [FromServices] ICertificateGenerationSignUpService service,
+        [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -49,7 +49,7 @@ public class SignUpsController : ControllerBase
         {
             GsrnNotFound => BadRequest($"GSRN {createSignUp.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createSignUp.GSRN} is not a production metering point"),
-            SignUpAlreadyExists => Conflict(),
+            ContractAlreadyExists => Conflict(),
             Success(var createdSignUp) => CreatedAtRoute(
                 "GetSignUp",
                 new { id = createdSignUp.Id },
@@ -66,7 +66,7 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(204)]
     [Route("api/signUps")]
     public async Task<ActionResult<SignUpList>> GetAllSignUps(
-        [FromServices] ICertificateGenerationSignUpService service,
+        [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -87,7 +87,7 @@ public class SignUpsController : ControllerBase
     [Route("api/signUps/{id}", Name = "GetSignUp")]
     public async Task<ActionResult<SignUp>> GetSignUp(
         [FromRoute] Guid id,
-        [FromServices] ICertificateGenerationSignUpService service,
+        [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");

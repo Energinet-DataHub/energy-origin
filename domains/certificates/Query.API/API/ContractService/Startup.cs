@@ -17,7 +17,7 @@ public static class Startup
             o.Schema.For<CertificateIssuingContract>();
         });
 
-        services.AddScoped<ICertificateGenerationSignUpService, CertificateGenerationSignUpServiceImpl>();
+        services.AddScoped<IContractService, ContractServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
