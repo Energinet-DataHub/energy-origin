@@ -1,6 +1,6 @@
 using System;
+using API.Configurations;
 using API.DataSyncSyncer.Client;
-using API.DataSyncSyncer.Configurations;
 using API.DataSyncSyncer.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
