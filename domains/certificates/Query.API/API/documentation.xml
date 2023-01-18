@@ -4,44 +4,84 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="P:API.Query.API.ApiModels.Certificate.Id">
-            <summary>
-            Certificate ID
-            </summary>
-        </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.DateFrom">
-            <summary>
-            Start timestamp for the certificate in Unix time
-            </summary>
-        </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.DateTo">
-            <summary>
-            End timestamp for the certificate in Unix time
-            </summary>
-        </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.Quantity">
-            <summary>
-            Quantity of energy measured in Wh
-            </summary>
-        </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.GSRN">
+        <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.GridArea">
+        <member name="P:API.Query.API.ApiModels.Requests.CreateContract.StartDate">
+            <summary>
+            Starting date for generation of certificates in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.Id">
+            <summary>
+            Certificate ID
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.DateFrom">
+            <summary>
+            Start timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.DateTo">
+            <summary>
+            End timestamp for the certificate in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.Quantity">
+            <summary>
+            Quantity of energy measured in Wh
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.GSRN">
+            <summary>
+            Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.GridArea">
             <summary>
             Grid area for the metering point
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.TechCode">
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.TechCode">
             <summary>
             The technology of the production device as specified in EECS Rules Fact Sheet 5
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Certificate.FuelCode">
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.FuelCode">
             <summary>
             The energy source for the production device as specified in EECS Rules Fact Sheet 5
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.GSRN">
+            <summary>
+            Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.StartDate">
+            <summary>
+            Starting date for generation of certificates in Unix time
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.Created">
+            <summary>
+            Date for the sign up
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Signs up a metering point for granular certificate generation
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns sign up based on the id
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.GetAllContracts(API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns all metering points signed up for granular certificate generation
             </summary>
         </member>
     </members>

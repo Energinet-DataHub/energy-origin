@@ -992,3 +992,6 @@ $RECYCLE.BIN/
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/helm,rider,linux,macos,python,csharp,windows,visualstudio,visualstudiocode,jetbrains
+
+# Verify files
+*.received.txt
