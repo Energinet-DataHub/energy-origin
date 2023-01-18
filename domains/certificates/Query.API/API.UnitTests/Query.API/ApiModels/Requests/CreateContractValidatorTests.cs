@@ -17,7 +17,7 @@ public class CreateContractValidatorTests
         var result = await validator.TestValidateAsync(new CreateContract
         { GSRN = "123456789032432", StartDate = now.ToUnixTimeSeconds() });
 
-        result.ShouldNotHaveValidationErrorFor(signUp => signUp.StartDate);
+        result.ShouldNotHaveValidationErrorFor(cc => cc.StartDate);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class CreateContractValidatorTests
         var result = await validator.TestValidateAsync(new CreateContract
         { GSRN = "123456789032432", StartDate = utcMidnight.ToUnixTimeSeconds() });
 
-        result.ShouldNotHaveValidationErrorFor(signUp => signUp.StartDate);
+        result.ShouldNotHaveValidationErrorFor(cc => cc.StartDate);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class CreateContractValidatorTests
             await validator.TestValidateAsync(new CreateContract
             { GSRN = "123456789032432", StartDate = justBeforeUtcMidnight.ToUnixTimeSeconds() });
 
-        result.ShouldHaveValidationErrorFor(signup => signup.StartDate);
+        result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
     }
 
     [Theory]
@@ -66,7 +66,7 @@ public class CreateContractValidatorTests
         var result = await validator.TestValidateAsync(new CreateContract
         { GSRN = invalidGsrn, StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
-        result.ShouldHaveValidationErrorFor(signup => signup.GSRN);
+        result.ShouldHaveValidationErrorFor(cc => cc.GSRN);
     }
 
     [Theory]
@@ -78,6 +78,6 @@ public class CreateContractValidatorTests
         var result = await validator.TestValidateAsync(new CreateContract
         { GSRN = validGsrn, StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
-        result.ShouldNotHaveValidationErrorFor(signup => signup.GSRN);
+        result.ShouldNotHaveValidationErrorFor(cc => cc.GSRN);
     }
 }

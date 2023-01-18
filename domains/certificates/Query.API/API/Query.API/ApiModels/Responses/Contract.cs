@@ -24,12 +24,12 @@ public class Contract
     /// </summary>
     public long Created { get; set; }
 
-    public static Contract CreateFrom(CertificateIssuingContract signUp) =>
+    public static Contract CreateFrom(CertificateIssuingContract contract) =>
         new()
         {
-            Id = signUp.Id,
-            GSRN = signUp.GSRN,
-            StartDate = signUp.SignUpStartDate.ToUnixTimeSeconds(),
-            Created = signUp.Created.ToUnixTimeSeconds()
+            Id = contract.Id,
+            GSRN = contract.GSRN,
+            StartDate = contract.StartDate.ToUnixTimeSeconds(),
+            Created = contract.Created.ToUnixTimeSeconds()
         };
 }

@@ -27,7 +27,7 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
         .Where(x => x.GSRN == gsrn)
         .SingleOrDefaultAsync();
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerSignUps(string meteringPointOwner, CancellationToken cancellationToken) => session
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken) => session
         .Query<CertificateIssuingContract>()
         .Where(x => x.MeteringPointOwner == meteringPointOwner)
         .ToListAsync(cancellationToken);

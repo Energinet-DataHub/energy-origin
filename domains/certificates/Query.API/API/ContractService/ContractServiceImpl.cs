@@ -51,7 +51,7 @@ internal class ContractServiceImpl : IContractService
             GSRN = gsrn,
             MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
-            SignUpStartDate = startDate,
+            StartDate = startDate,
             Created = DateTimeOffset.UtcNow
         };
         await repository.Save(userObject);
@@ -60,17 +60,17 @@ internal class ContractServiceImpl : IContractService
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
-        => repository.GetAllMeteringPointOwnerSignUps(meteringPointOwner, cancellationToken);
+        => repository.GetAllMeteringPointOwnerContracts(meteringPointOwner, cancellationToken);
 
     public async Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
     {
-        var signUp = await repository.GetById(id, cancellationToken);
+        var contract = await repository.GetById(id, cancellationToken);
 
-        if (signUp == null)
+        if (contract == null)
             return null;
 
-        return signUp.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
+        return contract.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
             ? null
-            : signUp;
+            : contract;
     }
 }
