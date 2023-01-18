@@ -20,7 +20,7 @@ public class Contract
     public long StartDate { get; set; }
 
     /// <summary>
-    /// Date for the sign up
+    /// Creation date for the contract
     /// </summary>
     public long Created { get; set; }
 

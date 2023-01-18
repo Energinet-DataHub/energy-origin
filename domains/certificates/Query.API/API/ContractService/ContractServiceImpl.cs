@@ -36,7 +36,6 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        // Check if GSRN is already signed up
         var document = await repository.GetByGsrn(gsrn);
 
         if (document != null)
@@ -44,7 +43,6 @@ internal class ContractServiceImpl : IContractService
             return new ContractAlreadyExists(document);
         }
 
-        // Save
         var userObject = new CertificateIssuingContract
         {
             Id = Guid.Empty,
