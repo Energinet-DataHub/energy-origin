@@ -1,7 +1,7 @@
 using System;
 using API.MasterDataService;
 
-namespace API.CertificateGenerationSignUpService;
+namespace API.ContractService;
 
 public class CertificateGenerationSignUp
 {

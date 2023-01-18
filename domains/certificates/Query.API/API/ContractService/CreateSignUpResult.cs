@@ -1,4 +1,4 @@
-namespace API.CertificateGenerationSignUpService;
+namespace API.ContractService;
 
 public abstract record CreateSignUpResult
 {

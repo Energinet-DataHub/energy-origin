@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Marten;
 
-namespace API.CertificateGenerationSignUpService.Repositories;
+namespace API.ContractService.Repositories;
 
 internal class CertificateGenerationSignUpRepository : ICertificateGenerationSignUpRepository
 {

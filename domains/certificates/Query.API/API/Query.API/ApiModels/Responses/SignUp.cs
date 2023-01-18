@@ -1,6 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
-using API.CertificateGenerationSignUpService;
+using API.ContractService;
 
 namespace API.Query.API.ApiModels.Responses;
 

@@ -1,16 +1,16 @@
 using System;
-using API.CertificateGenerationSignUpService.Clients;
-using API.CertificateGenerationSignUpService.Repositories;
 using API.Configurations;
+using API.ContractService.Clients;
+using API.ContractService.Repositories;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace API.CertificateGenerationSignUpService;
+namespace API.ContractService;
 
 public static class Startup
 {
-    public static void AddCertificateGenerationSignUpService(this IServiceCollection services)
+    public static void AddContractService(this IServiceCollection services)
     {
         services.ConfigureMarten(o =>
         {
