@@ -4,7 +4,7 @@ using API.ContractService;
 
 namespace API.Query.API.ApiModels.Responses;
 
-public class SignUp
+public class Contract
 {
     public Guid Id { get; set; }
 
@@ -24,7 +24,7 @@ public class SignUp
     /// </summary>
     public long Created { get; set; }
 
-    public static SignUp CreateFrom(CertificateIssuingContract signUp) =>
+    public static Contract CreateFrom(CertificateIssuingContract signUp) =>
         new()
         {
             Id = signUp.Id,

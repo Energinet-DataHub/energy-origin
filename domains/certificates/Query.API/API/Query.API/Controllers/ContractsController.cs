@@ -17,7 +17,7 @@ namespace API.Query.API.Controllers;
 
 [Authorize]
 [ApiController]
-public class SignUpsController : ControllerBase
+public class ContractsController : ControllerBase
 {
     /// <summary>
     /// Signs up a metering point for granular certificate generation
@@ -28,33 +28,33 @@ public class SignUpsController : ControllerBase
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/signUps")]
     public async Task<ActionResult> CreateSignUp(
-        [FromBody] CreateSignUp createSignUp,
-        [FromServices] IValidator<CreateSignUp> validator,
+        [FromBody] CreateContract createContract,
+        [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var validationResult = await validator.ValidateAsync(createSignUp, cancellationToken);
+        var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
         if (!validationResult.IsValid)
         {
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.Create(createSignUp.GSRN, meteringPointOwner,
-            DateTimeOffset.FromUnixTimeSeconds(createSignUp.StartDate), cancellationToken);
+        var result = await service.Create(createContract.GSRN, meteringPointOwner,
+            DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate), cancellationToken);
 
         return result switch
         {
-            GsrnNotFound => BadRequest($"GSRN {createSignUp.GSRN} not found"),
-            NotProductionMeteringPoint => BadRequest($"GSRN {createSignUp.GSRN} is not a production metering point"),
+            GsrnNotFound => BadRequest($"GSRN {createContract.GSRN} not found"),
+            NotProductionMeteringPoint => BadRequest($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
             Success(var createdSignUp) => CreatedAtRoute(
                 "GetSignUp",
                 new { id = createdSignUp.Id },
-                SignUp.CreateFrom(createdSignUp)),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(SignUpsController)}")
+                Contract.CreateFrom(createdSignUp)),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
 
@@ -62,10 +62,10 @@ public class SignUpsController : ControllerBase
     /// Returns all metering points signed up for granular certificate generation
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(SignUpList), 200)]
+    [ProducesResponseType(typeof(ContractList), 200)]
     [ProducesResponseType(204)]
     [Route("api/signUps")]
-    public async Task<ActionResult<SignUpList>> GetAllSignUps(
+    public async Task<ActionResult<ContractList>> GetAllSignUps(
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
@@ -75,17 +75,17 @@ public class SignUpsController : ControllerBase
 
         return signUps.IsEmpty()
             ? NoContent()
-            : Ok(new SignUpList { Result = signUps.Select(SignUp.CreateFrom) });
+            : Ok(new ContractList { Result = signUps.Select(Contract.CreateFrom) });
     }
 
     /// <summary>
     /// Returns sign up based on the id
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(SignUp), 200)]
+    [ProducesResponseType(typeof(Contract), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [Route("api/signUps/{id}", Name = "GetSignUp")]
-    public async Task<ActionResult<SignUp>> GetSignUp(
+    public async Task<ActionResult<Contract>> GetSignUp(
         [FromRoute] Guid id,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
@@ -96,6 +96,6 @@ public class SignUpsController : ControllerBase
 
         return signUp == null
             ? NotFound()
-            : Ok(SignUp.CreateFrom(signUp));
+            : Ok(Contract.CreateFrom(signUp));
     }
 }

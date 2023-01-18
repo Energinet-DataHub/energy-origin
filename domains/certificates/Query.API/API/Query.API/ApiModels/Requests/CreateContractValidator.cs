@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace API.Query.API.ApiModels.Requests;
 
-public class CreateSignUpValidator : AbstractValidator<CreateSignUp>
+public class CreateContractValidator : AbstractValidator<CreateContract>
 {
-    public CreateSignUpValidator()
+    public CreateContractValidator()
     {
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay).ToUnixTimeSeconds();
