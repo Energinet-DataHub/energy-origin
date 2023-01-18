@@ -37,27 +37,27 @@
         }
       }
     },
-    "/api/signUps": {
+    "/api/certificates/contracts": {
       "post": {
         "tags": [
-          "SignUps"
+          "Contracts"
         ],
         "summary": "Signs up a metering point for granular certificate generation",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignUp"
+                "$ref": "#/components/schemas/CreateContract"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignUp"
+                "$ref": "#/components/schemas/CreateContract"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSignUp"
+                "$ref": "#/components/schemas/CreateContract"
               }
             }
           }
@@ -93,7 +93,7 @@
       },
       "get": {
         "tags": [
-          "SignUps"
+          "Contracts"
         ],
         "summary": "Returns all metering points signed up for granular certificate generation",
         "responses": {
@@ -102,17 +102,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpList"
+                  "$ref": "#/components/schemas/ContractList"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpList"
+                  "$ref": "#/components/schemas/ContractList"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUpList"
+                  "$ref": "#/components/schemas/ContractList"
                 }
               }
             }
@@ -123,13 +123,13 @@
         }
       }
     },
-    "/api/signUps/{id}": {
+    "/api/certificates/contracts/{id}": {
       "get": {
         "tags": [
-          "SignUps"
+          "Contracts"
         ],
         "summary": "Returns sign up based on the id",
-        "operationId": "GetSignUp",
+        "operationId": "GetContract",
         "parameters": [
           {
             "name": "id",
@@ -147,17 +147,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUp"
+                  "$ref": "#/components/schemas/Contract"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUp"
+                  "$ref": "#/components/schemas/Contract"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignUp"
+                  "$ref": "#/components/schemas/Contract"
                 }
               }
             }
@@ -225,22 +225,7 @@
         },
         "additionalProperties": false
       },
-      "CreateSignUp": {
-        "type": "object",
-        "properties": {
-          "gsrn": {
-            "type": "string",
-            "description": "Global Service Relation Number (GSRN) for the metering point"
-          },
-          "startDate": {
-            "type": "integer",
-            "description": "Starting date for generation of certificates in Unix time",
-            "format": "int64"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SignUp": {
+      "Contract": {
         "type": "object",
         "properties": {
           "id": {
@@ -264,14 +249,29 @@
         },
         "additionalProperties": false
       },
-      "SignUpList": {
+      "ContractList": {
         "type": "object",
         "properties": {
           "result": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SignUp"
+              "$ref": "#/components/schemas/Contract"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateContract": {
+        "type": "object",
+        "properties": {
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "startDate": {
+            "type": "integer",
+            "description": "Starting date for generation of certificates in Unix time",
+            "format": "int64"
           }
         },
         "additionalProperties": false
