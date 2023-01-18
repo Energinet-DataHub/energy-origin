@@ -26,8 +26,8 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 409)]
-    [Route("api/signUps")]
-    public async Task<ActionResult> CreateSignUp(
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> CreateContract(
         [FromBody] CreateContract createContract,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
@@ -50,32 +50,12 @@ public class ContractsController : ControllerBase
             GsrnNotFound => BadRequest($"GSRN {createContract.GSRN} not found"),
             NotProductionMeteringPoint => BadRequest($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
-            Success(var createdSignUp) => CreatedAtRoute(
-                "GetSignUp",
-                new { id = createdSignUp.Id },
-                Contract.CreateFrom(createdSignUp)),
+            Success(var createdContract) => CreatedAtRoute(
+                "GetContract",
+                new { id = createdContract.Id },
+                Contract.CreateFrom(createdContract)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
-    }
-
-    /// <summary>
-    /// Returns all metering points signed up for granular certificate generation
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(ContractList), 200)]
-    [ProducesResponseType(204)]
-    [Route("api/signUps")]
-    public async Task<ActionResult<ContractList>> GetAllSignUps(
-        [FromServices] IContractService service,
-        CancellationToken cancellationToken)
-    {
-        var meteringPointOwner = User.FindFirstValue("subject");
-
-        var signUps = await service.GetByOwner(meteringPointOwner, cancellationToken);
-
-        return signUps.IsEmpty()
-            ? NoContent()
-            : Ok(new ContractList { Result = signUps.Select(Contract.CreateFrom) });
     }
 
     /// <summary>
@@ -84,18 +64,38 @@ public class ContractsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(Contract), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/signUps/{id}", Name = "GetSignUp")]
-    public async Task<ActionResult<Contract>> GetSignUp(
+    [Route("api/certificates/contracts/{id}", Name = "GetContract")]
+    public async Task<ActionResult<Contract>> GetContract(
         [FromRoute] Guid id,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
 
-        var signUp = await service.GetById(id, meteringPointOwner, cancellationToken);
+        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
 
-        return signUp == null
+        return contract == null
             ? NotFound()
-            : Ok(Contract.CreateFrom(signUp));
+            : Ok(Contract.CreateFrom(contract));
+    }
+
+    /// <summary>
+    /// Returns all metering points signed up for granular certificate generation
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(ContractList), 200)]
+    [ProducesResponseType(204)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult<ContractList>> GetAllContracts(
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
+    {
+        var meteringPointOwner = User.FindFirstValue("subject");
+
+        var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
+
+        return contracts.IsEmpty()
+            ? NoContent()
+            : Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) });
     }
 }

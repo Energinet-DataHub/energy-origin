@@ -10,12 +10,12 @@ using Xunit;
 
 namespace API.AppTests;
 
-public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
+public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public SignUpTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
+    public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
         const string dataSyncUrl = "http://localhost:9001/";
         dataSyncWireMock = new DataSyncWireMock(dataSyncUrl);
@@ -26,7 +26,7 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
     }
 
     [Fact]
-    public async Task CreateSignUp_SignUpGsrn_Created()
+    public async Task CreateContract_Activate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -36,19 +36,19 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var createdSignUpUri = response.Headers.Location;
+        var createdContractUri = response.Headers.Location;
 
-        var createdSignUpResponse = await client.GetAsync(createdSignUpUri);
+        var createdContractResponse = await client.GetAsync(createdContractUri);
 
-        createdSignUpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createdContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task CreateSignUp_GsrnAlreadyExistsInDb_Conflict()
+    public async Task CreateContract_GsrnAlreadyExistsInDb_Conflict()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -58,15 +58,15 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        response = await client.PostAsJsonAsync("api/signUps", body);
+        response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]
-    public async Task CreateSignUp_MeteringPointNotOwnedByUser_BadRequest()
+    public async Task CreateContract_MeteringPointNotOwnedByUser_BadRequest()
     {
         var gsrn1 = GsrnHelper.GenerateRandom();
         var gsrn2 = GsrnHelper.GenerateRandom();
@@ -78,13 +78,13 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn = gsrn2, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task CreateSignUp_MeteringPointIsConsumption_BadRequest()
+    public async Task CreateContract_MeteringPointIsConsumption_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn, type: "consumption");
@@ -94,13 +94,13 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task CreateSignUp_InvalidGsrn_BadRequest()
+    public async Task CreateContract_InvalidGsrn_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var invalidGsrn = "invalid GSRN";
@@ -111,13 +111,13 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn = invalidGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/signUps", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_Success()
+    public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_Success()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -126,35 +126,35 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
-        await client.PostAsJsonAsync("api/signUps", body);
+        await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var response = await client.GetAsync("api/signUps");
+        var response = await client.GetAsync("api/certificates/contracts");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task GetAllMeteringPointOwnerSignUps_QueryAllSignUps_NoContent()
+    public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_NoContent()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var response = await client.GetAsync("api/signUps");
+        var response = await client.GetAsync("api/certificates/contracts");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
-    public async Task GetSpecificSignUp_SignUpDoesNotExist_NotFound()
+    public async Task GetSpecificContract_ContractDoesNotExist_NotFound()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var signUpId = Guid.NewGuid().ToString();
-        var response = await client.GetAsync($"api/signUps/{signUpId}");
+        var contractId = Guid.NewGuid().ToString();
+        var response = await client.GetAsync($"api/certificates/contracts/{contractId}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task GetSpecificSignUp_UserIsNotOwner_NotFound()
+    public async Task GetSpecificContract_UserIsNotOwner_NotFound()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -164,18 +164,18 @@ public sealed class SignUpTests : IClassFixture<QueryApiWebApplicationFactory>, 
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client1.PostAsJsonAsync("api/signUps", body);
+        var response = await client1.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var createdSignUpUri = response.Headers.Location;
+        var createdContractUri = response.Headers.Location;
 
         var subject2 = Guid.NewGuid().ToString();
         using var client2 = factory.CreateAuthenticatedClient(subject2);
 
-        var getSpecificSignUpResponse = await client2.GetAsync(createdSignUpUri);
+        var getSpecificContractResponse = await client2.GetAsync(createdContractUri);
 
-        getSpecificSignUpResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     public void Dispose() => dataSyncWireMock.Dispose();
