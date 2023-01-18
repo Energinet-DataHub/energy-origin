@@ -13,9 +13,9 @@ namespace API.ContractService;
 internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSignUpService
 {
     private readonly IMeteringPointsClient client;
-    private readonly ICertificateGenerationSignUpRepository repository;
+    private readonly ICertificateIssuingContractRepository repository;
 
-    public CertificateGenerationSignUpServiceImpl(IMeteringPointsClient client, ICertificateGenerationSignUpRepository repository)
+    public CertificateGenerationSignUpServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository)
     {
         this.client = client;
         this.repository = repository;
@@ -45,7 +45,7 @@ internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSi
         }
 
         // Save
-        var userObject = new CertificateGenerationSignUp
+        var userObject = new CertificateIssuingContract
         {
             Id = Guid.Empty,
             GSRN = gsrn,
@@ -59,10 +59,10 @@ internal class CertificateGenerationSignUpServiceImpl : ICertificateGenerationSi
         return new Success(userObject);
     }
 
-    public Task<IReadOnlyList<CertificateGenerationSignUp>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
         => repository.GetAllMeteringPointOwnerSignUps(meteringPointOwner, cancellationToken);
 
-    public async Task<CertificateGenerationSignUp?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
+    public async Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
     {
         var signUp = await repository.GetById(id, cancellationToken);
 

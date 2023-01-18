@@ -14,14 +14,14 @@ public static class Startup
     {
         services.ConfigureMarten(o =>
         {
-            o.Schema.For<CertificateGenerationSignUp>();
+            o.Schema.For<CertificateIssuingContract>();
         });
 
         services.AddScoped<ICertificateGenerationSignUpService, CertificateGenerationSignUpServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
-        services.AddScoped<ICertificateGenerationSignUpRepository, CertificateGenerationSignUpRepository>();
+        services.AddScoped<ICertificateIssuingContractRepository, CertificateIssuingContractRepository>();
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {

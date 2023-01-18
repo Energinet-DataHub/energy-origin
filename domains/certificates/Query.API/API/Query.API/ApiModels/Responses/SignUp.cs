@@ -24,7 +24,7 @@ public class SignUp
     /// </summary>
     public long Created { get; set; }
 
-    public static SignUp CreateFrom(CertificateGenerationSignUp signUp) =>
+    public static SignUp CreateFrom(CertificateIssuingContract signUp) =>
         new()
         {
             Id = signUp.Id,

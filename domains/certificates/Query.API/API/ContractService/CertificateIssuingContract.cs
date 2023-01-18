@@ -3,7 +3,7 @@ using API.MasterDataService;
 
 namespace API.ContractService;
 
-public class CertificateGenerationSignUp
+public class CertificateIssuingContract
 {
     public Guid Id { get; set; }
     public string GSRN { get; set; } = "";
