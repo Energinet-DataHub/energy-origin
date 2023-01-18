@@ -20,7 +20,7 @@ namespace API.Query.API.Controllers;
 public class ContractsController : ControllerBase
 {
     /// <summary>
-    /// Activates a metering point for granular certificate generation
+    /// Create a contract that activates granular certificate generation for a metering point 
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
@@ -80,7 +80,7 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
-    /// Returns the user's contracts for issuing granular certificates
+    /// Returns all the user's contracts for issuing granular certificates
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ContractList), 200)]

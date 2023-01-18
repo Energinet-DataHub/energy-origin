@@ -42,7 +42,7 @@
         "tags": [
           "Contracts"
         ],
-        "summary": "Signs up a metering point for granular certificate generation",
+        "summary": "Create a contract that activates granular certificate generation for a metering point",
         "requestBody": {
           "content": {
             "application/json": {
@@ -95,7 +95,7 @@
         "tags": [
           "Contracts"
         ],
-        "summary": "Returns all metering points signed up for granular certificate generation",
+        "summary": "Returns all the user's contracts for issuing granular certificates",
         "responses": {
           "200": {
             "description": "Success",
@@ -128,7 +128,7 @@
         "tags": [
           "Contracts"
         ],
-        "summary": "Returns sign up based on the id",
+        "summary": "Returns contract based on the id",
         "operationId": "GetContract",
         "parameters": [
           {
@@ -243,7 +243,7 @@
           },
           "created": {
             "type": "integer",
-            "description": "Date for the sign up",
+            "description": "Creation date for the contract",
             "format": "int64"
           }
         },
