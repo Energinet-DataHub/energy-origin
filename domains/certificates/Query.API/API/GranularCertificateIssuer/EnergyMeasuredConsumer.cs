@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.MasterDataService;
@@ -17,21 +18,20 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IDocumentSession session;
+    private readonly IContractService contractService;
 
-    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
+    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IContractService contractService)
     {
         this.logger = logger;
         this.session = session;
+        this.contractService = contractService;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
-        var contractService = new CertificateIssuingContractRepository(session);
 
-        var contract = await contractService.GetByGsrn(message.GSRN);
-
-        //var masterData = await masterDataService.GetMasterData(message.GSRN);
+        var contract = await contractService.GetByGSRN(message.GSRN, CancellationToken.None); // Todo: Make cancellationToken
 
         if (!ShouldEventBeProduced(contract, message))
         {

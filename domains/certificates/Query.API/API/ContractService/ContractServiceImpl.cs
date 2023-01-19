@@ -36,7 +36,7 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var document = await repository.GetByGsrn(gsrn);
+        var document = await repository.GetByGsrn(gsrn, cancellationToken);
 
         if (document != null)
         {
@@ -72,4 +72,6 @@ internal class ContractServiceImpl : IContractService
             ? null
             : contract;
     }
+
+    public Task<CertificateIssuingContract?> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 }
