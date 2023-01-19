@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.MasterDataService;
+using API.ContractService;
 using API.Query.API.Projections;
 using Marten;
 using Microsoft.Extensions.Logging;
@@ -19,23 +19,23 @@ public class SyncState : ISyncState
         this.logger = logger;
     }
 
-    public async Task<long?> GetPeriodStartTime(MasterData masterData)
+    public async Task<long?> GetPeriodStartTime(CertificateIssuingContract contract)
     {
         try
         {
             await using var querySession = documentStore.QuerySession();
 
-            var projection = await querySession.LoadAsync<CertificatesByOwnerView>(masterData.MeteringPointOwner);
+            var projection = await querySession.LoadAsync<CertificatesByOwnerView>(contract.MeteringPointOwner);
             if (projection == null)
-                return masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds();
+                return contract.StartDate.ToUnixTimeSeconds();
 
             var maxDateTo = projection.Certificates.Values
-                .Where(c => masterData.GSRN.Equals(c.GSRN, StringComparison.InvariantCultureIgnoreCase))
+                .Where(c => contract.GSRN.Equals(c.GSRN, StringComparison.InvariantCultureIgnoreCase))
                 .Select(c => c.DateTo)
                 .DefaultIfEmpty(0)
                 .Max();
 
-            return Math.Max(maxDateTo, masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds());
+            return Math.Max(maxDateTo, contract.StartDate.ToUnixTimeSeconds());
         }
         catch (Exception e)
         {

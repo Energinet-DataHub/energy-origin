@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService;
 using API.DataSyncSyncer;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
@@ -18,31 +19,32 @@ namespace API.UnitTests.DataSyncSyncer;
 
 public class DataSyncServiceTest
 {
-    private readonly MasterData validMasterData = new(
-        GSRN: "gsrn",
-        GridArea: "gridArea",
-        Type: MeteringPointType.Production,
-        Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
-        MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
+    private readonly CertificateIssuingContract contract = new()
+    {
+        GSRN = "gsrn",
+        GridArea = "gridArea",
+        MeteringPointType = MeteringPointType.Production,
+        MeteringPointOwner = "meteringPointOwner",
+        StartDate = DateTimeOffset.Now.AddDays(-1)
+    };
 
     private readonly Mock<IDataSyncClient> fakeClient = new();
     private readonly Mock<ILogger<DataSyncService>> fakeLogger = new();
     private readonly Mock<ISyncState> fakeSyncState = new();
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointOnboarded_DataFetched()
+    public async Task FetchMeasurements_AfterContractStartDate_DataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
-        var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
+        contract.StartDate = meteringPointOnboarded;
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
             .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
 
         var fakeResponseList = new List<DataSyncDto>
         {
             new(
-                GSRN: validMasterData.GSRN,
+                GSRN: contract.GSRN,
                 DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
                 DateTo: DateTimeOffset.Now.ToUnixTimeSeconds(),
                 Quantity: 5,
@@ -51,41 +53,41 @@ public class DataSyncServiceTest
         };
 
         fakeClient.Setup(it => it.RequestAsync(
-                masterData.GSRN,
+                contract.GSRN,
                 It.IsAny<Period>(),
-                masterData.MeteringPointOwner,
+                contract.MeteringPointOwner,
                 CancellationToken.None)
             )
             .ReturnsAsync(() => fakeResponseList);
 
         var service = SetupService();
 
-        var response = await service.FetchMeasurements(masterData,
+        var response = await service.FetchMeasurements(contract,
             CancellationToken.None);
 
         response.Should().Equal(fakeResponseList);
     }
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointOnboarded_NoDataFetched()
+    public async Task FetchMeasurements_NoMeasurements_NoDataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
-        var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
+        contract.StartDate = meteringPointOnboarded;
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
             .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
 
         fakeClient.Setup(it => it.RequestAsync(
-                masterData.GSRN,
+                contract.GSRN,
                 It.IsAny<Period>(),
-                masterData.MeteringPointOwner,
+                contract.MeteringPointOwner,
                 CancellationToken.None)
             )
             .ReturnsAsync(() => new List<DataSyncDto>());
 
         var service = SetupService();
 
-        var response = await service.FetchMeasurements(masterData,
+        var response = await service.FetchMeasurements(contract,
             CancellationToken.None);
 
         response.Should().BeEmpty();
@@ -95,16 +97,16 @@ public class DataSyncServiceTest
     }
 
     [Fact]
-    public async Task FetchMeasurements_MeteringPointNotOnboarded_NoDataFetched()
+    public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
-        var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
+        contract.StartDate = meteringPointOnboarded;
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
             .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
         var service = SetupService();
 
-        var response = await service.FetchMeasurements(masterData,
+        var response = await service.FetchMeasurements(contract,
             CancellationToken.None);
 
         response.Should().BeEmpty();
@@ -117,13 +119,13 @@ public class DataSyncServiceTest
     public async Task FetchMeasurements_NoPeriodStartTimeInSyncState_NoDataFetched()
     {
         var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
-        var masterData = validMasterData with { MeteringPointOnboardedStartDate = meteringPointOnboarded };
+        contract.StartDate = meteringPointOnboarded;
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(masterData))
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
             .ReturnsAsync((long?)null);
         var service = SetupService();
 
-        var response = await service.FetchMeasurements(masterData,
+        var response = await service.FetchMeasurements(contract,
             CancellationToken.None);
 
         response.Should().BeEmpty();
@@ -137,12 +139,10 @@ public class DataSyncServiceTest
         var fakeFactory = new Mock<IDataSyncClientFactory>();
         fakeFactory.Setup(it => it.CreateClient()).Returns(fakeClient.Object);
 
-        var service = new DataSyncService(
+        return new DataSyncService(
             factory: fakeFactory.Object,
             logger: fakeLogger.Object,
             syncState: fakeSyncState.Object
         );
-
-        return service;
     }
 }
