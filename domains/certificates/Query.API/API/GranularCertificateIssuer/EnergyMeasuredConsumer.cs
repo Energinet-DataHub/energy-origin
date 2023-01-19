@@ -31,7 +31,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var message = context.Message;
 
-        var contract = await contractService.GetByGSRN(message.GSRN, CancellationToken.None); // Todo: Make cancellationToken
+        var contract = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
 
         if (!ShouldEventBeProduced(contract, message))
         {
