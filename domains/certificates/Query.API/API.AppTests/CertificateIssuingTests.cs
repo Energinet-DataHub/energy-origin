@@ -106,6 +106,6 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
         await Verifier.Verify(certificateList);
     }
-    
+
     public void Dispose() => dataSyncWireMock.Dispose();
 }
