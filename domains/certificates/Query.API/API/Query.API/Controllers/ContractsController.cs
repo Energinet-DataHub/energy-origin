@@ -11,6 +11,7 @@ using FluentValidation.AspNetCore;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using static API.ContractService.CreateContractResult;
 
 namespace API.Query.API.Controllers;
@@ -31,6 +32,7 @@ public class ContractsController : ControllerBase
         [FromBody] CreateContract createContract,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
+        [FromServices] ILogger<ContractsController> logger,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject");
@@ -39,23 +41,29 @@ public class ContractsController : ControllerBase
         if (!validationResult.IsValid)
         {
             validationResult.AddToModelState(ModelState, null);
+            logger.LogWarning("400 - ModelState {modelState}", ModelState);
             return ValidationProblem(ModelState);
         }
 
         var result = await service.Create(createContract.GSRN, meteringPointOwner,
             DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate), cancellationToken);
 
-        return result switch
+        switch (result)
         {
-            GsrnNotFound => BadRequest($"GSRN {createContract.GSRN} not found"),
-            NotProductionMeteringPoint => BadRequest($"GSRN {createContract.GSRN} is not a production metering point"),
-            ContractAlreadyExists => Conflict(),
-            Success(var createdContract) => CreatedAtRoute(
-                "GetContract",
-                new { id = createdContract.Id },
-                Contract.CreateFrom(createdContract)),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
-        };
+            case GsrnNotFound:
+                logger.LogWarning($"400 - GSRN {createContract.GSRN} not found");
+                return BadRequest($"GSRN {createContract.GSRN} not found");
+            case NotProductionMeteringPoint:
+                logger.LogWarning($"400 - GSRN {createContract.GSRN} is not a production metering point");
+                return BadRequest($"GSRN {createContract.GSRN} is not a production metering point");
+            case ContractAlreadyExists:
+                return Conflict();
+            case Success(var createdContract):
+                return CreatedAtRoute("GetContract", new { id = createdContract.Id },
+                    Contract.CreateFrom(createdContract));
+            default:
+                throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}");
+        }
     }
 
     /// <summary>
