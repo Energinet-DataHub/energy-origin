@@ -24,10 +24,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public QueryApiWebApplicationFactory() => masterDataServiceMock = new TestMasterDataService();
 
     public string MartenConnectionString { get; set; } = "";
+    public string DataSyncUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
+        builder.UseSetting("Datasync:Url", DataSyncUrl);
 
         builder.ConfigureTestServices(services =>
         {
