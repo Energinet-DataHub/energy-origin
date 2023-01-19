@@ -4,9 +4,8 @@ using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
-using API.MasterDataService;
+using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
-using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
 using MassTransit;
@@ -16,14 +15,17 @@ using Xunit;
 namespace API.AppTests;
 
 [UsesVerify]
-public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
+public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
+    private readonly DataSyncWireMock dataSyncWireMock;
 
-    public ApiTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
+    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
     {
+        dataSyncWireMock = new DataSyncWireMock(port: 9002);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.DataSyncUrl = dataSyncWireMock.Url;
     }
 
     [Fact]
@@ -51,14 +53,17 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        const string gsrn = "GSRN-1";
+        var gsrn = "111111111111111111";
 
-        factory.AddMasterData(CreateMasterData(subject, gsrn));
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay);
+
+        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
-            DateFrom: DateTimeOffset.Parse("2022-06-01T00:00Z").ToUnixTimeSeconds(),
-            DateTo: DateTimeOffset.Parse("2022-06-01T01:00Z").ToUnixTimeSeconds(),
+            DateFrom: utcMidnight.ToUnixTimeSeconds(),
+            DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
@@ -75,16 +80,18 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        const string gsrn = "GSRN-2";
+        var gsrn = "222222222222222222";
 
-        factory.AddMasterData(CreateMasterData(subject, gsrn));
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        var dateStart = DateTimeOffset.Parse("2022-06-01T00:00Z");
+        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+
         var measurements = Enumerable.Range(0, 5)
             .Select(i => new EnergyMeasuredIntegrationEvent(
                 GSRN: gsrn,
-                DateFrom: dateStart.AddHours(i).ToUnixTimeSeconds(),
-                DateTo: dateStart.AddHours(i + 1).ToUnixTimeSeconds(),
+                DateFrom: utcMidnight.AddHours(i).ToUnixTimeSeconds(),
+                DateTo: utcMidnight.AddHours(i + 1).ToUnixTimeSeconds(),
                 Quantity: 42 + i,
                 Quality: MeasurementQuality.Measured))
             .ToArray();
@@ -98,12 +105,5 @@ public class ApiTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixt
         await Verifier.Verify(certificateList);
     }
 
-    private static MasterData CreateMasterData(string owner, string gsrn) => new(
-        GSRN: gsrn,
-        GridArea: "GridArea",
-        Type: MeteringPointType.Production,
-        Technology: new Technology("foo", "bar"),
-        MeteringPointOwner: owner,
-        MeteringPointOnboardedStartDate: DateTimeOffset.Parse("2022-01-01T00:00Z"));
-
+    public void Dispose() => dataSyncWireMock.Dispose();
 }
