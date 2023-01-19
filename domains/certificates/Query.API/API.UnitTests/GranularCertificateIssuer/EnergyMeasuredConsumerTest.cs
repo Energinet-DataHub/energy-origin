@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.GranularCertificateIssuer;
-using API.MasterDataService;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;

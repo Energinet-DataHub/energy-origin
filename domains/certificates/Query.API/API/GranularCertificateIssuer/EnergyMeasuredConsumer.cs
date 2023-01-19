@@ -1,10 +1,7 @@
 using System;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.ContractService.Repositories;
-using API.MasterDataService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using IntegrationEvents;

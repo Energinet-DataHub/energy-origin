@@ -7,7 +7,6 @@ using API.DataSyncSyncer;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using API.MasterDataService;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
