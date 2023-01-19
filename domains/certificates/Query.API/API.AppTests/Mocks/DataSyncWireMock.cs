@@ -9,7 +9,9 @@ public sealed class DataSyncWireMock : IDisposable
 {
     private readonly WireMockServer server;
 
-    public DataSyncWireMock(string url) => server = WireMockServer.Start(url);
+    public DataSyncWireMock(int port) => server = WireMockServer.Start(port);
+
+    public string Url => server.Url!;
 
     public void SetupMeteringPointsResponse(string gsrn, string type = "production") =>
         server
