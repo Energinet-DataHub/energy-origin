@@ -17,13 +17,11 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IDocumentSession session;
-    private readonly IMasterDataService masterDataService;
 
     public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
     {
         this.logger = logger;
         this.session = session;
-        this.masterDataService = masterDataService;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
