@@ -22,12 +22,10 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
     public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
     {
-        const string dataSyncUrl = "http://localhost:9002/";
-        dataSyncWireMock = new DataSyncWireMock(dataSyncUrl); //TODO: Auto-assign port or add property for Url in dataSyncWireMock
-
+        dataSyncWireMock = new DataSyncWireMock(port: 9002);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
-        this.factory.DataSyncUrl = dataSyncUrl;
+        this.factory.DataSyncUrl = dataSyncWireMock.Url;
     }
 
     [Fact]
