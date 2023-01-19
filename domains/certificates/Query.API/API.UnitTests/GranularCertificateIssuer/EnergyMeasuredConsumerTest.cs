@@ -32,7 +32,7 @@ public class EnergyMeasuredConsumerTest
     };
 
     [Fact]
-    public async Task Consume_NoMasterData_NoEventsSaved()
+    public async Task Consume_NoContract_NoEventsSaved()
     {
         var documentSessionMock = GetDocumentSessionMock();
 
