@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using API.MasterDataService;
+using CertificateEvents.Primitives;
 using static API.ContractService.CreateContractResult;
 
 namespace API.ContractService;

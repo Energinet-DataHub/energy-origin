@@ -1,5 +1,5 @@
 using System;
-using API.MasterDataService;
+using CertificateEvents.Primitives;
 
 namespace API.ContractService;
 
