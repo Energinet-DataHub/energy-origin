@@ -35,7 +35,7 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
     public Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken) => session
         .LoadAsync<CertificateIssuingContract>(id, cancellationToken);
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts() => session
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken) => session
         .Query<CertificateIssuingContract>()
-        .ToListAsync();
+        .ToListAsync(cancellationToken);
 }

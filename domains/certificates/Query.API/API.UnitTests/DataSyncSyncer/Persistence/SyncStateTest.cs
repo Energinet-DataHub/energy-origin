@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService;
 using API.DataSyncSyncer.Persistence;
 using API.MasterDataService;
 using API.Query.API.Projections;
-using CertificateEvents.Primitives;
 using FluentAssertions;
 using Marten;
 using Microsoft.Extensions.Logging;
@@ -15,101 +15,95 @@ namespace API.UnitTests.DataSyncSyncer.Persistence;
 
 public class SyncStateTest
 {
-    private readonly MasterData masterData = new(
-        GSRN: "gsrn",
-        GridArea: "gridArea",
-        Type: MeteringPointType.Production,
-        Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
-        MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
-
+    private readonly CertificateIssuingContract contract = new()
+    {
+        GSRN = "gsrn",
+        GridArea = "gridArea",
+        MeteringPointType = MeteringPointType.Production,
+        MeteringPointOwner = "meteringPointOwner",
+        StartDate = DateTimeOffset.Now.AddDays(-1)
+    };
 
     [Fact]
-    public async Task GetPeriodStartTime_NoDataInStore_ReturnsMeteringPointOnboardedStartDate()
+    public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()
     {
         var storeMock = CreateStoreMock(data: null);
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
-        actualPeriodStartTime.Should().Be(masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
     {
-        var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
 
-        var start = masterData.MeteringPointOnboardedStartDate;
-
-        var certDateFrom = start.ToUnixTimeSeconds();
-        var certDateTo = start.AddHours(1).ToUnixTimeSeconds();
+        var certDateFrom = contract.StartDate.ToUnixTimeSeconds();
+        var certDateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
 
         view.Certificates.Add(Guid.NewGuid(),
-            new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = masterData.GSRN });
+            new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = contract.GSRN });
 
         var storeMock = CreateStoreMock(view);
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
         actualPeriodStartTime.Should().Be(certDateTo);
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeOnboardedStartDate_ReturnsMeteringPointOnboardedStartDate()
+    public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
-        var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
 
         view.Certificates.Add(Guid.NewGuid(),
-            new CertificateView { DateFrom = 1000, DateTo = 2000, GSRN = masterData.GSRN });
+            new CertificateView { DateFrom = 1000, DateTo = 2000, GSRN = contract.GSRN });
 
         var storeMock = CreateStoreMock(view);
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
-        actualPeriodStartTime.Should().Be(masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetPeriodStartTime_TwoCertificatesInStore_ReturnsNewestDate()
     {
-        var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
 
-        var start = masterData.MeteringPointOnboardedStartDate;
+        var cert1DateFrom = contract.StartDate.ToUnixTimeSeconds();
+        var cert1DateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
 
-        var cert1DateFrom = start.ToUnixTimeSeconds();
-        var cert1DateTo = start.AddHours(1).ToUnixTimeSeconds();
+        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert1DateFrom, DateTo = cert1DateTo, GSRN = contract.GSRN });
 
-        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert1DateFrom, DateTo = cert1DateTo, GSRN = masterData.GSRN });
+        var cert2DateFrom = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
+        var cert2DateTo = contract.StartDate.AddHours(2).ToUnixTimeSeconds();
 
-        var cert2DateFrom = start.AddHours(1).ToUnixTimeSeconds();
-        var cert2DateTo = start.AddHours(2).ToUnixTimeSeconds();
-
-        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert2DateFrom, DateTo = cert2DateTo, GSRN = masterData.GSRN });
+        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert2DateFrom, DateTo = cert2DateTo, GSRN = contract.GSRN });
 
         var storeMock = CreateStoreMock(view);
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
         actualPeriodStartTime.Should().Be(cert2DateTo);
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_NoCertificatesForThatGsrnInStore_ReturnsMeteringPointOnboardedStartDate()
+    public async Task GetPeriodStartTime_NoCertificatesForThatGsrnInStore_ReturnsContractStartDate()
     {
-        var view = new CertificatesByOwnerView { Owner = masterData.MeteringPointOwner };
+        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
 
-        var start = masterData.MeteringPointOnboardedStartDate;
-
-        var certDateFrom = start.ToUnixTimeSeconds();
-        var certDateTo = start.AddHours(1).ToUnixTimeSeconds();
+        var certDateFrom = contract.StartDate.ToUnixTimeSeconds();
+        var certDateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
 
         view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = "someOtherGsrn" });
 
@@ -117,9 +111,9 @@ public class SyncStateTest
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
-        actualPeriodStartTime.Should().Be(masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
     }
 
     [Fact]
@@ -132,7 +126,7 @@ public class SyncStateTest
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(masterData);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
         actualPeriodStartTime.Should().Be(null);
         storeMock.Verify();
