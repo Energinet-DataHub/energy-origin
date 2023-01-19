@@ -34,17 +34,17 @@ public class DataSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_AfterContractStartDate_DataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
-        contract.StartDate = meteringPointOnboarded;
+        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
+        contract.StartDate = contractStartDate;
 
         fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
-            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
+            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
 
         var fakeResponseList = new List<DataSyncDto>
         {
             new(
                 GSRN: contract.GSRN,
-                DateFrom: meteringPointOnboarded.ToUnixTimeSeconds(),
+                DateFrom: contractStartDate.ToUnixTimeSeconds(),
                 DateTo: DateTimeOffset.Now.ToUnixTimeSeconds(),
                 Quantity: 5,
                 Quality: MeasurementQuality.Measured
@@ -70,11 +70,11 @@ public class DataSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_NoMeasurements_NoDataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(-1);
-        contract.StartDate = meteringPointOnboarded;
+        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
+        contract.StartDate = contractStartDate;
 
         fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
-            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
+            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
 
         fakeClient.Setup(it => it.RequestAsync(
                 contract.GSRN,
@@ -98,11 +98,11 @@ public class DataSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
-        contract.StartDate = meteringPointOnboarded;
+        var contractStartDate = DateTimeOffset.Now.AddDays(1);
+        contract.StartDate = contractStartDate;
 
         fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
-            .ReturnsAsync(meteringPointOnboarded.ToUnixTimeSeconds());
+            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
         var service = SetupService();
 
         var response = await service.FetchMeasurements(contract,
@@ -117,8 +117,8 @@ public class DataSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_NoPeriodStartTimeInSyncState_NoDataFetched()
     {
-        var meteringPointOnboarded = DateTimeOffset.Now.AddDays(1);
-        contract.StartDate = meteringPointOnboarded;
+        var contractStartDate = DateTimeOffset.Now.AddDays(1);
+        contract.StartDate = contractStartDate;
 
         fakeSyncState.Setup(it => it.GetPeriodStartTime(contract))
             .ReturnsAsync((long?)null);
