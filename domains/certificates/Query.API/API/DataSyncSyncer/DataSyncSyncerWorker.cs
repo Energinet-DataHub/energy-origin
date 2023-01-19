@@ -32,23 +32,23 @@ internal class DataSyncSyncerWorker : BackgroundService
         this.dataSyncService = dataSyncService;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var allContracts = await GetAllContracts(cancellationToken);
+            var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
                 var measurements = await dataSyncService.FetchMeasurements(contract,
-                    cancellationToken);
+                    stoppingToken);
 
                 if (measurements.Any())
                 {
-                    await PublishIntegrationEvents(measurements, cancellationToken);
+                    await PublishIntegrationEvents(measurements, stoppingToken);
                 }
             }
 
-            await SleepToNearestHour(cancellationToken);
+            await SleepToNearestHour(stoppingToken);
         }
     }
 
