@@ -47,6 +47,7 @@ internal class ContractServiceImpl : IContractService
         {
             Id = Guid.Empty,
             GSRN = gsrn,
+            GridArea = matchingMeteringPoint.GridArea,
             MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
             StartDate = startDate,
