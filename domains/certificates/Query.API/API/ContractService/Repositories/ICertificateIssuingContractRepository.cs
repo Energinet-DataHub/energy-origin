@@ -11,5 +11,4 @@ public interface ICertificateIssuingContractRepository
     Task<CertificateIssuingContract?> GetByGsrn(string gsrn);
     Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken);
     Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken);
 }

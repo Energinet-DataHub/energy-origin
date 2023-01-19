@@ -72,7 +72,4 @@ internal class ContractServiceImpl : IContractService
             ? null
             : contract;
     }
-
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken) =>
-        repository.GetAllContracts(cancellationToken);
 }

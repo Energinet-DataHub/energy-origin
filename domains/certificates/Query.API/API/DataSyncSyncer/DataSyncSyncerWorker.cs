@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
 using IntegrationEvents;
+using Marten;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,18 +17,18 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IContractService contractService;
+    private readonly IDocumentStore documentStore;
     private readonly DataSyncService dataSyncService;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        IContractService contractService,
+        IDocumentStore documentStore,
         IBus bus,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
-        this.contractService = contractService;
+        this.documentStore = documentStore;
         this.dataSyncService = dataSyncService;
     }
 
@@ -35,7 +36,7 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var allContracts = await contractService.GetAllContracts(cancellationToken);
+            var allContracts = await GetAllContracts(cancellationToken);
             foreach (var contract in allContracts)
             {
                 var measurements = await dataSyncService.FetchMeasurements(contract,
@@ -48,6 +49,23 @@ internal class DataSyncSyncerWorker : BackgroundService
             }
 
             await SleepToNearestHour(cancellationToken);
+        }
+    }
+
+    private async Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var querySession = documentStore.QuerySession();
+
+            return await querySession
+                .Query<CertificateIssuingContract>()
+                .ToListAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning("Failed fetching contracts. Exception: {e}", e);
+            return new List<CertificateIssuingContract>();
         }
     }
 

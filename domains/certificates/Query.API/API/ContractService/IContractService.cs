@@ -12,5 +12,4 @@ public interface IContractService
     Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
 
     Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken);
-    Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken);
 }
