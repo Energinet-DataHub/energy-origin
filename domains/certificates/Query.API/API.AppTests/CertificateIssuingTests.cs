@@ -121,58 +121,58 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
         var expected = new CertificateList
         {
             Result = new[]
-        {
-            new Certificate
             {
-                Quantity = 46,
-                DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
-                DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
-                GridArea = "DK1",
-                GSRN = gsrn,
-                FuelCode = "F00000000",
-                TechCode = "T070000"
-            },
-            new Certificate
-            {
-                Quantity = 45,
-                DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
-                DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
-                GridArea = "DK1",
-                GSRN = gsrn,
-                FuelCode = "F00000000",
-                TechCode = "T070000"
-            },
-            new Certificate
-            {
-                Quantity = 44,
-                DateFrom = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
-                DateTo = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
-                GridArea = "DK1",
-                GSRN = gsrn,
-                FuelCode = "F00000000",
-                TechCode = "T070000"
-            },
-            new Certificate
-            {
-                Quantity = 43,
-                DateFrom = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
-                DateTo = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
-                GridArea = "DK1",
-                GSRN = gsrn,
-                FuelCode = "F00000000",
-                TechCode = "T070000"
-            },
-            new Certificate
-            {
-                Quantity = 42,
-                DateFrom = utcMidnight.ToUnixTimeSeconds(),
-                DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
-                GridArea = "DK1",
-                GSRN = gsrn,
-                FuelCode = "F00000000",
-                TechCode = "T070000"
+                new Certificate
+                {
+                    Quantity = 46,
+                    DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
+                new Certificate
+                {
+                    Quantity = 45,
+                    DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
+                new Certificate
+                {
+                    Quantity = 44,
+                    DateFrom = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
+                new Certificate
+                {
+                    Quantity = 43,
+                    DateFrom = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
+                new Certificate
+                {
+                    Quantity = 42,
+                    DateFrom = utcMidnight.ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                }
             }
-        }
         };
 
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
