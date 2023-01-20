@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using API.MasterDataService;
+using CertificateEvents.Primitives;
 using static API.ContractService.CreateContractResult;
 
 namespace API.ContractService;
@@ -36,7 +36,7 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var document = await repository.GetByGsrn(gsrn);
+        var document = await repository.GetByGsrn(gsrn, cancellationToken);
 
         if (document != null)
         {
@@ -47,6 +47,7 @@ internal class ContractServiceImpl : IContractService
         {
             Id = Guid.Empty,
             GSRN = gsrn,
+            GridArea = matchingMeteringPoint.GridArea,
             MeteringPointType = MeteringPointType.Production,
             MeteringPointOwner = meteringPointOwner,
             StartDate = startDate,
@@ -71,4 +72,6 @@ internal class ContractServiceImpl : IContractService
             ? null
             : contract;
     }
+
+    public Task<CertificateIssuingContract?> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 }
