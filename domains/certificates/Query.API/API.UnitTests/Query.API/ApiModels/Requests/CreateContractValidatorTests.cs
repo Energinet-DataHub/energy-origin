@@ -49,6 +49,34 @@ public class CreateContractValidatorTests
         result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
     }
 
+    [Fact]
+    public async Task Validate_StartDateInMilliseconds_HaveValidationError()
+    {
+        var validator = new CreateContractValidator();
+
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay);
+        var utcMidnightInMilliseconds = utcMidnight.ToUnixTimeMilliseconds();
+
+        var result = await validator.TestValidateAsync(new CreateContract
+            { GSRN = "123456789032432", StartDate = utcMidnightInMilliseconds });
+
+        result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
+    }
+
+    [Fact]
+    public async Task Validate_StartDateInYear10000_HaveValidationError()
+    {
+        var validator = new CreateContractValidator();
+
+        const long januaryFirstYear10000 = 253402300800L;
+
+        var result = await validator.TestValidateAsync(new CreateContract
+            { GSRN = "123456789032432", StartDate = januaryFirstYear10000 });
+
+        result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("not a number")]
