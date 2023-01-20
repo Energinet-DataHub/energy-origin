@@ -31,7 +31,7 @@ public class DataSyncService
 
         if (dateFrom == null)
         {
-            logger.LogInformation("Not possible to get start date from sync state for {contract}", contract);
+            logger.LogInformation("Not possible to get start date from sync state for {@contract}", contract);
             return new();
         }
 
