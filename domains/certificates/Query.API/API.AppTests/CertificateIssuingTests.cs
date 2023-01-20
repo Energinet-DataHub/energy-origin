@@ -7,14 +7,13 @@ using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
+using FluentAssertions.Equivalency;
 using IntegrationEvents;
 using MassTransit;
-using VerifyXunit;
 using Xunit;
 
 namespace API.AppTests;
 
-[UsesVerify]
 public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -73,7 +72,24 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
         var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
-        await Verifier.Verify(certificateList);
+        var expected = new CertificateList
+        {
+            Result = new[]
+            {
+                new Certificate
+                {
+                    DateFrom = utcMidnight.ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                    Quantity = 42,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000",
+                    GridArea = "DK1",
+                    GSRN = gsrn
+                }
+            }
+        };
+
+        certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
     [Fact]
@@ -102,8 +118,70 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
         var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
 
-        await Verifier.Verify(certificateList);
+        var expected = new CertificateList
+        {
+            Result = new[]
+        {
+            new Certificate
+            {
+                Quantity = 46,
+                DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                GSRN = gsrn,
+                FuelCode = "F00000000",
+                TechCode = "T070000"
+            },
+            new Certificate
+            {
+                Quantity = 45,
+                DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
+                DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                GSRN = gsrn,
+                FuelCode = "F00000000",
+                TechCode = "T070000"
+            },
+            new Certificate
+            {
+                Quantity = 44,
+                DateFrom = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
+                DateTo = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                GSRN = gsrn,
+                FuelCode = "F00000000",
+                TechCode = "T070000"
+            },
+            new Certificate
+            {
+                Quantity = 43,
+                DateFrom = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                DateTo = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                GSRN = gsrn,
+                FuelCode = "F00000000",
+                TechCode = "T070000"
+            },
+            new Certificate
+            {
+                Quantity = 42,
+                DateFrom = utcMidnight.ToUnixTimeSeconds(),
+                DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                GSRN = gsrn,
+                FuelCode = "F00000000",
+                TechCode = "T070000"
+            }
+        }
+        };
+
+        certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
+
+    private static EquivalencyAssertionOptions<CertificateList> CertificateListAssertionOptions(EquivalencyAssertionOptions<CertificateList> options) =>
+        options
+            .WithStrictOrderingFor(l => l.Result)
+            .For(l => l.Result).Exclude(c => c.Id);
 
     public void Dispose() => dataSyncWireMock.Dispose();
 }
