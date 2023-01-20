@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
-using API.MasterDataService;
-using API.MasterDataService.MockInput;
 using IntegrationEvents;
+using Marten;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,48 +17,55 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly MasterDataMockInputCollection collection;
+    private readonly IDocumentStore documentStore;
     private readonly DataSyncService dataSyncService;
-    private readonly IMasterDataService masterDataService;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        MasterDataMockInputCollection collection,
-        IMasterDataService masterDataService,
+        IDocumentStore documentStore,
         IBus bus,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
-        this.collection = collection;
+        this.documentStore = documentStore;
         this.dataSyncService = dataSyncService;
-        this.masterDataService = masterDataService;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            foreach (var gsrn in collection.GetAllGsrns())
+            var allContracts = await GetAllContracts(stoppingToken);
+            foreach (var contract in allContracts)
             {
-                var masterData = await masterDataService.GetMasterData(gsrn);
-
-                if (masterData == null)
-                {
-                    logger.LogInformation("No master data for {gsrn}", gsrn);
-                    continue;
-                }
-
-                var measurements = await dataSyncService.FetchMeasurements(masterData,
-                    cancellationToken);
+                var measurements = await dataSyncService.FetchMeasurements(contract,
+                    stoppingToken);
 
                 if (measurements.Any())
                 {
-                    await PublishIntegrationEvents(measurements, cancellationToken);
+                    await PublishIntegrationEvents(measurements, stoppingToken);
                 }
             }
 
-            await SleepToNearestHour(cancellationToken);
+            await SleepToNearestHour(stoppingToken);
+        }
+    }
+
+    private async Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var querySession = documentStore.QuerySession();
+
+            return await querySession
+                .Query<CertificateIssuingContract>()
+                .ToListAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning("Failed fetching contracts. Exception: {e}", e);
+            return new List<CertificateIssuingContract>();
         }
     }
 
