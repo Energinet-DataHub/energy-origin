@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using API.MasterDataService;
+using API.ContractService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using IntegrationEvents;
@@ -15,22 +15,22 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IDocumentSession session;
-    private readonly IMasterDataService masterDataService;
+    private readonly IContractService contractService;
 
-    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IMasterDataService masterDataService)
+    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IContractService contractService)
     {
         this.logger = logger;
         this.session = session;
-        this.masterDataService = masterDataService;
+        this.contractService = contractService;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
 
-        var masterData = await masterDataService.GetMasterData(message.GSRN);
+        var contract = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
 
-        if (!ShouldEventBeProduced(masterData, message))
+        if (!ShouldEventBeProduced(contract, message))
         {
             logger.LogInformation("No production certificate event stream started for {message}", message);
             return;
@@ -40,10 +40,12 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
         var createdEvent = new ProductionCertificateCreated(
             CertificateId: certificateId,
-            GridArea: masterData!.GridArea,
+            GridArea: contract!.GridArea,
             Period: new Period(message.DateFrom, message.DateTo),
-            Technology: masterData.Technology,
-            MeteringPointOwner: masterData.MeteringPointOwner,
+            Technology: new Technology(
+                FuelCode: "F00000000",
+                TechCode: "T070000"),
+            MeteringPointOwner: contract.MeteringPointOwner,
             ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
             ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
 
@@ -58,16 +60,16 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         logger.LogInformation("Created production certificate event stream for {message}", message);
     }
 
-    private static bool ShouldEventBeProduced(MasterData? masterData,
+    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract,
         EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
-        if (masterData is null)
+        if (contract is null)
             return false;
 
-        if (masterData.Type != MeteringPointType.Production)
+        if (contract.MeteringPointType != MeteringPointType.Production)
             return false;
 
-        if (energyMeasuredIntegrationEvent.DateFrom < masterData.MeteringPointOnboardedStartDate.ToUnixTimeSeconds())
+        if (energyMeasuredIntegrationEvent.DateFrom < contract.StartDate.ToUnixTimeSeconds())
             return false;
 
         return true;
