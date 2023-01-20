@@ -59,7 +59,7 @@ public class CreateContractValidatorTests
         var utcMidnightInMilliseconds = utcMidnight.ToUnixTimeMilliseconds();
 
         var result = await validator.TestValidateAsync(new CreateContract
-            { GSRN = "123456789032432", StartDate = utcMidnightInMilliseconds });
+        { GSRN = "123456789032432", StartDate = utcMidnightInMilliseconds });
 
         result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
     }
@@ -72,7 +72,7 @@ public class CreateContractValidatorTests
         const long januaryFirstYear10000 = 253402300800L;
 
         var result = await validator.TestValidateAsync(new CreateContract
-            { GSRN = "123456789032432", StartDate = januaryFirstYear10000 });
+        { GSRN = "123456789032432", StartDate = januaryFirstYear10000 });
 
         result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
     }
