@@ -27,23 +27,32 @@ public class MeteringPointsClient : IMeteringPointsClient
     {
         this.httpClient = httpClient;
         this.httpContextAccessor = httpContextAccessor;
-
-        var httpContext = httpContextAccessor.HttpContext;
-        if (httpContext == null)
-            throw new ArgumentException("No HTTP context found. Client must be used as part of a request", nameof(httpContextAccessor));
-
-        var headersAuthorization = httpContext.Request.Headers.Authorization;
-        this.httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(headersAuthorization);
     }
 
     public async Task<MeteringPointsResponse?> GetMeteringPoints(string owner, CancellationToken cancellationToken)
     {
-        var subject = httpContextAccessor.HttpContext?.User.FindFirstValue("subject") ?? string.Empty;
-        if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
-            throw new HttpRequestException("Owner must match subject");
+        SetAuthorizationHeader();
+
+        ValidateOwnerAndSubjectMatch(owner);
 
         return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("meteringPoints",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
+    }
+
+    private void SetAuthorizationHeader()
+    {
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext == null)
+            throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
+
+        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization);
+    }
+
+    private void ValidateOwnerAndSubjectMatch(string owner)
+    {
+        var subject = httpContextAccessor.HttpContext?.User.FindFirstValue("subject") ?? string.Empty;
+        if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+            throw new HttpRequestException("Owner must match subject");
     }
 }
 

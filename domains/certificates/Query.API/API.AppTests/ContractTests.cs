@@ -17,12 +17,10 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
     public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
-        const string dataSyncUrl = "http://localhost:9001/";
-        dataSyncWireMock = new DataSyncWireMock(dataSyncUrl);
-
-        factory.MartenConnectionString = marten.ConnectionString;
-        factory.DataSyncUrl = dataSyncUrl;
+        dataSyncWireMock = new DataSyncWireMock(port: 9001);
         this.factory = factory;
+        this.factory.MartenConnectionString = marten.ConnectionString;
+        this.factory.DataSyncUrl = dataSyncWireMock.Url;
     }
 
     [Fact]

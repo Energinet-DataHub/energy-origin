@@ -6,7 +6,6 @@ using API.ContractService;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
-using API.MasterDataService;
 using API.Query.API;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -60,7 +59,6 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddIntegrationEventBus();
 builder.Services.AddQueryApi();
-builder.Services.AddMasterDataService(builder.Configuration);
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
