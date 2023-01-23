@@ -29,7 +29,7 @@ namespace RabbitMQ
 
                         x.UsingRabbitMq( (context, cfg) =>
                         {
-                            cfg.Host("http://rabbitmq", "/");
+                            cfg.Host("https://eo-u-rabbitmq.westeurope.cloudapp.azure.com", "/");
                             cfg.ConfigureEndpoints(context);
                         });
                     });
