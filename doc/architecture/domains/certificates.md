@@ -21,8 +21,9 @@ The component diagram shows a first iteration which is based on an in-memory int
 
 Components that is used for mocking and will be replaced or discarded at a later are marked with its own color in the diagram.
 
-![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
+Note: `ContractService` is currently getting information about a metering point from `DataSync`. In the future it is expected to get this from the MeteringPoints domain, but this domain does not exist at this point.
 
+![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
 ## Target architecture
 
