@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
-using API.MasterDataService;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using IntegrationEvents;
@@ -21,17 +20,11 @@ namespace API.UnitTests.DataSyncSyncer.Client;
 
 public class DataSyncClientTest
 {
-    private readonly MasterData validMasterData = new(
-        GSRN: "gsrn",
-        GridArea: "gridArea",
-        Type: MeteringPointType.Production,
-        Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
-        MeteringPointOwner: "meteringPointOwner",
-        MeteringPointOnboardedStartDate: DateTimeOffset.Now.AddDays(-1));
+    private const string validGsrn = "123456789012345678";
+    private const string validOwner = "foo";
 
     private readonly MockHttpMessageHandler fakeHttpHandler = new();
     private readonly Mock<ILogger<DataSyncClient>> fakeLogger = new();
-
 
     private DataSyncClient Setup()
     {
@@ -51,18 +44,18 @@ public class DataSyncClientTest
 
         fakeHttpHandler
             .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
+            .WithQueryString("gsrn", validGsrn)
             .Respond(HttpStatusCode.InternalServerError);
 
         var dataSyncClient = Setup();
 
         await Assert.ThrowsAsync<HttpRequestException>(() => dataSyncClient.RequestAsync(
-            GSRN: validMasterData.GSRN,
+            GSRN: validGsrn,
             period: new Period(
                 DateFrom: date.ToUnixTimeSeconds(),
                 DateTo: date.AddDays(1).ToUnixTimeSeconds()
             ),
-            meteringPointOwner: validMasterData.MeteringPointOwner,
+            meteringPointOwner: validOwner,
             cancellationToken: CancellationToken.None
         ));
 
@@ -77,7 +70,7 @@ public class DataSyncClientTest
         var fakeResponseList = new List<DataSyncDto>
         {
             new(
-                GSRN: validMasterData.GSRN,
+                GSRN: validGsrn,
                 DateFrom: date.ToUnixTimeSeconds(),
                 DateTo: DateTimeOffset.Now.AddDays(-1).ToUnixTimeSeconds(),
                 Quantity: 5,
@@ -88,16 +81,16 @@ public class DataSyncClientTest
 
         fakeHttpHandler
             .Expect("/measurements")
-            .WithQueryString("gsrn", validMasterData.GSRN)
+            .WithQueryString("gsrn", validGsrn)
             .Respond("application/json", json);
 
         var dataSyncClient = Setup();
 
         var response = await dataSyncClient.RequestAsync(
-            GSRN: validMasterData.GSRN,
+            GSRN: validGsrn,
             period: new Period(date.ToUnixTimeSeconds(),
                 date.AddDays(1).ToUnixTimeSeconds()),
-            meteringPointOwner: validMasterData.MeteringPointOwner,
+            meteringPointOwner: validOwner,
             CancellationToken.None
         );
 
