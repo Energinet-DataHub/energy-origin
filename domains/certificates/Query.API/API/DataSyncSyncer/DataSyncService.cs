@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using API.MasterDataService;
 using CertificateEvents.Primitives;
 using Microsoft.Extensions.Logging;
 
@@ -24,14 +24,14 @@ public class DataSyncService
         this.syncState = syncState;
     }
 
-    public async Task<List<DataSyncDto>> FetchMeasurements(MasterData masterData,
+    public async Task<List<DataSyncDto>> FetchMeasurements(CertificateIssuingContract contract,
         CancellationToken cancellationToken)
     {
-        var dateFrom = await syncState.GetPeriodStartTime(masterData);
+        var dateFrom = await syncState.GetPeriodStartTime(contract);
 
         if (dateFrom == null)
         {
-            logger.LogInformation("Not possible to get start date from sync state for {masterData}", masterData);
+            logger.LogInformation("Not possible to get start date from sync state for {@contract}", contract);
             return new();
         }
 
@@ -44,19 +44,19 @@ public class DataSyncService
             {
                 var client = factory.CreateClient();
                 var result = await client.RequestAsync(
-                    masterData.GSRN,
+                    contract.GSRN,
                     new Period(
                         DateFrom: dateFrom.Value,
                         DateTo: midnight
                     ),
-                    masterData.MeteringPointOwner,
+                    contract.MeteringPointOwner,
                     cancellationToken
                 );
 
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                     result.Count,
-                    masterData.GSRN,
+                    contract.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o"));
 
