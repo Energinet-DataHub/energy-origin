@@ -1,10 +1,10 @@
-﻿namespace Consumers
-{
-    using System.Threading.Tasks;
-    using MassTransit;
-    using Contracts;
-    using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using Contracts;
+using MassTransit;
+using Microsoft.Extensions.Logging;
 
+namespace Consumers
+{
     public class PocConsumer :
         IConsumer<HelloMessage>
     {

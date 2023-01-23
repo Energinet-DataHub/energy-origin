@@ -1,7 +1,7 @@
-﻿namespace Consumers
-{
-    using MassTransit;
+using MassTransit;
 
+namespace Consumers
+{
     public class PocConsumerDefinition :
         ConsumerDefinition<PocConsumer>
     {

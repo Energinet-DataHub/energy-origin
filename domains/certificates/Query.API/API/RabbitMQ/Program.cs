@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace RabbitMQ
 {
@@ -27,7 +27,7 @@ namespace RabbitMQ
 
                         x.AddConsumers(entryAssembly);
 
-                        x.UsingRabbitMq( (context, cfg) =>
+                        x.UsingRabbitMq((context, cfg) =>
                         {
                             cfg.Host("https://eo-u-rabbitmq.westeurope.cloudapp.azure.com", "/");
                             cfg.ConfigureEndpoints(context);

@@ -1,11 +1,11 @@
-﻿namespace RabbitMQ
-{
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Contracts;
-    using MassTransit;
-    using Microsoft.Extensions.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
+using Contracts;
+using MassTransit;
+using Microsoft.Extensions.Hosting;
 
+namespace RabbitMQ
+{
     public class Worker : BackgroundService
     {
         readonly IBus _bus;
