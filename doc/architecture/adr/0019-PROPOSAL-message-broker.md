@@ -9,7 +9,7 @@ Message broker
 ## Context and Problem Statement
 
 For the certificates domain, we need a message broker for our event driven architecture solution.
-We need a message broker that can handle a large number of messages and fairly easy to set up.
+We need a message broker that can handle a large number of messages and is fairly easy to set up.
 
 ---
 
