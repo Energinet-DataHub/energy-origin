@@ -1,6 +1,6 @@
 Message broker
 
-* Status:
+* Status: Proposed
 * Deciders: @anna-knudsen, @duizer, @ckr123, @Exobitt
 * Date: 2022-01-19
 
@@ -8,8 +8,8 @@ Message broker
 
 ## Context and Problem Statement
 
-For our event driven architecture solution we need a message broker that can handle a large number of messages.
-We also want a message broker that is fairly easy to set up.
+For the certificates domain, we need a message broker for our event driven architecture solution.
+We need a message broker that can handle a large number of messages and fairly easy to set up.
 
 ---
 
@@ -28,24 +28,24 @@ We are going with RabbitMQ
 
 ## Rationale
 
+### RabbitMQ:
 RabbitMQ seems to be a simple message broker and not much else, which is exactly what we need.
 It is a very popular, open source message broker with lots of support and documentation.
 It also seems very easy to set up.
 
-Kafka:
+### Kafka:
 We chose not to go with Kafka, as it seems very complex - it is more like a streaming service and provides much more functionality than we need.
 We get the impression that Kafka requires experts to fine tune after the initial setup
 
-ActiveMQ:
+### ActiveMQ:
 Active MQ is mostly for Java.
 
-Redis:
+### Redis:
 Redis doesn't have built-in SSL and offers no persistence out of the box.
 
 ### Positive Consequences
-
-Easy setup
-Lots of documentation
+* Easy setup
+* Lots of documentation
 
 ### Negative Consequences
 
