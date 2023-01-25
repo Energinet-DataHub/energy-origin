@@ -78,9 +78,7 @@ sequenceDiagram
   spa->>auth: Navigates to api/auth/logout
   auth->>broker: Redirects to configured endpoint
   Note over broker: MitID log out flow
-  broker->>spa: Redirect
-  Note over auth: Handles information about login
-  auth->>spa: Redirect to landing page
+  broker->>spa: Redirect to landing page
   Note over spa: Log out is complete
 ```
 
