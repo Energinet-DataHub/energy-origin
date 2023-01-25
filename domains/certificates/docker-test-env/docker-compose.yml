@@ -33,6 +33,14 @@ services:
     depends_on:
       - martendb
 
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - postgres
+
 networks:
   postgres:
     driver: bridge
