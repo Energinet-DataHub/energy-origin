@@ -55,8 +55,8 @@ sequenceDiagram
   alt Successful login
     Note over auth: Add token in cookie headers
     auth->>spa: HTML meta redirect to landing page
-    spa->>spa: Save token
-    spa->>spa: Delete cookie
+    spa->>spa: Saves token
+    spa->>spa: Deletes cookie
     Note over spa: Log in is complete
   else Failed login
     Note over auth: Add error information to query string
@@ -75,6 +75,7 @@ sequenceDiagram
   participant broker as MitID Broker
 
   Note over spa: User begins logout flow
+  spa->>spa: Deletes token
   spa->>auth: Navigates to api/auth/logout
   auth->>broker: Redirects to configured endpoint
   Note over broker: MitID log out flow
