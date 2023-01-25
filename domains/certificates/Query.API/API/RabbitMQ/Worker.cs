@@ -8,11 +8,11 @@ namespace API.RabbitMQ
 {
     public class Worker : BackgroundService
     {
-        readonly IBus _bus;
+        private readonly IBus bus;
 
         public Worker(IBus bus)
         {
-            _bus = bus;
+            this.bus = bus;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -20,7 +20,7 @@ namespace API.RabbitMQ
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _bus.Publish(new HelloMessage
+                await bus.Publish(new HelloMessage
                 {
                     Name = "World"
                 }, stoppingToken);

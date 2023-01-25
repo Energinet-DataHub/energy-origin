@@ -8,15 +8,15 @@ namespace API.RabbitMQ.Consumers
     public class PocConsumer :
         IConsumer<HelloMessage>
     {
-        readonly ILogger<PocConsumer> _logger;
+        readonly ILogger<PocConsumer> logger;
 
         public PocConsumer(ILogger<PocConsumer> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
         public Task Consume(ConsumeContext<HelloMessage> context)
         {
-            _logger.LogInformation("Hello {Name}", context.Message.Name);
+            logger.LogInformation("Hello {Name}", context.Message.Name);
 
             return Task.CompletedTask;
         }
