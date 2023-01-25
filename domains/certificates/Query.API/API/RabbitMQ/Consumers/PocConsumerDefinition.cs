@@ -1,6 +1,6 @@
 using MassTransit;
 
-namespace Consumers
+namespace API.RabbitMQ.Consumers
 {
     public class PocConsumerDefinition :
         ConsumerDefinition<PocConsumer>

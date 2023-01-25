@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using Contracts;
+using API.RabbitMQ.Contracts;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace Consumers
+namespace API.RabbitMQ.Consumers
 {
     public class PocConsumer :
         IConsumer<HelloMessage>

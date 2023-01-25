@@ -1,10 +1,10 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Contracts;
+using API.RabbitMQ.Contracts;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
 
-namespace RabbitMQ
+namespace API.RabbitMQ
 {
     public class Worker : BackgroundService
     {

@@ -1,10 +1,8 @@
 using System.Reflection;
-using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace RabbitMQ;
+namespace API.RabbitMQ;
 
 public static class Startup
 {

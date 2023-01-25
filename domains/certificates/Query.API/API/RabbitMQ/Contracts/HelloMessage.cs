@@ -1,4 +1,4 @@
-namespace Contracts
+namespace API.RabbitMQ.Contracts
 {
     public record HelloMessage
     {
