@@ -22,7 +22,7 @@ public static class Startup
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("https://eo-u-rabbitmq.westeurope.cloudapp.azure.com", "/");
+                cfg.Host("eo-rabbitmq-service", "/");
                 cfg.ConfigureEndpoints(context);
             });
         });
