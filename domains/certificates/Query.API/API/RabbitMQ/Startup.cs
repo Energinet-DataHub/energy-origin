@@ -1,4 +1,4 @@
-using System.Reflection;
+using API.RabbitMQ.Consumers;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,9 +14,7 @@ public static class Startup
             // saga repository.
             x.SetInMemorySagaRepositoryProvider();
 
-            var entryAssembly = Assembly.GetEntryAssembly();
-
-            x.AddConsumers(entryAssembly);
+            x.AddConsumer<PocConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
