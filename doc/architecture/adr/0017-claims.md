@@ -1,6 +1,6 @@
 # Claims
 
-* Status: proposed
+* Status: Accepted
 * Deciders: @CodeReaper, @duizer, @MartinSchmidt
 * Date: 2022-11-29
 
@@ -27,7 +27,7 @@ Note this need is very similiar to the needs of each domain where we are using J
 
 ## Decision Outcome
 
-We chose to use JWT tokens with scope claim for adherence to (RFC 8693)[https://www.rfc-editor.org/rfc/rfc8693.html]:
+We chose to use JWT tokens with scope claim for adherence to [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693.html):
 ```jsonc
 {
   "sub": "1234567890",
