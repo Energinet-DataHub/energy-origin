@@ -7,6 +7,7 @@ using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.Query.API;
+using API.RabbitMQ;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -57,11 +58,12 @@ builder.Services.AddMarten(options =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddIntegrationEventBus();
-builder.Services.AddQueryApi();
-builder.Services.AddContractService();
-builder.Services.AddDataSyncSyncer(builder.Configuration);
-builder.Services.AddGranularCertificateIssuer();
+// builder.Services.AddIntegrationEventBus();
+//builder.Services.AddQueryApi();
+//builder.Services.AddContractService();
+//builder.Services.AddDataSyncSyncer(builder.Configuration);
+//builder.Services.AddGranularCertificateIssuer();
+builder.Services.AddRabbitMq();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
