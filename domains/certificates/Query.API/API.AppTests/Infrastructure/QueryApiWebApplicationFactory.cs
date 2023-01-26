@@ -1,13 +1,15 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using API.AppTests.Mocks;
 using API.DataSyncSyncer;
-using API.MasterDataService;
+using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -19,24 +21,18 @@ namespace API.AppTests.Infrastructure;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly TestMasterDataService masterDataServiceMock;
-
-    public QueryApiWebApplicationFactory() => masterDataServiceMock = new TestMasterDataService();
-
     public string MartenConnectionString { get; set; } = "";
+    public string DataSyncUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
+        builder.UseSetting("Datasync:Url", DataSyncUrl);
 
         builder.ConfigureTestServices(services =>
         {
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
-
-            // Replace IMasterDataService
-            services.Remove(services.First(s => s.ServiceType == typeof(IMasterDataService)));
-            services.AddSingleton<IMasterDataService>(masterDataServiceMock);
         });
     }
 
@@ -51,8 +47,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
-
-    public void AddMasterData(MasterData data) => masterDataServiceMock.Add(data);
 
     private static string GenerateToken(
         string scope = "",
@@ -78,5 +72,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate, DataSyncWireMock dataSyncWireMock)
+    {
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn);
+
+        using var client = CreateAuthenticatedClient(subject);
+        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }
