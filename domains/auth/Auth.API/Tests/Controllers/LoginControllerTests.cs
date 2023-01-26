@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tests.Controllers
+namespace Tests.Controllers;
+
+public class LoginControllerTests
 {
-    public class LoginControllerTests
-    {
-    }
 }
