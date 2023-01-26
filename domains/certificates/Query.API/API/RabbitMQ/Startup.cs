@@ -18,7 +18,11 @@ public static class Startup
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("eo-rabbitmq-service", "/");
+                cfg.Host("simple-rabbit", "/", o =>
+                {
+                    o.Username("guest");
+                    o.Password("guest");
+                });
                 cfg.ConfigureEndpoints(context);
             });
         });
