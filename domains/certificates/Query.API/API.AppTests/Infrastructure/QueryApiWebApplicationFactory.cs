@@ -32,7 +32,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             //Remove DataSyncSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+            //TODO: Remove fails if it does not find DataSyncSyncerWorker
+            //services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
 
