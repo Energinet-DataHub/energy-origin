@@ -37,10 +37,6 @@ jobs:
             required_file "$domain/.devcontainer/Dockerfile"
             required_file "$domain/.devcontainer/devcontainer.json"
 
-            required_folder "$domain/.vscode"
-            required_file "$domain/.vscode/settings.json"
-            required_file "$domain/.vscode/extensions.json"
-
             required_file "$domain"/*.sln
 
             required_folder "$domain/chart"
