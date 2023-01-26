@@ -1,3 +1,4 @@
 {
-    "draft": true
+    "draft": true,
+    "dotnetVersion": "7.0.102"
 }
