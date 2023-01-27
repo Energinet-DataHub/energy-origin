@@ -17,18 +17,12 @@ public class LoginControllerTests
         var authorityHost = "them.com";
         var callbackUri = "us.com";
         var clientId = Guid.NewGuid().ToString();
-        var document = DiscoveryDocument.Load($$"""{"authorization_endpoint":"http://{{authorityHost}}/connect"}""");
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{authorityHost}/connect") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var options = Options.Create(new OidcOptions()
-        {
-            AuthorityUrl = new Uri($"http://{authorityHost}/"),
-            CacheDuration = new TimeSpan(6, 0, 0),
-            ClientId = clientId,
-            RedirectUri = callbackUri
-        });
+        var options = Options.Create(new OidcOptions(AuthorityUrl: new Uri($"http://{authorityHost}/"), CacheDuration: new TimeSpan(6, 0, 0), ClientId: clientId, RedirectUri: callbackUri));
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
@@ -55,18 +49,12 @@ public class LoginControllerTests
         var authorityHost = "them.com";
         var callbackHost = "us.com";
         var clientId = Guid.NewGuid().ToString();
-        var document = DiscoveryDocument.Load($$"""{"error":"it went all wrong"}""");
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var options = Options.Create(new OidcOptions()
-        {
-            AuthorityUrl = new Uri($"http://{authorityHost}/"),
-            CacheDuration = new TimeSpan(6, 0, 0),
-            ClientId = clientId,
-            RedirectUri = $"http://{callbackHost}/"
-        });
+        var options = Options.Create(new OidcOptions(AuthorityUrl: new Uri($"http://{authorityHost}/"), CacheDuration: new TimeSpan(6, 0, 0), ClientId: clientId, RedirectUri: $"http://{callbackHost}/"));
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
@@ -92,18 +80,12 @@ public class LoginControllerTests
         var authorityHost = "them.com";
         var callbackHost = "us.com";
         var clientId = Guid.NewGuid().ToString();
-        var document = DiscoveryDocument.Load($$"""{"error":"it went all wrong"}""");
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var options = Options.Create(new OidcOptions()
-        {
-            AuthorityUrl = new Uri($"http://{authorityHost}/"),
-            CacheDuration = new TimeSpan(6, 0, 0),
-            ClientId = clientId,
-            RedirectUri = $"http://{callbackHost}/"
-        });
+        var options = Options.Create(new OidcOptions(AuthorityUrl: new Uri($"http://{authorityHost}/"), CacheDuration: new TimeSpan(6, 0, 0), ClientId: clientId, RedirectUri: $"http://{callbackHost}/"));
 
         var logger = Mock.Of<ILogger<LoginController>>();
 

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using IdentityModel.Client;
 
@@ -6,8 +7,19 @@ namespace Tests;
 
 public static class DiscoveryDocument
 {
-    public static DiscoveryDocumentResponse Load(string json)
+    public static DiscoveryDocumentResponse Load(IEnumerable<KeyValuePair<string, string>> items)
     {
+        var builder = new StringBuilder();
+        builder = builder.Append("{ ");
+        foreach (var item in items)
+        {
+            builder = builder.Append($""" "{item.Key}":"{item.Value}",""");
+        }
+        builder.Length--;
+        builder = builder.Append('}');
+
+        var json = builder.ToString();
+
         var element = JsonDocument.Parse(json)!.RootElement;
 
         var document = new DiscoveryDocumentResponse();
