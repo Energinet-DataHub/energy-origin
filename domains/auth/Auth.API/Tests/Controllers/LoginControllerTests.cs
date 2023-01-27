@@ -1,5 +1,4 @@
-using System.Reflection;
-using System.Text.Json;
+using System.Web;
 using API.Controllers;
 using API.Options;
 using IdentityModel.Client;
@@ -13,28 +12,110 @@ namespace Tests.Controllers;
 public class LoginControllerTests
 {
     [Fact]
-    public async Task Index_ReturnsAViewResult_WithAListOfBrainstormSessions()
+    public async Task GetAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var json = JsonDocument.Parse("""{"authorization_endpoint":"http://example.com"}""")!.RootElement;
-
-        var document = new DiscoveryDocumentResponse();
-        var reflection = document.GetType().GetProperty(nameof(document.Json), BindingFlags.Public | BindingFlags.Instance);
-        reflection!.SetValue(document, json);
+        var authorityHost = "them.com";
+        var callbackUri = "us.com";
+        var clientId = Guid.NewGuid().ToString();
+        var document = DiscoveryDocument.Load($$"""{"authorization_endpoint":"http://{{authorityHost}}/connect"}""");
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var oidcOptions = Options.Create(new OidcOptions());
-        oidcOptions.Value.AuthorityUrl = new Uri("http://example.com");
-        oidcOptions.Value.CacheDuration = new TimeSpan(6, 0, 0);
-        oidcOptions.Value.ClientId = "testClientId";
-        oidcOptions.Value.RedirectUri = "example.com";
+        var options = Options.Create(new OidcOptions()
+        {
+            AuthorityUrl = new Uri($"http://{authorityHost}/"),
+            CacheDuration = new TimeSpan(6, 0, 0),
+            ClientId = clientId,
+            RedirectUri = callbackUri
+        });
+
         var logger = Mock.Of<ILogger<LoginController>>();
 
-        var result = await new LoginController().GetAsync(cache, oidcOptions, logger);
-        var okResult = result as ObjectResult;
+        var result = await new LoginController().GetAsync(cache, options, logger);
 
-        Assert.NotNull(okResult);
-        Assert.Equal(307, okResult.StatusCode);
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+
+        var redirectResult = (RedirectResult)result;
+        Assert.True(redirectResult.PreserveMethod);
+        Assert.False(redirectResult.Permanent);
+
+        var uri = new Uri(redirectResult.Url);
+        Assert.Equal(authorityHost, uri.Host);
+
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.Contains($"client_id={clientId}", query);
+        Assert.Contains($"redirect_uri={callbackUri}", query);
+    }
+
+    [Fact]
+    public async Task GetAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
+    {
+        var authorityHost = "them.com";
+        var callbackHost = "us.com";
+        var clientId = Guid.NewGuid().ToString();
+        var document = DiscoveryDocument.Load($$"""{"error":"it went all wrong"}""");
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var options = Options.Create(new OidcOptions()
+        {
+            AuthorityUrl = new Uri($"http://{authorityHost}/"),
+            CacheDuration = new TimeSpan(6, 0, 0),
+            ClientId = clientId,
+            RedirectUri = $"http://{callbackHost}/"
+        });
+
+        var logger = Mock.Of<ILogger<LoginController>>();
+
+        var result = await new LoginController().GetAsync(cache, options, logger);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+
+        var redirectResult = (RedirectResult)result;
+        Assert.True(redirectResult.PreserveMethod);
+        Assert.False(redirectResult.Permanent);
+
+        var uri = new Uri(redirectResult.Url);
+        Assert.Equal(callbackHost, uri.Host);
+
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.Contains($"errorCode=2", query);
+    }
+
+    [Fact]
+    public async Task GetAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
+    {
+        var authorityHost = "them.com";
+        var callbackHost = "us.com";
+        var clientId = Guid.NewGuid().ToString();
+        var document = DiscoveryDocument.Load($$"""{"error":"it went all wrong"}""");
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var options = Options.Create(new OidcOptions()
+        {
+            AuthorityUrl = new Uri($"http://{authorityHost}/"),
+            CacheDuration = new TimeSpan(6, 0, 0),
+            ClientId = clientId,
+            RedirectUri = $"http://{callbackHost}/"
+        });
+
+        var logger = Mock.Of<ILogger<LoginController>>();
+
+        var result = await new LoginController().GetAsync(cache, options, logger);
+
+        Mock.Get(logger).Verify(it => it.Log(
+            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once
+        );
     }
 }

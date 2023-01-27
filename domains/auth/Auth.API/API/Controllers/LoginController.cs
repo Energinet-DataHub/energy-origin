@@ -1,9 +1,7 @@
-using System.Web;
 using API.Options;
 using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
@@ -16,9 +14,9 @@ public class LoginController : ControllerBase
     public async Task<IActionResult> GetAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
-        if (discoveryDocument.IsError)
+        if (discoveryDocument == null || discoveryDocument.IsError)
         {
-            logger.LogError(discoveryDocument.Error);
+            logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
             var uri = new Uri(oidcOptions.Value.RedirectUri);
             return RedirectPreserveMethod(uri.AddQueryParameters("errorCode", "2").ToString());
         }
