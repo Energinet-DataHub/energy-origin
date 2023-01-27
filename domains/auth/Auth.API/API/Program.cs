@@ -1,6 +1,5 @@
 using API.Options;
 using IdentityModel.Client;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -10,8 +9,10 @@ var logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
@@ -34,7 +35,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-var configuration = app.Services.GetRequiredService<IConfiguration>();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
