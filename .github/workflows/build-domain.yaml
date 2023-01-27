@@ -37,10 +37,6 @@ jobs:
             required_file "$domain/.devcontainer/Dockerfile"
             required_file "$domain/.devcontainer/devcontainer.json"
 
-            required_folder "$domain/.vscode"
-            required_file "$domain/.vscode/settings.json"
-            required_file "$domain/.vscode/extensions.json"
-
             required_file "$domain"/*.sln
 
             required_folder "$domain/chart"
@@ -76,7 +72,7 @@ jobs:
         run: |
           matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
             [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
-            echo '{"draft": false}' > "$domain/.default.domain.json"
+            echo '{"draft": false, "dotnetVersion": "6.0.101"}' > "$domain/.default.domain.json"
             settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
 
             draft=$(printf '%s' "$settings" | jq -rce '.draft')
@@ -152,6 +148,7 @@ jobs:
         uses: ./.github/actions/dotnet-validate-domain
         with:
           solution-file-folder: ${{ steps.resolver.outputs.service }}
+          dotnet-version: ${{ matrix.build.path.dotnetVersion }}
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container

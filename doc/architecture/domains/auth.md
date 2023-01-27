@@ -33,6 +33,56 @@ The frontend domain will present the HTML and to do so will have the latest term
 The auth domain will be configured with the latest version and can check if a user has accepted the latest version or not.
 Based on this the claim relating to terms for the front-facing token can be calculated.
 
+## Flows
+
+An overview of the important flows that needs to be understood.
+
+### Log in
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant spa as Single Page Application
+  participant auth as Auth Domain
+  participant broker as MitID Broker
+
+  Note over spa: User begins login flow
+  spa->>auth: Navigates to api/auth/login
+  auth->>broker: Redirects to configured endpoint
+  Note over broker: MitID log in flow
+  broker->>auth: Redirects to api/auth/oidc/callback
+  Note over auth: Handles information about login
+  alt Successful login
+    Note over auth: Add token in cookie headers
+    auth->>spa: HTML meta redirect to landing page
+    spa->>spa: Saves token
+    spa->>spa: Deletes cookie
+    Note over spa: Log in is complete
+  else Failed login
+    Note over auth: Add error information to query string
+    auth->>spa: Redirect to landing page
+    Note over spa: Log in attempt failed
+  end
+```
+
+### Log out
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant spa as Single Page Application
+  participant auth as Auth Domain
+  participant broker as MitID Broker
+
+  Note over spa: User begins logout flow
+  spa->>spa: Deletes token
+  spa->>auth: Navigates to api/auth/logout
+  auth->>broker: Redirects to configured endpoint
+  Note over broker: MitID log out flow
+  broker->>spa: Redirect to landing page
+  Note over spa: Log out is complete
+```
+
 ## New endpoints
 
 ### `GET /api/auth/login`

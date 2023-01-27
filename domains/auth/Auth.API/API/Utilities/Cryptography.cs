@@ -9,10 +9,7 @@ public class Cryptography : ICryptography
 {
     private readonly byte[] secret;
 
-    public Cryptography(string secret)
-    {
-        this.secret = Encoding.UTF8.GetBytes(secret);
-    }
+    public Cryptography(string secret) => this.secret = Encoding.UTF8.GetBytes(secret);
 
     public string Encrypt<T>(T state)
     {
