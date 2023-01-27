@@ -6,13 +6,13 @@ public class UriExtensionTests
 {
     [Fact]
     public void AddQueryParameters_ShouldAddQueryParameters_WhenQueryParametersIsAdded()
-    {            
+    {
         var uri = new Uri("http://example.com/");
         var key = "abc";
         var value = "123";
         var expectedOutput = $"?{key}={value}";
 
-        var result = uri.AddQueryParameters(key, value);            
+        var result = uri.AddQueryParameters(key, value);
 
         Assert.Contains(expectedOutput, result.ToString());
     }
@@ -42,7 +42,7 @@ public class UriExtensionTests
         var result = uri.AddQueryParameters(key, value, extra);
 
         Assert.Contains(expectedOutput, result.ToString());
-        Assert.DoesNotContain(extra, result.ToString());    
+        Assert.DoesNotContain(extra, result.ToString());
     }
 
     [Fact]
