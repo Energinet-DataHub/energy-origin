@@ -19,7 +19,8 @@ All current valid ADR.
 - [ADR-0015 Domains are responsible for their persistance](0015-domains-responsible-for-persistance.md)
 - [ADR-0016 Interdomain communication through intergration events](0016-interdomain-integration-events.md)
 - [ADR-0017 Claims](0017-claims.md)
-- [ADR-0019 Message Broker Certificate](0019-PROPOSAL-message-broker.md)
+- [ADR-0018 .NET upgrade strategy](0018-.net-upgrade-strategy.md)
+- [ADR-0019 Message Broker Certificates domain](0019-PROPOSAL-message-broker.md)
 
 ## Deprecated
 

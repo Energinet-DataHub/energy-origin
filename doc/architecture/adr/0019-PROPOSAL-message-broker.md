@@ -50,4 +50,7 @@ Redis doesn't have built-in SSL and offers no persistence out of the box.
 ### Negative Consequences
 
 We are not yet 100% sure that RabbitMQ can handle the number of messages we need, and we are aware that RabbitMQ can not be scaled to the extent that Kafka can.
-We chose to go with RabbitMQ anyway, as we want to create a quick POC. If needed, we will substitute RabbitMQ for another, more scalable message broker later.
+
+A quick calculation on the number of messages going through the message broker, could be based on a case where every measurement from a metering point in DK1+DK2 is a message resulting in an issued certificate. With 3,500,000 metering points in DK1+DK2 and with a measurement every hour that will be approximately 1,000 messages/second. If the market resolution changes to 15 minutes, then the number is 4,000 messages/second.
+
+We chose to go with RabbitMQ, as we want to create a quick POC and articles mentions that RabbitMQ can handle around 50,000 messages/second. If needed, we will substitute RabbitMQ for another, more scalable message broker later.
