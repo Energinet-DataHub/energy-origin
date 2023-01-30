@@ -19,7 +19,7 @@ public class UriExtensionTests
 
     [Theory]
     [InlineData("Cat")]
-    [InlineData("Dog","Horse","Frog")]
+    [InlineData("Dog", "Horse", "Frog")]
     [InlineData("Fish", "Monkey", "Chicken", "Cow", "Pig")]
     public void AddQueryParameters_ShouldNotThrowException_WhenAddingOddNumberOfParameters(params string[] parameters)
     {
@@ -60,7 +60,7 @@ public class UriExtensionTests
     {
         var uri = new Uri("http://example.com/");
 
-        var result = uri.AddQueryParameters("","");
+        var result = uri.AddQueryParameters("", "");
 
         Assert.Equal(uri.ToString(), result.ToString());
     }
