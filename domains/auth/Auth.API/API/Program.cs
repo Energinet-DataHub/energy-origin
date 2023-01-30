@@ -22,7 +22,7 @@ builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOpt
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
     var options = providers.GetRequiredService<IOptions<OidcOptions>>();
-    return new DiscoveryCache(options.Value.AuthorityUrl.AbsoluteUri)
+    return new DiscoveryCache(options.Value.AuthorityUri.AbsoluteUri)
     {
         CacheDuration = options.Value.CacheDuration
     };
