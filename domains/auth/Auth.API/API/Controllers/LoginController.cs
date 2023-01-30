@@ -1,5 +1,4 @@
 using API.Options;
-using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -18,8 +17,7 @@ public class LoginController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            var uri = new Uri(oidcOptions.Value.RedirectUri);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(uri.ToString(), "errorCode", "2"));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
@@ -27,7 +25,7 @@ public class LoginController : ControllerBase
         var url = requestUrl.CreateAuthorizeUrl(
             clientId: oidcOptions.Value.ClientId,
             responseType: "code",
-            redirectUri: oidcOptions.Value.RedirectUri,
+            redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
             scope: "openid mitid nemid userinfo_token",
             extra: new Parameters(new List<KeyValuePair<string, string>>()
             {
