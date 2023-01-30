@@ -76,16 +76,18 @@ public class LogoutControllerTests
     [Fact]
     public async Task GetAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
     {
-        var authority = new Uri("http://them.com/");
-        var callback = new Uri("http://us.com");
-        var clientId = Guid.NewGuid().ToString();
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var options = Options.Create(new OidcOptions(AuthorityUri: authority, CacheDuration: new TimeSpan(6, 0, 0), ClientId: clientId, AuthorityCallbackUri: callback, FrontendRedirectUri: new Uri("http://example.com")));
-
+        var options = Options.Create(new OidcOptions(
+            AuthorityUri: new Uri("http://them.com/"),
+            CacheDuration: new TimeSpan(6, 0, 0),
+            ClientId: "clientId",
+            AuthorityCallbackUri: new Uri("http://us.com"),
+            FrontendRedirectUri: new Uri("http://example.com")
+        ));
         var logger = Mock.Of<ILogger<LogoutController>>();
 
         var result = await new LogoutController().GetAsync(cache, options, logger);
