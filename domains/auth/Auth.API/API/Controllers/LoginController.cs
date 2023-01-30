@@ -2,6 +2,7 @@ using API.Options;
 using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
@@ -18,7 +19,7 @@ public class LoginController : ControllerBase
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
             var uri = new Uri(oidcOptions.Value.RedirectUri);
-            return RedirectPreserveMethod(uri.AddQueryParameters("errorCode", "2").ToString());
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(uri.ToString(), "errorCode", "2"));
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
