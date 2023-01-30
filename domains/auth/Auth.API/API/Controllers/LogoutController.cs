@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 namespace API.Controllers;
 
 [ApiController]
-public class LoginController : ControllerBase
+public class LogoutController : ControllerBase
 {
     [HttpGet()]
-    [Route("auth/login")]
+    [Route("auth/logout")]
     public async Task<IActionResult> GetAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
@@ -20,17 +20,12 @@ public class LoginController : ControllerBase
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.RedirectUri, "errorCode", "2"));
         }
 
-        var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
+        var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var url = requestUrl.CreateAuthorizeUrl(
-            clientId: oidcOptions.Value.ClientId,
-            responseType: "code",
-            redirectUri: oidcOptions.Value.RedirectUri,
-            scope: "openid mitid nemid userinfo_token",
-            extra: new Parameters(new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("idp_params","{\"nemid\": {\"amr_values\": \"nemid.otp nemid.keyfile\"}}")
-            }));
+        var url = requestUrl.CreateEndSessionUrl(
+            idTokenHint: null, // TODO: this should be the access token obtained during code exchange
+            postLogoutRedirectUri: oidcOptions.Value.RedirectUri
+        );
 
         return RedirectPreserveMethod(url);
     }
