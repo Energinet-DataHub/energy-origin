@@ -1,5 +1,6 @@
 using API.Options;
 using IdentityModel.Client;
+using Marten;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -16,6 +17,7 @@ builder.Logging.AddSerilog(logger);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
+builder.Services.AddMarten("host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;");
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));

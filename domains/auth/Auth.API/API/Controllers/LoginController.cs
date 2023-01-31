@@ -1,5 +1,6 @@
 using API.Options;
 using IdentityModel.Client;
+using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,19 @@ public class LoginController : ControllerBase
             }));
 
         return RedirectPreserveMethod(url);
+    }
+
+    [HttpGet()]
+    [Route("test")]
+    public void Test(IDocumentSession session)
+    {
+        session.Store(new Target { Hehe = "1" });
+        session.SaveChanges();
+    }
+    public class Target
+    {
+        public int Id { get; set; }
+        public string Hehe { get; set; }
     }
 }
 

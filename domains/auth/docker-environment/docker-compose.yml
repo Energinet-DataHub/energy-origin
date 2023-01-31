@@ -26,22 +26,15 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
       - ./servers.json:/pgadmin4/servers.json
-      - ./configuration/pgpass:/pgadmin4/pgpass
     networks:
       - postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.admin
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     depends_on:
       - martendb
-    entrypoint: |
-      /bin/sh -c "
-      mkdir -m 700 /var/lib/pgadmin/storage/admin_admin.admin;
-      chown -R pgadmin:pgadmin /var/lib/pgadmin/storage/admin_admin.admin;
-      cp -prv /pgadmin4/pgpass /var/lib/pgadmin/storage/admin_admin.admin/;
-      chmod 600 /var/lib/pgadmin/storage/admin_admin.admin/pgpass;
-      /entrypoint.sh
-      "
 
 networks:
   postgres:
