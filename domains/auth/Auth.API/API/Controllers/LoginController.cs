@@ -1,4 +1,7 @@
+using System.Diagnostics.Contracts;
+using API.Models;
 using API.Options;
+using API.Services;
 using IdentityModel.Client;
 using Marten;
 using Microsoft.AspNetCore.Mvc;
@@ -37,16 +40,35 @@ public class LoginController : ControllerBase
     }
 
     [HttpGet()]
-    [Route("test")]
-    public void Test(IDocumentSession session)
+    [Route("GetUserById/{id}", Name = "GetUserById")]
+    public async Task<ActionResult<User>> GetUserById([FromRoute] Guid id, [FromServices] IUserService userService)
     {
-        session.Store(new Target { Hehe = "1" });
-        session.SaveChanges();
+        var user = await userService.GetUserById(id);
+        if (user is not null)
+        {
+            return Ok(user);
+        }
+        return NotFound();
     }
-    public class Target
+
+    [HttpGet()]
+    [Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")]
+    public ActionResult<User> GetUserByProviderId([FromRoute] string id, [FromServices] IUserService userService)
     {
-        public int Id { get; set; }
-        public string Hehe { get; set; }
+        var user = userService.GetUserByProviderId(id);
+        if (user is not null)
+        {
+            return Ok(user);
+        }
+        return NotFound();
+    }
+
+    [HttpGet()]
+    [Route("G", Name = "G")]
+    public async Task<ActionResult> G([FromServices] IUserService userService)
+    {
+        await userService.Insert(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = "test", Tin = "hehe", AllowCPRLookup = false });
+        return Ok();
     }
 }
 
