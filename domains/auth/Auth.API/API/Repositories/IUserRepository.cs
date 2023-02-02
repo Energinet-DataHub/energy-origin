@@ -6,6 +6,6 @@ namespace API.Repositories
     {
         Task Insert(User user);
         Task<User?> GetUserById(Guid id);
-        User? GetUserByProviderId(string providerId);
+        Task<User?> GetUserByProviderId(string providerId);
     }
 }

@@ -6,7 +6,7 @@ namespace API.Services
     {
         Task Insert(User user);
         Task<User?> GetUserById(Guid userId);
-        User? GetUserByProviderId(string providerId);
+        Task<User?> GetUserByProviderId(string providerId);
         
     }
 }

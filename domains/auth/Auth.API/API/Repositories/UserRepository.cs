@@ -1,4 +1,5 @@
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
@@ -19,12 +20,12 @@ namespace API.Repositories
 
         public async Task<User?> GetUserById(Guid id)
         {
-            return dataContext.Users.FirstOrDefault(x => x.Id == id);
+            return await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public User? GetUserByProviderId(string providerId)
+        public async Task<User?> GetUserByProviderId(string providerId)
         {
-            return dataContext.Users.FirstOrDefault(x => x.ProviderId == providerId);
+            return await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
         }
     }   
 }
