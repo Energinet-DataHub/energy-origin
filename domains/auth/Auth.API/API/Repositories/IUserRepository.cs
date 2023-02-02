@@ -5,7 +5,7 @@ namespace API.Repositories
     public interface IUserRepository
     {
         Task Insert(User user);
-        Task<User?> GetById(Guid id);
+        Task<User?> GetUserById(Guid id);
         User? GetUserByProviderId(string providerId);
     }
 }

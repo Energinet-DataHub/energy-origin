@@ -3,7 +3,6 @@ using API.Models;
 using API.Options;
 using API.Services;
 using IdentityModel.Client;
-using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
@@ -15,7 +14,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> GetAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
+    public async Task<IActionResult> LoginUser(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)

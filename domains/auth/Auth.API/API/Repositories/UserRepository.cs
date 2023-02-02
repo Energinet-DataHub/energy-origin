@@ -1,23 +1,30 @@
 using API.Models;
-using Marten;
 
 namespace API.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly IDocumentSession session;
+        private readonly DataContext dataContext;
 
-        public UserRepository(IDocumentSession session)
+        public UserRepository(DataContext dataContext)
         {
-            this.session = session;
+            this.dataContext = dataContext;
         }
+
         public Task Insert(User user)
         {
-            session.Insert(user);
-            return session.SaveChangesAsync();
+            dataContext.Users.Add(user);
+            return dataContext.SaveChangesAsync();
         }
 
-        public async Task<User?> GetById(Guid id) => await session.LoadAsync<User>(id);
-        public  User? GetUserByProviderId(string providerId) => session.Query<User>().FirstOrDefault(x => x.ProviderId == providerId);
+        public async Task<User?> GetUserById(Guid id)
+        {
+            return dataContext.Users.FirstOrDefault(x => x.Id == id);
+        }
+
+        public User? GetUserByProviderId(string providerId)
+        {
+            return dataContext.Users.FirstOrDefault(x => x.ProviderId == providerId);
+        }
     }   
 }
