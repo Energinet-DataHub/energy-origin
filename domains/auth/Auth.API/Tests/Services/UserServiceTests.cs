@@ -1,20 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using API.Controllers;
-using API.Options;
-using IdentityModel.Client;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System.Web;
 using API.Services;
 using API.Repositories;
-using System.Reflection.Metadata;
 using API.Models;
-using Serilog.Core;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Tests.Services
 {

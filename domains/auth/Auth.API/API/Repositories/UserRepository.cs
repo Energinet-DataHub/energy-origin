@@ -28,5 +28,5 @@ namespace API.Repositories
         {
             return await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
         }
-    }   
+    }
 }

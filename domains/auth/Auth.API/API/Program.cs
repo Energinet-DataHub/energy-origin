@@ -1,14 +1,10 @@
-using System.Net;
 using API.Middleware;
 using API.Options;
 using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Formatting.Json;

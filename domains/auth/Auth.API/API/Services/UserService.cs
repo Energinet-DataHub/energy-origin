@@ -1,10 +1,9 @@
-using API.Controllers;
 using API.Models;
 using API.Repositories;
 
 namespace API.Services
 {
-    public class UserService: IUserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository userRepository;
         private readonly ILogger<IUserService> logger;
@@ -17,7 +16,7 @@ namespace API.Services
 
         public async Task<int> UpsertUserAsync(User user)
         {
-           return await userRepository.UpsertUserAsync(user);
+            return await userRepository.UpsertUserAsync(user);
         }
 
         public async Task<User?> GetUserByIdAsync(Guid userId)
