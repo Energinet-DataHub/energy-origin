@@ -1,5 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 using API.Utilities;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Tests.Utilities;
 
@@ -47,6 +50,31 @@ public class TokenIssuerTests
         Assert.NotNull(jwt);
         Assert.Equal(issuer, jwt.Issuer);
         Assert.Contains(audience, jwt.Audiences);
+    }
+
+    [Fact]
+    public void Issue_ShouldReturnASignedToken_WhenIssuing()
+    {
+        var options = TestOptions.Token();
+
+        var token = TokenIssuer.Issue(options.Value, "a-user-id");
+
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
+        var key = new RsaSecurityKey(rsa);
+
+        var parameters = new TokenValidationParameters()
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateActor = false,
+            ValidateLifetime = false,
+            ValidateTokenReplay = false,
+            IssuerSigningKey = key
+        };
+        new JwtSecurityTokenHandler().ValidateToken(token, parameters, out var validatedToken);
+
+        Assert.NotNull(validatedToken);
     }
 
     private static JwtSecurityToken? Convert(string? token)
