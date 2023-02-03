@@ -26,4 +26,9 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="a-private-key.pem" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="a-public-key.pem" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
