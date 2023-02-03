@@ -1,18 +1,18 @@
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories
+namespace API.Repositories.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : DbContext, IUserDataContext
     {
         protected readonly IConfiguration Configuration;
+
+        public DbSet<User> Users { get; set; }
 
         public DataContext(DbContextOptions options, IConfiguration configuration) : base(options)
         {
             Configuration = configuration;
         }
-
-        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

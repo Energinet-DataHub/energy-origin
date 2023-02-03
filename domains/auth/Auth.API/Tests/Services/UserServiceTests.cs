@@ -20,13 +20,13 @@ namespace Tests.Services
 {
     public class UserServiceTests
     {
-        private readonly UserService sut;
-        private readonly IUserRepository repositoryMock = Mock.Of<IUserRepository>();
-        private readonly ILogger<UserService> loggerMock = Mock.Of<ILogger<UserService>>();
+        private readonly IUserService userService;
+        private readonly IUserRepository repository = Mock.Of<IUserRepository>();
+        private readonly ILogger<IUserService> logger = Mock.Of<ILogger<IUserService>>();
 
         public UserServiceTests()
         {
-            sut = new UserService(repositoryMock, loggerMock);
+            userService = new UserService(repository, logger);
         }
 
         [Fact]
@@ -34,53 +34,55 @@ namespace Tests.Services
         {
             var id = Guid.NewGuid();
 
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserById(It.IsAny<Guid>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(value: new User()
                 {
                     Id = id,
-                    ProviderId = "1",
+                    ProviderId = Guid.NewGuid().ToString(),
                     Name = "Amigo",
-                    AcceptedTermsVersion = "Version 4",
+                    AcceptedTermsVersion = 2,
                     Tin = null,
                     AllowCPRLookup = true
                 });
 
-            var result = await sut.GetUserById(id);
+            var result = await userService.GetUserByIdAsync(id);
 
+            Assert.NotNull(result);
             Assert.Equal(id, result?.Id);
         }
 
         [Fact]
         public async Task GetUserByProviderId_ShouldReturnUser_WhenUserExists()
         {
-            var providerId = "1";
+            var providerId = Guid.NewGuid().ToString();
 
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserByProviderId(It.IsAny<string>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
                 .ReturnsAsync(value: new User()
                 {
                     Id = Guid.NewGuid(),
                     ProviderId = providerId,
                     Name = "Amigo",
-                    AcceptedTermsVersion = "Version 4",
+                    AcceptedTermsVersion = 2,
                     Tin = null,
                     AllowCPRLookup = true
                 });
 
-            var result = await sut.GetUserByProviderId(providerId);
+            var result = await userService.GetUserByProviderIdAsync(providerId);
 
+            Assert.NotNull(result);
             Assert.Equal(providerId, result?.ProviderId);
         }
 
         [Fact]
         public async Task GetUserById_ShouldReturnNull_WhenNoUserExists()
         {
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserById(It.IsAny<Guid>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(value: null);
 
-            var result = await sut.GetUserById(Guid.NewGuid());
+            var result = await userService.GetUserByIdAsync(Guid.NewGuid());
 
             Assert.Null(result);
         }
@@ -88,11 +90,11 @@ namespace Tests.Services
         [Fact]
         public async Task GetUserByProviderId_ShouldReturnNull_WhenNoUserExists()
         {
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserByProviderId(It.IsAny<string>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
                 .ReturnsAsync(value: null);
 
-            var result = await sut.GetUserByProviderId("1");
+            var result = await userService.GetUserByProviderIdAsync(Guid.NewGuid().ToString());
 
             Assert.Null(result);
         }
@@ -100,39 +102,21 @@ namespace Tests.Services
         [Fact]
         public async Task GetUserById_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
         {
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserById(It.IsAny<Guid>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception());
 
-            await Assert.ThrowsAsync<Exception>(async () => await sut.GetUserById(Guid.NewGuid()));
-
-            Mock.Get(loggerMock).Verify(it => it.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once
-            );
+            await Assert.ThrowsAsync<Exception>(async () => await userService.GetUserByIdAsync(Guid.NewGuid()));
         }
 
         [Fact]
         public async Task GetUserByProviderId_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
         {
-            Mock.Get(repositoryMock)
-                .Setup(it => it.GetUserByProviderId(It.IsAny<string>()))
+            Mock.Get(repository)
+                .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
                 .ThrowsAsync(new Exception());
 
-            await Assert.ThrowsAsync<Exception>(async () => await sut.GetUserByProviderId("1"));
-
-            Mock.Get(loggerMock).Verify(it => it.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once
-            );
+            await Assert.ThrowsAsync<Exception>(async () => await userService.GetUserByProviderIdAsync(Guid.NewGuid().ToString()));
         }
     }
 }

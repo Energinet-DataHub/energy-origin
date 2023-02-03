@@ -14,7 +14,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginUser(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
+    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -37,37 +37,4 @@ public class LoginController : ControllerBase
 
         return RedirectPreserveMethod(url);
     }
-
-    [HttpGet()]
-    [Route("GetUserById/{id}", Name = "GetUserById")]
-    public async Task<ActionResult<User>> GetUserById([FromRoute] Guid id, [FromServices] IUserService userService)
-    {
-        var user = await userService.GetUserById(id);
-        if (user is not null)
-        {
-            return Ok(user);
-        }
-        return NotFound();
-    }
-
-    [HttpGet()]
-    [Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")]
-    public ActionResult<User> GetUserByProviderId([FromRoute] string id, [FromServices] IUserService userService)
-    {
-        var user = userService.GetUserByProviderId(id);
-        if (user is not null)
-        {
-            return Ok(user);
-        }
-        return NotFound();
-    }
-
-    [HttpGet()]
-    [Route("G", Name = "G")]
-    public async Task<ActionResult> G([FromServices] IUserService userService)
-    {
-        await userService.Insert(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = "test", Tin = "hehe", AllowCPRLookup = false });
-        return Ok();
-    }
 }
-

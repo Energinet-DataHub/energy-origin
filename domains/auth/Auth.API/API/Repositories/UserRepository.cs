@@ -1,29 +1,30 @@
 using API.Models;
+using API.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DataContext dataContext;
+        private readonly IUserDataContext dataContext;
 
-        public UserRepository(DataContext dataContext)
+        public UserRepository(IUserDataContext dataContext)
         {
             this.dataContext = dataContext;
         }
 
-        public Task Insert(User user)
+        public async Task<int> UpsertUserAsync(User user)
         {
-            dataContext.Users.Add(user);
-            return dataContext.SaveChangesAsync();
+            dataContext.Users.Update(user);
+            return await dataContext.SaveChangesAsync();
         }
 
-        public async Task<User?> GetUserById(Guid id)
+        public async Task<User?> GetUserByIdAsync(Guid id)
         {
             return await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<User?> GetUserByProviderId(string providerId)
+        public async Task<User?> GetUserByProviderIdAsync(string providerId)
         {
             return await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
         }

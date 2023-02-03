@@ -4,8 +4,8 @@ namespace API.Repositories
 {
     public interface IUserRepository
     {
-        Task Insert(User user);
-        Task<User?> GetUserById(Guid id);
-        Task<User?> GetUserByProviderId(string providerId);
+        Task<int> UpsertUserAsync(User user);
+        Task<User?> GetUserByIdAsync(Guid id);
+        Task<User?> GetUserByProviderIdAsync(string providerId);
     }
 }

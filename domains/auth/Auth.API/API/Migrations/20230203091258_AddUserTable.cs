@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddedUserTable : Migration
+    public partial class AddUserTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,7 @@ namespace API.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ProviderId = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    AcceptedTermsVersion = table.Column<string>(type: "text", nullable: false),
+                    AcceptedTermsVersion = table.Column<int>(type: "integer", nullable: false),
                     Tin = table.Column<string>(type: "text", nullable: true),
                     AllowCPRLookup = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -26,13 +26,17 @@ namespace API.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_ProviderId",
+                table: "Users",
+                column: "ProviderId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Users");
+            migrationBuilder.DropTable(name: "Users");
         }
     }
 }
