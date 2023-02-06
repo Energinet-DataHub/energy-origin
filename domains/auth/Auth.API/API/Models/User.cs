@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Models
 {
+#pragma warning disable CS8618
     [Index(nameof(ProviderId))]
     public record User
     {

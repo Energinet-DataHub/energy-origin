@@ -28,14 +28,8 @@ namespace API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            await context.Response.WriteAsync(new ErrorDetails()
-            {
-                StatusCode = context.Response.StatusCode,
-                Message = "An error occurred processing your request."
-            }.ToString());
+            await context.Response.CompleteAsync();
         }
     }
 }

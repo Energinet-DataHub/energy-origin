@@ -14,19 +14,14 @@ namespace API.Services
             this.logger = logger;
         }
 
-        public async Task<int> UpsertUserAsync(User user)
+        public async Task<User?> UpsertUserAsync(User user)
         {
-            return await userRepository.UpsertUserAsync(user);
+            await userRepository.UpsertUserAsync(user);
+            return user;
         }
 
-        public async Task<User?> GetUserByIdAsync(Guid userId)
-        {
-            return await userRepository.GetUserByIdAsync(userId);
-        }
+        public async Task<User?> GetUserByIdAsync(Guid userId) => await userRepository.GetUserByIdAsync(userId);
 
-        public async Task<User?> GetUserByProviderIdAsync(string providerId)
-        {
-            return await userRepository.GetUserByProviderIdAsync(providerId);
-        }
+        public async Task<User?> GetUserByProviderIdAsync(string providerId) => await userRepository.GetUserByProviderIdAsync(providerId);
     }
 }

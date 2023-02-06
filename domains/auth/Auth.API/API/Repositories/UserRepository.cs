@@ -13,20 +13,15 @@ namespace API.Repositories
             this.dataContext = dataContext;
         }
 
-        public async Task<int> UpsertUserAsync(User user)
+        public async Task<User?> UpsertUserAsync(User user)
         {
             dataContext.Users.Update(user);
-            return await dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
+            return user;
         }
 
-        public async Task<User?> GetUserByIdAsync(Guid id)
-        {
-            return await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
-        }
+        public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
-        public async Task<User?> GetUserByProviderIdAsync(string providerId)
-        {
-            return await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
-        }
+        public async Task<User?> GetUserByProviderIdAsync(string providerId) => await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
     }
 }
