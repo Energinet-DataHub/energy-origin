@@ -1,8 +1,6 @@
 using API.Models;
 using API.Repositories;
 using API.Services;
-using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Tests.Services;
 
