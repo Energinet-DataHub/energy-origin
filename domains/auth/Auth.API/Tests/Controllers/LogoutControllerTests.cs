@@ -20,7 +20,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().GetAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -48,7 +48,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().GetAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -76,7 +76,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().GetAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, options, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
