@@ -1,11 +1,10 @@
 using API.Models;
 
-namespace API.Services
+namespace API.Services;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task<User> UpsertUserAsync(User user);
-        Task<User?> GetUserByIdAsync(Guid userId);
-        Task<User?> GetUserByProviderIdAsync(string providerId);
-    }
+    Task<User> UpsertUserAsync(User user);
+    Task<User?> GetUserByIdAsync(Guid userId);
+    Task<User?> GetUserByProviderIdAsync(string providerId);
 }
