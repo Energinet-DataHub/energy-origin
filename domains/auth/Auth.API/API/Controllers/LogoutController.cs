@@ -1,5 +1,7 @@
 using API.Options;
+using API.Utilities;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
@@ -9,9 +11,11 @@ namespace API.Controllers;
 [ApiController]
 public class LogoutController : ControllerBase
 {
+    [Authorize]
+    [AllowAnonymous]
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> GetAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
+    public async Task<IActionResult> GetAsync(ICryptography cryptography, IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -23,10 +27,14 @@ public class LogoutController : ControllerBase
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: null, // TODO: this should be the identity token obtained during code exchange
+            idTokenHint: HttpContext.User.IdentityToken(cryptography),
             postLogoutRedirectUri: oidcOptions.Value.FrontendRedirectUri.AbsoluteUri
         );
 
         return RedirectPreserveMethod(url);
     }
+
+    [HttpGet()]
+    [Route("issue")]
+    public IActionResult RemoveThis(ICryptography cryptography, IOptions<TokenOptions> options) => Ok(TokenIssuer.Issue(cryptography, options.Value, new TokenIssuer.Input("me", "a", "1"))); // FIXME: remove
 }

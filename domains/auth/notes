@@ -1,0 +1,25 @@
+
+dotnet run --project Auth.API/API/API.csproj
+
+curl -v \
+http://127.0.0.1:5111/issue
+
+curl -v \
+-H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtZSIsIm5hbWUiOiJSZXNvbHZlZCB1c2VycyBmdWxsIG5hbWUiLCJzY29wZSI6ImZlYXR1cmVBIGZlYXR1cmVCIiwiZWF0IjoiNTRaeDJqdnRDbEQxcGMzMmFCT2ZnU2gwdXE3SE9zZXgxRC9VRzRJMHl0QT0iLCJlaXQiOiJ6VWphMmhQUnZnd0d4SGxYbE1PY1NUcmRSbXZYSTA4RVZMUzFvUHhLMzdRPSIsIm5iZiI6MTY3NTY5NzM1NCwiZXhwIjoxNjc1Njk3OTU0LCJpYXQiOjE2NzU2OTczNTQsImlzcyI6IlVzIiwiYXVkIjoiVXNlcnMifQ.SLnXm-dXkDi0Ln-oD8pQOuOecNkcolHuME_Eq0U0_cVTwx2Vkz1Rz11mKu5RGr9V2DTKDwn5dzA5arKX3JJGXPxtM9oex1lO9GePdWNfjZ4VyL_WJqNFZhMFU8_3lP92-DOAsvOzKuL_SAU6zDho3RPNltbHkgmmS_dqoi5EAcl8R74Z--TM_hfKv8hcGabcDZLBcdrTbRIh7HDsO3SgAHlKM0AX4GYawioHdZLZP32R3PWhlJsT550zEP_5uevBB0QO36CRVg4zhEs5vO7BRGOfb7A3gOg3n1N6Pdon9k99mFFPgLj1Mp4UQ3dZCRhWs5VS8Ij5M1EbotP_EHhQKg" \
+http://127.0.0.1:5111/auth/logout
+
+{
+  "sub": "me",
+  "name": "Resolved users full name",
+  "scope": "featureA featureB",
+  "eat": "54Zx2jvtClD1pc32aBOfgSh0uq7HOsex1D/UG4I0ytA=",
+  "eit": "zUja2hPRvgwGxHlXlMOcSTrdRmvXI08EVLS1oPxK37Q=",
+  "nbf": 1675697354,
+  "exp": 1675697954,
+  "iat": 1675697354,
+  "iss": "Us",
+  "aud": "Users"
+}
+
+curl -v \
+http://127.0.0.1:5111/auth/logout
