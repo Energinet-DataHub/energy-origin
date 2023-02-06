@@ -14,11 +14,7 @@ namespace API.Services
             this.logger = logger;
         }
 
-        public async Task<User?> UpsertUserAsync(User user)
-        {
-            await userRepository.UpsertUserAsync(user);
-            return user;
-        }
+        public async Task<User> UpsertUserAsync(User user) => await userRepository.UpsertUserAsync(user);
 
         public async Task<User?> GetUserByIdAsync(Guid userId) => await userRepository.GetUserByIdAsync(userId);
 

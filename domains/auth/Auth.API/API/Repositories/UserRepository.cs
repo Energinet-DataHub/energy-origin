@@ -13,7 +13,7 @@ namespace API.Repositories
             this.dataContext = dataContext;
         }
 
-        public async Task<User?> UpsertUserAsync(User user)
+        public async Task<User> UpsertUserAsync(User user)
         {
             dataContext.Users.Update(user);
             await dataContext.SaveChangesAsync();
