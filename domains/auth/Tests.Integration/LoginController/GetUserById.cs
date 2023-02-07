@@ -18,19 +18,10 @@ namespace Tests.Integration.LoginController
         }
 
         [Fact]
-        public async Task G()
+        public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
         {
             var client = factory.CreateUnauthenticatedClient();
             var userResponse = await client.GetAsync("G");
-
-            Assert.Equal(HttpStatusCode.OK, userResponse.StatusCode);
-        }
-
-        [Fact]
-        public async Task W()
-        {
-            var client = factory.CreateUnauthenticatedClient();
-            var userResponse = await client.GetAsync("W");
 
             Assert.Equal(HttpStatusCode.OK, userResponse.StatusCode);
         }

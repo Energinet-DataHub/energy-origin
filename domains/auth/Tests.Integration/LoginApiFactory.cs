@@ -35,7 +35,8 @@ namespace Tests.Integration
                Username = "admin",
                Password = "admin",
            })
-           .WithImage("postgres")
+           .WithImage("postgres").
+            WithPortBinding(5432,5432)
            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
            .Build();
 
@@ -52,12 +53,12 @@ namespace Tests.Integration
                 //Remove DataSyncSyncerWorker
                 services.Remove(services.First(s => s.ImplementationType == typeof(DataContext)));
 
-                services.AddDbContext<DataContextTest>(options =>
+                services.AddDbContext<DataContext>(options =>
                 {
                     options.UseNpgsql(testContainer.ConnectionString);
                 });
 
-                services.AddScoped<IUserDataContext, DataContextTest>();
+                services.AddScoped<IUserDataContext, DataContext>();
             });
         }
 
@@ -69,13 +70,13 @@ namespace Tests.Integration
             {
                 await testContainer.StartAsync();
                 var scope = Services.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContextTest>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
                 await dbContext.Database.MigrateAsync();
             }
             catch (Exception e)
             {
                 var d = e;
-                throw;
+               throw;
             }
             
         }
