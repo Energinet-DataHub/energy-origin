@@ -3,19 +3,31 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
+using API.Services;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
 
-public class TokenIssuer
+public class TokenIssuer : ITokenIssuer
 {
-    public static string Issue(TokenOptions options, string userId, DateTime? issueAt = default)
+    private readonly TermsOptions termsOptions;
+    private readonly TokenOptions tokenOptions;
+    private readonly IUserService userService;
+
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, IUserService userService)
     {
-        var credentials = CreateSigningCredentials(options);
+        this.termsOptions = termsOptions;
+        this.tokenOptions = tokenOptions;
+        this.userService = userService;
+    }
 
-        var state = ResolveState(userId);
+    public async Task<string> IssueAsync(string userId, DateTime? issueAt = default)
+    {
+        var credentials = CreateSigningCredentials(tokenOptions);
 
-        var descriptor = CreateTokenDescriptor(options, credentials, state, issueAt ?? DateTime.UtcNow);
+        var state = await ResolveStateAsync(termsOptions, userService, userId);
+
+        var descriptor = CreateTokenDescriptor(tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow);
 
         return CreateToken(descriptor);
     }
@@ -30,23 +42,39 @@ public class TokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(string userId) => new(User: new User(Id: userId, Name: "Resolved users full name", Tin: "1234567890"), Scopes: "featureA featureB"); // FIXME: Resolve state using user service
-
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt) => new()
+    private static async Task<UserState> ResolveStateAsync(TermsOptions options, IUserService userService, string userId)
     {
-        Subject = new ClaimsIdentity(new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, state.User.Id),
-            new Claim(JwtRegisteredClaimNames.Name, state.User.Name),
-        }),
-        NotBefore = issueAt,
-        Expires = issueAt.Add(options.Duration),
-        Issuer = options.Issuer,
-        Audience = options.Audience,
-        SigningCredentials = credentials,
-        Claims = new Dictionary<string, object> {
-            { "scope", state.Scopes },
+        var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
+        var scope = user.AcceptedTermsVersion == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
+        return new(user.Id.ToString(), user.Name, user.AcceptedTermsVersion, user.Tin, Scope: scope);
+    }
+
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
+    {
+        var claims = new Dictionary<string, object> {
+            { "scope", state.Scope },
+            { "terms", state.AcceptedVersion },
+        };
+
+        if (state.Tin != null)
+        {
+            claims.Add("tin", state.Tin);
         }
-    };
+
+        return new()
+        {
+            Subject = new ClaimsIdentity(new[] {
+            new Claim(JwtRegisteredClaimNames.Sub, state.Id),
+            new Claim(JwtRegisteredClaimNames.Name, state.Name),
+        }),
+            NotBefore = issueAt,
+            Expires = issueAt.Add(options.Duration),
+            Issuer = options.Issuer,
+            Audience = options.Audience,
+            SigningCredentials = credentials,
+            Claims = claims
+        };
+    }
 
     private static string CreateToken(SecurityTokenDescriptor descriptor)
     {
@@ -55,9 +83,5 @@ public class TokenIssuer
         return handler.WriteToken(token);
     }
 
-    // FIXME: migrate usage of private records to actual user models
-
-    private record UserState(User User, string Scopes);
-
-    private record User(string Id, string Name, string? Tin);
+    private record UserState(string Id, string Name, int AcceptedVersion, string? Tin, string Scope);
 }

@@ -21,6 +21,11 @@ public static class TestOptions
         CacheDuration = cacheDuration ?? new TimeSpan(6, 0, 0)
     });
 
+    public static IOptions<TermsOptions> Terms(int version = 1) => Options.Create(new TermsOptions
+    {
+        CurrentVersion = version,
+    });
+
     public static IOptions<TokenOptions> Token(
         string audience = "Users",
         string issuer = "Us",
