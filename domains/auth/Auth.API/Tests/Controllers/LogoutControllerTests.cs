@@ -1,17 +1,32 @@
 using System.Web;
 using API.Controllers;
+using API.Options;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Tests.Controllers;
 
 public class LogoutControllerTests
 {
+    private readonly OidcOptions oidcOptions;
+
+    public LogoutControllerTests()
+    {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Test.json", false)
+            .Build();
+
+        oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
+    }
+
+
     [Fact]
     public async Task GetAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var options = TestOptions.Oidc();
+        var options = TestOptions.Oidc(oidcOptions);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
 
@@ -39,7 +54,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task GetAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
     {
-        var options = TestOptions.Oidc();
+        var options = TestOptions.Oidc(oidcOptions);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
@@ -67,7 +82,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task GetAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
     {
-        var options = TestOptions.Oidc();
+        var options = TestOptions.Oidc(oidcOptions);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
