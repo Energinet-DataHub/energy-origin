@@ -46,7 +46,7 @@ public class TokenIssuer : ITokenIssuer
     {
         var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
         var scope = user.AcceptedTermsVersion == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
-        return new(user.Id.ToString(), user.Name, user.AcceptedTermsVersion, user.Tin, Scope: scope);
+        return new(user.Id.ToString(), user.Name, user.AcceptedTermsVersion, user.Tin, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
@@ -64,9 +64,9 @@ public class TokenIssuer : ITokenIssuer
         return new()
         {
             Subject = new ClaimsIdentity(new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, state.Id),
-            new Claim(JwtRegisteredClaimNames.Name, state.Name),
-        }),
+                new Claim(JwtRegisteredClaimNames.Sub, state.Id),
+                new Claim(JwtRegisteredClaimNames.Name, state.Name),
+            }),
             NotBefore = issueAt,
             Expires = issueAt.Add(options.Duration),
             Issuer = options.Issuer,
