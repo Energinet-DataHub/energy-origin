@@ -7,16 +7,10 @@ namespace API.Repositories.Data
     {
         protected readonly IConfiguration Configuration;
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> Users { get; set; } = null!;
 
-        public DataContext(DbContextOptions options, IConfiguration configuration) : base(options)
-        {
-            Configuration = configuration;
-        }
+        public DataContext(DbContextOptions options, IConfiguration configuration) : base(options) => Configuration = configuration;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder) => base.OnModelCreating(modelBuilder);
     }
 }

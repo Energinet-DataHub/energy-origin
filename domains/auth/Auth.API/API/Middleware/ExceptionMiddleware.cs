@@ -22,11 +22,11 @@ public class ExceptionMiddleware
         catch (Exception ex)
         {
             logger.LogError(ex, "An unhandled exception has occurred while executing the request.");
-            await HandleExceptionAsync(httpContext, ex);
+            await HandleExceptionAsync(httpContext);
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context)
     {
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         await context.Response.CompleteAsync();
