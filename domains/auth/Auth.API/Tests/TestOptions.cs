@@ -1,4 +1,3 @@
-
 using API.Options;
 using Microsoft.Extensions.Options;
 
@@ -7,32 +6,37 @@ namespace Tests;
 public static class TestOptions
 {
     public static IOptions<OidcOptions> Oidc(
-        string authority = "http://them.local/",
-        string authorityCallback = "http://api.local",
-        string frontendRedirect = "http://us.local",
+        OidcOptions options,
+        string? authority = default,
+        string? authorityCallback = default,
+        string? frontendRedirect = default,
         string? clientId = default,
         TimeSpan? cacheDuration = default
     ) => Options.Create(new OidcOptions
     {
-        AuthorityUri = new Uri(authority),
-        AuthorityCallbackUri = new Uri(authorityCallback),
-        FrontendRedirectUri = new Uri(frontendRedirect),
-        ClientId = clientId ?? Guid.NewGuid().ToString(),
-        CacheDuration = cacheDuration ?? new TimeSpan(6, 0, 0)
+        AuthorityUri = new Uri(authority ?? options.AuthorityUri.AbsoluteUri),
+        AuthorityCallbackUri = new Uri(authorityCallback ?? options.AuthorityCallbackUri.AbsoluteUri),
+        FrontendRedirectUri = new Uri(frontendRedirect ?? options.FrontendRedirectUri.AbsoluteUri),
+        ClientId = clientId ?? options.ClientId,
+        CacheDuration = cacheDuration ?? options.CacheDuration
+    });
+
+    public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Options.Create(new TermsOptions
+    {
+        CurrentVersion = version ?? options.CurrentVersion,
     });
 
     public static IOptions<TokenOptions> Token(
-        string audience = "Users",
-        string issuer = "Us",
-        TimeSpan? duration = default,
-        byte[]? privateKey = default,
-        byte[]? publicKey = default
+        TokenOptions options,
+        string? audience = default,
+        string? issuer = default,
+        TimeSpan? duration = default
     ) => Options.Create(new TokenOptions
     {
-        Audience = audience,
-        Issuer = issuer,
-        Duration = duration ?? new TimeSpan(0, 1, 0),
-        PrivateKeyPem = privateKey ?? File.ReadAllBytes("./a-private-key.pem")!,
-        PublicKeyPem = publicKey ?? File.ReadAllBytes("./a-public-key.pem")!
+        Audience = audience ?? options.Audience,
+        Issuer = issuer ?? options.Issuer,
+        Duration = duration ?? options.Duration,
+        PrivateKeyPem = options.PrivateKeyPem,
+        PublicKeyPem = options.PublicKeyPem
     });
 }

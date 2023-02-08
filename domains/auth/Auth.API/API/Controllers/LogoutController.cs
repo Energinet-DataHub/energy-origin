@@ -15,7 +15,7 @@ public class LogoutController : ControllerBase
     [AllowAnonymous]
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> GetAsync(ICryptography cryptography, IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
+    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -27,7 +27,7 @@ public class LogoutController : ControllerBase
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: HttpContext.User.IdentityToken(cryptography),
+            idTokenHint: null, // FIXME: HttpContext.User.IdentityToken(cryptography),
             postLogoutRedirectUri: oidcOptions.Value.FrontendRedirectUri.AbsoluteUri
         );
 
@@ -36,5 +36,5 @@ public class LogoutController : ControllerBase
 
     [HttpGet()]
     [Route("issue")]
-    public IActionResult RemoveThis(ICryptography cryptography, IOptions<TokenOptions> options) => Ok(TokenIssuer.Issue(cryptography, options.Value, new TokenIssuer.Input("me", "a", "1"))); // FIXME: remove
+    public async Task<IActionResult> RemoveThisAsync(ITokenIssuer tokenIssuer) => Ok(await tokenIssuer.IssueAsync("me", "a", "1")); // FIXME: remove
 }

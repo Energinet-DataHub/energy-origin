@@ -1,8 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
+using API.Middleware;
 using API.Options;
+using API.Repositories;
+using API.Repositories.Data;
+using API.Services;
 using API.Utilities;
 using IdentityModel.Client;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -30,6 +35,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
+
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
     var rsa = RSA.Create();
@@ -43,6 +52,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     };
 });
 
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
+
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
     var options = providers.GetRequiredService<IOptions<OidcOptions>>();
@@ -51,10 +62,23 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.Value.CacheDuration
     };
 });
+builder.Services.AddSingleton<ICryptography>(providers => new Cryptography("secretsecretsecretsecret"));
 
-builder.Services.AddSingleton<ICryptography>(providers =>
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserDataContext, DataContext>();
+builder.Services.AddScoped<ITokenIssuer>(providers =>
 {
-    return new Cryptography("secretsecretsecretsecret");
+    var termsOptions = providers.GetRequiredService<IOptions<TermsOptions>>().Value;
+    var tokenOptions = providers.GetRequiredService<IOptions<TokenOptions>>().Value;
+    var cryptography = providers.GetRequiredService<ICryptography>();
+    var userService = providers.GetRequiredService<IUserService>();
+    return new TokenIssuer(termsOptions, tokenOptions, cryptography, userService);
+});
+builder.Services.AddScoped<IUserThang>(providers =>
+{
+    var context = providers.GetRequiredService<IHttpContextAccessor>();
+    return new UserThang();
 });
 
 var app = builder.Build();
@@ -64,8 +88,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseMiddleware<ExceptionMiddleware>();
+}
 
 app.UseHttpsRedirection();
+app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 

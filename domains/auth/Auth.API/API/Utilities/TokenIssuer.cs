@@ -3,19 +3,33 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
+using API.Services;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
 
-public class TokenIssuer
+public class TokenIssuer : ITokenIssuer
 {
-    public static string Issue(ICryptography cryptography, TokenOptions options, Input input, DateTime? issueAt = default)
+    private readonly TermsOptions termsOptions;
+    private readonly TokenOptions tokenOptions;
+    private readonly ICryptography cryptography;
+    private readonly IUserService userService;
+
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, ICryptography cryptography, IUserService userService)
     {
-        var credentials = CreateSigningCredentials(options);
+        this.termsOptions = termsOptions;
+        this.tokenOptions = tokenOptions;
+        this.cryptography = cryptography;
+        this.userService = userService;
+    }
 
-        var state = ResolveState(input.UserId);
+    public async Task<string> IssueAsync(string userId, string accessToken, string identityToken, DateTime? issueAt = default)
+    {
+        var credentials = CreateSigningCredentials(tokenOptions);
 
-        var descriptor = CreateTokenDescriptor(cryptography, options, credentials, input, state, issueAt ?? DateTime.UtcNow);
+        var state = await ResolveStateAsync(termsOptions, userService, userId, accessToken, identityToken);
+
+        var descriptor = CreateTokenDescriptor(tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow);
 
         return CreateToken(descriptor);
     }
@@ -30,25 +44,40 @@ public class TokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(string userId) => new(User: new User(Id: userId, Name: "Resolved users full name", Tin: "1234567890"), Scopes: "featureA featureB"); // FIXME: Resolve state using user service
-
-    private static SecurityTokenDescriptor CreateTokenDescriptor(ICryptography cryptography, TokenOptions options, SigningCredentials credentials, Input input, UserState state, DateTime issueAt) => new()
+    private static async Task<UserState> ResolveStateAsync(TermsOptions options, IUserService userService, string userId, string accessToken, string identityToken)
     {
-        Subject = new ClaimsIdentity(new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, state.User.Id),
-            new Claim(JwtRegisteredClaimNames.Name, state.User.Name),
-        }),
-        NotBefore = issueAt,
-        Expires = issueAt.Add(options.Duration),
-        Issuer = options.Issuer,
-        Audience = options.Audience,
-        SigningCredentials = credentials,
-        Claims = new Dictionary<string, object> {
-            { UserClaim.Scopes, state.Scopes },
-            { UserClaim.AccessToken, cryptography.Encrypt(input.AccessToken) },
-            { UserClaim.IdentityToken, cryptography.Encrypt(input.IdentityToken) },
+        var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
+        var scope = user.AcceptedTermsVersion == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
+        return new(user.Id.ToString(), user.Name, user.AcceptedTermsVersion, user.Tin, scope, accessToken, identityToken);
+    }
+
+    private SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
+    {
+        var claims = new Dictionary<string, object> {
+            { UserClaim.Scope, state.Scope },
+            { UserClaim.AccessToken, cryptography.Encrypt(state.AccessToken) },
+            { UserClaim.IdentityToken, cryptography.Encrypt(state.IdentityToken) },
+        };
+
+        if (state.Tin != null)
+        {
+            claims.Add(UserClaim.Tin, state.Tin);
         }
-    };
+
+        return new()
+        {
+            Subject = new ClaimsIdentity(new[] {
+                new Claim(JwtRegisteredClaimNames.Sub, state.Id),
+                new Claim(JwtRegisteredClaimNames.Name, state.Name),
+            }),
+            NotBefore = issueAt,
+            Expires = issueAt.Add(options.Duration),
+            Issuer = options.Issuer,
+            Audience = options.Audience,
+            SigningCredentials = credentials,
+            Claims = claims
+        };
+    }
 
     private static string CreateToken(SecurityTokenDescriptor descriptor)
     {
@@ -57,11 +86,5 @@ public class TokenIssuer
         return handler.WriteToken(token);
     }
 
-    public record Input(string UserId, string AccessToken, string IdentityToken);
-
-    // FIXME: migrate usage of private records to actual user models
-
-    private record UserState(User User, string Scopes);
-
-    private record User(string Id, string Name, string? Tin);
+    private record UserState(string Id, string Name, int AcceptedVersion, string? Tin, string Scope, string AccessToken, string IdentityToken);
 }
