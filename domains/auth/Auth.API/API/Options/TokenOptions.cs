@@ -1,13 +1,12 @@
 namespace API.Options;
 
-#pragma warning disable CS8618
 public class TokenOptions
 {
     public const string Prefix = "Token";
 
-    public string Audience { get; init; }
-    public string Issuer { get; init; }
+    public string Audience { get; init; } = null!;
+    public string Issuer { get; init; } = null!;
     public TimeSpan Duration { get; init; }
-    public byte[] PrivateKeyPem { get; init; }
-    public byte[] PublicKeyPem { get; init; }
+    public byte[] PrivateKeyPem { get; init; } = null!;
+    public byte[] PublicKeyPem { get; init; } = null!;
 }
