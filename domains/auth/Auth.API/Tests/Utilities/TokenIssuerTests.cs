@@ -21,7 +21,7 @@ public class TokenIssuerTests
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Test.json", false)
+            .AddJsonFile("appsettings.Development.json", false)
             .Build();
 
         termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
@@ -33,7 +33,7 @@ public class TokenIssuerTests
     {
         var userId = AddUser();
 
-        var token = await GetTokenIssuer().IssueAsync(userId.ToString());
+        var token = await GetTokenIssuer().IssueAsync("fa41e653-e5b4-467a-8a1c-f2320a8e7091");
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
