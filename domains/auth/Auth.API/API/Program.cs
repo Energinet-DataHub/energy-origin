@@ -75,10 +75,11 @@ builder.Services.AddScoped<ITokenIssuer>(providers =>
     var userService = providers.GetRequiredService<IUserService>();
     return new TokenIssuer(termsOptions, tokenOptions, cryptography, userService);
 });
-builder.Services.AddScoped<IUserThang>(providers =>
+builder.Services.AddScoped(providers =>
 {
-    var context = providers.GetRequiredService<IHttpContextAccessor>();
-    return new UserThang();
+    var accessor = providers.GetRequiredService<IHttpContextAccessor>();
+    var cryptography = providers.GetRequiredService<ICryptography>();
+    return new UserDescriptor(cryptography, accessor?.HttpContext?.User);
 });
 
 var app = builder.Build();

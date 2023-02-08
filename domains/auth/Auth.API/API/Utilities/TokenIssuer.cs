@@ -54,14 +54,14 @@ public class TokenIssuer : ITokenIssuer
     private SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
-            { UserClaim.Scope, state.Scope },
-            { UserClaim.AccessToken, cryptography.Encrypt(state.AccessToken) },
-            { UserClaim.IdentityToken, cryptography.Encrypt(state.IdentityToken) },
+            { UserClaimName.Scope, state.Scope },
+            { UserClaimName.AccessToken, cryptography.Encrypt(state.AccessToken) },
+            { UserClaimName.IdentityToken, cryptography.Encrypt(state.IdentityToken) },
         };
 
         if (state.Tin != null)
         {
-            claims.Add(UserClaim.Tin, state.Tin);
+            claims.Add(UserClaimName.Tin, state.Tin);
         }
 
         return new()
