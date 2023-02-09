@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-rabbitmq
+  name: {{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.rabbitmq.replicaCount }}
+  serviceName: {{ .Release.Name }}-rabbitmq
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-rabbitmq
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-rabbitmq
+          image: '{{ .Values.rabbitmq.image.name }}:{{ .Values.rabbitmq.image.tag }}'
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 120
+            timeoutSeconds: 20
+            periodSeconds: 30
+            failureThreshold: 6
+            successThreshold: 1
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 10
+            timeoutSeconds: 20
+            periodSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+          ports:
+            - containerPort: 5672
+              name: rbmq
+              protocol: TCP
