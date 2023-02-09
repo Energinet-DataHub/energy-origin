@@ -12,7 +12,3 @@ rabbitmq:
   image:
     name: bitnami/rabbitmq-cluster-operator
     tag: 2.1.0
-  auth:
-    username: user
-    password: "user" # Password has to be set in the env
-    #securePassword: true :: This shall be enabled after the password is saved securely
