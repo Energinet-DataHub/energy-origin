@@ -1,9 +1,20 @@
 namespace API.Utilities;
 
-public record UserDescriptor(Guid? Id, string ProviderId, string Name, string? Tin, int AcceptedTermsVersion, bool AllowCPRLookup, string EncryptedAccessToken, string EncryptedIdentityToken)
+public class UserDescriptor
 {
-    public UserDescriptor(Guid? Id, string ProviderId, string Name, string? Tin, int AcceptedTermsVersion, bool AllowCPRLookup, string EncryptedAccessToken, string EncryptedIdentityToken, ICryptography cryptography) : this(Id, ProviderId, Name, Tin, AcceptedTermsVersion, AllowCPRLookup, EncryptedAccessToken, EncryptedIdentityToken) => this.cryptography = cryptography;
+    public Guid? Id { get; init; }
+    public string ProviderId { get; init; } = null!;
+    public string Name { get; init; } = null!;
+    public string? Tin { get; init; }
+    public int AcceptedTermsVersion { get; init; }
+    public bool AllowCPRLookup { get; init; }
+    public string EncryptedAccessToken { get; init; } = null!;
+    public string EncryptedIdentityToken { get; init; } = null!;
+
     public string? AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
     public string? IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
-    private readonly ICryptography cryptography = null!;
+
+    private readonly ICryptography cryptography;
+
+    public UserDescriptor(ICryptography cryptography) => this.cryptography = cryptography;
 };

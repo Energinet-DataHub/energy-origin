@@ -112,43 +112,56 @@ public class TokenIssuerTests
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(name, jwt.Claims.First(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
-        Assert.Equal(tin, jwt.Claims.First(it => it.Type == UserClaimName.Tin)?.Value);
-        Assert.Equal($"{version}", jwt.Claims.First(it => it.Type == UserClaimName.TermsVersion)?.Value);
-        Assert.Equal(descriptor.ProviderId, jwt.Claims.First(it => it.Type == UserClaimName.ProviderId)?.Value);
-        Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.First(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
-        Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.First(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
-        Assert.Equal(accesToken, jwt.Claims.First(it => it.Type == UserClaimName.AccessToken)?.Value);
-        Assert.Equal(identityToken, jwt.Claims.First(it => it.Type == UserClaimName.IdentityToken)?.Value);
+        Assert.Equal(descriptor.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
+        Assert.Equal(tin, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.Tin)?.Value);
+        Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.TermsVersion)?.Value);
+        Assert.Equal(descriptor.ProviderId, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.ProviderId)?.Value);
+        Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
+        Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
+        Assert.Equal(accesToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
+        Assert.Equal(identityToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
     }
 
     [Fact]
     public async Task IssueAsync_ShouldThrowKeyNotFoundException_WhenIssuingForNonExistingUser() => await Assert.ThrowsAsync<KeyNotFoundException>(async () => await GetTokenIssuer().IssueAsync(PrepareUser(addToMock: false)));
 
+    [Fact]
+    public async Task IssueAsync_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
+    {
+        var descriptor = PrepareUser(addToMock: false, hasId: false);
+
+        var token = await GetTokenIssuer().IssueAsync(descriptor);
+
+        var jwt = Convert(token);
+        Assert.NotNull(jwt);
+        Assert.Null(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+    }
+
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions, service);
 
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true)
+    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
     {
-        var id = Guid.NewGuid();
         var user = new User()
         {
-            Id = id,
+            Id = hasId ? Guid.NewGuid() : null,
             ProviderId = Guid.NewGuid().ToString(),
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
             Tin = tin,
             AllowCPRLookup = true
         };
-        var descriptor = new UserDescriptor(
-            Id: user.Id,
-            ProviderId: user.ProviderId,
-            Name: user.Name,
-            AcceptedTermsVersion: user.AcceptedTermsVersion,
-            Tin: user.Tin,
-            AllowCPRLookup: user.AllowCPRLookup,
-            EncryptedAccessToken: accesToken ?? "",
-            EncryptedIdentityToken: identityToken ?? ""
-        );
+        var descriptor = new UserDescriptor(null!)
+        {
+            Id = user.Id,
+            ProviderId = user.ProviderId,
+            Name = user.Name,
+            AcceptedTermsVersion = user.AcceptedTermsVersion,
+            Tin = user.Tin,
+            AllowCPRLookup = user.AllowCPRLookup,
+            EncryptedAccessToken = accesToken ?? "",
+            EncryptedIdentityToken = identityToken ?? ""
+        };
         if (addToMock)
         {
             Mock.Get(service)

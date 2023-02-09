@@ -14,6 +14,7 @@ public class LogoutControllerTests
 {
     private readonly OidcOptions oidcOptions;
     private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+    private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
 
     public LogoutControllerTests()
     {
@@ -25,7 +26,6 @@ public class LogoutControllerTests
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
     }
 
-
     [Fact]
     public async Task GetAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
@@ -36,7 +36,10 @@ public class LogoutControllerTests
         var cryptography = Mock.Of<ICryptography>();
         Mock.Get(cryptography).Setup(it => it.Decrypt<string>("identityToken")).Returns(sentiel);
 
-        var descriptor = new UserDescriptor(null, "", "", null, 0, false, "", "identityToken", cryptography);
+        var descriptor = new UserDescriptor(cryptography)
+        {
+            EncryptedIdentityToken = "identityToken"
+        };
 
         Mock.Get(mapper)
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
@@ -46,8 +49,6 @@ public class LogoutControllerTests
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LogoutController>>();
 
         var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 
@@ -67,6 +68,24 @@ public class LogoutControllerTests
     }
 
     [Fact]
+    public async Task GetAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
+    {
+        var options = TestOptions.Oidc(oidcOptions);
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
+
+        var redirectResult = (RedirectResult)result;
+        var uri = new Uri(redirectResult.Url);
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.DoesNotContain($"id_token_hint", query);
+    }
+
+    [Fact]
     public async Task GetAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);
@@ -75,8 +94,6 @@ public class LogoutControllerTests
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LogoutController>>();
 
         var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 
@@ -103,8 +120,6 @@ public class LogoutControllerTests
 
         var cache = Mock.Of<IDiscoveryCache>();
         _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LogoutController>>();
 
         var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 

@@ -35,9 +35,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
-builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -62,8 +63,8 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.Value.CacheDuration
     };
 });
-builder.Services.AddSingleton<ICryptography>(providers => new Cryptography("secretsecretsecretsecret")); // FIXME: option in, consider PP
-builder.Services.AddSingleton<IUserDescriptMapper>(providers => new UserDescriptMapper(providers.GetRequiredService<ICryptography>()));
+builder.Services.AddSingleton<ICryptography>(providers => new Cryptography(providers.GetRequiredService<IOptions<CryptographyOptions>>().Value.Key));
+builder.Services.AddSingleton<IUserDescriptMapper>(providers => new UserDescriptMapper(providers.GetRequiredService<ICryptography>(), providers.GetRequiredService<ILogger<UserDescriptMapper>>()));
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
