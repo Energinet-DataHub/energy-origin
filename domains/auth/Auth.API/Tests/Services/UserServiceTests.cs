@@ -1,8 +1,6 @@
 using API.Models;
 using API.Repositories;
 using API.Services;
-using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Tests.Services;
 
@@ -10,12 +8,8 @@ public class UserServiceTests
 {
     private readonly IUserService userService;
     private readonly IUserRepository repository = Mock.Of<IUserRepository>();
-    private readonly ILogger<IUserService> logger = Mock.Of<ILogger<IUserService>>();
 
-    public UserServiceTests()
-    {
-        userService = new UserService(repository, logger);
-    }
+    public UserServiceTests() => userService = new UserService(repository);
 
     [Fact]
     public async Task GetUserById_ShouldReturnUser_WhenUserExists()
