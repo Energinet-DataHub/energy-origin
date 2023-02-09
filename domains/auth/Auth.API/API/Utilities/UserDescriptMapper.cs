@@ -75,22 +75,27 @@ public class UserDescriptMapper : IUserDescriptMapper
             return null;
         }
 
-        var tin = user.FindFirstValue(UserClaimName.Tin);
-
-        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
-        Guid? userId = null;
-        try
+        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        Guid? userId;
+        if (id == null)
         {
-            userId = Guid.Parse(id);
+            userId = null;
         }
-        catch { }
+        else if (Guid.TryParse(id, out var parsed))
+        {
+            userId = parsed;
+        }
+        else
+        {
+            return null;
+        }
 
         return new(cryptography)
         {
             Id = userId,
             ProviderId = providerId,
             Name = name,
-            Tin = tin,
+            Tin = user.FindFirstValue(UserClaimName.Tin),
             AcceptedTermsVersion = version,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,

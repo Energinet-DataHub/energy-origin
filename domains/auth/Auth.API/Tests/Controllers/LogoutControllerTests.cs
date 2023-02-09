@@ -31,14 +31,15 @@ public class LogoutControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var sentiel = Guid.NewGuid().ToString();
+        var encryptedIdentityToken = Guid.NewGuid().ToString();
+        var identityToken = Guid.NewGuid().ToString();
 
         var cryptography = Mock.Of<ICryptography>();
-        Mock.Get(cryptography).Setup(it => it.Decrypt<string>("identityToken")).Returns(sentiel);
+        Mock.Get(cryptography).Setup(it => it.Decrypt<string>(encryptedIdentityToken)).Returns(identityToken);
 
         var descriptor = new UserDescriptor(cryptography)
         {
-            EncryptedIdentityToken = "identityToken"
+            EncryptedIdentityToken = encryptedIdentityToken
         };
 
         Mock.Get(mapper)
@@ -64,7 +65,7 @@ public class LogoutControllerTests
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"post_logout_redirect_uri={options.Value.FrontendRedirectUri.AbsoluteUri}", query);
-        Assert.Contains($"id_token_hint={sentiel}", query);
+        Assert.Contains($"id_token_hint={identityToken}", query);
     }
 
     [Fact]

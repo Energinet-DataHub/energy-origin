@@ -102,4 +102,6 @@ public class UserDescriptMapperTests
 
         Assert.Null(descriptor);
     }
+
+    // FIXME: add tests for logger message, incorrect values that should return null
 }
