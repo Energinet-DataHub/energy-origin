@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Docker.DotNet.Models;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Tests.Integration.LoginController
 {
@@ -22,7 +15,7 @@ namespace Tests.Integration.LoginController
         {
             var client = factory.CreateUnauthenticatedClient();
             var userResponse = await client.GetAsync("G");
-
+            var df = await client.GetAsync("GetUserByProviderId/1");
             Assert.Equal(HttpStatusCode.OK, userResponse.StatusCode);
         }
 

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API;
+using API.Models;
 using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
@@ -35,14 +37,12 @@ namespace Tests.Integration
                Username = "admin",
                Password = "admin",
            })
-           .WithImage("postgres").
-            WithPortBinding(5432,5432)
+           .WithImage("postgres")
            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
            .Build();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-
             builder.ConfigureLogging(logging =>
             {
                 logging.ClearProviders();
@@ -51,8 +51,8 @@ namespace Tests.Integration
             builder.ConfigureTestServices(services =>
             {
                 //Remove DataSyncSyncerWorker
-                services.Remove(services.First(s => s.ImplementationType == typeof(DataContext)));
-
+                services.Remove(services.First(s => s.ServiceType == typeof(DbContextOptions<DataContext>)));
+                services.Remove(services.First(s => s.ServiceType == typeof(DataContext)));     
                 services.AddDbContext<DataContext>(options =>
                 {
                     options.UseNpgsql(testContainer.ConnectionString);
