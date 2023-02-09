@@ -1,88 +1,53 @@
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using API;
-using API.Models;
-using API.Repositories;
 using API.Repositories.Data;
-using API.Services;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 
-namespace Tests.Integration
+namespace Tests.Integration;
+
+public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
 {
-    public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
+    private readonly PostgreSqlTestcontainer testContainer
+        = new ContainerBuilder<PostgreSqlTestcontainer>()
+       .WithDatabase(new PostgreSqlTestcontainerConfiguration
+       {
+           Database = "Database",
+           Username = "admin",
+           Password = "admin",
+       })
+       .Build();
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        private readonly PostgreSqlTestcontainer testContainer
-            = new ContainerBuilder<PostgreSqlTestcontainer>()
-           .WithDatabase(new PostgreSqlTestcontainerConfiguration
-           {
-               Database = "Database",
-               Username = "admin",
-               Password = "admin",
-           })
-           .WithImage("postgres")
-           .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
-           .Build();
-
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        builder.ConfigureTestServices(services =>
         {
-            builder.ConfigureLogging(logging =>
+            services.Remove(services.First(s => s.ServiceType == typeof(DbContextOptions<DataContext>)));
+            services.Remove(services.First(s => s.ServiceType == typeof(DataContext)));
+            services.AddDbContext<DataContext>(options =>
             {
-                logging.ClearProviders();
+                options.UseNpgsql(testContainer.ConnectionString);
             });
+            services.AddScoped<IUserDataContext, DataContext>();
+        });
+    }
+    public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-            builder.ConfigureTestServices(services =>
-            {
-                //Remove DataSyncSyncerWorker
-                services.Remove(services.First(s => s.ServiceType == typeof(DbContextOptions<DataContext>)));
-                services.Remove(services.First(s => s.ServiceType == typeof(DataContext)));     
-                services.AddDbContext<DataContext>(options =>
-                {
-                    options.UseNpgsql(testContainer.ConnectionString);
-                });
+    public async Task InitializeAsync()
+    {
+        await testContainer.StartAsync();
+        var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        await dbContext.Database.MigrateAsync();
+    }
 
-                services.AddScoped<IUserDataContext, DataContext>();
-            });
-        }
-
-        public HttpClient CreateUnauthenticatedClient() => CreateClient();
-
-        public async Task InitializeAsync()
-        {
-            try
-            {
-                await testContainer.StartAsync();
-                var scope = Services.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-                await dbContext.Database.MigrateAsync();
-            }
-            catch (Exception e)
-            {
-                var d = e;
-               throw;
-            }
-            
-        }
-        async Task IAsyncLifetime.DisposeAsync()
-        {
-            await testContainer.DisposeAsync();
-        }
+    async Task IAsyncLifetime.DisposeAsync()
+    {
+        await testContainer.DisposeAsync();
     }
 }
