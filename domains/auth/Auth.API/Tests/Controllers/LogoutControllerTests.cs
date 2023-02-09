@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Options;
+using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +13,7 @@ namespace Tests.Controllers;
 public class LogoutControllerTests
 {
     private readonly OidcOptions oidcOptions;
+    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
 
     public LogoutControllerTests()
     {
@@ -28,6 +31,17 @@ public class LogoutControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
+        var sentiel = Guid.NewGuid().ToString();
+
+        var cryptography = Mock.Of<ICryptography>();
+        Mock.Get(cryptography).Setup(it => it.Decrypt<string>("identityToken")).Returns(sentiel);
+
+        var descriptor = new UserDescriptor(null, "", "", null, 0, false, "", "identityToken", cryptography);
+
+        Mock.Get(mapper)
+            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: descriptor);
+
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
@@ -35,7 +49,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().LogoutAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -49,6 +63,7 @@ public class LogoutControllerTests
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"post_logout_redirect_uri={options.Value.FrontendRedirectUri.AbsoluteUri}", query);
+        Assert.Contains($"id_token_hint={sentiel}", query);
     }
 
     [Fact]
@@ -63,7 +78,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().LogoutAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -91,7 +106,7 @@ public class LogoutControllerTests
 
         var logger = Mock.Of<ILogger<LogoutController>>();
 
-        var result = await new LogoutController().LogoutAsync(cache, options, logger);
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),

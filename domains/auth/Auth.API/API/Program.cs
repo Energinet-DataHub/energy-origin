@@ -62,7 +62,8 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.Value.CacheDuration
     };
 });
-builder.Services.AddSingleton<ICryptography>(providers => new Cryptography("secretsecretsecretsecret"));
+builder.Services.AddSingleton<ICryptography>(providers => new Cryptography("secretsecretsecretsecret")); // FIXME: option in, consider PP
+builder.Services.AddSingleton<IUserDescriptMapper>(providers => new UserDescriptMapper(providers.GetRequiredService<ICryptography>()));
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -71,15 +72,8 @@ builder.Services.AddScoped<ITokenIssuer>(providers =>
 {
     var termsOptions = providers.GetRequiredService<IOptions<TermsOptions>>().Value;
     var tokenOptions = providers.GetRequiredService<IOptions<TokenOptions>>().Value;
-    var cryptography = providers.GetRequiredService<ICryptography>();
     var userService = providers.GetRequiredService<IUserService>();
-    return new TokenIssuer(termsOptions, tokenOptions, cryptography, userService);
-});
-builder.Services.AddScoped(providers =>
-{
-    var accessor = providers.GetRequiredService<IHttpContextAccessor>();
-    var cryptography = providers.GetRequiredService<ICryptography>();
-    return new UserDescriptor(cryptography, accessor?.HttpContext?.User);
+    return new TokenIssuer(termsOptions, tokenOptions, userService);
 });
 
 var app = builder.Build();

@@ -15,7 +15,7 @@ public class LogoutController : ControllerBase
     [AllowAnonymous]
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, UserDescriptor descriptor, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
+    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptMapper descriptMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -27,14 +27,10 @@ public class LogoutController : ControllerBase
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: descriptor.IdentityToken,
+            idTokenHint: descriptMapper.Map(User)?.IdentityToken,
             postLogoutRedirectUri: oidcOptions.Value.FrontendRedirectUri.AbsoluteUri
         );
 
         return RedirectPreserveMethod(url);
     }
-
-    [HttpGet()]
-    [Route("issue")]
-    public async Task<IActionResult> RemoveThisAsync(ITokenIssuer tokenIssuer) => Ok(await tokenIssuer.IssueAsync("me", "a", "1")); // FIXME: remove
 }

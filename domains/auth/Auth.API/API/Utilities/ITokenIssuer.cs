@@ -2,5 +2,5 @@ namespace API.Utilities;
 
 public interface ITokenIssuer
 {
-    Task<string> IssueAsync(string userId, string accessToken, string identityToken, DateTime? issueAt = default);
+    Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default);
 }
