@@ -14,6 +14,12 @@ namespace Tests.Controllers
     public class TermsControllerTests
     {
         [Fact]
+        public async Task AcceptTermsAsync_ShouldCreateAndReturnUser_WhenUserDoesNotExist()
+        {
+
+        }
+
+        [Fact]
         public async Task AcceptTermsAsync_ShouldUpdateAcceptedTermsVersionAndReturnUser_WhenUserExists()
         {
             var userService = Mock.Of<IUserService>();
