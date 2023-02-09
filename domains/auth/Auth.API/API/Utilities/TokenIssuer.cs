@@ -4,17 +4,18 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Options;
 using API.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
-    private readonly TermsOptions termsOptions;
-    private readonly TokenOptions tokenOptions;
+    private readonly IOptions<TermsOptions> termsOptions;
+    private readonly IOptions<TokenOptions> tokenOptions;
     private readonly IUserService userService;
 
-    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, IUserService userService)
+    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions, IUserService userService)
     {
         this.termsOptions = termsOptions;
         this.tokenOptions = tokenOptions;
@@ -23,11 +24,11 @@ public class TokenIssuer : ITokenIssuer
 
     public async Task<string> IssueAsync(string userId, DateTime? issueAt = default)
     {
-        var credentials = CreateSigningCredentials(tokenOptions);
+        var credentials = CreateSigningCredentials(tokenOptions.Value);
 
-        var state = await ResolveStateAsync(termsOptions, userService, userId);
+        var state = await ResolveStateAsync(termsOptions.Value, userService, userId);
 
-        var descriptor = CreateTokenDescriptor(tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow);
+        var descriptor = CreateTokenDescriptor(tokenOptions.Value, credentials, state, issueAt ?? DateTime.UtcNow);
 
         return CreateToken(descriptor);
     }

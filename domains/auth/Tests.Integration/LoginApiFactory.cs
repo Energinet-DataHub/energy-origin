@@ -1,5 +1,7 @@
+using System.Net.Http.Headers;
 using API;
 using API.Repositories.Data;
+using API.Utilities;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -25,6 +27,7 @@ public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test");
         builder.ConfigureTestServices(services =>
         {
             services.Remove(services.First(s => s.ServiceType == typeof(DbContextOptions<DataContext>)));
@@ -35,14 +38,26 @@ public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             });
             services.AddScoped<IUserDataContext, DataContext>();
         });
+
+        builder.UseSetting("https_port", "8080");
     }
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
+    public HttpClient CreateUnauthenticatedClient() => CreateClient(new WebApplicationFactoryClientOptions
+    {
+        AllowAutoRedirect = false
+    });
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(string userId)
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await Services.CreateScope().ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userId));
+
+        return client;
+    }
 
     public async Task InitializeAsync()
     {
         await testContainer.StartAsync();
         var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();       
         await dbContext.Database.MigrateAsync();
     }
 

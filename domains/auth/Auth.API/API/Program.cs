@@ -3,6 +3,7 @@ using API.Options;
 using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
+using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -39,8 +40,8 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 });
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

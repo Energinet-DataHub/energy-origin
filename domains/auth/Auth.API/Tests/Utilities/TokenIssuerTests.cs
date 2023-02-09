@@ -6,6 +6,7 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Tests.Utilities;
@@ -118,7 +119,7 @@ public class TokenIssuerTests
     [Fact]
     public async Task IssueAsync_ShouldThrowKeyNotFoundException_WhenIssuingForNonExistingUser() => await Assert.ThrowsAsync<KeyNotFoundException>(async () => await GetTokenIssuer().IssueAsync(Guid.NewGuid().ToString()));
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions, service);
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new( Options.Create( terms ?? termsOptions), Options.Create(token ?? tokenOptions), service);
 
     private Guid AddUser(string? name = default, int version = 1, string? tin = default)
     {
