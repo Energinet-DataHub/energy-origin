@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using API;
+using API.Models;
 using API.Repositories.Data;
 using API.Utilities;
 using DotNet.Testcontainers.Builders;
@@ -13,8 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.Integration;
 
-public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
+public class LoginApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
+    public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
+
     private readonly PostgreSqlTestcontainer testContainer
         = new ContainerBuilder<PostgreSqlTestcontainer>()
        .WithDatabase(new PostgreSqlTestcontainerConfiguration
@@ -39,24 +42,29 @@ public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             services.AddScoped<IUserDataContext, DataContext>();
         });
     }
-    public HttpClient CreateUnauthenticatedClient() => CreateClient(new WebApplicationFactoryClientOptions
+
+    public HttpClient CreateUnauthenticatedClient()
     {
-        AllowAutoRedirect = false,
-        BaseAddress = new Uri("https://localhost")
-    });
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(string userId)
+        return CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            BaseAddress = new Uri("https://localhost")
+        });
+    }
+
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user)
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await Services.CreateScope().ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userId));
-
+        var userDescriptMapper = ServiceProvider.GetRequiredService<UserDescriptMapper>();
+        var userDescriptor = userDescriptMapper.Map(user, Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
         return client;
     }
 
     public async Task InitializeAsync()
     {
         await testContainer.StartAsync();
-        var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();       
+        var dbContext = ServiceProvider.GetRequiredService<DataContext>();
         await dbContext.Database.MigrateAsync();
     }
 

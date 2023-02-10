@@ -12,18 +12,9 @@ public class UserRepository : IUserRepository
 
     public async Task<User> UpsertUserAsync(User user)
     {
-        try
-        {
-            dataContext.Users.Update(user);
-            await dataContext.SaveChangesAsync();
-            return user;
-        }
-        catch (Exception e )
-        {
-            var dta = e;
-            throw;
-        }
-       
+        dataContext.Users.Update(user);
+        await dataContext.SaveChangesAsync();
+        return user;
     }
 
     public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
