@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Options;
 using API.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
@@ -14,10 +15,10 @@ public class TokenIssuer : ITokenIssuer
     private readonly TokenOptions tokenOptions;
     private readonly IUserService userService;
 
-    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, IUserService userService)
+    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions, IUserService userService)
     {
-        this.termsOptions = termsOptions;
-        this.tokenOptions = tokenOptions;
+        this.termsOptions = termsOptions.Value;
+        this.tokenOptions = tokenOptions.Value;
         this.userService = userService;
     }
 

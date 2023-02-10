@@ -5,6 +5,7 @@ using API.Options;
 using API.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Tests.Utilities;
 
@@ -23,7 +24,7 @@ public class UserDescriptMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        cryptography = new Cryptography(options.Key);
+        cryptography = new Cryptography(Options.Create(options));
 
         mapper = new UserDescriptMapper(cryptography, logger);
     }
