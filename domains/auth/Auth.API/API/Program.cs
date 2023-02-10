@@ -63,19 +63,13 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.Value.CacheDuration
     };
 });
-builder.Services.AddSingleton<ICryptography>(providers => new Cryptography(providers.GetRequiredService<IOptions<CryptographyOptions>>().Value.Key));
-builder.Services.AddSingleton<IUserDescriptMapper>(providers => new UserDescriptMapper(providers.GetRequiredService<ICryptography>(), providers.GetRequiredService<ILogger<UserDescriptMapper>>()));
+builder.Services.AddSingleton<ICryptography, Cryptography>();
+builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
-builder.Services.AddScoped<ITokenIssuer>(providers =>
-{
-    var termsOptions = providers.GetRequiredService<IOptions<TermsOptions>>().Value;
-    var tokenOptions = providers.GetRequiredService<IOptions<TokenOptions>>().Value;
-    var userService = providers.GetRequiredService<IUserService>();
-    return new TokenIssuer(termsOptions, tokenOptions, userService);
-});
+builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 
 var app = builder.Build();
 

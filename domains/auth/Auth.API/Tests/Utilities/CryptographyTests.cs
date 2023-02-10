@@ -51,6 +51,7 @@ public class CryptographyTests
 
         Assert.NotNull(decrypted);
         Assert.IsType<string>(decrypted);
+        Assert.Equal(value, decrypted);
     }
 
     [Fact]
