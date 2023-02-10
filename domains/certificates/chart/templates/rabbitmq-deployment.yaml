@@ -33,5 +33,5 @@ spec:
       - rabbitmq_management
       - rabbitmq_peer_discovery_k8s
     additionalConfig: |
-    default_user = guest
-    default_pass = guest
+      default_user = guest
+      default_pass = guest
