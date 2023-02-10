@@ -3,8 +3,8 @@ name: eo-certificates
 description: A chart containing the certificates domain.
 
 dependencies:
-  - name: rabbitmq-cluster-operator
-    version: 2.1.0
+  - name: rabbitmq-cluster-operators
+    version: 3.2.2
     repository: https://charts.bitnami.com/bitnami
 
 type: application
