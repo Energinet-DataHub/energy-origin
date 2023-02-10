@@ -22,15 +22,13 @@ public class TokenIssuer : ITokenIssuer
         this.userService = userService;
     }
 
-    public async Task<string> IssueAsync(string userId, DateTime? issueAt = default)
+    public async Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions.Value);
 
-        var state = await ResolveStateAsync(termsOptions.Value, userService, userId);
+        var state = await ResolveStateAsync(termsOptions, userService, descriptor);
 
-        var descriptor = CreateTokenDescriptor(tokenOptions.Value, credentials, state, issueAt ?? DateTime.UtcNow);
-
-        return CreateToken(descriptor);
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -43,31 +41,50 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static async Task<UserState> ResolveStateAsync(TermsOptions options, IUserService userService, string userId)
+    private static async Task<UserState> ResolveStateAsync(TermsOptions options, IUserService userService, UserDescriptor descriptor)
     {
-        var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
-        var scope = user.AcceptedTermsVersion == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
-        return new(user.Id.ToString(), user.Name, user.AcceptedTermsVersion, user.Tin, scope);
+        var userId = descriptor.Id?.ToString();
+        int version;
+        if (userId == null)
+        {
+            version = descriptor.AcceptedTermsVersion;
+        }
+        else
+        {
+            var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
+            version = user.AcceptedTermsVersion;
+        }
+        var scope = version == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
+        return new(userId, version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
-            { "scope", state.Scope },
-            { "terms", state.AcceptedVersion },
+            { UserClaimName.Scope, state.Scope },
+            { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
+            { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
+            { UserClaimName.ProviderId, descriptor.ProviderId },
+            { UserClaimName.TermsVersion, state.AcceptedVersion },
+            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
         };
-
-        if (state.Tin != null)
+        if (descriptor.Tin != null)
         {
-            claims.Add("tin", state.Tin);
+            claims.Add(UserClaimName.Tin, descriptor.Tin);
+        }
+
+        var identity = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
+        };
+        if (state.Id != null)
+        {
+            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, state.Id));
         }
 
         return new()
         {
-            Subject = new ClaimsIdentity(new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, state.Id),
-                new Claim(JwtRegisteredClaimNames.Name, state.Name),
-            }),
+            Subject = new ClaimsIdentity(identity),
             NotBefore = issueAt,
             Expires = issueAt.Add(options.Duration),
             Issuer = options.Issuer,
@@ -84,5 +101,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(string Id, string Name, int AcceptedVersion, string? Tin, string Scope);
+    private record UserState(string? Id, int AcceptedVersion, string Scope);
 }
