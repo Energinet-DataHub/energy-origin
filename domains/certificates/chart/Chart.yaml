@@ -2,5 +2,10 @@ apiVersion: v2
 name: eo-certificates
 description: A chart containing the certificates domain.
 
+dependencies:
+  - name: rabbitmq-cluster-operator
+    version: 2.1.0
+    repository: https://charts.bitnami.com/bitnami
+
 type: application
 version: 1.1.2
