@@ -57,7 +57,7 @@ builder.Services.AddMarten(options =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddIntegrationEventBus();
+builder.Services.AddIntegrationEventBus(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
@@ -78,6 +78,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Host {host}", app.Configuration["RabbitMQ:Host"]);
+logger.LogInformation("Username {username}", app.Configuration["RabbitMQ:Username"]);
+logger.LogInformation("Password {password}", app.Configuration["RabbitMQ:Password"]);
 
 app.MapHealthChecks("/health");
 
