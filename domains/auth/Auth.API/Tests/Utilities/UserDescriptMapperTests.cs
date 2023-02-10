@@ -142,7 +142,6 @@ public class UserDescriptMapperTests
     public void Map_ShouldReturnNull_WhenMappingClaimPrincipalWithoutRequiredProperties()
     {
         var name = Guid.NewGuid().ToString();
-        var scope = $"{Guid.NewGuid()} {Guid.NewGuid()}";
         var accessToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var providerId = Guid.NewGuid().ToString();
@@ -151,15 +150,6 @@ public class UserDescriptMapperTests
         var cases = new Dictionary<string, Claim[]>
         {
             { JwtRegisteredClaimNames.Name, new Claim[] {
-                new Claim(UserClaimName.Scope, scope),
-                new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
-                new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
-                new Claim(UserClaimName.ProviderId, providerId),
-                new Claim(UserClaimName.TermsVersion, $"{version}"),
-                new Claim(UserClaimName.AllowCPRLookup, "true"),
-            }},
-            { UserClaimName.Scope, new Claim[] {
-                new Claim(JwtRegisteredClaimNames.Name, name),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
@@ -168,7 +158,6 @@ public class UserDescriptMapperTests
             }},
             { UserClaimName.AccessToken, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(UserClaimName.Scope, scope),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.TermsVersion, $"{version}"),
@@ -176,7 +165,6 @@ public class UserDescriptMapperTests
             }},
             { UserClaimName.IdentityToken, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(UserClaimName.Scope, scope),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.TermsVersion, $"{version}"),
@@ -184,7 +172,6 @@ public class UserDescriptMapperTests
             }},
             { UserClaimName.ProviderId, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(UserClaimName.Scope, scope),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.TermsVersion, $"{version}"),
@@ -192,7 +179,6 @@ public class UserDescriptMapperTests
             }},
                 { UserClaimName.TermsVersion, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(UserClaimName.Scope, scope),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
@@ -200,7 +186,6 @@ public class UserDescriptMapperTests
             }},
                 { UserClaimName.AllowCPRLookup, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(UserClaimName.Scope, scope),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
@@ -214,7 +199,7 @@ public class UserDescriptMapperTests
 
             var descriptor = mapper.Map(user);
 
-            Assert.True(descriptor != null, $"Descriptor was made without required property: '{kase.Key}'");
+            Assert.True(descriptor == null, $"Descriptor was made without required property: '{kase.Key}'");
         }
     }
 
