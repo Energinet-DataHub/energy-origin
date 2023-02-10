@@ -1,0 +1,10 @@
+extraDeploy:
+  - apiVersion: rabbitmq.com/v1beta1
+    kind: RabbitmqCluster
+    metadata:
+      name: rabbitmq-custom-configuration
+    spec:
+      replicas: 1
+      rabbitmq:
+        additionalConfig: |
+          log.console.level = debug
