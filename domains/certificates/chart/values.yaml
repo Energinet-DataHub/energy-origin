@@ -12,7 +12,7 @@ rabbitmq-cluster-operator:
     - apiVersion: rabbitmq.com/v1beta1
       kind: RabbitmqCluster
       metadata:
-        name: {{ .Release.Name }}-rabbitmq-cluster
+        name: certificate-rabbitmq-cluster
       spec:
         replicas: 1
         rabbitmq:
