@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
+using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
@@ -14,7 +15,11 @@ using Xunit;
 
 namespace API.AppTests;
 
-public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
+public sealed class CertificateIssuingTests :
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+    IClassFixture<RabbitMqContainer>,
+    IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
