@@ -26,9 +26,9 @@ public class TokenIssuer : ITokenIssuer
     {
         var credentials = CreateSigningCredentials(tokenOptions.Value);
 
-        var state = await ResolveStateAsync(termsOptions, userService, descriptor);
+        var state = await ResolveStateAsync(termsOptions.Value, userService, descriptor);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions.Value, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
