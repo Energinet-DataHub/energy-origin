@@ -22,10 +22,8 @@ public class LoginControllerTest : IClassFixture<LoginApiFactory>
     {
         var client = factory.CreateUnauthenticatedClient();
         var result = await client.GetAsync("auth/login");
-        var oidcOptions = factory.Services.CreateScope().ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
-        var redirectResult = await result.Content.ReadAsStringAsync();
-        var query = HttpUtility.UrlDecode(redirectResult);
-        var gege = result.Headers.Location.OriginalString;
+        var oidcOptions = factory.Services.CreateScope().ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();        
+        var query = HttpUtility.UrlDecode(result.Headers.Location.AbsoluteUri);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);        
         Assert.Contains($"client_id={oidcOptions.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri}", query);

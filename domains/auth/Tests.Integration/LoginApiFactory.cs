@@ -38,12 +38,11 @@ public class LoginApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             });
             services.AddScoped<IUserDataContext, DataContext>();
         });
-
-        builder.UseSetting("https_port", "8080");
     }
     public HttpClient CreateUnauthenticatedClient() => CreateClient(new WebApplicationFactoryClientOptions
     {
-        AllowAutoRedirect = false
+        AllowAutoRedirect = false,
+        BaseAddress = new Uri("https://localhost")
     });
     public async Task<HttpClient> CreateAuthenticatedClientAsync(string userId)
     {
