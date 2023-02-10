@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-rabbitmq
+  name: {{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.rabbitmq.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-rabbitmq
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-rabbitmq
+          image: '{{ .Values.rabbitmq.image.name }}:{{ .Values.rabbitmq.image.tag }}'
+          livenessProbe:
+            exec:
+              command: ['rabbitmq-diagnostics', '-q', 'ping']
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          ports:
+            - containerPort: 5672
+              name: rbmq
+              protocol: TCP
+  rabbitmq:
+    additionalPlugins:
+      - rabbitmq_management
+      - rabbitmq_peer_discovery_k8s
+    additionalConfig: |
+      default_user = guest
+      default_pass = guest
