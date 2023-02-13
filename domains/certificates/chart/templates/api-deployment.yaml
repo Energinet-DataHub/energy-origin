@@ -34,15 +34,15 @@ spec:
             - name: RABBITMQ__HOST
               valueFrom:
                 secretKeyRef:
-                  name: certificate-rabbitmq-cluster-default-user
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
                   key: host
             - name: RABBITMQ__USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: certificate-rabbitmq-cluster-default-user
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
                   key: username
             - name: RABBITMQ__PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: certificate-rabbitmq-cluster-default-user
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
                   key: password
