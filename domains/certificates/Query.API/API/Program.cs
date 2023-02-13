@@ -79,11 +79,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Host {host}", app.Configuration["RabbitMQ:Host"]);
-logger.LogInformation("Username {username}", app.Configuration["RabbitMQ:Username"]);
-logger.LogInformation("Password {password}", app.Configuration["RabbitMQ:Password"]);
-
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
