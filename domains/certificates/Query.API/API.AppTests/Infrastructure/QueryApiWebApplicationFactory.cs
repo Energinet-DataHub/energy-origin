@@ -23,11 +23,16 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "";
+    public string RabbitMqUsername { get; set; } = "";
+    public string RabbitMqPassword { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
+        builder.UseSetting("IntegrationEventBus:Password", RabbitMqPassword);
+        builder.UseSetting("IntegrationEventBus:Username", RabbitMqUsername);
+        builder.UseSetting("IntegrationEventBus:Url", "localhost");
 
         builder.ConfigureTestServices(services =>
         {

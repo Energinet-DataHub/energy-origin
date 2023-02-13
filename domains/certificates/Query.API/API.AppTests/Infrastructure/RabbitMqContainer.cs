@@ -15,10 +15,13 @@ public class RabbitMqContainer : IAsyncLifetime
             .WithMessageBroker(new RabbitMqTestcontainerConfiguration
             {
                 Username = "guest",
-                Password = "guest",
+                Password = "guest"
             })
-            .WithImage("rabbitmq:3.7.28")
             .Build();
+
+    public string Username => testContainer.Username;
+    public string Password => testContainer.Password;
+
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 

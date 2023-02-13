@@ -18,18 +18,21 @@ namespace API.AppTests;
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
-    IClassFixture<RabbitMqContainer>,
+    // IClassFixture<RabbitMqContainer>,
     IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
     public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
+    // public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9002);
+        dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.RabbitMqPassword = "guest";// rabbitMqContainer.Password;
+        this.factory.RabbitMqUsername = "guest";//rabbitMqContainer.Username;
     }
 
     [Fact]
@@ -116,8 +119,9 @@ public sealed class CertificateIssuingTests :
                 Quantity: 42 + i,
                 Quality: MeasurementQuality.Measured))
             .ToArray();
+        var bus = factory.GetMassTransitBus();
 
-        await factory.GetMassTransitBus().PublishBatch(measurements);
+        await bus.PublishBatch(measurements);
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
