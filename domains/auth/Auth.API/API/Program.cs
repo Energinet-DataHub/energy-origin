@@ -1,5 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -7,6 +5,7 @@ using API.Options;
 using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
+using API.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -24,29 +23,36 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
+
+var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
+var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
+
+builder.Services.Configure<TokenOptions>(tokenConfiguration);
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
-var rsa = RSA.Create();
-rsa.ImportFromPem(Encoding.UTF8.GetString(builder.Configuration.GetSection(TokenOptions.Prefix).GetValue<byte[]>("PublicKeyPem")));
-var key = new RsaSecurityKey(rsa);
+builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
+builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
+builder.Services.AddAuthentication().AddJwtBearer(options =>
+{
+    var rsa = RSA.Create();
+    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
+
+    options.TokenValidationParameters = new()
     {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateActor = false,
-            ValidateLifetime = false,
-            ValidateTokenReplay = false,
-            IssuerSigningKey = key
-        };
-    });
+        IssuerSigningKey = new RsaSecurityKey(rsa),
+        ValidAudience = tokenOptions.Audience,
+        ValidIssuer = tokenOptions.Issuer,
+    };
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -72,10 +78,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
-builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
-builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
-
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
@@ -86,9 +88,13 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.Value.CacheDuration
     };
 });
+builder.Services.AddSingleton<ICryptography, Cryptography>();
+builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
+builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 
 var app = builder.Build();
 
@@ -103,7 +109,6 @@ else
 }
 
 app.UseHttpsRedirection();
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

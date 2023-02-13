@@ -7,11 +7,10 @@ namespace API.Repositories.Data
     {
         protected readonly IConfiguration Configuration;
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> Users { get; set; } = null!;
 
-#pragma warning disable CS8618
         public DataContext(DbContextOptions options, IConfiguration configuration) : base(options) => Configuration = configuration;
-#pragma warning restore CS8618
+
         protected override void OnModelCreating(ModelBuilder modelBuilder) => base.OnModelCreating(modelBuilder);
     }
 }
