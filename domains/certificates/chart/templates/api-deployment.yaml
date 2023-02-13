@@ -30,3 +30,19 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
+          # env:
+          #   - name: RABBITMQ__HOST
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+          #         key: host
+          #   - name: RABBITMQ__USERNAME
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+          #         key: username
+          #   - name: RABBITMQ__PASSWORD
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+          #         key: password
