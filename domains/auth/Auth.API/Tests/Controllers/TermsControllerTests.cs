@@ -1,77 +1,139 @@
-using System.Reflection.Metadata;
-using System.Web;
+using System.Security.Claims;
 using API.Controllers;
 using API.Models;
-using API.Options;
 using API.Services;
-using IdentityModel.Client;
+using API.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Tests.Controllers
 {
     public class TermsControllerTests
     {
-        [Fact]
-        public async Task AcceptTermsAsync_ShouldCreateAndReturnUser_WhenUserDoesNotExist()
-        {
+        private readonly TermsController termsController = new TermsController();
+        private readonly IUserService userService = Mock.Of<IUserService>();
+        private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
 
+        [Fact]
+        public async Task AcceptTermsAsync_ShouldOnlyUpdateAcceptedTermsVersionAndReturnUser_WhenUserExists()
+        {
+            var id = Guid.NewGuid();
+            var name = Guid.NewGuid().ToString();
+            var providerId = Guid.NewGuid().ToString();
+            var tin = null as string;
+            var allowCprLookup = false;
+            var oldAcceptedTermsVersion = 1;
+            var newAcceptedTermsVersion = 2;
+
+            var hehe = Guid.NewGuid().ToString();
+
+            Mock.Get(mapper)
+                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+                .Returns(value: new UserDescriptor(null!)
+                {
+                    Id = id,
+                    Name = Guid.NewGuid().ToString(),
+                    ProviderId = Guid.NewGuid().ToString(),
+                    Tin = Guid.NewGuid().ToString(),
+                    AllowCPRLookup = true,
+                    AcceptedTermsVersion = oldAcceptedTermsVersion
+                });
+
+            Mock.Get(userService)
+                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(value: new User()
+                {
+                    Id = id,
+                    Name = name,
+                    ProviderId = providerId,
+                    Tin = tin,
+                    AllowCPRLookup = allowCprLookup,
+                    AcceptedTermsVersion = oldAcceptedTermsVersion
+                });
+
+            Mock.Get(userService)
+                .Setup(x => x.UpsertUserAsync(It.IsAny<User>()))
+                .ReturnsAsync(value: new User()
+                {
+                    Id = id,
+                    Name = name,
+                    ProviderId = providerId,
+                    Tin = tin,
+                    AllowCPRLookup = allowCprLookup,
+                    AcceptedTermsVersion = newAcceptedTermsVersion
+                });
+
+            var result = await termsController.AcceptTermsAsync(newAcceptedTermsVersion, mapper, userService);
+            Assert.NotNull(result);
+            Assert.IsType<ActionResult<User>>(result);
+            Assert.IsType<OkObjectResult>(result?.Result);
+
+            var value = (result?.Result as OkObjectResult)!.Value;
+            Assert.NotNull(value);
+            Assert.IsType<User>(value);
+
+            var user = (value as User)!;
+            Assert.Equal(id, user.Id);
+            Assert.Equal(name, user.Name);
+            Assert.Equal(providerId, user.ProviderId);
+            Assert.Equal(tin, user.Tin);
+            Assert.Equal(allowCprLookup, user.AllowCPRLookup);
+            Assert.Equal(newAcceptedTermsVersion, user.AcceptedTermsVersion);
         }
 
         [Fact]
-        public async Task AcceptTermsAsync_ShouldUpdateAcceptedTermsVersionAndReturnUser_WhenUserExists()
+        public async Task AcceptTermsAsync_ShouldCreateAndReturnUser_WhenUserDoesNotExist()
         {
-            var userService = Mock.Of<IUserService>();
+            var id = null as Guid?;
+            var name = Guid.NewGuid().ToString();
+            var providerId = Guid.NewGuid().ToString();
+            var tin = null as string;
+            var allowCprLookup = false;
+            var newAcceptedTermsVersion = 1;
 
-            var termsVersion = 5;
+            Mock.Get(mapper)
+                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+                .Returns(value: new UserDescriptor(null!)
+                {
+                    Id = id,
+                    Name = name,
+                    ProviderId = providerId,
+                    Tin = tin,
+                    AllowCPRLookup = allowCprLookup,
+                    AcceptedTermsVersion = 0
+                });
 
             Mock.Get(userService)
-                .Setup(it => it.UpsertUserAsync(It.IsAny<User>()))
+                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(value: null);
+
+            Mock.Get(userService)
+                .Setup(x => x.UpsertUserAsync(It.IsAny<User>()))
                 .ReturnsAsync(value: new User()
                 {
                     Id = Guid.NewGuid(),
-                    ProviderId = Guid.NewGuid().ToString(),
-                    Name = "Amigo",
-                    AcceptedTermsVersion = termsVersion,
-                    Tin = null,
-                    AllowCPRLookup = true
+                    Name = name,
+                    ProviderId = providerId,
+                    Tin = tin,
+                    AllowCPRLookup = allowCprLookup,
+                    AcceptedTermsVersion = newAcceptedTermsVersion
                 });
 
-            var result = await new TermsController().AcceptTermsAsync(termsVersion, userService);
-            var user = result.Value;
-
+            var result = await termsController.AcceptTermsAsync(newAcceptedTermsVersion, mapper, userService);
             Assert.NotNull(result);
-            Assert.IsType<OkResult>(result);
-            Assert.Equal(termsVersion, user?.AcceptedTermsVersion);
+            Assert.IsType<ActionResult<User>>(result);
+            Assert.IsType<OkObjectResult>(result?.Result);
 
+            var value = (result?.Result as OkObjectResult)!.Value;
+            Assert.NotNull(value);
+            Assert.IsType<User>(value);
 
-
-
-            //var options = TestOptions.Oidc(oidcOptions);
-
-            //var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
-
-            //var cache = Mock.Of<IDiscoveryCache>();
-            //_ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-            //var logger = Mock.Of<ILogger<LoginController>>();
-
-            //var result = await new LoginController().LoginAsync(cache, options, logger);
-
-            //Assert.NotNull(result);
-            //Assert.IsType<RedirectResult>(result);
-
-            //var redirectResult = (RedirectResult)result;
-            //Assert.True(redirectResult.PreserveMethod);
-            //Assert.False(redirectResult.Permanent);
-
-            //var uri = new Uri(redirectResult.Url);
-            //Assert.Equal(options.Value.AuthorityUri.Host, uri.Host);
-
-            //var query = HttpUtility.UrlDecode(uri.Query);
-            //Assert.Contains($"client_id={options.Value.ClientId}", query);
-            //Assert.Contains($"redirect_uri={options.Value.AuthorityCallbackUri.AbsoluteUri}", query);
+            var user = (value as User)!;
+            Assert.NotEqual(id, user.Id);
+            Assert.Equal(name, user.Name);
+            Assert.Equal(providerId, user.ProviderId);
+            Assert.Equal(tin, user.Tin);
+            Assert.Equal(allowCprLookup, user.AllowCPRLookup);
+            Assert.Equal(newAcceptedTermsVersion, user.AcceptedTermsVersion);
         }
     }
 }
