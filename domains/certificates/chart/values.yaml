@@ -7,14 +7,5 @@ postgres:
     name: sibedge/postgres-plv8
     tag: 15.0-3.1.4-alpine
   size: 10Gi
-rabbitmq-cluster-operator:
-  extraDeploy:
-    - apiVersion: rabbitmq.com/v1beta1
-      kind: RabbitmqCluster
-      metadata:
-        name: certificate-rabbitmq-cluster
-      spec:
-        replicas: 1
-        rabbitmq:
-          additionalConfig: |
-            log.console.level = debug
+rabbitmq:
+  replicaCount: 1
