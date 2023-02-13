@@ -39,6 +39,8 @@ internal class DataSyncSyncerWorker : BackgroundService
             var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
+                logger.LogInformation("Delete me!");
+
                 var measurements = await dataSyncService.FetchMeasurements(contract,
                     stoppingToken);
 
