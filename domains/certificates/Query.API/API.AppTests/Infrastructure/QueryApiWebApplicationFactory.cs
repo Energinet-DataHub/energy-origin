@@ -25,6 +25,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string DataSyncUrl { get; set; } = "";
     public string RabbitMqUsername { get; set; } = "";
     public string RabbitMqPassword { get; set; } = "";
+    public string RabbitMqUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -32,7 +33,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("IntegrationEventBus:Password", RabbitMqPassword);
         builder.UseSetting("IntegrationEventBus:Username", RabbitMqUsername);
-        builder.UseSetting("IntegrationEventBus:Url", "localhost");
+        builder.UseSetting("IntegrationEventBus:Url", RabbitMqUrl);
 
         builder.ConfigureTestServices(services =>
         {

@@ -18,21 +18,22 @@ namespace API.AppTests;
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
-    // IClassFixture<RabbitMqContainer>,
+     IClassFixture<RabbitMqContainer>,
     IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
+    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     // public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
-        this.factory.RabbitMqPassword = "guest";// rabbitMqContainer.Password;
-        this.factory.RabbitMqUsername = "guest";//rabbitMqContainer.Username;
+        this.factory.RabbitMqUrl = rabbitMqContainer.Url;
+        this.factory.RabbitMqPassword = rabbitMqContainer.Password;
+        this.factory.RabbitMqUsername = rabbitMqContainer.Username;
     }
 
     [Fact]

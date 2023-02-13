@@ -1,3 +1,4 @@
+using System;
 using API.Configurations;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus.Configurations;
@@ -24,7 +25,9 @@ public static class Startup
             o.UsingRabbitMq((context, cfg) =>
             {
                 var options = context.GetRequiredService<IOptions<IntegrationEventBusOptions>>().Value;
-                cfg.Host(options.Url, "/", h =>
+
+                //cfg.Host(options.Url, "/", h =>
+                cfg.Host(new Uri(options.Url), h =>
                 {
                     h.Username(options.Username);
                     h.Password(options.Password);
