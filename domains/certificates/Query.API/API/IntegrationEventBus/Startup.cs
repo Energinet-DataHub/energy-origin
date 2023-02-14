@@ -1,3 +1,4 @@
+using API.DemoWorkflow;
 using API.GranularCertificateIssuer;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,10 @@ public static class Startup
         services.AddMassTransit(o =>
         {
             o.SetKebabCaseEndpointNameFormatter();
+
+            // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
+            o.AddSagaStateMachine<DemoStateMachine, DemoStateMachineInstance>()
+                .InMemoryRepository(); //TODO: Change this to Marten
 
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
 
