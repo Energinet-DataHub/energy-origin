@@ -47,7 +47,7 @@ public class TokenIssuerTests
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
-        var issueAt = new DateTime(2000, 1, 1, 0, 0, 0);
+        var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor, issueAt);
 
