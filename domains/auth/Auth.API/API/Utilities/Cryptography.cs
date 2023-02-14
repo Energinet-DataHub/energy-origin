@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using API.Options;
+using Microsoft.Extensions.Options;
 
 namespace API.Utilities;
 
@@ -9,7 +11,7 @@ public class Cryptography : ICryptography
 {
     private readonly byte[] secret;
 
-    public Cryptography(string secret) => this.secret = Encoding.UTF8.GetBytes(secret);
+    public Cryptography(IOptions<CryptographyOptions> options) => secret = Encoding.UTF8.GetBytes(options.Value.Key);
 
     public string Encrypt<T>(T state)
     {
