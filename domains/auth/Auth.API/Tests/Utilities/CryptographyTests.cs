@@ -1,6 +1,7 @@
 using API.Options;
 using API.Utilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Tests.Utilities;
 
@@ -17,7 +18,7 @@ public class CryptographyTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        cryptography = new Cryptography(options.Key);
+        cryptography = new Cryptography(Options.Create(options));
     }
 
     [Fact]

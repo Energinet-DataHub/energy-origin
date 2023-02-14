@@ -15,8 +15,8 @@ public class TokenIssuerTests
 {
     private readonly IUserService service = Mock.Of<IUserService>();
 
-    private readonly TermsOptions termsOptions;
-    private readonly TokenOptions tokenOptions;
+    private readonly IOptions<TermsOptions> termsOptions;
+    private readonly IOptions<TokenOptions> tokenOptions;
 
     public TokenIssuerTests()
     {
@@ -25,8 +25,8 @@ public class TokenIssuerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
-        tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
+        termsOptions = Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
+        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class TokenIssuerTests
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
-        var options = TestOptions.Token(tokenOptions, duration: duration);
+        var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0);
 
         var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor, issueAt);
@@ -63,7 +63,7 @@ public class TokenIssuerTests
         var descriptor = PrepareUser();
         var audience = Guid.NewGuid().ToString();
         var issuer = Guid.NewGuid().ToString();
-        var options = TestOptions.Token(tokenOptions, audience, issuer);
+        var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
 
         var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
 
@@ -77,7 +77,7 @@ public class TokenIssuerTests
     public async Task IssueAsync_ShouldReturnASignedToken_WhenIssuing()
     {
         var descriptor = PrepareUser();
-        var options = TestOptions.Token(tokenOptions);
+        var options = TestOptions.Token(tokenOptions.Value);
 
         var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
 
@@ -139,7 +139,7 @@ public class TokenIssuerTests
         Assert.Null(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
     }
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new( Options.Create( terms ?? termsOptions), Options.Create(token ?? tokenOptions), service);
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value), service);
 
     private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
     {

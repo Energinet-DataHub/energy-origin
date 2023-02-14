@@ -12,11 +12,12 @@ public class CreateContractValidator : AbstractValidator<CreateContract>
         var utcMidnight = now.Subtract(now.TimeOfDay).ToUnixTimeSeconds();
 
         RuleFor(cs => cs.StartDate)
-            .GreaterThanOrEqualTo(_ => utcMidnight);
+            .GreaterThanOrEqualTo(_ => utcMidnight)
+            .LessThan(253402300800).WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)");
 
         RuleFor(cs => cs.GSRN)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .Must(gsrn => Regex.IsMatch(gsrn, "^\\d{18}$", RegexOptions.None, TimeSpan.FromSeconds(1))).WithMessage("Invalid GSRN. Must be 18 digits");
+            .Must(gsrn => Regex.IsMatch(gsrn, "^\\d{18}$", RegexOptions.None, TimeSpan.FromSeconds(1))).WithMessage("Invalid {PropertyName}. Must be 18 digits");
     }
 }

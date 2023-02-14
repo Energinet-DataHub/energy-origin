@@ -11,24 +11,24 @@ namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
-    private readonly IOptions<TermsOptions> termsOptions;
-    private readonly IOptions<TokenOptions> tokenOptions;
+    private readonly TermsOptions termsOptions;
+    private readonly TokenOptions tokenOptions;
     private readonly IUserService userService;
 
     public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions, IUserService userService)
     {
-        this.termsOptions = termsOptions;
-        this.tokenOptions = tokenOptions;
+        this.termsOptions = termsOptions.Value;
+        this.tokenOptions = tokenOptions.Value;
         this.userService = userService;
     }
 
     public async Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default)
     {
-        var credentials = CreateSigningCredentials(tokenOptions.Value);
+        var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = await ResolveStateAsync(termsOptions.Value, userService, descriptor);
+        var state = await ResolveStateAsync(termsOptions, userService, descriptor);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions.Value, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)

@@ -26,7 +26,7 @@ public class LoginControllerTests : IClassFixture<LoginApiFactory>
         var oidcOptions = factory.Services.CreateScope().ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();        
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
 
-        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);        
+        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
         Assert.Contains($"client_id={oidcOptions.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri}", query);
     }   
