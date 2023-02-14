@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
+using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
@@ -14,17 +15,25 @@ using Xunit;
 
 namespace API.AppTests;
 
-public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
+public sealed class CertificateIssuingTests :
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+     IClassFixture<RabbitMqContainer>,
+    IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
+    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9002);
+        dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.RabbitMqPassword = rabbitMqContainer.Password;
+        this.factory.RabbitMqUsername = rabbitMqContainer.Username;
+        this.factory.RabbitMqHost = rabbitMqContainer.Hostname;
+        this.factory.RabbitMqPort = rabbitMqContainer.Port.ToString();
     }
 
     [Fact]
