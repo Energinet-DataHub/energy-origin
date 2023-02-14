@@ -16,7 +16,7 @@ public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance
 
         Initially(
             When(DemoRequested)
-                .Then(x => logger.LogInformation("Received {message}", x.CorrelationId)));    
+                .Then(x => logger.LogInformation("Received {message}", x.CorrelationId)));
     }
 }
 
