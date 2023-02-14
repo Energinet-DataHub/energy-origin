@@ -4,7 +4,6 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
@@ -17,7 +16,7 @@ public class OidcController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/oidc/callback")]
-    public async Task<RedirectResult> CallbackAsync(
+    public async Task<IActionResult> CallbackAsync(
         IDiscoveryCache discoveryCache,
         HttpClient client, // FIXME: add
         IUserDescriptMapper mapper,
@@ -87,7 +86,14 @@ public class OidcController : ControllerBase
             var descriptor = mapper.Map(user, response.AccessToken, response.IdentityToken);
             var token = await issuer.IssueAsync(descriptor);
 
-            return RedirectPreserveMethod(options.Value.FrontendRedirectUri.AbsoluteUri); // FIXME: html redirect with cookie
+            Response.Cookies.Append("Authentication", token, new CookieOptions
+            {
+                IsEssential = true,
+                Secure = true,
+                Expires = DateTimeOffset.UtcNow.Add(options.Value.CacheDuration) // FIXME: configurable
+            });
+
+            return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{options.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
         }
         catch
         {
