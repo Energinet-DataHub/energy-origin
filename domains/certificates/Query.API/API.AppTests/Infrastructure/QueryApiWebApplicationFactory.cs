@@ -25,15 +25,17 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string DataSyncUrl { get; set; } = "";
     public string RabbitMqUsername { get; set; } = "";
     public string RabbitMqPassword { get; set; } = "";
-    public string RabbitMqUrl { get; set; } = "";
+    public string RabbitMqHost { get; set; } = "";
+    public string RabbitMqPort { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
-        builder.UseSetting("IntegrationEventBus:Password", RabbitMqPassword);
-        builder.UseSetting("IntegrationEventBus:Username", RabbitMqUsername);
-        builder.UseSetting("IntegrationEventBus:Url", RabbitMqUrl);
+        builder.UseSetting("RabbitMq:Password", RabbitMqPassword);
+        builder.UseSetting("RabbitMq:Username", RabbitMqUsername);
+        builder.UseSetting("RabbitMq:Host", RabbitMqHost);
+        builder.UseSetting("RabbitMq:Port", RabbitMqPort);
 
         builder.ConfigureTestServices(services =>
         {

@@ -25,9 +25,9 @@ public static class Startup
             o.UsingRabbitMq((context, cfg) =>
             {
                 var options = context.GetRequiredService<IOptions<IntegrationEventBusOptions>>().Value;
+                string url = $"rabbitmq://{options.Host}:{options.Port}";
 
-                //cfg.Host(options.Url, "/", h =>
-                cfg.Host(new Uri(options.Url), h =>
+                cfg.Host(new Uri(url), h =>
                 {
                     h.Username(options.Username);
                     h.Password(options.Password);

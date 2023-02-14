@@ -25,15 +25,15 @@ public sealed class CertificateIssuingTests :
     private readonly DataSyncWireMock dataSyncWireMock;
 
     public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
-    // public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
-        this.factory.RabbitMqUrl = rabbitMqContainer.Url;
         this.factory.RabbitMqPassword = rabbitMqContainer.Password;
         this.factory.RabbitMqUsername = rabbitMqContainer.Username;
+        this.factory.RabbitMqHost = rabbitMqContainer.Hostname;
+        this.factory.RabbitMqPort = rabbitMqContainer.Port.ToString();
     }
 
     [Fact]

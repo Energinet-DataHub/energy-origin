@@ -22,7 +22,7 @@ public class RabbitMqContainer : IAsyncLifetime
     public string Username => testContainer.Username;
     public string Password => testContainer.Password;
 
-    public string Url => $"rabbitmq://{testContainer.Hostname}:{testContainer.Port}";
+
     public string Hostname => testContainer.Hostname;
     public int Port => testContainer.Port;
 
