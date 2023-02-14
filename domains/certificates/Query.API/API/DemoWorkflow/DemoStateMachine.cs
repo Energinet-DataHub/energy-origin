@@ -12,11 +12,11 @@ public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance
     {
         InstanceState(x => x.CurrentState);
 
-        Event(() => DemoRequested, c => c.CorrelateById(x => x.Message.CorrelationId));
+        Event(() => DemoRequested);
 
         Initially(
             When(DemoRequested)
-                .Then(x => logger.LogInformation("Received {message}", x.CorrelationId)));
+                .Then(x => logger.LogInformation("Received {correlationId}", x.CorrelationId)));
     }
 }
 
