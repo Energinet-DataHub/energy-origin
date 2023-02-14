@@ -6,13 +6,8 @@ namespace API.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository userRepository;
-    private readonly ILogger<IUserService> logger;
 
-    public UserService(IUserRepository userRepository, ILogger<IUserService> logger)
-    {
-        this.userRepository = userRepository;
-        this.logger = logger;
-    }
+    public UserService(IUserRepository userRepository) => this.userRepository = userRepository;
 
     public async Task<User> UpsertUserAsync(User user) => await userRepository.UpsertUserAsync(user);
 

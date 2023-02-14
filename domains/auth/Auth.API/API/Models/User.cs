@@ -1,14 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 
-#pragma warning disable CS8618
 namespace API.Models;
 
 [Index(nameof(ProviderId))]
 public record User
 {
-    public Guid Id { get; set; }
-    public string ProviderId { get; set; }
-    public string Name { get; set; }
+    public Guid? Id { get; init; }
+    public string ProviderId { get; set; } = null!;
+    public string Name { get; set; } = null!;
     public int AcceptedTermsVersion { get; set; }
     public string? Tin { get; set; }
     public bool AllowCPRLookup { get; set; }
