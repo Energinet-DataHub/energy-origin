@@ -6,6 +6,7 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Tests.Utilities;
@@ -14,8 +15,8 @@ public class TokenIssuerTests
 {
     private readonly IUserService service = Mock.Of<IUserService>();
 
-    private readonly TermsOptions termsOptions;
-    private readonly TokenOptions tokenOptions;
+    private readonly IOptions<TermsOptions> termsOptions;
+    private readonly IOptions<TokenOptions> tokenOptions;
 
     public TokenIssuerTests()
     {
@@ -24,31 +25,31 @@ public class TokenIssuerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
-        tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
+        termsOptions = Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
+        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
     }
 
     [Fact]
     public async Task IssueAsync_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
-        var userId = AddUser();
+        var descriptor = PrepareUser();
 
-        var token = await GetTokenIssuer().IssueAsync(userId.ToString());
+        var token = await GetTokenIssuer().IssueAsync(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(userId.ToString(), jwt.Subject);
+        Assert.Equal(descriptor.Id.ToString(), jwt.Subject);
     }
 
     [Fact]
     public async Task IssueAsync_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
     {
-        var userId = AddUser();
+        var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
-        var options = TestOptions.Token(tokenOptions, duration: duration);
+        var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(userId.ToString(), issueAt);
+        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor, issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -59,12 +60,12 @@ public class TokenIssuerTests
     [Fact]
     public async Task IssueAsync_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
     {
-        var userId = AddUser();
+        var descriptor = PrepareUser();
         var audience = Guid.NewGuid().ToString();
         var issuer = Guid.NewGuid().ToString();
-        var options = TestOptions.Token(tokenOptions, audience, issuer);
+        var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(userId.ToString());
+        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -75,10 +76,10 @@ public class TokenIssuerTests
     [Fact]
     public async Task IssueAsync_ShouldReturnASignedToken_WhenIssuing()
     {
-        var userId = AddUser();
-        var options = TestOptions.Token(tokenOptions);
+        var descriptor = PrepareUser();
+        var options = TestOptions.Token(tokenOptions.Value);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(userId.ToString());
+        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
 
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
@@ -103,38 +104,72 @@ public class TokenIssuerTests
     {
         var name = Guid.NewGuid().ToString();
         var tin = Guid.NewGuid().ToString();
+        var accesToken = Guid.NewGuid().ToString();
+        var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var userId = AddUser(name, version, tin);
+        var descriptor = PrepareUser(name, version, tin, accesToken, identityToken);
 
-        var token = await GetTokenIssuer().IssueAsync(userId.ToString());
+        var token = await GetTokenIssuer().IssueAsync(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(name, jwt.Claims.First(it => it.Type == "name")?.Value);
-        Assert.Equal(tin, jwt.Claims.First(it => it.Type == "tin")?.Value);
-        Assert.Equal($"{version}", jwt.Claims.First(it => it.Type == "terms")?.Value);
+        Assert.Equal(descriptor.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
+        Assert.Equal(tin, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.Tin)?.Value);
+        Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.TermsVersion)?.Value);
+        Assert.Equal(descriptor.ProviderId, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.ProviderId)?.Value);
+        Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
+        Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
+        Assert.Equal(accesToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
+        Assert.Equal(identityToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldThrowKeyNotFoundException_WhenIssuingForNonExistingUser() => await Assert.ThrowsAsync<KeyNotFoundException>(async () => await GetTokenIssuer().IssueAsync(Guid.NewGuid().ToString()));
+    public async Task IssueAsync_ShouldThrowKeyNotFoundException_WhenIssuingForNonExistingUser() => await Assert.ThrowsAsync<KeyNotFoundException>(async () => await GetTokenIssuer().IssueAsync(PrepareUser(addToMock: false)));
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions, service);
-
-    private Guid AddUser(string? name = default, int version = 1, string? tin = default)
+    [Fact]
+    public async Task IssueAsync_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
-        var id = Guid.NewGuid();
-        Mock.Get(service)
-            .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: new User()
-            {
-                Id = id,
-                ProviderId = Guid.NewGuid().ToString(),
-                Name = name ?? "Amigo",
-                AcceptedTermsVersion = version,
-                Tin = tin,
-                AllowCPRLookup = true
-            });
-        return id;
+        var descriptor = PrepareUser(addToMock: false, hasId: false);
+
+        var token = await GetTokenIssuer().IssueAsync(descriptor);
+
+        var jwt = Convert(token);
+        Assert.NotNull(jwt);
+        Assert.Null(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+    }
+
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value), service);
+
+    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
+    {
+        var user = new User()
+        {
+            Id = hasId ? Guid.NewGuid() : null,
+            ProviderId = Guid.NewGuid().ToString(),
+            Name = name ?? "Amigo",
+            AcceptedTermsVersion = version,
+            Tin = tin,
+            AllowCPRLookup = true
+        };
+        var descriptor = new UserDescriptor(null!)
+        {
+            Id = user.Id,
+            ProviderId = user.ProviderId,
+            Name = user.Name,
+            AcceptedTermsVersion = user.AcceptedTermsVersion,
+            Tin = user.Tin,
+            AllowCPRLookup = user.AllowCPRLookup,
+            EncryptedAccessToken = accesToken ?? "",
+            EncryptedIdentityToken = identityToken ?? ""
+        };
+        if (addToMock)
+        {
+            Mock.Get(service)
+                .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(value: user);
+        }
+        return descriptor;
     }
 
     private static JwtSecurityToken? Convert(string? token)
