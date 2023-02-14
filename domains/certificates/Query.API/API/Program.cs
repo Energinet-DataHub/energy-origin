@@ -5,8 +5,8 @@ using System.Linq;
 using API.ContractService;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
-using API.IntegrationEventBus;
 using API.Query.API;
+using API.RabbitMq;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -57,7 +57,7 @@ builder.Services.AddMarten(options =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddIntegrationEventBus(builder.Configuration);
+builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
@@ -78,7 +78,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
-
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");

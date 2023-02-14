@@ -1,20 +1,19 @@
 using System;
-using API.Configurations;
 using API.GranularCertificateIssuer;
-using API.IntegrationEventBus.Configurations;
+using API.RabbitMq.Configurations;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace API.IntegrationEventBus;
+namespace API.RabbitMq;
 
 public static class Startup
 {
-    public static void AddIntegrationEventBus(this IServiceCollection services, IConfiguration configuration)
+    public static void AddRabbitMq(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<IntegrationEventBusOptions>(
-            configuration.GetSection(IntegrationEventBusOptions.IntegrationEventBus));
+        services.Configure<RabbitMqOptions>(
+            configuration.GetSection(RabbitMqOptions.RabbitMq));
 
         services.AddMassTransit(o =>
         {
@@ -24,8 +23,8 @@ public static class Startup
 
             o.UsingRabbitMq((context, cfg) =>
             {
-                var options = context.GetRequiredService<IOptions<IntegrationEventBusOptions>>().Value;
-                string url = $"rabbitmq://{options.Host}:{options.Port}";
+                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+                var url = $"rabbitmq://{options.Host}:{options.Port}";
 
                 cfg.Host(new Uri(url), h =>
                 {
