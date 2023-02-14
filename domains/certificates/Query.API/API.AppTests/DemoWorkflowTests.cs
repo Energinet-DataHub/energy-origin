@@ -23,8 +23,13 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
     {
         var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
-        var response = await client.PostAsJsonAsync("api/certificates/demo", new DemoRequestModel { Foo = "bar" });
+        var demoCreateResponse = await client.PostAsJsonAsync("api/certificates/demo", new DemoRequestModel { Foo = "bar" });
 
-        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        demoCreateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+        var statusLocation = demoCreateResponse.Headers.Location;
+
+        var statusResponse = await client.GetAsync(statusLocation);
+        statusResponse.StatusCode.Should().Be((HttpStatusCode)418);
     }
 }
