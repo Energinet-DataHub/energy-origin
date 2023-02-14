@@ -22,7 +22,7 @@ public class TokenIssuerTests
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Development.json", false)
+            .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
         termsOptions = Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
