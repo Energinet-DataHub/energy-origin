@@ -53,19 +53,6 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     };
 });
 
-builder.Services.AddAuthentication().AddJwtBearer(options =>
-{
-    var rsa = RSA.Create();
-    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
-
-    options.TokenValidationParameters = new()
-    {
-        IssuerSigningKey = new RsaSecurityKey(rsa),
-        ValidAudience = tokenOptions.Audience,
-        ValidIssuer = tokenOptions.Issuer,
-    };
-});
-
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
@@ -83,7 +70,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
-builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 
 var app = builder.Build();
 
