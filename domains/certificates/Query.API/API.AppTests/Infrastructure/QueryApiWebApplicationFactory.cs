@@ -23,14 +23,24 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "";
+    public string RabbitMqUsername { get; set; } = "";
+    public string RabbitMqPassword { get; set; } = "";
+    public string RabbitMqHost { get; set; } = "";
+    public string RabbitMqPort { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
+        builder.UseSetting("RabbitMq:Password", RabbitMqPassword);
+        builder.UseSetting("RabbitMq:Username", RabbitMqUsername);
+        builder.UseSetting("RabbitMq:Host", RabbitMqHost);
+        builder.UseSetting("RabbitMq:Port", RabbitMqPort);
 
         builder.ConfigureTestServices(services =>
         {
+            //  Ensure masstransit bus is started when we run our health checks
+            services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
