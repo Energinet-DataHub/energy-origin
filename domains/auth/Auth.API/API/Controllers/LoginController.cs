@@ -1,6 +1,4 @@
-using API.Models;
 using API.Options;
-using API.Services;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -36,47 +34,4 @@ public class LoginController : ControllerBase
 
         return RedirectPreserveMethod(url);
     }
-
-
-
-    [HttpGet()]
-    [Route("GetUserById/{id}", Name = "GetUserById")]
-    public async Task<ActionResult<User>> GetUserById([FromRoute] Guid id, [FromServices] IUserService userService)
-    {
-        var user = await userService.GetUserByIdAsync(id);
-        if (user is not null)
-        {
-            return Ok(user);
-        }
-        return NotFound();
-    }
-
-    [HttpGet()]
-    [Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")]
-    public async Task<ActionResult<User>> GetUserByProviderIdAsync([FromRoute] string id, [FromServices] IUserService userService)
-    {
-        var user = await userService.GetUserByProviderIdAsync(id);
-        if (user is not null)
-        {
-            return Ok(user);
-        }
-        return NotFound();
-    }
-
-    [HttpGet()]
-    [Route("G", Name = "G")]
-    public async Task<ActionResult> G([FromServices] IUserService userService)
-    {
-    await userService.UpsertUserAsync(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = 2, Tin = "hehe", AllowCPRLookup = false });
-        return Ok();
-    }
-
-
-    [HttpGet()]
-    [Route("W", Name = "W")]
-    public async Task<ActionResult> W()
-    {
-        return Ok();
-    }
-
 }
