@@ -41,5 +41,5 @@ public class DemoController : ControllerBase
 
 public record DemoRequestModel
 {
-    public string Foo { get; init; }
+    public string Foo { get; init; } = "";
 }

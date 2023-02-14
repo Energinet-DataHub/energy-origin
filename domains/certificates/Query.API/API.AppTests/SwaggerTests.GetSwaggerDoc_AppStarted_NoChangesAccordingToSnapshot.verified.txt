@@ -330,6 +330,15 @@
         },
         "additionalProperties": false
       },
+      "DemoRequestModel": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "ValidationProblemDetails": {
         "type": "object",
         "properties": {

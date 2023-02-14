@@ -6,7 +6,7 @@ namespace API.DemoWorkflow;
 
 public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance>
 {
-    public Event<DemoRequested> DemoRequested { get; private set; }
+    public Event<DemoRequested>? DemoRequested { get; set; }
 
     public DemoStateMachine(ILogger<DemoStateMachine> logger)
     {
@@ -23,5 +23,5 @@ public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance
 public class DemoStateMachineInstance : SagaStateMachineInstance
 {
     public Guid CorrelationId { get; set; }
-    public string CurrentState { get; set; }
+    public string CurrentState { get; set; } = "Initial";
 }

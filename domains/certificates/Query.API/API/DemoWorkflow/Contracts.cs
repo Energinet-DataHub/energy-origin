@@ -8,7 +8,7 @@ namespace API.DemoWorkflow;
 public record DemoRequested
 {
     public Guid CorrelationId { get; init; }
-    public string Foo { get; init; }
+    public string Foo { get; init; } = "";
 }
 
 #endregion
