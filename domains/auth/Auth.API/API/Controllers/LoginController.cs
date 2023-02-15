@@ -11,7 +11,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginAsync([FromServices] IDiscoveryCache discoveryCache, [FromServices] IOptions<OidcOptions> oidcOptions, [FromServices] ILogger<LoginController> logger)
+    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
