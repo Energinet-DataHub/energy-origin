@@ -17,17 +17,14 @@ public class TermsController : ControllerBase
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
-        User user;
+        var user = new User();
 
         if (descriptor.Id is null)
         {
-            user = new User()
-            {
-                Name = descriptor.Name,
-                ProviderId = descriptor.ProviderId,
-                Tin = descriptor.Tin,
-                AllowCPRLookup = descriptor.AllowCPRLookup
-            };
+            user.Name = descriptor.Name;
+            user.ProviderId = descriptor.ProviderId;
+            user.Tin = descriptor.Tin;
+            user.AllowCPRLookup = descriptor.AllowCPRLookup;
         }
         else
         {
