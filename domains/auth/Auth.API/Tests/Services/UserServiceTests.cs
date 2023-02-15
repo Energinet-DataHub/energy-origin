@@ -1,4 +1,4 @@
-using API.Models;
+using API.Models.Entities;
 using API.Repositories;
 using API.Services;
 

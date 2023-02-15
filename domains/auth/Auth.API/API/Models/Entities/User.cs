@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Models;
+namespace API.Models.Entities;
 
 [Index(nameof(ProviderId))]
 public record User
