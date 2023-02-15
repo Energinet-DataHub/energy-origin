@@ -7,12 +7,14 @@ using API.Repositories.Data;
 using API.Services;
 using API.Utilities;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
-
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
     .CreateLogger();
@@ -30,7 +32,6 @@ builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOpt
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
@@ -51,6 +52,30 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
         ValidAudience = tokenOptions.Audience,
         ValidIssuer = tokenOptions.Issuer,
     };
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
+    {
+        new OpenApiSecurityScheme {
+            Reference = new OpenApiReference {
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"},
+            Scheme = "oauth2",
+            Name = "Bearer",
+            In = ParameterLocation.Header,
+        }, new List<string>() }
+    });
 });
 
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
@@ -84,6 +109,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
