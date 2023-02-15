@@ -18,13 +18,14 @@ namespace API.AppTests;
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
-     IClassFixture<RabbitMqContainer>,
+    IClassFixture<RabbitMqContainer>,
     IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
+    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
+        RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
@@ -79,7 +80,8 @@ public sealed class CertificateIssuingTests :
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
         var expected = new CertificateList
         {
@@ -125,7 +127,8 @@ public sealed class CertificateIssuingTests :
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
 
         var expected = new CertificateList
         {
@@ -187,7 +190,8 @@ public sealed class CertificateIssuingTests :
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-    private static EquivalencyAssertionOptions<CertificateList> CertificateListAssertionOptions(EquivalencyAssertionOptions<CertificateList> options) =>
+    private static EquivalencyAssertionOptions<CertificateList> CertificateListAssertionOptions(
+        EquivalencyAssertionOptions<CertificateList> options) =>
         options
             .WithStrictOrderingFor(l => l.Result)
             .For(l => l.Result).Exclude(c => c.Id);
