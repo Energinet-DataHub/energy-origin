@@ -1,3 +1,3 @@
 namespace API.Models.DTOs;
 
-public record class AcceptTermsDTO(int Version);
+public record AcceptTermsDTO(int Version);
