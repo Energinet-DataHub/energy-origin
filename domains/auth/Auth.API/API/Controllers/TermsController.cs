@@ -20,10 +20,11 @@ public class TermsController : ControllerBase
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
-        var user = new User();
+        User user;
 
         if (descriptor.Id is null)
         {
+            user = new User();
             user.Name = descriptor.Name;
             user.ProviderId = descriptor.ProviderId;
             user.Tin = descriptor.Tin;
