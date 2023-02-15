@@ -22,8 +22,8 @@ namespace Tests.Controllers;
 
 public class OidcControllerTests
 {
-    private readonly OidcOptions oidcOptions;
-    private readonly TokenOptions tokenOptions;
+    private readonly IOptions<OidcOptions> oidcOptions;
+    private readonly IOptions<TokenOptions> tokenOptions;
     private readonly ITokenIssuer issuer;
     private readonly IUserDescriptMapper mapper;
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
@@ -42,10 +42,10 @@ public class OidcControllerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
-        tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
+        oidcOptions = Options.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
+        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
 
-        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), Options.Create(tokenOptions), service);
+        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions, service);
         mapper = new UserDescriptMapper(
             new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
             Mock.Of<ILogger<UserDescriptMapper>>()
@@ -57,9 +57,6 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions);
-        var tokenOptions = TestOptions.Token(this.tokenOptions);
-
         var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(
@@ -99,16 +96,13 @@ public class OidcControllerTests
         Assert.NotNull(accessor.HttpContext);
         var header = accessor.HttpContext!.Response.Headers.SetCookie;
         Assert.True(header.Count >= 1);
-        Assert.Contains("Authentication=", header[0]);
+        Assert.Contains("Authentication=", header[0]); // FIXME: verify cookie lifetime?
     }
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeIsMissing()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions);
-        var tokenOptions = TestOptions.Token(this.tokenOptions);
-
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>());
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
@@ -127,6 +121,33 @@ public class OidcControllerTests
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"errorCode=2", query); // FIXME: codable error list?
     }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldLogWarning_WhenCodeIsMissing()
+    {
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, null, null, null);
+
+        Mock.Get(logger).Verify(it => it.Log(
+            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once
+        );
+    }
+
+    // FIXME: add tests for discovery failure
+
+    // FIXME: add tests for code exchange failure
+
+    // FIXME: add tests for invalid access, id and user token
+
+    // FIXME: add tests for missing user token information
 
     private static IdentityModel.Jwk.JsonWebKeySet KeySetUsing(byte[] pem)
     {
