@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using API.Models;
+using API.Models.Entities;
 using API.Repositories.Data;
 using API.Utilities;
 using DotNet.Testcontainers.Builders;
@@ -43,14 +43,11 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateUnauthenticatedClient()
+    public HttpClient CreateUnauthenticatedClient() => CreateClient(new WebApplicationFactoryClientOptions
     {
-        return CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            BaseAddress = new Uri("https://localhost")
-        });
-    }
+        AllowAutoRedirect = false,
+        BaseAddress = new Uri("https://localhost")
+    });
 
     public async Task<HttpClient> CreateAuthenticatedClientAsync(User user)
     {
@@ -68,8 +65,5 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         await dbContext.Database.MigrateAsync();
     }
 
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await testContainer.DisposeAsync();
-    }
+    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
 }
