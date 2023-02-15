@@ -93,8 +93,8 @@ builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserDataContext, DataContext>();
 builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
+builder.Services.AddScoped<IUserDataContext, DataContext>();
 
 var app = builder.Build();
 
@@ -115,3 +115,5 @@ app.MapControllers();
 app.MapHealthChecks("/healthz");
 
 app.Run();
+
+public partial class Program { }
