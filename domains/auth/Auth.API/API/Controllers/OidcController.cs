@@ -31,7 +31,7 @@ public class OidcController : ControllerBase
         if (code == null)
         {
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(options.Value.FrontendRedirectUri.AbsoluteUri); // FIXME: error code?
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(options.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
@@ -59,7 +59,10 @@ public class OidcController : ControllerBase
 
         try
         {
-            var parameters = new TokenValidationParameters();
+            var parameters = new TokenValidationParameters()
+            {   // FIXME: parameters?
+                IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey())
+            };
             new JwtSecurityTokenHandler().ValidateToken(response.AccessToken, parameters, out _);
             new JwtSecurityTokenHandler().ValidateToken(response.IdentityToken, parameters, out _);
             // FIXME: validate access and id tokens more?
@@ -99,7 +102,7 @@ public class OidcController : ControllerBase
         {
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
-                options.Value.FrontendRedirectUri.AbsoluteUri // FIXME: error code?
+                QueryHelpers.AddQueryString(options.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2")
             );
             return RedirectPreserveMethod(url);
         }

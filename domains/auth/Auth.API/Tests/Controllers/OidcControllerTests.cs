@@ -1,9 +1,14 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Web;
 using API.Controllers;
 using API.Options;
 using API.Services;
 using API.Utilities;
+using IdentityModel;
 using IdentityModel.Client;
+using IdentityModel.Jwk;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,6 +19,7 @@ namespace Tests.Controllers;
 public class OidcControllerTests
 {
     private readonly OidcOptions oidcOptions;
+    private readonly TokenOptions tokenOptions;
     private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
     private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
     private readonly IUserService service = Mock.Of<IUserService>();
@@ -28,18 +34,30 @@ public class OidcControllerTests
             .Build();
 
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
+        tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
     }
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
     {
-        var options = TestOptions.Oidc(oidcOptions);
+        var oidcOptions = TestOptions.Oidc(this.oidcOptions);
+        var tokenOptions = TestOptions.Token(this.tokenOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+        var userEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/userinfo");
+
+        var jwks = KeySetUsing(tokenOptions.Value.PublicKeyPem);
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri), new("userinfo_endpoint", userEndpoint.AbsoluteUri) }, jwks);
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new OidcController().CallbackAsync(cache, new HttpClient(), mapper, service, issuer, options, logger, null, null, null);
+        var http = new MockHttpMessageHandler();
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", "{'access_token' : 'access_token', 'id_token' : 'id_token'}");
+        http.When(HttpMethod.Post, userEndpoint.AbsoluteUri).Respond("application/json", "{'access_token' : 'access_token', 'id_token' : 'id_token'}");
+
+        var result = await new OidcController().CallbackAsync(cache, http.ToHttpClient(), mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.Fail("Not done yet");
     }
@@ -67,5 +85,30 @@ public class OidcControllerTests
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"errorCode=2", query); // FIXME: codable error list?
+    }
+
+    private static JsonWebKeySet KeySetUsing(byte[] pem)
+    {
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
+        var parameters = rsa.ExportParameters(false);
+
+        var exponent = Base64Url.Encode(parameters.Exponent);
+        var modulus = Base64Url.Encode(parameters.Modulus);
+        var kid = SHA256.HashData(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new Dictionary<string, string>() {
+            {"e", exponent},
+            {"kty", "RSA"},
+            {"n", modulus}
+        })));
+
+        var set = new JsonWebKeySet();
+        set.Keys.Add(new JsonWebKey()
+        {
+            Kid = Base64Url.Encode(kid),
+            Kty = "RSA",
+            E = exponent,
+            N = modulus
+        });
+        return set;
     }
 }
