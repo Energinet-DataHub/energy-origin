@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.Integration;
 
-public class LoginApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
     public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();

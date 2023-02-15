@@ -10,10 +10,10 @@ using Newtonsoft.Json;
 
 namespace Tests.Integration.LoginController;
 
-public class LoginControllerTests : IClassFixture<LoginApiFactory>
+public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
-    private readonly LoginApiFactory factory;
-    public LoginControllerTests(LoginApiFactory factory)
+    private readonly AuthWebApplicationFactory factory;
+    public LoginControllerTests(AuthWebApplicationFactory factory)
     {
         this.factory = factory;
     }
