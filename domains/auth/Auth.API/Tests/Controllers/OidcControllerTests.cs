@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -8,10 +9,13 @@ using API.Services;
 using API.Utilities;
 using IdentityModel;
 using IdentityModel.Client;
-using IdentityModel.Jwk;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
 using RichardSzalay.MockHttp;
 
 namespace Tests.Controllers;
@@ -20,14 +24,19 @@ public class OidcControllerTests
 {
     private readonly OidcOptions oidcOptions;
     private readonly TokenOptions tokenOptions;
+    private readonly ITokenIssuer issuer;
+    private readonly IUserDescriptMapper mapper;
+    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
-    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
     private readonly IUserService service = Mock.Of<IUserService>();
-    private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
+    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
     private readonly ILogger<OidcController> logger = Mock.Of<ILogger<OidcController>>();
+    private readonly MockHttpMessageHandler http = new();
 
     public OidcControllerTests()
     {
+        IdentityModelEventSource.ShowPII = true;
+
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
@@ -35,6 +44,14 @@ public class OidcControllerTests
 
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
         tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
+
+        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), Options.Create(tokenOptions), service);
+        mapper = new UserDescriptMapper(
+            new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
+            Mock.Of<ILogger<UserDescriptMapper>>()
+        );
+
+        Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
     }
 
     [Fact]
@@ -44,34 +61,58 @@ public class OidcControllerTests
         var tokenOptions = TestOptions.Token(this.tokenOptions);
 
         var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
-        var userEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/userinfo");
 
-        var jwks = KeySetUsing(tokenOptions.Value.PublicKeyPem);
-
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri), new("userinfo_endpoint", userEndpoint.AbsoluteUri) }, jwks);
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var http = new MockHttpMessageHandler();
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var anyToken = TokenUsing(tokenOptions.Value);
+        var userToken = TokenUsing(tokenOptions.Value, new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
 
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", "{'access_token' : 'access_token', 'id_token' : 'id_token'}");
-        http.When(HttpMethod.Post, userEndpoint.AbsoluteUri).Respond("application/json", "{'access_token' : 'access_token', 'id_token' : 'id_token'}");
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{anyToken}}", "id_token":"{{anyToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(cache, http.ToHttpClient(), mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
 
-        Assert.Fail("Not done yet");
+        Assert.NotNull(action);
+        Assert.IsType<OkObjectResult>(action);
+
+        var result = action as OkObjectResult;
+        var body = result!.Value as string;
+        Assert.Contains("<html><head><meta ", body);
+        Assert.Contains(" http-equiv=", body);
+        Assert.Contains("refresh", body);
+        Assert.Contains("<body />", body);
+        Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
+
+        Assert.NotNull(accessor.HttpContext);
+        var header = accessor.HttpContext!.Response.Headers.SetCookie;
+        Assert.True(header.Count >= 1);
+        Assert.Contains("Authentication=", header[0]);
     }
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeIsMissing()
     {
-        var options = TestOptions.Oidc(oidcOptions);
+        var oidcOptions = TestOptions.Oidc(this.oidcOptions);
+        var tokenOptions = TestOptions.Token(this.tokenOptions);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>());
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new OidcController().CallbackAsync(cache, new MockHttpMessageHandler().ToHttpClient(), mapper, service, issuer, options, logger, null, null, null);
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, null, null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -81,13 +122,13 @@ public class OidcControllerTests
         Assert.False(redirectResult.Permanent);
 
         var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"errorCode=2", query); // FIXME: codable error list?
     }
 
-    private static JsonWebKeySet KeySetUsing(byte[] pem)
+    private static IdentityModel.Jwk.JsonWebKeySet KeySetUsing(byte[] pem)
     {
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
@@ -101,14 +142,34 @@ public class OidcControllerTests
             {"n", modulus}
         })));
 
-        var set = new JsonWebKeySet();
-        set.Keys.Add(new JsonWebKey()
+        return new IdentityModel.Jwk.JsonWebKeySet
         {
-            Kid = Base64Url.Encode(kid),
-            Kty = "RSA",
-            E = exponent,
-            N = modulus
-        });
-        return set;
+            Keys = new() { new() {
+                Kid = Base64Url.Encode(kid),
+                Kty = "RSA",
+                E = exponent,
+                N = modulus
+            }}
+        };
+    }
+
+    private static string TokenUsing(TokenOptions options, Dictionary<string, object>? claims = default)
+    {
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(Encoding.UTF8.GetString(options.PrivateKeyPem));
+        var key = new RsaSecurityKey(rsa);
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+
+        var descriptor = new SecurityTokenDescriptor()
+        {
+            Audience = options.Audience,
+            Issuer = options.Issuer,
+            SigningCredentials = credentials,
+            Claims = claims
+        };
+
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.CreateJwtSecurityToken(descriptor);
+        return handler.WriteToken(token);
     }
 }

@@ -17,12 +17,14 @@ public class OidcController : ControllerBase
     [HttpGet()]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
+        IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
-        HttpClient client, // FIXME: add
+        IHttpClientFactory clientFactory,
         IUserDescriptMapper mapper,
         IUserService service,
         ITokenIssuer issuer,
-        IOptions<OidcOptions> options,
+        IOptions<OidcOptions> oidcOptions,
+        IOptions<TokenOptions> tokenOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
@@ -31,23 +33,24 @@ public class OidcController : ControllerBase
         if (code == null)
         {
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(options.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(options.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
         }
 
+        var client = clientFactory.CreateClient();
         var request = new AuthorizationCodeTokenRequest
         {
             Address = discoveryDocument.TokenEndpoint,
             Code = code,
-            ClientId = options.Value.ClientId,
-            ClientSecret = options.Value.ClientSecret, // FIXME: add
-            RedirectUri = options.Value.AuthorityCallbackUri.AbsolutePath
+            ClientId = oidcOptions.Value.ClientId,
+            ClientSecret = oidcOptions.Value.ClientSecret,
+            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsolutePath
         };
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
         if (response.IsError)
@@ -59,19 +62,17 @@ public class OidcController : ControllerBase
 
         try
         {
+            var handler = new JwtSecurityTokenHandler();
             var parameters = new TokenValidationParameters()
-            {   // FIXME: parameters?
-                IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey())
-            };
-            new JwtSecurityTokenHandler().ValidateToken(response.AccessToken, parameters, out _);
-            new JwtSecurityTokenHandler().ValidateToken(response.IdentityToken, parameters, out _);
-            // FIXME: validate access and id tokens more?
-
-            var userInfo = await client.GetUserInfoAsync(new UserInfoRequest // FIXME: may have impact on mock
             {
-                Address = discoveryDocument.UserInfoEndpoint,
-                Token = response.AccessToken
-            });
+                IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
+                ValidAudience = tokenOptions.Value.Audience,
+                ValidIssuer = tokenOptions.Value.Issuer,
+            };
+            handler.ValidateToken(response.AccessToken, parameters, out _);
+            handler.ValidateToken(response.IdentityToken, parameters, out _);
+            var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
+            // FIXME: validate tokens more?
 
             var providerId = userInfo.Claims.First(it => it.Type == "mitid.uuid").Value;
             var name = userInfo.Claims.First(it => it.Type == "mitid.identity_name").Value;
@@ -89,20 +90,22 @@ public class OidcController : ControllerBase
             var descriptor = mapper.Map(user, response.AccessToken, response.IdentityToken);
             var token = await issuer.IssueAsync(descriptor);
 
-            Response.Cookies.Append("Authentication", token, new CookieOptions
+            accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
             {
                 IsEssential = true,
                 Secure = true,
-                Expires = DateTimeOffset.UtcNow.Add(options.Value.CacheDuration) // FIXME: configurable
+                Expires = DateTimeOffset.UtcNow.Add(oidcOptions.Value.CacheDuration) // FIXME: configurable
             });
 
-            return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{options.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
+            return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
         }
-        catch
+        catch (Exception exception)
         {
+            logger.LogError(exception, "Failure occured after acquiring token");
+
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
-                QueryHelpers.AddQueryString(options.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2")
+                QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2")
             );
             return RedirectPreserveMethod(url);
         }

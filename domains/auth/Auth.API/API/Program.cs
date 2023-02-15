@@ -28,6 +28,7 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 builder.Services.Configure<TokenOptions>(tokenConfiguration);
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
+builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
