@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
-using API.Models;
+using API.Models.Entities;
 using API.Options;
 using API.Services;
 using API.Utilities;
