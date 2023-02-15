@@ -1,139 +1,137 @@
 using System.Security.Claims;
 using API.Controllers;
+using API.DTOs;
 using API.Models;
 using API.Services;
 using API.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Tests.Controllers
+namespace Tests.Controllers;
+
+public class TermsControllerTests
 {
-    public class TermsControllerTests
+    private readonly TermsController termsController = new TermsController();
+    private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldOnlyUpdateAcceptedTermsVersion_WhenUserExists()
     {
-        private readonly TermsController termsController = new TermsController();
-        private readonly IUserService userService = Mock.Of<IUserService>();
-        private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+        var id = Guid.NewGuid();
+        var name = Guid.NewGuid().ToString();
+        var providerId = Guid.NewGuid().ToString();
+        var tin = null as string;
+        var allowCprLookup = false;
+        var oldAcceptedTermsVersion = 1;
+        var newAcceptedTermsVersion = 2;
 
-        [Fact]
-        public async Task AcceptTermsAsync_ShouldOnlyUpdateAcceptedTermsVersionAndReturnUser_WhenUserExists()
-        {
-            var id = Guid.NewGuid();
-            var name = Guid.NewGuid().ToString();
-            var providerId = Guid.NewGuid().ToString();
-            var tin = null as string;
-            var allowCprLookup = false;
-            var oldAcceptedTermsVersion = 1;
-            var newAcceptedTermsVersion = 2;
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                Id = id,
+                Name = Guid.NewGuid().ToString(),
+                ProviderId = Guid.NewGuid().ToString(),
+                Tin = Guid.NewGuid().ToString(),
+                AllowCPRLookup = true,
+                AcceptedTermsVersion = oldAcceptedTermsVersion
+            });
 
-            var hehe = Guid.NewGuid().ToString();
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(value: new User()
+            {
+                Id = id,
+                Name = name,
+                ProviderId = providerId,
+                Tin = tin,
+                AllowCPRLookup = allowCprLookup,
+                AcceptedTermsVersion = oldAcceptedTermsVersion
+            });
 
-            Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: new UserDescriptor(null!)
-                {
-                    Id = id,
-                    Name = Guid.NewGuid().ToString(),
-                    ProviderId = Guid.NewGuid().ToString(),
-                    Tin = Guid.NewGuid().ToString(),
-                    AllowCPRLookup = true,
-                    AcceptedTermsVersion = oldAcceptedTermsVersion
-                });
+        var result = await termsController.AcceptTermsAsync(new AcceptTermsDTO { Version = newAcceptedTermsVersion }, mapper, userService);
+        Assert.NotNull(result);
+        Assert.IsType<NoContentResult>(result);
 
-            Mock.Get(userService)
-                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(value: new User()
-                {
-                    Id = id,
-                    Name = name,
-                    ProviderId = providerId,
-                    Tin = tin,
-                    AllowCPRLookup = allowCprLookup,
-                    AcceptedTermsVersion = oldAcceptedTermsVersion
-                });
+        Mock.Get(userService).Verify(x => x.UpsertUserAsync(
+            It.Is<User>(y =>
+                y.AcceptedTermsVersion == newAcceptedTermsVersion
+                && y.Name == name
+                && y.ProviderId == providerId
+                && y.Tin == tin
+                && y.AllowCPRLookup == allowCprLookup
+                && y.Id == id)),
+            Times.Once
+        );
+    }
 
-            Mock.Get(userService)
-                .Setup(x => x.UpsertUserAsync(It.IsAny<User>()))
-                .ReturnsAsync(value: new User()
-                {
-                    Id = id,
-                    Name = name,
-                    ProviderId = providerId,
-                    Tin = tin,
-                    AllowCPRLookup = allowCprLookup,
-                    AcceptedTermsVersion = newAcceptedTermsVersion
-                });
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldCreateUser_WhenUserDoesNotExist()
+    {
+        var id = null as Guid?;
+        var name = Guid.NewGuid().ToString();
+        var providerId = Guid.NewGuid().ToString();
+        var tin = null as string;
+        var allowCprLookup = false;
+        var newAcceptedTermsVersion = 1;
 
-            var result = await termsController.AcceptTermsAsync(newAcceptedTermsVersion, mapper, userService);
-            Assert.NotNull(result);
-            Assert.IsType<ActionResult<User>>(result);
-            Assert.IsType<OkObjectResult>(result?.Result);
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                Id = id,
+                Name = name,
+                ProviderId = providerId,
+                Tin = tin,
+                AllowCPRLookup = allowCprLookup,
+                AcceptedTermsVersion = 0
+            });
 
-            var value = (result?.Result as OkObjectResult)!.Value;
-            Assert.NotNull(value);
-            Assert.IsType<User>(value);
+        var result = await termsController.AcceptTermsAsync(new AcceptTermsDTO { Version = newAcceptedTermsVersion }, mapper, userService);
+        Assert.NotNull(result);
+        Assert.IsType<NoContentResult>(result);
 
-            var user = (value as User)!;
-            Assert.Equal(id, user.Id);
-            Assert.Equal(name, user.Name);
-            Assert.Equal(providerId, user.ProviderId);
-            Assert.Equal(tin, user.Tin);
-            Assert.Equal(allowCprLookup, user.AllowCPRLookup);
-            Assert.Equal(newAcceptedTermsVersion, user.AcceptedTermsVersion);
-        }
+        Mock.Get(userService).Verify(x => x.UpsertUserAsync(
+            It.Is<User>(y =>
+                y.AcceptedTermsVersion == newAcceptedTermsVersion
+                && y.Name == name
+                && y.ProviderId == providerId
+                && y.Tin == tin
+                && y.AllowCPRLookup == allowCprLookup
+                && y.Id == id)),
+            Times.Once
+        );
+    }
 
-        [Fact]
-        public async Task AcceptTermsAsync_ShouldCreateAndReturnUser_WhenUserDoesNotExist()
-        {
-            var id = null as Guid?;
-            var name = Guid.NewGuid().ToString();
-            var providerId = Guid.NewGuid().ToString();
-            var tin = null as string;
-            var allowCprLookup = false;
-            var newAcceptedTermsVersion = 1;
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: null);
 
-            Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: new UserDescriptor(null!)
-                {
-                    Id = id,
-                    Name = name,
-                    ProviderId = providerId,
-                    Tin = tin,
-                    AllowCPRLookup = allowCprLookup,
-                    AcceptedTermsVersion = 0
-                });
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(new AcceptTermsDTO { Version = 1 }, mapper, userService));
+    }
 
-            Mock.Get(userService)
-                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(value: null);
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString(),
+                ProviderId = Guid.NewGuid().ToString(),
+                Tin = null,
+                AllowCPRLookup = false,
+                AcceptedTermsVersion = 1
+            });
 
-            Mock.Get(userService)
-                .Setup(x => x.UpsertUserAsync(It.IsAny<User>()))
-                .ReturnsAsync(value: new User()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = name,
-                    ProviderId = providerId,
-                    Tin = tin,
-                    AllowCPRLookup = allowCprLookup,
-                    AcceptedTermsVersion = newAcceptedTermsVersion
-                });
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(value: null);
 
-            var result = await termsController.AcceptTermsAsync(newAcceptedTermsVersion, mapper, userService);
-            Assert.NotNull(result);
-            Assert.IsType<ActionResult<User>>(result);
-            Assert.IsType<OkObjectResult>(result?.Result);
-
-            var value = (result?.Result as OkObjectResult)!.Value;
-            Assert.NotNull(value);
-            Assert.IsType<User>(value);
-
-            var user = (value as User)!;
-            Assert.NotEqual(id, user.Id);
-            Assert.Equal(name, user.Name);
-            Assert.Equal(providerId, user.ProviderId);
-            Assert.Equal(tin, user.Tin);
-            Assert.Equal(allowCprLookup, user.AllowCPRLookup);
-            Assert.Equal(newAcceptedTermsVersion, user.AcceptedTermsVersion);
-        }
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(new AcceptTermsDTO { Version = 1 }, mapper, userService));
     }
 }
