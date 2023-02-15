@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using API.Models;
+using API.Models.Entities;
 
 namespace API.Utilities;
 
