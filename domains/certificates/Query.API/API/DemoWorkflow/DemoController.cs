@@ -30,7 +30,8 @@ public class DemoController : ControllerBase
     }
 
     [HttpGet]
-    //TODO: Produces attributes
+    [ProducesResponseType(typeof(DemoStatusResponse), 200)] //TODO: Should DemoStatusResponse be mapped to API class?
+    [ProducesResponseType(typeof(NotFoundResponse), 404)] //TODO: Should NotFoundResponse be mapped to API class?
     [Route("api/certificates/demo/status/{correlationId}")]
     public async Task<IActionResult> GetDemoStatus(
         [FromRoute] Guid correlationId,

@@ -16,6 +16,8 @@ public static class Startup
             o.AddSagaStateMachine<DemoStateMachine, DemoStateMachineInstance>()
                 .InMemoryRepository(); //TODO: Change this to Marten
 
+            // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
+            o.AddConsumer<RegistryConnectorDemoConsumer>();
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
 
             o.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));

@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
 using API.DemoWorkflow;
 using FluentAssertions;
@@ -28,13 +29,17 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
 
         demoCreateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
-        var statusLocation = demoCreateResponse.Headers.Location;
+        var statusLocation = demoCreateResponse.Headers.Location!;
         var statusResponse = await client.GetAsync(statusLocation);
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await statusResponse.Content.ReadFromJsonAsync<DemoStatusResponse>();
         content!.Status.Should().Be("Running");
+
+        var completedStatus = await client.RepeatedlyGetUntil<DemoStatusResponse>(statusLocation.ToString(),
+            r => !r.Status.Equals("Running", StringComparison.InvariantCultureIgnoreCase));
+        completedStatus.Status.Should().Be("Completed");
     }
 
     [Fact]

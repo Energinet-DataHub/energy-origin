@@ -10,6 +10,23 @@ public record DemoRequested
     public string Foo { get; init; } = "";
 }
 
+public record DemoInRegistrySaved
+{
+    public Guid CorrelationId { get; init; }
+    public string Foo { get; init; } = "";
+    public int R { get; set; }
+}
+
+#endregion
+
+#region Commands
+
+public record SaveDemoInRegistry
+{
+    public Guid CorrelationId { get; init; }
+    public string Foo { get; init; } = "";
+}
+
 #endregion
 
 #region Requests and repsonses
