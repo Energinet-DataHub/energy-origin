@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ public class RegistryConnectorDemoConsumer : IConsumer<SaveDemoInRegistry>
     {
         logger.LogInformation("Received {message}", context.Message);
 
-        var sleepTime = new Random().Next(1, 5);
+        var sleepTime = RandomNumberGenerator.GetInt32(1, 5);
         await Task.Delay(TimeSpan.FromSeconds(sleepTime));
 
         var message = new DemoInRegistrySaved
