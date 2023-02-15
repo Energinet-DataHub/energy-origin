@@ -33,8 +33,8 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseEnvironment("Test");
         builder.ConfigureTestServices(services =>
         {
-            services.Remove(services.First(s => s.ServiceType == typeof(DbContextOptions<DataContext>)));
-            services.Remove(services.First(s => s.ServiceType == typeof(DataContext)));
+            services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
+            services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseNpgsql(testContainer.ConnectionString);
