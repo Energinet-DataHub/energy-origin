@@ -24,7 +24,7 @@ public record DemoStatusResponse
 {
     public Guid CorrelationId { get; init; }
     public DateTimeOffset Timestamp { get; init; }
-    public string Status { get; init; }
+    public string Status { get; init; } = "";
     //public DateTimeOffset StartTimestamp { get; init; }
     //public DateTimeOffset? EndTimestamp { get; set; }
     //public TimeSpan Duration => EndTimestamp.HasValue
