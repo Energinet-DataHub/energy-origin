@@ -12,8 +12,7 @@ namespace API.DemoWorkflow;
 public class DemoController : ControllerBase
 {
     [HttpPost]
-    //[ProducesResponseType(typeof(CertificateList), 200)] //TODO
-    //[ProducesResponseType(204)]
+    [ProducesResponseType(202)]
     [Route("api/certificates/demo")]
     public async Task<IActionResult> CreateDemo(
         [FromBody] DemoRequestModel demoRequest,
@@ -31,10 +30,25 @@ public class DemoController : ControllerBase
     }
 
     [HttpGet]
+    //TODO: Produces attributes
     [Route("api/certificates/demo/status/{correlationId}")]
-    public IActionResult GetDemoStatus(
-        [FromRoute] Guid correlationId)
+    public async Task<IActionResult> GetDemoStatus(
+        [FromRoute] Guid correlationId,
+        [FromServices] IRequestClient<DemoStatusRequest> requestClient)
     {
+        var response = await requestClient.GetResponse<DemoStatusResponse, NotFoundResponse>(
+            new DemoStatusRequest { CorrelationId = correlationId });
+
+        if (response.Is(out Response<DemoStatusResponse>? okResponse))
+        {
+            return Ok(okResponse!.Message);
+        }
+
+        if (response.Is(out Response<NotFoundResponse>? notFoundResponse))
+        {
+            return NotFound(notFoundResponse!.Message);
+        }
+
         return StatusCode(418); // I'm a teapot
     }
 }

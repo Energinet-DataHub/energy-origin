@@ -12,3 +12,30 @@ public record DemoRequested
 }
 
 #endregion
+
+#region Requests and repsonses
+
+public record DemoStatusRequest
+{
+    public Guid CorrelationId { get; init; }
+}
+
+public record DemoStatusResponse
+{
+    public Guid CorrelationId { get; init; }
+    public DateTimeOffset Timestamp { get; init; }
+    public string Status { get; init; }
+    //public DateTimeOffset StartTimestamp { get; init; }
+    //public DateTimeOffset? EndTimestamp { get; set; }
+    //public TimeSpan Duration => EndTimestamp.HasValue
+    //    ? EndTimestamp.Value - StartTimestamp
+    //    : Timestamp - StartTimestamp;
+}
+
+public record NotFoundResponse
+{
+    public Guid CorrelationId { get; init; }
+    public DateTimeOffset Timestamp { get; init; }
+}
+
+#endregion

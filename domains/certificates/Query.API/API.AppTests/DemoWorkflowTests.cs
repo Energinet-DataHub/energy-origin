@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
 using API.DemoWorkflow;
@@ -19,7 +20,7 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [Fact]
-    public async Task DoesSomething()
+    public async Task StartWorkflow()
     {
         var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
@@ -28,8 +29,25 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
         demoCreateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
         var statusLocation = demoCreateResponse.Headers.Location;
-
         var statusResponse = await client.GetAsync(statusLocation);
-        statusResponse.StatusCode.Should().Be((HttpStatusCode)418);
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await statusResponse.Content.ReadFromJsonAsync<DemoStatusResponse>();
+        content!.Status.Should().Be("Running");
+    }
+
+    [Fact]
+    public async Task NoMatchingWorkflow()
+    {
+        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+
+        var unknownCorrelationId = Guid.NewGuid();
+        var statusResponse = await client.GetAsync($"api/certificates/demo/status/{unknownCorrelationId}");
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var content = await statusResponse.Content.ReadFromJsonAsync<NotFoundResponse>();
+        content!.CorrelationId.Should().Be(unknownCorrelationId);
     }
 }
