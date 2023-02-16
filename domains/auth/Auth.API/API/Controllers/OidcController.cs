@@ -35,7 +35,7 @@ public class OidcController : ControllerBase
         if (code == null)
         {
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCodeFrom(error, errorDescription)));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
@@ -136,16 +136,4 @@ public class OidcController : ControllerBase
         };
         return mapper.Map(user, response.AccessToken, response.IdentityToken);
     }
-
-    private static string ErrorCodeFrom(string? error, string? errorDescription) => (error?.ToLowerInvariant() ?? "", errorDescription?.ToLowerInvariant() ?? "")
-    switch
-    {
-        ("access_denied", "no_ctx") => ErrorCode.AuthenticationUpstream.NoContext,
-        ("access_denied", "user_aborted") or ("access_denied", "private_to_business_user_aborted") => ErrorCode.AuthenticationUpstream.Aborted,
-        ("access_denied", "internal_error") or ("server_error", _) or ("temporarily_unavailable", _) => ErrorCode.AuthenticationUpstream.InternalError,
-        ("unsupported_response_type", _) or ("invalid_request", _) => ErrorCode.AuthenticationUpstream.InvalidRequest,
-        ("unauthorized_client", _) => ErrorCode.AuthenticationUpstream.InvalidClient,
-        ("invalid_scope", _) => ErrorCode.AuthenticationUpstream.InvalidScope,
-        _ => ErrorCode.AuthenticationUpstream.Failed,
-    };
 }
