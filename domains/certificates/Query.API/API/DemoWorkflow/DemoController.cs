@@ -21,7 +21,7 @@ public class DemoController : ControllerBase
     {
         var @event = new DemoRequested
         {
-            CorrelationId = Guid.NewGuid(), 
+            CorrelationId = Guid.NewGuid(),
             Foo = demoRequest.Foo
         };
         await publishEndpoint.Publish(@event, cancellationToken);
@@ -31,7 +31,7 @@ public class DemoController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(DemoStatusResponse), 200)] //TODO: Should DemoStatusResponse be mapped to API class?
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(void), 404)]
     [Route("api/certificates/demo/status/{correlationId}")]
     public async Task<IActionResult> GetDemoStatus(
         [FromRoute] Guid correlationId,

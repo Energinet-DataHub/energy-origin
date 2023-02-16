@@ -24,7 +24,7 @@ Below is how the messages flow for the demo workflow. Please notes that events a
 
 ![Message flow](demoworkflow.messageflow.drawio.svg)
 
-The orchestration saga is a MassTransit State Machine. Below is a diagram of the states. A MassTransit State Machine will always have the states Initial and Final; all other states are defined specifically (e.g. "Processing" below).
+The orchestration saga is a MassTransit State Machine. Below is a diagram of the states. A MassTransit State Machine will always have the states Initial and Final; all other states are defined specifically (e.g. "Processing" below). A transition to a different state happens based on an event; the name of the event is written on the arrow.
 
 ![State machine](demoworkflow.statemachine.drawio.svg)
 
