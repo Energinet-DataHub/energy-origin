@@ -5,13 +5,13 @@ using API.ContractService;
 using API.GranularCertificateIssuer;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using IntegrationEvents;
 using Marten;
 using Marten.Events;
 using MassTransit;
 using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using RabbitMqEvents;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;

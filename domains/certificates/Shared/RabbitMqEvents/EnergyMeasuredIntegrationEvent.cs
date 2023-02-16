@@ -1,4 +1,4 @@
-namespace IntegrationEvents;
+namespace RabbitMqEvents;
 
 public record EnergyMeasuredIntegrationEvent(
     string GSRN,

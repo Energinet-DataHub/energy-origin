@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
 using API.IntegrationTest.Infrastructure;
+using API.RabbitMq.Configurations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
@@ -17,10 +18,13 @@ public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>, IClass
     public SwaggerTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
     {
         this.factory = factory;
-        this.factory.RabbitMqHost = rabbitMqContainer.Hostname;
-        this.factory.RabbitMqPort = rabbitMqContainer.Port.ToString();
-        this.factory.RabbitMqUsername = rabbitMqContainer.Username;
-        this.factory.RabbitMqPassword = rabbitMqContainer.Password;
+        this.factory.RabbitMqSetup = new RabbitMqOptions
+        {
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
+        };
     }
 
     [Fact]

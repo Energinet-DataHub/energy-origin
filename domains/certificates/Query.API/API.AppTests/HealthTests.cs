@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
 using API.IntegrationTest.Infrastructure;
+using API.RabbitMq.Configurations;
 using Xunit;
 
 namespace API.AppTests;
@@ -9,14 +10,19 @@ namespace API.AppTests;
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
+    private readonly RabbitMqContainer rabbitMqContainer;
 
     public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
     {
         this.factory = factory;
-        this.factory.RabbitMqHost = rabbitMqContainer.Hostname;
-        this.factory.RabbitMqPort = rabbitMqContainer.Port.ToString();
-        this.factory.RabbitMqUsername = rabbitMqContainer.Username;
-        this.factory.RabbitMqPassword = rabbitMqContainer.Password;
+        this.factory.RabbitMqSetup = new RabbitMqOptions
+        {
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
+        };
+        this.rabbitMqContainer = rabbitMqContainer;
     }
 
     [Fact]
@@ -27,4 +33,5 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
+
 }

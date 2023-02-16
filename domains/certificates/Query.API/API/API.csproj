@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
-    <ProjectReference Include="..\..\Shared\IntegrationEvents\IntegrationEvents.csproj" />
+    <ProjectReference Include="..\..\Shared\RabbitMqEvents\RabbitMqEvents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

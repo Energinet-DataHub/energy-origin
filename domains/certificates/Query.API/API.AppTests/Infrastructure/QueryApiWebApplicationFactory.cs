@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.AppTests.Mocks;
 using API.DataSyncSyncer;
+using API.RabbitMq.Configurations;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -23,19 +24,23 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "";
-    public string RabbitMqUsername { get; set; } = "";
-    public string RabbitMqPassword { get; set; } = "";
-    public string RabbitMqHost { get; set; } = "";
-    public string RabbitMqPort { get; set; } = "";
+
+    public RabbitMqOptions RabbitMqSetup { get; set; }
+
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
-        builder.UseSetting("RabbitMq:Password", RabbitMqPassword);
-        builder.UseSetting("RabbitMq:Username", RabbitMqUsername);
-        builder.UseSetting("RabbitMq:Host", RabbitMqHost);
-        builder.UseSetting("RabbitMq:Port", RabbitMqPort);
+
+        if (RabbitMqSetup != null)
+        {
+            builder.UseSetting("RabbitMq:Password", RabbitMqSetup.Password);
+            builder.UseSetting("RabbitMq:Username", RabbitMqSetup.Username);
+            builder.UseSetting("RabbitMq:Host", RabbitMqSetup.Host);
+            builder.UseSetting("RabbitMq:Port", RabbitMqSetup.Port.ToString());
+        }
+
 
         builder.ConfigureTestServices(services =>
         {
@@ -51,7 +56,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateAuthenticatedClient(string subject)
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
 
         return client;
     }
@@ -76,7 +82,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddMinutes(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -84,7 +91,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return tokenHandler.WriteToken(token);
     }
 
-    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate, DataSyncWireMock dataSyncWireMock)
+    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate,
+        DataSyncWireMock dataSyncWireMock)
     {
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn);
 
