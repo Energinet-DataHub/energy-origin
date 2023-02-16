@@ -109,7 +109,7 @@ public class LogoutControllerTests
         Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode=2", query);
+        Assert.DoesNotContain($"errorCode=", query);
     }
 
     [Fact]

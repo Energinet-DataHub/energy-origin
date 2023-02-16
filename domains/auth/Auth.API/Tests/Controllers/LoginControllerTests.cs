@@ -1,6 +1,7 @@
 using System.Web;
 using API.Controllers;
 using API.Options;
+using API.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -76,7 +77,7 @@ public class LoginControllerTests
         Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode=2", query);
+        Assert.Contains($"errorCode={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
     }
 
     [Fact]

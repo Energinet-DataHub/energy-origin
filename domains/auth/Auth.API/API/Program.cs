@@ -7,14 +7,13 @@ using API.Repositories.Data;
 using API.Services;
 using API.Utilities;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
+
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
     .CreateLogger();

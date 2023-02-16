@@ -35,10 +35,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
-            services.AddDbContext<DataContext>(options =>
-            {
-                options.UseNpgsql(testContainer.ConnectionString);
-            });
+            services.AddDbContext<DataContext>(options => options.UseNpgsql(testContainer.ConnectionString));
             services.AddScoped<IUserDataContext, DataContext>();
         });
     }

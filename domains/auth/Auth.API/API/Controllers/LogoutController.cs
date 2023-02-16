@@ -21,7 +21,7 @@ public class LogoutController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", "2"));
+            return RedirectPreserveMethod(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri);
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
