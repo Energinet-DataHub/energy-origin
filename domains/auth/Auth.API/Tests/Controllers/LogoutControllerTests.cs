@@ -7,6 +7,7 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Tests.Common;
 
 namespace Tests.Controllers;
 

@@ -1,22 +1,26 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Repositories.Data;
+using API.Services;
 using API.Utilities;
+using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Tests.Integration;
 
 public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
-    public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
 
     private readonly PostgreSqlTestcontainer testContainer
         = new ContainerBuilder<PostgreSqlTestcontainer>()
@@ -43,17 +47,21 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateUnauthenticatedClient() => CreateClient(new WebApplicationFactoryClientOptions
+    public HttpClient CreateUnauthenticatedClient(Action<IWebHostBuilder> config = null!)
     {
-        AllowAutoRedirect = false,
-        BaseAddress = new Uri("https://localhost")
-    });
+        var factory = config is not null ? WithWebHostBuilder(config) : this;
+        return factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            BaseAddress = new Uri("https://localhost")
+        });
+    }
 
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user)
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string accessToken, string identityToken, Action<IWebHostBuilder> config = null!)
     {
-        var client = CreateClient();
-        var userDescriptMapper = ServiceProvider.GetRequiredService<UserDescriptMapper>();
-        var userDescriptor = userDescriptMapper.Map(user, Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+        var client = CreateUnauthenticatedClient(config);
+        var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
+        var userDescriptor = userDescriptMapper.Map(user, accessToken, identityToken);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
         return client;
     }

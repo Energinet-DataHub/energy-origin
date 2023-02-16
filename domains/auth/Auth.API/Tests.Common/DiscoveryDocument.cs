@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using IdentityModel.Client;
 
-namespace Tests;
+namespace Tests.Common;
 
 public static class DiscoveryDocument
 {
