@@ -1,6 +1,6 @@
 # Authentication ORM
 
-* Status: Accepted
+* Status: Proposed
 * Deciders: @MortMH, @Frydensberg1, @CodeReaper, @robertrosborg
 * Date: 2023-02-06
 
@@ -30,4 +30,3 @@ Both Entity Framework and Dapper are capable ORMs, but we've chosen Entity Frame
 * Built-in migration handling and generation.
 * Improved productivity and faster development.
 * Well known and supported in .NET ecosystem.
-* Allows for SQL for complex queries if needed.
