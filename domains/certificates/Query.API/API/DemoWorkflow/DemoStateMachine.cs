@@ -20,7 +20,6 @@ public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance
         Event(() => DemoInRegistrySaved);
         Event(() => StatusRequested, c =>
         {
-            c.CorrelateById(x => x.Message.CorrelationId);
             c.OnMissingInstance(context => context.ExecuteAsync(x => x.RespondAsync(
                 new NotFoundResponse
                 {
