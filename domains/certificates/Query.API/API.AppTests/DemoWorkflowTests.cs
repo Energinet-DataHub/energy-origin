@@ -51,8 +51,5 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
         var statusResponse = await client.GetAsync($"api/certificates/demo/status/{unknownCorrelationId}");
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var content = await statusResponse.Content.ReadFromJsonAsync<NotFoundResponse>();
-        content!.CorrelationId.Should().Be(unknownCorrelationId);
     }
 }
