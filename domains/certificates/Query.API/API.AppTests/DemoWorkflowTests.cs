@@ -35,10 +35,10 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await statusResponse.Content.ReadFromJsonAsync<DemoStatusResponse>();
-        content!.Status.Should().Be("Running");
+        content!.Status.Should().Be("Processing");
 
         var completedStatus = await client.RepeatedlyGetUntil<DemoStatusResponse>(statusLocation.ToString(),
-            r => !r.Status.Equals("Running", StringComparison.InvariantCultureIgnoreCase));
+            r => !r.Status.Equals("Processing", StringComparison.InvariantCultureIgnoreCase));
         completedStatus.Status.Should().Be("Completed");
     }
 

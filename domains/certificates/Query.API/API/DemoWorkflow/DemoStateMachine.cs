@@ -49,7 +49,7 @@ public class DemoStateMachine : MassTransitStateMachine<DemoStateMachineInstance
                 {
                     CorrelationId = c.Message.CorrelationId,
                     Timestamp = DateTimeOffset.Now,
-                    Status = "Running"
+                    Status = "Processing"
                 }));
 
         During(Final,
