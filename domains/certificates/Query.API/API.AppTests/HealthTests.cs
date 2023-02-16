@@ -10,7 +10,6 @@ namespace API.AppTests;
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
-    private readonly RabbitMqContainer rabbitMqContainer;
 
     public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
     {
@@ -22,7 +21,6 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
             Host = rabbitMqContainer.Hostname,
             Port = rabbitMqContainer.Port
         };
-        this.rabbitMqContainer = rabbitMqContainer;
     }
 
     [Fact]
@@ -33,5 +31,4 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
-
 }
