@@ -1,6 +1,8 @@
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
+using API.IntegrationTest.Infrastructure;
+using API.RabbitMq.Configurations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
@@ -9,11 +11,21 @@ using Xunit;
 namespace API.AppTests;
 
 [UsesVerify]
-public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
+public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public SwaggerTests(QueryApiWebApplicationFactory factory) => this.factory = factory;
+    public SwaggerTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
+    {
+        this.factory = factory;
+        this.factory.RabbitMqSetup = new RabbitMqOptions
+        {
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
+        };
+    }
 
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()

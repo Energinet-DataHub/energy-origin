@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using API.ContractService;
 using CertificateEvents;
 using CertificateEvents.Primitives;
-using IntegrationEvents;
 using Marten;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using RabbitMqEvents;
 
 namespace API.GranularCertificateIssuer;
 

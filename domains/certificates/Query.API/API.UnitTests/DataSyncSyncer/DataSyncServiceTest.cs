@@ -9,9 +9,9 @@ using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
+using RabbitMqEvents;
 using Xunit;
 
 namespace API.UnitTests.DataSyncSyncer;

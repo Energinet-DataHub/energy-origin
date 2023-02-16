@@ -8,11 +8,11 @@ using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using IntegrationEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using RabbitMqEvents;
 using RichardSzalay.MockHttp;
 using Xunit;
 
