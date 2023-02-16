@@ -3,6 +3,7 @@ using System.Web;
 using API.Controllers;
 using API.Options;
 using API.Utilities;
+using API.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -109,7 +110,7 @@ public class LogoutControllerTests
         Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.DoesNotContain($"errorCode=", query);
+        Assert.DoesNotContain($"{ErrorCode.QueryString}=", query);
     }
 
     [Fact]

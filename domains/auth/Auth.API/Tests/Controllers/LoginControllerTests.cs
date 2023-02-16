@@ -77,7 +77,7 @@ public class LoginControllerTests
         Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
     }
 
     [Fact]

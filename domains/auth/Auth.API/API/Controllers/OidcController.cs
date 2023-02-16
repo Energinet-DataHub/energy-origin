@@ -35,14 +35,14 @@ public class OidcController : ControllerBase
         if (code == null)
         {
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCodeFrom(error, errorDescription)));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCodeFrom(error, errorDescription)));
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
 
         var client = clientFactory.CreateClient();
@@ -59,65 +59,14 @@ public class OidcController : ControllerBase
         {
             request.ClientSecret = "<removed>";
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@request}", request);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCode.AuthenticationUpstream.BadResponse));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
         }
 
+        string token;
         try
         {
-            var handler = new JwtSecurityTokenHandler
-            {
-                MapInboundClaims = false
-            };
-            var parameters = new TokenValidationParameters()
-            {
-                IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
-                ValidIssuer = discoveryDocument.Issuer,
-                ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
-                ValidAudience = oidcOptions.Value.ClientId
-            };
-
-            var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
-            var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
-
-            parameters.ValidateAudience = false;
-            var access = handler.ValidateToken(response.AccessToken, parameters, out _);
-
-            var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
-            var scope = access.FindFirstValue("scope");
-            var providerId = userInfo.FindFirstValue("mitid.uuid");
-            var name = userInfo.FindFirstValue("mitid.identity_name");
-            var tin = userInfo.FindFirstValue("nemid.cvr");
-
-            ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
-            ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
-            ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
-            ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-
-            if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
-            {
-                throw new SecurityTokenException("Subject mismatched found in tokens received.");
-            }
-
-            var user = await service.GetUserByProviderIdAsync(providerId) ?? new User
-            {
-                Id = null,
-                ProviderId = providerId,
-                Name = name,
-                Tin = tin,
-                AcceptedTermsVersion = 0,
-                AllowCPRLookup = false
-            };
-            var descriptor = mapper.Map(user, response.AccessToken, response.IdentityToken);
-            var token = await issuer.IssueAsync(descriptor);
-
-            accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
-            {
-                IsEssential = true,
-                Secure = true,
-                Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
-            });
-
-            return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
+            var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
+            token = await issuer.IssueAsync(descriptor);
         }
         catch (Exception exception)
         {
@@ -125,10 +74,67 @@ public class OidcController : ControllerBase
 
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
-                QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCode.Authentication.InvalidTokens)
+                QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );
             return RedirectPreserveMethod(url);
         }
+
+        accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
+        {
+            IsEssential = true,
+            Secure = true,
+            Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
+        });
+
+        return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
+    }
+
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    {
+        var handler = new JwtSecurityTokenHandler
+        {
+            MapInboundClaims = false
+        };
+        var parameters = new TokenValidationParameters()
+        {
+            IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
+            ValidIssuer = discoveryDocument.Issuer,
+            ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
+            ValidAudience = oidcOptions.ClientId
+        };
+
+        var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
+        var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
+
+        parameters.ValidateAudience = false;
+        var access = handler.ValidateToken(response.AccessToken, parameters, out _);
+
+        var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        var scope = access.FindFirstValue("scope");
+        var providerId = userInfo.FindFirstValue("mitid.uuid");
+        var name = userInfo.FindFirstValue("mitid.identity_name");
+        var tin = userInfo.FindFirstValue("nemid.cvr");
+
+        ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
+        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
+        ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
+        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+
+        if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
+        {
+            throw new SecurityTokenException("Subject mismatched found in tokens received.");
+        }
+
+        var user = await service.GetUserByProviderIdAsync(providerId) ?? new User
+        {
+            Id = null,
+            ProviderId = providerId,
+            Name = name,
+            Tin = tin,
+            AcceptedTermsVersion = 0,
+            AllowCPRLookup = false
+        };
+        return mapper.Map(user, response.AccessToken, response.IdentityToken);
     }
 
     private static string ErrorCodeFrom(string? error, string? errorDescription) => (error?.ToLowerInvariant() ?? "", errorDescription?.ToLowerInvariant() ?? "")

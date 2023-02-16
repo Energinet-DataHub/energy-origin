@@ -18,7 +18,7 @@ public class LoginController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);

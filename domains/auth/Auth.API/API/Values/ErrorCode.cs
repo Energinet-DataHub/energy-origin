@@ -2,6 +2,7 @@ namespace API.Values;
 
 public readonly struct ErrorCode
 {
+    public const string QueryString = "errorCode";
     public struct Authentication
     {
         public const string Failed = "600";

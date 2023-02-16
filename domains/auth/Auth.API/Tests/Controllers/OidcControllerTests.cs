@@ -126,7 +126,7 @@ public class OidcControllerTests
         Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class OidcControllerTests
         Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode={ErrorCode.AuthenticationUpstream.BadResponse}", query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", query);
     }
 
     [Fact]
@@ -200,9 +200,158 @@ public class OidcControllerTests
         );
     }
 
-    // FIXME: add tests for invalid access, id and user token
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenIsMissingName()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
 
-    // FIXME: add tests for missing user token information
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var acccessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{acccessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+        var redirectResult = (RedirectResult)result;
+        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenIsMissingId()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var acccessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.identity_name", name }
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{acccessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+        var redirectResult = (RedirectResult)result;
+        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenAccessTokenIsMissingScope()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var acccessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{acccessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+        var redirectResult = (RedirectResult)result;
+        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+    }
+
+    [Theory]
+    [InlineData("incorrect", "as expected", "as expected", "as expected")]
+    [InlineData("as expected", "incorrect", "as expected", "as expected")]
+    [InlineData("as expected", "as expected", "incorrect", "as expected")]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenTokenIsInvalid(string identity, string access, string user, string expected)
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", expected),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, identity, oidcOptions.Value.ClientId);
+        var acccessToken = TokenUsing(tokenOptions.Value, access, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, user, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{acccessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+        var redirectResult = (RedirectResult)result;
+        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+    }
 
     [Theory]
     [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
@@ -216,6 +365,7 @@ public class OidcControllerTests
     [InlineData("invalid_scope", null, ErrorCode.AuthenticationUpstream.InvalidScope)]
     [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { });
@@ -235,7 +385,7 @@ public class OidcControllerTests
         Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"errorCode={expected}", query);
+        Assert.Contains($"{ErrorCode.QueryString}={expected}", query);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
