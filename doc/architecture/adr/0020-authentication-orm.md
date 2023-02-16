@@ -1,4 +1,4 @@
-# Claims
+# Authentication ORM
 
 * Status: Accepted
 * Deciders: @MortMH, @Frydensberg1, @CodeReaper, @robertrosborg
