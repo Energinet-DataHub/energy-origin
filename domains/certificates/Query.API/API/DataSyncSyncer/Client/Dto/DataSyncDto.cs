@@ -1,4 +1,4 @@
-using IntegrationEvents;
+using RabbitMqEvents;
 
 namespace API.DataSyncSyncer.Client.Dto;
 

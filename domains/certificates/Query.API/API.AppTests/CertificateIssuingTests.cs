@@ -5,26 +5,40 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
+using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
+using API.RabbitMq.Configurations;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
-using IntegrationEvents;
 using MassTransit;
+using RabbitMqEvents;
 using Xunit;
 
 namespace API.AppTests;
 
-public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
+public sealed class CertificateIssuingTests :
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+    IClassFixture<RabbitMqContainer>,
+    IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer)
+    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
+        RabbitMqContainer rabbitMqContainer)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9002);
+        dataSyncWireMock = new DataSyncWireMock(port: 9003);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.RabbitMqSetup = new RabbitMqOptions
+        {
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
+        };
     }
 
     [Fact]
@@ -70,7 +84,8 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
         var expected = new CertificateList
         {
@@ -116,7 +131,8 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var certificateList = await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
 
         var expected = new CertificateList
         {
@@ -178,7 +194,8 @@ public sealed class CertificateIssuingTests : IClassFixture<QueryApiWebApplicati
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-    private static EquivalencyAssertionOptions<CertificateList> CertificateListAssertionOptions(EquivalencyAssertionOptions<CertificateList> options) =>
+    private static EquivalencyAssertionOptions<CertificateList> CertificateListAssertionOptions(
+        EquivalencyAssertionOptions<CertificateList> options) =>
         options
             .WithStrictOrderingFor(l => l.Result)
             .For(l => l.Result).Exclude(c => c.Id);
