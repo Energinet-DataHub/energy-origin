@@ -19,7 +19,7 @@ public static class Startup
             // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
             o.AddSagaStateMachine<DemoStateMachine, DemoStateMachineInstance>()
                 .InMemoryRepository(); //TODO: Change this to Marten
-            
+
             // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
             o.AddConsumer<RegistryConnectorDemoConsumer>().Endpoint(c => { c.Name = configuration.RegistryConnector; });
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
