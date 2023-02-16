@@ -59,7 +59,7 @@ public class OidcController : ControllerBase
         {
             request.ClientSecret = "<removed>";
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@request}", request);
-            throw new BadHttpRequestException(response.Error);
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, "errorCode", ErrorCode.AuthenticationUpstream.BadResponse));
         }
 
         try

@@ -18,5 +18,6 @@ public readonly struct ErrorCode
         public const string InvalidClient = "710";
         public const string InvalidRequest = "720";
         public const string InvalidScope = "730";
+        public const string BadResponse = "790";
     }
 }

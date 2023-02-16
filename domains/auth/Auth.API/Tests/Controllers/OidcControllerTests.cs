@@ -130,16 +130,16 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public async Task CallbackAsync_ShouldLogWarning_WhenDiscoveryFails()
+    public async Task CallbackAsync_ShouldLogError_WhenDiscoveryFails()
     {
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        _ = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Mock.Get(logger).Verify(it => it.Log(
-            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
+            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
             It.IsAny<EventId>(),
             It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception>(),
@@ -148,7 +148,57 @@ public class OidcControllerTests
         );
     }
 
-    // FIXME: add tests for code exchange failure
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeExchangeFails()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+
+        var redirectResult = (RedirectResult)result;
+        Assert.True(redirectResult.PreserveMethod);
+        Assert.False(redirectResult.Permanent);
+
+        var uri = new Uri(redirectResult.Url);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.Contains($"errorCode={ErrorCode.AuthenticationUpstream.BadResponse}", query);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldLogError_WhenCodeExchangeFails()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        _ = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Mock.Get(logger).Verify(it => it.Log(
+            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once
+        );
+    }
 
     // FIXME: add tests for invalid access, id and user token
 
