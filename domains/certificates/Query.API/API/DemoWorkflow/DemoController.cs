@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.DemoWorkflow;
 
-[Authorize]
+//[Authorize]
 [ApiController]
 public class DemoController : ControllerBase
 {

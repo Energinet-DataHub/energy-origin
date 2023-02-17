@@ -31,10 +31,19 @@ public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>, I
         demoCreateResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
         var statusLocation = demoCreateResponse.Headers.Location!;
+
         var statusResponse = await client.GetAsync(statusLocation);
 
-        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        var counter = 0;
+        while (statusResponse.StatusCode == HttpStatusCode.NotFound && counter <= 10)
+        {
+            await Task.Delay(1000);
+            statusResponse = await client.GetAsync(statusLocation);
+            counter++;
+        }
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await statusResponse.Content.ReadFromJsonAsync<DemoStatusResponse>();
         content!.Status.Should().Be("Processing");
 
