@@ -8,7 +8,9 @@
 
 ## Context and Problem Statement
 
-We need an ORM for the Auth domain to handle entity mapping and database migrations.
+MartenDB EventStore has previously been proposed as the database of choice, but [ADR-0015](0015-domains-responsible-for-persistance.md) allows each domain to choose the database that best suits it. For the Auth domain we've therefore decided to go for a simpler solution in the form of a relational PostgreSQL database.
+
+Because of this we need an ORM to handle entity mapping and database migrations.
 
 ---
 
@@ -25,7 +27,7 @@ We have chosen Entity Framework.
 
 ## Rationale
 
-Both Entity Framework and Dapper are capable ORMs, but we've chosen Entity Framework for the following main reasons:
+Both Entity Framework and Dapper are capable ORMs and a choice between them will often come down to personal preferences, but the main differentiating reasons we've chosen Entity Framework are:
 
 * Built-in migration handling and generation.
 * Improved productivity and faster development.
