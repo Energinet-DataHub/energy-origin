@@ -59,7 +59,7 @@ builder.Services.AddMarten(options =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddIntegrationEventBus();
+builder.Services.AddIntegrationEventBus(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
