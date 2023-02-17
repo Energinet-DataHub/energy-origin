@@ -1,4 +1,4 @@
-namespace IntegrationEvents;
+namespace MeasurementEvents;
 
 public record EnergyMeasuredIntegrationEvent(
     string GSRN,

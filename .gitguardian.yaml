@@ -1,0 +1,6 @@
+version: 2
+
+secret:
+  ignored-paths:
+    - domains/auth/Auth.API/API/appsettings.Test.json
+    - domains/auth/Auth.API/API/appsettings.Development.json

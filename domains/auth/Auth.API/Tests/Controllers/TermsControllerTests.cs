@@ -10,7 +10,7 @@ namespace Tests.Controllers;
 
 public class TermsControllerTests
 {
-    private readonly TermsController termsController = new TermsController();
+    private readonly TermsController termsController = new();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
 
