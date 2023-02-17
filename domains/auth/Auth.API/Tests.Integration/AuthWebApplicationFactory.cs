@@ -1,20 +1,15 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Repositories.Data;
-using API.Services;
 using API.Utilities;
-using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
-using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Tests.Integration;
 
