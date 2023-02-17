@@ -1,12 +1,12 @@
 using System.Net;
 using System.Web;
 using API.Options;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Tests.Common;
-using Moq;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Moq;
+using Tests.Common;
 
 namespace Tests.Integration.Controllers;
 

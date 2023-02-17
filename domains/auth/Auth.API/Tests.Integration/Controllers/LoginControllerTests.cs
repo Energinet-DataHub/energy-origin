@@ -49,7 +49,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var result = await client.GetAsync("auth/login");
         Assert.NotNull(result);
-        
+
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains($"errorCode=2", query);
 
