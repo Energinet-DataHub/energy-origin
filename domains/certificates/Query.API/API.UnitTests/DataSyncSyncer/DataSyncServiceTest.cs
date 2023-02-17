@@ -9,7 +9,7 @@ using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using IntegrationEvents;
+using MeasurementEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;

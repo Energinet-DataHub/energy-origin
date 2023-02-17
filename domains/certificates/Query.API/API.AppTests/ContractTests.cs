@@ -5,22 +5,31 @@ using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
+using API.IntegrationTest.Infrastructure;
+using API.RabbitMq.Configurations;
 using FluentAssertions;
 using Xunit;
 
 namespace API.AppTests;
 
-public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IDisposable
+public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
+    public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten, RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9001);
         this.factory = factory;
         this.factory.MartenConnectionString = marten.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.RabbitMqSetup = new RabbitMqOptions
+        {
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
+        };
     }
 
     [Fact]

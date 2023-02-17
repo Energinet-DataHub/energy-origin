@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
-using IntegrationEvents;
 using Marten;
 using MassTransit;
+using MeasurementEvents;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
