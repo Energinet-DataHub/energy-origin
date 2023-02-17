@@ -6,8 +6,8 @@ using CertificateEvents;
 using CertificateEvents.Primitives;
 using Marten;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using MeasurementEvents;
+using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 

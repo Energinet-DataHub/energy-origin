@@ -7,9 +7,9 @@ using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
 using Marten;
 using MassTransit;
+using MeasurementEvents;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MeasurementEvents;
 
 namespace API.DataSyncSyncer;
 
