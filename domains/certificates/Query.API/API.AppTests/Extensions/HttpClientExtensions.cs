@@ -9,6 +9,14 @@ namespace API.AppTests.Extensions;
 
 public static class HttpClientExtensions
 {
+    public static Task<T> RepeatedlyGetUntil<T>(this HttpClient client, Uri? requestUri, Func<T, bool> condition, TimeSpan? timeLimit = null)
+    {
+        if (requestUri == null)
+            throw new ArgumentNullException(nameof(requestUri));
+
+        return RepeatedlyGetUntil(client, requestUri.ToString(), condition, timeLimit);
+    }
+
     public static async Task<T> RepeatedlyGetUntil<T>(this HttpClient client, string requestUri, Func<T, bool> condition, TimeSpan? timeLimit = null)
     {
         if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
