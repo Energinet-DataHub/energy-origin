@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using API.ContractService;
 using API.DataSyncSyncer;
+using API.DemoWorkflow;
 using API.GranularCertificateIssuer;
 using API.IntegrationEventBus;
 using API.Query.API;
@@ -52,12 +53,13 @@ builder.Services.AddMarten(options =>
 {
     options.Connection(builder.Configuration.GetConnectionString("Marten"));
 
+    options.Schema.For<DemoStateMachineInstance>().Identity(x => x.CorrelationId);
     options.AutoCreateSchemaObjects = AutoCreate.All;
 });
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddIntegrationEventBus();
+builder.Services.AddIntegrationEventBus(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
