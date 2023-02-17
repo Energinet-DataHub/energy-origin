@@ -8,7 +8,7 @@
 
 ## Context and Problem Statement
 
-MartenDB EventStore has previously been proposed as the database of choice, but [ADR-0015](0015-domains-responsible-for-persistance.md) allows each domain to choose the database that best suits it. For the Auth domain we've therefore decided to go for a simpler solution in the form of a relational PostgreSQL database.
+MartenDB EventStore has previously been proposed as the database of choice, but [ADR-0015](0015-domains-responsible-for-persistance.md) allows each domain to choose the database that best suits it. For the Auth domain we have therefore decided to go for a simpler solution in the form of a relational database. PostgreSQL has previously been the go-to choice and we found no reason to change this.
 
 Because of this we need an ORM to handle entity mapping and database migrations.
 
