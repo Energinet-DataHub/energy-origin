@@ -21,6 +21,7 @@ All current valid ADR.
 - [ADR-0017 Claims](0017-claims.md)
 - [ADR-0018 .NET upgrade strategy](0018-.net-upgrade-strategy.md)
 - [ADR-0019 Message Broker Certificates domain](0019-PROPOSAL-message-broker.md)
+- [ADR-0020 Authentication ORM](0020-PROPOSAL-authentication-orm.md)
 
 ## Deprecated
 
