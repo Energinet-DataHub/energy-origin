@@ -9,7 +9,7 @@ using Marten;
 using MassTransit;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RabbitMqEvents;
+using MeasurementEvents;
 
 namespace API.DataSyncSyncer;
 

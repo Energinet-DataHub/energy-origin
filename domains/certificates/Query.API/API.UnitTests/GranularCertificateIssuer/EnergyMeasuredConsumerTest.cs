@@ -9,9 +9,9 @@ using Marten;
 using Marten.Events;
 using MassTransit;
 using MassTransit.Testing;
+using MeasurementEvents;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using RabbitMqEvents;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;

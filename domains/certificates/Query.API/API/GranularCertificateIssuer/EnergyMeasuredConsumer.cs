@@ -7,7 +7,7 @@ using CertificateEvents.Primitives;
 using Marten;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using RabbitMqEvents;
+using MeasurementEvents;
 
 namespace API.GranularCertificateIssuer;
 

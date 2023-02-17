@@ -31,4 +31,6 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
+
+
 }

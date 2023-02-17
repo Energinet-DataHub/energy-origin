@@ -1,4 +1,4 @@
-using RabbitMqEvents;
+using MeasurementEvents;
 
 namespace API.DataSyncSyncer.Client.Dto;
 

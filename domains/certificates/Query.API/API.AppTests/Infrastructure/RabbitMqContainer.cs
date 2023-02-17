@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
@@ -28,5 +29,5 @@ public class RabbitMqContainer : IAsyncLifetime
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
-    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    public Task DisposeAsync() => testContainer.StopAsync(); //  testContainer.DisposeAsync().AsTask();
 }

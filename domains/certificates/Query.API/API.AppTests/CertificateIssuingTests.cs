@@ -11,7 +11,7 @@ using API.RabbitMq.Configurations;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using MassTransit;
-using RabbitMqEvents;
+using MeasurementEvents;
 using Xunit;
 
 namespace API.AppTests;

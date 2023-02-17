@@ -33,7 +33,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
 
-        if (RabbitMqSetup != null)
+        if (IsRabbitMqSet())
         {
             builder.UseSetting("RabbitMq:Password", RabbitMqSetup.Password);
             builder.UseSetting("RabbitMq:Username", RabbitMqSetup.Username);
@@ -44,12 +44,17 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            //  Ensure masstransit bus is started when we run our health checks
-            services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
+            if (IsRabbitMqSet())
+            {
+                //  Ensure masstransit bus is started when we run our health checks
+                services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
+            }
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
+
+    private bool IsRabbitMqSet() => RabbitMqSetup != null;
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
