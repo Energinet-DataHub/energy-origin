@@ -42,7 +42,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateUnauthenticatedClient(Action<IWebHostBuilder> config = null!)
+    public HttpClient CreateUnauthenticatedClient(Action<IWebHostBuilder>? config = null)
     {
         var factory = config is not null ? WithWebHostBuilder(config) : this;
         return factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -52,7 +52,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder> config = null!)
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateUnauthenticatedClient(config);
         var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
