@@ -11,20 +11,13 @@ using Xunit;
 namespace API.AppTests;
 
 [UsesVerify]
-public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
+public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public SwaggerTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
+    public SwaggerTests(QueryApiWebApplicationFactory factory)
     {
         this.factory = factory;
-        this.factory.RabbitMqSetup = new RabbitMqOptions
-        {
-            Username = rabbitMqContainer.Username,
-            Password = rabbitMqContainer.Password,
-            Host = rabbitMqContainer.Hostname,
-            Port = rabbitMqContainer.Port
-        };
     }
 
     [Fact]

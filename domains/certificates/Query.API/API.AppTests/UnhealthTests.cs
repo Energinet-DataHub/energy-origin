@@ -12,13 +12,13 @@ public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
     public UnhealthTests(QueryApiWebApplicationFactory factory)
     {
         this.factory = factory;
+        this.factory.RabbitMqSetup = null;
     }
 
     [Fact]
     public async Task Health_IsCalledWhenRabbitMqIsDown_ReturnsServiceUnavailable()
     {
         var client = factory.CreateClient();
-
         var healthResponse = await client.GetAsync("health");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, healthResponse.StatusCode);
     }

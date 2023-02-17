@@ -22,12 +22,10 @@ public class RabbitMqContainer : IAsyncLifetime
 
     public string Username => testContainer.Username;
     public string Password => testContainer.Password;
-
-
     public string Hostname => testContainer.Hostname;
     public int Port => testContainer.Port;
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
-    public Task DisposeAsync() => testContainer.StopAsync(); //  testContainer.DisposeAsync().AsTask();
+    public Task DisposeAsync() => testContainer.StopAsync();
 }

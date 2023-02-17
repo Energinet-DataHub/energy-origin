@@ -24,37 +24,27 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "";
-
-    public RabbitMqOptions RabbitMqSetup { get; set; }
-
+    public RabbitMqOptions? RabbitMqSetup { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
-
-        if (IsRabbitMqSet())
-        {
-            builder.UseSetting("RabbitMq:Password", RabbitMqSetup.Password);
-            builder.UseSetting("RabbitMq:Username", RabbitMqSetup.Username);
-            builder.UseSetting("RabbitMq:Host", RabbitMqSetup.Host);
-            builder.UseSetting("RabbitMq:Port", RabbitMqSetup.Port.ToString());
-        }
-
+        builder.UseSetting("RabbitMq:Password", RabbitMqSetup?.Password ?? "");
+        builder.UseSetting("RabbitMq:Username", RabbitMqSetup?.Username ?? "");
+        builder.UseSetting("RabbitMq:Host", RabbitMqSetup?.Host ?? "localhost");
+        builder.UseSetting("RabbitMq:Port", RabbitMqSetup?.Port.ToString() ?? "4242");
 
         builder.ConfigureTestServices(services =>
         {
-            if (IsRabbitMqSet())
-            {
-                //  Ensure masstransit bus is started when we run our health checks
+            //  Ensure masstransit bus is started when we run our health checks
+            if (RabbitMqSetup != null)
                 services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
-            }
+
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
-
-    private bool IsRabbitMqSet() => RabbitMqSetup != null;
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
