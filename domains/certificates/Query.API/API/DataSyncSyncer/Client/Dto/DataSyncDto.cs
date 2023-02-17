@@ -1,4 +1,4 @@
-using IntegrationEvents;
+using MeasurementEvents;
 
 namespace API.DataSyncSyncer.Client.Dto;
 
