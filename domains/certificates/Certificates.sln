@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CertificateEvents", "Shared
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API.UnitTests", "Query.API\API.UnitTests\API.UnitTests.csproj", "{536410DD-6B50-47DC-99EF-CBCFBAAE0079}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationEvents", "Shared\IntegrationEvents\IntegrationEvents.csproj", "{7CE965F2-DF46-4372-A44F-BA14957DC9C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasurementEvents", "Shared\MeasurementEvents\MeasurementEvents.csproj", "{7CE965F2-DF46-4372-A44F-BA14957DC9C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

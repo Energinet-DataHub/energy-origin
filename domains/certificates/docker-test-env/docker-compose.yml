@@ -16,6 +16,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
+  rabbitmq:
+    image: rabbitmq:3.11.7-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - postgres
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
