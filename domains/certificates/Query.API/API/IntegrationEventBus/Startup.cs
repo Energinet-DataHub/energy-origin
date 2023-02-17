@@ -9,6 +9,8 @@ public static class Startup
 {
     public static void AddIntegrationEventBus(this IServiceCollection services)
     {
+        var connectionString = "host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;";
+
         var configuration = new DemoSendEndpointConfiguration();
         services.AddSingleton(configuration);
 
@@ -16,11 +18,12 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
             o.AddSagaStateMachine<DemoStateMachine, DemoStateMachineInstance>()
-                .InMemoryRepository(); //TODO: Change this to Marten
+                .MartenRepository(connectionString, r =>
+                {
+                    r.Schema.For<DemoStateMachineInstance>().UseOptimisticConcurrency(true);
+                });
 
-            // TODO: Can this be defined elsewhere, like in a startup-class for DemoWorkflow?
             o.AddConsumer<RegistryConnectorDemoConsumer>().Endpoint(c => { c.Name = configuration.RegistryConnector; });
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
 

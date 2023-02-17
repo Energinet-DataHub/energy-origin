@@ -11,13 +11,14 @@ using Xunit;
 
 namespace API.AppTests;
 
-public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>
+public class DemoWorkflowTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public DemoWorkflowTests(QueryApiWebApplicationFactory factory)
+    public DemoWorkflowTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten)
     {
         this.factory = factory;
+        this.factory.MartenConnectionString = marten.ConnectionString;
     }
 
     [Fact]
