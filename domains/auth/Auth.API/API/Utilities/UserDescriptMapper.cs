@@ -24,7 +24,7 @@ public class UserDescriptMapper : IUserDescriptMapper
         AcceptedTermsVersion = user.AcceptedTermsVersion,
         AllowCPRLookup = user.AllowCPRLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
-        EncryptedIdentityToken = cryptography.Encrypt(identityToken),
+        EncryptedIdentityToken = cryptography.Encrypt(identityToken)
     };
 
     public UserDescriptor? Map(ClaimsPrincipal? user)

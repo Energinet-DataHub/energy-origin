@@ -28,7 +28,7 @@ public class LogoutControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
+    public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
         var options = TestOptions.Oidc(oidcOptions);
 
@@ -70,7 +70,7 @@ public class LogoutControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
+    public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
         var options = TestOptions.Oidc(oidcOptions);
 
@@ -88,7 +88,7 @@ public class LogoutControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
+    public async Task LogoutAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);
 
@@ -114,7 +114,7 @@ public class LogoutControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
+    public async Task LogoutAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);
 

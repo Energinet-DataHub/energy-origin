@@ -43,7 +43,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped(x => Mock.Of<IDiscoveryCache>());
+                services.AddScoped(x => cache);
             });
         });
 

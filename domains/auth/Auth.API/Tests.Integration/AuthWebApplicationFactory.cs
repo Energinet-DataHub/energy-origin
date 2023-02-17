@@ -57,13 +57,31 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string accessToken, string identityToken, Action<IWebHostBuilder> config = null!)
+    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder> config = null!)
     {
         var client = CreateUnauthenticatedClient(config);
         var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
-        var userDescriptor = userDescriptMapper.Map(user, accessToken, identityToken);
+        var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
         return client;
+    }
+
+    public async Task<User> AddUserToDatabaseAsync(User? user = null)
+    {
+        user ??= new User()
+        {
+            ProviderId = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString(),
+            AcceptedTermsVersion = 1,
+            Tin = null,
+            AllowCPRLookup = true
+        };
+
+        var dbContext = ServiceProvider.GetRequiredService<DataContext>();
+        await dbContext.Users.AddAsync(user);
+        await dbContext.SaveChangesAsync();
+
+        return user;
     }
 
     public async Task InitializeAsync()
