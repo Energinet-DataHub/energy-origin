@@ -21,18 +21,20 @@ public class TermsController : ControllerBase
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
         User user;
-
         if (descriptor.Id is null)
         {
-            user = new User();
-            user.Name = descriptor.Name;
-            user.ProviderId = descriptor.ProviderId;
-            user.Tin = descriptor.Tin;
-            user.AllowCPRLookup = descriptor.AllowCPRLookup;
+            user = new User
+            {
+                Name = descriptor.Name,
+                ProviderId = descriptor.ProviderId,
+                Tin = descriptor.Tin,
+                AllowCPRLookup = descriptor.AllowCPRLookup
+            };
         }
         else
         {
-            user = await userService.GetUserByIdAsync((Guid)descriptor.Id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id}");
+            var id = descriptor.Id.Value;
+            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
 
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;

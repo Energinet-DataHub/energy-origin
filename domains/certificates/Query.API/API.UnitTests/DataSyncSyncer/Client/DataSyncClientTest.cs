@@ -8,7 +8,7 @@ using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using IntegrationEvents;
+using MeasurementEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;

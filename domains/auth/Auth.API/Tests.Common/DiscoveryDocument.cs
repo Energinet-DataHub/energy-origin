@@ -2,12 +2,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using IdentityModel.Client;
+using IdentityModel.Jwk;
 
 namespace Tests.Common;
 
 public static class DiscoveryDocument
 {
-    public static DiscoveryDocumentResponse Load(IEnumerable<KeyValuePair<string, string>> items)
+    public static DiscoveryDocumentResponse Load(IEnumerable<KeyValuePair<string, string>> items, JsonWebKeySet? keySet = null)
     {
         var builder = new StringBuilder();
         builder = builder.Append("{ ");
@@ -25,6 +26,8 @@ public static class DiscoveryDocument
         var document = new DiscoveryDocumentResponse();
         var reflection = document.GetType().GetProperty(nameof(document.Json), BindingFlags.Public | BindingFlags.Instance);
         reflection!.SetValue(document, element);
+
+        document.KeySet = keySet;
 
         return document;
     }
