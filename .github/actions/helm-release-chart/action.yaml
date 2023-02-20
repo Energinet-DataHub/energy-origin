@@ -54,11 +54,9 @@ runs:
         chart-version: ${{ inputs.chart_version }}
         include-image-name: ${{ inputs.include_image_name }}
 
-    - id: generate_filename
-      name: Generate filename
+    - name: Generate filename
       shell: bash
-      run: |
-        echo ::set-output name=filename::${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz
+      run: echo "filename=${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz" >> $GITHUB_STATE
 
     - name: Update chart dependencies
       shell: bash
@@ -92,8 +90,8 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ steps.generate_filename.outputs.filename }}
-        asset_name: ${{ steps.generate_filename.outputs.filename }}
+        asset_path: ./${{ env.filename }}
+        asset_name: ${{ env.filename }}
         asset_content_type: application/zip
 
     - name: Checkout chart repository
@@ -112,7 +110,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ steps.generate_filename.outputs.filename }}' --dir './'
+        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ env.filename }}' --dir './'
 
     - name: Update index file for helm registry
       if: ${{ inputs.dry_run != 'true' }}
@@ -125,8 +123,8 @@ runs:
       id: commit
       uses: EndBug/add-and-commit@v9
       with:
-        add: '["index.yaml", "${{ steps.generate_filename.outputs.filename }}"]'
-        message: Updated the helm registry with file ${{ steps.generate_filename.outputs.filename }}
+        add: '["index.yaml", "${{ env.filename }}"]'
+        message: Updated the helm registry with file ${{ env.filename }}
         push: --force
         new_branch: ${{ inputs.chart_repository_branch }}
         default_author: github_actions

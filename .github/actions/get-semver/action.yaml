@@ -51,10 +51,10 @@ runs:
         cd ${{ inputs.git_checkout_folder }}
         if ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         then
-          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}"
+          echo "version=${{ steps.get_chart_version.outputs.result }}" >> $GITHUB_OUTPUT
         elif ${{ github.event_name == 'pull_request' }}
         then
-          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short ${{ github.sha }})"
+          echo "version=${{ steps.get_chart_version.outputs.result }}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
         else
           echo Not supported on push to branches other than main
           exit 1

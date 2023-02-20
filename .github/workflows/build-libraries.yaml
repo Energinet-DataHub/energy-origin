@@ -58,7 +58,6 @@ jobs:
 
       - name: Resolve paths
         shell: bash
-        id: resolve-paths
         run: |
           solution=$(dirname "${{ matrix.projects.project }}")
           project=$(basename "${{ matrix.projects.project }}")
@@ -66,20 +65,20 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
-          echo "::set-output name=solution::${solution}"
-          echo "::set-output name=project::${project}"
+          echo "solution=$solution" >> $GITHUB_STATE
+          echo "project=$project" >> $GITHUB_STATE
 
       - name: Resolve version
         id: resolve-version
         uses: ./.github/actions/yaml-get
         with:
-          yaml_file: ${{ steps.resolve-paths.outputs.solution }}/version.yaml
+          yaml_file: ${{ env.solution }}/version.yaml
           yaml_path: version
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
         with:
-          solution-file-folder: ${{ steps.resolve-paths.outputs.solution }}
-          project-name: ${{ steps.resolve-paths.outputs.project }}
+          solution-file-folder: ${{ env.solution }}
+          project-name: ${{ env.project }}
           package-version: ${{ steps.resolve-version.outputs.result }}
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}
