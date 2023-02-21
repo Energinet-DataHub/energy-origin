@@ -24,28 +24,27 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       name: Download available artifacts # this supports use of artifacts (currently only frontends)
       with:
         path: artifacts/
 
     - name: Resolve container image name
-      id: image-name
-      uses: ASzc/change-string-case-action@v2
-      with:
-        string: ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}
+      shell: bash
+      run: echo "lowercased=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_STATE
 
     - name: Log in to the Container registry
-      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      uses: docker/login-action@3da7dc6e2b31f99ef2cb9fb4c50fb0971e0d0139
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ github.token }}
+        ecr: false
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      uses: docker/build-push-action@7944f9a25be0279b7713908f16090a214db107ef
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ steps.image-name.outputs.lowercase }}:${{ inputs.image-tag }}
+        tags: ${{ env.lowercased }}:${{ inputs.image-tag }}

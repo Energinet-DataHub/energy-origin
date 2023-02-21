@@ -41,7 +41,7 @@ runs:
     - uses: actions/checkout@v3
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1.9.0
+      uses: actions/setup-dotnet@v3
 
     - name: Install license tool
       shell: bash
