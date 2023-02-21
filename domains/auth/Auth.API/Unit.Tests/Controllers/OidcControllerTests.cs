@@ -18,7 +18,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RichardSzalay.MockHttp;
-using Tests.Common;
 
 namespace Tests.Controllers;
 

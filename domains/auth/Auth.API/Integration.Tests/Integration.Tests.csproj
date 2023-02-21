@@ -15,6 +15,7 @@
     <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.26.0" />
     <PackageReference Include="Testcontainers" Version="2.4.0" />
+    <PackageReference Include="WireMock.Net" Version="1.5.16" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,8 +28,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\API\API.csproj" />
-    <ProjectReference Include="..\Tests.Common\Tests.Common.csproj" />
+    <ProjectReference Include="../API/API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="jwks.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="openid-configuration.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

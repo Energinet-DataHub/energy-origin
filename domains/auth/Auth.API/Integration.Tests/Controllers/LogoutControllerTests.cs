@@ -1,12 +1,13 @@
 using System.Net;
 using System.Web;
 using API.Options;
-using IdentityModel.Client;
+using API.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Moq;
-using Tests.Common;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
+using WireMock.Server;
 
 namespace Tests.Integration.Controllers;
 
@@ -21,20 +22,37 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
+        var broker = WireMockServer.Start();
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
+            )
+        );
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./jwks.json")
+            )
+        );
+
         var identityToken = Guid.NewGuid().ToString();
-        var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
         var user = await factory.AddUserToDatabaseAsync();
+        var oidcOptions = Options.Create(new OidcOptions()
+        {
+            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            FrontendRedirectUri = new Uri("https://example.com")
+        });
 
         var client = await factory.CreateAuthenticatedClientAsync(user, identityToken: identityToken, config: builder =>
         {
-            var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/end_session") });
-
-            var cache = Mock.Of<IDiscoveryCache>();
-            _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped(x => cache);
+                services.AddScoped(x => oidcOptions);
             });
         });
 
@@ -56,24 +74,13 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = await factory.CreateAuthenticatedClientAsync(user, config: builder =>
-        {
-            var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
-
-            var cache = Mock.Of<IDiscoveryCache>();
-            _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => cache);
-            });
-        });
+        var client = await factory.CreateAuthenticatedClientAsync(user);
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
-        Assert.Contains($"errorCode=2", query);
+        Assert.DoesNotContain($"{ErrorCode.QueryString}=", query);
 
         var uri = new Uri(query!);
         Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
@@ -83,18 +90,35 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
-        var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
+        var broker = WireMockServer.Start();
 
-        var client = factory.CreateUnauthenticatedClient(builder =>
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
+            )
+        );
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./jwks.json")
+            )
+        );
+
+        var oidcOptions = Options.Create(new OidcOptions()
         {
-            var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/end_session") });
+            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            FrontendRedirectUri = new Uri("https://example.com")
+        });
 
-            var cache = Mock.Of<IDiscoveryCache>();
-            _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
+        var client = factory.CreateAnonymousClient(config: builder =>
+        {
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped(x => cache);
+                services.AddScoped(x => oidcOptions);
             });
         });
 

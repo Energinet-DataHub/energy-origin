@@ -2,13 +2,11 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using API.Models.DTOs;
-using API.Repositories.Data;
+using API.Models.Entities;
 using API.Services;
 using API.Utilities;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Newtonsoft.Json;
 
 namespace Tests.Integration.Controllers;
@@ -32,7 +30,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
-        var dbUser = factory.ServiceProvider.GetRequiredService<DataContext>().Users.AsNoTracking().SingleOrDefault(x => x.Id == user.Id)!;
+        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
@@ -47,47 +45,30 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-
-        var name = Guid.NewGuid().ToString();
-        var providerId = Guid.NewGuid().ToString();
-        var tin = null! as string;
-        var allowCprLookup = false;
-        var acceptedTermsVersion = 0;
-
-        var client = await factory.CreateAuthenticatedClientAsync(user, config: builder =>
+        var user = new User()
         {
-            var mapper = Mock.Of<IUserDescriptMapper>();
-            _ = Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: new UserDescriptor(null!)
-                {
-                    Id = null,
-                    Name = name,
-                    ProviderId = providerId,
-                    Tin = tin,
-                    AllowCPRLookup = allowCprLookup,
-                    AcceptedTermsVersion = acceptedTermsVersion
-                });
+            Id = null,
+            Name = Guid.NewGuid().ToString(),
+            ProviderId = Guid.NewGuid().ToString(),
+            Tin = null! as string,
+            AllowCPRLookup = false,
+            AcceptedTermsVersion = 0
+        };
 
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => mapper);
-            });
-        });
+        var client = await factory.CreateAuthenticatedClientAsync(user);
 
         var dto = new AcceptTermsDTO(1);
         var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
-        var dbUser = factory.ServiceProvider.GetRequiredService<DataContext>().Users.AsNoTracking().SingleOrDefault(x => x.ProviderId == providerId)!;
+        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.ProviderId == user.ProviderId)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(providerId, dbUser.ProviderId);
-        Assert.Equal(name, dbUser.Name);
-        Assert.Equal(tin, dbUser.Tin);
-        Assert.Equal(allowCprLookup, dbUser.AllowCPRLookup);
+        Assert.Equal(user.ProviderId, dbUser.ProviderId);
+        Assert.Equal(user.Name, dbUser.Name);
+        Assert.Equal(user.Tin, dbUser.Tin);
+        Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
 

@@ -16,7 +16,11 @@ namespace Tests.Integration;
 public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
+    public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
 
+    // https://github.com/testcontainers/testcontainers-dotnet/issues/750#issuecomment-1412257694
+    // Should be fixed in V2.5.
+#pragma warning disable 618
     private readonly PostgreSqlTestcontainer testContainer
         = new ContainerBuilder<PostgreSqlTestcontainer>()
        .WithDatabase(new PostgreSqlTestcontainerConfiguration
@@ -26,10 +30,12 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
            Password = "admin",
        })
        .Build();
+#pragma warning restore 618
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
+
         builder.ConfigureTestServices(services =>
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
@@ -39,7 +45,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateUnauthenticatedClient(Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAnonymousClient(Action<IWebHostBuilder>? config = null)
     {
         var factory = config is not null ? WithWebHostBuilder(config) : this;
         return factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -51,7 +57,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
     {
-        var client = CreateUnauthenticatedClient(config);
+        var client = CreateAnonymousClient(config);
         var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
         var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
@@ -69,7 +75,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             AllowCPRLookup = true
         };
 
-        var dbContext = ServiceProvider.GetRequiredService<DataContext>();
+        var dbContext = DataContext;
         await dbContext.Users.AddAsync(user);
         await dbContext.SaveChangesAsync();
 
@@ -79,7 +85,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public async Task InitializeAsync()
     {
         await testContainer.StartAsync();
-        var dbContext = ServiceProvider.GetRequiredService<DataContext>();
+        var dbContext = DataContext;
         await dbContext.Database.MigrateAsync();
     }
 

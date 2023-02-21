@@ -4,7 +4,7 @@ using System.Text.Json;
 using IdentityModel.Client;
 using IdentityModel.Jwk;
 
-namespace Tests.Common;
+namespace Tests;
 
 public static class DiscoveryDocument
 {
