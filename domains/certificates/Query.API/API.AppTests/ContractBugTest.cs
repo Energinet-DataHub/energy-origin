@@ -38,21 +38,20 @@ public class ContractBugTest :
         var client = factory.CreateAuthenticatedClient(subject);
 
         var startingContracts = await client.GetAsync("api/certificates/contracts");
-
         startingContracts.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var now = DateTimeOffset.Now;
         var responseMessages = await Task.WhenAll(
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(1).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(2).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(3).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(4).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(5).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(6).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(7).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(8).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(9).ToUnixTimeSeconds() }),
-            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMilliseconds(10).ToUnixTimeSeconds() })
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(1).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(2).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(3).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(4).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(5).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(6).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(7).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(8).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(9).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(10).ToUnixTimeSeconds() })
         );
         //responseMessages.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.Created));
         
