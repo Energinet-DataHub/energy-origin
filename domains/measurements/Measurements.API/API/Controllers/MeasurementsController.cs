@@ -2,7 +2,6 @@ using API.Models;
 using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +19,14 @@ public class MeasurementsController : AuthorizationController
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
-            validateResult.AddToModelState(ModelState, null);
+            validateResult.AddToModelState(ModelState);
             return ValidationProblem(ModelState);
         }
 
-        var dateFromDateTime = request.DateFrom.ToDateTime();
-        var dateToDateTime = request.DateTo.ToDateTime();
+        var dateFrom = DateTimeOffset.FromUnixTimeSeconds(request.DateFrom).DateTime;
+        var dateTo = DateTimeOffset.FromUnixTimeSeconds(request.DateTo).DateTime;
 
-        var typeOfMP = MeterType.Consumption;
-
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
+        return Ok(await measurementsService.GetMeasurements(Context, request.TimeZoneInfo, dateFrom, dateTo, request.Aggregation, MeterType.Consumption));
     }
 
     [HttpGet]
@@ -39,15 +36,13 @@ public class MeasurementsController : AuthorizationController
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
-            validateResult.AddToModelState(ModelState, null);
+            validateResult.AddToModelState(ModelState);
             return ValidationProblem(ModelState);
         }
 
-        var dateFromDateTime = request.DateFrom.ToDateTime();
-        var dateToDateTime = request.DateTo.ToDateTime();
+        var dateFrom = DateTimeOffset.FromUnixTimeSeconds(request.DateFrom).DateTime;
+        var dateTo = DateTimeOffset.FromUnixTimeSeconds(request.DateTo).DateTime;
 
-        var typeOfMP = MeterType.Production;
-
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
+        return Ok(await measurementsService.GetMeasurements(Context, request.TimeZoneInfo, dateFrom, dateTo, request.Aggregation, MeterType.Production));
     }
 }

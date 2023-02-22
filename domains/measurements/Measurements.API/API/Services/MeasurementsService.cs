@@ -14,7 +14,10 @@ public class MeasurementsService : IMeasurementsService
         this.aggregator = aggregator;
     }
 
-    public async Task<MeasurementResponse> GetMeasurements(AuthorizationContext context, DateTime dateFrom,
+    public async Task<MeasurementResponse> GetMeasurements(
+        AuthorizationContext context,
+        TimeZoneInfo timeZone,
+        DateTime dateFrom,
         DateTime dateTo,
         Aggregation aggregation,
         MeterType typeOfMP)
@@ -25,7 +28,7 @@ public class MeasurementsService : IMeasurementsService
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, consumptionMeteringPoints);
 
-        return aggregator.CalculateAggregation(measurements, aggregation);
+        return aggregator.CalculateAggregation(measurements, timeZone, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, DateTime dateFrom, DateTime dateTo, IEnumerable<MeteringPoint> meteringPoints)
