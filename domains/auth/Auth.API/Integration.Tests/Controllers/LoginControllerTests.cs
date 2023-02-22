@@ -5,9 +5,6 @@ using API.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
 
 namespace Tests.Integration.LoginController;
 
@@ -22,38 +19,19 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var broker = WireMockServer.Start();
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./jwks.json")
-            )
-        );
+        var broker = factory.MockOidcProvider();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {
             AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
-            ClientId = "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
+            ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug")
         });
 
-        var client = factory.CreateAnonymousClient(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => oidcOptions);
-            });
-        });
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
 
         var result = await client.GetAsync("auth/login");
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);

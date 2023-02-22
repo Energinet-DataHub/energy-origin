@@ -47,6 +47,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     var rsa = RSA.Create();
     rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
 
+    options.MapInboundClaims = false;
+
     options.TokenValidationParameters = new()
     {
         IssuerSigningKey = new RsaSecurityKey(rsa),
@@ -110,7 +112,6 @@ else
 }
 
 app.UseHttpsRedirection();
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

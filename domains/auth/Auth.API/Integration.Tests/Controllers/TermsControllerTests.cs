@@ -1,13 +1,13 @@
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using API.Models.DTOs;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Tests.Integration.Controllers;
 
@@ -27,7 +27,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = await factory.CreateAuthenticatedClientAsync(user);
 
         var dto = new AcceptTermsDTO(2);
-        var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
         var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == user.Id)!;
@@ -50,7 +50,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString(),
             ProviderId = Guid.NewGuid().ToString(),
-            Tin = null! as string,
+            Tin = null,
             AllowCPRLookup = false,
             AcceptedTermsVersion = 0
         };
@@ -58,7 +58,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = await factory.CreateAuthenticatedClientAsync(user);
 
         var dto = new AcceptTermsDTO(1);
-        var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
         var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.ProviderId == user.ProviderId)!;
@@ -84,14 +84,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => mapper);
-            });
+            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
         });
 
         var dto = new AcceptTermsDTO(2);
-        var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
         Assert.NotNull(result);
@@ -110,14 +107,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                 .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => userService);
-            });
+            builder.ConfigureTestServices(services => services.AddScoped(x => userService));
         });
 
         var dto = new AcceptTermsDTO(2);
-        var httpContent = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
         Assert.NotNull(result);

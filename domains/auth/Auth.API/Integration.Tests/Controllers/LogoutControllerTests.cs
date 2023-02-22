@@ -5,9 +5,6 @@ using API.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
 
 namespace Tests.Integration.Controllers;
 
@@ -22,23 +19,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var broker = WireMockServer.Start();
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./jwks.json")
-            )
-        );
+        var broker = factory.MockOidcProvider();
 
         var identityToken = Guid.NewGuid().ToString();
         var user = await factory.AddUserToDatabaseAsync();
@@ -48,13 +29,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
-        var client = await factory.CreateAuthenticatedClientAsync(user, identityToken: identityToken, config: builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => oidcOptions);
-            });
-        });
+        var client = await factory
+            .CreateAuthenticatedClientAsync(user, identityToken: identityToken,config: builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
@@ -90,23 +68,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
-        var broker = WireMockServer.Start();
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./jwks.json")
-            )
-        );
+        var broker = factory.MockOidcProvider();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {
@@ -114,13 +76,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
-        var client = factory.CreateAnonymousClient(config: builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(x => oidcOptions);
-            });
-        });
+        var client = factory
+            .CreateAnonymousClient(config: builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
