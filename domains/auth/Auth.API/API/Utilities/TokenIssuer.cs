@@ -1,11 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,22 +13,20 @@ public class TokenIssuer : ITokenIssuer
 {
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
-    private readonly IUserDescriptMapper mapper;
 
-    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions, IUserDescriptMapper mapper)
+    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
     {
         this.termsOptions = termsOptions.Value;
         this.tokenOptions = tokenOptions.Value;
-        this.mapper = mapper;
     }
 
-    public async Task<string> IssueAsync(User user, string accessToken, string identityToken, DateTime? issueAt = default)
+    public async Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = await ResolveStateAsync(termsOptions, user);
+        var state = await ResolveStateAsync(termsOptions, descriptor);
 
-        return CreateToken(CreateTokenDescriptor(user, accessToken, identityToken, mapper, tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(descriptor, tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -44,19 +39,16 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static async Task<UserState> ResolveStateAsync(TermsOptions options, User user)
+    private static async Task<UserState> ResolveStateAsync(TermsOptions options, UserDescriptor descriptor)
     {
-        var version = user.AcceptedTermsVersion;
+        var version = descriptor.AcceptedTermsVersion;
 
         var scope = version == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
-        return new(user.Id?.ToString(), version, scope);
-
+        return new(descriptor.Id?.ToString(), version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(User user, string accessToken, string identityToken, IUserDescriptMapper mapper, TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(UserDescriptor descriptor, TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
     {
-        var descriptor = mapper.Map(user, accessToken, identityToken);
-
         var claims = new Dictionary<string, object> {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },

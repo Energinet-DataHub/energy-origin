@@ -22,6 +22,7 @@ public class OidcController : ControllerBase
         IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
+        IUserDescriptMapper mapper,
         IUserService service,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
@@ -64,8 +65,8 @@ public class OidcController : ControllerBase
         string token;
         try
         {
-            var user = await ValidateToken(service, oidcOptions.Value, discoveryDocument, response);
-            token = await issuer.IssueAsync(user, response.AccessToken, response.IdentityToken);
+            var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
+            token = await issuer.IssueAsync(descriptor);
         }
         catch (Exception exception)
         {
@@ -88,7 +89,7 @@ public class OidcController : ControllerBase
         return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
     }
 
-    private static async Task<User> ValidateToken(IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -124,7 +125,7 @@ public class OidcController : ControllerBase
             throw new SecurityTokenException("Subject mismatched found in tokens received.");
         }
 
-        return await service.GetUserByProviderIdAsync(providerId) ?? new User
+        var user = await service.GetUserByProviderIdAsync(providerId) ?? new User
         {
             Id = null,
             ProviderId = providerId,
@@ -133,5 +134,6 @@ public class OidcController : ControllerBase
             AcceptedTermsVersion = 0,
             AllowCPRLookup = false
         };
+        return mapper.Map(user, response.AccessToken, response.IdentityToken);
     }
 }

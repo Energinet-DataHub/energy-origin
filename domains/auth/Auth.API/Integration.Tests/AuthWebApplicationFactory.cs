@@ -61,8 +61,9 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
-        var token = await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
+        var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
         return client;
     }
 
