@@ -15,8 +15,6 @@ namespace Tests;
 [UnitTest]
 public sealed class ProductionAggregationServiceTest
 {
-    readonly ConsumptionAggregationData dataSetFactory = new();
-
     [Fact]
     public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
     {
@@ -26,7 +24,7 @@ public sealed class ProductionAggregationServiceTest
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
-        var measurements = dataSetFactory.CreateMeasurements();
+        var measurements = MeasurementAggregationDataSetFactory.CreateMeasurements();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
 

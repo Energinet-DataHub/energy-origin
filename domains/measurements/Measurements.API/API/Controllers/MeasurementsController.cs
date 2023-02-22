@@ -13,18 +13,9 @@ namespace API.Controllers;
 [Authorize]
 public class MeasurementsController : AuthorizationController
 {
-    readonly IMeasurementsService measurementsService;
-    readonly IValidator<MeasurementsRequest> validator;
-
-    public MeasurementsController(IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
-    {
-        this.measurementsService = measurementsService;
-        this.validator = validator;
-    }
-
     [HttpGet]
     [Route("api/measurements/consumption")]
-    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -43,7 +34,7 @@ public class MeasurementsController : AuthorizationController
 
     [HttpGet]
     [Route("api/measurements/production")]
-    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)

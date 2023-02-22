@@ -6,14 +6,9 @@ namespace API.Services;
 
 public class DataSyncService : IDataSyncService
 {
-    readonly ILogger<DataSyncService> logger;
-    readonly HttpClient httpClient;
+    private readonly HttpClient httpClient;
 
-    public DataSyncService(ILogger<DataSyncService> logger, HttpClient httpClient)
-    {
-        this.logger = logger;
-        this.httpClient = httpClient;
-    }
+    public DataSyncService(HttpClient httpClient) => this.httpClient = httpClient;
 
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo)
     {

@@ -11,8 +11,6 @@ namespace Tests;
 [UnitTest]
 public sealed class ConsumptionAggregationTest
 {
-    readonly ConsumptionAggregationData dataSetFactory = new();
-
     [Theory]
     [InlineData(Aggregation.Total, new long[] { 1609538400 }, new long[] { 1609552799 }, new long[] { 3930 })]
     [InlineData(Aggregation.Actual, new long[] { 1609538400, 1609542000, 1609545600, 1609549200 }, new long[] { 1609541999, 1609545599, 1609549199, 1609552799 }, new long[] { 1234, 242, 654, 1800 })]
@@ -25,7 +23,7 @@ public sealed class ConsumptionAggregationTest
         // Arrange
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeries();
+        var timeSeries = ConsumptionAggregationData.CreateTimeSeries();
 
         var aggregationCalculator = new MeasurementAggregation();
 
@@ -45,9 +43,7 @@ public sealed class ConsumptionAggregationTest
     public void Measurements_SupportLongValues()
     {
         // Arrange
-        var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
-        var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-        var timeSeries = dataSetFactory.CreateTimeSeriesHugeValues();
+        var timeSeries = ConsumptionAggregationData.CreateTimeSeriesHugeValues();
 
         var aggregationCalculator = new MeasurementAggregation();
 
