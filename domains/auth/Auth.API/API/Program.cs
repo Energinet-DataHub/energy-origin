@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -45,6 +46,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
     var rsa = RSA.Create();
     rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
+
+    options.MapInboundClaims = false;
 
     options.TokenValidationParameters = new()
     {

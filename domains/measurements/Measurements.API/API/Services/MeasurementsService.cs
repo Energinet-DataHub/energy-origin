@@ -5,8 +5,8 @@ namespace API.Services;
 
 public class MeasurementsService : IMeasurementsService
 {
-    readonly IDataSyncService dataSyncService;
-    readonly IAggregator aggregator;
+    private readonly IDataSyncService dataSyncService;
+    private readonly IAggregator aggregator;
 
     public MeasurementsService(IDataSyncService dataSyncService, IAggregator aggregator)
     {

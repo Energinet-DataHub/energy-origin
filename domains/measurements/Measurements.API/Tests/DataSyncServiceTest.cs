@@ -3,8 +3,6 @@ using System.Linq;
 using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Tests.Helpers;
 using Xunit;
 
@@ -18,9 +16,7 @@ namespace Tests
             // Arrange
             var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
 
-            var logger = new Mock<ILogger<DataSyncService>>();
-
-            var datasync = new DataSyncService(logger.Object, mockClient);
+            var datasync = new DataSyncService(mockClient);
 
             // Act
             var res = await datasync.GetListOfMeteringPoints(new AuthorizationContext("", "", ""));
@@ -41,9 +37,8 @@ namespace Tests
 
             var dateFrom = new DateTime(2021, 1, 1);
             var dateTo = new DateTime(2021, 1, 2);
-            var logger = new Mock<ILogger<DataSyncService>>();
 
-            var datasync = new DataSyncService(logger.Object, mockClient);
+            var datasync = new DataSyncService(mockClient);
 
             // Act
             var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", dateFrom, dateTo);
