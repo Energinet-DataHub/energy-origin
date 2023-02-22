@@ -30,7 +30,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
 
         var client = await factory
-            .CreateAuthenticatedClientAsync(user, identityToken: identityToken,config: builder =>
+            .CreateAuthenticatedClientAsync(user, identityToken: identityToken, config: builder =>
                 builder.ConfigureTestServices(services =>
                     services.AddScoped(x => oidcOptions)));
 
