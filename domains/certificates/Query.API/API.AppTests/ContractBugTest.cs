@@ -34,8 +34,7 @@ public class ContractBugTest :
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
-        var subject = Guid.NewGuid().ToString();
-        var client = factory.CreateAuthenticatedClient(subject);
+        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var startingContracts = await client.GetAsync("api/certificates/contracts");
         startingContracts.StatusCode.Should().Be(HttpStatusCode.NoContent);
