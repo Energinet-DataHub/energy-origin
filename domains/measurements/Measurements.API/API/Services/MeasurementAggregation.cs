@@ -1,10 +1,9 @@
-using API.Helpers;
 using API.Models;
 using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
-class MeasurementAggregation : IAggregator
+public class MeasurementAggregation : IAggregator
 {
     public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, Aggregation aggregation)
     {
@@ -33,7 +32,7 @@ class MeasurementAggregation : IAggregator
         return new MeasurementResponse(bucketMeasurements);
     }
 
-    static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, List<AggregatedMeasurementInteral> listOfMeasurements)
+    private static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, List<AggregatedMeasurementInteral> listOfMeasurements)
     {
         var groupedMeasurements = aggregation switch
         {
@@ -44,7 +43,7 @@ class MeasurementAggregation : IAggregator
             Aggregation.QuarterHour => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH/mm")),
             Aggregation.Actual => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
             Aggregation.Total => listOfMeasurements.GroupBy(_ => "total"),
-            _ => throw new ArgumentOutOfRangeException($"Invalid value {nameof(aggregation)}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(aggregation)),
         };
         return groupedMeasurements;
     }
