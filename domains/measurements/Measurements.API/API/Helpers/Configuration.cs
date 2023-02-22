@@ -2,11 +2,8 @@ namespace API.Helpers
 {
     public static class Configuration
     {
-        const string dataSyncEndpoint = "DATASYNCENDPOINT";
+        private const string dataSyncEndpoint = "DATASYNCENDPOINT";
 
-        public static string GetDataSyncEndpoint()
-        {
-            return Environment.GetEnvironmentVariable(dataSyncEndpoint) ?? throw new ArgumentNullException();
-        }
+        public static string GetDataSyncEndpoint() => Environment.GetEnvironmentVariable(dataSyncEndpoint) ?? throw new ArgumentNullException();
     }
 }

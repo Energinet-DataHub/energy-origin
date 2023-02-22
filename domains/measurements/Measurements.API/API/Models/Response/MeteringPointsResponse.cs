@@ -4,9 +4,6 @@ namespace API.Models
     {
         public List<MeteringPoint> MeteringPoints { get; }
 
-        public MeteringPointsResponse(List<MeteringPoint> meteringPoints)
-        {
-            MeteringPoints = meteringPoints;
-        }
+        public MeteringPointsResponse(List<MeteringPoint> meteringPoints) => MeteringPoints = meteringPoints;
     }
 }
