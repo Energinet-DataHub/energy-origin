@@ -20,13 +20,13 @@ public class TokenIssuer : ITokenIssuer
         this.tokenOptions = tokenOptions.Value;
     }
 
-    public async Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default)
+    public string Issue(UserDescriptor descriptor, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = await ResolveStateAsync(termsOptions, descriptor);
+        var state = ResolveState(termsOptions, descriptor);
 
-        return CreateToken(CreateTokenDescriptor(descriptor, tokenOptions, credentials, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -39,7 +39,7 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static async Task<UserState> ResolveStateAsync(TermsOptions options, UserDescriptor descriptor)
+    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor)
     {
         var version = descriptor.AcceptedTermsVersion;
 
@@ -47,7 +47,7 @@ public class TokenIssuer : ITokenIssuer
         return new(descriptor.Id?.ToString(), version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(UserDescriptor descriptor, TokenOptions options, SigningCredentials credentials, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
             { UserClaimName.Scope, state.Scope },

@@ -35,7 +35,7 @@ public class TokenIssuerTests
     {
         var descriptor = PrepareUser();
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -50,7 +50,7 @@ public class TokenIssuerTests
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor, issueAt);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -66,7 +66,7 @@ public class TokenIssuerTests
         var issuer = Guid.NewGuid().ToString();
         var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -80,7 +80,7 @@ public class TokenIssuerTests
         var descriptor = PrepareUser();
         var options = TestOptions.Token(tokenOptions.Value);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
 
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
@@ -110,7 +110,7 @@ public class TokenIssuerTests
         var version = Random.Shared.Next();
         var descriptor = PrepareUser(name, version, tin, accesToken, identityToken);
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -130,7 +130,7 @@ public class TokenIssuerTests
     {
         var descriptor = PrepareUser(addToMock: false, hasId: false);
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
