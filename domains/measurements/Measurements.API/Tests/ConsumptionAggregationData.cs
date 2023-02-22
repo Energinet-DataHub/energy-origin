@@ -5,31 +5,25 @@ namespace Tests;
 
 internal class ConsumptionAggregationData : MeasurementAggregationDataSetFactory
 {
-    public List<TimeSeries> CreateTimeSeries()
+    public static List<TimeSeries> CreateTimeSeries() => new()
     {
-        return new List<TimeSeries>
-        {
-            new TimeSeries(
-                new MeteringPoint(
-                    gsrn: "571313121223234323",
-                    gridArea: "DK1",
-                    type: MeterType.Consumption),
-                CreateMeasurements()
-            )
-        };
-    }
+        new TimeSeries(
+            new MeteringPoint(
+                gsrn: "571313121223234323",
+                gridArea: "DK1",
+                type: MeterType.Consumption),
+            CreateMeasurements()
+        )
+    };
 
-    public List<TimeSeries> CreateTimeSeriesHugeValues()
+    public static List<TimeSeries> CreateTimeSeriesHugeValues() => new()
     {
-        return new List<TimeSeries>
-        {
-            new TimeSeries(
-                new MeteringPoint(
-                    gsrn: "571313121223234323",
-                    gridArea: "DK1",
-                    type: MeterType.Consumption),
-                CreateMeasurementHuge()
-            )
-        };
-    }
+        new TimeSeries(
+            new MeteringPoint(
+                gsrn: "571313121223234323",
+                gridArea: "DK1",
+                type: MeterType.Consumption),
+            CreateMeasurementHuge()
+        )
+    };
 }

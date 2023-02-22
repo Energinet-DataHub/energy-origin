@@ -5,10 +5,8 @@ namespace Tests;
 
 internal class ProductionAggregationData : MeasurementAggregationDataSetFactory
 {
-    public List<TimeSeries> CreateTimeSeries()
+    public static List<TimeSeries> CreateTimeSeries() => new()
     {
-        return new List<TimeSeries>
-        {
             new TimeSeries(
                 new MeteringPoint(
                     gsrn: "571313121223234323",
@@ -17,5 +15,4 @@ internal class ProductionAggregationData : MeasurementAggregationDataSetFactory
                 CreateMeasurements()
             )
         };
-    }
 }

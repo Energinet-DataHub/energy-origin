@@ -6,10 +6,8 @@ using EnergyOriginDateTimeExtension;
 namespace Tests;
 internal class MeasurementAggregationDataSetFactory
 {
-    public List<Measurement> CreateMeasurements()
+    public static List<Measurement> CreateMeasurements() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
@@ -35,12 +33,9 @@ internal class MeasurementAggregationDataSetFactory
                 Quantity: 1800,
                 Quality: Quality.Measured)
         };
-    }
 
-    public List<Measurement> CreateMeasurementHuge()
+    public static List<Measurement> CreateMeasurementHuge() => new()
     {
-        return new List<Measurement>
-        {
             new Measurement(
                 GSRN: "571313121223234323",
                 DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
@@ -66,5 +61,4 @@ internal class MeasurementAggregationDataSetFactory
                 Quantity: 1500000000L,
                 Quality: Quality.Measured)
         };
-    }
 }
