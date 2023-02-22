@@ -24,7 +24,7 @@ public class ContractBugTest :
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9004);
         this.factory = factory;
-        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.MartenConnectionString  = martenDbContainer.ConnectionString; //If running docker compose setup, this line can be replaced with "host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;" and you remove the interface IClassFixture<MartenDbContainer> + "martenDbContainer" from constructor. This will run a bit faster
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
     }
 
