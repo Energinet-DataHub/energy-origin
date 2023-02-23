@@ -93,10 +93,10 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
+builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
 
 var app = builder.Build();

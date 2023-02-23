@@ -31,11 +31,11 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
+    public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
         var descriptor = PrepareUser();
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -43,14 +43,14 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
+    public void Issue_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor, issueAt);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -59,14 +59,14 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
+    public void Issue_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
     {
         var descriptor = PrepareUser();
         var audience = Guid.NewGuid().ToString();
         var issuer = Guid.NewGuid().ToString();
         var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -75,12 +75,12 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnASignedToken_WhenIssuing()
+    public void Issue_ShouldReturnASignedToken_WhenIssuing()
     {
         var descriptor = PrepareUser();
         var options = TestOptions.Token(tokenOptions.Value);
 
-        var token = await GetTokenIssuer(token: options.Value).IssueAsync(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
 
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
@@ -101,7 +101,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
+    public void Issue_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
     {
         var name = Guid.NewGuid().ToString();
         var tin = Guid.NewGuid().ToString();
@@ -110,7 +110,7 @@ public class TokenIssuerTests
         var version = Random.Shared.Next();
         var descriptor = PrepareUser(name, version, tin, accesToken, identityToken);
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -126,21 +126,18 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldThrowKeyNotFoundException_WhenIssuingForNonExistingUser() => await Assert.ThrowsAsync<KeyNotFoundException>(async () => await GetTokenIssuer().IssueAsync(PrepareUser(addToMock: false)));
-
-    [Fact]
-    public async Task IssueAsync_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
+    public void Issue_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
         var descriptor = PrepareUser(addToMock: false, hasId: false);
 
-        var token = await GetTokenIssuer().IssueAsync(descriptor);
+        var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
         Assert.Null(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
     }
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value), service);
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
 
     private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
     {
