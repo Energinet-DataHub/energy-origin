@@ -80,23 +80,33 @@ public sealed class AggregationTests
     }
 
     [Theory]
-    [InlineData(Aggregation.Day, 24)]
-    [InlineData(Aggregation.Month, 7 * 24)]
-    public void Measurements_CalculateAggregation_ForSpecificDates(Aggregation aggregation, int amount)
+    [InlineData(Aggregation.Day, 24, "Europe/Copenhagen")]
+    [InlineData(Aggregation.Month, 31 * 24, "Europe/Copenhagen")]
+    [InlineData(Aggregation.Day, 24, "America/Los_Angeles")]
+    [InlineData(Aggregation.Month, 31 * 24, "America/Los_Angeles")]
+    [InlineData(Aggregation.Day, 24, "Asia/Kolkata")]
+    [InlineData(Aggregation.Month, 31 * 24, "Asia/Kolkata")]
+    public void Measurements_CalculateAggregation_ForSpecificDates(Aggregation aggregation, int amount, string timeZoneId)
     {
         // Arrange
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         var start = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        start = start.ToOffset(timeZone.GetUtcOffset(start));
+        start = start.Add(-timeZone.GetUtcOffset(start.UtcDateTime));
         var timeSeries = MeasurementDataSet.CreateSpecificDateTimeSeries(startingAt: start, amount: amount);
         var aggregationCalculator = new MeasurementAggregation();
 
         // Act
         var result = aggregationCalculator.CalculateAggregation(timeSeries, timeZone, aggregation).AggregatedMeasurement.ToArray();
+        var utcResult = aggregationCalculator.CalculateAggregation(timeSeries, TimeZoneInfo.Utc, aggregation).AggregatedMeasurement.ToArray();
 
         // Assert
         Assert.NotNull(result);
+        Assert.NotNull(utcResult);
+
         Assert.Single(result);
         Assert.Equal(timeSeries.Sum(series => series.Measurements.Sum(x => x.Quantity)), result.First().Value);
+
+        Assert.NotEqual(utcResult.Length, result.Length);
+        Assert.Equal(utcResult.Sum(x => x.Value), result.First().Value);
     }
 }
