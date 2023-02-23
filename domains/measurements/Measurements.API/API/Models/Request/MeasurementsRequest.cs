@@ -14,7 +14,7 @@ public class MeasurementsRequest
 
     public string TimeZone { get; init; } = TimeZoneInfo.Utc.Id;
 
-    public TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById(TimeZone);
+    internal TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById(TimeZone);
 
     public class Validator : AbstractValidator<MeasurementsRequest>
     {
