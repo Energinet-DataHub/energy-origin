@@ -40,7 +40,7 @@ public sealed class AggregationTests
     public void Measurements_SupportLongValues()
     {
         // Arrange
-        var timeSeries = MeasurementDataSet.CreateTimeSeriesHugeValues();
+        var timeSeries = MeasurementDataSet.CreateHugeValuesTimeSeries();
         var aggregationCalculator = new MeasurementAggregation();
 
         // Act
@@ -77,5 +77,26 @@ public sealed class AggregationTests
         Assert.Equal(expectedValues, result.Select(x => x.Value));
         Assert.Equal(expectedDateFrom, result.Select(x => x.DateFrom));
         Assert.Equal(expectedDateTo, result.Select(x => x.DateTo));
+    }
+
+    [Theory]
+    [InlineData(Aggregation.Day, 24)]
+    [InlineData(Aggregation.Month, 7 * 24)]
+    public void Measurements_CalculateAggregation_ForSpecificDates(Aggregation aggregation, int amount)
+    {
+        // Arrange
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
+        var start = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        start = start.ToOffset(timeZone.GetUtcOffset(start));
+        var timeSeries = MeasurementDataSet.CreateSpecificDateTimeSeries(startingAt: start, amount: amount);
+        var aggregationCalculator = new MeasurementAggregation();
+
+        // Act
+        var result = aggregationCalculator.CalculateAggregation(timeSeries, timeZone, aggregation).AggregatedMeasurement.ToArray();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(timeSeries.Sum(series => series.Measurements.Sum(x => x.Quantity)), result.First().Value);
     }
 }
