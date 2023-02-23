@@ -31,7 +31,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
+    public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
         var descriptor = PrepareUser();
 
@@ -43,7 +43,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
+    public void Issue_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
@@ -59,7 +59,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
+    public void Issue_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
     {
         var descriptor = PrepareUser();
         var audience = Guid.NewGuid().ToString();
@@ -75,7 +75,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnASignedToken_WhenIssuing()
+    public void Issue_ShouldReturnASignedToken_WhenIssuing()
     {
         var descriptor = PrepareUser();
         var options = TestOptions.Token(tokenOptions.Value);
@@ -101,7 +101,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
+    public void Issue_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
     {
         var name = Guid.NewGuid().ToString();
         var tin = Guid.NewGuid().ToString();
@@ -126,7 +126,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public async Task IssueAsync_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
+    public void Issue_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
         var descriptor = PrepareUser(addToMock: false, hasId: false);
 
