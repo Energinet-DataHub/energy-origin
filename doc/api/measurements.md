@@ -3,7 +3,7 @@
 
 # Get Measurements for consumption and production data
 
-The measurements api should take three query parameters and returns a date from, to and a value given in Wh.
+The measurements api should take four query parameters and returns a date from, to and a value given in Wh.
 
 ## Request
 
@@ -12,12 +12,14 @@ GET /api/measurements/consumption
         ?dateFrom=1514826000
         &dateTo=1514864000
         &aggregation=TOTAL
+        &timeZone=Europe%2FCopenhagen
 ```
 ```text
 GET /api/measurements/production
         ?dateFrom=1514826000
         &dateTo=1514864000
         &aggregation=TOTAL
+        &timeZone=Europe%2FCopenhagen
 ```
 
 ## Parameters
@@ -25,6 +27,7 @@ GET /api/measurements/production
 - dateFrom: [UNIX timestamp](conventions.md#date-from-and-to)
 - dateTo: [UNIX timestamp](conventions.md#date-from-and-to)
 - aggregation: [aggregation ENUM](conventions.md#aggregation)
+- timeZone: [Time Zone](conventions.md#time-zone)
 
 ## Response
 

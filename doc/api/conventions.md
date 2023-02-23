@@ -31,6 +31,15 @@ Possible values:
 ?aggregation=HOUR
 ```
 
+### Time Zone
+
+A time zone is expected to be supplied as an IANA/Olson Time Zone Identifier.
+The API will use the UTC/GMT time zone to generate output if a time zone is not provided. Note that the identifier must be URL encoded.
+
+```text
+?timeZone=Europe%2FCopenhagen
+```
+
 ## Return object
 
 JSON reponses **must** be a json object and not an array.
