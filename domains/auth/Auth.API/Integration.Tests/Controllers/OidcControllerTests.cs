@@ -1,82 +1,295 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using API.Options;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Web;
-using Tests.Integration;
-using Microsoft.Extensions.Options;
+using API.Options;
+using API.Values;
+using IdentityModel;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using API.Controllers;
-using System.Net.Http;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Tests.Integration;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
+using WireMock.Server;
 
-namespace Integration.Tests.Controllers
+namespace Integration.Tests.Controllers;
+
+public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
-    public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
+    private readonly AuthWebApplicationFactory factory;
+    public enum TokenInvalid
     {
-        private readonly AuthWebApplicationFactory factory;
-        public OidcControllerTests(AuthWebApplicationFactory factory)
+        Identity,
+        Access,
+        User
+    }
+
+    public OidcControllerTests(AuthWebApplicationFactory factory)
+    {
+        this.factory = factory;
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
+    {
+        var broker = WireMockServer.Start();
+
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
+        var oidcOptions = Options.Create(new OidcOptions()
         {
-            this.factory = factory;
-        }
+            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com")
+        });
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
 
-        [Fact]
-        public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
-        {
-            var broker = factory.MockOidcProvider();
-            var configuration = new ConfigurationBuilder()
-           .SetBasePath(Directory.GetCurrentDirectory())
-           .AddJsonFile("appsettings.Test.json", false)
-           .Build();
-            var oidcOptions = Options.Create(new OidcOptions()
-            {
-                AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
-                ClientId = Guid.NewGuid().ToString(),
-                AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug")
-            });
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
+            )
+        );
 
-           var tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                JsonSerializer.Serialize(
+                    KeySetUsing(tokenOptions.Value.PublicKeyPem),
+                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true }
+                )
+            )
+        );
 
-
-   //         var tokenOptions = Options.Create(new TokenOptions()
-   //         {
-   //           Issuer = "Us",
-   // Audience = "Users",
-   // CookieDuration = "00:05:00",
-   // Duration = "24:00:00",
-   // PublicKeyPem = Toby"LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF3TENkQmwrekdJei9Va0xHVEtmaAplc0F0bUUxQUIrL25lQ0djU1VmU3h1Z2tkc3J3NXBuYmlteGtyZnU2RGxpSmtDTXZMUkZPOHRLZHhnYjN1ZWxPCm96U2ZpS2h3Nm9NRmQzWEd4dUpLeWljUVFFRVVwdkxmS3AxN2NmTE1aRG44T1lPYmQ2Q3lXVjBvczIzb2cyZVkKcmtvRzg1UzdOQ2JQeVJUSVF3VUJvNGw0bE9RWnNpNjgwaXdvU0ErVWRFL25La0dGVGxSOERYTW45NUR2V1hacQpkdDRjMXlPbmpMRmRyYTRLODRlblZ5Wm56SlQvRkFRVGRJTG9zLzhOVnlQM3pOY21sWmZmZDJUZlp5T3NRRHVhClVKQzd0eFlUYm50UlpZMnd5clVXaTZkblFOSkFwdmx5ZEN5QnpibmM3MW9Mc2NXQXpGZjdnSzRRSWI4SVNjWEQKUlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==",
-   //PrivateKeyPem = "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBd0xDZEJsK3pHSXovVWtMR1RLZmhlc0F0bUUxQUIrL25lQ0djU1VmU3h1Z2tkc3J3CjVwbmJpbXhrcmZ1NkRsaUprQ012TFJGTzh0S2R4Z2IzdWVsT296U2ZpS2h3Nm9NRmQzWEd4dUpLeWljUVFFRVUKcHZMZktwMTdjZkxNWkRuOE9ZT2JkNkN5V1Ywb3MyM29nMmVZcmtvRzg1UzdOQ2JQeVJUSVF3VUJvNGw0bE9RWgpzaTY4MGl3b1NBK1VkRS9uS2tHRlRsUjhEWE1uOTVEdldYWnFkdDRjMXlPbmpMRmRyYTRLODRlblZ5Wm56SlQvCkZBUVRkSUxvcy84TlZ5UDN6TmNtbFpmZmQyVGZaeU9zUUR1YVVKQzd0eFlUYm50UlpZMnd5clVXaTZkblFOSkEKcHZseWRDeUJ6Ym5jNzFvTHNjV0F6RmY3Z0s0UUliOElTY1hEUlFJREFRQUJBb0lCQUh5VmRHRTduT3RCdG83MApONHcyZTFYSFRYT01kdHJxNU9qS0ttZEM5ZWUvRGx4MEtEK2d1TTZOK0taNC9EbnNTcjBUMHB1NzlpU1B3b3pYCjBuRzBoRENIaEtKeDdkZmljTFZsUStreFJKUGhuK003Y09Qa1lpQUdoRnNQVmRGem9EMTdkeGhvb1FlZ2NRRmEKRFp4d2JjbzZlTFlpc3Nzc1VPbzg4cUpLYVYzWEZCQ3dJNkVTeDA3Q3ZWRXkxd0FJTklFSEE0VTZ5dDF3c1dsbQpLNFJZMkxVdjJtQTlhTkQyNjEwZEhIN3YwVS8wN0oxQXdJZmhhMzh1b0dkS05GeFNhU1Ivc2M2Tk84VXpwcHhSCmliMUl4TnBFb2Q4K2o4ZDdqSDFQV1ZlUDRpamxvUlBlbkRMeXdtWnBva3g2WEN6QjBzdlFLUjJlUFQ4ajZWSmMKc05VdW5sMENnWUVBNFdKQjU5MHQyci9IZVpHMW9SdmxGRXd3aWt4RzJ0UXA2ZXdTNEk5T0oxYTBnU3NLc0xQagpWSFk4MjNtSHozT3dzUFV2K3Y5bkRYOGpHd0JaTmNlZ2E3MHJoekNFT0luQ2RzcmV1U3Y3TzJDbUpOeklZNFFWCklGR2JyZFlEaGRPclJUbnVVcmpnOElQRXNSY01SdTZJTnlxUVRBN244UVNOQ3RjejlQZkIxbmNDZ1lFQTJ0MXIKL21MOWduUlo2bmhRd1FzL05NNWZpcnhlSTZ3WFI0UjlYcG9XbHhwNjVPbnZOZVVFTndZT0xCeHhqblhoMTlDMQozQk5MN2sxVHJLM1FZNVBBR1Y1TDZvT3U1UWJ0ajU4QldaTmRBRWNGWHVvYkNsb1FWRExRRW5EaURvWWVjd0xtCkZHNEFtVk0wRFlEWmdSckszR1AwbVFhTGNrYm9ZTWI0TnlwMVZ5TUNnWUVBaVNmTVI1ZVhzZ2tIRVBvVTk4Z0wKN2dBM2dkSE5SSm5jTDloVDNJZ1kzV09zVVBhcWVNSGYwNlJvZ0g5Q29JSWN3bk5URVlHZmF0MDF0ZGJPY3lYYQpmL1lNcVNaak1DelZSSWxNWkk5WlFkY2RCRTIvUEtCQ1l2cUdySkVTYjd4Uis3eTNSV3Z3cHl6bzQ0UE5HdFZKCjI1aHhXM2V1dWtNMHVhWWduakN2cXgwQ2dZQWgxdng4bjZlY3hRcW1BeVpSUXNEcUZFS1hlOXArWDN4VjlYbEEKNkVnMzRzTS9vNS8xMEV3ZmlkTWxKTnkxN3lvVktWTUZEUUsvZkx0RVJyZWl2ZFNFMTV5YlRQTDh2RjU4eDFQNQpHcHpWanlXWWNFL3dBTTduaGRmQUVpNFJtdEVZYlVsUHZWWmdYb244MElCUXd1aTh2TU96NlZ3a05peDEwaTNNCnNjYmt5d0tCZ0JJK09iRjBMVEt4SVQ4dk5mZVczbUwxU0svRk5QSFFZSFh4VTdCUzQ0L1MwVmF2bTdDRWtXUGEKWXByV2ZQRkkvVWtPcEpOZ3hBVGxiTFcvYmdzaUJnY1A3K3ZweFlIN0Y5YnoydzRLajY3Yjc3bnVRWDMvL1RTSQo0ZE9GMERIeENkU3ZNV2s1d0ZGRCt2RjJvTEttdTdkaDA0VVJlNFJmb2Y2Q3RRZmlIZDhzCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==",
-   
-
-   //         });
-            
-
-            var client = factory
-                .CreateAnonymousClient(builder =>
-                    builder.ConfigureTestServices(services =>
+        broker.Given(
+            Request.Create().WithPath("/op/connect/token").UsingPost()
+        )
+        .RespondWith(
+            Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody(
+                JsonSerializer.Serialize(
+                    new
                     {
-                        services.AddScoped(x => oidcOptions);
-                        services.AddScoped(x => tokenOptions);
-                    }
-                    ));
-            var queryString = "auth/oidc/callback/error_description?code=errorCode&error=702";
-            var result = await client.GetAsync(queryString);
-            var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+                        access_token = accessToken,
+                        userinfo_token = userToken,
+                        id_token = identityToken
+                    }))
+        );
 
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
 
-            //var action = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
+        var result = await client.GetAsync(queryString);
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
 
-            //Assert.NotNull(action);
-            //Assert.IsType<OkObjectResult>(action);
-            //var result = action as OkObjectResult;
-            //var body = result!.Value as string;
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            //Assert.Contains("<html><head><meta ", body);
-            //Assert.Contains(" http-equiv=", body);
-            //Assert.Contains("refresh", body);
-            //Assert.Contains("<body />", body);
-            //Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
-        }
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var body = await result.Content.ReadAsStringAsync();
+        Assert.Contains("<html><head><meta ", body);
+        Assert.Contains(" http-equiv=", body);
+        Assert.Contains("refresh", body);
+        Assert.Contains("<body />", body);
+        Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
+
+        var header = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
+        Assert.True(header.Count() >= 1);
+        Assert.Contains("Authentication=", header.First());
+        Assert.Contains("; secure", header.First());
+        Assert.Contains("; expires=", header.First());
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeExchangeFails()
+    {
+        var broker = WireMockServer.Start();
+
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
+        var oidcOptions = Options.Create(new OidcOptions()
+        {
+            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com")
+        });
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
+            )
+        );
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./jwks.json")
+            )
+        );
+
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
+
+        var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
+        var result = await client.GetAsync(queryString);
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", query);
+    }
+
+    [Theory]
+    [InlineData(TokenInvalid.Identity)]
+    [InlineData(TokenInvalid.Access)]
+    [InlineData(TokenInvalid.User)]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenTokenIsInvalid(TokenInvalid tokenInvalid)
+    {
+        var broker = WireMockServer.Start();
+
+        var correctIssuer = $"http://localhost:{broker.Port}/op";
+        var wrongIssuer = "http://example-wrong-issuer.com";
+
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
+        var oidcOptions = Options.Create(new OidcOptions()
+        {
+            AuthorityUri = new Uri(correctIssuer),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com")
+        });
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.Identity ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.Access ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.User ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
+            )
+        );
+
+        broker.Given(
+            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
+        ).RespondWith(
+            Response.Create().WithStatusCode(200).WithBody(
+                JsonSerializer.Serialize(
+                    KeySetUsing(tokenOptions.Value.PublicKeyPem),
+                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true }))
+        );
+
+        broker.Given(
+            Request.Create().WithPath("/op/connect/token").UsingPost()
+        )
+        .RespondWith(
+            Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        access_token = accessToken,
+                        userinfo_token = userToken,
+                        id_token = identityToken
+                    }))
+        );
+
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
+
+        var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
+        var result = await client.GetAsync(queryString);
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+    }
+
+    private static IdentityModel.Jwk.JsonWebKeySet KeySetUsing(byte[] pem)
+    {
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
+        var parameters = rsa.ExportParameters(false);
+
+        var exponent = Base64Url.Encode(parameters.Exponent);
+        var modulus = Base64Url.Encode(parameters.Modulus);
+        var kid = SHA256.HashData(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new Dictionary<string, string>() {
+            {"e", exponent},
+            {"kty", "RSA"},
+            {"n", modulus}
+        })));
+
+        return new IdentityModel.Jwk.JsonWebKeySet
+        {
+            Keys = new() { new() {
+                Kid = Base64Url.Encode(kid),
+                Kty = "RSA",
+                E = exponent,
+                N = modulus
+            }}
+        };
+    }
+
+    private static string TokenUsing(TokenOptions tokenOptions, string issuer, string audience, string? subject = default, Dictionary<string, object>? claims = default)
+    {
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PrivateKeyPem));
+        var key = new RsaSecurityKey(rsa);
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+
+        var updatedClaims = claims ?? new Dictionary<string, object>();
+        updatedClaims.Add("sub", subject ?? "subject");
+
+        var descriptor = new SecurityTokenDescriptor()
+        {
+            Audience = audience,
+            Issuer = issuer,
+            SigningCredentials = credentials,
+            Claims = updatedClaims
+        };
+
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.CreateJwtSecurityToken(descriptor);
+        return handler.WriteToken(token);
     }
 }
