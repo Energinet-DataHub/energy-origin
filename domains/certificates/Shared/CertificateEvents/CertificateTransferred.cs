@@ -12,7 +12,6 @@ public record CertificateTransferred(
     string GridArea,
     Period Period,
     Technology Technology,
-    string MeteringPointOwner,
     ShieldedValue<string> ShieldedGSRN,
     ShieldedValue<long> ShieldedQuantity
 );

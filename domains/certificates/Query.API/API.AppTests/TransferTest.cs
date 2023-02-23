@@ -26,6 +26,7 @@ public class TransferTest :
     public async Task Test()
     {
         var owner1 = Guid.NewGuid().ToString();
+        var owner2 = Guid.NewGuid().ToString();
         var client = factory.CreateAuthenticatedClient(owner1);
 
         var createdEvent = new ProductionCertificateCreated(
@@ -42,10 +43,20 @@ public class TransferTest :
             createdEvent.MeteringPointOwner,
             createdEvent.ShieldedGSRN.Value);
 
+        var transferredEvent = new CertificateTransferred(
+            createdEvent.CertificateId,
+            owner1,
+            owner2,
+            createdEvent.GridArea,
+            createdEvent.Period,
+            createdEvent.Technology,
+            createdEvent.ShieldedGSRN,
+            createdEvent.ShieldedQuantity);
+
         var documentStore = factory.GetDocumentStore();
         await using var documentSession = documentStore.OpenSession();
 
-        documentSession.Events.StartStream(createdEvent.CertificateId, createdEvent, issuedEvent);
+        documentSession.Events.StartStream(createdEvent.CertificateId, createdEvent, issuedEvent, transferredEvent);
         await documentSession.SaveChangesAsync();
 
         var certificates = await client.GetAsync("api/certificates");
