@@ -29,7 +29,7 @@ public class MeasurementsController : AuthorizationController
             DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
             DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
             request.Aggregation,
-             MeterType.Consumption));
+            MeterType.Consumption));
     }
 
     [HttpGet]
