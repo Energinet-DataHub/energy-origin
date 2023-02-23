@@ -23,10 +23,13 @@ public class MeasurementsController : AuthorizationController
             return ValidationProblem(ModelState);
         }
 
-        var dateFrom = DateTimeOffset.FromUnixTimeSeconds(request.DateFrom).DateTime;
-        var dateTo = DateTimeOffset.FromUnixTimeSeconds(request.DateTo).DateTime;
-
-        return Ok(await measurementsService.GetMeasurements(Context, request.TimeZoneInfo, dateFrom, dateTo, request.Aggregation, MeterType.Consumption));
+        return Ok(await measurementsService.GetMeasurements(
+            Context,
+            request.TimeZoneInfo,
+            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+            request.Aggregation,
+             MeterType.Consumption));
     }
 
     [HttpGet]
@@ -40,9 +43,12 @@ public class MeasurementsController : AuthorizationController
             return ValidationProblem(ModelState);
         }
 
-        var dateFrom = DateTimeOffset.FromUnixTimeSeconds(request.DateFrom).DateTime;
-        var dateTo = DateTimeOffset.FromUnixTimeSeconds(request.DateTo).DateTime;
-
-        return Ok(await measurementsService.GetMeasurements(Context, request.TimeZoneInfo, dateFrom, dateTo, request.Aggregation, MeterType.Production));
+        return Ok(await measurementsService.GetMeasurements(
+            Context,
+            request.TimeZoneInfo,
+            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+            request.Aggregation,
+            MeterType.Production));
     }
 }

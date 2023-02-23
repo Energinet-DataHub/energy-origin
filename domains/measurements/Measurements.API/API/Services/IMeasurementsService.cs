@@ -8,8 +8,8 @@ public interface IMeasurementsService
     Task<MeasurementResponse> GetMeasurements(
         AuthorizationContext context,
         TimeZoneInfo timeZone,
-        DateTime dateFrom,
-        DateTime dateTo,
+        DateTimeOffset dateFrom,
+        DateTimeOffset dateTo,
         Aggregation aggregation,
         MeterType typeOfMP);
 }
