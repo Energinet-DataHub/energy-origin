@@ -1,30 +1,29 @@
 using API.Models;
-using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
 public class MeasurementAggregation : IAggregator
 {
-    public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, Aggregation aggregation)
+    public MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, TimeZoneInfo timeZone, Aggregation aggregation)
     {
-        var listOfMeasurements = measurements.SelectMany(
+        var list = measurements.SelectMany(
             measurement => measurement.Measurements.Select(
                 reading => new AggregatedMeasurementInteral
                 (
-                    DateFrom: reading.DateFrom.ToDateTime(),
-                    DateTo: reading.DateTo.ToDateTime(),
+                    DateFrom: DateTimeOffset.FromUnixTimeSeconds(reading.DateFrom),
+                    DateTo: DateTimeOffset.FromUnixTimeSeconds(reading.DateTo),
                     Value: reading.Quantity
                 )
             )
         ).ToList();
 
-        var groupedMeasurements = GetGroupedConsumption(aggregation, listOfMeasurements);
+        var groupedList = GetGroupedConsumption(aggregation, timeZone, list);
 
-        var bucketMeasurements = groupedMeasurements.Select(
+        var bucketMeasurements = groupedList.Select(
             group => new AggregatedMeasurement
             (
-                DateFrom: group.First().DateFrom.ToUnixTime(),
-                DateTo: group.Last().DateTo.ToUnixTime(),
+                DateFrom: group.First().DateFrom.ToUnixTimeSeconds(),
+                DateTo: group.Last().DateTo.ToUnixTimeSeconds(),
                 Value: group.Sum(it => it.Value)
             )
         ).ToList();
@@ -32,26 +31,28 @@ public class MeasurementAggregation : IAggregator
         return new MeasurementResponse(bucketMeasurements);
     }
 
-    private static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, List<AggregatedMeasurementInteral> listOfMeasurements)
+    private static IEnumerable<IGrouping<string, AggregatedMeasurementInteral>> GetGroupedConsumption(Aggregation aggregation, TimeZoneInfo timeZone, List<AggregatedMeasurementInteral> list)
     {
         var groupedMeasurements = aggregation switch
         {
-            Aggregation.Year => listOfMeasurements.GroupBy(_ => _.DateFrom.Year.ToString()),
-            Aggregation.Month => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM")),
-            Aggregation.Day => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd")),
-            Aggregation.Hour => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
-            Aggregation.QuarterHour => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH/mm")),
-            Aggregation.Actual => listOfMeasurements.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH")),
-            Aggregation.Total => listOfMeasurements.GroupBy(_ => "total"),
+            Aggregation.Year => list.GroupBy(x => Key(timeZone, "yyyy", x.DateFrom)),
+            Aggregation.Month => list.GroupBy(x => Key(timeZone, "yyyy/MM", x.DateFrom)),
+            Aggregation.Day => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd", x.DateFrom)),
+            Aggregation.Hour => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH", x.DateFrom)),
+            Aggregation.QuarterHour => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH/mm", x.DateFrom)),
+            Aggregation.Actual => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH", x.DateFrom)),
+            Aggregation.Total => list.GroupBy(x => "total"),
             _ => throw new ArgumentOutOfRangeException(nameof(aggregation)),
         };
         return groupedMeasurements;
     }
 
+    private static string Key(TimeZoneInfo timeZone, string format, DateTimeOffset date) => date.ToOffset(timeZone.GetUtcOffset(date.UtcDateTime)).ToString(format);
+
     private record AggregatedMeasurementInteral
     (
-        DateTime DateFrom,
-        DateTime DateTo,
+        DateTimeOffset DateFrom,
+        DateTimeOffset DateTo,
         long Value
     );
 }

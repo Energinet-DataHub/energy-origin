@@ -46,7 +46,7 @@ public class OidcControllerTests
         oidcOptions = Options.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
         tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
 
-        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions, service);
+        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
         mapper = new UserDescriptMapper(
             new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
             Mock.Of<ILogger<UserDescriptMapper>>()

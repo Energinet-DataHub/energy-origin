@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
-using API.Services;
 using API.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -14,20 +13,18 @@ public class TokenIssuer : ITokenIssuer
 {
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
-    private readonly IUserService userService;
 
-    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions, IUserService userService)
+    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
     {
         this.termsOptions = termsOptions.Value;
         this.tokenOptions = tokenOptions.Value;
-        this.userService = userService;
     }
 
-    public async Task<string> IssueAsync(UserDescriptor descriptor, DateTime? issueAt = default)
+    public string Issue(UserDescriptor descriptor, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = await ResolveStateAsync(termsOptions, userService, descriptor);
+        var state = ResolveState(termsOptions, descriptor);
 
         return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
@@ -42,21 +39,12 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static async Task<UserState> ResolveStateAsync(TermsOptions options, IUserService userService, UserDescriptor descriptor)
+    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor)
     {
-        var userId = descriptor.Id?.ToString();
-        int version;
-        if (userId == null)
-        {
-            version = descriptor.AcceptedTermsVersion;
-        }
-        else
-        {
-            var user = await userService.GetUserByIdAsync(Guid.Parse(userId)) ?? throw new KeyNotFoundException($"User not found: {userId}");
-            version = user.AcceptedTermsVersion;
-        }
+        var version = descriptor.AcceptedTermsVersion;
+
         var scope = version == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
-        return new(userId, version, scope);
+        return new(descriptor.Id?.ToString(), version, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
