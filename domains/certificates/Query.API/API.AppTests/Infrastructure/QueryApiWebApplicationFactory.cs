@@ -11,6 +11,7 @@ using API.AppTests.Mocks;
 using API.DataSyncSyncer;
 using API.RabbitMq.Configurations;
 using FluentAssertions;
+using Marten;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -58,6 +59,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
+
+    public IDocumentStore GetDocumentStore() => Services.GetRequiredService<IDocumentStore>();
 
     private static string GenerateToken(
         string scope = "",
