@@ -10,7 +10,7 @@ namespace Tests
 {
     public sealed class CalculateSourceEmissionShareTest
     {
-        readonly SourceEmissionShareDataSetFactory dataSetFactory = new();
+        private readonly SourceEmissionShareDataSetFactory dataSetFactory = new();
 
         [Theory]
         [InlineData(Aggregation.Total)]
@@ -24,8 +24,8 @@ namespace Tests
             // Arrange
             var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
             var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
-            var timeSeries = dataSetFactory.CreateTimeSeries();
-            var emissionShares = dataSetFactory.CreateEmissionsShares();
+            var timeSeries = SourceEmissionShareDataSetFactory.CreateTimeSeries();
+            var emissionShares = SourceEmissionShareDataSetFactory.CreateEmissionsShares();
             Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
             Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
 
@@ -43,113 +43,95 @@ namespace Tests
             Assert.Equal(expected.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
         }
 
-        EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo)
+        private static EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo) => aggregation switch
         {
-            switch (aggregation)
+            Aggregation.Total or Aggregation.Month or Aggregation.Year => new EnergySourceResponse(new List<EnergySourceDeclaration>
             {
-                case Aggregation.Total:
-                case Aggregation.Month:
-                case Aggregation.Year:
-                    return new EnergySourceResponse(
-
-                        new List<EnergySourceDeclaration>
-                        {
-                            new(
-                                dateFrom.ToUnixTime(),
-                                dateTo.ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.3m },
-                                    { "windOnshore", 0.38m },
-                                    { "bioGas", 0.32m }
-                                }
-                            )
-                        });
-                case Aggregation.Actual:
-                case Aggregation.Hour:
-                    return new EnergySourceResponse(
-
-                        new List<EnergySourceDeclaration>
-                        {
-                            new(
-                                dateFrom.ToUnixTime(),
-                                dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.5m },
-                                    { "windOnshore", 0.3m },
-                                    { "bioGas", 0.2m }
-                                }
-                            ),
-                            new(
-                                dateFrom.AddHours(1).ToUnixTime(),
-                                dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.4m },
-                                    { "windOnshore", 0.5m },
-                                    { "bioGas", 0.1m }
-                                }
-                            ),
-                            new(
-                                dateFrom.AddHours(2).ToUnixTime(),
-                                dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.3m },
-                                    { "windOnshore", 0.3m },
-                                    { "bioGas", 0.4m }
-                                }
-                            ),
-                            new(
-                                dateFrom.AddHours(3).ToUnixTime(),
-                                dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.2m },
-                                    { "windOnshore", 0.4m },
-                                    { "bioGas", 0.4m }
-                                }
-                            )
-                        });
-                case Aggregation.Day:
-                    return new EnergySourceResponse(
-
-                        new List<EnergySourceDeclaration>
-                        {
-                            new(
-                                dateFrom.ToUnixTime(),
-                                dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                0.99999m,
-                                new()
-                                {
-                                    { "solar", 0.43333m },
-                                    { "windOnshore", 0.43333m },
-                                    { "bioGas", 0.13333m }
-                                }
-                            ),
-                            new(
-                                dateFrom.AddHours(2).ToUnixTime(),
-                                dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
-                                1,
-                                new()
-                                {
-                                    { "solar", 0.24286m },
-                                    { "windOnshore", 0.35714m },
-                                    { "bioGas", 0.4m }
-                                }
-                            )
-                        });
-
-
-                default:
-                    return new EnergySourceResponse(new List<EnergySourceDeclaration>());
-            }
-        }
+                new(
+                    dateFrom.ToUnixTime(),
+                    dateTo.ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.3m },
+                        { "windOnshore", 0.38m },
+                        { "bioGas", 0.32m }
+                    }
+                )
+            }),
+            Aggregation.Actual or Aggregation.Hour => new EnergySourceResponse(new List<EnergySourceDeclaration>
+            {
+                new(
+                    dateFrom.ToUnixTime(),
+                    dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.5m },
+                        { "windOnshore", 0.3m },
+                        { "bioGas", 0.2m }
+                    }
+                ),
+                new(
+                    dateFrom.AddHours(1).ToUnixTime(),
+                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.4m },
+                        { "windOnshore", 0.5m },
+                        { "bioGas", 0.1m }
+                    }
+                ),
+                new(
+                    dateFrom.AddHours(2).ToUnixTime(),
+                    dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.3m },
+                        { "windOnshore", 0.3m },
+                        { "bioGas", 0.4m }
+                    }
+                ),
+                new(
+                    dateFrom.AddHours(3).ToUnixTime(),
+                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.2m },
+                        { "windOnshore", 0.4m },
+                        { "bioGas", 0.4m }
+                    }
+                )
+            }),
+            Aggregation.Day => new EnergySourceResponse(new List<EnergySourceDeclaration>
+            {
+                new(
+                    dateFrom.ToUnixTime(),
+                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    0.99999m,
+                    new()
+                    {
+                        { "solar", 0.43333m },
+                        { "windOnshore", 0.43333m },
+                        { "bioGas", 0.13333m }
+                    }
+                ),
+                new(
+                    dateFrom.AddHours(2).ToUnixTime(),
+                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    1,
+                    new()
+                    {
+                        { "solar", 0.24286m },
+                        { "windOnshore", 0.35714m },
+                        { "bioGas", 0.4m }
+                    }
+                )
+            }),
+            _ => new EnergySourceResponse(new List<EnergySourceDeclaration>()),
+        };
     }
 }

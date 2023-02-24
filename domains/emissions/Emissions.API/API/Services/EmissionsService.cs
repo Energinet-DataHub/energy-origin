@@ -1,15 +1,14 @@
 using API.Models;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
 public class EmissionsService : IEmissionsService
 {
-    readonly IDataSyncService dataSyncService;
-    readonly IEnergiDataService energyDataService;
-    readonly IEmissionsCalculator emissionsCalculator;
-    readonly ISourcesCalculator sourcesCalculator;
+    private readonly IDataSyncService dataSyncService;
+    private readonly IEnergiDataService energyDataService;
+    private readonly IEmissionsCalculator emissionsCalculator;
+    private readonly ISourcesCalculator sourcesCalculator;
 
     public EmissionsService(
         IDataSyncService dataSyncService,

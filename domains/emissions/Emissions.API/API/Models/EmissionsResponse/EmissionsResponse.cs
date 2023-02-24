@@ -7,9 +7,6 @@ namespace API.Models
         [JsonPropertyName("emissions")]
         public IEnumerable<Emissions> Emissions { get; }
 
-        public EmissionsResponse(IEnumerable<Emissions> emissions)
-        {
-            Emissions = emissions;
-        }
+        public EmissionsResponse(IEnumerable<Emissions> emissions) => Emissions = emissions;
     }
 }

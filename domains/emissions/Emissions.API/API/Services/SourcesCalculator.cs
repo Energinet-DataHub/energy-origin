@@ -6,10 +6,10 @@ namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
     {
-        readonly IList<string> renewableSources = Configuration.GetRenewableSources();
-        readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
-        const string waste = "waste";
-        const string total = "total";
+        private readonly IList<string> renewableSources = Configuration.GetRenewableSources();
+        private readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
+        private const string waste = "waste";
+        private const string total = "total";
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
@@ -72,19 +72,16 @@ namespace API.Services
 
         //Translates a date into an aggregated date string.
         //This creates a period bucket/bin spanning the aggregation amount.
-        string GetAggregationDateString(DateTime date, Aggregation aggregation)
+        private static string GetAggregationDateString(DateTime date, Aggregation aggregation) => aggregation switch
         {
-            return aggregation switch
-            {
-                Aggregation.Year => date.ToString("yyyy"),
-                Aggregation.Month => date.ToString("yyyy/MM"),
-                Aggregation.Day => date.ToString("yyyy/MM/dd"),
-                Aggregation.Hour => date.ToString("yyyy/MM/dd/HH"),
-                Aggregation.QuarterHour => date.ToString("yyyy/MM/dd/HH/mm"),
-                Aggregation.Actual => date.ToString("yyyy/MM/dd/HH"),
-                Aggregation.Total => total,
-                _ => throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null),
-            };
-        }
+            Aggregation.Year => date.ToString("yyyy"),
+            Aggregation.Month => date.ToString("yyyy/MM"),
+            Aggregation.Day => date.ToString("yyyy/MM/dd"),
+            Aggregation.Hour => date.ToString("yyyy/MM/dd/HH"),
+            Aggregation.QuarterHour => date.ToString("yyyy/MM/dd/HH/mm"),
+            Aggregation.Actual => date.ToString("yyyy/MM/dd/HH"),
+            Aggregation.Total => total,
+            _ => throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null),
+        };
     }
 }

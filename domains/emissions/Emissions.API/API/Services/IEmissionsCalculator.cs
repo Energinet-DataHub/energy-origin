@@ -1,4 +1,5 @@
 using API.Models;
+using API.Models.EnergiDataService;
 
 namespace API.Services;
 

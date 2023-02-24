@@ -1,11 +1,11 @@
 using API.Helpers;
 using API.Models;
+using API.Models.EnergiDataService;
 using EnergyOriginDateTimeExtension;
-
 
 namespace API.Services;
 
-class EmissionsCalculator : IEmissionsCalculator
+internal class EmissionsCalculator : IEmissionsCalculator
 {
     public EmissionsResponse CalculateEmission(
         IEnumerable<EmissionRecord> emissions,
@@ -14,7 +14,6 @@ class EmissionsCalculator : IEmissionsCalculator
         DateTime dateTo,
         Aggregation aggregation)
     {
-
         var bucketEmissions = new List<Emissions>();
 
         var listOfEmissions = timeSeriesList.SelectMany(timeseries => timeseries.Measurements.Join(
@@ -33,8 +32,8 @@ class EmissionsCalculator : IEmissionsCalculator
 
         foreach (var groupedEmission in groupedEmissions)
         {
-            var totalForBucket = groupedEmission.Sum(_ => _.Co2);
-            var relativeForBucket = totalForBucket / groupedEmission.Sum(_ => _.Consumption);
+            var totalForBucket = groupedEmission.Sum(x => x.Co2);
+            var relativeForBucket = totalForBucket / groupedEmission.Sum(x => x.Consumption);
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTime(),
                 groupedEmission.Last().DateTo.ToUnixTime(),
@@ -48,43 +47,19 @@ class EmissionsCalculator : IEmissionsCalculator
         return response;
     }
 
-    static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, IEnumerable<Emission> listOfEmissions)
+    private static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, IEnumerable<Emission> listOfEmissions)
     {
-        IEnumerable<IGrouping<string, Emission>> groupedEmissions;
-        switch (aggregation)
+        var groupedEmissions = aggregation switch
         {
-            case Aggregation.Year:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.Year.ToString());
-                break;
-
-            case Aggregation.Month:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM"));
-                break;
-
-            case Aggregation.Day:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd"));
-                break;
-
-            case Aggregation.Hour:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH"));
-                break;
-
-            case Aggregation.QuarterHour:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH/mm"));
-                break;
-
-            case Aggregation.Actual:
-                groupedEmissions = listOfEmissions.GroupBy(_ => _.DateFrom.ToString("yyyy/MM/dd/HH"));
-                break;
-
-            case Aggregation.Total:
-                groupedEmissions = listOfEmissions.GroupBy(_ => "total");
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException($"Invalid value {nameof(aggregation)}");
-        }
-
+            Aggregation.Year => listOfEmissions.GroupBy(x => x.DateFrom.Year.ToString()),
+            Aggregation.Month => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM")),
+            Aggregation.Day => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd")),
+            Aggregation.Hour => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH")),
+            Aggregation.QuarterHour => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH/mm")),
+            Aggregation.Actual => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH")),
+            Aggregation.Total => listOfEmissions.GroupBy(_ => "total"),
+            _ => throw new ArgumentOutOfRangeException(nameof(aggregation)),
+        };
         return groupedEmissions;
     }
 }

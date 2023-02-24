@@ -5,6 +5,7 @@ using API.Helpers;
 using API.Models;
 using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -19,25 +20,36 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-// Add services to the container.
+builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
+{
+    try
+    {
+        Configuration.GetDataSyncEndpoint();
+        return Task.FromResult(HealthCheckResult.Healthy());
+    }
+    catch
+    {
+        return Task.FromResult(HealthCheckResult.Unhealthy());
+    }
+});
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<EnergySourceRequest.Validator>();
+// FIXME: builder.Services.AddScoped<IValidator<MeasurementsRequest>, MeasurementsRequest.Validator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
-builder.Services.AddTransient<IValidatorFactory, ServiceProviderValidatorFactory>();
 builder.Services.AddFluentValidationRulesToSwagger();
 
 builder.Services.AddHttpClient();
-builder.Services.AddCustomServices();
+builder.Services.AddCustomServices(); // FIXME: follow up
 
 var app = builder.Build();
 
@@ -49,7 +61,8 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
+app.UseHttpLogging(); // FIXME: follow up
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();
