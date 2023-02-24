@@ -36,12 +36,12 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
     {
-        var broker = WireMockServer.Start();
+        var server = WireMockServer.Start();
 
         var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
         var oidcOptions = Options.Create(new OidcOptions()
         {
-            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
@@ -57,38 +57,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             { "mitid.identity_name", name }
         });
 
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                JsonSerializer.Serialize(
-                    KeySetUsing(tokenOptions.Value.PublicKeyPem),
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true }
-                )
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/connect/token").UsingPost()
-        )
-        .RespondWith(
-            Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody(
-                JsonSerializer.Serialize(
-                    new
-                    {
-                        access_token = accessToken,
-                        userinfo_token = userToken,
-                        id_token = identityToken
-                    }))
-        );
+        server.MockConfigEndpoint()
+            .MockJwkEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var client = factory
             .CreateAnonymousClient(builder =>
@@ -119,12 +90,12 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeExchangeFails()
     {
-        var broker = WireMockServer.Start();
+        var server = WireMockServer.Start();
 
         var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
         var oidcOptions = Options.Create(new OidcOptions()
         {
-            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
@@ -140,21 +111,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             { "mitid.identity_name", name }
         });
 
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./jwks.json")
-            )
-        );
+        server.MockConfigEndpoint().MockJwkEndpoint();
 
         var client = factory
             .CreateAnonymousClient(builder =>
@@ -176,9 +133,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     [InlineData(TokenInvalid.User)]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenTokenIsInvalid(TokenInvalid tokenInvalid)
     {
-        var broker = WireMockServer.Start();
+        var server = WireMockServer.Start();
 
-        var correctIssuer = $"http://localhost:{broker.Port}/op";
+        var correctIssuer = $"http://localhost:{server.Port}/op";
         var wrongIssuer = "http://example-wrong-issuer.com";
 
         var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
@@ -200,36 +157,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             { "mitid.identity_name", name }
         });
 
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                JsonSerializer.Serialize(
-                    KeySetUsing(tokenOptions.Value.PublicKeyPem),
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true }))
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/connect/token").UsingPost()
-        )
-        .RespondWith(
-            Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody(
-                JsonSerializer.Serialize(
-                    new
-                    {
-                        access_token = accessToken,
-                        userinfo_token = userToken,
-                        id_token = identityToken
-                    }))
-        );
+        server.MockConfigEndpoint()
+            .MockJwkEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var client = factory
             .CreateAnonymousClient(builder =>
