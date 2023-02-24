@@ -58,12 +58,12 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
         var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
         var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(userDescriptor));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(userDescriptor, issueAt));
         return client;
     }
 
