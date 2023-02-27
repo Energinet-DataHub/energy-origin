@@ -71,7 +71,7 @@ public class ProductionCertificate : AggregateBase
         AddUncommittedEvent(@event);
     }
 
-    private void Apply(ProductionCertificateIssued @event)
+    private void Apply(ProductionCertificateIssued _)
     {
         issuedState = IssuedState.Issued;
 
@@ -89,7 +89,7 @@ public class ProductionCertificate : AggregateBase
         AddUncommittedEvent(@event);
     }
 
-    private void Apply(ProductionCertificateRejected @event)
+    private void Apply(ProductionCertificateRejected _)
     {
         issuedState = IssuedState.Rejected;
 
