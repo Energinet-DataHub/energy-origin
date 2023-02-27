@@ -17,7 +17,7 @@ public class AggregateTest
 
         var repo = new AggregateRepository(documentStore);
 
-        var aggregate = new ProductionCertificateAggregate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
+        var aggregate = new ProductionCertificate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
             "owner1", "gsrn", 42);
 
         aggregate.Issue();
@@ -25,7 +25,7 @@ public class AggregateTest
 
         await repo.StoreAsync(aggregate);
 
-        var aggregateFromRepo = await repo.LoadAsync<ProductionCertificateAggregate>(aggregate.Id);
+        var aggregateFromRepo = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
 
         aggregateFromRepo.Transfer("owner2", "owner3");
 
@@ -39,13 +39,13 @@ public class AggregateTest
 
         var repo = new AggregateRepository(documentStore);
 
-        var aggregate = new ProductionCertificateAggregate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
+        var aggregate = new ProductionCertificate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
             "owner1", "gsrn", 42);
 
         await repo.StoreAsync(aggregate);
 
-        var aggregateFromRepo1 = await repo.LoadAsync<ProductionCertificateAggregate>(aggregate.Id);
-        var aggregateFromRepo2 = await repo.LoadAsync<ProductionCertificateAggregate>(aggregate.Id);
+        var aggregateFromRepo1 = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo2 = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
 
         aggregateFromRepo1.Issue();
         aggregateFromRepo2.Reject("foo");

@@ -5,7 +5,7 @@ using CertificateEvents.Primitives;
 
 namespace API.GranularCertificateIssuer;
 
-public class ProductionCertificateAggregate : AggregateBase
+public class ProductionCertificate : AggregateBase
 {
     public string CertificateOwner { get; protected set; } = "";
     private IssuedState? issuedState;
@@ -18,11 +18,11 @@ public class ProductionCertificateAggregate : AggregateBase
     private Period period = new(1, 1);
     private Technology technology = new("", "");
 
-    private ProductionCertificateAggregate()
+    private ProductionCertificate()
     {
     }
 
-    public ProductionCertificateAggregate(
+    public ProductionCertificate(
         string gridArea,
         Period period,
         Technology technology,
@@ -92,14 +92,14 @@ public class ProductionCertificateAggregate : AggregateBase
 
     public void Transfer(string from, string to)
     {
-        if (string.Equals(from, to))
-            throw new InvalidOperationException("Cannot transfer to the same owner"); //TODO: Exception type
         if (issuedState != IssuedState.Issued)
             throw new InvalidOperationException("Transfer only allowed on issued certificates");//TODO: Exception type
+        //if (string.Equals(from, to))
+        //    throw new InvalidOperationException("Cannot transfer to the same owner"); //TODO: Exception type
         if (string.Equals(to, CertificateOwner))
             throw new InvalidOperationException($"Cannot transfer certificate to the current owner {CertificateOwner}"); //TODO: Exception type
         if (!string.Equals(from, CertificateOwner))
-            throw new InvalidOperationException("Can only transfer from current owner"); //TODO: Exception type
+            throw new InvalidOperationException($"Can only transfer from current owner {CertificateOwner}"); //TODO: Exception type
 
         var @event = new CertificateTransferred(Id, from, to, gridArea, period, technology, gsrn, quantity);
 
