@@ -15,7 +15,7 @@ public class AggregateTest
     {
         var documentStore = DocumentStore.For("host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;");
 
-        var repo = new AggregateRepository(documentStore);
+        var repo = new ProductionCertificateRepository(documentStore);
 
         var aggregate = new ProductionCertificate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
             "owner1", "gsrn", 42);
@@ -25,7 +25,7 @@ public class AggregateTest
 
         await repo.Save(aggregate);
 
-        var aggregateFromRepo = await repo.Get<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo = await repo.Get(aggregate.Id);
 
         aggregateFromRepo.Transfer("owner2", "owner3");
 
@@ -37,15 +37,15 @@ public class AggregateTest
     {
         var documentStore = DocumentStore.For("host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;");
 
-        var repo = new AggregateRepository(documentStore);
+        var repo = new ProductionCertificateRepository(documentStore);
 
         var aggregate = new ProductionCertificate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
             "owner1", "gsrn", 42);
 
         await repo.Save(aggregate);
 
-        var aggregateFromRepo1 = await repo.Get<ProductionCertificate>(aggregate.Id);
-        var aggregateFromRepo2 = await repo.Get<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo1 = await repo.Get(aggregate.Id);
+        var aggregateFromRepo2 = await repo.Get(aggregate.Id);
 
         aggregateFromRepo1.Issue();
         aggregateFromRepo2.Reject("foo");
