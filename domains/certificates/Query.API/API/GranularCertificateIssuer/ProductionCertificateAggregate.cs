@@ -28,12 +28,12 @@ public class ProductionCertificateAggregate : AggregateBase
     }
 
     #region Immutable Properties
-    public string MeteringPointOwner { get; protected set; } = "";
-    public ShieldedValue<string> GSRN { get; protected set; }
-    public ShieldedValue<long> Quantity { get; protected set; }
-    public string GridArea { get; protected set; }
-    public Period Period { get; protected set; }
-    public Technology Technology { get; protected set; }
+    private string meteringPointOwner = "";
+    private ShieldedValue<string> GSRN = new("", BigInteger.Zero);
+    private ShieldedValue<long> quantity = new(0, BigInteger.Zero);
+    private string gridArea = "";
+    private Period period = new(1, 1);
+    private Technology technology = new("", "");
     #endregion
 
     public string CertificateOwner { get; protected set; } = "";
@@ -45,7 +45,7 @@ public class ProductionCertificateAggregate : AggregateBase
             throw new InvalidOperationException(
                 $"Cannot issue when certificate is already {IssuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateIssued(Id, MeteringPointOwner, GSRN.Value);
+        var @event = new ProductionCertificateIssued(Id, meteringPointOwner, GSRN.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -57,7 +57,7 @@ public class ProductionCertificateAggregate : AggregateBase
             throw new InvalidOperationException(
                 $"Cannot reject when certificate is already {IssuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateRejected(Id, reason, MeteringPointOwner, GSRN.Value);
+        var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, GSRN.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -72,7 +72,7 @@ public class ProductionCertificateAggregate : AggregateBase
         if (!string.Equals(from, CertificateOwner))
             throw new InvalidOperationException("Can only transfer from current owner"); //TODO: Exception type
 
-        var @event = new CertificateTransferred(Id, from, to, GridArea, Period, Technology, GSRN, Quantity);
+        var @event = new CertificateTransferred(Id, from, to, gridArea, period, technology, GSRN, quantity);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -82,12 +82,12 @@ public class ProductionCertificateAggregate : AggregateBase
     {
         Id = @event.CertificateId;
         CertificateOwner = @event.MeteringPointOwner;
-        MeteringPointOwner = @event.MeteringPointOwner;
+        meteringPointOwner = @event.MeteringPointOwner;
         GSRN = @event.ShieldedGSRN;
-        Quantity = @event.ShieldedQuantity;
-        GridArea = @event.GridArea;
-        Period = @event.Period;
-        Technology = @event.Technology;
+        quantity = @event.ShieldedQuantity;
+        gridArea = @event.GridArea;
+        period = @event.Period;
+        technology = @event.Technology;
 
         Version++;
     }

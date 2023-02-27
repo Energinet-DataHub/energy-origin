@@ -21,7 +21,6 @@ public class AggregateTest
 
         aggregate.Issue();
         aggregate.Transfer("owner1", "owner2");
-        aggregate.Reject("foo");
 
         await repo.StoreAsync(aggregate);
 
