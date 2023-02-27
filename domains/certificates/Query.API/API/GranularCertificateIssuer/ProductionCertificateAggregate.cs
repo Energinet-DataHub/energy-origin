@@ -44,6 +44,19 @@ public class ProductionCertificateAggregate : AggregateBase
         AddUncommittedEvent(@event);
     }
 
+    public void Reject(string reason)
+    {
+        if (IssuedState is not null)
+        {
+            throw new InvalidOperationException($"Cannot reject when certificate is already {IssuedState}"); //TODO: Exception type
+        }
+
+        var @event = new ProductionCertificateRejected(Id, reason, MeteringPointOwner, GSRN);
+
+        Apply(@event);
+        AddUncommittedEvent(@event);
+    }
+
     private void Apply(ProductionCertificateCreated @event)
     {
         Id = @event.CertificateId;
@@ -56,6 +69,13 @@ public class ProductionCertificateAggregate : AggregateBase
     private void Apply(ProductionCertificateIssued @event)
     {
         IssuedState = GranularCertificateIssuer.IssuedState.Issued;
+
+        Version++;
+    }
+
+    private void Apply(ProductionCertificateRejected @event)
+    {
+        IssuedState = GranularCertificateIssuer.IssuedState.Rejected;
 
         Version++;
     }
