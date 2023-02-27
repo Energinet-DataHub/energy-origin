@@ -12,7 +12,7 @@ public class ProductionCertificateAggregate : AggregateBase
 
     // Fields for the immutable properties of the certificate
     private string meteringPointOwner = "";
-    private ShieldedValue<string> GSRN = new("", BigInteger.Zero);
+    private ShieldedValue<string> gsrn = new("", BigInteger.Zero);
     private ShieldedValue<long> quantity = new(0, BigInteger.Zero);
     private string gridArea = "";
     private Period period = new(1, 1);
@@ -37,12 +37,13 @@ public class ProductionCertificateAggregate : AggregateBase
         Apply(@event);
         AddUncommittedEvent(@event);
     }
+
     private void Apply(ProductionCertificateCreated @event)
     {
         Id = @event.CertificateId;
         CertificateOwner = @event.MeteringPointOwner;
         meteringPointOwner = @event.MeteringPointOwner;
-        GSRN = @event.ShieldedGSRN;
+        gsrn = @event.ShieldedGSRN;
         quantity = @event.ShieldedQuantity;
         gridArea = @event.GridArea;
         period = @event.Period;
@@ -57,7 +58,7 @@ public class ProductionCertificateAggregate : AggregateBase
             throw new InvalidOperationException(
                 $"Cannot issue when certificate is already {issuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateIssued(Id, meteringPointOwner, GSRN.Value);
+        var @event = new ProductionCertificateIssued(Id, meteringPointOwner, gsrn.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -76,7 +77,7 @@ public class ProductionCertificateAggregate : AggregateBase
             throw new InvalidOperationException(
                 $"Cannot reject when certificate is already {issuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, GSRN.Value);
+        var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, gsrn.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -100,7 +101,7 @@ public class ProductionCertificateAggregate : AggregateBase
         if (!string.Equals(from, CertificateOwner))
             throw new InvalidOperationException("Can only transfer from current owner"); //TODO: Exception type
 
-        var @event = new CertificateTransferred(Id, from, to, gridArea, period, technology, GSRN, quantity);
+        var @event = new CertificateTransferred(Id, from, to, gridArea, period, technology, gsrn, quantity);
 
         Apply(@event);
         AddUncommittedEvent(@event);
