@@ -23,9 +23,9 @@ public class AggregateTest
         aggregate.Issue();
         aggregate.Transfer("owner1", "owner2");
 
-        await repo.StoreAsync(aggregate);
+        await repo.Save(aggregate);
 
-        var aggregateFromRepo = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo = await repo.Get<ProductionCertificate>(aggregate.Id);
 
         aggregateFromRepo.Transfer("owner2", "owner3");
 
@@ -42,16 +42,16 @@ public class AggregateTest
         var aggregate = new ProductionCertificate("gridArea", new Period(1, 42), new Technology("f00", "t00"),
             "owner1", "gsrn", 42);
 
-        await repo.StoreAsync(aggregate);
+        await repo.Save(aggregate);
 
-        var aggregateFromRepo1 = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
-        var aggregateFromRepo2 = await repo.LoadAsync<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo1 = await repo.Get<ProductionCertificate>(aggregate.Id);
+        var aggregateFromRepo2 = await repo.Get<ProductionCertificate>(aggregate.Id);
 
         aggregateFromRepo1.Issue();
         aggregateFromRepo2.Reject("foo");
 
-        var storeAction1 = () => repo.StoreAsync(aggregateFromRepo1);
-        var storeAction2 = () => repo.StoreAsync(aggregateFromRepo2);
+        var storeAction1 = () => repo.Save(aggregateFromRepo1);
+        var storeAction2 = () => repo.Save(aggregateFromRepo2);
 
         await storeAction1.Should().NotThrowAsync();
         await storeAction2.Should().ThrowAsync<EventStreamUnexpectedMaxEventIdException>();
