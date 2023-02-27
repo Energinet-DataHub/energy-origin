@@ -20,11 +20,15 @@ public class AggregateTest
             "owner1", "gsrn", 42);
 
         aggregate.Issue();
+        aggregate.Transfer("owner1", "owner2");
+        aggregate.Reject("foo");
 
         await repo.StoreAsync(aggregate);
 
         var aggregateFromRepo = await repo.LoadAsync<ProductionCertificateAggregate>(aggregate.Id);
 
-        aggregateFromRepo.IssuedState.Should().Be(IssuedState.Issued);
+        aggregateFromRepo.Transfer("owner2", "owner3");
+
+        aggregateFromRepo.CertificateOwner.Should().Be("owner3");
     }
 }

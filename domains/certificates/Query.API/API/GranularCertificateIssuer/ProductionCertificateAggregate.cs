@@ -27,18 +27,25 @@ public class ProductionCertificateAggregate : AggregateBase
         AddUncommittedEvent(@event);
     }
 
-    public string MeteringPointOwner { get; protected set; } = ""; //TODO: Should this be Owner instead?
-    public string GSRN { get; protected set; } = "";
+    #region Immutable Properties
+    public string MeteringPointOwner { get; protected set; } = "";
+    public ShieldedValue<string> GSRN { get; protected set; }
+    public ShieldedValue<long> Quantity { get; protected set; }
+    public string GridArea { get; protected set; }
+    public Period Period { get; protected set; }
+    public Technology Technology { get; protected set; }
+    #endregion
+
+    public string CertificateOwner { get; protected set; } = "";
     public IssuedState? IssuedState { get; protected set; }
 
     public void Issue()
     {
         if (IssuedState is not null)
-        {
-            throw new InvalidOperationException($"Cannot issue when certificate is already {IssuedState}"); //TODO: Exception type
-        }
+            throw new InvalidOperationException(
+                $"Cannot issue when certificate is already {IssuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateIssued(Id, MeteringPointOwner, GSRN);
+        var @event = new ProductionCertificateIssued(Id, MeteringPointOwner, GSRN.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -47,11 +54,25 @@ public class ProductionCertificateAggregate : AggregateBase
     public void Reject(string reason)
     {
         if (IssuedState is not null)
-        {
-            throw new InvalidOperationException($"Cannot reject when certificate is already {IssuedState}"); //TODO: Exception type
-        }
+            throw new InvalidOperationException(
+                $"Cannot reject when certificate is already {IssuedState}"); //TODO: Exception type
 
-        var @event = new ProductionCertificateRejected(Id, reason, MeteringPointOwner, GSRN);
+        var @event = new ProductionCertificateRejected(Id, reason, MeteringPointOwner, GSRN.Value);
+
+        Apply(@event);
+        AddUncommittedEvent(@event);
+    }
+
+    public void Transfer(string from, string to)
+    {
+        if (string.Equals(from, to))
+            throw new InvalidOperationException("Cannot transfer to the same owner"); //TODO: Exception type
+        if (string.Equals(to, CertificateOwner))
+            throw new InvalidOperationException($"Cannot transfer certificate to the current owner {CertificateOwner}"); //TODO: Exception type
+        if (!string.Equals(from, CertificateOwner))
+            throw new InvalidOperationException("Can only transfer from current owner"); //TODO: Exception type
+
+        var @event = new CertificateTransferred(Id, from, to, GridArea, Period, Technology, GSRN, Quantity);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -60,8 +81,13 @@ public class ProductionCertificateAggregate : AggregateBase
     private void Apply(ProductionCertificateCreated @event)
     {
         Id = @event.CertificateId;
+        CertificateOwner = @event.MeteringPointOwner;
         MeteringPointOwner = @event.MeteringPointOwner;
-        GSRN = @event.ShieldedGSRN.Value;
+        GSRN = @event.ShieldedGSRN;
+        Quantity = @event.ShieldedQuantity;
+        GridArea = @event.GridArea;
+        Period = @event.Period;
+        Technology = @event.Technology;
 
         Version++;
     }
@@ -76,6 +102,13 @@ public class ProductionCertificateAggregate : AggregateBase
     private void Apply(ProductionCertificateRejected @event)
     {
         IssuedState = GranularCertificateIssuer.IssuedState.Rejected;
+
+        Version++;
+    }
+
+    private void Apply(CertificateTransferred @event)
+    {
+        CertificateOwner = @event.To;
 
         Version++;
     }
