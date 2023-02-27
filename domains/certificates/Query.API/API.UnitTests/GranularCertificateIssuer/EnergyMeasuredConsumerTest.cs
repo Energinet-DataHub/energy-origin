@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.GranularCertificateIssuer;
+using API.GranularCertificateIssuer.Repositories;
+using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using MassTransit;

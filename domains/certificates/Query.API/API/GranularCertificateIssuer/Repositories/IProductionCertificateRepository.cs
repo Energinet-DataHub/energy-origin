@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateEvents.Aggregates;
 
-namespace API.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer.Repositories;
 
 public interface IProductionCertificateRepository
 {

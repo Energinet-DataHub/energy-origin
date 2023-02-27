@@ -1,11 +1,12 @@
 using System;
-using API.GranularCertificateIssuer;
+using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using Xunit;
 
-namespace API.UnitTests.GranularCertificateIssuer;
+namespace API.UnitTests.CertificateEvents.Aggregates;
 
+//TODO: Should this be in its own test project for Shared project CertificateEvents?
 public class ProductionCertificateTest
 {
     [Fact]
@@ -53,6 +54,15 @@ public class ProductionCertificateTest
     {
         var sut = CreateProductionCertificate();
 
+        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void cannot_transfer_if_rejected()
+    {
+        var sut = CreateProductionCertificate();
+
+        sut.Reject("foo");
         sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<InvalidOperationException>();
     }
 

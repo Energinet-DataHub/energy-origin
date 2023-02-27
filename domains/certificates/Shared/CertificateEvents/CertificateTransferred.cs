@@ -3,6 +3,7 @@ using CertificateEvents.Primitives;
 
 namespace CertificateEvents;
 
+//TODO: Should this be renamed to ProductionCertificateTransferred to make it consistent with the rest of the events?
 public record CertificateTransferred(
     Guid CertificateId,
     string From,

@@ -1,9 +1,8 @@
 using System;
 using System.Numerics;
-using CertificateEvents;
 using CertificateEvents.Primitives;
 
-namespace API.GranularCertificateIssuer;
+namespace CertificateEvents.Aggregates;
 
 public class ProductionCertificate : AggregateBase
 {
@@ -94,8 +93,6 @@ public class ProductionCertificate : AggregateBase
     {
         if (issuedState != IssuedState.Issued)
             throw new InvalidOperationException("Transfer only allowed on issued certificates");//TODO: Exception type
-        //if (string.Equals(from, to))
-        //    throw new InvalidOperationException("Cannot transfer to the same owner"); //TODO: Exception type
         if (string.Equals(to, CertificateOwner))
             throw new InvalidOperationException($"Cannot transfer certificate to the current owner {CertificateOwner}"); //TODO: Exception type
         if (!string.Equals(from, CertificateOwner))

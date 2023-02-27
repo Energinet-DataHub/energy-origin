@@ -2,9 +2,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateEvents.Aggregates;
 using Marten;
 
-namespace API.GranularCertificateIssuer;
+namespace API.GranularCertificateIssuer.Repositories;
 
 public static class AggregateRepositoryExtensions
 {

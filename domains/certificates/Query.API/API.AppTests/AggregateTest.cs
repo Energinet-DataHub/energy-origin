@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
-using API.GranularCertificateIssuer;
+using API.GranularCertificateIssuer.Repositories;
+using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using Marten;
@@ -30,6 +31,7 @@ public class AggregateTest
         aggregateFromRepo.Transfer("owner2", "owner3");
 
         aggregateFromRepo.CertificateOwner.Should().Be("owner3");
+        aggregateFromRepo.Version.Should().Be(4);
     }
 
     [Fact]

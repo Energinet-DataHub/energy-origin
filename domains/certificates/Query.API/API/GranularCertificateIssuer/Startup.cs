@@ -1,3 +1,4 @@
+using API.GranularCertificateIssuer.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.GranularCertificateIssuer;
