@@ -37,13 +37,13 @@ public class ProductionCertificateAggregate : AggregateBase
     #endregion
 
     public string CertificateOwner { get; protected set; } = "";
-    public IssuedState? IssuedState { get; protected set; }
+    private IssuedState? issuedState;
 
     public void Issue()
     {
-        if (IssuedState is not null)
+        if (issuedState is not null)
             throw new InvalidOperationException(
-                $"Cannot issue when certificate is already {IssuedState}"); //TODO: Exception type
+                $"Cannot issue when certificate is already {issuedState}"); //TODO: Exception type
 
         var @event = new ProductionCertificateIssued(Id, meteringPointOwner, GSRN.Value);
 
@@ -53,9 +53,9 @@ public class ProductionCertificateAggregate : AggregateBase
 
     public void Reject(string reason)
     {
-        if (IssuedState is not null)
+        if (issuedState is not null)
             throw new InvalidOperationException(
-                $"Cannot reject when certificate is already {IssuedState}"); //TODO: Exception type
+                $"Cannot reject when certificate is already {issuedState}"); //TODO: Exception type
 
         var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, GSRN.Value);
 
@@ -67,6 +67,8 @@ public class ProductionCertificateAggregate : AggregateBase
     {
         if (string.Equals(from, to))
             throw new InvalidOperationException("Cannot transfer to the same owner"); //TODO: Exception type
+        if (issuedState != IssuedState.Issued)
+            throw new InvalidOperationException("Transfer only allowed on issued certificates");//TODO: Exception type
         if (string.Equals(to, CertificateOwner))
             throw new InvalidOperationException($"Cannot transfer certificate to the current owner {CertificateOwner}"); //TODO: Exception type
         if (!string.Equals(from, CertificateOwner))
@@ -94,14 +96,14 @@ public class ProductionCertificateAggregate : AggregateBase
 
     private void Apply(ProductionCertificateIssued @event)
     {
-        IssuedState = GranularCertificateIssuer.IssuedState.Issued;
+        issuedState = IssuedState.Issued;
 
         Version++;
     }
 
     private void Apply(ProductionCertificateRejected @event)
     {
-        IssuedState = GranularCertificateIssuer.IssuedState.Rejected;
+        issuedState = IssuedState.Rejected;
 
         Version++;
     }
@@ -112,10 +114,10 @@ public class ProductionCertificateAggregate : AggregateBase
 
         Version++;
     }
-}
 
-public enum IssuedState //TODO: Would like this to be private
-{
-    Issued,
-    Rejected
+    private enum IssuedState
+    {
+        Issued,
+        Rejected
+    }
 }
