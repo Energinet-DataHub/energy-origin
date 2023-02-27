@@ -30,7 +30,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
         if (!ShouldEventBeProduced(contract, message))
         {
-            logger.LogInformation("No production certificate event stream started for {message}", message);
+            logger.LogInformation("No production certificate created for {message}", message);
             return;
         }
 
@@ -46,7 +46,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
         await repository.Save(productionCertificate, context.CancellationToken);
 
-        logger.LogInformation("Created production certificate event stream for {message}", message);
+        logger.LogInformation("Created production certificate for {message}", message);
     }
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract? contract,
