@@ -7,6 +7,17 @@ namespace API.GranularCertificateIssuer;
 
 public class ProductionCertificateAggregate : AggregateBase
 {
+    public string CertificateOwner { get; protected set; } = "";
+    private IssuedState? issuedState;
+
+    // Fields for the immutable properties of the certificate
+    private string meteringPointOwner = "";
+    private ShieldedValue<string> GSRN = new("", BigInteger.Zero);
+    private ShieldedValue<long> quantity = new(0, BigInteger.Zero);
+    private string gridArea = "";
+    private Period period = new(1, 1);
+    private Technology technology = new("", "");
+
     private ProductionCertificateAggregate()
     {
     }
@@ -26,18 +37,19 @@ public class ProductionCertificateAggregate : AggregateBase
         Apply(@event);
         AddUncommittedEvent(@event);
     }
+    private void Apply(ProductionCertificateCreated @event)
+    {
+        Id = @event.CertificateId;
+        CertificateOwner = @event.MeteringPointOwner;
+        meteringPointOwner = @event.MeteringPointOwner;
+        GSRN = @event.ShieldedGSRN;
+        quantity = @event.ShieldedQuantity;
+        gridArea = @event.GridArea;
+        period = @event.Period;
+        technology = @event.Technology;
 
-    #region Immutable Properties
-    private string meteringPointOwner = "";
-    private ShieldedValue<string> GSRN = new("", BigInteger.Zero);
-    private ShieldedValue<long> quantity = new(0, BigInteger.Zero);
-    private string gridArea = "";
-    private Period period = new(1, 1);
-    private Technology technology = new("", "");
-    #endregion
-
-    public string CertificateOwner { get; protected set; } = "";
-    private IssuedState? issuedState;
+        Version++;
+    }
 
     public void Issue()
     {
@@ -51,6 +63,13 @@ public class ProductionCertificateAggregate : AggregateBase
         AddUncommittedEvent(@event);
     }
 
+    private void Apply(ProductionCertificateIssued @event)
+    {
+        issuedState = IssuedState.Issued;
+
+        Version++;
+    }
+
     public void Reject(string reason)
     {
         if (issuedState is not null)
@@ -61,6 +80,13 @@ public class ProductionCertificateAggregate : AggregateBase
 
         Apply(@event);
         AddUncommittedEvent(@event);
+    }
+
+    private void Apply(ProductionCertificateRejected @event)
+    {
+        issuedState = IssuedState.Rejected;
+
+        Version++;
     }
 
     public void Transfer(string from, string to)
@@ -78,34 +104,6 @@ public class ProductionCertificateAggregate : AggregateBase
 
         Apply(@event);
         AddUncommittedEvent(@event);
-    }
-
-    private void Apply(ProductionCertificateCreated @event)
-    {
-        Id = @event.CertificateId;
-        CertificateOwner = @event.MeteringPointOwner;
-        meteringPointOwner = @event.MeteringPointOwner;
-        GSRN = @event.ShieldedGSRN;
-        quantity = @event.ShieldedQuantity;
-        gridArea = @event.GridArea;
-        period = @event.Period;
-        technology = @event.Technology;
-
-        Version++;
-    }
-
-    private void Apply(ProductionCertificateIssued @event)
-    {
-        issuedState = IssuedState.Issued;
-
-        Version++;
-    }
-
-    private void Apply(ProductionCertificateRejected @event)
-    {
-        issuedState = IssuedState.Rejected;
-
-        Version++;
     }
 
     private void Apply(CertificateTransferred @event)
