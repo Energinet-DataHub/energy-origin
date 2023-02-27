@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using CertificateEvents.Exceptions;
 using CertificateEvents.Primitives;
 
 namespace CertificateEvents.Aggregates;
@@ -17,6 +18,7 @@ public class ProductionCertificate : AggregateBase
     private Period period = new(1, 1);
     private Technology technology = new("", "");
 
+    // Default constructor used for loading the aggregate
     private ProductionCertificate()
     {
     }
@@ -29,7 +31,14 @@ public class ProductionCertificate : AggregateBase
         string gsrn,
         long quantity)
     {
-        var @event = new ProductionCertificateCreated(Guid.NewGuid(), gridArea, period, technology, meteringPointOwner,
+        var certificateId = Guid.NewGuid();
+
+        var @event = new ProductionCertificateCreated(
+            certificateId,
+            gridArea,
+            period,
+            technology,
+            meteringPointOwner,
             new ShieldedValue<string>(Value: gsrn, R: BigInteger.Zero),
             new ShieldedValue<long>(Value: quantity, R: BigInteger.Zero));
 
@@ -54,8 +63,7 @@ public class ProductionCertificate : AggregateBase
     public void Issue()
     {
         if (issuedState is not null)
-            throw new InvalidOperationException(
-                $"Cannot issue when certificate is already {issuedState}"); //TODO: Exception type
+            throw new CertificateDomainException(Id, $"Cannot issue when certificate is already {issuedState.ToString()!.ToLower()}");
 
         var @event = new ProductionCertificateIssued(Id, meteringPointOwner, gsrn.Value);
 
@@ -73,8 +81,7 @@ public class ProductionCertificate : AggregateBase
     public void Reject(string reason)
     {
         if (issuedState is not null)
-            throw new InvalidOperationException(
-                $"Cannot reject when certificate is already {issuedState}"); //TODO: Exception type
+            throw new CertificateDomainException(Id, $"Cannot reject when certificate is already {issuedState.ToString()!.ToLower()}");
 
         var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, gsrn.Value);
 
@@ -92,11 +99,11 @@ public class ProductionCertificate : AggregateBase
     public void Transfer(string from, string to)
     {
         if (issuedState != IssuedState.Issued)
-            throw new InvalidOperationException("Transfer only allowed on issued certificates");//TODO: Exception type
+            throw new CertificateDomainException(Id, "Transfer only allowed on issued certificates");
         if (string.Equals(to, CertificateOwner))
-            throw new InvalidOperationException($"Cannot transfer certificate to the current owner {CertificateOwner}"); //TODO: Exception type
+            throw new CertificateDomainException(Id, $"Cannot transfer certificate to the current owner {CertificateOwner}");
         if (!string.Equals(from, CertificateOwner))
-            throw new InvalidOperationException($"Can only transfer from current owner {CertificateOwner}"); //TODO: Exception type
+            throw new CertificateDomainException(Id, $"Can only transfer from current owner {CertificateOwner}, not from {from}");
 
         var @event = new CertificateTransferred(Id, from, to, gridArea, period, technology, gsrn, quantity);
 

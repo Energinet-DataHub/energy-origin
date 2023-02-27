@@ -1,5 +1,6 @@
 using System;
 using CertificateEvents.Aggregates;
+using CertificateEvents.Exceptions;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using Xunit;
@@ -25,7 +26,7 @@ public class ProductionCertificateTest
         var sut = CreateProductionCertificate();
 
         sut.Reject("foo");
-        sut.Invoking(s => s.Issue()).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Issue()).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public class ProductionCertificateTest
         var sut = CreateProductionCertificate();
 
         sut.Issue();
-        sut.Invoking(s => s.Reject("foo")).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Reject("foo")).Should().Throw<CertificateDomainException>();
 
         sut.Version.Should().Be(2);
     }
@@ -54,7 +55,7 @@ public class ProductionCertificateTest
     {
         var sut = CreateProductionCertificate();
 
-        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
@@ -63,7 +64,7 @@ public class ProductionCertificateTest
         var sut = CreateProductionCertificate();
 
         sut.Reject("foo");
-        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class ProductionCertificateTest
         var sut = CreateProductionCertificate();
 
         sut.Issue();
-        sut.Invoking(s => s.Transfer("owner1", "owner1")).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Transfer("owner1", "owner1")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
@@ -104,7 +105,7 @@ public class ProductionCertificateTest
         var sut = CreateProductionCertificate();
 
         sut.Issue();
-        sut.Invoking(s => s.Transfer("wrong-owner", "owner2")).Should().Throw<InvalidOperationException>();
+        sut.Invoking(s => s.Transfer("wrong-owner", "owner2")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
