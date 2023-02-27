@@ -1,10 +1,8 @@
-using System;
-using System.Numerics;
 using System.Threading.Tasks;
 using API.ContractService;
-using CertificateEvents;
+using API.GranularCertificateIssuer.Repositories;
+using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
-using Marten;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
@@ -14,13 +12,13 @@ namespace API.GranularCertificateIssuer;
 public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredConsumer> logger;
-    private readonly IDocumentSession session;
+    private readonly IProductionCertificateRepository repository;
     private readonly IContractService contractService;
 
-    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IDocumentSession session, IContractService contractService)
+    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IProductionCertificateRepository repository, IContractService contractService)
     {
         this.logger = logger;
-        this.session = session;
+        this.repository = repository;
         this.contractService = contractService;
     }
 
@@ -36,26 +34,17 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             return;
         }
 
-        var certificateId = Guid.NewGuid();
+        var productionCertificate = new ProductionCertificate(
+            contract!.GridArea,
+            new Period(message.DateFrom, message.DateTo),
+            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+            contract.MeteringPointOwner,
+            message.GSRN,
+            message.Quantity);
 
-        var createdEvent = new ProductionCertificateCreated(
-            CertificateId: certificateId,
-            GridArea: contract!.GridArea,
-            Period: new Period(message.DateFrom, message.DateTo),
-            Technology: new Technology(
-                FuelCode: "F00000000",
-                TechCode: "T070000"),
-            MeteringPointOwner: contract.MeteringPointOwner,
-            ShieldedGSRN: new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
-            ShieldedQuantity: new ShieldedValue<long>(message.Quantity, BigInteger.Zero));
+        productionCertificate.Issue();
 
-        var issuedEvent = new ProductionCertificateIssued(
-            CertificateId: createdEvent.CertificateId,
-            MeteringPointOwner: createdEvent.MeteringPointOwner,
-            GSRN: createdEvent.ShieldedGSRN.Value);
-
-        session.Events.StartStream(certificateId, createdEvent, issuedEvent);
-        await session.SaveChangesAsync(context.CancellationToken);
+        await repository.Save(productionCertificate, context.CancellationToken);
 
         logger.LogInformation("Created production certificate event stream for {message}", message);
     }
