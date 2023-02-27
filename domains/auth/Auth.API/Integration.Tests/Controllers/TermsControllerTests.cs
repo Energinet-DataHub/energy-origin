@@ -24,7 +24,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = await factory.CreateAuthenticatedClientAsync(user);
+        var client = factory.CreateAuthenticatedClient(user);
 
         var dto = new AcceptTermsDTO(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -55,7 +55,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AcceptedTermsVersion = 0
         };
 
-        var client = await factory.CreateAuthenticatedClientAsync(user);
+        var client = factory.CreateAuthenticatedClient(user);
 
         var dto = new AcceptTermsDTO(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -77,7 +77,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = await factory.CreateAuthenticatedClientAsync(user, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptMapper>();
             _ = Mock.Get(mapper)
@@ -100,7 +100,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = await factory.CreateAuthenticatedClientAsync(user, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
             _ = Mock.Get(userService)

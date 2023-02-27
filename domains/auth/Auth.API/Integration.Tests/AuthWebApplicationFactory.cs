@@ -10,9 +10,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
 
 namespace Tests.Integration;
 
@@ -58,12 +55,12 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public async Task<HttpClient> CreateAuthenticatedClientAsync(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
         var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
         var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await ServiceProvider.GetRequiredService<ITokenIssuer>().IssueAsync(userDescriptor));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(userDescriptor));
         return client;
     }
 
@@ -83,29 +80,6 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         await dbContext.SaveChangesAsync();
 
         return user;
-    }
-
-    public WireMockServer MockOidcProvider(WireMockServer? broker = null)
-    {
-        broker ??= WireMockServer.Start();
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./openid-configuration.json").Replace("https://pp.netseidbroker.dk", $"http://localhost:{broker.Port}")
-            )
-        );
-
-        broker.Given(
-            Request.Create().WithPath("/op/.well-known/openid-configuration/jwks").UsingGet()
-        ).RespondWith(
-            Response.Create().WithStatusCode(200).WithBody(
-                File.ReadAllText("./jwks.json")
-            )
-        );
-
-        return broker;
     }
 
     public async Task InitializeAsync()
