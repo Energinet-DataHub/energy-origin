@@ -45,7 +45,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         productionCertificate.Issue();
 
         await repository.Save(productionCertificate, context.CancellationToken);
-        
+
         logger.LogInformation("Created production certificate event stream for {message}", message);
     }
 
