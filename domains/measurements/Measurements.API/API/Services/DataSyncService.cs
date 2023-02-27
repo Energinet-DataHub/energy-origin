@@ -1,6 +1,5 @@
 using API.Models;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
@@ -10,9 +9,9 @@ public class DataSyncService : IDataSyncService
 
     public DataSyncService(HttpClient httpClient) => this.httpClient = httpClient;
 
-    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo)
+    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo)
     {
-        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}";
+        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTimeSeconds()}&dateTo={dateTo.ToUnixTimeSeconds()}";
 
         httpClient.AddAuthorizationToken(context);
 

@@ -2,9 +2,11 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
+using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using WireMock.Server;
 
 namespace Tests.Integration.Controllers;
 
@@ -19,18 +21,18 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var broker = factory.MockOidcProvider();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
 
         var identityToken = Guid.NewGuid().ToString();
         var user = await factory.AddUserToDatabaseAsync();
         var oidcOptions = Options.Create(new OidcOptions()
         {
-            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
-        var client = await factory
-            .CreateAuthenticatedClientAsync(user, identityToken: identityToken, config: builder =>
+        var client = factory
+            .CreateAuthenticatedClient(user, identityToken: identityToken, config: builder =>
                 builder.ConfigureTestServices(services =>
                     services.AddScoped(x => oidcOptions)));
 
@@ -52,7 +54,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = await factory.CreateAuthenticatedClientAsync(user);
+        var client = factory.CreateAuthenticatedClient(user);
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
@@ -68,11 +70,11 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
-        var broker = factory.MockOidcProvider();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {
-            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
