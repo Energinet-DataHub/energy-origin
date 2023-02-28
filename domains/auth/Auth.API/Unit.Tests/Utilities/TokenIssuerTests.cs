@@ -43,7 +43,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public void Issue_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
+    public void Issue_ShouldReturnATokenWithCorrectValidityTimes_WhenIssuingAtASpecifiedTime()
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);

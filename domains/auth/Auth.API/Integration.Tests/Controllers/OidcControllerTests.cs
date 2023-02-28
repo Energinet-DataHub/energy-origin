@@ -58,7 +58,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
 
         server.MockConfigEndpoint()
-            .MockJwkEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
             .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var client = factory
@@ -111,7 +111,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             { "mitid.identity_name", name }
         });
 
-        server.MockConfigEndpoint().MockJwkEndpoint();
+        server.MockConfigEndpoint().MockJwksEndpoint();
 
         var client = factory
             .CreateAnonymousClient(builder =>
@@ -158,7 +158,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
 
         server.MockConfigEndpoint()
-            .MockJwkEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
             .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var client = factory
