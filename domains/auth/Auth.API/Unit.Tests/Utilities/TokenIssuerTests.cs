@@ -50,7 +50,7 @@ public class TokenIssuerTests
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt: issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
