@@ -66,7 +66,7 @@ public class OidcController : ControllerBase
         try
         {
             var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
-            token = await issuer.IssueAsync(descriptor);
+            token = issuer.Issue(descriptor);
         }
         catch (Exception exception)
         {
