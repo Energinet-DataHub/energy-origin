@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using API.Models;
-using EnergyOriginDateTimeExtension;
 
 namespace Tests
 {
@@ -11,29 +10,29 @@ namespace Tests
         {
             new Measurement(
                 GSRN: MP,
-                DateFrom: new DateTime(2021, 1, 1, 22,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateFrom: new DateTimeOffset(2021, 1, 1, 22,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+                DateTo: new DateTimeOffset(2021, 1, 1, 22,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
                 Quantity: 1000,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: MP,
-                DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
+                DateFrom: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+                DateTo: new DateTimeOffset(2021, 1, 1, 23,59, 59, TimeSpan.Zero).ToUnixTimeSeconds(),
                 Quantity: 2000,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: MP,
-                DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateFrom: new DateTimeOffset(2021, 1, 2, 0,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+                DateTo: new DateTimeOffset(2021, 1, 2, 0,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
                 Quantity: 3000,
                 Quality: Quality.Measured
                 ),
             new Measurement(
                 GSRN: MP,
-                DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-                DateTo: new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
+                DateFrom: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+                DateTo: new DateTimeOffset(2021, 1, 2, 1,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
                 Quantity: 4000,
                 Quality: Quality.Measured
             )

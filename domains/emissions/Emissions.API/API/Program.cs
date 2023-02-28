@@ -3,7 +3,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
+using API.Services;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
@@ -35,25 +37,27 @@ builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    options.JsonSerializerOptions.Converters.Add(new CustomJsonStringEnumConverter<QuantityUnit>());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-// FIXME: builder.Services.AddScoped<IValidator<MeasurementsRequest>, MeasurementsRequest.Validator>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
+builder.Services.AddFluentValidationAutoValidation();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
 builder.Services.AddFluentValidationRulesToSwagger();
 
-builder.Services.AddHttpClient();
-builder.Services.AddCustomServices(); // FIXME: follow up
+builder.Services.AddHttpClient<IEnergiDataService, EnergiDataService>(x => x.BaseAddress = new Uri(Configuration.GetEnergiDataServiceEndpoint()));
+builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(x => x.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
+builder.Services.AddTransient<IEmissionsService, EmissionsService>();
+builder.Services.AddTransient<IEmissionsCalculator, EmissionsCalculator>();
+builder.Services.AddTransient<ISourcesCalculator, SourcesCalculator>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseSwagger(o => o.RouteTemplate = "api-docs/emissions/{documentName}/swagger.json");
 if (builder.Environment.IsDevelopment())
 {
@@ -61,7 +65,6 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-app.UseHttpLogging(); // FIXME: follow up
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 

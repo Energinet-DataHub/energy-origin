@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using API.Services;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
@@ -14,24 +11,16 @@ namespace Tests;
 [UnitTest]
 public sealed class EnergiDataServiceTest
 {
-
     [Fact]
     public async void DatePeriod_GetEmissionsPerHour_EmissionRecordsReturned()
     {
-        // Arrange
-        var edsMmix = new List<string>(new string[] { "eds_emissions_hourly.json" });
-        var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(edsMmix);
-
+        var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string>(new string[] { "eds_emissions_hourly.json" }));
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var logger = new Mock<ILogger<EnergiDataService>>();
+        var eds = new EnergiDataService(edsMock);
 
-        var eds = new EnergiDataService(logger.Object, edsMock);
-
-        // Act
         var res = await eds.GetEmissionsPerHour(dateFrom, dateTo);
 
-        // Assert
         Assert.NotEmpty(res);
         Assert.Equal(10, res.Count());
     }
@@ -39,20 +28,13 @@ public sealed class EnergiDataServiceTest
     [Fact]
     public async void DatePeriod_GetResidualMixPerHour_EmissionRecordsReturned()
     {
-        // Arrange
-        var edsData = new List<string>(new string[] { "eds_mix_hourly_all.json", "eds_mix_hourly_total.json" });
-        var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(edsData);
-
+        var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string>(new string[] { "eds_mix_hourly_all.json", "eds_mix_hourly_total.json" }));
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
-        var logger = new Mock<ILogger<EnergiDataService>>();
+        var eds = new EnergiDataService(edsMock);
 
-        var eds = new EnergiDataService(logger.Object, edsMock);
-
-        // Act
         var res = await eds.GetResidualMixPerHour(dateFrom, dateTo);
 
-        // Assert
         Assert.NotEmpty(res);
         Assert.Equal(24, res.Count());
     }

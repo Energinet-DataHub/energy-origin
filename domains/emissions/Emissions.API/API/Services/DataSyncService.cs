@@ -1,22 +1,28 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
 
 namespace API.Services;
 
 public class DataSyncService : IDataSyncService
 {
     private readonly HttpClient httpClient;
+    private readonly JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
 
-    public DataSyncService(HttpClient httpClient) => this.httpClient = httpClient;
-
-    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTime dateFrom, DateTime dateTo)
+    public DataSyncService(HttpClient httpClient)
     {
-        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTime()}&dateTo={dateTo.ToUnixTime()}";
+        this.httpClient = httpClient;
+        options.Converters.Add(new JsonStringEnumConverter());
+    }
+
+    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo)
+    {
+        var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTimeSeconds()}&dateTo={dateTo.ToUnixTimeSeconds()}";
 
         httpClient.AddAuthorizationToken(context);
-        var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url);
+        var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url, options);
 
         return result ?? throw new Exception("List of measurements failed");
     }
@@ -26,7 +32,7 @@ public class DataSyncService : IDataSyncService
         var uri = "meteringpoints";
         httpClient.AddAuthorizationToken(context);
 
-        var result = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri);
+        var result = await httpClient.GetFromJsonAsync<MeteringPointsResponse>(uri, options);
 
         return result?.MeteringPoints ?? throw new Exception("List of meteringpoints failed");
     }

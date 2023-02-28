@@ -1,6 +1,5 @@
 using API.Helpers;
 using API.Models;
-using EnergyOriginDateTimeExtension;
 
 namespace API.Services
 {
@@ -14,6 +13,7 @@ namespace API.Services
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<TimeSeries> timeSeries,
             IEnumerable<MixRecord> records,
+            TimeZoneInfo timeZone,
             Aggregation aggregation)
         {
             var result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
@@ -29,39 +29,39 @@ namespace API.Services
                      measurement.DateTo,
                      measurement.Quantity
                  })
-                .GroupBy(a => GetAggregationDateString(a.DateFrom.ToDateTime(), aggregation));
+                .GroupBy(x => GetAggregationDateString(DateTimeOffset.FromUnixTimeSeconds(x.DateFrom), timeZone, aggregation));
 
             //Go through each period (aggregated date string).
             foreach (var measurementGroup in measurementGroups)
             {
-                var totalConsumption = measurementGroup.Sum(a => a.Quantity);
+                var totalConsumption = measurementGroup.Sum(x => x.Quantity);
 
                 //Get a summed share value, date interval and percentage of total for each production type.
                 var consumptionShares =
                     from measurement in measurementGroup
                     join declaration in records
-                        on new { measurement.GridArea, DateFrom = measurement.DateFrom.ToDateTime() }
-                        equals new { declaration.GridArea, DateFrom = declaration.HourUTC }
+                        on new { measurement.GridArea, DateFrom = DateTimeOffset.FromUnixTimeSeconds(measurement.DateFrom) }
+                        equals new { declaration.GridArea, DateFrom = (DateTimeOffset)declaration.HourUTC }
                     group new { measurement, declaration } by declaration.ProductionType into productionTypeGroup
-                    let shareValue = productionTypeGroup.Sum(a => a.declaration.ShareTotal * a.measurement.Quantity)
+                    let shareValue = productionTypeGroup.Sum(x => x.declaration.ShareTotal * x.measurement.Quantity)
                     select new
                     {
                         productionType = productionTypeGroup.Key,
                         shareValue,
-                        dateFrom = productionTypeGroup.Min(a => a.measurement.DateFrom),
-                        dateTo = productionTypeGroup.Max(a => a.measurement.DateTo),
+                        dateFrom = productionTypeGroup.Min(x => x.measurement.DateFrom),
+                        dateTo = productionTypeGroup.Max(x => x.measurement.DateTo),
                         percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, Configuration.DecimalPrecision)
                     };
 
                 //Get period in unix timestamps for entire aggregation.
-                var dateFrom = consumptionShares.Min(a => a.dateFrom);
-                var dateTo = consumptionShares.Max(a => a.dateTo);
+                var dateFrom = consumptionShares.Min(x => x.dateFrom);
+                var dateTo = consumptionShares.Max(x => x.dateTo);
 
                 //Create production type percentage dictionary and calculate renewable percentage for period.
-                var sourcesWithPercentage = consumptionShares.ToDictionary(a => a.productionType, b => b.percentageOfTotal);
+                var sourcesWithPercentage = consumptionShares.ToDictionary(x => x.productionType, b => b.percentageOfTotal);
                 var renewablePercentage = sourcesWithPercentage
                     .Where(a => renewableSources.Contains(a.Key))
-                    .Sum(a => a.Value * (a.Key == waste ? wasteRenewableShare : 1));
+                    .Sum(x => x.Value * (x.Key == waste ? wasteRenewableShare : 1));
 
                 //Add to results
                 result.EnergySources.Add(new EnergySourceDeclaration(dateFrom, dateTo, renewablePercentage, sourcesWithPercentage));
@@ -72,7 +72,7 @@ namespace API.Services
 
         //Translates a date into an aggregated date string.
         //This creates a period bucket/bin spanning the aggregation amount.
-        private static string GetAggregationDateString(DateTime date, Aggregation aggregation) => aggregation switch
+        private static string GetAggregationDateString(DateTimeOffset date, TimeZoneInfo timeZone, Aggregation aggregation) => aggregation switch
         {
             Aggregation.Year => date.ToString("yyyy"),
             Aggregation.Month => date.ToString("yyyy/MM"),

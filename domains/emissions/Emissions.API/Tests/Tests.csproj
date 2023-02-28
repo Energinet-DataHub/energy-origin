@@ -27,4 +27,8 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Resources/**" CopyToOutputDirectory="PreserveNewest" LinkBase="Resources/" />
+  </ItemGroup>
+
 </Project>

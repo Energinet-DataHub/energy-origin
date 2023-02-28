@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
-using EnergyOriginDateTimeExtension;
 using Xunit;
 
 namespace Tests
 {
     public sealed class CalculateSourceEmissionShareTest
     {
-        private readonly SourceEmissionShareDataSetFactory dataSetFactory = new();
-
         [Theory]
         [InlineData(Aggregation.Total)]
         [InlineData(Aggregation.Actual)]
@@ -21,9 +18,8 @@ namespace Tests
         [InlineData(Aggregation.Year)]
         public void EmissionSharesAndMeasurements_CalculateTotalEmission_TotalAnRelativeEmission(Aggregation aggregation)
         {
-            // Arrange
-            var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
-            var dateTo = new DateTime(2021, 1, 2, 1, 59, 59, DateTimeKind.Utc);
+            var dateFrom = new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero);
+            var dateTo = new DateTimeOffset(2021, 1, 2, 1, 59, 59, TimeSpan.Zero);
             var timeSeries = SourceEmissionShareDataSetFactory.CreateTimeSeries();
             var emissionShares = SourceEmissionShareDataSetFactory.CreateEmissionsShares();
             Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
@@ -31,25 +27,23 @@ namespace Tests
 
             var calculator = new SourcesCalculator();
 
-            // Act
-            var result = calculator.CalculateSourceEmissions(timeSeries, emissionShares, aggregation);
+            var result = calculator.CalculateSourceEmissions(timeSeries, emissionShares, TimeZoneInfo.Utc, aggregation);
 
-            //Assert
             Assert.NotNull(result);
             var expected = GetExpectedSourceEmissions(aggregation, dateFrom, dateTo).EnergySources;
-            Assert.Equal(expected.Select(_ => _.Renewable), result.EnergySources.Select(_ => _.Renewable));
-            Assert.Equal(expected.Select(_ => _.Ratios), result.EnergySources.Select(_ => _.Ratios));
-            Assert.Equal(expected.Select(_ => _.DateFrom), result.EnergySources.Select(_ => _.DateFrom));
-            Assert.Equal(expected.Select(_ => _.DateTo), result.EnergySources.Select(_ => _.DateTo));
+            Assert.Equal(expected.Select(x => x.Renewable), result.EnergySources.Select(x => x.Renewable));
+            Assert.Equal(expected.Select(x => x.Ratios), result.EnergySources.Select(x => x.Ratios));
+            Assert.Equal(expected.Select(x => x.DateFrom), result.EnergySources.Select(x => x.DateFrom));
+            Assert.Equal(expected.Select(x => x.DateTo), result.EnergySources.Select(x => x.DateTo));
         }
 
-        private static EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTime dateFrom, DateTime dateTo) => aggregation switch
+        private static EnergySourceResponse GetExpectedSourceEmissions(Aggregation aggregation, DateTimeOffset dateFrom, DateTimeOffset dateTo) => aggregation switch
         {
             Aggregation.Total or Aggregation.Month or Aggregation.Year => new EnergySourceResponse(new List<EnergySourceDeclaration>
             {
                 new(
-                    dateFrom.ToUnixTime(),
-                    dateTo.ToUnixTime(),
+                    dateFrom.ToUnixTimeSeconds(),
+                    dateTo.ToUnixTimeSeconds(),
                     1,
                     new()
                     {
@@ -62,8 +56,8 @@ namespace Tests
             Aggregation.Actual or Aggregation.Hour => new EnergySourceResponse(new List<EnergySourceDeclaration>
             {
                 new(
-                    dateFrom.ToUnixTime(),
-                    dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.ToUnixTimeSeconds(),
+                    dateFrom.AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     1,
                     new()
                     {
@@ -73,8 +67,8 @@ namespace Tests
                     }
                 ),
                 new(
-                    dateFrom.AddHours(1).ToUnixTime(),
-                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.AddHours(1).ToUnixTimeSeconds(),
+                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     1,
                     new()
                     {
@@ -84,8 +78,8 @@ namespace Tests
                     }
                 ),
                 new(
-                    dateFrom.AddHours(2).ToUnixTime(),
-                    dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.AddHours(2).ToUnixTimeSeconds(),
+                    dateFrom.AddHours(2).AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     1,
                     new()
                     {
@@ -95,8 +89,8 @@ namespace Tests
                     }
                 ),
                 new(
-                    dateFrom.AddHours(3).ToUnixTime(),
-                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.AddHours(3).ToUnixTimeSeconds(),
+                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     1,
                     new()
                     {
@@ -109,8 +103,8 @@ namespace Tests
             Aggregation.Day => new EnergySourceResponse(new List<EnergySourceDeclaration>
             {
                 new(
-                    dateFrom.ToUnixTime(),
-                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.ToUnixTimeSeconds(),
+                    dateFrom.AddHours(1).AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     0.99999m,
                     new()
                     {
@@ -120,8 +114,8 @@ namespace Tests
                     }
                 ),
                 new(
-                    dateFrom.AddHours(2).ToUnixTime(),
-                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTime(),
+                    dateFrom.AddHours(2).ToUnixTimeSeconds(),
+                    dateFrom.AddHours(3).AddMinutes(59).AddSeconds(59).ToUnixTimeSeconds(),
                     1,
                     new()
                     {

@@ -6,11 +6,7 @@ public class MeteringPoint
 {
     [JsonPropertyName("gsrn")]
     public string GSRN { get; }
-
-    [JsonPropertyName("gridArea")]
     public string GridArea { get; }
-
-    [JsonPropertyName("type")]
     public MeterType Type { get; }
 
     public MeteringPoint(string gsrn, string gridArea, MeterType type)

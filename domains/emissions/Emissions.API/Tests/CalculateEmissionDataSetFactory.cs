@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using API.Models;
 using API.Models.EnergiDataService;
-using EnergyOriginDateTimeExtension;
 
 namespace Tests;
 
@@ -10,17 +9,17 @@ internal class CalculateEmissionDataSetFactory
 {
     public static List<TimeSeries> CreateTimeSeries() => new()
     {
-            new TimeSeries
-            (
-                new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
-                CreateMeasurementsFirstMP()
-            ),
-            new TimeSeries
-            (
-                new MeteringPoint("571313121223234324", "DK1", MeterType.Consumption),
-                CreateMeasurementsSecondMP()
-            )
-        };
+        new TimeSeries
+        (
+            new MeteringPoint("571313121223234323", "DK1", MeterType.Consumption),
+            CreateMeasurementsFirstMP()
+        ),
+        new TimeSeries
+        (
+            new MeteringPoint("571313121223234324", "DK1", MeterType.Consumption),
+            CreateMeasurementsSecondMP()
+        )
+    };
 
     public static List<TimeSeries> CreateTimeSeriesHugeValues() => new()
     {
@@ -50,29 +49,29 @@ internal class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1234,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 0,0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 242,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 0,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 654,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 2,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1800,
             Quality: Quality.Measured
             ),
@@ -81,29 +80,29 @@ internal class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 789,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 0,0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1212,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 0,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 324,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 2,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1233,
             Quality: Quality.Measured
             )
@@ -113,36 +112,36 @@ internal class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 789,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0,0, 0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 0,0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1212,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 0,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 324,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 2,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1233,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234324",
-            DateFrom: new DateTime(2021, 1, 2, 2,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 3,0,0, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 2,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 3,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 2140,
             Quality: Quality.Measured
             )
@@ -184,29 +183,29 @@ internal class CalculateEmissionDataSetFactory
     {
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 22,59,59, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 1, 22,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 2000000000L,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 1, 23,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 1, 23,59, 59, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 1, 23,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 1, 23,59, 59, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1500000000L,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 0,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 0,59,59, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 0,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 0,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1000000000L,
             Quality: Quality.Measured
             ),
         new Measurement(
             GSRN: "571313121223234323",
-            DateFrom: new DateTime(2021, 1, 2, 1,0,0, DateTimeKind.Utc).ToUnixTime(),
-            DateTo: new DateTime(2021, 1, 2, 1,59,59, DateTimeKind.Utc).ToUnixTime(),
+            DateFrom: new DateTimeOffset(2021, 1, 2, 1,0,0, TimeSpan.Zero).ToUnixTimeSeconds(),
+            DateTo: new DateTimeOffset(2021, 1, 2, 1,59,59, TimeSpan.Zero).ToUnixTimeSeconds(),
             Quantity: 1500000000L,
             Quality: Quality.Measured
             )

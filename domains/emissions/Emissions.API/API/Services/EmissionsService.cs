@@ -22,7 +22,7 @@ public class EmissionsService : IEmissionsService
         this.sourcesCalculator = sourcesCalculator;
     }
 
-    public async Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext context, DateTime dateFrom, DateTime dateTo, Aggregation aggregation)
+    public async Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext context, DateTimeOffset dateFrom, DateTimeOffset dateTo, TimeZoneInfo timeZone, Aggregation aggregation)
     {
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
@@ -32,13 +32,13 @@ public class EmissionsService : IEmissionsService
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         //Calculate total emission
-        return emissionsCalculator.CalculateEmission(emissions, measurements, dateFrom, dateTo, aggregation);
+        return emissionsCalculator.CalculateEmission(emissions, measurements, timeZone, aggregation);
     }
 
     public async Task<IEnumerable<TimeSeries>> GetTimeSeries(
         AuthorizationContext context,
-        DateTime dateFrom,
-        DateTime dateTo,
+        DateTimeOffset dateFrom,
+        DateTimeOffset dateTo,
         IEnumerable<MeteringPoint> meteringPoints)
     {
         var timeSeries = new List<TimeSeries>();
@@ -52,7 +52,7 @@ public class EmissionsService : IEmissionsService
         return timeSeries;
     }
 
-    public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext context, DateTime dateFrom, DateTime dateTo, Aggregation aggregation)
+    public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext context, DateTimeOffset dateFrom, DateTimeOffset dateTo, TimeZoneInfo timeZone, Aggregation aggregation)
     {
         //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
@@ -62,6 +62,6 @@ public class EmissionsService : IEmissionsService
 
         var mixRecords = await energyDataService.GetResidualMixPerHour(dateFrom, dateTo);
 
-        return sourcesCalculator.CalculateSourceEmissions(measurements, mixRecords, aggregation);
+        return sourcesCalculator.CalculateSourceEmissions(measurements, mixRecords, timeZone, aggregation);
     }
 }
