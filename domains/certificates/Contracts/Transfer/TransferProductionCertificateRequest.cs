@@ -1,8 +1,8 @@
 using System;
 
-namespace CertificateEvents;
+namespace Contracts.Transfer;
 
-public record TransferProductionCertificate(
+public record TransferProductionCertificateRequest(
     string CurrentOwner,
     string NewOwner,
     Guid CertificateId

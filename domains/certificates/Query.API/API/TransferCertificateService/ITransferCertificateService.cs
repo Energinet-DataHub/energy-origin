@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Requests;
-using CertificateEvents;
+using Contracts.Transfer;
 
 namespace API.TransferCertificateService;
 
 public interface ITransferCertificateService
 {
-    Task<TransferProductionCertificateStatus> Get(TransferCertificate transferCertificate);
+    Task<TransferProductionCertificateResponse> Get(TransferCertificate transferCertificate);
 }
