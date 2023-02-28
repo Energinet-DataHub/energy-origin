@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.GranularCertificateIssuer;
+using API.GranularCertificateIssuer.Repositories;
+using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
 using FluentAssertions;
-using Marten;
-using Marten.Events;
 using MassTransit;
 using MassTransit.Testing;
 using MeasurementEvents;
@@ -34,7 +34,7 @@ public class EnergyMeasuredConsumerTest
     [Fact]
     public async Task Consume_NoContract_NoEventsSaved()
     {
-        var documentSessionMock = GetDocumentSessionMock();
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
 
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -47,9 +47,9 @@ public class EnergyMeasuredConsumerTest
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, documentSessionMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class EnergyMeasuredConsumerTest
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockContract);
 
-        var documentSessionMock = GetDocumentSessionMock();
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -69,9 +69,9 @@ public class EnergyMeasuredConsumerTest
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, documentSessionMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Theory]
@@ -85,7 +85,7 @@ public class EnergyMeasuredConsumerTest
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockContract);
 
-        var documentSessionMock = GetDocumentSessionMock();
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -94,9 +94,9 @@ public class EnergyMeasuredConsumerTest
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, documentSessionMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class EnergyMeasuredConsumerTest
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockContract);
 
-        var documentSessionMock = GetDocumentSessionMock();
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -115,24 +115,17 @@ public class EnergyMeasuredConsumerTest
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, documentSessionMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        documentSessionMock.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    private static Mock<IDocumentSession> GetDocumentSessionMock()
-    {
-        var documentSessionMock = new Mock<IDocumentSession>();
-        documentSessionMock.Setup(m => m.Events).Returns(Mock.Of<IEventStore>());
-        return documentSessionMock;
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,
-        IDocumentSession documentSession, IContractService contractService)
+        IProductionCertificateRepository repository, IContractService contractService)
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredConsumer>())
-            .AddSingleton(documentSession)
+            .AddSingleton(repository)
             .AddSingleton(contractService)
             .BuildServiceProvider(true);
 
