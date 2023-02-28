@@ -20,7 +20,7 @@ public class TransferCertificateConsumer : IConsumer<TransferProductionCertifica
                               $"New owner: {context.Message.NewOwner} \nl" +
                               $"CertificateID: {context.Message.CertificateId}");
 
-        await context.RespondAsync(new { Message = "OK" });
+        await context.RespondAsync(new TransferProductionCertificateStatus(Status: "OK"));
     }
 
 }
