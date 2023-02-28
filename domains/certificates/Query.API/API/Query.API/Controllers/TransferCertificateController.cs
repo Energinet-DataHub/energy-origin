@@ -1,11 +1,9 @@
-using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
-using API.TransferCertificateService;
 using Baseline;
-using CertificateEvents;
+using Contracts.Transfer;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,14 +19,18 @@ public class TransferCertificateController : ControllerBase
     [Route("api/certificates/production/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
-        [FromServices] ITransferCertificateService service
-        )
+        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient)
     {
-        var response = await service.Get(transferCertificate);
+        var request = new TransferProductionCertificateRequest(
+            CurrentOwner: transferCertificate.CurrentOwner,
+            NewOwner: transferCertificate.NewOwner,
+            CertificateId: transferCertificate.CertificateId
+        );
 
-        return Ok(response.Status);
+        var response = await requestClient.GetResponse<TransferProductionCertificateResponse>(request);
+        
+        return Ok(response.Message.Status);
     }
-
 
     [HttpGet]
     [ProducesResponseType(200)]
@@ -38,7 +40,7 @@ public class TransferCertificateController : ControllerBase
     {
         var ownerObject = new OwnerUuid()
         {
-            UUID = User.FindFirstValue("subject ")
+            UUID = User.FindFirstValue("subject")
         };
 
         return Task.FromResult<ActionResult<OwnerUuid>>(
@@ -46,5 +48,4 @@ public class TransferCertificateController : ControllerBase
             ? NotFound()
             : Ok(ownerObject));
     }
-
 }
