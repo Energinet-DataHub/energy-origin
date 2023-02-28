@@ -1,6 +1,7 @@
 using System;
 using API.GranularCertificateIssuer;
 using API.RabbitMq.Configurations;
+using API.TransferCertificateService;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class Startup
             o.SetKebabCaseEndpointNameFormatter();
 
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
+            o.AddConsumer<TransferCertificateConsumer>();
 
             o.UsingRabbitMq((context, cfg) =>
             {
