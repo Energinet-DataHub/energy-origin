@@ -27,6 +27,9 @@ builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
     try
     {
         Configuration.GetDataSyncEndpoint();
+        Configuration.GetEnergiDataServiceEndpoint();
+        Configuration.GetRenewableSources();
+        Configuration.GetWasteRenewableShare();
         return Task.FromResult(HealthCheckResult.Healthy());
     }
     catch
