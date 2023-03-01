@@ -42,10 +42,8 @@ public class TransferCertificateController : ControllerBase
         if (response.Is(out Response<Success>? _))
             return Ok();
 
-        if (response.Is(out Response<Failure>? failure))
-            return BadRequest(failure!.Message.Reason);
-
-        return Conflict(); //TODO
+        var failureReason = ((Failure)response.Message).Reason;
+        return BadRequest(failureReason);
     }
 
     [HttpGet]
