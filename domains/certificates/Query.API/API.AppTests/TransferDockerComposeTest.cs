@@ -95,7 +95,6 @@ public class TransferDockerComposeTest : IClassFixture<QueryApiWebApplicationFac
     /// <summary>
     /// Creates a contract and then publishes a measurement. Wait for a certificate to be generated for the measurement
     /// </summary>
-    /// <returns></returns>
     private async Task<(string owner1, HttpClient owner1Client, string owner2, HttpClient, Guid certificateId)> Setup()
     {
         var owner1 = Guid.NewGuid().ToString();
