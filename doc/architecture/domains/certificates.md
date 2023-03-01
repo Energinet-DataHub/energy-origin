@@ -10,7 +10,7 @@ The reason for this split is certain constraints. The constraints are:
 * Registry is under development
 * Integration Event Bus does not exist and the inter-domain events are not defined
 
-## Current architecture
+## Current architecture (as-is)
 
 ### Container diagram
 ![Container diagram](../diagrams/certificates.current.container.drawio.svg)
@@ -23,7 +23,7 @@ Note: `ContractService` is currently getting information about a metering point 
 
 ![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
-## Target architecture
+## Target architecture (to-be)
 
 ### Container diagram
 ![Container diagram](../diagrams/certificates.target.container.drawio.svg)
