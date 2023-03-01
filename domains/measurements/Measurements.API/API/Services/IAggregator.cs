@@ -4,7 +4,6 @@ namespace API.Services
 {
     public interface IAggregator
     {
-        MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements,
-            Aggregation aggregation);
+        MeasurementResponse CalculateAggregation(IEnumerable<TimeSeries> measurements, TimeZoneInfo timeZone, Aggregation aggregation);
     }
 }

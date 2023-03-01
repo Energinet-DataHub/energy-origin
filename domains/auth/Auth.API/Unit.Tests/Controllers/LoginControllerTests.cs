@@ -24,7 +24,7 @@ public class LoginControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
+    public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
         var options = TestOptions.Oidc(oidcOptions);
 
@@ -53,7 +53,7 @@ public class LoginControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
+    public async Task LoginAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);
 
@@ -81,7 +81,7 @@ public class LoginControllerTests
     }
 
     [Fact]
-    public async Task GetAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
+    public async Task LoginAsync_ShouldLogErrorMessage_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);
 

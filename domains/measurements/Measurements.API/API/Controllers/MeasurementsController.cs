@@ -2,7 +2,6 @@ using API.Models;
 using API.Models.Request;
 using API.Services;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
@@ -13,50 +12,43 @@ namespace API.Controllers;
 [Authorize]
 public class MeasurementsController : AuthorizationController
 {
-    readonly IMeasurementsService measurementsService;
-    readonly IValidator<MeasurementsRequest> validator;
-
-    public MeasurementsController(IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
-    {
-        this.measurementsService = measurementsService;
-        this.validator = validator;
-    }
-
     [HttpGet]
     [Route("api/measurements/consumption")]
-    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
-            validateResult.AddToModelState(ModelState, null);
+            validateResult.AddToModelState(ModelState);
             return ValidationProblem(ModelState);
         }
 
-        var dateFromDateTime = request.DateFrom.ToDateTime();
-        var dateToDateTime = request.DateTo.ToDateTime();
-
-        var typeOfMP = MeterType.Consumption;
-
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
+        return Ok(await measurementsService.GetMeasurements(
+            Context,
+            request.TimeZoneInfo,
+            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+            request.Aggregation,
+            MeterType.Consumption));
     }
 
     [HttpGet]
     [Route("api/measurements/production")]
-    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request)
+    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
-            validateResult.AddToModelState(ModelState, null);
+            validateResult.AddToModelState(ModelState);
             return ValidationProblem(ModelState);
         }
 
-        var dateFromDateTime = request.DateFrom.ToDateTime();
-        var dateToDateTime = request.DateTo.ToDateTime();
-
-        var typeOfMP = MeterType.Production;
-
-        return Ok(await measurementsService.GetMeasurements(Context, dateFromDateTime, dateToDateTime, request.Aggregation, typeOfMP));
+        return Ok(await measurementsService.GetMeasurements(
+            Context,
+            request.TimeZoneInfo,
+            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+            request.Aggregation,
+            MeterType.Production));
     }
 }

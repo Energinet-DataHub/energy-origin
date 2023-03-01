@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -46,6 +47,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     var rsa = RSA.Create();
     rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
 
+    options.MapInboundClaims = false;
+
     options.TokenValidationParameters = new()
     {
         IssuerSigningKey = new RsaSecurityKey(rsa),
@@ -90,10 +93,10 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
+builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ITokenIssuer, TokenIssuer>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
 
 var app = builder.Build();
