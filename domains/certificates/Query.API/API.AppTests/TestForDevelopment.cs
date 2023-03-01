@@ -54,7 +54,7 @@ public class TestForDevelopment :
             createdEvent.MeteringPointOwner,
             createdEvent.ShieldedGSRN.Value);
 
-        var transferredEvent = new CertificateTransferred(
+        var transferredEvent = new ProductionCertificateTransferred(
             createdEvent.CertificateId,
             owner1,
             owner2,

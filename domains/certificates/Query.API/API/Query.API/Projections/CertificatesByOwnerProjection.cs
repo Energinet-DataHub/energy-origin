@@ -15,11 +15,11 @@ public class CertificatesByOwnerProjection : MultiStreamAggregation<Certificates
         Identity<ProductionCertificateCreated>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateIssued>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateRejected>(e => e.MeteringPointOwner);
-        Identity<CertificateTransferred>(e => e.From);
-        Identity<CertificateTransferred>(e => e.To);
+        Identity<ProductionCertificateTransferred>(e => e.From);
+        Identity<ProductionCertificateTransferred>(e => e.To);
     }
 
-    public void Apply(CertificateTransferred @event, CertificatesByOwnerView view)
+    public void Apply(ProductionCertificateTransferred @event, CertificatesByOwnerView view)
     {
         if (view.Owner == @event.From)
         {
