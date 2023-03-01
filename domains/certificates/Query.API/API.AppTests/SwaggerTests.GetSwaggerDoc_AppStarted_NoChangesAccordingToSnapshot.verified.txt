@@ -168,6 +168,18 @@
         }
       }
     },
+    "/api/certificates/subject": {
+      "get": {
+        "tags": [
+          "Subject"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/certificates/production/transfer": {
       "post": {
         "tags": [
@@ -215,38 +227,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/certificates/owner/uuid": {
-      "get": {
-        "tags": [
-          "Uuid"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OwnerUuid"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OwnerUuid"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OwnerUuid"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }
@@ -359,27 +339,21 @@
         },
         "additionalProperties": false
       },
-      "OwnerUuid": {
-        "type": "object",
-        "properties": {
-          "uuid": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "TransferCertificate": {
         "type": "object",
         "properties": {
-          "currentOwner": {
-            "type": "string"
-          },
-          "newOwner": {
-            "type": "string"
-          },
           "certificateId": {
             "type": "string",
+            "description": "Id of the certificate",
             "format": "uuid"
+          },
+          "currentOwner": {
+            "type": "string",
+            "description": "Key for the owner currently owning the certificate"
+          },
+          "newOwner": {
+            "type": "string",
+            "description": "Key for the owner to transfer the certificate to"
           }
         },
         "additionalProperties": false
