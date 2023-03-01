@@ -4,9 +4,6 @@ using System.Linq;
 using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
-using EnergyOriginDateTimeExtension;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
@@ -19,21 +16,13 @@ public sealed class DataSyncServiceTest
     [Fact]
     public async void DataSync_GetListOfMeteringPoints_success()
     {
-        // Arrange
-        var datasyncData = new List<string>(new string[] { "datasync_meteringpoints.json" });
-        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
+        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string> { "datasync_meteringpoints.json" });
+        var datasync = new DataSyncService(mockClient);
 
-        var logger = new Mock<ILogger<DataSyncService>>();
-
-        var datasync = new DataSyncService(logger.Object, mockClient);
-
-        // Act
         var res = await datasync.GetListOfMeteringPoints(new AuthorizationContext("", "", ""));
 
-        // Assert
         Assert.NotEmpty(res);
         Assert.Equal(3, res.Count());
-
         Assert.Equal("571313121223234323", res.First().GSRN);
         Assert.Equal("DK1", res.First().GridArea);
         Assert.Equal(MeterType.Consumption, res.First().Type);
@@ -42,23 +31,15 @@ public sealed class DataSyncServiceTest
     [Fact]
     public async void DataSync_GetMeasurements_success()
     {
-        // Arrange
-        var datasyncData = new List<string>(new string[] { "datasync_measurements.json" });
-        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(datasyncData);
-
+        var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string> { "datasync_measurements.json" });
         var dateFrom = 1609455600L;
         var dateTo = 1609459200L;
-        var logger = new Mock<ILogger<DataSyncService>>();
+        var datasync = new DataSyncService(mockClient);
 
-        var datasync = new DataSyncService(logger.Object, mockClient);
+        var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", new DateTimeOffset(), new DateTimeOffset());
 
-        // Act
-        var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", new DateTime(), new DateTime());
-
-        // Assert
         Assert.NotEmpty(res);
         Assert.Equal(2, res.Count());
-
         Assert.Equal("571313121223234323", res.First().GSRN);
         Assert.Equal(dateFrom, res.First().DateFrom);
         Assert.Equal(dateTo, res.First().DateTo);
