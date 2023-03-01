@@ -19,7 +19,7 @@ public class TransferCertificateController : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [Route("api/certificates/production/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
@@ -36,30 +36,17 @@ public class TransferCertificateController : ControllerBase
         var request = new TransferProductionCertificateRequest(
             CurrentOwner: transferCertificate.CurrentOwner,
             NewOwner: transferCertificate.NewOwner,
-            CertificateId: transferCertificate.CertificateId
-        );
+            CertificateId: transferCertificate.CertificateId);
 
         var response = await requestClient.GetResponse<Success, Failure>(request);
 
-
-        return Ok(
-            new TransferProductionCertificateResponse(
-                Status: response.Message.
-                )
-            );
-/*
-        if (response.Is(out Response<TransferProductionCertificateResponse>? success))
-        {
-
         if (response.Is(out Response<Success>? _))
-
             return Ok();
 
         if (response.Is(out Response<Failure>? failure))
             return BadRequest(failure!.Message.Reason);
 
         return Conflict(); //TODO
-        */
     }
 
     [HttpGet]
