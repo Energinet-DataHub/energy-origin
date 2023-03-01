@@ -16,11 +16,22 @@ public class TransferCertificateController : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
     [Route("api/certificates/production/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
         [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient)
     {
+        if (transferCertificate.CurrentOwner.IsEmpty() || transferCertificate.NewOwner.IsEmpty())
+        {
+            return BadRequest();
+        }
+
+        if (transferCertificate.CurrentOwner.Equals(transferCertificate.NewOwner))
+        {
+            return BadRequest();
+        }
+
         var request = new TransferProductionCertificateRequest(
             CurrentOwner: transferCertificate.CurrentOwner,
             NewOwner: transferCertificate.NewOwner,
@@ -29,7 +40,11 @@ public class TransferCertificateController : ControllerBase
 
         var response = await requestClient.GetResponse<TransferProductionCertificateResponse>(request);
 
-        return Ok(response.Message.Status);
+        return Ok(
+            new TransferProductionCertificateResponse(
+                Status: response.Message.Status
+                )
+            );
     }
 
     [HttpGet]
