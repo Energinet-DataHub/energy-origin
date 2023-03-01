@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -13,16 +12,7 @@ namespace Tests.Helpers;
 
 public static class MockHttpClientFactory
 {
-
-    public static string ReadJsonFiles(string resourceName)
-    {
-        var directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? throw new Exception("Invalid directory");
-        var path = System.IO.Path.Combine(directory, "../../../Resources/", resourceName);
-        var json = File.ReadAllText(path);
-        return json;
-    }
-
-    public static HttpClient SetupHttpClientWithFiles(List<string> resourceName)
+    public static HttpClient SetupHttpClientWithFiles(List<string> resources)
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         var handlerPart = handlerMock
@@ -34,9 +24,9 @@ public static class MockHttpClientFactory
                 ItExpr.IsAny<CancellationToken>()
             );
 
-        foreach (var resourceNameItem in resourceName)
+        foreach (var item in resources)
         {
-            var content = ReadJsonFiles(resourceNameItem);
+            var content = File.ReadAllText($"Resources/{item}");
             var contentSequence = new StringContent(content);
             handlerPart = handlerPart.ReturnsAsync(new HttpResponseMessage()
             {

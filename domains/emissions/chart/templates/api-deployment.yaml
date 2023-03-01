@@ -20,11 +20,11 @@ spec:
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
           readinessProbe:
             httpGet:
-              path: /health
+              path: /healthz
               port: http
           livenessProbe:
             httpGet:
-              path: /health
+              path: /healthz
               port: http
           ports:
             - containerPort: 80
