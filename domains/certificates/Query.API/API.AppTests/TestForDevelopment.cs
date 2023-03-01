@@ -12,14 +12,15 @@ using Xunit;
 
 namespace API.AppTests;
 
-public class TransferTest :
+//TODO: Delete this test
+public class TestForDevelopment :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public TransferTest(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
+    public TestForDevelopment(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer, RabbitMqContainer rabbitMqContainer)
     {
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;

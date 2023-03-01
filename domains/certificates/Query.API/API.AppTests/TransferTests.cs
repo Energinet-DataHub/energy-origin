@@ -8,6 +8,7 @@ using API.AppTests.Extensions;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
+using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
 using API.RabbitMq.Configurations;
 using FluentAssertions;
@@ -16,25 +17,29 @@ using Xunit;
 
 namespace API.AppTests;
 
-public class TransferDockerComposeTest : IClassFixture<QueryApiWebApplicationFactory>, IDisposable
+public class TransferTests :
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+    IClassFixture<RabbitMqContainer>,
+    IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public TransferDockerComposeTest(QueryApiWebApplicationFactory factory)
+    public TransferTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
+        RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9004);
         this.factory = factory;
-        this.factory.MartenConnectionString =
-            "host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;";
+        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqSetup = new RabbitMqOptions
         {
-            Host = "localhost",
-            Port = 5672,
-            Username = "guest",
-            Password = "guest"
+            Username = rabbitMqContainer.Username,
+            Password = rabbitMqContainer.Password,
+            Host = rabbitMqContainer.Hostname,
+            Port = rabbitMqContainer.Port
         };
-        this.factory.DataSyncUrl = dataSyncWireMock.Url;
     }
 
     [Fact]
