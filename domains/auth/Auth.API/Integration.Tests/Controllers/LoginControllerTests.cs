@@ -2,9 +2,11 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
+using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using WireMock.Server;
 
 namespace Tests.Integration.LoginController;
 
@@ -19,11 +21,11 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var broker = factory.MockOidcProvider();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {
-            AuthorityUri = new Uri($"http://localhost:{broker.Port}/op"),
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug")
         });
