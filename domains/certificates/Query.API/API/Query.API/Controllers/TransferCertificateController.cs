@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
-using Baseline;
 using Contracts.Transfer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -50,19 +49,15 @@ public class TransferCertificateController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(OwnerUuid), 200)]
+    [ProducesResponseType(typeof(void), 404)]
     [Route("api/certificates/owner/uuid")]
-    public Task<ActionResult<OwnerUuid>> GetUuid()
+    public IActionResult GetUuid()
     {
-        var ownerObject = new OwnerUuid()
-        {
-            UUID = User.FindFirstValue("subject")
-        };
+        var subject = User.FindFirstValue("subject");
 
-        return Task.FromResult<ActionResult<OwnerUuid>>(
-            ownerObject.UUID.IsEmpty()
+        return string.IsNullOrWhiteSpace(subject)
             ? NotFound()
-            : Ok(ownerObject));
+            : Ok(new OwnerUuid { UUID = subject });
     }
 }

@@ -6,6 +6,6 @@ namespace API.Query.API.ApiModels.Responses;
 public record OwnerUuid
 {
     [JsonPropertyName("uuid")]
-    public string? UUID { get; set; }
+    public string UUID { get; init; }
 
 }
