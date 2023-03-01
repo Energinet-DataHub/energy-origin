@@ -31,9 +31,9 @@ public class TransferCertificateController : ControllerBase
         }
 
         var request = new TransferProductionCertificateRequest(
-            CurrentOwner: transferCertificate.CurrentOwner,
-            NewOwner: transferCertificate.NewOwner,
-            CertificateId: transferCertificate.CertificateId);
+            transferCertificate.CurrentOwner,
+            transferCertificate.NewOwner,
+            transferCertificate.CertificateId);
 
         var response = await requestClient.GetResponse<Success, Failure>(request);
 

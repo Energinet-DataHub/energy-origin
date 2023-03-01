@@ -17,7 +17,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-public class TransferTests :
+public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
@@ -43,12 +43,12 @@ public class TransferTests :
     }
 
     [Fact]
-    public async Task successfully_transfer()
+    public async Task can_successfully_transfer()
     {
         var (owner1, owner1Client, owner2, owner2Client, certificateId) = await Setup();
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
-            new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner2 });
+        var body = new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner2 };
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -56,29 +56,32 @@ public class TransferTests :
 
         certificateListForOwner2!.Result.Should().HaveCount(1);
 
-        var certificateListResponseForOwner1AfterTransfer = await owner1Client.GetAsync("api/certificates");
-        certificateListResponseForOwner1AfterTransfer.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var certificateListResponseForOwner1 = await owner1Client.GetAsync("api/certificates");
+        certificateListResponseForOwner1.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
-    public async Task transfer_the_wrong_direction()
+    public async Task fails_when_transferring_in_the_wrong_direction()
     {
         var (owner1, owner1Client, owner2, _, certificateId) = await Setup();
 
-        var body = new { CertificateId = certificateId, CurrentOwner = owner2, NewOwner = owner1 };
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer", body);
+        var bodyWithOwnersSwitched = new { CertificateId = certificateId, CurrentOwner = owner2, NewOwner = owner1 };
+
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
+            bodyWithOwnersSwitched);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task unknown_certificate_id()
+    public async Task fails_for_unknown_certificate_id()
     {
         var (owner1, owner1Client, owner2, _, _) = await Setup();
 
         var unknownCertificateId = Guid.NewGuid();
 
         var body = new { CertificateId = unknownCertificateId, CurrentOwner = owner1, NewOwner = owner2 };
+
         var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
             body);
 
@@ -86,19 +89,20 @@ public class TransferTests :
     }
 
     [Fact]
-    public async Task transfer_to_same_owner()
+    public async Task fails_when_transferring_to_same_owner()
     {
         var (owner1, owner1Client, _, _, certificateId) = await Setup();
 
-        var body = new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner1 };
+        var bodyWithSameOwner = new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner1 };
+
         var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
-            body);
+            bodyWithSameOwner);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
-    /// Creates a contract and then publishes a measurement. Wait for a certificate to be generated for the measurement
+    /// Creates a contract for "owner1" and then publishes a measurement. Wait for a certificate to be generated for the measurement
     /// </summary>
     private async Task<(string owner1, HttpClient owner1Client, string owner2, HttpClient, Guid certificateId)> Setup()
     {
