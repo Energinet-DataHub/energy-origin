@@ -1,9 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using API.GranularCertificateIssuer.Repositories;
+using CertificateEvents.Exceptions;
 using Contracts.Transfer;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using static MassTransit.ValidationResultExtensions;
+using static Contracts.Transfer.TransferProductionCertificateResponse;
 
 namespace API.TransferCertificateService;
 
@@ -28,14 +30,21 @@ public class TransferCertificateConsumer : IConsumer<TransferProductionCertifica
 
         if (productionCertificate == null)
         {
-            await context.RespondAsync(
-                new TransferProductionCertificateFailureResponse(
-                    $"No production certificate by Id {context.Message.CertificateId}"));
+            await context.RespondAsync(new Failure($"No production certificate by Id {context.Message.CertificateId}"));
             return;
         }
 
-        productionCertificate.Transfer(context.Message.CurrentOwner, context.Message.NewOwner);
+        try
+        {
+            productionCertificate.Transfer(context.Message.CurrentOwner, context.Message.NewOwner);
 
-        await context.RespondAsync(new TransferProductionCertificateResponse("todo"));
+            await repository.Save(productionCertificate, context.CancellationToken);
+
+            await context.RespondAsync(new Success());
+        }
+        catch (CertificateDomainException e)
+        {
+            await context.RespondAsync(new Failure(e.Message));
+        }
     }
 }

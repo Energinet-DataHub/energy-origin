@@ -7,10 +7,11 @@ using Contracts.Transfer;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Contracts.Transfer.TransferProductionCertificateResponse;
 
 namespace API.Query.API.Controllers;
 
-[Authorize]
+//[Authorize]
 [ApiController]
 public class TransferCertificateController : ControllerBase
 {
@@ -38,26 +39,15 @@ public class TransferCertificateController : ControllerBase
             CertificateId: transferCertificate.CertificateId
         );
 
-        var response = await requestClient.GetResponse<TransferProductionCertificateResponse, TransferProductionCertificateFailureResponse>(request);
+        var response = await requestClient.GetResponse<Success, Failure>(request);
 
-        return Ok(
-            new TransferProductionCertificateResponse(
-                Status: response.Message.Status
-                )
-            );
-/*
-        if (response.Is(out Response<TransferProductionCertificateResponse>? success))
-        {
+        if (response.Is(out Response<Success>? _))
             return Ok();
-        }
 
-        if (response.Is(out Response<TransferProductionCertificateFailureResponse>? failure))
-        {
-            return BadRequest(failure!.Message.FailureReason);
-        }
+        if (response.Is(out Response<Failure>? failure))
+            return BadRequest(failure!.Message.Reason);
 
         return Conflict(); //TODO
-*/
     }
 
     [HttpGet]
