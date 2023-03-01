@@ -1,4 +1,12 @@
 namespace Contracts.Transfer;
 
-public record TransferProductionCertificateResponse(string Status);
-public record TransferProductionCertificateFailureResponse(string FailureReason);
+public abstract record TransferProductionCertificateResponse
+{
+    public record Success : TransferProductionCertificateResponse;
+
+    public record Failure(string Reason) : TransferProductionCertificateResponse;
+
+    private TransferProductionCertificateResponse()
+    {
+    }
+}

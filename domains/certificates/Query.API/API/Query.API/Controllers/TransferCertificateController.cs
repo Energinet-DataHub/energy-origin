@@ -9,6 +9,7 @@ using FluentValidation.AspNetCore;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Contracts.Transfer.TransferProductionCertificateResponse;
 
 namespace API.Query.API.Controllers;
 
@@ -38,7 +39,8 @@ public class TransferCertificateController : ControllerBase
             CertificateId: transferCertificate.CertificateId
         );
 
-        var response = await requestClient.GetResponse<TransferProductionCertificateResponse, TransferProductionCertificateFailureResponse>(request);
+        var response = await requestClient.GetResponse<Success, Failure>(request);
+
 
         return Ok(
             new TransferProductionCertificateResponse(
@@ -48,16 +50,16 @@ public class TransferCertificateController : ControllerBase
 /*
         if (response.Is(out Response<TransferProductionCertificateResponse>? success))
         {
-            return Ok();
-        }
 
-        if (response.Is(out Response<TransferProductionCertificateFailureResponse>? failure))
-        {
-            return BadRequest(failure!.Message.FailureReason);
-        }
+        if (response.Is(out Response<Success>? _))
+
+            return Ok();
+
+        if (response.Is(out Response<Failure>? failure))
+            return BadRequest(failure!.Message.Reason);
 
         return Conflict(); //TODO
-*/
+        */
     }
 
     [HttpGet]

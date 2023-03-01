@@ -94,8 +94,8 @@ public class TransferTest :
         var response = await client.PostAsJsonAsync("api/certificates/production/transfer", transferObject);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var respBody = await response.Content.ReadFromJsonAsync<TransferProductionCertificateResponse>();
-        respBody?.Status.Should().Be("OK");
+        //var respBody = await response.Content.ReadFromJsonAsync<TransferProductionCertificateResponse>();
+        //respBody?.Status.Should().Be("OK");
     }
 
     [Fact]
