@@ -56,7 +56,7 @@ runs:
 
     - name: Generate filename
       shell: bash
-      run: echo "filename=${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz" >> $GITHUB_STATE
+      run: echo "FILENAME=${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz" >> $GITHUB_ENV
 
     - name: Update chart dependencies
       shell: bash
@@ -73,7 +73,7 @@ runs:
     - name: Add prerelease argument
       shell: bash
       if: ${{ github.ref_name != 'main' }}
-      run: echo "prerelease=--prerelease" >> $GITHUB_STATE
+      run: echo "PRERELEASE=--prerelease" >> $GITHUB_ENV
 
     - name: Create Release
       if: ${{ inputs.dry_run != 'true' }}
@@ -81,7 +81,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release create "${{ steps.chart-info.outputs.tag-name }}" --repo '${{ github.repository }}' --title "Release ${{ steps.chart-info.outputs.tag-name }}" ${{ env.prerelease }} "./${{ env.filename }}"
+        gh release create "${{ steps.chart-info.outputs.tag-name }}" --repo '${{ github.repository }}' --title "Release ${{ steps.chart-info.outputs.tag-name }}" ${{ env.PRERELEASE }} "./${{ env.FILENAME }}"
 
     - name: Checkout chart repository
       if: ${{ inputs.dry_run != 'true' }}
@@ -99,7 +99,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ env.filename }}' --dir './'
+        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ env.FILENAME }}' --dir './'
 
     - name: Update index file for helm registry
       if: ${{ inputs.dry_run != 'true' }}
@@ -112,8 +112,8 @@ runs:
       id: commit
       uses: EndBug/add-and-commit@v9
       with:
-        add: '["index.yaml", "${{ env.filename }}"]'
-        message: Updated the helm registry with file ${{ env.filename }}
+        add: '["index.yaml", "${{ env.FILENAME }}"]'
+        message: Updated the helm registry with file ${{ env.FILENAME }}
         push: --force
         new_branch: ${{ inputs.chart_repository_branch }}
         default_author: github_actions

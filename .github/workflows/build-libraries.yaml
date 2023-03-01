@@ -65,20 +65,20 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
-          echo "solution=$solution" >> $GITHUB_STATE
-          echo "project=$project" >> $GITHUB_STATE
+          echo "SOLUTION=$solution" >> $GITHUB_ENV
+          echo "PROJECT=$project" >> $GITHUB_ENV
 
       - name: Resolve version
         id: resolve-version
         uses: ./.github/actions/yaml-get
         with:
-          yaml_file: ${{ env.solution }}/version.yaml
+          yaml_file: ${{ env.SOLUTION }}/version.yaml
           yaml_path: version
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
         with:
-          solution-file-folder: ${{ env.solution }}
-          project-name: ${{ env.project }}
+          solution-file-folder: ${{ env.SOLUTION }}
+          project-name: ${{ env.PROJECT }}
           package-version: ${{ steps.resolve-version.outputs.result }}
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}

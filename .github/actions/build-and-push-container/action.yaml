@@ -31,7 +31,7 @@ runs:
 
     - name: Resolve container image name
       shell: bash
-      run: echo "lowercased=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_STATE
+      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Log in to the Container registry
       uses: docker/login-action@3da7dc6e2b31f99ef2cb9fb4c50fb0971e0d0139
@@ -47,4 +47,4 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ env.lowercased }}:${{ inputs.image-tag }}
+        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
