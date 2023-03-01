@@ -38,13 +38,27 @@ public class TransferCertificateController : ControllerBase
             CertificateId: transferCertificate.CertificateId
         );
 
-        var response = await requestClient.GetResponse<TransferProductionCertificateResponse>(request);
+        var response = await requestClient.GetResponse<TransferProductionCertificateResponse, TransferProductionCertificateFailureResponse>(request);
 
+<<<<<<< HEAD
         return Ok(
             new TransferProductionCertificateResponse(
                 Status: response.Message.Status
                 )
             );
+=======
+        if (response.Is(out Response<TransferProductionCertificateResponse>? success))
+        {
+            return Ok();
+        }
+
+        if (response.Is(out Response<TransferProductionCertificateFailureResponse>? failure))
+        {
+            return BadRequest(failure!.Message.FailureReason);
+        }
+
+        return Conflict(); //TODO
+>>>>>>> 17c91334ec658c53d7c7c2b967267fcf406d9fc9
     }
 
     [HttpGet]
