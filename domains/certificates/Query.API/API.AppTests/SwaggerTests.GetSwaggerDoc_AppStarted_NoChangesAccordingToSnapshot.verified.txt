@@ -396,13 +396,13 @@
       "TransferCertificate": {
         "type": "object",
         "properties": {
-          "current-owner": {
+          "currentOwner": {
             "type": "string"
           },
-          "new-owner": {
+          "newOwner": {
             "type": "string"
           },
-          "certificateid": {
+          "certificateId": {
             "type": "string",
             "format": "uuid"
           }

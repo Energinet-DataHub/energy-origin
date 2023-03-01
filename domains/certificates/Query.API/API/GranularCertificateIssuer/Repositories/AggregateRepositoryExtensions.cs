@@ -20,10 +20,9 @@ public static class AggregateRepositoryExtensions
         aggregate.ClearUncommittedEvents();
     }
 
-    public static async Task<T> Get<T>(this IDocumentStore store, Guid id, int? version = null, CancellationToken cancellationToken = default) where T : AggregateBase
+    public static async Task<T?> Get<T>(this IDocumentStore store, Guid id, int? version = null, CancellationToken cancellationToken = default) where T : AggregateBase
     {
         await using var session = store.LightweightSession();
-        var aggregate = await session.Events.AggregateStreamAsync<T>(id, version ?? 0, token: cancellationToken);
-        return aggregate ?? throw new InvalidOperationException($"No aggregate by id {id}.");
+        return await session.Events.AggregateStreamAsync<T>(id, version ?? 0, token: cancellationToken);
     }
 }

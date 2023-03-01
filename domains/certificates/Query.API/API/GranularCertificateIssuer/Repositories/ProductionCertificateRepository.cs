@@ -15,6 +15,6 @@ public class ProductionCertificateRepository : IProductionCertificateRepository
     public Task Save(ProductionCertificate productionCertificate, CancellationToken cancellationToken = default)
         => store.Save(productionCertificate, cancellationToken);
 
-    public Task<ProductionCertificate> Get(Guid id, int? version = null, CancellationToken cancellationToken = default) =>
+    public Task<ProductionCertificate?> Get(Guid id, int? version = null, CancellationToken cancellationToken = default) =>
         store.Get<ProductionCertificate>(id, version, cancellationToken);
 }

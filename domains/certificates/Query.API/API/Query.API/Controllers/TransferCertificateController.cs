@@ -27,9 +27,19 @@ public class TransferCertificateController : ControllerBase
             CertificateId: transferCertificate.CertificateId
         );
 
-        var response = await requestClient.GetResponse<TransferProductionCertificateResponse>(request);
+        var response = await requestClient.GetResponse<TransferProductionCertificateResponse, TransferProductionCertificateFailureResponse>(request);
 
-        return Ok(response.Message.Status);
+        if (response.Is(out Response<TransferProductionCertificateResponse>? success))
+        {
+            return Ok();
+        }
+
+        if (response.Is(out Response<TransferProductionCertificateFailureResponse>? failure))
+        {
+            return BadRequest(failure!.Message.FailureReason);
+        }
+
+        return Conflict(); //TODO
     }
 
     [HttpGet]
