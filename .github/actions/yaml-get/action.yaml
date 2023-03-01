@@ -23,4 +23,4 @@ runs:
     - name: Run yaml get
       id: get
       shell: bash
-      run: echo "::set-output name=result::$(yaml-get --query ${{ inputs.yaml_path }} ${{ inputs.yaml_file }})"
+      run: echo "result=$(yaml-get --query ${{ inputs.yaml_path }} ${{ inputs.yaml_file }})" >> $GITHUB_OUTPUT
