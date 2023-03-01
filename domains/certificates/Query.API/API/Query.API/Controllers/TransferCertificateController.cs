@@ -40,13 +40,12 @@ public class TransferCertificateController : ControllerBase
 
         var response = await requestClient.GetResponse<TransferProductionCertificateResponse, TransferProductionCertificateFailureResponse>(request);
 
-<<<<<<< HEAD
         return Ok(
             new TransferProductionCertificateResponse(
                 Status: response.Message.Status
                 )
             );
-=======
+/*
         if (response.Is(out Response<TransferProductionCertificateResponse>? success))
         {
             return Ok();
@@ -58,7 +57,7 @@ public class TransferCertificateController : ControllerBase
         }
 
         return Conflict(); //TODO
->>>>>>> 17c91334ec658c53d7c7c2b967267fcf406d9fc9
+*/
     }
 
     [HttpGet]
