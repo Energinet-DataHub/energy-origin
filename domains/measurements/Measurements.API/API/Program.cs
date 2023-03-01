@@ -2,9 +2,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
-using API.Models.Request;
 using API.Services;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
@@ -40,16 +40,13 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddScoped<IValidator<MeasurementsRequest>, MeasurementsRequest.Validator>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
+builder.Services.AddFluentValidationAutoValidation();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
 builder.Services.AddFluentValidationRulesToSwagger();
-
-builder.Services.AddHttpClient();
 
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
