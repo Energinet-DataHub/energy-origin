@@ -54,11 +54,9 @@ runs:
         chart-version: ${{ inputs.chart_version }}
         include-image-name: ${{ inputs.include_image_name }}
 
-    - id: generate_filename
-      name: Generate filename
+    - name: Generate filename
       shell: bash
-      run: |
-        echo ::set-output name=filename::${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz
+      run: echo "FILENAME=${{ steps.chart-info.outputs.chart-name }}-${{ inputs.chart_version }}.tgz" >> $GITHUB_ENV
 
     - name: Update chart dependencies
       shell: bash
@@ -72,29 +70,18 @@ runs:
       shell: bash
       run: helm package --version ${{  inputs.chart_version }} ${{ inputs.chart_folder }}
 
-    - name: Create Release
-      id: create_release
-      if: ${{ inputs.dry_run != 'true' }}
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        tag_name: ${{ steps.chart-info.outputs.tag-name }}
-        release_name: Release ${{ steps.chart-info.outputs.tag-name }}
-        draft: false
-        prerelease: ${{ github.ref_name != 'main' }}
+    - name: Add prerelease argument
+      shell: bash
+      if: ${{ github.ref_name != 'main' }}
+      run: echo "PRERELEASE=--prerelease" >> $GITHUB_ENV
 
-    - name: Add chart.tar to release
-      id: upload-release-asset
+    - name: Create Release
       if: ${{ inputs.dry_run != 'true' }}
-      uses: actions/upload-release-asset@v1
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ steps.generate_filename.outputs.filename }}
-        asset_name: ${{ steps.generate_filename.outputs.filename }}
-        asset_content_type: application/zip
+      run: |
+        gh release create "${{ steps.chart-info.outputs.tag-name }}" --repo '${{ github.repository }}' --title "Release ${{ steps.chart-info.outputs.tag-name }}" ${{ env.PRERELEASE }} "./${{ env.FILENAME }}"
 
     - name: Checkout chart repository
       if: ${{ inputs.dry_run != 'true' }}
@@ -112,7 +99,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ steps.generate_filename.outputs.filename }}' --dir './'
+        gh release download '${{ steps.chart-info.outputs.tag-name }}' --repo '${{ github.repository }}' --pattern '${{ env.FILENAME }}' --dir './'
 
     - name: Update index file for helm registry
       if: ${{ inputs.dry_run != 'true' }}
@@ -125,8 +112,8 @@ runs:
       id: commit
       uses: EndBug/add-and-commit@v9
       with:
-        add: '["index.yaml", "${{ steps.generate_filename.outputs.filename }}"]'
-        message: Updated the helm registry with file ${{ steps.generate_filename.outputs.filename }}
+        add: '["index.yaml", "${{ env.FILENAME }}"]'
+        message: Updated the helm registry with file ${{ env.FILENAME }}
         push: --force
         new_branch: ${{ inputs.chart_repository_branch }}
         default_author: github_actions
