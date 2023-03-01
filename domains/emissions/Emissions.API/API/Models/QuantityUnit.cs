@@ -1,49 +1,29 @@
-using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace API.Models
 {
     public enum QuantityUnit
     {
-        [Description("Wh")]
-        Wh = 1,
+        Wh,
+        kWh,
+        MWh,
+        GWh,
 
-        [Description("kWh")]
-        kWh = 2,
+        W,
+        kW,
+        MW,
+        GW,
 
-        [Description("MWh")]
-        MWh = 3,
+        mg,
+        g,
+        kg,
+        Mg,
 
-        [Description("GWh")]
-        GWh = 3,
-
-        [Description("kW")]
-        kW = 4,
-
-        [Description("MW")]
-        MW = 5,
-
-        [Description("GW")]
-        GW = 6,
-
-        [Description("mg")]
-        mg = 7,
-
-        [Description("g")]
-        g = 8,
-
-        [Description("kg")]
-        kg = 9,
-
-        [Description("Mg")]
-        Mg = 10,
-
-        [Description("mg/kWh")]
-        mgPerkWh = 11,
-
-        [Description("g/kWh")]
-        gPerkWh = 12,
-
-        [Description("kg/kWh")]
-        kgPerkWh = 13,
+        [JsonPropertyName("mg/kWh")]
+        mgPerkWh,
+        [JsonPropertyName("g/kWh")]
+        gPerkWh,
+        [JsonPropertyName("kg/kWh")]
+        kgPerkWh
     }
 }
