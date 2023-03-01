@@ -28,10 +28,11 @@ runs:
 
     - name: Guard against non-supported events
       if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
-      uses: actions/github-script@v6
-      with:
-        script: |
-          core.setFailed('Only "push" and "pull_request" events are supported by this action.')
+      shell: bash
+      run: |
+        echo "::error::Only "push" and "pull_request" events are supported by this action."
+        exit 1
+
     - uses: actions/checkout@v3
       with:
         path: ${{ inputs.git_checkout_folder }}
@@ -51,10 +52,10 @@ runs:
         cd ${{ inputs.git_checkout_folder }}
         if ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         then
-          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}"
+          echo "version=${{ steps.get_chart_version.outputs.result }}" >> $GITHUB_OUTPUT
         elif ${{ github.event_name == 'pull_request' }}
         then
-          echo "::set-output name=version::${{ steps.get_chart_version.outputs.result }}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short ${{ github.sha }})"
+          echo "version=${{ steps.get_chart_version.outputs.result }}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
         else
           echo Not supported on push to branches other than main
           exit 1
