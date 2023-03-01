@@ -222,7 +222,7 @@
     "/api/certificates/owner/uuid": {
       "get": {
         "tags": [
-          "TransferCertificate"
+          "Uuid"
         ],
         "responses": {
           "200": {
