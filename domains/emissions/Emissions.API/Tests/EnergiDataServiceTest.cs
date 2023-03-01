@@ -15,8 +15,8 @@ public sealed class EnergiDataServiceTest
     public async void DatePeriod_GetEmissionsPerHour_EmissionRecordsReturned()
     {
         var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string>(new string[] { "eds_emissions_hourly.json" }));
-        var dateFrom = new DateTime(2021, 1, 1);
-        var dateTo = new DateTime(2021, 1, 2);
+        var dateFrom = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var dateTo = new DateTimeOffset(2021, 1, 2, 0, 0, 0, TimeSpan.Zero);
         var eds = new EnergiDataService(edsMock);
 
         var res = await eds.GetEmissionsPerHour(dateFrom, dateTo);
@@ -29,8 +29,8 @@ public sealed class EnergiDataServiceTest
     public async void DatePeriod_GetResidualMixPerHour_EmissionRecordsReturned()
     {
         var edsMock = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string>(new string[] { "eds_mix_hourly_all.json", "eds_mix_hourly_total.json" }));
-        var dateFrom = new DateTime(2021, 1, 1);
-        var dateTo = new DateTime(2021, 1, 2);
+        var dateFrom = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var dateTo = new DateTimeOffset(2021, 1, 2, 0, 0, 0, TimeSpan.Zero);
         var eds = new EnergiDataService(edsMock);
 
         var res = await eds.GetResidualMixPerHour(dateFrom, dateTo);

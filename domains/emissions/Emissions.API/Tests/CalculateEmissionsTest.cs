@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
+using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
 
@@ -22,8 +23,8 @@ public sealed class CalculateEmissionsTest
     {
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
-        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeries();
-        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
+        var timeSeries = StaticDataSetFactory.CreateTimeSeries();
+        var emissions = StaticDataSetFactory.CreateEmissions();
         var calculator = new EmissionsCalculator();
 
         var result = calculator.CalculateEmission(emissions, timeSeries, TimeZoneInfo.Utc, aggregation).Emissions.ToArray();
@@ -47,8 +48,8 @@ public sealed class CalculateEmissionsTest
     {
         var dateFrom = new DateTime(2021, 1, 1, 22, 0, 0, DateTimeKind.Utc);
         var dateTo = new DateTime(2021, 1, 2, 2, 0, 0, DateTimeKind.Utc);
-        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeriesForMismatchMeasurements();
-        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
+        var timeSeries = StaticDataSetFactory.CreateTimeSeriesForMismatchMeasurements();
+        var emissions = StaticDataSetFactory.CreateEmissions();
         var calculator = new EmissionsCalculator();
 
         var result = calculator.CalculateEmission(emissions, timeSeries, TimeZoneInfo.Utc, aggregation).Emissions.ToArray();
@@ -64,14 +65,41 @@ public sealed class CalculateEmissionsTest
     [Fact]
     public void EmissionsAndMeasurements_CalculateTotalEmission_HugeDateSet()
     {
-        var timeSeries = CalculateEmissionDataSetFactory.CreateTimeSeriesHugeValues();
-        var emissions = CalculateEmissionDataSetFactory.CreateEmissions();
+        var timeSeries = StaticDataSetFactory.CreateTimeSeriesHugeValues();
+        var emissions = StaticDataSetFactory.CreateEmissions();
         var calculator = new EmissionsCalculator();
 
         var result = calculator.CalculateEmission(emissions, timeSeries, TimeZoneInfo.Utc, Aggregation.Total).Emissions.ToArray();
 
         Assert.NotNull(result);
         Assert.Equal(864000000L, result.Single().Total.Value);
+    }
+
+    [Theory]
+    [InlineData(Aggregation.Day, 24, "Europe/Copenhagen")]
+    [InlineData(Aggregation.Month, 31 * 24, "Europe/Copenhagen")]
+    [InlineData(Aggregation.Day, 24, "America/Los_Angeles")]
+    [InlineData(Aggregation.Month, 31 * 24, "America/Los_Angeles")]
+    [InlineData(Aggregation.Day, 24, "Asia/Kolkata")]
+    [InlineData(Aggregation.Month, 31 * 24, "Asia/Kolkata")]
+    public void Calculate_AggreatingToOne_WhenAggregationMatchesAmountOfHours(Aggregation aggregation, int amount, string timeZoneId)
+    {
+        Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
+        Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var date = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        date = date.Add(-timeZone.GetUtcOffset(date.UtcDateTime));
+        var series = DataSetFactory.CreateTimeSeries(startingAt: date, amount: amount);
+        var emissions = DataSetFactory.CreateEmissionSeries(startingAt: date, amount: amount);
+        var calculator = new EmissionsCalculator();
+
+        var result = calculator.CalculateEmission(emissions, series, timeZone, aggregation);
+        var utcResult = calculator.CalculateEmission(emissions, series, TimeZoneInfo.Utc, aggregation);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Emissions);
+        Assert.NotNull(utcResult);
+        Assert.NotEqual(1, utcResult.Emissions.Count());
     }
 
     private static IEnumerable<Emissions> GetExpectedEmissions(Aggregation aggregation, DateTimeOffset dateFrom, DateTimeOffset dateTo) => aggregation switch

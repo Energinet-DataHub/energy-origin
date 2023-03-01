@@ -20,8 +20,8 @@ public class DataSyncService : IDataSyncService
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo)
     {
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTimeSeconds()}&dateTo={dateTo.ToUnixTimeSeconds()}";
-
         httpClient.AddAuthorizationToken(context);
+
         var result = await httpClient.GetFromJsonAsync<List<Measurement>>(url, options);
 
         return result ?? throw new Exception("List of measurements failed");

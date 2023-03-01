@@ -11,8 +11,8 @@ namespace API.Services
         private const string total = "total";
 
         public EnergySourceResponse CalculateSourceEmissions(
-            IEnumerable<TimeSeries> timeSeries,
             IEnumerable<MixRecord> records,
+            IEnumerable<TimeSeries> timeSeries,
             TimeZoneInfo timeZone,
             Aggregation aggregation)
         {
@@ -70,18 +70,18 @@ namespace API.Services
             return result;
         }
 
-        //Translates a date into an aggregated date string.
-        //This creates a period bucket/bin spanning the aggregation amount.
         private static string GetAggregationDateString(DateTimeOffset date, TimeZoneInfo timeZone, Aggregation aggregation) => aggregation switch
         {
-            Aggregation.Year => date.ToString("yyyy"),
-            Aggregation.Month => date.ToString("yyyy/MM"),
-            Aggregation.Day => date.ToString("yyyy/MM/dd"),
-            Aggregation.Hour => date.ToString("yyyy/MM/dd/HH"),
-            Aggregation.QuarterHour => date.ToString("yyyy/MM/dd/HH/mm"),
-            Aggregation.Actual => date.ToString("yyyy/MM/dd/HH"),
+            Aggregation.Year => Key(timeZone, "yyyy", date),
+            Aggregation.Month => Key(timeZone, "yyyy/MM", date),
+            Aggregation.Day => Key(timeZone, "yyyy/MM/dd", date),
+            Aggregation.Hour => Key(timeZone, "yyyy/MM/dd/HH", date),
+            Aggregation.QuarterHour => Key(timeZone, "yyyy/MM/dd/HH/mm", date),
+            Aggregation.Actual => Key(timeZone, "yyyy/MM/dd/HH", date),
             Aggregation.Total => total,
             _ => throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, null),
         };
+
+        private static string Key(TimeZoneInfo timeZone, string format, DateTimeOffset date) => date.ToOffset(timeZone.GetUtcOffset(date.UtcDateTime)).ToString(format);
     }
 }

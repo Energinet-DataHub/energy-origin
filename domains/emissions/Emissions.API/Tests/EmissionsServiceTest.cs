@@ -8,6 +8,7 @@ using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
 using Moq;
+using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
 
@@ -331,12 +332,11 @@ public sealed class EmissionsServiceTests
     [Fact]
     public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
     {
-        //Arrange
         var context = new AuthorizationContext("subject", "actor", "token");
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
-        var measurements = CalculateEmissionDataSetFactory.CreateMeasurementsFirstMP();
+        var measurements = StaticDataSetFactory.CreateMeasurementsFirstMP();
 
         var mockDataSyncService = new Mock<IDataSyncService>();
         var mockEds = new Mock<IEnergiDataService>();

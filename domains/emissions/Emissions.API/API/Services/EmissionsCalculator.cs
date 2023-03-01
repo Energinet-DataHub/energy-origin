@@ -45,21 +45,19 @@ internal class EmissionsCalculator : IEmissionsCalculator
         return response;
     }
 
-    private static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, TimeZoneInfo timeZone, IEnumerable<Emission> listOfEmissions)
+    private static IEnumerable<IGrouping<string, Emission>> GetGroupedEmissions(Aggregation aggregation, TimeZoneInfo timeZone, IEnumerable<Emission> list) => aggregation switch
     {
-        var groupedEmissions = aggregation switch
-        {
-            Aggregation.Year => listOfEmissions.GroupBy(x => x.DateFrom.Year.ToString()),
-            Aggregation.Month => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM")),
-            Aggregation.Day => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd")),
-            Aggregation.Hour => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH")),
-            Aggregation.QuarterHour => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH/mm")),
-            Aggregation.Actual => listOfEmissions.GroupBy(x => x.DateFrom.ToString("yyyy/MM/dd/HH")),
-            Aggregation.Total => listOfEmissions.GroupBy(_ => "total"),
-            _ => throw new ArgumentOutOfRangeException(nameof(aggregation)),
-        };
-        return groupedEmissions;
-    }
+        Aggregation.Year => list.GroupBy(x => Key(timeZone, "yyyy", x.DateFrom)),
+        Aggregation.Month => list.GroupBy(x => Key(timeZone, "yyyy/MM", x.DateFrom)),
+        Aggregation.Day => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd", x.DateFrom)),
+        Aggregation.Hour => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH", x.DateFrom)),
+        Aggregation.QuarterHour => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH/mm", x.DateFrom)),
+        Aggregation.Actual => list.GroupBy(x => Key(timeZone, "yyyy/MM/dd/HH", x.DateFrom)),
+        Aggregation.Total => list.GroupBy(x => "total"),
+        _ => throw new ArgumentOutOfRangeException(nameof(aggregation)),
+    };
+
+    private static string Key(TimeZoneInfo timeZone, string format, DateTimeOffset date) => date.ToOffset(timeZone.GetUtcOffset(date.UtcDateTime)).ToString(format);
 
     private record Emission
     (

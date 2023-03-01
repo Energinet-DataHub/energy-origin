@@ -24,14 +24,12 @@ public class EmissionsService : IEmissionsService
 
     public async Task<EmissionsResponse> GetTotalEmissions(AuthorizationContext context, DateTimeOffset dateFrom, DateTimeOffset dateTo, TimeZoneInfo timeZone, Aggregation aggregation)
     {
-        //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
         var emissions = await energyDataService.GetEmissionsPerHour(dateFrom, dateTo);
 
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
-        //Calculate total emission
         return emissionsCalculator.CalculateEmission(emissions, measurements, timeZone, aggregation);
     }
 
@@ -48,20 +46,17 @@ public class EmissionsService : IEmissionsService
 
             timeSeries.Add(new TimeSeries(meteringPoint, measurements));
         }
-
         return timeSeries;
     }
 
     public async Task<EnergySourceResponse> GetSourceDeclaration(AuthorizationContext context, DateTimeOffset dateFrom, DateTimeOffset dateTo, TimeZoneInfo timeZone, Aggregation aggregation)
     {
-        //Get list of metering points
         var meteringPoints = await dataSyncService.GetListOfMeteringPoints(context);
 
-        //Get metering point time series
         var measurements = await GetTimeSeries(context, dateFrom, dateTo, meteringPoints.Where(mp => mp.Type == MeterType.Consumption));
 
         var mixRecords = await energyDataService.GetResidualMixPerHour(dateFrom, dateTo);
 
-        return sourcesCalculator.CalculateSourceEmissions(measurements, mixRecords, timeZone, aggregation);
+        return sourcesCalculator.CalculateSourceEmissions(mixRecords, measurements, timeZone, aggregation);
     }
 }
