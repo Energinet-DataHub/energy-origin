@@ -4,6 +4,8 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using Baseline;
 using Contracts.Transfer;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +22,14 @@ public class TransferCertificateController : ControllerBase
     [Route("api/certificates/production/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
-        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient)
+        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient,
+        [FromServices] IValidator<TransferCertificate> validator)
     {
-        if (transferCertificate.CurrentOwner.IsEmpty() || transferCertificate.NewOwner.IsEmpty())
+        var validationResult = await validator.ValidateAsync(transferCertificate);
+        if (!validationResult.IsValid)
         {
-            return BadRequest();
-        }
-
-        if (transferCertificate.CurrentOwner.Equals(transferCertificate.NewOwner))
-        {
-            return BadRequest();
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
         }
 
         var request = new TransferProductionCertificateRequest(
@@ -42,7 +42,7 @@ public class TransferCertificateController : ControllerBase
 
         return Ok(
             new TransferProductionCertificateResponse(
-                Status: response.Message.Status
+                Status: response.Message.
                 )
             );
 /*
