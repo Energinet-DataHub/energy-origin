@@ -16,7 +16,7 @@ public class UserDescriptMapper : IUserDescriptMapper
         this.logger = logger;
     }
 
-    public UserDescriptor Map(User user, string accessToken, string identityToken, bool encrypt = true) => new(cryptography)
+    public UserDescriptor Map(User user, string accessToken, string identityToken) => new(cryptography)
     {
         Id = user.Id,
         ProviderId = user.ProviderId,
@@ -24,8 +24,8 @@ public class UserDescriptMapper : IUserDescriptMapper
         Tin = user.Tin,
         AcceptedTermsVersion = user.AcceptedTermsVersion,
         AllowCPRLookup = user.AllowCPRLookup,
-        EncryptedAccessToken = encrypt ? cryptography.Encrypt(accessToken) : accessToken,
-        EncryptedIdentityToken = encrypt ? cryptography.Encrypt(identityToken) : identityToken
+        EncryptedAccessToken = cryptography.Encrypt(accessToken),
+        EncryptedIdentityToken = cryptography.Encrypt(identityToken)
     };
 
     public UserDescriptor? Map(ClaimsPrincipal? user)

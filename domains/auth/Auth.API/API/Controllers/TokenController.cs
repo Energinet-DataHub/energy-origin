@@ -14,7 +14,7 @@ public class TokenController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/token")]
-    public async Task<ActionResult> RefreshAsync(
+    public async Task<IActionResult> RefreshAsync(
         IUserDescriptMapper descriptMapper,
         IUserService userService,
         ITokenIssuer tokenIssuer)
@@ -25,12 +25,10 @@ public class TokenController : ControllerBase
         if (descriptor.Id is not null)
         {
             var user = await userService.GetUserByIdAsync(descriptor.Id.Value) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id.Value}");
-            descriptor = descriptMapper.Map(user, descriptor.AccessToken!, descriptor.IdentityToken!, false);
+            descriptor = descriptMapper.Map(user, descriptor.AccessToken!, descriptor.IdentityToken!);
             versionBypass = true;
         }
 
-        var token = tokenIssuer.Issue(descriptor, versionBypass);
-
-        return Ok(token);
+        return Ok(tokenIssuer.Issue(descriptor, versionBypass));
     }
 }
