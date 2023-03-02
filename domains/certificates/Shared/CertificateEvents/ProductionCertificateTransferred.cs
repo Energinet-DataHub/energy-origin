@@ -5,8 +5,8 @@ namespace CertificateEvents;
 
 public record ProductionCertificateTransferred(
     Guid CertificateId,
-    string From,
-    string To,
+    string Source,
+    string Target,
 
     // Duplicated values from below
     string GridArea,

@@ -19,14 +19,14 @@
             Id of the certificate
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.TransferCertificate.CurrentOwner">
+        <member name="P:API.Query.API.ApiModels.Requests.TransferCertificate.Source">
             <summary>
-            Key for the owner currently owning the certificate
+            Key for the current owner of the certificate
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.TransferCertificate.NewOwner">
+        <member name="P:API.Query.API.ApiModels.Requests.TransferCertificate.Target">
             <summary>
-            Key for the owner to transfer the certificate to
+            Key to transfer the certificate to
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Certificate.Id">

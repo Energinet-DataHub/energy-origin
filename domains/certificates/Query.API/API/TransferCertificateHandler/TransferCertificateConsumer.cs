@@ -25,7 +25,7 @@ public class TransferCertificateConsumer : IConsumer<TransferProductionCertifica
 
         try
         {
-            productionCertificate.Transfer(context.Message.CurrentOwner, context.Message.NewOwner);
+            productionCertificate.Transfer(context.Message.Source, context.Message.Target);
 
             await repository.Save(productionCertificate, context.CancellationToken);
 

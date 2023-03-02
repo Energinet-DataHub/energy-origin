@@ -17,11 +17,11 @@ public class TransferCertificateController : ControllerBase
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
-    [Route("api/certificates/production/transfer")]
+    [Route("api/certificates/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
-        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient,
-        [FromServices] IValidator<TransferCertificate> validator)
+        [FromServices] IValidator<TransferCertificate> validator,
+        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient)
     {
         var validationResult = await validator.ValidateAsync(transferCertificate);
         if (!validationResult.IsValid)
@@ -31,8 +31,8 @@ public class TransferCertificateController : ControllerBase
         }
 
         var request = new TransferProductionCertificateRequest(
-            transferCertificate.CurrentOwner,
-            transferCertificate.NewOwner,
+            transferCertificate.Source,
+            transferCertificate.Target,
             transferCertificate.CertificateId);
 
         var response = await requestClient.GetResponse<Success, Failure>(request);

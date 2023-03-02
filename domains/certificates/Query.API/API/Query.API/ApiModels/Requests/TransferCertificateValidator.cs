@@ -6,12 +6,12 @@ public class TransferCertificateValidator : AbstractValidator<TransferCertificat
 {
     public TransferCertificateValidator()
     {
-        RuleFor(tc => tc.CurrentOwner)
+        RuleFor(tc => tc.Source)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .NotEqual(tc => tc.NewOwner);
+            .NotEqual(tc => tc.Target);
 
-        RuleFor(tc => tc.NewOwner)
+        RuleFor(tc => tc.Target)
             .NotEmpty();
     }
 }

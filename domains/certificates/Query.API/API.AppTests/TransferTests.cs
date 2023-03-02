@@ -17,7 +17,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-public sealed class TransferTests :
+public class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
@@ -26,7 +26,9 @@ public sealed class TransferTests :
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public TransferTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
+    public TransferTests(
+        QueryApiWebApplicationFactory factory,
+        MartenDbContainer martenDbContainer,
         RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9004);
@@ -47,8 +49,8 @@ public sealed class TransferTests :
     {
         var (owner1, owner1Client, owner2, owner2Client, certificateId) = await Setup();
 
-        var body = new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner2 };
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer", body);
+        var body = new { CertificateId = certificateId, Source = owner1, Target = owner2 };
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -65,10 +67,9 @@ public sealed class TransferTests :
     {
         var (owner1, owner1Client, owner2, _, certificateId) = await Setup();
 
-        var bodyWithOwnersSwitched = new { CertificateId = certificateId, CurrentOwner = owner2, NewOwner = owner1 };
+        var bodyWithOwnersSwitched = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
-            bodyWithOwnersSwitched);
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithOwnersSwitched);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -80,10 +81,9 @@ public sealed class TransferTests :
 
         var unknownCertificateId = Guid.NewGuid();
 
-        var body = new { CertificateId = unknownCertificateId, CurrentOwner = owner1, NewOwner = owner2 };
+        var body = new { CertificateId = unknownCertificateId, Source = owner1, Target = owner2 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
-            body);
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -93,10 +93,9 @@ public sealed class TransferTests :
     {
         var (owner1, owner1Client, _, _, certificateId) = await Setup();
 
-        var bodyWithSameOwner = new { CertificateId = certificateId, CurrentOwner = owner1, NewOwner = owner1 };
+        var bodyWithSameOwner = new { CertificateId = certificateId, Source = owner1, Target = owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/production/transfer",
-            bodyWithSameOwner);
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithSameOwner);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

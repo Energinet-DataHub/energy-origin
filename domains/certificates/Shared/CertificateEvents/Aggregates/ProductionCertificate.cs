@@ -96,16 +96,16 @@ public class ProductionCertificate : AggregateBase
         Version++;
     }
 
-    public void Transfer(string from, string to)
+    public void Transfer(string source, string target)
     {
         if (issuedState != IssuedState.Issued)
             throw new CertificateDomainException(Id, "Transfer only allowed on issued certificates");
-        if (string.Equals(to, CertificateOwner))
-            throw new CertificateDomainException(Id, $"Cannot transfer certificate to the current owner {CertificateOwner}");
-        if (!string.Equals(from, CertificateOwner))
-            throw new CertificateDomainException(Id, $"Can only transfer from current owner {CertificateOwner}, not from {from}");
+        if (string.Equals(target, CertificateOwner))
+            throw new CertificateDomainException(Id, $"Cannot transfer certificate to the current owner {target}");
+        if (!string.Equals(source, CertificateOwner))
+            throw new CertificateDomainException(Id, $"Cannot transfer from {source}. {source} is not current owner");
 
-        var @event = new ProductionCertificateTransferred(Id, from, to, gridArea, period, technology, gsrn, quantity);
+        var @event = new ProductionCertificateTransferred(Id, source, target, gridArea, period, technology, gsrn, quantity);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -113,7 +113,7 @@ public class ProductionCertificate : AggregateBase
 
     private void Apply(ProductionCertificateTransferred @event)
     {
-        CertificateOwner = @event.To;
+        CertificateOwner = @event.Target;
 
         Version++;
     }
