@@ -25,7 +25,7 @@ public class SyncStateProjectionTest
         var projection = new SyncStateProjection();
         var view = new SyncStateView();
 
-        projection.Apply(createdEvent with {Period = new Period(1900, 2000)}, view);
+        projection.Apply(createdEvent with { Period = new Period(1900, 2000) }, view);
 
         view.SyncDateTo.Should().Be(2000);
     }
