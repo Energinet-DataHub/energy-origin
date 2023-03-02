@@ -180,7 +180,7 @@
         }
       }
     },
-    "/api/certificates/production/transfer": {
+    "/api/certificates/transfer": {
       "post": {
         "tags": [
           "TransferCertificate"
@@ -347,13 +347,13 @@
             "description": "Id of the certificate",
             "format": "uuid"
           },
-          "currentOwner": {
+          "source": {
             "type": "string",
-            "description": "Key for the owner currently owning the certificate"
+            "description": "Key for the current owner of the certificate"
           },
-          "newOwner": {
+          "target": {
             "type": "string",
-            "description": "Key for the owner to transfer the certificate to"
+            "description": "Key to transfer the certificate to"
           }
         },
         "additionalProperties": false
