@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -12,8 +11,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
@@ -67,7 +70,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
+     
     c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
     {
         new OpenApiSecurityScheme {
@@ -98,6 +101,36 @@ builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
+
+var serviceName = "Auth.API";
+var serviceVersion = "1.0.0";
+
+var appResourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracerProviderBuilder =>
+    {
+        tracerProviderBuilder
+            .AddConsoleExporter()
+            .AddSource(serviceName)
+            .SetResourceBuilder(appResourceBuilder)
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation();
+
+        //tracerProviderBuilder.AddJaegerExporter();
+    })
+    .WithMetrics(metricProviderBuilder =>
+    {
+        metricProviderBuilder
+            .AddConsoleExporter()
+            .AddMeter(serviceName)
+            .SetResourceBuilder(appResourceBuilder)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+
+        //metricProviderBuilder.AddPrometheusExporter();
+    });
 
 var app = builder.Build();
 
