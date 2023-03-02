@@ -53,11 +53,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
 
+builder.Services.AddSingleton<IEmissionsCalculator, EmissionsCalculator>();
+builder.Services.AddSingleton<ISourcesCalculator, SourcesCalculator>();
+
 builder.Services.AddHttpClient<IEnergiDataService, EnergiDataService>(x => x.BaseAddress = new Uri(Configuration.GetEnergiDataServiceEndpoint()));
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(x => x.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
 builder.Services.AddTransient<IEmissionsService, EmissionsService>();
-builder.Services.AddTransient<IEmissionsCalculator, EmissionsCalculator>();
-builder.Services.AddTransient<ISourcesCalculator, SourcesCalculator>();
 
 var app = builder.Build();
 
