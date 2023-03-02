@@ -28,7 +28,7 @@ public class RabbitMqContainer : IAsyncLifetime
         Username = testContainer.Username,
         Password = testContainer.Password
     };
-    
+
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
     public Task DisposeAsync() => testContainer.StopAsync();
