@@ -12,7 +12,7 @@ public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
     public UnhealthTests(QueryApiWebApplicationFactory factory)
     {
         this.factory = factory;
-        this.factory.RabbitMqSetup = null;
+        this.factory.RabbitMqOptions = null;
     }
 
     [Fact]

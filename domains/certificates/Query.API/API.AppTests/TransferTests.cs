@@ -35,13 +35,7 @@ public sealed class TransferTests :
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
-        this.factory.RabbitMqSetup = new RabbitMqOptions
-        {
-            Username = rabbitMqContainer.Username,
-            Password = rabbitMqContainer.Password,
-            Host = rabbitMqContainer.Hostname,
-            Port = rabbitMqContainer.Port
-        };
+        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
     [Fact]

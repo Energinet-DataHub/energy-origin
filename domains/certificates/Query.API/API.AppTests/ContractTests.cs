@@ -6,7 +6,6 @@ using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
 using API.IntegrationTest.Infrastructure;
-using API.RabbitMq.Configurations;
 using FluentAssertions;
 using Xunit;
 
@@ -23,13 +22,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         this.factory = factory;
         this.factory.MartenConnectionString = marten.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
-        this.factory.RabbitMqSetup = new RabbitMqOptions
-        {
-            Username = rabbitMqContainer.Username,
-            Password = rabbitMqContainer.Password,
-            Host = rabbitMqContainer.Hostname,
-            Port = rabbitMqContainer.Port
-        };
+        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
     [Fact]

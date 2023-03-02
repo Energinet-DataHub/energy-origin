@@ -11,7 +11,6 @@ using API.AppTests.Mocks;
 using API.DataSyncSyncer;
 using API.RabbitMq.Configurations;
 using FluentAssertions;
-using Marten;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -25,21 +24,21 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "";
-    public RabbitMqOptions? RabbitMqSetup { get; set; }
+    public RabbitMqOptions? RabbitMqOptions { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
-        builder.UseSetting("RabbitMq:Password", RabbitMqSetup?.Password ?? "");
-        builder.UseSetting("RabbitMq:Username", RabbitMqSetup?.Username ?? "");
-        builder.UseSetting("RabbitMq:Host", RabbitMqSetup?.Host ?? "localhost");
-        builder.UseSetting("RabbitMq:Port", RabbitMqSetup?.Port.ToString() ?? "4242");
+        builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
+        builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
+        builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
+        builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
 
         builder.ConfigureTestServices(services =>
         {
             //  Ensure masstransit bus is started when we run our health checks
-            if (RabbitMqSetup != null)
+            if (RabbitMqOptions != null)
                 services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
 
             //Remove DataSyncSyncerWorker

@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using API.RabbitMq.Configurations;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -20,11 +21,14 @@ public class RabbitMqContainer : IAsyncLifetime
             })
             .Build();
 
-    public string Username => testContainer.Username;
-    public string Password => testContainer.Password;
-    public string Hostname => testContainer.Hostname;
-    public int Port => testContainer.Port;
-
+    public RabbitMqOptions Options => new()
+    {
+        Host = testContainer.Hostname,
+        Port = testContainer.Port,
+        Username = testContainer.Username,
+        Password = testContainer.Password
+    };
+    
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
     public Task DisposeAsync() => testContainer.StopAsync();

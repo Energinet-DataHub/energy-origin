@@ -7,7 +7,6 @@ using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
 using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
-using API.RabbitMq.Configurations;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using MassTransit;
@@ -32,13 +31,7 @@ public sealed class CertificateIssuingTests :
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
-        this.factory.RabbitMqSetup = new RabbitMqOptions
-        {
-            Username = rabbitMqContainer.Username,
-            Password = rabbitMqContainer.Password,
-            Host = rabbitMqContainer.Hostname,
-            Port = rabbitMqContainer.Port
-        };
+        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
     [Fact]
