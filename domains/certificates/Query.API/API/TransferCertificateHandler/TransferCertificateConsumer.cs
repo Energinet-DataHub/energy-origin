@@ -5,7 +5,7 @@ using Contracts.Transfer;
 using MassTransit;
 using static Contracts.Transfer.TransferProductionCertificateResponse;
 
-namespace API.TransferCertificateService;
+namespace API.TransferCertificateHandler;
 
 public class TransferCertificateConsumer : IConsumer<TransferProductionCertificateRequest>
 {

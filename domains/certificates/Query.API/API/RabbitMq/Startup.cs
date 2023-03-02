@@ -1,7 +1,7 @@
 using System;
 using API.GranularCertificateIssuer;
 using API.RabbitMq.Configurations;
-using API.TransferCertificateService;
+using API.TransferCertificateHandler;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
