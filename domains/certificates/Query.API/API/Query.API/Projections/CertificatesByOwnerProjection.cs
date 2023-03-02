@@ -37,7 +37,7 @@ public class CertificatesByOwnerProjection : MultiStreamAggregation<Certificates
                 GridArea = @event.GridArea,
                 TechCode = @event.Technology.TechCode,
                 FuelCode = @event.Technology.FuelCode,
-                Status = CertificateStatus.Issued // TODO: What to do
+                Status = CertificateStatus.Issued // Transfer is only allowed if certificate is issued
             };
         }
     }
