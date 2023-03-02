@@ -60,8 +60,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
 
-    public IDocumentStore GetDocumentStore() => Services.GetRequiredService<IDocumentStore>();
-
     private static string GenerateToken(
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",

@@ -8,7 +8,10 @@ namespace API.Query.API.Controllers;
 [ApiController]
 public class SubjectController : ControllerBase
 {
+    /// <summary>
+    /// Endpoint to return the Subject UUID. Will be removed from the API in the future
+    /// </summary>
     [HttpGet]
     [Route("api/certificates/subject")]
-    public IActionResult GetUuid() => Ok(User.FindFirstValue("subject"));
+    public IActionResult GetSubject() => Ok(User.FindFirstValue("subject"));
 }

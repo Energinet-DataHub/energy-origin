@@ -14,6 +14,9 @@ namespace API.Query.API.Controllers;
 [ApiController]
 public class TransferCertificateController : ControllerBase
 {
+    /// <summary>
+    /// Transfers the entire certificate 
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]

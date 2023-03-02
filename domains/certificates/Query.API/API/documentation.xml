@@ -99,5 +99,15 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.SubjectController.GetSubject">
+            <summary>
+            Endpoint to return the Subject UUID. Will be removed from the API in the future
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.TransferCertificateController.TransferCertificate(API.Query.API.ApiModels.Requests.TransferCertificate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.TransferCertificate},MassTransit.IRequestClient{Contracts.Transfer.TransferProductionCertificateRequest})">
+            <summary>
+            Transfers the entire certificate 
+            </summary>
+        </member>
     </members>
 </doc>
