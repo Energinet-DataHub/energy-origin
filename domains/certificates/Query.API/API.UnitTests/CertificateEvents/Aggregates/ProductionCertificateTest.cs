@@ -7,105 +7,93 @@ using Xunit;
 
 namespace API.UnitTests.CertificateEvents.Aggregates;
 
-//TODO: Should this be in its own test project for Shared project CertificateEvents?
 public class ProductionCertificateTest
 {
+    private readonly ProductionCertificate productionCertificate = new(
+        "gridArea",
+        new Period(1, 42),
+        new Technology(FuelCode: "F00000000", TechCode: "T010000"),
+        "owner1",
+        "gsrn",
+        42);
+
     [Fact]
     public void can_issue_certificate()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
 
-        sut.Issue();
-
-        sut.Version.Should().Be(2);
-    }
-
-    [Fact]
-    public void cannot_issue_if_rejected()
-    {
-        var sut = CreateProductionCertificate();
-
-        sut.Reject("foo");
-        sut.Invoking(s => s.Issue()).Should().Throw<CertificateDomainException>();
+        productionCertificate.Version.Should().Be(2);
     }
 
     [Fact]
     public void can_reject_certificate()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Reject("foo");
 
-        sut.Reject("foo");
+        productionCertificate.Version.Should().Be(2);
+    }
 
-        sut.Version.Should().Be(2);
+    [Fact]
+    public void cannot_issue_if_rejected()
+    {
+        productionCertificate.Reject("foo");
+
+        productionCertificate.Invoking(s => s.Issue()).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
     public void cannot_reject_if_issued()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
 
-        sut.Issue();
-        sut.Invoking(s => s.Reject("foo")).Should().Throw<CertificateDomainException>();
-
-        sut.Version.Should().Be(2);
+        productionCertificate.Invoking(s => s.Reject("foo")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
     public void cannot_transfer_if_not_issued()
-    {
-        var sut = CreateProductionCertificate();
-
-        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
-    }
+        => productionCertificate.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
 
     [Fact]
     public void cannot_transfer_if_rejected()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Reject("foo");
 
-        sut.Reject("foo");
-        sut.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
+        productionCertificate.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
     public void can_transfer_if_issued()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
+        productionCertificate.Transfer("owner1", "owner2");
 
-        sut.Issue();
-        sut.Transfer("owner1", "owner2");
-
-        sut.CertificateOwner.Should().Be("owner2");
+        productionCertificate.CertificateOwner.Should().Be("owner2");
     }
 
     [Fact]
     public void can_transfer_back_to_original_owner()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
+        productionCertificate.Transfer("owner1", "owner2");
+        productionCertificate.Transfer("owner2", "owner1");
 
-        sut.Issue();
-        sut.Transfer("owner1", "owner2");
-        sut.Transfer("owner2", "owner1");
-
-        sut.CertificateOwner.Should().Be("owner1");
+        productionCertificate.CertificateOwner.Should().Be("owner1");
     }
 
     [Fact]
     public void cannot_transfer_to_same_owner()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
 
-        sut.Issue();
-        sut.Invoking(s => s.Transfer("owner1", "owner1")).Should().Throw<CertificateDomainException>();
+        productionCertificate.Invoking(s => s.Transfer("owner1", "owner1")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
     public void cannot_transfer_from_wrong_owner()
     {
-        var sut = CreateProductionCertificate();
+        productionCertificate.Issue();
 
-        sut.Issue();
-        sut.Invoking(s => s.Transfer("wrong-owner", "owner2")).Should().Throw<CertificateDomainException>();
+        productionCertificate.Invoking(s => s.Transfer("wrong-owner", "owner2")).Should().Throw<CertificateDomainException>();
     }
 
     [Fact]
@@ -114,13 +102,4 @@ public class ProductionCertificateTest
         var sut = Activator.CreateInstance(typeof(ProductionCertificate), true);
         sut.Should().NotBeNull();
     }
-
-    private static ProductionCertificate CreateProductionCertificate() =>
-        new(
-            "gridArea",
-            new Period(1, 42),
-            new Technology(FuelCode: "F00000000", TechCode: "T010000"),
-            "owner1",
-            "gsrn",
-            42);
 }
