@@ -1,4 +1,4 @@
-using API.GranularCertificateIssuer.Repositories;
+using AggregateRepositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

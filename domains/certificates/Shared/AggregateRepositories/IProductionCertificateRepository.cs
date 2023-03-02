@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CertificateEvents.Aggregates;
 
-namespace API.GranularCertificateIssuer.Repositories;
+namespace AggregateRepositories;
 
 public interface IProductionCertificateRepository
 {

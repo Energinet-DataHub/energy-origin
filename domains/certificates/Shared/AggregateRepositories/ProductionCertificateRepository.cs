@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using CertificateEvents.Aggregates;
 using Marten;
 
-namespace API.GranularCertificateIssuer.Repositories;
+namespace AggregateRepositories;
 
 public class ProductionCertificateRepository : IProductionCertificateRepository
 {

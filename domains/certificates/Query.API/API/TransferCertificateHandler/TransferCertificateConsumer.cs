@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using API.GranularCertificateIssuer.Repositories;
+using AggregateRepositories;
 using CertificateEvents.Exceptions;
 using Contracts.Transfer;
 using MassTransit;
