@@ -10,7 +10,6 @@ using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
 using API.IntegrationTest.Infrastructure;
 using API.Query.API.ApiModels.Responses;
-using API.RabbitMq.Configurations;
 using FluentAssertions;
 using MeasurementEvents;
 using Xunit;
@@ -53,6 +52,7 @@ public sealed class TransferTests :
         certificateListForOwner2!.Result.Should().HaveCount(1);
 
         var certificateListResponseForOwner1 = await owner1Client.GetAsync("api/certificates");
+
         certificateListResponseForOwner1.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -121,10 +121,10 @@ public sealed class TransferTests :
         var owner1Client = factory.CreateAuthenticatedClient(owner1);
         var owner2Client = factory.CreateAuthenticatedClient(owner2);
 
-        var certificateListForOwner1BeforeTransfer =
+        var certificateListForOwner1 =
             await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
-        var certificateId = certificateListForOwner1BeforeTransfer.Result.Single().Id;
+        var certificateId = certificateListForOwner1.Result.Single().Id;
 
         return (owner1, owner1Client, owner2, owner2Client, certificateId);
     }

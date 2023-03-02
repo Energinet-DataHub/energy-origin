@@ -2,7 +2,6 @@ using System;
 using API.Configurations;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Persistence;
-using API.Query.API.Projections;
 using Marten;
 using Marten.Events.Projections;
 using Microsoft.Extensions.Configuration;

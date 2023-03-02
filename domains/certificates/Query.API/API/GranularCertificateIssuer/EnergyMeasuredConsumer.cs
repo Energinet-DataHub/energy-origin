@@ -42,6 +42,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             message.GSRN,
             message.Quantity);
 
+        // The certificate is issued immediately here. This will be changed when integrating with Project Origin Registry
         productionCertificate.Issue();
 
         await repository.Save(productionCertificate, context.CancellationToken);
