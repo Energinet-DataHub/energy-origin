@@ -30,6 +30,21 @@ public class TokenIssuerTests
         tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
     }
 
+    [Theory]
+    [InlineData("terms", 0, false)]
+    [InlineData("terms dashboard production meters certificates", 1, false)]
+    [InlineData("terms dashboard production meters certificates", 0, true)]
+    [InlineData("terms dashboard production meters certificates", 1, true)]
+    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
+    {
+        var descriptor = PrepareUser(version: version);
+
+        var token = GetTokenIssuer().Issue(descriptor, versionBypass: bypass);
+
+        var scope = Convert(token)!.Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        Assert.Equal(expectedScope, scope);
+    }
+
     [Fact]
     public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {

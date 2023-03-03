@@ -1,10 +1,9 @@
-using API.Models.Entities;
-using API.Options;
+using System.Security.Claims;
 using API.Services;
 using API.Utilities;
+using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -26,7 +25,10 @@ public class TokenController : ControllerBase
         {
             var user = await userService.GetUserByIdAsync(descriptor.Id.Value) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id.Value}");
             descriptor = descriptMapper.Map(user, descriptor.AccessToken!, descriptor.IdentityToken!);
-            versionBypass = true;
+
+            var scope = User.FindFirstValue(UserClaimName.Scope);
+
+            if (scope != "terms") versionBypass = true;
         }
 
         return Ok(tokenIssuer.Issue(descriptor, versionBypass));

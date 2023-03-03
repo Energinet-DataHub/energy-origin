@@ -43,11 +43,7 @@ public class TokenIssuer : ITokenIssuer
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var allScopes = "terms dashboard production meters certificates";
-
-        var scope = versionBypass
-            ? allScopes
-            : version == options.CurrentVersion ? allScopes : "terms";
+        var scope = version == options.CurrentVersion || versionBypass ? "terms dashboard production meters certificates" : "terms";
 
         return new(descriptor.Id?.ToString(), version, scope);
     }

@@ -1,74 +1,115 @@
-//using System.Security.Claims;
-//using API.Controllers;
-//using API.Options;
-//using API.Utilities;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using API.Controllers;
+using API.Models.Entities;
+using API.Services;
+using API.Utilities;
+using API.Values;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace Integration.Tests.Controllers;
+namespace Integration.Tests.Controllers;
 
-//public class RefreshControllerTests
-//{
-//    private readonly RefreshController refreshController = new();
-//    private readonly IOptions<TokenOptions> tokenOptions;
-//    private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
-//    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
-//    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
+public class TokenControllerTests
+{
+    private readonly TokenController tokenController = new();
+    private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
+    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+    private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
+    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
 
-//    public RefreshControllerTests()
-//    {
-//        var configuration = new ConfigurationBuilder()
-//            .SetBasePath(Directory.GetCurrentDirectory())
-//            .AddJsonFile("appsettings.Test.json", false)
-//            .Build();
+    public TokenControllerTests() =>
+        tokenController.ControllerContext = new ControllerContext()
+        {
+            HttpContext = new DefaultHttpContext() { User = claimsPrincipal }
+        };
 
-//        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+    [Theory]
+    [InlineData(false, "terms", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
+    [InlineData(true, "terms dashboard production meters certificates", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
+    [InlineData(false, "terms", null)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
+    {
+        var token = Guid.NewGuid().ToString();
 
-//        Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
-//    }
+        Mock.Get(cryptography)
+            .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
+            .Returns(value: Guid.NewGuid().ToString());
 
-//    [Fact]
-//    public void RefreshAccessToken_ShouldReturnCookieHeaderAndNoContent_WhenInvoked()
-//    {
-//        var oldToken = Guid.NewGuid().ToString();
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(cryptography)
+            {
+                Id = userId != null ? Guid.Parse(userId) : null,
+                EncryptedAccessToken = Guid.NewGuid().ToString(),
+                EncryptedIdentityToken = Guid.NewGuid().ToString()
+            });
 
-//        Mock.Get(mapper)
-//            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-//            .Returns(value: new UserDescriptor(null!));
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(value: new UserDescriptor(cryptography)
+            {
+                Id = Guid.NewGuid()
+            });
 
-//        Mock.Get(issuer)
-//            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), null))
-//            .Returns(value: oldToken);
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(value: new User()
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString(),
+                ProviderId = Guid.NewGuid().ToString(),
+                Tin = null,
+                AllowCPRLookup = false,
+                AcceptedTermsVersion = 1
+            });
 
-//        var result = refreshController.RefreshAccessToken(accessor, tokenOptions, mapper, issuer);
-//        Assert.NotNull(result);
-//        Assert.IsType<NoContentResult>(result);
+        Mock.Get(issuer)
+            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), null))
+            .Returns(value: token);
 
-//        Assert.NotNull(accessor.HttpContext);
+        Mock.Get(claimsPrincipal)
+            .Setup(x => x.FindFirst(UserClaimName.Scope))
+            .Returns(value: new Claim(UserClaimName.Scope, scope));
 
-//        var header = accessor.HttpContext!.Response.Headers.SetCookie;
-//        Assert.True(header.Count >= 1);
-//        Assert.Contains("Authentication=", header[0]);
-//        Assert.Contains("; secure", header[0]);
-//        Assert.Contains("; expires=", header[0]);
+        var result = await tokenController.RefreshAsync(mapper, userService, issuer);
+        Assert.NotNull(result);
+        Assert.IsType<OkObjectResult>(result);
 
-//        var newToken = header.First()!.Split("Authentication=").Last().Split(";").First();
-//        Assert.Equal(oldToken, newToken);
+        Assert.Equal((result as OkObjectResult)!.Value, token);
 
-//        var expiresDate = DateTime.Parse(header.First()!.Split("expires=").Last().Split(';').First());
-//        Assert.True(DateTime.Now.AddMinutes(tokenOptions.Value.CookieDuration.TotalMinutes - 1) < expiresDate);
-//        Assert.True(DateTime.Now.AddMinutes(tokenOptions.Value.CookieDuration.TotalMinutes + 1) > expiresDate);
-//    }
+        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, null), Times.Once);
+    }
 
-//    [Fact]
-//    public void RefreshAccessToken_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
-//    {
-//        Mock.Get(mapper)
-//            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-//            .Returns(value: null);
+    [Fact]
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: null);
 
-//        Assert.Throws<NullReferenceException>(() => refreshController.RefreshAccessToken(accessor, tokenOptions, mapper, issuer));
-//    }
-//}
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString(),
+                ProviderId = Guid.NewGuid().ToString(),
+                Tin = null,
+                AllowCPRLookup = false,
+                AcceptedTermsVersion = 1
+            });
+
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(value: null);
+
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
+    }
+}
