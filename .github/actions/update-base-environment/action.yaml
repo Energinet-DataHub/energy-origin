@@ -48,23 +48,21 @@ runs:
 
     - name: Resolve simple app
       shell: bash
-      id: simple-app
       env:
         APP_NAME: ${{ inputs.app_name }}
-      run: |
-        echo "::set-output name=base-file::k8s/energy-origin-apps/${APP_NAME#eo-}/base/kustomization.yaml"
+      run: echo "BASEFILE=k8s/energy-origin-apps/${APP_NAME#eo-}/base/kustomization.yaml" >> $GITHUB_ENV
 
     - name: Validate simple app file
       working-directory: base
       shell: bash
       run: |
         # Disallow multiple manifests in simple app files
-        grep -v '^---' ${{ steps.simple-app.outputs.base-file }} >/dev/null
+        grep -v '^---' ${{ env.BASEFILE }} >/dev/null
 
     - name: Update target revision
       uses: Energinet-DataHub/energy-origin/.github/actions/yaml-set@main
       with:
-        yaml_file: base/${{ steps.simple-app.outputs.base-file }}
+        yaml_file: base/${{ env.BASEFILE }}
         yaml_path: helmCharts[name="${{ inputs.chart_name }}"].version
         value: ${{ inputs.chart_version }}
 
@@ -73,7 +71,7 @@ runs:
       if: ${{ inputs.dry_run != 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
-        add: ${{ steps.simple-app.outputs.base-file }}
+        add: ${{ env.BASEFILE }}
         message: Bump ${{ inputs.app_name }} to new release ${{ inputs.chart_version }}
         new_branch: ${{ inputs.env_branch }}
         push: --force --set-upstream origin ${{ inputs.env_branch }}
