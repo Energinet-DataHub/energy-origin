@@ -25,9 +25,11 @@ public class SyncStateProjectionTest
         var projection = new SyncStateProjection();
         var view = new SyncStateView();
 
-        projection.Apply(createdEvent with { Period = new Period(1900, 2000) }, view);
+        var period = new Period(1900, 2000);
 
-        view.SyncDateTo.Should().Be(2000);
+        projection.Apply(createdEvent with { Period = period }, view);
+
+        view.SyncDateTo.Should().Be(period.DateTo);
     }
 
     [Fact]
@@ -36,10 +38,13 @@ public class SyncStateProjectionTest
         var projection = new SyncStateProjection();
         var view = new SyncStateView();
 
-        projection.Apply(createdEvent with { Period = new Period(1900, 2000) }, view);
-        projection.Apply(createdEvent with { Period = new Period(1800, 1900) }, view);
+        var oldestPeriod = new Period(1800, 1900);
+        var newestPeriod = new Period(1900, 2000);
 
-        view.SyncDateTo.Should().Be(2000);
+        projection.Apply(createdEvent with { Period = newestPeriod }, view);
+        projection.Apply(createdEvent with { Period = oldestPeriod }, view);
+
+        view.SyncDateTo.Should().Be(newestPeriod.DateTo);
     }
 
     [Fact]
@@ -48,9 +53,12 @@ public class SyncStateProjectionTest
         var projection = new SyncStateProjection();
         var view = new SyncStateView();
 
-        projection.Apply(createdEvent with { Period = new Period(1900, 2000) }, view);
-        projection.Apply(createdEvent with { Period = new Period(2000, 2100) }, view);
+        var oldestPeriod = new Period(1800, 1900);
+        var newestPeriod = new Period(1900, 2000);
 
-        view.SyncDateTo.Should().Be(2100);
+        projection.Apply(createdEvent with { Period = oldestPeriod }, view);
+        projection.Apply(createdEvent with { Period = newestPeriod }, view);
+
+        view.SyncDateTo.Should().Be(newestPeriod.DateTo);
     }
 }
