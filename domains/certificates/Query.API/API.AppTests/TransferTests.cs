@@ -60,9 +60,9 @@ public sealed class TransferTests :
     {
         var (owner1, owner1Client, owner2, _, certificateId) = await Setup();
 
-        var bodyWithOwnersSwitched = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
+        var bodyWithWrongOwnerAsSource = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithOwnersSwitched);
+        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
