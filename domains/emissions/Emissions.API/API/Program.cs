@@ -3,8 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
+using API.Services;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -19,29 +22,46 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-// Add services to the container.
+builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
+{
+    try
+    {
+        Configuration.GetDataSyncEndpoint();
+        Configuration.GetEnergiDataServiceEndpoint();
+        Configuration.GetRenewableSources();
+        Configuration.GetWasteRenewableShare();
+        return Task.FromResult(HealthCheckResult.Healthy());
+    }
+    catch
+    {
+        return Task.FromResult(HealthCheckResult.Unhealthy());
+    }
+});
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    options.JsonSerializerOptions.Converters.Add(new CustomJsonStringEnumConverter<QuantityUnit>());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<EnergySourceRequest.Validator>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
+builder.Services.AddFluentValidationAutoValidation();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Inform Swagger about FluentValidation rules. See https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation for more details
-builder.Services.AddTransient<IValidatorFactory, ServiceProviderValidatorFactory>();
 builder.Services.AddFluentValidationRulesToSwagger();
 
-builder.Services.AddHttpClient();
-builder.Services.AddCustomServices();
+builder.Services.AddSingleton<IEmissionsCalculator, EmissionsCalculator>();
+builder.Services.AddSingleton<ISourcesCalculator, SourcesCalculator>();
+
+builder.Services.AddHttpClient<IEnergiDataService, EnergiDataService>(x => x.BaseAddress = new Uri(Configuration.GetEnergiDataServiceEndpoint()));
+builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(x => x.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
+builder.Services.AddTransient<IEmissionsService, EmissionsService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseSwagger(o => o.RouteTemplate = "api-docs/emissions/{documentName}/swagger.json");
 if (builder.Environment.IsDevelopment())
 {
@@ -49,7 +69,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();
