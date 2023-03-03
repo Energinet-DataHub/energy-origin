@@ -18,11 +18,18 @@ public class ProductionCertificateTest
         42);
 
     [Fact]
+    public void is_initially_not_issued_or_rejected()
+    {
+        productionCertificate.IsIssued.Should().BeFalse();
+        productionCertificate.IsRejected.Should().BeFalse();
+    }
+
+    [Fact]
     public void can_issue_certificate()
     {
         productionCertificate.Issue();
 
-        productionCertificate.Version.Should().Be(2);
+        productionCertificate.IsIssued.Should().BeTrue();
     }
 
     [Fact]
@@ -30,7 +37,7 @@ public class ProductionCertificateTest
     {
         productionCertificate.Reject("foo");
 
-        productionCertificate.Version.Should().Be(2);
+        productionCertificate.IsRejected.Should().BeTrue();
     }
 
     [Fact]

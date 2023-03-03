@@ -8,6 +8,10 @@ namespace CertificateEvents.Aggregates;
 public class ProductionCertificate : AggregateBase
 {
     public string CertificateOwner { get; protected set; } = "";
+
+    public bool IsIssued => issuedState == IssuedState.Issued;
+    public bool IsRejected => issuedState == IssuedState.Rejected;
+
     private IssuedState? issuedState;
 
     // Fields for the immutable properties of the certificate
