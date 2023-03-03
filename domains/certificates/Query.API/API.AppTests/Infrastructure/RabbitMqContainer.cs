@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Threading.Tasks;
 using API.RabbitMq.Configurations;
 using DotNet.Testcontainers.Builders;
@@ -6,7 +5,7 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Xunit;
 
-namespace API.IntegrationTest.Infrastructure;
+namespace API.AppTests.Infrastructure;
 
 public class RabbitMqContainer : IAsyncLifetime
 {

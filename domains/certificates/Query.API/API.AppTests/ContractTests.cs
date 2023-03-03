@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
-using API.IntegrationTest.Infrastructure;
 using FluentAssertions;
 using Xunit;
 
