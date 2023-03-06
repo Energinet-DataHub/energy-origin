@@ -108,34 +108,60 @@ var serviceVersion = "1.0.0";
 var appResourceBuilder = ResourceBuilder.CreateDefault()
     .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
 
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracerProviderBuilder =>
-    {
-        tracerProviderBuilder
-            .AddConsoleExporter()
-            .AddSource(serviceName)
-            .SetResourceBuilder(appResourceBuilder)
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation();
+//builder.Services.AddOpenTelemetryMetrics(metricProviderBuilder =>
+//{
+//    metricProviderBuilder
+//        .AddHttpClientInstrumentation()
+//        .AddAspNetCoreInstrumentation()
+//        .AddMeter("MyApplicationMetrics")
+//        .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"));
+//});
+
+builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
+{
+    metricProviderBuilder
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddMeter("MyApplicationMetrics")
+        .AddPrometheusExporter(options =>
+        {
+            options.ScrapeResponseCacheDurationMilliseconds = 0;
+        });
+});
+
+//builder.Services.AddOpenTelemetry()
+//    //.WithTracing(tracerProviderBuilder =>
+//    //{
+//    //    tracerProviderBuilder
+//    //        .AddConsoleExporter()
+//    //        .AddSource(serviceName)
+//    //        .SetResourceBuilder(appResourceBuilder)
+//    //        .AddHttpClientInstrumentation()
+//    //        .AddAspNetCoreInstrumentation();
 
 
 
-        //tracerProviderBuilder.AddJaegerExporter();
-    })
-    .WithMetrics(metricProviderBuilder =>
-    {
-        metricProviderBuilder
-            .AddConsoleExporter()
-            .AddPrometheusExporter()
-            .AddMeter(serviceName)
-            .SetResourceBuilder(appResourceBuilder)
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
+//    //    //tracerProviderBuilder.AddJaegerExporter();
+//    //})
+//    .WithMetrics(metricProviderBuilder =>
+//    {
+//        metricProviderBuilder
+//                                  //.AddConsoleExporter()
+//                                  //.AddPrometheusExporter()
+//            .AddHttpClientInstrumentation()
+//            .AddAspNetCoreInstrumentation()
+//            .AddMeter("MyApplicationMetrics")
+//            .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"));
 
-        //metricProviderBuilder.AddPrometheusExporter();
-    });
+//            //.SetResourceBuilder(appResourceBuilder)
+
+
+//        //metricProviderBuilder.AddPrometheusExporter();
+//    });
 
 var app = builder.Build();
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 if (app.Environment.IsDevelopment())
 {
