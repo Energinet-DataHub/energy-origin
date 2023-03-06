@@ -118,12 +118,15 @@ builder.Services.AddOpenTelemetry()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();
 
+
+
         //tracerProviderBuilder.AddJaegerExporter();
     })
     .WithMetrics(metricProviderBuilder =>
     {
         metricProviderBuilder
             .AddConsoleExporter()
+            .AddPrometheusExporter()
             .AddMeter(serviceName)
             .SetResourceBuilder(appResourceBuilder)
             .AddAspNetCoreInstrumentation()
