@@ -15,7 +15,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Logs;
 
 var logger = new LoggerConfiguration()
@@ -102,66 +101,33 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
 
-var serviceName = "Auth.API";
-var serviceVersion = "1.0.0";
-
-var appResourceBuilder = ResourceBuilder.CreateDefault()
-    .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
-
-//builder.Services.AddOpenTelemetryMetrics(metricProviderBuilder =>
-//{
-//    metricProviderBuilder
-//        .AddHttpClientInstrumentation()
-//        .AddAspNetCoreInstrumentation()
-//        .AddMeter("MyApplicationMetrics")
-//        .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"));
-//});
-
-builder.Services.AddOpenTelemetry().WithMetrics(metricProviderBuilder =>
-{
-    metricProviderBuilder
-        .AddHttpClientInstrumentation()
-        .AddAspNetCoreInstrumentation()
-        .AddMeter("MyApplicationMetrics")
-        .AddPrometheusExporter(options =>
-        {
-            options.ScrapeResponseCacheDurationMilliseconds = 0;
-        });
-});
-
-//builder.Services.AddOpenTelemetry()
-//    //.WithTracing(tracerProviderBuilder =>
-//    //{
-//    //    tracerProviderBuilder
-//    //        .AddConsoleExporter()
-//    //        .AddSource(serviceName)
-//    //        .SetResourceBuilder(appResourceBuilder)
-//    //        .AddHttpClientInstrumentation()
-//    //        .AddAspNetCoreInstrumentation();
-
-
-
-//    //    //tracerProviderBuilder.AddJaegerExporter();
-//    //})
-//    .WithMetrics(metricProviderBuilder =>
-//    {
-//        metricProviderBuilder
-//                                  //.AddConsoleExporter()
-//                                  //.AddPrometheusExporter()
-//            .AddHttpClientInstrumentation()
-//            .AddAspNetCoreInstrumentation()
-//            .AddMeter("MyApplicationMetrics")
-//            .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"));
-
-//            //.SetResourceBuilder(appResourceBuilder)
-
-
-//        //metricProviderBuilder.AddPrometheusExporter();
-//    });
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+    {
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddPrometheusExporter();
+    }).WithTracing(provider =>
+    {
+        provider
+            .AddConsoleExporter()
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation();
+    });
 
 var app = builder.Build();
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
+app.UseOpenTelemetryPrometheusScrapingEndpoint(context =>
+{
+    // TODO: Figure out how to implement Auth here. Can we just whitelist the Prometheus IP?
+
+    if (context.Request.Path != "/metrics")
+        return false;
+    else
+        return true;
+});
 
 if (app.Environment.IsDevelopment())
 {
