@@ -43,6 +43,7 @@ builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<JaegerOptions>(builder.Configuration.GetSection(JaegerOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -69,7 +70,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-     
+    
     c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
     {
         new OpenApiSecurityScheme {
@@ -103,19 +104,22 @@ builder.Services.AddScoped<IUserDataContext, DataContext>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
-    {
         provider
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddPrometheusExporter();
-    }).WithTracing(provider =>
-    {
+            .AddPrometheusExporter())
+    .WithTracing(provider =>
         provider
-            .AddConsoleExporter()
             .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation();
-    });
+            .AddAspNetCoreInstrumentation()
+            .AddJaegerExporter(options =>
+            {
+                var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
+
+                options.AgentHost = config!.AgentHost;
+                options.AgentPort = config.AgentPort;
+            }));
 
 var app = builder.Build();
 

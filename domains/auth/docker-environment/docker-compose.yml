@@ -34,6 +34,13 @@ services:
     ports:
       - "9090:9090"
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+
 volumes:
   local_pgdata:
   pgadmin-data:
