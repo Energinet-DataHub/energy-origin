@@ -10,7 +10,7 @@ using Xunit.Categories;
 namespace Tests;
 
 [UnitTest]
-public sealed class CalculateEmissionsTest
+public sealed class CalculateEmissionsTests
 {
     [Theory]
     [InlineData(Aggregation.Total)]

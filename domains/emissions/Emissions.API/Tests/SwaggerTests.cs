@@ -6,7 +6,7 @@ using Xunit;
 namespace Tests;
 
 [UsesVerify]
-public class SwaggerTest
+public class SwaggerTests
 {
     [Fact]
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()

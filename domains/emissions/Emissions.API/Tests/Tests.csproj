@@ -33,4 +33,10 @@
     <None Include="Resources/**" CopyToOutputDirectory="PreserveNewest" LinkBase="Resources/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SwaggerTests.GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot.verified.txt">
+      <DependentUpon>SwaggerTests.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+
 </Project>
