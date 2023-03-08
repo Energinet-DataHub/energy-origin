@@ -4,12 +4,15 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
+using API.AppTests.Infrastructure.TestPriority;
 using API.AppTests.Mocks;
+using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
 
 namespace API.AppTests;
 
+[TestCaseOrderer("API.AppTests.Infrastructure.TestPriority.PriorityOrderer", "API.AppTests")]
 public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -113,6 +116,37 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [TestPriority(1)]
+    [Fact]
+    public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+
+        //var startingContracts = await client.GetAsync("api/certificates/contracts");
+        //startingContracts.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var now = DateTimeOffset.Now;
+        var responseMessages = await Task.WhenAll(
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(1).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(2).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(3).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(4).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(5).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(6).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(7).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(8).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(9).ToUnixTimeSeconds() }),
+            client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now.AddMinutes(10).ToUnixTimeSeconds() })
+        );
+        //responseMessages.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.Created));
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+        contracts!.Result.Should().HaveCount(1);
     }
 
     [Fact]
