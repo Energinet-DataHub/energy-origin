@@ -36,8 +36,6 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await CleanupDuplicates(stoppingToken);
-
             var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
@@ -51,40 +49,6 @@ internal class DataSyncSyncerWorker : BackgroundService
             }
 
             await SleepToNearestHour(stoppingToken);
-        }
-    }
-
-    private async Task CleanupDuplicates(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await using var session = documentStore.OpenSession();
-
-            var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync(token: cancellationToken);
-
-            var duplicates = allContracts
-                .GroupBy(c => c.GSRN)
-                .Where(g => g.Count() > 1)
-                .ToList();
-
-            if (!duplicates.Any())
-                return;
-
-            foreach (var duplicate in duplicates)
-            {
-                var contractsToDelete = duplicate.Skip(1).ToArray();
-
-                logger.LogInformation("Deleting {numberToDelete} contracts for GSRN {GSRN}", contractsToDelete.Length,
-                    duplicate.Key);
-
-                session.DeleteObjects(contractsToDelete);
-            }
-
-            await session.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception e)
-        {
-            logger.LogWarning("Failed cleaning duplicate contracts. Exception: {e}", e);
         }
     }
 

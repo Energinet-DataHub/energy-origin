@@ -3,6 +3,7 @@ using API.Configurations;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
 using Marten;
+using Marten.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -14,7 +15,9 @@ public static class Startup
     {
         services.ConfigureMarten(o =>
         {
-            o.Schema.For<CertificateIssuingContract>();
+            o.Schema
+                .For<CertificateIssuingContract>()
+                .UniqueIndex(UniqueIndexType.Computed, c => c.GSRN, c => c.ContractNumber);
         });
 
         services.AddScoped<IContractService, ContractServiceImpl>();
