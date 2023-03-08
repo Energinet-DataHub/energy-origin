@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace Integration.Tests;
 
 [UsesVerify]
-public class Swagger
+public class SwaggerTests
 {
     [Fact]
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
