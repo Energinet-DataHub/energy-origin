@@ -27,7 +27,7 @@ public class LoginController : ControllerBase
             clientId: oidcOptions.Value.ClientId,
             responseType: "code",
             redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
-            scope: "openid mitid nemid userinfo_token",
+            scope: "openid mitid nemid ssn userinfo_token",
             extra: new Parameters(new List<KeyValuePair<string, string>>()
             {
                 new KeyValuePair<string, string>("idp_params","{\"nemid\": {\"amr_values\": \"nemid.otp nemid.keyfile\"}}")

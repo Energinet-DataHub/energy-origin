@@ -30,6 +30,21 @@ public class TokenIssuerTests
         tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
     }
 
+    [Theory]
+    [InlineData(UserScopeClaim.NotAcceptedTerms, 0, false)]
+    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, false)]
+    [InlineData(UserScopeClaim.AllAcceptedScopes, 0, true)]
+    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, true)]
+    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
+    {
+        var descriptor = PrepareUser(version: version);
+
+        var token = GetTokenIssuer().Issue(descriptor, versionBypass: bypass);
+
+        var scope = Convert(token)!.Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        Assert.Equal(expectedScope, scope);
+    }
+
     [Fact]
     public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
@@ -43,14 +58,14 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public void Issue_ShouldReturnATokenWithCorrectValidatityTimes_WhenIssuingAtASpecifiedTime()
+    public void Issue_ShouldReturnATokenWithCorrectValidityTimes_WhenIssuingAtASpecifiedTime()
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt);
+        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt: issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);

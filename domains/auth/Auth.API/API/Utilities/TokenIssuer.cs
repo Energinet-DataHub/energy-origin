@@ -20,11 +20,11 @@ public class TokenIssuer : ITokenIssuer
         this.tokenOptions = tokenOptions.Value;
     }
 
-    public string Issue(UserDescriptor descriptor, DateTime? issueAt = default)
+    public string Issue(UserDescriptor descriptor, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, descriptor);
+        var state = ResolveState(termsOptions, descriptor, versionBypass);
 
         return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
@@ -39,11 +39,12 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor)
+    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor, bool versionBypass)
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var scope = version == options.CurrentVersion ? "terms dashboard production meters certificates" : "terms";
+        var scope = version == options.CurrentVersion || versionBypass ? UserScopeClaim.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+
         return new(descriptor.Id?.ToString(), version, scope);
     }
 
