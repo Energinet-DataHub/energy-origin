@@ -4,6 +4,6 @@ namespace API.Services
 {
     public interface ISourcesCalculator
     {
-        EnergySourceResponse CalculateSourceEmissions(IEnumerable<TimeSeries> measurements, IEnumerable<MixRecord> records, Aggregation aggregation);
+        EnergySourceResponse CalculateSourceEmissions(IEnumerable<MixRecord> records, IEnumerable<TimeSeries> measurements, TimeZoneInfo timeZone, Aggregation aggregation);
     }
 }

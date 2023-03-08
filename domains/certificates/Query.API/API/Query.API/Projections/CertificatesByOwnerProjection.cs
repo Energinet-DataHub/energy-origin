@@ -15,6 +15,31 @@ public class CertificatesByOwnerProjection : MultiStreamAggregation<Certificates
         Identity<ProductionCertificateCreated>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateIssued>(e => e.MeteringPointOwner);
         Identity<ProductionCertificateRejected>(e => e.MeteringPointOwner);
+        Identity<ProductionCertificateTransferred>(e => e.Source);
+        Identity<ProductionCertificateTransferred>(e => e.Target);
+    }
+
+    public void Apply(ProductionCertificateTransferred @event, CertificatesByOwnerView view)
+    {
+        if (view.Owner == @event.Source)
+        {
+            view.Certificates.Remove(@event.CertificateId);
+        }
+        else
+        {
+            view.Certificates[@event.CertificateId] = new CertificateView
+            {
+                CertificateId = @event.CertificateId,
+                DateFrom = @event.Period.DateFrom,
+                DateTo = @event.Period.DateTo,
+                Quantity = @event.ShieldedQuantity.Value,
+                GSRN = @event.ShieldedGSRN.Value,
+                GridArea = @event.GridArea,
+                TechCode = @event.Technology.TechCode,
+                FuelCode = @event.Technology.FuelCode,
+                Status = CertificateStatus.Issued // Transfer is only allowed if certificate is issued
+            };
+        }
     }
 
     public void Apply(ProductionCertificateCreated @event, CertificatesByOwnerView view)

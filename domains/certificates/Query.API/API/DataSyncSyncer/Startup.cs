@@ -2,6 +2,8 @@ using System;
 using API.Configurations;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Persistence;
+using Marten;
+using Marten.Events.Projections;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -23,6 +25,11 @@ public static class Startup
 
         services.AddSingleton<DataSyncService>();
         services.AddSingleton<ISyncState, SyncState>();
+
+        services.ConfigureMarten(o =>
+        {
+            o.Projections.Add<SyncStateProjection>(ProjectionLifecycle.Inline);
+        });
 
         services.AddHostedService<DataSyncSyncerWorker>();
     }
