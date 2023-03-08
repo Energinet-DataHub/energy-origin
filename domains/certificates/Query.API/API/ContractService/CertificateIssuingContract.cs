@@ -6,7 +6,7 @@ namespace API.ContractService;
 public class CertificateIssuingContract
 {
     public Guid Id { get; set; }
-    public int ContractNumber { get; set; } = 1;
+    public int ContractNumber { get; set; } = 0;
     public string GSRN { get; set; } = "";
     public string GridArea { get; set; } = "";
     public MeteringPointType MeteringPointType { get; set; }

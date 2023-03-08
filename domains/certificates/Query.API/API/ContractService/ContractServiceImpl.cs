@@ -49,7 +49,7 @@ internal class ContractServiceImpl : IContractService
             var contract = new CertificateIssuingContract
             {
                 Id = Guid.Empty,
-                ContractNumber = 1,
+                ContractNumber = 0,
                 GSRN = gsrn,
                 GridArea = matchingMeteringPoint.GridArea,
                 MeteringPointType = MeteringPointType.Production,

@@ -17,7 +17,7 @@ public static class Startup
         {
             o.Schema
                 .For<CertificateIssuingContract>()
-                .UniqueIndex(UniqueIndexType.Computed, c => c.GSRN, c => c.ContractNumber);
+                .UniqueIndex(UniqueIndexType.Computed, "uidx_gsrn_contractnumber", c => c.GSRN, c => c.ContractNumber);
         });
 
         services.AddScoped<IContractService, ContractServiceImpl>();
