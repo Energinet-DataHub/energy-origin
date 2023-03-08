@@ -20,6 +20,11 @@ public class CertificatesController : ControllerBase
     {
         var meteringPointOwner = User.FindFirstValue("subject");
         var projection = await querySession.LoadAsync<CertificatesByOwnerView>(meteringPointOwner);
-        return projection != null ? projection.ToApiModel() : NoContent();
+
+        if (projection == null) return NoContent();
+
+        return projection.Certificates.IsEmpty()
+            ? NoContent()
+            : projection.ToApiModel();
     }
 }
