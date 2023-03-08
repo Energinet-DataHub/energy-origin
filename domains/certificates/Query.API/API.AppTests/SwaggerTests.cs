@@ -1,8 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure;
-using API.IntegrationTest.Infrastructure;
-using API.RabbitMq.Configurations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
