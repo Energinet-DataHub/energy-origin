@@ -21,7 +21,7 @@ public class PriorityOrderer : ITestCaseOrderer
             var testPriorityAttribute = testCase.TestMethod.Method
                 .GetCustomAttributes(typeof(TestPriorityAttribute))
                 .FirstOrDefault();
-            
+
             var priority = testPriorityAttribute?.GetNamedArgument<int>(nameof(TestPriorityAttribute.Priority))
                            ?? priorityForTestCasesWithoutAttribute;
 
