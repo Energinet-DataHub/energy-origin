@@ -7,7 +7,7 @@ using API.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Integration.Tests.Controllers;
+namespace Tests.Controllers;
 
 public class TokenControllerTests
 {
@@ -25,9 +25,9 @@ public class TokenControllerTests
         };
 
     [Theory]
-    [InlineData(false, "terms", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(true, "terms dashboard production meters certificates", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(false, "terms", null)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
+    [InlineData(true, UserScopeClaim.AllAcceptedScopes, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null)]
     public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
     {
         var token = Guid.NewGuid().ToString();

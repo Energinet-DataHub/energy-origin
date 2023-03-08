@@ -28,7 +28,7 @@ public class TokenController : ControllerBase
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
-            if (scope != "terms") versionBypass = true;
+            if (scope!.Contains(UserScopeClaim.NotAcceptedTerms) == false) versionBypass = true;
         }
 
         return Ok(tokenIssuer.Issue(descriptor, versionBypass));

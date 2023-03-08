@@ -92,8 +92,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal("terms", oldScope);
-        Assert.Equal("terms", newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedTerms, newScope);
     }
 
     [Fact]
