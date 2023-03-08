@@ -15,7 +15,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
-using OpenTelemetry.Logs;
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())
