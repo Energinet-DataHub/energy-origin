@@ -31,7 +31,6 @@ public class CertificatesTransferProjection : IProjection
                 var cert = source.Certificates[productionCertificateTransferred.CertificateId];
                 var certificateView = SetupCertificateView(cert);
 
-
                 RemoveCertificateFromSource(operations, source, productionCertificateTransferred);
                 AddCertificateToTarget(operations, productionCertificateTransferred, certificateView);
             }
