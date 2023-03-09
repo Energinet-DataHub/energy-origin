@@ -109,7 +109,7 @@ public class ProductionCertificate : AggregateBase
         if (!string.Equals(source, CertificateOwner))
             throw new CertificateDomainException(Id, $"Cannot transfer from {source}. {source} is not current owner");
 
-        var @event = new ProductionCertificateTransferred(Id, source, target, gridArea, period, technology, gsrn, quantity);
+        var @event = new ProductionCertificateTransferred(Id, source, target);
 
         Apply(@event);
         AddUncommittedEvent(@event);
