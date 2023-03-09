@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Query.API.Projections;
+using API.Query.API.Projections.Views;
 using Marten;
 using Microsoft.Extensions.Logging;
 

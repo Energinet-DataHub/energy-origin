@@ -14,7 +14,7 @@ public static class Startup
 
         services.ConfigureMarten(o =>
         {
-            o.Projections.Add(new CertificatesTransferProjection(), ProjectionLifecycle.Inline);
+            o.Projections.Add(new CertificatesTransferProjection());
             o.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
         });
 

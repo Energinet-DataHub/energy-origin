@@ -18,6 +18,7 @@ namespace API.AppTests;
 public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<RabbitMqContainer>,
+    IClassFixture<MartenDbContainer>,
     IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -25,13 +26,12 @@ public sealed class TransferTests :
 
     public TransferTests(
         QueryApiWebApplicationFactory factory,
-        //MartenDbContainer martenDbContainer,
+        MartenDbContainer martenDbContainer,
         RabbitMqContainer rabbitMqContainer)
     {
         dataSyncWireMock = new DataSyncWireMock(port: 9004);
         this.factory = factory;
-        this.factory.MartenConnectionString =
-            "host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;"; //martenDbContainer.ConnectionString;
+        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
@@ -62,7 +62,8 @@ public sealed class TransferTests :
 
         var bodyWithWrongOwnerAsSource = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
+        var transferResult =
+            await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

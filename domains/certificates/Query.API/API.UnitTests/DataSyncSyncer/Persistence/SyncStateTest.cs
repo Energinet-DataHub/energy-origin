@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Persistence;
-using API.Query.API.Projections;
+using API.Query.API.Projections.Views;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using Marten;
