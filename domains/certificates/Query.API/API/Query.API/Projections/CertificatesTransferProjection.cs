@@ -63,7 +63,7 @@ public class CertificatesTransferProjection : IProjection
         }
     }
 
-    private static void RemoveCertificateFromSource(IDocumentOperations operations, CertificatesByOwnerView? source,
+    private static void RemoveCertificateFromSource(IDocumentOperations operations, CertificatesByOwnerView source,
         ProductionCertificateTransferred productionCertificateTransferred)
     {
         source.Certificates.Remove(productionCertificateTransferred.CertificateId);
