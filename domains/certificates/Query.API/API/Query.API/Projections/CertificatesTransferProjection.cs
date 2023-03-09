@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Query.API.Projections.Views;
 using CertificateEvents;
+using CertificateEvents.Exceptions;
 using Marten;
 using Marten.Events;
 using Marten.Events.Projections;
@@ -27,7 +28,11 @@ public class CertificatesTransferProjection : IProjection
         {
             if (@event is ProductionCertificateTransferred productionCertificateTransferred)
             {
-                var source = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source);
+                var source = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source)
+                             ?? throw new CertificateDomainException(
+                                 productionCertificateTransferred.CertificateId,
+                                 $"Cannot transfer from {productionCertificateTransferred.Source}. {productionCertificateTransferred.Source} cannot be found"
+                             );
                 var cert = source.Certificates[productionCertificateTransferred.CertificateId];
                 var certificateView = SetupCertificateView(cert);
 
