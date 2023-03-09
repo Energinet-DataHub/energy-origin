@@ -31,17 +31,18 @@ public class CertificatesTransferProjection : IProjection
                 var cert = source.Certificates[productionCertificateTransferred.CertificateId];
                 var certificateView = SetupCertificateView(cert);
 
-                var target = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
 
                 RemoveCertificateFromSource(operations, source, productionCertificateTransferred);
-                AddCertificateToTarget(operations, target, productionCertificateTransferred, certificateView);
+                AddCertificateToTarget(operations, productionCertificateTransferred, certificateView);
             }
         }
     }
 
-    private static void AddCertificateToTarget(IDocumentOperations operations, CertificatesByOwnerView? target,
+    private static void AddCertificateToTarget(IDocumentOperations operations,
         ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView)
     {
+        var target = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
+
         if (target == null)
         {
             target = new CertificatesByOwnerView
