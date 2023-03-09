@@ -136,8 +136,8 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var responses = await Task.WhenAll(tenConcurrentRequests);
 
-        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
         responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
+        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
 
         var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
         contracts!.Result.Should().HaveCount(1);
