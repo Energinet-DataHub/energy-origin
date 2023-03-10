@@ -1,8 +1,10 @@
 api:
   replicaCount: 1
-  image: {}
+  image:
+    name: test2
 
 postgresql:
   postgresqlUsername: test
   postgresqlDatabase: test
   existingSecret: test
+

@@ -35,4 +35,12 @@ public class LoginController : ControllerBase
 
         return RedirectPreserveMethod(url);
     }
+
+    [HttpGet]
+    [Route("test")]
+    public IActionResult GetConfigurationSettings(IConfiguration config)
+    {
+        return Ok(config.GetSection("Token").Get<TokenOptions>());
+    }
+
 }
