@@ -99,6 +99,29 @@ public class EnergyMeasuredConsumerTest
         repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-42)]
+    public async Task Consume_QuantityIsZeroOrNegative_NoEventsSaved(long quantity)
+    {
+        var contractServiceMock = new Mock<IContractService>();
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockContract);
+
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
+
+        var message = new EnergyMeasuredIntegrationEvent(
+            GSRN: mockContract.GSRN,
+            DateFrom: now.ToUnixTimeSeconds(),
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
+            Quantity: quantity,
+            Quality: MeasurementQuality.Measured);
+
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task Consume_ProductionPoint_EventsSaved()
     {
