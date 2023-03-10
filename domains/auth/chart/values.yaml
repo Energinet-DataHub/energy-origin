@@ -1,10 +1,9 @@
 api:
   replicaCount: 1
   image:
-    name: test2
-
-postgresql:
-  postgresqlUsername: test
-  postgresqlDatabase: test
-  existingSecret: test
-
+    name: test3
+global:
+  postgresql:
+    postgresqlUsername: admin
+    postgresqlDatabase: postgres
+    postgresqlPassword: admin

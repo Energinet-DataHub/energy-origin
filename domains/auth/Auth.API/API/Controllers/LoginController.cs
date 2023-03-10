@@ -1,4 +1,6 @@
+using API.Models.Entities;
 using API.Options;
+using API.Services;
 using API.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
@@ -42,5 +44,9 @@ public class LoginController : ControllerBase
     {
         return Ok(config.GetSection("Token").Get<TokenOptions>());
     }
+
+    [HttpGet()][Route("GetUserById/{id}", Name = "GetUserById")] public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id, [FromServices] IUserService userService) { var user = await userService.GetUserByIdAsync(id); if (user is not null) { return Ok(user); } return NotFound(); }
+    [HttpGet()][Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")] public ActionResult<User> GetUserByProviderIdAsync([FromRoute] string id, [FromServices] IUserService userService) { var user = userService.GetUserByProviderIdAsync(id); if (user is not null) { return Ok(user); } return NotFound(); }
+    [HttpGet()][Route("G", Name = "G")] public async Task<ActionResult<User>> G([FromServices] IUserService userService) { return Ok(await userService.UpsertUserAsync(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = 1, Tin = "hehe", AllowCPRLookup = false })); }
 
 }

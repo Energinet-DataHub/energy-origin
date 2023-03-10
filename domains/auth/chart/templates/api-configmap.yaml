@@ -13,7 +13,7 @@ data:
     },
     "Cryptography:Key": "secretsecretsecretsecret",
     "ConnectionStrings": {
-        "Db": "host=localhost;Port=5432;Database=postgres;username=admin;password=admin;"
+        "Db": "host=postgresql;Port=5432;Database=postgres;username=admin;password=admin;"
     },
     "Terms:CurrentVersion": "1",
     "Token:Issuer": "Us",
