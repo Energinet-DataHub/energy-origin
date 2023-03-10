@@ -19,6 +19,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 using Weasel.Core;
 
@@ -26,7 +27,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 var loggerConfiguration = new LoggerConfiguration()
     .Filter
-    .ByExcluding("RequestPath like '/health%'");
+    .ByExcluding("RequestPath like '/health%'")
+    .Enrich.WithSpan(); //Ensures that e have traceid and spanid in logs
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
