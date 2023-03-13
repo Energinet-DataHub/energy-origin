@@ -40,13 +40,21 @@ public class LoginController : ControllerBase
 
     [HttpGet]
     [Route("test")]
-    public IActionResult GetConfigurationSettings(IConfiguration config)
+    public IActionResult GetConfigurationSettings(IConfiguration config) => Ok(config.GetSection("Token").Get<TokenOptions>());
+
+    [HttpGet()]
+    [Route("GetUserById/{id}", Name = "GetUserById")]
+    public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id, [FromServices] IUserService userService)
     {
-        return Ok(config.GetSection("Token").Get<TokenOptions>());
+        var user = await userService.GetUserByIdAsync(id); return user is not null ? (ActionResult<User>)Ok(user) : (ActionResult<User>)NotFound();
     }
 
-    [HttpGet()][Route("GetUserById/{id}", Name = "GetUserById")] public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id, [FromServices] IUserService userService) { var user = await userService.GetUserByIdAsync(id); if (user is not null) { return Ok(user); } return NotFound(); }
-    [HttpGet()][Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")] public ActionResult<User> GetUserByProviderIdAsync([FromRoute] string id, [FromServices] IUserService userService) { var user = userService.GetUserByProviderIdAsync(id); if (user is not null) { return Ok(user); } return NotFound(); }
-    [HttpGet()][Route("G", Name = "G")] public async Task<ActionResult<User>> G([FromServices] IUserService userService) { return Ok(await userService.UpsertUserAsync(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = 1, Tin = "hehe", AllowCPRLookup = false })); }
+    [HttpGet()]
+    [Route("GetUserByProviderId/{id}", Name = "GetUserByProviderId")]
+    public ActionResult<User> GetUserByProviderIdAsync([FromRoute] string id, [FromServices] IUserService userService)
+    {
+        var user = userService.GetUserByProviderIdAsync(id); return user is not null ? (ActionResult<User>)Ok(user) : (ActionResult<User>)NotFound();
+    }
 
+    [HttpGet()][Route("G", Name = "G")] public async Task<ActionResult<User>> G([FromServices] IUserService userService) => Ok(await userService.UpsertUserAsync(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = 1, Tin = "hehe", AllowCPRLookup = false }));
 }
