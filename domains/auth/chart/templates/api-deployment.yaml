@@ -17,10 +17,18 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-api
-          image: '{{ .Values.api.image.name }}'
+          image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
           envFrom:
             - configMapRef:
-                name: auth-configmap2
+                name: auth-token-cm
+            - configMapRef:
+                name: auth-oidc-cm
+            - configMapRef:
+                name: auth-cryptography-cm
+            - configMapRef:
+                name: auth-terms-cm
+            - configMapRef:
+                name: auth-connections-cm
           imagePullPolicy: IfNotPresent
           readinessProbe:
             httpGet:

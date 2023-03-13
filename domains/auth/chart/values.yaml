@@ -1,8 +1,23 @@
 api:
   replicaCount: 1
-  image:
-    name: test3
-#postgresql:
-#  postgresqlUsername: admin
-#  postgresqlDatabase: postgres
-# postgresqlPassword: admin
+  image: {}
+  cryptography:
+    key:
+  connections:
+    db:
+  terms:
+    currentVersion:
+  oidc:
+    authorityUri:
+    cacheDuration:
+    clientId:
+    clientSecret:
+    authorityCallbackUri:
+    frontendRedirectUri:
+  token:
+    issuer:
+    audience:
+    cookieDuration:
+    duration:
+    publicKeyPem:
+    privateKeyPem:
