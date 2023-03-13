@@ -14,8 +14,7 @@ public static class Startup
 
         services.ConfigureMarten(o =>
         {
-            o.Projections.Add(new CertificatesTransferProjection());
-            o.Projections.Add<CertificatesByOwnerProjection>(ProjectionLifecycle.Inline);
+            o.Projections.Add(new CertificatesByOwnerProjection());
         });
 
         services.AddHttpContextAccessor();

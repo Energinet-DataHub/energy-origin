@@ -15,12 +15,12 @@ public class ProductionCertificate : AggregateBase
     private IssuedState? issuedState;
 
     // Fields for the immutable properties of the certificate
-    private string meteringPointOwner = "";
+    private string meteringPointOwner;
     private ShieldedValue<string> gsrn = new("", BigInteger.Zero);
     private ShieldedValue<long> quantity = new(0, BigInteger.Zero);
-    private string gridArea = "";
-    private Period period = new(1, 1);
-    private Technology technology = new("", "");
+    private string gridArea;
+    private Period period;
+    private Technology technology;
 
     // Default constructor used for loading the aggregate
     private ProductionCertificate()
@@ -69,7 +69,7 @@ public class ProductionCertificate : AggregateBase
         if (issuedState is not null)
             throw new CertificateDomainException(Id, $"Cannot issue when certificate is already {issuedState.ToString()!.ToLower()}");
 
-        var @event = new ProductionCertificateIssued(Id, meteringPointOwner, gsrn.Value);
+        var @event = new ProductionCertificateIssued(Id, gsrn.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
@@ -87,7 +87,7 @@ public class ProductionCertificate : AggregateBase
         if (issuedState is not null)
             throw new CertificateDomainException(Id, $"Cannot reject when certificate is already {issuedState.ToString()!.ToLower()}");
 
-        var @event = new ProductionCertificateRejected(Id, reason, meteringPointOwner, gsrn.Value);
+        var @event = new ProductionCertificateRejected(Id, reason, gsrn.Value);
 
         Apply(@event);
         AddUncommittedEvent(@event);
