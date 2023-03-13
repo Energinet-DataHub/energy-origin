@@ -62,6 +62,9 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         if (energyMeasuredIntegrationEvent.DateFrom < contract.StartDate.ToUnixTimeSeconds())
             return false;
 
+        if (energyMeasuredIntegrationEvent.Quantity <= 0)
+            return false;
+
         return true;
     }
 
