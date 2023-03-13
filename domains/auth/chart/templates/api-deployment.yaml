@@ -15,13 +15,12 @@ spec:
       labels:
         app: {{ .Release.Name }}-api
     spec:
-      volumes:
-        - name: {{ .Release.Name }}-api-volume
-          configMap:
-            name: auth-configmap
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}'
+          envFrom:
+            - configMapRef:
+                name: auth-configmap2
           imagePullPolicy: IfNotPresent
           readinessProbe:
             httpGet:
@@ -31,10 +30,6 @@ spec:
             httpGet:
               path: /healthz
               port: http
-          volumeMounts:
-            - name: {{ .Release.Name }}-api-volume
-              mountPath: /app/appsettings.json
-              subPath: appsettings.json
           ports:
             - containerPort: 80
               name: http

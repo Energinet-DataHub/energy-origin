@@ -2,8 +2,7 @@ api:
   replicaCount: 1
   image:
     name: test3
-global:
-  postgresql:
-    postgresqlUsername: admin
-    postgresqlDatabase: postgres
-    postgresqlPassword: admin
+#postgresql:
+#  postgresqlUsername: admin
+#  postgresqlDatabase: postgres
+# postgresqlPassword: admin
