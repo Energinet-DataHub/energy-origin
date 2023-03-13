@@ -10,7 +10,7 @@ public class DemoController : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(typeof(void), 200)]
-    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [Route("api/demo")]
     public async Task<IActionResult> Get([FromBody] DemoBody body, [FromServices] IValidator<DemoBody> validator)
     {
@@ -24,7 +24,7 @@ public class DemoController : ControllerBase
         return body.Return switch
         {
             1 => BadRequest("Something bad"),
-            2 => Problem("Something bad", statusCode: 400/*, title: "This is fun"*/),
+            2 => Problem("Something bad", statusCode: 400/*, title: "This is fun"*/), //TODO: This is a bit annoying that you have to specify status code = 400
             3 => ValidationProblem("Something bad", instance: "bla"),
             _ => Ok()
         };
