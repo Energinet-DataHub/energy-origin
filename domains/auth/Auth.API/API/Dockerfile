@@ -17,8 +17,6 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 FROM base AS final
 
 RUN apk add --no-cache tzdata
-RUN echo "ARG_MAX=1048576" >> /etc/login.defs
-RUN echo "POSIX2_COLL_WEIGHTS_MAX=1048576" >> /etc/login.defs
 
 WORKDIR /app
 COPY --from=publish /app/publish .

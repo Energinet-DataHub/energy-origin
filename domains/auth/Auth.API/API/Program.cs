@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -29,6 +28,10 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 
 builder.Services.Configure<TokenOptions>(tokenConfiguration);
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
+builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -36,11 +39,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
-
-builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
-builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
-builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
-builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
