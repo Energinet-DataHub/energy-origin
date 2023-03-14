@@ -122,15 +122,7 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint(context =>
-{
-    // TODO: Figure out how to implement Auth here. Can we just whitelist the Prometheus IP?
-
-    if (context.Request.Path != "/metrics")
-        return false;
-    else
-        return true;
-});
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 if (app.Environment.IsDevelopment())
 {
