@@ -18,7 +18,6 @@ spec:
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
-          imagePullPolicy: IfNotPresent
           readinessProbe:
             httpGet:
               path: /healthz
@@ -33,44 +32,44 @@ spec:
               protocol: TCP
           env:
             - name: Cryptography__Key
-              value: {{ .Values.api.cryptography.key }}
+              value: {{ .Values.api.cryptography.key | required }}
 
             - name: Terms__CurrentVersion
-              value: {{ .Values.api.terms.currentVersion }}
+              value: {{ .Values.api.terms.currentVersion | required }}
 
             - name: ConnectionStrings__Db
-              value: {{ .Values.api.connections.db }}
+              value: {{ .Values.api.connections.db | required }}
 
             - name: Token__Issuer
-              value: {{ .Values.api.token.issuer }}
+              value: {{ .Values.api.token.issuer | required }}
             - name: Token__Audience
-              value: {{ .Values.api.token.audience }}
+              value: {{ .Values.api.token.audience | required }}
             - name: Token__CookieDuration
-              value: {{ .Values.api.token.cookieDuration }}
+              value: {{ .Values.api.token.cookieDuration | required }}
             - name: Token__Duration
-              value: {{ .Values.api.token.duration }}
+              value: {{ .Values.api.token.duration | required }}
             - name: Token__PublicKeyPem
-              value: {{ .Values.api.token.publicKeyPem }}
+              value: {{ .Values.api.token.publicKeyPem | required }}
             - name: Token__PrivateKeyPem
-              value: {{ .Values.api.token.privateKeyPem }}
+              value: {{ .Values.api.token.privateKeyPem | required }}
 
             - name: Oidc__AuthorityUri
-              value: {{ .Values.api.oidc.authorityUri }}
+              value: {{ .Values.api.oidc.authorityUri | required }}
             - name: Oidc__CacheDuration
-              value: {{ .Values.api.oidc.cacheDuration }}
+              value: {{ .Values.api.oidc.cacheDuration | required }}
             - name: Oidc__AuthorityCallbackUri
-              value: {{ .Values.api.oidc.authorityCallbackUri }}
+              value: {{ .Values.api.oidc.authorityCallbackUri | required }}
             - name: Oidc__FrontendRedirectUri
-              value: {{ .Values.api.oidc.frontendRedirectUri }}
+              value: {{ .Values.api.oidc.frontendRedirectUri | required }}
 
           envFrom:
             - name: Oidc__ClientId
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientIdRef.name }}
-                  key: {{ .Values.api.oidc.clientIdRef.key }}
+                  name: {{ .Values.api.oidc.clientIdRef.name | required }}
+                  key: {{ .Values.api.oidc.clientIdRef.key | required }}
             - name: Oidc__ClientSecret
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientSecretRef.name }}
-                  key: {{ .Values.api.oidc.clientSecretRef.key }}
+                  name: {{ .Values.api.oidc.clientSecretRef.name | required }}
+                  key: {{ .Values.api.oidc.clientSecretRef.key | required }}
