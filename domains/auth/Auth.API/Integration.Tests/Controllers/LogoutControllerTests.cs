@@ -21,7 +21,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
         var identityToken = Guid.NewGuid().ToString();
         var user = await factory.AddUserToDatabaseAsync();
@@ -70,7 +70,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
-        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {

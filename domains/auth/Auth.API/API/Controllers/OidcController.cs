@@ -52,7 +52,7 @@ public class OidcController : ControllerBase
             Code = code,
             ClientId = oidcOptions.Value.ClientId,
             ClientSecret = oidcOptions.Value.ClientSecret,
-            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsolutePath
+            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri
         };
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
         if (response.IsError)

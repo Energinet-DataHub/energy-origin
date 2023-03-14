@@ -21,7 +21,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        var server = WireMockServer.Start().MockConfigEndpoint().MockJwkEndpoint();
+        var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
         var oidcOptions = Options.Create(new OidcOptions()
         {

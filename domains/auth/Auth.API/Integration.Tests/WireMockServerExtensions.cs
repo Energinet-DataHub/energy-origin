@@ -20,7 +20,7 @@ public static class WireMockServerExtensions
         return server;
     }
 
-    public static WireMockServer MockJwkEndpoint(this WireMockServer server, IdentityModel.Jwk.JsonWebKeySet? jwk = null)
+    public static WireMockServer MockJwksEndpoint(this WireMockServer server, IdentityModel.Jwk.JsonWebKeySet? jwk = null)
     {
         var json = jwk == null ? File.ReadAllText("./jwks.json") : JsonSerializer.Serialize(jwk, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
