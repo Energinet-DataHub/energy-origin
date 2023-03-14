@@ -32,42 +32,42 @@ spec:
               protocol: TCP
           env:
             - name: Cryptography__Key
-              value: {{ .Values.api.cryptography.key | required }}
+              value: {{ .Values.api.cryptography.key }}
 
             - name: Terms__CurrentVersion
-              value: {{ .Values.api.terms.currentVersion | required }}
+              value: {{ .Values.api.terms.currentVersion }}
 
             - name: ConnectionStrings__Db
-              value: {{ .Values.api.connections.db | required }}
+              value: {{ .Values.api.connections.db }}
 
             - name: Token__Issuer
-              value: {{ .Values.api.token.issuer | required }}
+              value: {{ .Values.api.token.issuer }}
             - name: Token__Audience
-              value: {{ .Values.api.token.audience | required }}
+              value: {{ .Values.api.token.audience }}
             - name: Oidc__ClientId
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientIdRef.name | required }}
-                  key: {{ .Values.api.oidc.clientIdRef.key | required }}
+                  name: {{ .Values.api.oidc.clientIdRef.name }}
+                  key: {{ .Values.api.oidc.clientIdRef.key }}
             - name: Oidc__ClientSecret
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientSecretRef.name | required }}
-                  key: {{ .Values.api.oidc.clientSecretRef.key | required }}
+                  name: {{ .Values.api.oidc.clientSecretRef.name }}
+                  key: {{ .Values.api.oidc.clientSecretRef.key }}
             - name: Token__CookieDuration
-              value: {{ .Values.api.token.cookieDuration | required }}
+              value: {{ .Values.api.token.cookieDuration }}
             - name: Token__Duration
-              value: {{ .Values.api.token.duration | required }}
+              value: {{ .Values.api.token.duration }}
             - name: Token__PublicKeyPem
-              value: {{ .Values.api.token.publicKeyPem | required }}
+              value: {{ .Values.api.token.publicKeyPem }}
             - name: Token__PrivateKeyPem
-              value: {{ .Values.api.token.privateKeyPem | required }}
+              value: {{ .Values.api.token.privateKeyPem }}
 
             - name: Oidc__AuthorityUri
-              value: {{ .Values.api.oidc.authorityUri | required }}
+              value: {{ .Values.api.oidc.authorityUri }}
             - name: Oidc__CacheDuration
-              value: {{ .Values.api.oidc.cacheDuration | required }}
+              value: {{ .Values.api.oidc.cacheDuration }}
             - name: Oidc__AuthorityCallbackUri
-              value: {{ .Values.api.oidc.authorityCallbackUri | required }}
+              value: {{ .Values.api.oidc.authorityCallbackUri }}
             - name: Oidc__FrontendRedirectUri
-              value: {{ .Values.api.oidc.frontendRedirectUri | required }}
+              value: {{ .Values.api.oidc.frontendRedirectUri }}
