@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using API.AppTests.Mocks;
 using API.DataSyncSyncer;
 using API.RabbitMq.Configurations;
+using API.RegistryConnector;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -43,6 +44,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
             //Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+
+            //Remove RegistryWorker
+            services.Remove(services.First(s => s.ImplementationType == typeof(RegistryWorker)));
         });
     }
 

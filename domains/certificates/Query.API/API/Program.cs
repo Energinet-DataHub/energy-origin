@@ -7,6 +7,7 @@ using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.Query.API;
 using API.RabbitMq;
+using API.RegistryConnector;
 using API.TransferCertificateHandler;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,6 +65,7 @@ builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddTransferCertificateHandler();
+builder.Services.AddRegistryConnector();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
