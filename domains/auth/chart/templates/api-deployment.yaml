@@ -67,10 +67,10 @@ spec:
             - name: Oidc__ClientId
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientIdRef.Name }}
-                  key: {{ .Values.api.oidc.clientIdRef.Key }}
+                  name: {{ .Values.api.oidc.clientIdRef.name }}
+                  key: {{ .Values.api.oidc.clientIdRef.key }}
             - name: Oidc__ClientSecret
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.api.oidc.clientSecretRef.Name }}
-                  key: {{ .Values.api.oidc.clientSecretRef.Key }}
+                  name: {{ .Values.api.oidc.clientSecretRef.name }}
+                  key: {{ .Values.api.oidc.clientSecretRef.key }}
