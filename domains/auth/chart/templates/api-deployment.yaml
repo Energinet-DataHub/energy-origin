@@ -44,6 +44,16 @@ spec:
               value: {{ .Values.api.token.issuer | required }}
             - name: Token__Audience
               value: {{ .Values.api.token.audience | required }}
+            - name: Oidc__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.oidc.clientIdRef.name | required }}
+                  key: {{ .Values.api.oidc.clientIdRef.key | required }}
+            - name: Oidc__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.oidc.clientSecretRef.name | required }}
+                  key: {{ .Values.api.oidc.clientSecretRef.key | required }}
             - name: Token__CookieDuration
               value: {{ .Values.api.token.cookieDuration | required }}
             - name: Token__Duration
@@ -61,15 +71,3 @@ spec:
               value: {{ .Values.api.oidc.authorityCallbackUri | required }}
             - name: Oidc__FrontendRedirectUri
               value: {{ .Values.api.oidc.frontendRedirectUri | required }}
-
-          envFrom:
-            - name: Oidc__ClientId
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.api.oidc.clientIdRef.name | required }}
-                  key: {{ .Values.api.oidc.clientIdRef.key | required }}
-            - name: Oidc__ClientSecret
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.api.oidc.clientSecretRef.name | required }}
-                  key: {{ .Values.api.oidc.clientSecretRef.key | required }}
