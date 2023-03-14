@@ -18,17 +18,6 @@ spec:
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
-          envFrom:
-            - configMapRef:
-                name: auth-token-cm
-            - configMapRef:
-                name: auth-oidc-cm
-            - configMapRef:
-                name: auth-cryptography-cm
-            - configMapRef:
-                name: auth-terms-cm
-            - configMapRef:
-                name: auth-connections-cm
           imagePullPolicy: IfNotPresent
           readinessProbe:
             httpGet:
@@ -42,3 +31,46 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
+          env:
+            - name: Cryptography__Key
+              value: {{ .Values.api.cryptography.key }}
+
+            - name: Terms__CurrentVersion
+              value: {{ .Values.api.terms.currentVersion }}
+
+            - name: ConnectionStrings__Db
+              value: {{ .Values.api.connections.db }}
+
+            - name: Token__Issuer
+              value: {{ .Values.api.token.issuer }}
+            - name: Token__Audience
+              value: {{ .Values.api.token.audience }}
+            - name: Token__CookieDuration
+              value: {{ .Values.api.token.cookieDuration }}
+            - name: Token__Duration
+              value: {{ .Values.api.token.duration }}
+            - name: Token__PublicKeyPem
+              value: {{ .Values.api.token.publicKeyPem }}
+            - name: Token__PrivateKeyPem
+              value: {{ .Values.api.token.privateKeyPem }}
+
+            - name: Oidc__AuthorityUri
+              value: {{ .Values.api.oidc.authorityUri }}
+            - name: Oidc__CacheDuration
+              value: {{ .Values.api.oidc.cacheDuration }}
+            - name: Oidc__AuthorityCallbackUri
+              value: {{ .Values.api.oidc.authorityCallbackUri }}
+            - name: Oidc__FrontendRedirectUri
+              value: {{ .Values.api.oidc.frontendRedirectUri }}
+
+          envFrom:
+            - name: Oidc__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.oidc.clientIdRef.Name }}
+                  key: {{ .Values.api.oidc.clientIdRef.Key }}
+            - name: Oidc__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.oidc.clientSecretRef.Name }}
+                  key: {{ .Values.api.oidc.clientSecretRef.Key }}

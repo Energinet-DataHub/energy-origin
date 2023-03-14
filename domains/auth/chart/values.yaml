@@ -10,8 +10,12 @@ api:
   oidc:
     authorityUri:
     cacheDuration:
-    clientId:
-    clientSecret:
+    clientIdRef:
+      name:
+      key:
+    clientSecretRef:
+      name:
+      key:
     authorityCallbackUri:
     frontendRedirectUri:
   token:
