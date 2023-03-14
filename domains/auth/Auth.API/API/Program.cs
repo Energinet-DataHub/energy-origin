@@ -122,12 +122,12 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.UseOpenTelemetryPrometheusScrapingEndpoint();
 }
 else
 {
