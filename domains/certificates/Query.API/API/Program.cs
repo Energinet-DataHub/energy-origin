@@ -65,7 +65,7 @@ builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddTransferCertificateHandler();
-builder.Services.AddRegistryConnector();
+builder.Services.AddRegistryConnector(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

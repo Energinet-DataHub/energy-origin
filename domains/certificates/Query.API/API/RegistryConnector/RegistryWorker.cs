@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSec.Cryptography;
 using ProjectOrigin.Electricity.Client;
 using ProjectOrigin.Electricity.Client.Models;
@@ -17,14 +18,14 @@ public class RegistryWorker : BackgroundService
     private readonly Key ownerKey;
     private readonly Key issuerKey;
 
-    public RegistryWorker(ILogger<RegistryWorker> logger)
+    public RegistryWorker(ILogger<RegistryWorker> logger, IOptions<RegistryOptions> registryOptions)
     {
         this.logger = logger;
 
         ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
         issuerKey = Key.Create(SignatureAlgorithm.Ed25519);
 
-        registerClient = new RegisterClient("http://po-registry");
+        registerClient = new RegisterClient(registryOptions.Value.Url);
 
         registerClient.Events += OnRegistryEvents;
     }
