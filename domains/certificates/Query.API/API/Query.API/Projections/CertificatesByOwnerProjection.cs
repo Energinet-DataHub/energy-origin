@@ -9,7 +9,6 @@ using CertificateEvents.Exceptions;
 using Marten;
 using Marten.Events;
 using Marten.Events.Projections;
-using Marten.Internal.Sessions;
 
 namespace API.Query.API.Projections;
 
@@ -18,7 +17,6 @@ public class CertificatesByOwnerProjection : IProjection
     private static CertificatesByOwnerView view;
     private static string owner;
 
-    private bool EnableDocumentTrackingDuringRebuilds = true;
 
     public Task ApplyAsync(IDocumentOperations operations, IReadOnlyList<StreamAction> streams,
         CancellationToken cancellation)
@@ -26,6 +24,8 @@ public class CertificatesByOwnerProjection : IProjection
         Apply(operations, streams);
         return Task.CompletedTask;
     }
+
+    public bool EnableDocumentTrackingDuringRebuilds { get; set; }
 
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
@@ -71,11 +71,11 @@ public class CertificatesByOwnerProjection : IProjection
     private static void ApplyProductionCertificateIssued(IDocumentOperations operations,
         ProductionCertificateIssued productionCertificateIssued)
     {
-        // var view = operations.Load<CertificatesByOwnerView>(owner)
-        //            ?? throw new CertificateDomainException(
-        //                productionCertificateIssued.CertificateId,
-        //                $"Cannot reject {productionCertificateIssued.CertificateId}. {productionCertificateIssued.CertificateId} cannot be found"
-        //            );
+        var view = operations.Load<CertificatesByOwnerView>(owner)
+                   ?? throw new CertificateDomainException(
+                       productionCertificateIssued.CertificateId,
+                       $"Cannot reject {productionCertificateIssued.CertificateId}. {productionCertificateIssued.CertificateId} cannot be found"
+                   );
 
         view.Certificates[productionCertificateIssued.CertificateId].Status = CertificateStatus.Issued;
         operations.Update(view);
@@ -85,9 +85,9 @@ public class CertificatesByOwnerProjection : IProjection
         ProductionCertificateCreated productionCertificateCreated)
     {
         owner = productionCertificateCreated.MeteringPointOwner;
-        view = new CertificatesByOwnerView
+        var view = new CertificatesByOwnerView
         {
-            Owner = owner,
+            Owner = productionCertificateCreated.MeteringPointOwner,
             Certificates =
             {
                 [productionCertificateCreated.CertificateId] = new CertificateView
