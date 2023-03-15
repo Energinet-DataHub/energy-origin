@@ -94,7 +94,7 @@ public class AuthController : Controller
         return Ok(
             new
             {
-                access_token = tokenGenerator.Generate(baseClaims),
+                access_token = tokenGenerator.Generate(baseClaims.Plus(user.AccessToken)),
                 token_type = "Bearer",
                 expires_in = expirationInSeconds,
                 scope = "openid nemid mitid userinfo_token",
