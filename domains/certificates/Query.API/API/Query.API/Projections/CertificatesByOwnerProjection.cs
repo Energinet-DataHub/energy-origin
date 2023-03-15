@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -34,7 +33,7 @@ public class CertificatesByOwnerProjection : IProjection
         {
             if (@event is ProductionCertificateCreated productionCertificateCreated)
             {
-                view = CreateCertificatesByOwnerView(productionCertificateCreated);
+                view = CreateCertificatesByOwnerView(operations, productionCertificateCreated);
             }
             else if (@event is ProductionCertificateIssued productionCertificateIssued)
             {
@@ -67,28 +66,37 @@ public class CertificatesByOwnerProjection : IProjection
         return view;
     }
 
-    private static CertificatesByOwnerView CreateCertificatesByOwnerView(
+    private static CertificatesByOwnerView CreateCertificatesByOwnerView(IDocumentOperations operations,
         ProductionCertificateCreated productionCertificateCreated)
     {
-        return new CertificatesByOwnerView
+        var view = operations.Load<CertificatesByOwnerView>(productionCertificateCreated.MeteringPointOwner);
+        var certificateView = new CertificateView
         {
-            Owner = productionCertificateCreated.MeteringPointOwner,
-            Certificates =
-            {
-                [productionCertificateCreated.CertificateId] = new CertificateView
-                {
-                    CertificateId = productionCertificateCreated.CertificateId,
-                    DateFrom = productionCertificateCreated.Period.DateFrom,
-                    DateTo = productionCertificateCreated.Period.DateTo,
-                    Quantity = productionCertificateCreated.ShieldedQuantity.Value,
-                    GSRN = productionCertificateCreated.ShieldedGSRN.Value,
-                    GridArea = productionCertificateCreated.GridArea,
-                    TechCode = productionCertificateCreated.Technology.TechCode,
-                    FuelCode = productionCertificateCreated.Technology.FuelCode,
-                    Status = CertificateStatus.Creating
-                }
-            }
+            CertificateId = productionCertificateCreated.CertificateId,
+            DateFrom = productionCertificateCreated.Period.DateFrom,
+            DateTo = productionCertificateCreated.Period.DateTo,
+            Quantity = productionCertificateCreated.ShieldedQuantity.Value,
+            GSRN = productionCertificateCreated.ShieldedGSRN.Value,
+            GridArea = productionCertificateCreated.GridArea,
+            TechCode = productionCertificateCreated.Technology.TechCode,
+            FuelCode = productionCertificateCreated.Technology.FuelCode,
+            Status = CertificateStatus.Creating
         };
+
+        if (view == null)
+        {
+            return new CertificatesByOwnerView
+            {
+                Owner = productionCertificateCreated.MeteringPointOwner,
+                Certificates =
+                {
+                    [productionCertificateCreated.CertificateId] = certificateView
+                }
+            };
+        }
+
+        view.Certificates.Add(productionCertificateCreated.CertificateId, certificateView);
+        return view;
     }
 
     private static CertificatesByOwnerView ApplyProductionCertificateTransferred(IDocumentOperations operations,

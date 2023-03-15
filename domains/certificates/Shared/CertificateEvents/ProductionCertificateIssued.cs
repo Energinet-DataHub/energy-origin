@@ -2,4 +2,4 @@ using System;
 
 namespace CertificateEvents;
 
-public record ProductionCertificateIssued(Guid CertificateId, string GSRN);
+public record ProductionCertificateIssued(Guid CertificateId);

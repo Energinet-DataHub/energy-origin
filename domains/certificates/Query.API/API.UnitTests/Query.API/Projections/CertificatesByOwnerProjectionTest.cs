@@ -6,6 +6,10 @@ using API.Query.API.Projections.Views;
 using CertificateEvents;
 using CertificateEvents.Primitives;
 using FluentAssertions;
+using LamarCodeGeneration.Util;
+using Marten;
+using Marten.Events;
+using Moq;
 using Xunit;
 
 namespace API.UnitTests.Query.API.Projections;
@@ -28,13 +32,11 @@ public class CertificatesByOwnerProjectionTest
                 ShieldedQuantity: new ShieldedValue<long>(Value: 42, R: BigInteger.Zero));
 
             var issuedEvent = new ProductionCertificateIssued(
-                CertificateId: certificateId,
-                GSRN: "gsrn");
+                CertificateId: certificateId);
 
             var rejectedEvent = new ProductionCertificateRejected(
                 CertificateId: certificateId,
-                Reason: "foo",
-                GSRN: "gsrn");
+                Reason: "foo");
 
             return new List<object[]>
             {
@@ -50,16 +52,17 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn",
+                                    GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
                                     Status = CertificateStatus.Creating
                                 }
                             }
                         }
                     }
                 },
-                new object []
+                new object[]
                 {
-                    (Action<CertificatesByOwnerProjection, CertificatesByOwnerView>) ((projection, view) =>
+                    (Action<CertificatesByOwnerProjection, CertificatesByOwnerView>)((projection, view) =>
                     {
                         // projection.Apply(createdEvent, view);
                         // projection.Apply(issuedEvent, view);
@@ -73,16 +76,17 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn",
+                                    GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
                                     Status = CertificateStatus.Issued
                                 }
                             }
                         }
                     }
                 },
-                new object []
+                new object[]
                 {
-                    (Action<CertificatesByOwnerProjection, CertificatesByOwnerView>) ((projection, view) =>
+                    (Action<CertificatesByOwnerProjection, CertificatesByOwnerView>)((projection, view) =>
                     {
                         // projection.Apply(createdEvent, view);
                         // projection.Apply(rejectedEvent, view);
@@ -96,7 +100,8 @@ public class CertificatesByOwnerProjectionTest
                                 certificateId,
                                 new CertificateView
                                 {
-                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn", GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
+                                    CertificateId = certificateId, DateFrom = 1, DateTo = 42, GSRN = "gsrn",
+                                    GridArea = "gridArea", Quantity = 42, FuelCode = "F00000000", TechCode = "T010000",
                                     Status = CertificateStatus.Rejected
                                 }
                             }
@@ -109,7 +114,8 @@ public class CertificatesByOwnerProjectionTest
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void Apply_EventsApplied_ViewAsExpected(Action<CertificatesByOwnerProjection, CertificatesByOwnerView> apply, CertificatesByOwnerView expected)
+    public void Apply_EventsApplied_ViewAsExpected(Action<CertificatesByOwnerProjection, CertificatesByOwnerView> apply,
+        CertificatesByOwnerView expected)
     {
         var projection = new CertificatesByOwnerProjection();
         var view = new CertificatesByOwnerView();
@@ -148,6 +154,4 @@ public class CertificatesByOwnerProjectionTest
 
         view.Certificates.Should().HaveCount(2);
     }
-
-
 }
