@@ -83,7 +83,7 @@ public class AuthController : Controller
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var baseClaims = new Dictionary<string, object>
         {
-            { "iss", $"{Request.Host}" },
+            { "iss", $"https://{options.Host}{Request.PathBase}" },
             { "iat", now },
             { "nbf", now },
             { "exp", now + expirationInSeconds },
@@ -101,6 +101,10 @@ public class AuthController : Controller
                 userinfo_token = tokenGenerator.Generate(baseClaims.Plus(user.UserinfoToken))
             });
     }
+
+    [HttpGet]
+    [Route("connect/endsession")]
+    public IActionResult logout(string post_logout_redirect_uri) => RedirectPreserveMethod(post_logout_redirect_uri);
 
     [HttpGet]
     [Route(".well-known/openid-configuration")]
