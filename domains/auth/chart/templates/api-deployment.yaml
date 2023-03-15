@@ -37,8 +37,19 @@ spec:
             - name: Terms__CurrentVersion
               value: {{ .Values.api.terms.currentVersion | quote }}
 
-            - name: ConnectionStrings__Db
-              value: {{ .Values.api.connections.db }}
+            - name: Database__Host
+              value: {{ .Values.api.database.host }}
+            - name: Database__Port
+              value: {{ .Values.api.database.port }}
+            - name: Database__Name
+              value: {{ .Values.api.database.name }}
+            - name: Database__User
+              value: {{ .Values.api.database.user }}
+            - name: Database__Password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.database.passwordRef.name }}
+                  key: {{ .Values.api.database.passwordRef.key }}
 
             - name: Token__Issuer
               value: {{ .Values.api.token.issuer }}

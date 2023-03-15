@@ -3,8 +3,14 @@ api:
   image: {}
   cryptography:
     key:
-  connections:
-    db:
+  database:
+    name: postgres
+    host:
+    port: 5432
+    user: postgres
+    passwordRef:
+      name:
+      key:
   terms:
     currentVersion:
   oidc:
