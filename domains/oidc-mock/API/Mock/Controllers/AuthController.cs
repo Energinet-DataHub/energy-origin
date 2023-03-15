@@ -85,7 +85,9 @@ public class AuthController : Controller
         {
             { "iss", $"{Request.Host}" },
             { "iat", now },
-            { "exp", now + expirationInSeconds }
+            { "nbf", now },
+            { "exp", now + expirationInSeconds },
+            { "aud", "Users" }
         };
 
         return Ok(
