@@ -102,14 +102,14 @@ public class AuthController : Controller
     public IActionResult openid() =>
         Ok(new
         {
-            issuer = $"{Request.Host}",
-            jwks_uri = $"https://{Request.Host}/{Request.PathBase}/.well-known/openid-configuration/jwks",
-            authorization_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/authorize",
-            token_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/token",
-            userinfo_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/userinfo",
-            end_session_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/endsession",
-            revocation_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/revocation",
-            backchannel_authentication_endpoint = $"https://{Request.Host}/{Request.PathBase}/connect/ciba",
+            issuer = $"eo-u-1144authchart.westeurope.cloudapp.azure.com",
+            jwks_uri = $"https://{Request.Host}{Request.PathBase}.well-known/openid-configuration/jwks",
+            authorization_endpoint = $"https://{Request.Host}{Request.PathBase}connect/authorize",
+            token_endpoint = $"https://{Request.Host}{Request.PathBase}connect/token",
+            userinfo_endpoint = $"https://{Request.Host}{Request.PathBase}connect/userinfo",
+            end_session_endpoint = $"https://{Request.Host}{Request.PathBase}connect/endsession",
+            revocation_endpoint = $"https://{Request.Host}{Request.PathBase}connect/revocation",
+            backchannel_authentication_endpoint = $"https://{Request.Host}{Request.PathBase}connect/ciba",
             frontchannel_logout_supported = true,
             frontchannel_logout_session_supported = true,
             backchannel_logout_supported = true,
