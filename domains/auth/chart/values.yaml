@@ -11,13 +11,13 @@ api:
     Database__Password:
     Token__Issuer:
     Token__Audience:
-    Oidc__ClientId:
-    Oidc__ClientSecret:
     Token__CookieDuration:
     Token__Duration:
     Token__PublicKeyPem:
     Token__PrivateKeyPem:
     Oidc__AuthorityUri:
+    Oidc__ClientId:
+    Oidc__ClientSecret:
     Oidc__CacheDuration:
     Oidc__AuthorityCallbackUri:
     Oidc__FrontendRedirectUri:
