@@ -87,7 +87,7 @@ public class AuthController : Controller
             { "iat", now },
             { "nbf", now },
             { "exp", now + expirationInSeconds },
-            { "aud", "Users" }
+            { "aud", clientId }
         };
 
         return Ok(
