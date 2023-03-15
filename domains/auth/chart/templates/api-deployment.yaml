@@ -31,54 +31,9 @@ spec:
               name: http
               protocol: TCP
           env:
-            - name: Cryptography__Key
-              value: {{ .Values.api.cryptography.key }}
-
-            - name: Terms__CurrentVersion
-              value: {{ .Values.api.terms.currentVersion | quote }}
-
-            - name: Database__Host
-              value: {{ .Values.api.database.host }}
-            - name: Database__Port
-              value: {{ .Values.api.database.port }}
-            - name: Database__Name
-              value: {{ .Values.api.database.name }}
-            - name: Database__User
-              value: {{ .Values.api.database.user }}
-            - name: Database__Password
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.api.database.passwordRef.name }}
-                  key: {{ .Values.api.database.passwordRef.key }}
-
-            - name: Token__Issuer
-              value: {{ .Values.api.token.issuer }}
-            - name: Token__Audience
-              value: {{ .Values.api.token.audience }}
-            - name: Oidc__ClientId
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.api.oidc.clientIdRef.name }}
-                  key: {{ .Values.api.oidc.clientIdRef.key }}
-            - name: Oidc__ClientSecret
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.api.oidc.clientSecretRef.name }}
-                  key: {{ .Values.api.oidc.clientSecretRef.key }}
-            - name: Token__CookieDuration
-              value: {{ .Values.api.token.cookieDuration }}
-            - name: Token__Duration
-              value: {{ .Values.api.token.duration }}
-            - name: Token__PublicKeyPem
-              value: {{ .Values.api.token.publicKeyPem }}
-            - name: Token__PrivateKeyPem
-              value: {{ .Values.api.token.privateKeyPem }}
-
-            - name: Oidc__AuthorityUri
-              value: {{ .Values.api.oidc.authorityUri }}
-            - name: Oidc__CacheDuration
-              value: {{ .Values.api.oidc.cacheDuration }}
-            - name: Oidc__AuthorityCallbackUri
-              value: {{ .Values.api.oidc.authorityCallbackUri }}
-            - name: Oidc__FrontendRedirectUri
-              value: {{ .Values.api.oidc.frontendRedirectUri }}
+          {{- if .Values.api.env}}
+          {{- range $name, $value := .Values.api.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+          {{- end}}
+          {{- end}}

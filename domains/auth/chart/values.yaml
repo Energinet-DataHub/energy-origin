@@ -1,33 +1,23 @@
 api:
   replicaCount: 1
   image: {}
-  cryptography:
-    key:
-  database:
-    name: postgres
-    host:
-    port: 5432
-    user: postgres
-    passwordRef:
-      name:
-      key:
-  terms:
-    currentVersion:
-  oidc:
-    authorityUri:
-    cacheDuration:
-    clientIdRef:
-      name:
-      key:
-    clientSecretRef:
-      name:
-      key:
-    authorityCallbackUri:
-    frontendRedirectUri:
-  token:
-    issuer:
-    audience:
-    cookieDuration:
-    duration:
-    publicKeyPem:
-    privateKeyPem:
+  env:
+    Cryptography__Key:
+    Terms__CurrentVersion:
+    Database__Host:
+    Database__Port: 5432
+    Database__Name: postgres
+    Database__User: postgres
+    Database__Password:
+    Token__Issuer:
+    Token__Audience:
+    Oidc__ClientId:
+    Oidc__ClientSecret:
+    Token__CookieDuration:
+    Token__Duration:
+    Token__PublicKeyPem:
+    Token__PrivateKeyPem:
+    Oidc__AuthorityUri:
+    Oidc__CacheDuration:
+    Oidc__AuthorityCallbackUri:
+    Oidc__FrontendRedirectUri:
