@@ -14,10 +14,6 @@ namespace API.Query.API.Projections;
 
 public class CertificatesByOwnerProjection : IProjection
 {
-    private static CertificatesByOwnerView view;
-    private static string owner;
-
-
     public Task ApplyAsync(IDocumentOperations operations, IReadOnlyList<StreamAction> streams,
         CancellationToken cancellation)
     {
@@ -25,67 +21,56 @@ public class CertificatesByOwnerProjection : IProjection
         return Task.CompletedTask;
     }
 
-    public bool EnableDocumentTrackingDuringRebuilds { get; set; }
-
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
+        CertificatesByOwnerView view = null;
+
         var events = streams
             .SelectMany(x => x.Events)
             .OrderBy(s => s.Sequence)
-            .Select(s =>  s.Data);
-
+            .Select(s => s.Data);
 
         foreach (var @event in events)
         {
-            if (@event is ProductionCertificateTransferred productionCertificateTransferred)
+            if (@event is ProductionCertificateCreated productionCertificateCreated)
             {
-                // ApplyProductionCertificateTransferred(operations, productionCertificateTransferred);
-            }
-            else if (@event is ProductionCertificateCreated productionCertificateCreated)
-            {
-                ApplyProductionCertificateCreated(operations, productionCertificateCreated);
+                view = CreateCertificatesByOwnerView(productionCertificateCreated);
             }
             else if (@event is ProductionCertificateIssued productionCertificateIssued)
             {
-                ApplyProductionCertificateIssued(operations, productionCertificateIssued);
+                view = ApplyProductionCertificateIssued(productionCertificateIssued, view);
             }
             else if (@event is ProductionCertificateRejected productionCertificateRejected)
             {
-                ApplyProductionCertificateRejected(operations, productionCertificateRejected);
+                view = ApplyProductionCertificateRejected(productionCertificateRejected, view);
+            }
+            else if (@event is ProductionCertificateTransferred productionCertificateTransferred)
+            {
+                view = ApplyProductionCertificateTransferred(operations, productionCertificateTransferred);
             }
         }
+
+        operations.Store(view);
     }
 
-    private static void ApplyProductionCertificateRejected(IDocumentOperations operations,
-        ProductionCertificateRejected productionCertificateRejected)
+    private static CertificatesByOwnerView ApplyProductionCertificateRejected(
+        ProductionCertificateRejected productionCertificateRejected, CertificatesByOwnerView? view)
     {
-        var view = operations.Load<CertificatesByOwnerView>(owner)
-                   ?? throw new CertificateDomainException(
-                       productionCertificateRejected.CertificateId,
-                       $"Cannot reject {productionCertificateRejected.CertificateId}. {productionCertificateRejected.CertificateId} cannot be found"
-                   );
         view.Certificates[productionCertificateRejected.CertificateId].Status = CertificateStatus.Rejected;
-        operations.Update(view);
+        return view;
     }
 
-    private static void ApplyProductionCertificateIssued(IDocumentOperations operations,
-        ProductionCertificateIssued productionCertificateIssued)
+    private static CertificatesByOwnerView ApplyProductionCertificateIssued(
+        ProductionCertificateIssued productionCertificateIssued, CertificatesByOwnerView view)
     {
-        var view = operations.Load<CertificatesByOwnerView>(owner)
-                   ?? throw new CertificateDomainException(
-                       productionCertificateIssued.CertificateId,
-                       $"Cannot reject {productionCertificateIssued.CertificateId}. {productionCertificateIssued.CertificateId} cannot be found"
-                   );
-
         view.Certificates[productionCertificateIssued.CertificateId].Status = CertificateStatus.Issued;
-        operations.Update(view);
+        return view;
     }
 
-    private static void ApplyProductionCertificateCreated(IDocumentOperations operations,
+    private static CertificatesByOwnerView CreateCertificatesByOwnerView(
         ProductionCertificateCreated productionCertificateCreated)
     {
-        owner = productionCertificateCreated.MeteringPointOwner;
-        var view = new CertificatesByOwnerView
+        return new CertificatesByOwnerView
         {
             Owner = productionCertificateCreated.MeteringPointOwner,
             Certificates =
@@ -104,10 +89,9 @@ public class CertificatesByOwnerProjection : IProjection
                 }
             }
         };
-        operations.Store(view);
     }
 
-    private static void ApplyProductionCertificateTransferred(IDocumentOperations operations,
+    private static CertificatesByOwnerView ApplyProductionCertificateTransferred(IDocumentOperations operations,
         ProductionCertificateTransferred productionCertificateTransferred)
     {
         var source = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source)
@@ -118,28 +102,28 @@ public class CertificatesByOwnerProjection : IProjection
         var cert = source.Certificates[productionCertificateTransferred.CertificateId];
 
         RemoveCertificateFromSource(operations, source, productionCertificateTransferred);
-        AddCertificateToTarget(operations, productionCertificateTransferred, cert);
+        return AddCertificateToTarget(operations, productionCertificateTransferred, cert);
     }
 
-    private static void AddCertificateToTarget(IDocumentOperations operations,
+    private static CertificatesByOwnerView AddCertificateToTarget(IDocumentOperations operations,
         ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView)
     {
-        var target = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
+        var view = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
 
-        if (target == null)
+        if (view == null)
         {
-            target = new CertificatesByOwnerView
+            return new CertificatesByOwnerView
             {
-                Owner = productionCertificateTransferred.Target
+                Owner = productionCertificateTransferred.Target,
+                Certificates =
+                {
+                    [certificateView.CertificateId] = certificateView
+                }
             };
-            target.Certificates.Add(certificateView.CertificateId, certificateView);
-            operations.Store(target);
         }
-        else
-        {
-            target.Certificates.Add(certificateView.CertificateId, certificateView);
-            operations.Update(target);
-        }
+
+        view.Certificates.Add(certificateView.CertificateId, certificateView);
+        return view;
     }
 
     private static void RemoveCertificateFromSource(IDocumentOperations operations, CertificatesByOwnerView source,

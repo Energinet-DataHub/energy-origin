@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
-    <PackageReference Include="Marten" Version="6.0.0-alpha.9" />
+    <PackageReference Include="Marten" Version="5.11.0" />
     <PackageReference Include="MassTransit" Version="8.0.12" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />

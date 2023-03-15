@@ -13,7 +13,7 @@ public static class Startup
     {
         services.ConfigureMarten(o =>
         {
-            o.Projections.Add(new CertificatesByOwnerProjection { EnableDocumentTrackingDuringRebuilds = true });
+            o.Projections.Add(new CertificatesByOwnerProjection());
         });
 
         services.AddHttpContextAccessor();
