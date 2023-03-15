@@ -114,19 +114,19 @@ public class AuthController : Controller
             frontchannel_logout_session_supported = true,
             backchannel_logout_supported = true,
             backchannel_logout_session_supported = true,
-            grant_types_supported = new[] { "authorization_code","client_credentials","refresh_token","implicit","urn:openid:params:grant-type:ciba" },
-            response_types_supported = new[] { "code","token","id_token","id_token token","code id_token","code token","code id_token token" },
-            response_modes_supported = new[] { "form_post","query","fragment" },
-            token_endpoint_auth_methods_supported = new[] { "client_secret_basic","client_secret_post","private_key_jwt" },
+            grant_types_supported = new[] { "authorization_code", "client_credentials", "refresh_token", "implicit", "urn:openid:params:grant-type:ciba" },
+            response_types_supported = new[] { "code", "token", "id_token", "id_token token", "code id_token", "code token", "code id_token token" },
+            response_modes_supported = new[] { "form_post", "query", "fragment" },
+            token_endpoint_auth_methods_supported = new[] { "client_secret_basic", "client_secret_post", "private_key_jwt" },
             id_token_signing_alg_values_supported = new[] { "RS256" },
             subject_types_supported = new[] { "public" },
             code_challenge_methods_supported = new[] { "plain", "RS256" },
             request_parameter_supported = true,
-            request_object_signing_alg_values_supported = new[] { "RS256","RS384","RS512","PS256","PS384","PS512","ES256","ES384","ES512","HS256","HS384","HS512" },
+            request_object_signing_alg_values_supported = new[] { "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512" },
             request_uri_parameter_supported = true,
             authorization_response_iss_parameter_supported = true,
             backchannel_token_delivery_modes_supported = new[] { "poll" },
-            backchannel_user_code_parameter_supported= true
+            backchannel_user_code_parameter_supported = true
         });
 
     [HttpGet]
