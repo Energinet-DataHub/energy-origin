@@ -1,3 +1,4 @@
+using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock;
 using Oidc.Mock.Extensions;
@@ -18,6 +19,7 @@ builder.Services.AddSingleton(_ =>
         builder.Configuration[Configuration.ClientIdKey],
         builder.Configuration[Configuration.ClientSecretKey],
         builder.Configuration[Configuration.ClientRedirectUriKey]));
+builder.Services.AddSingleton(x => new Options(Host: builder.Configuration[Configuration.Host]));
 
 var app = builder.Build();
 

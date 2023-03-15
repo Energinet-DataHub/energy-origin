@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Jwt;
@@ -12,13 +13,15 @@ public class AuthController : Controller
     private readonly User[] users;
     private readonly IJwtTokenGenerator tokenGenerator;
     private readonly ILogger<AuthController> logger;
+    private readonly Options options;
 
-    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger)
+    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger, Options options)
     {
         this.client = client;
         this.users = users;
         this.tokenGenerator = tokenGenerator;
         this.logger = logger;
+        this.options = options;
     }
 
     [HttpPost]
@@ -102,14 +105,14 @@ public class AuthController : Controller
     public IActionResult openid() =>
         Ok(new
         {
-            issuer = $"eo-u-1144authchart.westeurope.cloudapp.azure.com",
-            jwks_uri = $"https://{Request.Host}{Request.PathBase}.well-known/openid-configuration/jwks",
-            authorization_endpoint = $"https://{Request.Host}{Request.PathBase}connect/authorize",
-            token_endpoint = $"https://{Request.Host}{Request.PathBase}connect/token",
-            userinfo_endpoint = $"https://{Request.Host}{Request.PathBase}connect/userinfo",
-            end_session_endpoint = $"https://{Request.Host}{Request.PathBase}connect/endsession",
-            revocation_endpoint = $"https://{Request.Host}{Request.PathBase}connect/revocation",
-            backchannel_authentication_endpoint = $"https://{Request.Host}{Request.PathBase}connect/ciba",
+            issuer = $"https://{options.Host}{Request.PathBase}",
+            jwks_uri = $"https://{options.Host}{Request.PathBase}.well-known/openid-configuration/jwks",
+            authorization_endpoint = $"https://{options.Host}{Request.PathBase}connect/authorize",
+            token_endpoint = $"https://{options.Host}{Request.PathBase}connect/token",
+            userinfo_endpoint = $"https://{options.Host}{Request.PathBase}connect/userinfo",
+            end_session_endpoint = $"https://{options.Host}{Request.PathBase}connect/endsession",
+            revocation_endpoint = $"https://{options.Host}{Request.PathBase}connect/revocation",
+            backchannel_authentication_endpoint = $"https://{options.Host}{Request.PathBase}connect/ciba",
             frontchannel_logout_supported = true,
             frontchannel_logout_session_supported = true,
             backchannel_logout_supported = true,
