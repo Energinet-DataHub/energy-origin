@@ -23,7 +23,7 @@ public class RegistryWorker : BackgroundService
         this.logger = logger;
 
         ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
-        issuerKey = Key.Create(SignatureAlgorithm.Ed25519);
+        issuerKey = IssuerKey.LoadPrivateKey();
 
         registerClient = new RegisterClient(registryOptions.Value.Url);
 
