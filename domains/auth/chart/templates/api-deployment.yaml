@@ -32,9 +32,8 @@ spec:
           {{- end}}
           {{- end}}
           volumeMounts:
-            - name: sql-migrations
+            - name: migrations
               mountPath: /sql
-              name: migrations
               readOnly: true
       containers:
         - name: {{ .Release.Name }}-api
