@@ -83,7 +83,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql($"host={databaseOptions.Host};Port={databaseOptions.Port};Database={databaseOptions.Name};username={databaseOptions.User};password={databaseOptions.Password};"));
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
