@@ -38,6 +38,8 @@ public class LoginController : ControllerBase
         return RedirectPreserveMethod(url);
     }
 
+    // FIXME: remove below ----
+
     [HttpGet]
     [Route("test")]
     public IActionResult GetConfigurationSettings(IConfiguration config) => Ok(config.GetSection("Token").Get<TokenOptions>());
@@ -56,5 +58,31 @@ public class LoginController : ControllerBase
         var user = userService.GetUserByProviderIdAsync(id); return user is not null ? (ActionResult<User>)Ok(user) : (ActionResult<User>)NotFound();
     }
 
-    [HttpGet()][Route("G", Name = "G")] public async Task<ActionResult<User>> G([FromServices] IUserService userService) => Ok(await userService.UpsertUserAsync(new User { ProviderId = "1", Name = "TestUser", AcceptedTermsVersion = 1, Tin = "hehe", AllowCPRLookup = false }));
+    [HttpGet()]
+    [Route("G")]
+    public IActionResult GoGo(IHttpContextAccessor accessor)
+    {
+        accessor.HttpContext!.Response.Cookies.Append("Authentication", "token?", new CookieOptions
+        {
+            IsEssential = true,
+            Secure = true,
+            Expires = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(1))
+        });
+
+        return RedirectPreserveMethod("/dashboard");
+    }
+
+    [HttpGet()]
+    [Route("F")]
+    public IActionResult Fallback(IHttpContextAccessor accessor)
+    {
+        accessor.HttpContext!.Response.Cookies.Append("Authentication", "token?!", new CookieOptions
+        {
+            IsEssential = true,
+            Secure = true,
+            Expires = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(1))
+        });
+
+        return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='/dashboard'"/></head><body /></html>""");
+    }
 }
