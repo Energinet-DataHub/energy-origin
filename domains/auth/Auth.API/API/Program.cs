@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -7,6 +6,7 @@ using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
 using API.Utilities;
+using AuthLibrary.Utilities;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -42,20 +42,22 @@ builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsO
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
-builder.Services.AddAuthentication().AddJwtBearer(options =>
-{
-    var rsa = RSA.Create();
-    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
+var validate = new TokenValidator();
+var Isvalidated = validate.TokenValidation(builder, tokenOptions.PublicKeyPem);
+//builder.Services.AddAuthentication().AddJwtBearer(options =>
+//{
+//    var rsa = RSA.Create();
+//    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
 
-    options.MapInboundClaims = false;
+//    options.MapInboundClaims = false;
 
-    options.TokenValidationParameters = new()
-    {
-        IssuerSigningKey = new RsaSecurityKey(rsa),
-        ValidAudience = tokenOptions.Audience,
-        ValidIssuer = tokenOptions.Issuer,
-    };
-});
+//    options.TokenValidationParameters = new()
+//    {
+//        IssuerSigningKey = new RsaSecurityKey(rsa),
+//        ValidAudience = tokenOptions.Audience,
+//        ValidIssuer = tokenOptions.Issuer,
+//    };
+//});
 
 builder.Services.AddSwaggerGen(c =>
 {

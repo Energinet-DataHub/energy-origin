@@ -1,4 +1,4 @@
-namespace API.Values
+namespace AuthLibrary.Values
 {
     public struct UserScopeClaim
     {

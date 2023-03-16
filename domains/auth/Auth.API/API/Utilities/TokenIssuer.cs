@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Options;
 using API.Values;
+using AuthLibrary.Utilities;
+using AuthLibrary.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

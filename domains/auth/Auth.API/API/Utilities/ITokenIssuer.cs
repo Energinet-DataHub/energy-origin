@@ -1,3 +1,5 @@
+using AuthLibrary.Utilities;
+
 namespace API.Utilities;
 
 public interface ITokenIssuer

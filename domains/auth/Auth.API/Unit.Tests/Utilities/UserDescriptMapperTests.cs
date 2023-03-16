@@ -4,6 +4,8 @@ using API.Models.Entities;
 using API.Options;
 using API.Utilities;
 using API.Values;
+using AuthLibrary.Utilities;
+using AuthLibrary.Values;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,19 +18,19 @@ public class UserDescriptMapperTests
     private readonly ICryptography cryptography;
     private readonly ILogger<UserDescriptMapper> logger = Mock.Of<ILogger<UserDescriptMapper>>();
 
-    public UserDescriptMapperTests()
-    {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Test.json", false)
-            .Build();
+    //public UserDescriptMapperTests()
+    //{
+    //    var configuration = new ConfigurationBuilder()
+    //        .SetBasePath(Directory.GetCurrentDirectory())
+    //        .AddJsonFile("appsettings.Test.json", false)
+    //        .Build();
 
-        var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
+    //    var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        cryptography = new Cryptography(Options.Create(options));
+    //    cryptography = new Cryptography(Options.Create(options));
 
-        mapper = new UserDescriptMapper(cryptography, logger);
-    }
+    //    mapper = new UserDescriptMapper(cryptography, logger);
+    //}
 
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()

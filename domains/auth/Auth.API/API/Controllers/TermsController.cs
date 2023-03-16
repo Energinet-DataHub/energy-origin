@@ -1,7 +1,7 @@
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
+using AuthLibrary.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +16,7 @@ public class TermsController : ControllerBase
     public async Task<IActionResult> AcceptTermsAsync(
         IUserDescriptMapper descriptMapper,
         IUserService userService,
-        [FromBody] AcceptTermsDTO acceptedTermsVersion)
+        [FromBody] AcceptTermsRequest acceptedTermsVersion)
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 

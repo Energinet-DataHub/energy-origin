@@ -1,4 +1,4 @@
-namespace API.Values;
+namespace AuthLibrary.Values;
 
 // NOTE: Prefer claim names from this list when not presented in `JwtRegisteredClaimNames`: https://www.iana.org/assignments/jwt/jwt.xhtml
 public struct UserClaimName

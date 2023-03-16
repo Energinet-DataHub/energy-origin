@@ -2,16 +2,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Options;
 using Microsoft.Extensions.Options;
 
-namespace API.Utilities;
+namespace AuthLibrary.Utilities;
 
 public class Cryptography : ICryptography
 {
-    private readonly byte[] secret;
+    private readonly byte[] secret = Encoding.UTF8.GetBytes("Secret"); //TODO figure out how to handle secret/CryptographyOptions
 
-    public Cryptography(IOptions<CryptographyOptions> options) => secret = Encoding.UTF8.GetBytes(options.Value.Key);
+    // public Cryptography(IOptions<CryptographyOptions> options) => secret = Encoding.UTF8.GetBytes(options.Value.Key);
 
     public string Encrypt<T>(T state)
     {

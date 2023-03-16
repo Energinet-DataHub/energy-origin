@@ -4,6 +4,7 @@ using API.Controllers;
 using API.Options;
 using API.Utilities;
 using API.Values;
+using AuthLibrary.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;

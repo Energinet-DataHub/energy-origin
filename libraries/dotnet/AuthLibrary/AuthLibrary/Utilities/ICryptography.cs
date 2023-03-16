@@ -1,4 +1,4 @@
-namespace API.Utilities;
+namespace AuthLibrary.Utilities;
 
 public interface ICryptography
 {
