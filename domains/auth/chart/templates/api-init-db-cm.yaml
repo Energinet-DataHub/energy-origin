@@ -6,5 +6,7 @@ metadata:
   annotations:
     internal.config.kubernetes.io/needsHashSuffix: enabled
 data:
+  run.sh: |
+    psql ${PGNAME:-postgres} -U ${PGUSER:-postgres} -p ${PGPORT:-5432} -h ${PGHOST:-localhost} -f /sql/migrations.sql
   migrations.sql: |-
 {{ .Files.Get "migrations.sql" | indent 4 }}

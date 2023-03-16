@@ -22,8 +22,10 @@ spec:
       initContainers:
         - name: {{ .Release.Name }}-api-init-db
           image: postgres:alpine3.17
-          command: |
-            psql ${PGNAME:-postgres} -U ${PGUSER:-postgres} -p ${PGPORT:-5432} -h ${PGHOST:-localhost} -f /sql/migrations.sql
+          command:
+            - /bin/sh
+          args:
+            - /sql/run.sh
           env:
           {{- if .Values.api.setup.database}}
           {{- range $name, $value := .Values.api.setup.database }}
