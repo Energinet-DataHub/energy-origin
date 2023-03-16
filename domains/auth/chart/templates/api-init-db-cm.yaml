@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-api-init-db-cm
+  annotations:
+    internal.config.kubernetes.io/needsHashSuffix: enabled
+data:
+  migrations.sql: |-
+        {{ .Files.Get "migrations.sql" }}

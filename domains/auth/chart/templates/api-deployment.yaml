@@ -15,6 +15,27 @@ spec:
       labels:
         app: {{ .Release.Name }}-api
     spec:
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ .Release.Name }}-api-init-db-cm
+      initContainers:
+        - name: {{ .Release.Name }}-api-init-db
+          image: postgres:alpine3.17
+          command: |
+            psql ${PGNAME:-postgres} -U ${PGUSER:-postgres} -p ${PGPORT:-5432} -h ${PGHOST:-localhost} -f /sql/migrations.sql
+          env:
+          {{- if .Values.api.setup.database}}
+          {{- range $name, $value := .Values.api.setup.database }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+          {{- end}}
+          {{- end}}
+          volumeMounts:
+            - name: sql-migrations
+              mountPath: /sql
+              name: migrations
+              readOnly: true
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'

@@ -21,3 +21,10 @@ api:
     Oidc__CacheDuration:
     Oidc__AuthorityCallbackUri:
     Oidc__FrontendRedirectUri:
+  setup:
+    database:
+      PGHOST:
+      PGUSER:
+      PGPASSWORD:
+      PGNAME:
+      PGPORT:
