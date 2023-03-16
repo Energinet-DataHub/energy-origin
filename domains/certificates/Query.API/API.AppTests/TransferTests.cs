@@ -32,8 +32,6 @@ public sealed class TransferTests :
         dataSyncWireMock = new DataSyncWireMock(port: 9004);
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
-        // this.factory.MartenConnectionString =
-            // "host=localhost;Port=5432;Database=marten;username=postgres;password=postgres;";//martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }

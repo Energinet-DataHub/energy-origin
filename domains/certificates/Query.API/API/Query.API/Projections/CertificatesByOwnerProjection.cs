@@ -105,7 +105,7 @@ public class CertificatesByOwnerProjection : IProjection
         var source = operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source)
                      ?? throw new CertificateDomainException(
                          productionCertificateTransferred.CertificateId,
-                         $"Cannot transfer from {productionCertificateTransferred.Source}. {productionCertificateTransferred.Source} cannot be found"
+                         $"Cannot transfer from {productionCertificateTransferred.Source}. {productionCertificateTransferred.CertificateId} cannot be found"
                      );
         var cert = source.Certificates[productionCertificateTransferred.CertificateId];
 
