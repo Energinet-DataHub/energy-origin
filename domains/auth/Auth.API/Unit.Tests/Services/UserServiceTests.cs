@@ -24,7 +24,6 @@ public class UserServiceTests
                 ProviderId = Guid.NewGuid().ToString(),
                 Name = "Amigo",
                 AcceptedTermsVersion = 2,
-                Tin = null,
                 AllowCPRLookup = true
             });
 
@@ -47,7 +46,6 @@ public class UserServiceTests
                 ProviderId = providerId,
                 Name = "Amigo",
                 AcceptedTermsVersion = 2,
-                Tin = null,
                 AllowCPRLookup = true
             });
 

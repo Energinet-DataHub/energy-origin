@@ -26,7 +26,7 @@ public class OidcControllerTests
     private readonly IOptions<OidcOptions> oidcOptions;
     private readonly IOptions<TokenOptions> tokenOptions;
     private readonly ITokenIssuer issuer;
-    private readonly IUserDescriptMapper mapper;
+    private readonly IClaimsWrapperMapper mapper;
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
     private readonly IUserService service = Mock.Of<IUserService>();
@@ -47,9 +47,9 @@ public class OidcControllerTests
         tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
 
         issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
-        mapper = new UserDescriptMapper(
+        mapper = new ClaimsWrapperMapper(
             new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
-            Mock.Of<ILogger<UserDescriptMapper>>()
+            Mock.Of<ILogger<ClaimsWrapperMapper>>()
         );
 
         Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
@@ -432,7 +432,7 @@ public class OidcControllerTests
         var updatedClaims = claims ?? new Dictionary<string, object>();
         updatedClaims.Add("sub", subject ?? "subject");
 
-        var descriptor = new SecurityTokenDescriptor()
+        var claimsWrapper = new SecurityTokenDescriptor()
         {
             Audience = audience,
             Issuer = issuer,
@@ -441,7 +441,7 @@ public class OidcControllerTests
         };
 
         var handler = new JwtSecurityTokenHandler();
-        var token = handler.CreateJwtSecurityToken(descriptor);
+        var token = handler.CreateJwtSecurityToken(claimsWrapper);
         return handler.WriteToken(token);
     }
 }

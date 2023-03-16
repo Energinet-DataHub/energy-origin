@@ -37,9 +37,9 @@ public class TokenIssuerTests
     [InlineData(UserScopeClaim.AllAcceptedScopes, 1, true)]
     public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
     {
-        var descriptor = PrepareUser(version: version);
+        var claimsWrapper = PrepareUser(version: version);
 
-        var token = GetTokenIssuer().Issue(descriptor, versionBypass: bypass);
+        var token = GetTokenIssuer().Issue(claimsWrapper, versionBypass: bypass);
 
         var scope = Convert(token)!.Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.Equal(expectedScope, scope);
@@ -48,24 +48,24 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
-        var descriptor = PrepareUser();
+        var claimsWrapper = PrepareUser();
 
-        var token = GetTokenIssuer().Issue(descriptor);
+        var token = GetTokenIssuer().Issue(claimsWrapper);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(descriptor.Id.ToString(), jwt.Subject);
+        Assert.Equal(claimsWrapper.Id.ToString(), jwt.Subject);
     }
 
     [Fact]
     public void Issue_ShouldReturnATokenWithCorrectValidityTimes_WhenIssuingAtASpecifiedTime()
     {
-        var descriptor = PrepareUser();
+        var claimsWrapper = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
         var options = TestOptions.Token(tokenOptions.Value, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt: issueAt);
+        var token = GetTokenIssuer(token: options.Value).Issue(claimsWrapper, issueAt: issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -76,12 +76,12 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnATokenCreatedUsingOptions_WhenIssuing()
     {
-        var descriptor = PrepareUser();
+        var claimsWrapper = PrepareUser();
         var audience = Guid.NewGuid().ToString();
         var issuer = Guid.NewGuid().ToString();
         var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(claimsWrapper);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -92,10 +92,10 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnASignedToken_WhenIssuing()
     {
-        var descriptor = PrepareUser();
+        var claimsWrapper = PrepareUser();
         var options = TestOptions.Token(tokenOptions.Value);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
+        var token = GetTokenIssuer(token: options.Value).Issue(claimsWrapper);
 
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
@@ -123,19 +123,19 @@ public class TokenIssuerTests
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name, version, tin, accesToken, identityToken);
+        var claimsWrapper = PrepareUser(name, version, tin, accesToken, identityToken);
 
-        var token = GetTokenIssuer().Issue(descriptor);
+        var token = GetTokenIssuer().Issue(claimsWrapper);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(descriptor.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.Equal(claimsWrapper.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
         Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
         Assert.Equal(tin, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.Tin)?.Value);
         Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.TermsVersion)?.Value);
-        Assert.Equal(descriptor.ProviderId, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.ProviderId)?.Value);
-        Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
-        Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
+        Assert.Equal(claimsWrapper.ProviderId, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.ProviderId)?.Value);
+        Assert.Equal(claimsWrapper.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
+        Assert.Equal(!claimsWrapper.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
         Assert.Equal(accesToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
         Assert.Equal(identityToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
     }
@@ -143,9 +143,9 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
-        var descriptor = PrepareUser(addToMock: false, hasId: false);
+        var claimsWrapper = PrepareUser(addToMock: false, hasId: false);
 
-        var token = GetTokenIssuer().Issue(descriptor);
+        var token = GetTokenIssuer().Issue(claimsWrapper);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -154,7 +154,7 @@ public class TokenIssuerTests
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
 
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
+    private ClaimsWrapper PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
     {
         var user = new User()
         {
@@ -162,16 +162,14 @@ public class TokenIssuerTests
             ProviderId = Guid.NewGuid().ToString(),
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
-            Tin = tin,
             AllowCPRLookup = true
         };
-        var descriptor = new UserDescriptor(null!)
+        var claimsWrapper = new ClaimsWrapper(null!)
         {
             Id = user.Id,
             ProviderId = user.ProviderId,
             Name = user.Name,
             AcceptedTermsVersion = user.AcceptedTermsVersion,
-            Tin = user.Tin,
             AllowCPRLookup = user.AllowCPRLookup,
             EncryptedAccessToken = accesToken ?? "",
             EncryptedIdentityToken = identityToken ?? ""
@@ -182,7 +180,7 @@ public class TokenIssuerTests
                 .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(value: user);
         }
-        return descriptor;
+        return claimsWrapper;
     }
 
     private static JwtSecurityToken? Convert(string? token)

@@ -58,9 +58,9 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
-        var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
-        var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(userDescriptor, versionBypass, issueAt));
+        var claimsWrapperMapper = ServiceProvider.GetRequiredService<IClaimsWrapperMapper>();
+        var claimsWrapper = claimsWrapperMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(claimsWrapper, versionBypass, issueAt));
         return client;
     }
 
@@ -71,7 +71,6 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             ProviderId = Guid.NewGuid().ToString(),
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
-            Tin = null,
             AllowCPRLookup = true
         };
 

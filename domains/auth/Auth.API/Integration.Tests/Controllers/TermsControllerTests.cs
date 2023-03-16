@@ -36,7 +36,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.ProviderId, dbUser.ProviderId);
         Assert.Equal(user.Name, dbUser.Name);
-        Assert.Equal(user.Tin, dbUser.Tin);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
@@ -50,7 +49,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString(),
             ProviderId = Guid.NewGuid().ToString(),
-            Tin = null,
             AllowCPRLookup = false,
             AcceptedTermsVersion = 0
         };
@@ -67,7 +65,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.ProviderId, dbUser.ProviderId);
         Assert.Equal(user.Name, dbUser.Name);
-        Assert.Equal(user.Tin, dbUser.Tin);
         Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
@@ -79,7 +76,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            var mapper = Mock.Of<IUserDescriptMapper>();
+            var mapper = Mock.Of<IClaimsWrapperMapper>();
             _ = Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
@@ -96,7 +93,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenClaimsWrapperIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
 

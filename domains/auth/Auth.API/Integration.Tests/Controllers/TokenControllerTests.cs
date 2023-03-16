@@ -103,7 +103,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            var mapper = Mock.Of<IUserDescriptMapper>();
+            var mapper = Mock.Of<IClaimsWrapperMapper>();
             _ = Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
@@ -118,7 +118,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    public async Task RefreshAsync_ShouldReturnInternalServerError_WhenClaimsWrapperIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
 

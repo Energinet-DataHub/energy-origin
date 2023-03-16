@@ -12,9 +12,9 @@ namespace Tests.Utilities;
 
 public class UserDescriptMapperTests
 {
-    private readonly IUserDescriptMapper mapper;
+    private readonly IClaimsWrapperMapper mapper;
     private readonly ICryptography cryptography;
-    private readonly ILogger<UserDescriptMapper> logger = Mock.Of<ILogger<UserDescriptMapper>>();
+    private readonly ILogger<ClaimsWrapperMapper> logger = Mock.Of<ILogger<ClaimsWrapperMapper>>();
 
     public UserDescriptMapperTests()
     {
@@ -27,11 +27,11 @@ public class UserDescriptMapperTests
 
         cryptography = new Cryptography(Options.Create(options));
 
-        mapper = new UserDescriptMapper(cryptography, logger);
+        mapper = new ClaimsWrapperMapper(cryptography, logger);
     }
 
     [Fact]
-    public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()
+    public void Map_ShouldReturnClaimsWrapperWithProperties_WhenMappingDatabaseUserWithTokens()
     {
         var user = new User()
         {
@@ -39,29 +39,27 @@ public class UserDescriptMapperTests
             ProviderId = Guid.NewGuid().ToString(),
             Name = "Amigo",
             AcceptedTermsVersion = 0,
-            Tin = null,
             AllowCPRLookup = true
         };
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
 
-        var descriptor = mapper.Map(user, accesToken, identityToken);
+        var claimsWrapper = mapper.Map(user, accesToken, identityToken);
 
-        Assert.NotNull(descriptor);
-        Assert.Equal(user.Id, descriptor.Id);
-        Assert.Equal(user.ProviderId, descriptor.ProviderId);
-        Assert.Equal(user.Name, descriptor.Name);
-        Assert.Equal(user.AcceptedTermsVersion, descriptor.AcceptedTermsVersion);
-        Assert.Equal(user.Tin, descriptor.Tin);
-        Assert.Equal(user.AllowCPRLookup, descriptor.AllowCPRLookup);
-        Assert.Equal(accesToken, descriptor.AccessToken);
-        Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);
-        Assert.Equal(identityToken, descriptor.IdentityToken);
-        Assert.NotEqual(identityToken, descriptor.EncryptedIdentityToken);
+        Assert.NotNull(claimsWrapper);
+        Assert.Equal(user.Id, claimsWrapper.Id);
+        Assert.Equal(user.ProviderId, claimsWrapper.ProviderId);
+        Assert.Equal(user.Name, claimsWrapper.Name);
+        Assert.Equal(user.AcceptedTermsVersion, claimsWrapper.AcceptedTermsVersion);
+        Assert.Equal(user.AllowCPRLookup, claimsWrapper.AllowCPRLookup);
+        Assert.Equal(accesToken, claimsWrapper.AccessToken);
+        Assert.NotEqual(accesToken, claimsWrapper.EncryptedAccessToken);
+        Assert.Equal(identityToken, claimsWrapper.IdentityToken);
+        Assert.NotEqual(identityToken, claimsWrapper.EncryptedIdentityToken);
     }
 
     [Fact]
-    public void Map_ShouldReturnDescriptorWithProperties_WhenMappingClaimPrincipal()
+    public void Map_ShouldReturnClaimsWrapperWithProperties_WhenMappingClaimPrincipal()
     {
         var id = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
@@ -82,23 +80,23 @@ public class UserDescriptMapperTests
             new Claim(UserClaimName.AllowCPRLookup, "true"),
         }, "mock"));
 
-        var descriptor = mapper.Map(user);
+        var claimsWrapper = mapper.Map(user);
 
-        Assert.NotNull(descriptor);
-        Assert.Equal(id, descriptor.Id?.ToString());
-        Assert.Equal(providerId, descriptor.ProviderId);
-        Assert.Equal(name, descriptor.Name);
-        Assert.Equal(version, descriptor.AcceptedTermsVersion);
-        Assert.Null(descriptor.Tin);
-        Assert.True(descriptor.AllowCPRLookup);
-        Assert.Equal(accessToken, descriptor.AccessToken);
-        Assert.NotEqual(accessToken, descriptor.EncryptedAccessToken);
-        Assert.Equal(identityToken, descriptor.IdentityToken);
-        Assert.NotEqual(identityToken, descriptor.EncryptedIdentityToken);
+        Assert.NotNull(claimsWrapper);
+        Assert.Equal(id, claimsWrapper.Id?.ToString());
+        Assert.Equal(providerId, claimsWrapper.ProviderId);
+        Assert.Equal(name, claimsWrapper.Name);
+        Assert.Equal(version, claimsWrapper.AcceptedTermsVersion);
+        Assert.Null(claimsWrapper.Tin);
+        Assert.True(claimsWrapper.AllowCPRLookup);
+        Assert.Equal(accessToken, claimsWrapper.AccessToken);
+        Assert.NotEqual(accessToken, claimsWrapper.EncryptedAccessToken);
+        Assert.Equal(identityToken, claimsWrapper.IdentityToken);
+        Assert.NotEqual(identityToken, claimsWrapper.EncryptedIdentityToken);
     }
 
     [Fact]
-    public void Map_ShouldReturnDescriptorWithProperties_WhenMappingClaimPrincipalWithoutId()
+    public void Map_ShouldReturnClaimsWrapperWithProperties_WhenMappingClaimPrincipalWithoutId()
     {
         var name = Guid.NewGuid().ToString();
         var scope = $"{Guid.NewGuid()} {Guid.NewGuid()}";
@@ -117,26 +115,26 @@ public class UserDescriptMapperTests
             new Claim(UserClaimName.AllowCPRLookup, "true"),
         }, "mock"));
 
-        var descriptor = mapper.Map(user);
+        var claimsWrapper = mapper.Map(user);
 
-        Assert.NotNull(descriptor);
-        Assert.Equal(providerId, descriptor.ProviderId);
-        Assert.Equal(name, descriptor.Name);
-        Assert.Equal(version, descriptor.AcceptedTermsVersion);
-        Assert.Null(descriptor.Tin);
-        Assert.True(descriptor.AllowCPRLookup);
-        Assert.Equal(accessToken, descriptor.AccessToken);
-        Assert.NotEqual(accessToken, descriptor.EncryptedAccessToken);
-        Assert.Equal(identityToken, descriptor.IdentityToken);
-        Assert.NotEqual(identityToken, descriptor.EncryptedIdentityToken);
+        Assert.NotNull(claimsWrapper);
+        Assert.Equal(providerId, claimsWrapper.ProviderId);
+        Assert.Equal(name, claimsWrapper.Name);
+        Assert.Equal(version, claimsWrapper.AcceptedTermsVersion);
+        Assert.Null(claimsWrapper.Tin);
+        Assert.True(claimsWrapper.AllowCPRLookup);
+        Assert.Equal(accessToken, claimsWrapper.AccessToken);
+        Assert.NotEqual(accessToken, claimsWrapper.EncryptedAccessToken);
+        Assert.Equal(identityToken, claimsWrapper.IdentityToken);
+        Assert.NotEqual(identityToken, claimsWrapper.EncryptedIdentityToken);
     }
 
     [Fact]
     public void Map_ShouldReturnNull_WhenMappingANullClaimPrincipal()
     {
-        var descriptor = mapper.Map(null);
+        var claimsWrapper = mapper.Map(null);
 
-        Assert.Null(descriptor);
+        Assert.Null(claimsWrapper);
     }
 
     [Fact]
@@ -198,18 +196,18 @@ public class UserDescriptMapperTests
         {
             var user = new ClaimsPrincipal(new ClaimsIdentity(kase.Value, "mock"));
 
-            var descriptor = mapper.Map(user);
+            var claimsWrapper = mapper.Map(user);
 
-            Assert.True(descriptor == null, $"Descriptor was made without required property: '{kase.Key}'");
+            Assert.True(claimsWrapper == null, $"ClaimsWrapper was made without required property: '{kase.Key}'");
         }
     }
 
     [Fact]
     public void Map_ShouldLogMessage_WhenFailing()
     {
-        var descriptor = mapper.Map(null);
+        var claimsWrapper = mapper.Map(null);
 
-        Assert.Null(descriptor);
+        Assert.Null(claimsWrapper);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
