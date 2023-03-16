@@ -25,6 +25,7 @@ spec:
           command:
             - /bin/sh
           args:
+            - -e
             - /sql/run.sh
           env:
           {{- if .Values.api.setup.database}}
