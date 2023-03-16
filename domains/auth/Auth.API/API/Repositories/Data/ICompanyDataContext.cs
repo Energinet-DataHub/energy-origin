@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Data;
 
-public interface IUserDataContext : IBaseDataContext
+public interface ICompanyDataContext : IBaseDataContext
 {
-    DbSet<User> Users { get; set; }
+    DbSet<Company> Companies { get; set; }
 }

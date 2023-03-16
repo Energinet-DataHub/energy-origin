@@ -1,10 +1,9 @@
-namespace API.Repositories.Data
+namespace API.Repositories.Data;
+
+public interface IBaseDataContext
 {
-    public interface IBaseDataContext
-    {
-        int SaveChanges();
-        int SaveChanges(bool acceptAllChangesOnSuccess);
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-        Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default);
-    }
+    int SaveChanges();
+    int SaveChanges(bool acceptAllChangesOnSuccess);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default);
 }

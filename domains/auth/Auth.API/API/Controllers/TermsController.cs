@@ -14,26 +14,31 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        IUserDescriptMapper descriptMapper,
+        IClaimsWrapperMapper claimsWrapperMapper,
         IUserService userService,
+        ICompanyService companyService,
         [FromBody] AcceptTermsDTO acceptedTermsVersion)
     {
-        var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
+        var claimsWrapper = claimsWrapperMapper.Map(User) ?? throw new NullReferenceException($"ClaimsWrapperMapper failed: {User}");
 
         User user;
-        if (descriptor.Id is null)
+        if (claimsWrapper.Id is null)
         {
             user = new User
             {
-                Name = descriptor.Name,
-                ProviderId = descriptor.ProviderId,
-                Tin = descriptor.Tin,
-                AllowCPRLookup = descriptor.AllowCPRLookup
+                Name = claimsWrapper.Name,
+                ProviderId = claimsWrapper.ProviderId,
+                AllowCPRLookup = claimsWrapper.AllowCPRLookup,
+                Company = await companyService.GetCompanyByTinAsync(claimsWrapper.Tin) ?? new Company()
+                {
+                    Name = claimsWrapper.CompanyName,
+                    Tin = claimsWrapper.Tin
+                }
             };
         }
         else
         {
-            var id = descriptor.Id.Value;
+            var id = claimsWrapper.Id.Value;
             user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
 

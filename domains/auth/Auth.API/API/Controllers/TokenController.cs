@@ -14,23 +14,23 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
-        IUserDescriptMapper descriptMapper,
+        IClaimsWrapperMapper claimsWrapperMapper,
         IUserService userService,
         ITokenIssuer tokenIssuer)
     {
-        var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
+        var claimsWrapper = claimsWrapperMapper.Map(User) ?? throw new NullReferenceException($"ClaimsWrapperMapper failed: {User}");
         var versionBypass = false;
 
-        if (descriptor.Id is not null)
+        if (claimsWrapper.Id is not null)
         {
-            var user = await userService.GetUserByIdAsync(descriptor.Id.Value) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id.Value}");
-            descriptor = descriptMapper.Map(user, descriptor.AccessToken!, descriptor.IdentityToken!);
+            var user = await userService.GetUserByIdAsync(claimsWrapper.Id.Value) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {claimsWrapper.Id.Value}");
+            claimsWrapper = claimsWrapperMapper.Map(user, claimsWrapper.AccessToken!, claimsWrapper.IdentityToken!);
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
             if (scope!.Contains(UserScopeClaim.NotAcceptedTerms) == false) versionBypass = true;
         }
 
-        return Ok(tokenIssuer.Issue(descriptor, versionBypass));
+        return Ok(tokenIssuer.Issue(claimsWrapper, versionBypass));
     }
 }

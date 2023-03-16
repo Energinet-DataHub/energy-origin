@@ -10,4 +10,5 @@ public struct UserClaimName
     public const string ProviderId = "ext";
     public const string TermsVersion = "trm";
     public const string AllowCPRLookup = "acl";
+    public const string CompanyName = "cpn";
 }

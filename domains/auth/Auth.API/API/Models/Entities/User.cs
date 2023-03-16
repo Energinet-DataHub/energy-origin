@@ -9,6 +9,8 @@ public record User
     public string ProviderId { get; set; } = null!;
     public string Name { get; set; } = null!;
     public int AcceptedTermsVersion { get; set; }
-    public string? Tin { get; set; }
     public bool AllowCPRLookup { get; set; }
+
+    public Guid? CompanyId { get; set; }
+    public virtual Company Company { get; set; } = null!;
 }

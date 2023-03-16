@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.Include(x => x.Company).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<User?> GetUserByProviderIdAsync(string providerId) => await dataContext.Users.FirstOrDefaultAsync(x => x.ProviderId == providerId);
+    public async Task<User?> GetUserByProviderIdAsync(string providerId) => await dataContext.Users.Include(x => x.Company).FirstOrDefaultAsync(x => x.ProviderId == providerId);
 }

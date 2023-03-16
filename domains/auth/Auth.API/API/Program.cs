@@ -92,12 +92,15 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
-builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
+builder.Services.AddSingleton<IClaimsWrapperMapper, ClaimsWrapperMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 
 var app = builder.Build();
 

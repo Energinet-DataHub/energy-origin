@@ -5,34 +5,49 @@ using API.Values;
 
 namespace API.Utilities;
 
-public class UserDescriptMapper : IUserDescriptMapper
+public class ClaimsWrapperMapper : IClaimsWrapperMapper
 {
     private readonly ICryptography cryptography;
-    private readonly ILogger<UserDescriptMapper> logger;
+    private readonly ILogger<ClaimsWrapperMapper> logger;
 
-    public UserDescriptMapper(ICryptography cryptography, ILogger<UserDescriptMapper> logger)
+    public ClaimsWrapperMapper(ICryptography cryptography, ILogger<ClaimsWrapperMapper> logger)
     {
         this.cryptography = cryptography;
         this.logger = logger;
     }
 
-    public UserDescriptor Map(User user, string accessToken, string identityToken) => new(cryptography)
+    public ClaimsWrapper Map(User user, string accessToken, string identityToken) => new(cryptography)
     {
         Id = user.Id,
         ProviderId = user.ProviderId,
         Name = user.Name,
-        Tin = user.Tin,
+        Tin = user.Company.Tin,
+        CompanyName = user.Company.Name,
         AcceptedTermsVersion = user.AcceptedTermsVersion,
         AllowCPRLookup = user.AllowCPRLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken)
     };
 
-    public UserDescriptor? Map(ClaimsPrincipal? user)
+    public ClaimsWrapper? Map(ClaimsPrincipal? user)
     {
         if (user == null)
         {
             MissingProperty(nameof(user));
+            return null;
+        }
+
+        var companyName = user.FindFirstValue(UserClaimName.CompanyName);
+        if (companyName == null)
+        {
+            MissingProperty(nameof(UserClaimName.CompanyName));
+            return null;
+        }
+
+        var tin = user.FindFirstValue(UserClaimName.Tin);
+        if (tin == null)
+        {
+            MissingProperty(nameof(UserClaimName.Tin));
             return null;
         }
 
@@ -96,7 +111,8 @@ public class UserDescriptMapper : IUserDescriptMapper
             Id = userId,
             ProviderId = providerId,
             Name = name,
-            Tin = user.FindFirstValue(UserClaimName.Tin),
+            Tin = tin,
+            CompanyName = companyName,
             AcceptedTermsVersion = version,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,

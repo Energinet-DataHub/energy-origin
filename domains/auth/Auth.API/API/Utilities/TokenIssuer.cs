@@ -20,13 +20,13 @@ public class TokenIssuer : ITokenIssuer
         this.tokenOptions = tokenOptions.Value;
     }
 
-    public string Issue(UserDescriptor descriptor, bool versionBypass = false, DateTime? issueAt = default)
+    public string Issue(ClaimsWrapper claimsWrapper, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, descriptor, versionBypass);
+        var state = ResolveState(termsOptions, claimsWrapper, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, claimsWrapper, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -39,33 +39,31 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor, bool versionBypass)
+    private static UserState ResolveState(TermsOptions options, ClaimsWrapper claimsWrapper, bool versionBypass)
     {
-        var version = descriptor.AcceptedTermsVersion;
+        var version = claimsWrapper.AcceptedTermsVersion;
 
         var scope = version == options.CurrentVersion || versionBypass ? UserScopeClaim.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id?.ToString(), version, scope);
+        return new(claimsWrapper.Id?.ToString(), version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, ClaimsWrapper claimsWrapper, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
             { UserClaimName.Scope, state.Scope },
-            { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
-            { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
-            { UserClaimName.ProviderId, descriptor.ProviderId },
+            { UserClaimName.AccessToken, claimsWrapper.EncryptedAccessToken },
+            { UserClaimName.IdentityToken, claimsWrapper.EncryptedIdentityToken },
+            { UserClaimName.ProviderId, claimsWrapper.ProviderId },
             { UserClaimName.TermsVersion, state.AcceptedVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { UserClaimName.AllowCPRLookup, claimsWrapper.AllowCPRLookup },
+            { UserClaimName.Tin, claimsWrapper.Tin },
+            { UserClaimName.CompanyName, claimsWrapper.CompanyName }
         };
-        if (descriptor.Tin != null)
-        {
-            claims.Add(UserClaimName.Tin, descriptor.Tin);
-        }
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
+            new Claim(JwtRegisteredClaimNames.Name, claimsWrapper.Name)
         };
         if (state.Id != null)
         {

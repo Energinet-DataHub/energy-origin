@@ -22,7 +22,7 @@ public class OidcController : ControllerBase
         IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
-        IUserDescriptMapper mapper,
+        IClaimsWrapperMapper mapper,
         IUserService service,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
@@ -65,8 +65,8 @@ public class OidcController : ControllerBase
         string token;
         try
         {
-            var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
-            token = issuer.Issue(descriptor);
+            var claimsWrapper = await MapClaimsWrapper(mapper, service, oidcOptions.Value, discoveryDocument, response);
+            token = issuer.Issue(claimsWrapper);
         }
         catch (Exception exception)
         {
@@ -89,7 +89,7 @@ public class OidcController : ControllerBase
         return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<ClaimsWrapper> MapClaimsWrapper(IClaimsWrapperMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -111,14 +111,17 @@ public class OidcController : ControllerBase
 
         var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
         var scope = access.FindFirstValue("scope");
-        var providerId = userInfo.FindFirstValue("mitid.uuid");
-        var name = userInfo.FindFirstValue("mitid.identity_name");
+        var providerId = userInfo.FindFirstValue("idp_identity_id");
+        var name = userInfo.FindFirstValue("nemid.common_name");
         var tin = userInfo.FindFirstValue("nemid.cvr");
+        var companyName = userInfo.FindFirstValue("nemid.company_name");
 
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
+        ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
 
         if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
         {
@@ -130,9 +133,13 @@ public class OidcController : ControllerBase
             Id = null,
             ProviderId = providerId,
             Name = name,
-            Tin = tin,
             AcceptedTermsVersion = 0,
-            AllowCPRLookup = false
+            AllowCPRLookup = false,
+            Company = new Company()
+            {
+                Tin = tin,
+                Name = companyName
+            }
         };
         return mapper.Map(user, response.AccessToken, response.IdentityToken);
     }
