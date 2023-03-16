@@ -29,6 +29,8 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
 var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 
+Console.WriteLine($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};");
+
 builder.Services.Configure<TokenOptions>(tokenConfiguration);
 builder.Services.Configure<DatabaseOptions>(databaseConfiguration);
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
