@@ -2,8 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-api-init-db-cm
+  namespace: {{ .Release.Namespace }}
   annotations:
     internal.config.kubernetes.io/needsHashSuffix: enabled
 data:
   migrations.sql: |-
-        {{ .Files.Get "migrations.sql" }}
+{{ .Files.Get "migrations.sql" | indent 4 }}
