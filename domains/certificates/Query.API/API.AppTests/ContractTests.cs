@@ -1,15 +1,19 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
+using API.AppTests.Infrastructure.TestPriority;
 using API.AppTests.Mocks;
+using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
 
 namespace API.AppTests;
 
+[TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
 public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -113,6 +117,30 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [TestPriority(1)]
+    [Fact]
+    public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+
+        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+        var tenConcurrentRequests = Enumerable
+            .Range(1, 10)
+            .Select(_ => client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now }));
+
+        var responses = await Task.WhenAll(tenConcurrentRequests);
+
+        responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
+        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+        contracts!.Result.Should().HaveCount(1);
     }
 
     [Fact]
