@@ -27,8 +27,8 @@ spec:
           args:
             - -e
             - /sql/run.sh
-          env:
           {{- if .Values.api.setup.database}}
+          env:
           {{- range $name, $value := .Values.api.setup.database }}
             - name: {{ $name }}
               value: {{ $value | quote }}
@@ -53,8 +53,8 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
-          env:
           {{- if .Values.api.env}}
+          env:
           {{- range $name, $value := .Values.api.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}

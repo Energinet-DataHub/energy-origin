@@ -26,7 +26,7 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, descriptor, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(termsOptions, tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -48,14 +48,15 @@ public class TokenIssuer : ITokenIssuer
         return new(descriptor.Id?.ToString(), version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.ProviderId, descriptor.ProviderId },
-            { UserClaimName.TermsVersion, state.AcceptedVersion },
+            { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
+            { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
         };
         if (descriptor.Tin != null)
@@ -76,9 +77,9 @@ public class TokenIssuer : ITokenIssuer
         {
             Subject = new ClaimsIdentity(identity),
             NotBefore = issueAt,
-            Expires = issueAt.Add(options.Duration),
-            Issuer = options.Issuer,
-            Audience = options.Audience,
+            Expires = issueAt.Add(tokenOptions.Duration),
+            Issuer = tokenOptions.Issuer,
+            Audience = tokenOptions.Audience,
             SigningCredentials = credentials,
             Claims = claims
         };
