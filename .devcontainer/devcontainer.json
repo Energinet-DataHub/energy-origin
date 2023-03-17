@@ -4,15 +4,20 @@
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "settings": {
-        "editor.formatOnSave": true
-    },
-    "extensions": [
-        "EditorConfig.EditorConfig",
-        "redhat.vscode-yaml",
-        "hediet.vscode-drawio"
-    ],
     "postCreateCommand": "",
     "remoteUser": "vscode",
-    "features": {}
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "redhat.vscode-yaml",
+                "hediet.vscode-drawio",
+                "me-dutour-mathieu.vscode-github-actions"
+            ],
+            "settings": {
+                "editor.formatOnSave": true
+            }
+        }
+    }
 }
