@@ -52,8 +52,8 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-        logger.LogDebug($"connect/token: authorization header: {authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-        logger.LogDebug($"connect/token: form data: {string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -68,7 +68,7 @@ public class AuthController : Controller
         var (isValid, validationError) = client.Validate(clientId, clientSecret, redirect_uri);
         if (!isValid)
         {
-            logger.LogDebug($"connect/token: {validationError}");
+            logger.LogDebug("connect/token: {validationError}", validationError);
             return BadRequest(validationError);
         }
 

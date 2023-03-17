@@ -9,11 +9,8 @@ public static class DictionaryExtensions
 
         var sameKeys = dict1.Keys.Intersect(dict2.Keys).ToArray();
 
-        if (sameKeys.Any())
-        {
-            throw new ArgumentException($"Cannot add two dictionaries with same keys: {string.Join(",", sameKeys)}");
-        }
-
-        return dict1.Concat(dict2).ToDictionary(x => x.Key, x => x.Value);
+        return sameKeys.Any()
+            ? throw new ArgumentException($"Cannot add two dictionaries with same keys: {string.Join(",", sameKeys)}")
+            : dict1.Concat(dict2).ToDictionary(x => x.Key, x => x.Value);
     }
 }

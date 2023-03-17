@@ -1,4 +1,4 @@
-version: 0.0.8
+version: 0.1.0
 versionPath: api.image.tag
 name: ghcr.io/energinet-datahub/eo-oidc-mock
 namePath: api.image.name
