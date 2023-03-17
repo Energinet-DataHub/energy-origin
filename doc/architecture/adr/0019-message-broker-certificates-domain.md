@@ -1,8 +1,8 @@
-Message broker
+Message broker certificates domain
 
-* Status: Proposed
+* Status: Accepted
 * Deciders: @anna-knudsen, @duizer, @ckr123, @Exobitt
-* Date: 2022-01-19
+* Date: 2023-01-19
 
 ---
 
