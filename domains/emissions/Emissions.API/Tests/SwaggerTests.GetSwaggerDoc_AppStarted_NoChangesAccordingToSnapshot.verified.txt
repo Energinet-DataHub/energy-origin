@@ -1,0 +1,283 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/emissions": {
+      "get": {
+        "tags": [
+          "Emissions"
+        ],
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Aggregation",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Aggregation"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmissionsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmissionsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmissionsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sources": {
+      "get": {
+        "tags": [
+          "Emissions"
+        ],
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Aggregation",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Aggregation"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnergySourceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnergySourceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnergySourceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Aggregation": {
+        "enum": [
+          "Year",
+          "Month",
+          "Day",
+          "Hour",
+          "QuarterHour",
+          "Actual",
+          "Total"
+        ],
+        "type": "string"
+      },
+      "Emissions": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "relative": {
+            "$ref": "#/components/schemas/Quantity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmissionsResponse": {
+        "type": "object",
+        "properties": {
+          "emissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Emissions"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnergySourceDeclaration": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "renewable": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratios": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnergySourceRequest": {
+        "required": [
+          "dateFrom",
+          "dateTo"
+        ],
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "aggregation": {
+            "$ref": "#/components/schemas/Aggregation"
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnergySourceResponse": {
+        "type": "object",
+        "properties": {
+          "energySources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnergySourceDeclaration"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Quantity": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "$ref": "#/components/schemas/QuantityUnit"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuantityUnit": {
+        "enum": [
+          "Wh",
+          "kWh",
+          "MWh",
+          "GWh",
+          "W",
+          "kW",
+          "MW",
+          "GW",
+          "mg",
+          "g",
+          "kg",
+          "Mg",
+          "mg/kWh",
+          "g/kWh",
+          "kg/kWh"
+        ],
+        "type": "string"
+      }
+    }
+  }
+}
