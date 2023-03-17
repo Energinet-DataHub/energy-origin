@@ -1,4 +1,4 @@
-namespace API.Options;
+namespace AuthLibrary.Utilities;
 
 public class CryptographyOptions
 {

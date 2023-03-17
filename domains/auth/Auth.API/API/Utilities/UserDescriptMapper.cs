@@ -1,9 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using API.Models.Entities;
-using API.Values;
 using AuthLibrary.Utilities;
-using AuthLibrary.Values;
 
 namespace API.Utilities;
 
@@ -12,7 +8,7 @@ public class UserDescriptMapper : UserDescriptMapperBase, IUserDescriptMapper
     private readonly ICryptography cryptography;
     private readonly ILogger<UserDescriptMapper> logger;
 
-    public UserDescriptMapper(ICryptography cryptography, ILogger<UserDescriptMapper> logger) :base(cryptography)
+    public UserDescriptMapper(ICryptography cryptography, ILogger<UserDescriptMapper> logger) : base(cryptography, logger)
     {
         this.cryptography = cryptography;
         this.logger = logger;
@@ -29,5 +25,4 @@ public class UserDescriptMapper : UserDescriptMapperBase, IUserDescriptMapper
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken)
     };
-
 }

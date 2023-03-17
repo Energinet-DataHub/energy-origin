@@ -1,57 +1,66 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AuthLibrary.Values;
+using Microsoft.Extensions.Logging;
 
 namespace AuthLibrary.Utilities;
 
 public class UserDescriptMapperBase : IUserDescriptMapperBase
 {
     private readonly ICryptography cryptography;
+    private readonly ILogger<UserDescriptMapperBase> logger;
 
-    public UserDescriptMapperBase(ICryptography cryptography)
+    public UserDescriptMapperBase(ICryptography cryptography, ILogger<UserDescriptMapperBase> logger)
     {
         this.cryptography = cryptography;
+        this.logger = logger;
     }
-
 
     public UserDescriptor? Map(ClaimsPrincipal? user)
     {
         if (user == null)
         {
+            MissingProperty(nameof(user));
             return null;
         }
 
         var providerId = user.FindFirstValue(UserClaimName.ProviderId);
         if (providerId == null)
         {
+            MissingProperty(nameof(UserClaimName.ProviderId));
             return null;
         }
 
         var name = user.FindFirstValue(JwtRegisteredClaimNames.Name);
         if (name == null)
         {
+            MissingProperty(nameof(JwtRegisteredClaimNames.Name));
             return null;
         }
 
         if (!int.TryParse(user.FindFirstValue(UserClaimName.TermsVersion), out var version))
         {
+            MissingProperty(nameof(UserClaimName.TermsVersion));
             return null;
         }
 
         if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCPRLookup), out var allowCPRLookup))
         {
+            MissingProperty(nameof(UserClaimName.AllowCPRLookup));
             return null;
         }
 
         var encryptedAccessToken = user.FindFirstValue(UserClaimName.AccessToken);
         if (encryptedAccessToken == null)
         {
+            MissingProperty(nameof(UserClaimName.AccessToken));
             return null;
         }
 
         var encryptedIdentityToken = user.FindFirstValue(UserClaimName.IdentityToken);
         if (encryptedIdentityToken == null)
         {
+            MissingProperty(nameof(UserClaimName.IdentityToken));
             return null;
         }
 
@@ -82,4 +91,6 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             EncryptedIdentityToken = encryptedIdentityToken,
         };
     }
+
+    private void MissingProperty(string name) => logger.LogWarning("Missing property: '{Property}'", name);
 }

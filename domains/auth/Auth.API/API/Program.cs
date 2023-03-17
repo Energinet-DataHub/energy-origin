@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using API.Middleware;
 using API.Options;
 using API.Repositories;
@@ -10,7 +8,6 @@ using AuthLibrary.Utilities;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -42,22 +39,7 @@ builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsO
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
-var validate = new TokenValidator();
-var Isvalidated = validate.TokenValidation(builder, tokenOptions.PublicKeyPem);
-//builder.Services.AddAuthentication().AddJwtBearer(options =>
-//{
-//    var rsa = RSA.Create();
-//    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
-
-//    options.MapInboundClaims = false;
-
-//    options.TokenValidationParameters = new()
-//    {
-//        IssuerSigningKey = new RsaSecurityKey(rsa),
-//        ValidAudience = tokenOptions.Audience,
-//        ValidIssuer = tokenOptions.Issuer,
-//    };
-//});
+builder.AddTokenValidation(tokenOptions.PublicKeyPem);
 
 builder.Services.AddSwaggerGen(c =>
 {
