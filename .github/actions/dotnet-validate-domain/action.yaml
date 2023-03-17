@@ -45,6 +45,8 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet format --verify-no-changes -v diag
 
+    # FIXME: add optional sql generation check
+
     - name: Test
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}

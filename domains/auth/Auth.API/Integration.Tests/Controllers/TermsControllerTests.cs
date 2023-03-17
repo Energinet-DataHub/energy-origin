@@ -14,10 +14,7 @@ namespace Tests.Integration.Controllers;
 public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    public TermsControllerTests(AuthWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()

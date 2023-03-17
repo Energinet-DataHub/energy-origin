@@ -24,7 +24,7 @@ api:
   setup:
     database:
       PGHOST:
-      PGUSER:
+      PGUSER: postgres
       PGPASSWORD:
-      PGNAME:
-      PGPORT:
+      PGNAME: postgres
+      PGPORT: 5432

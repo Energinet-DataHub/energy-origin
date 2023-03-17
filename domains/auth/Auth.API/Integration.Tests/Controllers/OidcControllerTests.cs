@@ -30,59 +30,59 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
     public OidcControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
-    // [Fact]
-    // public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
-    // {
-    //     var server = WireMockServer.Start();
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
+    {
+        var server = WireMockServer.Start();
 
-    //     var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
-    //     var oidcOptions = Options.Create(new OidcOptions()
-    //     {
-    //         AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
-    //         ClientId = Guid.NewGuid().ToString(),
-    //         AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
-    //         FrontendRedirectUri = new Uri("https://example-redirect.com")
-    //     });
-    //     var providerId = Guid.NewGuid().ToString();
-    //     var name = Guid.NewGuid().ToString();
-    //     var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
-    //     var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
-    //         { "scope", "something" },
-    //     });
-    //     var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
-    //         { "mitid.uuid", providerId },
-    //         { "mitid.identity_name", name }
-    //     });
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
+        var oidcOptions = Options.Create(new OidcOptions()
+        {
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com")
+        });
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
 
-    //     server.MockConfigEndpoint()
-    //         .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
-    //         .MockTokenEndpoint(accessToken, userToken, identityToken);
+        server.MockConfigEndpoint()
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockTokenEndpoint(accessToken, userToken, identityToken);
 
-    //     var client = factory
-    //         .CreateAnonymousClient(builder =>
-    //             builder.ConfigureTestServices(services =>
-    //                 services.AddScoped(x => oidcOptions)));
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
 
-    //     var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
-    //     var result = await client.GetAsync(queryString);
-    //     var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+        var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
+        var result = await client.GetAsync(queryString);
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
 
-    //     Assert.NotNull(result);
-    //     Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
-    //     var body = await result.Content.ReadAsStringAsync();
-    //     Assert.Contains("<html><head><meta ", body);
-    //     Assert.Contains(" http-equiv=", body);
-    //     Assert.Contains("refresh", body);
-    //     Assert.Contains("<body />", body);
-    //     Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
+        var body = await result.Content.ReadAsStringAsync();
+        Assert.Contains("<html><head><meta ", body);
+        Assert.Contains(" http-equiv=", body);
+        Assert.Contains("refresh", body);
+        Assert.Contains("<body />", body);
+        Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
 
-    //     var header = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
-    //     Assert.True(header.Count() >= 1);
-    //     Assert.Contains("Authentication=", header.First());
-    //     Assert.Contains("; secure", header.First());
-    //     Assert.Contains("; expires=", header.First());
-    // }
+        var header = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
+        Assert.True(header.Any());
+        Assert.Contains("Authentication=", header.First());
+        Assert.Contains("; secure", header.First());
+        Assert.Contains("; expires=", header.First());
+    }
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeExchangeFails()
