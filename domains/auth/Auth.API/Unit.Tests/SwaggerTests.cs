@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace Integration.Tests;
+namespace Tests.Tests;
 
 [UsesVerify]
 public class SwaggerTests
