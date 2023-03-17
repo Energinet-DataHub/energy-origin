@@ -52,6 +52,7 @@ runs:
         for service in $(find . -name "*.csproj"); do
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
+          dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef
           dotnet ef migrations script -i  --no-build --project "$service" -o "/tmp/${name}.migrations.sql"
         done
 
