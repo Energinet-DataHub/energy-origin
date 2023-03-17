@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Tests
 {
-    public sealed class CalculateSourceEmissionShareTest
+    public sealed class CalculateSourceEmissionShareTests
     {
         [Theory]
         [InlineData(Aggregation.Total)]

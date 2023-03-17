@@ -9,7 +9,7 @@ using Xunit.Categories;
 namespace Tests;
 
 [UnitTest]
-public sealed class EnergiDataServiceTest
+public sealed class EnergiDataServiceTests
 {
     [Fact]
     public async void DatePeriod_GetEmissionsPerHour_EmissionRecordsReturned()
