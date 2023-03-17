@@ -8,7 +8,7 @@ namespace AuthLibrary.Utilities;
 
 public class Cryptography : ICryptography
 {
-    private readonly byte[] secret = Encoding.UTF8.GetBytes("Secret"); //TODO figure out how to handle secret/CryptographyOptions
+    private readonly byte[] secret = Encoding.UTF8.GetBytes("secretsecretsecretsecret"); //TODO figure out how to handle secret/CryptographyOptions
 
     // public Cryptography(IOptions<CryptographyOptions> options) => secret = Encoding.UTF8.GetBytes(options.Value.Key);
 
