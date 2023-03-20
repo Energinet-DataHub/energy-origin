@@ -101,15 +101,15 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var user = await factory.AddUserToDatabaseAsync();
 
-        var client = factory.CreateAuthenticatedClient(user, config: (Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder>?)(builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            var mapper = Mock.Of<API.Utilities.IUserDescriptorMapper>();
-            _ = Mock.Get<API.Utilities.IUserDescriptorMapper>((API.Utilities.IUserDescriptorMapper)mapper)
-                .Setup<UserDescriptor>(x => (UserDescriptor?)x.Map(It.IsAny<ClaimsPrincipal>()))
+            var mapper = Mock.Of<IUserDescriptorMapper>();
+            _ = Mock.Get(mapper)
+                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices((Action<IServiceCollection>)(services => services.AddScoped<API.Utilities.IUserDescriptorMapper>((Func<IServiceProvider, API.Utilities.IUserDescriptorMapper>)(x => (API.Utilities.IUserDescriptorMapper)mapper))));
-        }));
+            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
+        });
 
         var result = await client.GetAsync("auth/token");
 
