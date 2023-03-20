@@ -5,18 +5,18 @@ using API.Values;
 
 namespace API.Utilities;
 
-public class ClaimsWrapperMapper : IClaimsWrapperMapper
+public class UserDescriptorMapper : IUserDescriptorMapper
 {
     private readonly ICryptography cryptography;
-    private readonly ILogger<ClaimsWrapperMapper> logger;
+    private readonly ILogger<UserDescriptorMapper> logger;
 
-    public ClaimsWrapperMapper(ICryptography cryptography, ILogger<ClaimsWrapperMapper> logger)
+    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger)
     {
         this.cryptography = cryptography;
         this.logger = logger;
     }
 
-    public ClaimsWrapper Map(User user, string accessToken, string identityToken) => new(cryptography)
+    public UserDescriptor Map(User user, string accessToken, string identityToken) => new(cryptography)
     {
         Id = user.Id,
         ProviderId = user.ProviderId,
@@ -29,7 +29,7 @@ public class ClaimsWrapperMapper : IClaimsWrapperMapper
         EncryptedIdentityToken = cryptography.Encrypt(identityToken)
     };
 
-    public ClaimsWrapper? Map(ClaimsPrincipal? user)
+    public UserDescriptor? Map(ClaimsPrincipal? user)
     {
         if (user == null)
         {

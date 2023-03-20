@@ -44,9 +44,9 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
-        var claimsWrapperMapper = ServiceProvider.GetRequiredService<IClaimsWrapperMapper>();
-        var claimsWrapper = claimsWrapperMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(claimsWrapper, versionBypass, issueAt));
+        var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
+        var descriptor = mapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
         return client;
     }
 

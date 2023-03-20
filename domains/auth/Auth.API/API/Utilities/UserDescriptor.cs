@@ -1,6 +1,6 @@
 namespace API.Utilities;
 
-public class ClaimsWrapper
+public class UserDescriptor
 {
     public Guid? Id { get; init; }
     public string ProviderId { get; init; } = null!;
@@ -17,5 +17,5 @@ public class ClaimsWrapper
 
     private readonly ICryptography cryptography;
 
-    public ClaimsWrapper(ICryptography cryptography) => this.cryptography = cryptography;
+    public UserDescriptor(ICryptography cryptography) => this.cryptography = cryptography;
 };

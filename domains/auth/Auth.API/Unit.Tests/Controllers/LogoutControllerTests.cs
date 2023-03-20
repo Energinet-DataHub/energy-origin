@@ -14,7 +14,7 @@ namespace Tests.Controllers;
 public class LogoutControllerTests
 {
     private readonly OidcOptions oidcOptions;
-    private readonly IClaimsWrapperMapper mapper = Mock.Of<IClaimsWrapperMapper>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
 
     public LogoutControllerTests()
@@ -38,14 +38,14 @@ public class LogoutControllerTests
         var cryptography = Mock.Of<ICryptography>();
         Mock.Get(cryptography).Setup(it => it.Decrypt<string>(encryptedIdentityToken)).Returns(identityToken);
 
-        var claimsWrapper = new ClaimsWrapper(cryptography)
+        var descriptor = new UserDescriptor(cryptography)
         {
             EncryptedIdentityToken = encryptedIdentityToken
         };
 
         Mock.Get(mapper)
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: claimsWrapper);
+            .Returns(value: descriptor);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
 

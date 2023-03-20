@@ -13,7 +13,7 @@ public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
-    private readonly IClaimsWrapperMapper mapper = Mock.Of<IClaimsWrapperMapper>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
@@ -38,7 +38,7 @@ public class TokenControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new ClaimsWrapper(cryptography)
+            .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = userId != null ? Guid.Parse(userId) : null,
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
@@ -47,7 +47,7 @@ public class TokenControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(value: new ClaimsWrapper(cryptography)
+            .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
             });
@@ -64,7 +64,7 @@ public class TokenControllerTests
             });
 
         Mock.Get(issuer)
-            .Setup(x => x.Issue(It.IsAny<ClaimsWrapper>(), It.IsAny<bool>(), null))
+            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), null))
             .Returns(value: token);
 
         Mock.Get(claimsPrincipal)
@@ -77,7 +77,7 @@ public class TokenControllerTests
 
         Assert.Equal((result as OkObjectResult)!.Value, token);
 
-        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<ClaimsWrapper>(), bypass, null), Times.Once);
+        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, null), Times.Once);
     }
 
     [Fact]
@@ -91,11 +91,11 @@ public class TokenControllerTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenClaimsWrapperIdExistsButUserCannotBeFound()
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new ClaimsWrapper(null!)
+            .Returns(value: new UserDescriptor(null!)
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),

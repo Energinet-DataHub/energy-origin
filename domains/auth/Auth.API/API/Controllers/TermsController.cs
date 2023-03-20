@@ -14,31 +14,31 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        IClaimsWrapperMapper claimsWrapperMapper,
+        IUserDescriptorMapper mapper,
         IUserService userService,
         ICompanyService companyService,
         [FromBody] AcceptTermsDTO acceptedTermsVersion)
     {
-        var claimsWrapper = claimsWrapperMapper.Map(User) ?? throw new NullReferenceException($"ClaimsWrapperMapper failed: {User}");
+        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
         User user;
-        if (claimsWrapper.Id is null)
+        if (descriptor.Id is null)
         {
             user = new User
             {
-                Name = claimsWrapper.Name,
-                ProviderId = claimsWrapper.ProviderId,
-                AllowCPRLookup = claimsWrapper.AllowCPRLookup,
-                Company = await companyService.GetCompanyByTinAsync(claimsWrapper.Tin) ?? new Company()
+                Name = descriptor.Name,
+                ProviderId = descriptor.ProviderId,
+                AllowCPRLookup = descriptor.AllowCPRLookup,
+                Company = await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
                 {
-                    Name = claimsWrapper.CompanyName,
-                    Tin = claimsWrapper.Tin
+                    Name = descriptor.CompanyName,
+                    Tin = descriptor.Tin
                 }
             };
         }
         else
         {
-            var id = claimsWrapper.Id.Value;
+            var id = descriptor.Id.Value;
             user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
 

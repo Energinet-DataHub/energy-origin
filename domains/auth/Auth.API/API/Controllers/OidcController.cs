@@ -22,7 +22,7 @@ public class OidcController : ControllerBase
         IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
-        IClaimsWrapperMapper mapper,
+        IUserDescriptorMapper mapper,
         IUserService service,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
@@ -65,8 +65,8 @@ public class OidcController : ControllerBase
         string token;
         try
         {
-            var claimsWrapper = await MapClaimsWrapper(mapper, service, oidcOptions.Value, discoveryDocument, response);
-            token = issuer.Issue(claimsWrapper);
+            var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
+            token = issuer.Issue(descriptor);
         }
         catch (Exception exception)
         {
@@ -89,7 +89,7 @@ public class OidcController : ControllerBase
         return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
     }
 
-    private static async Task<ClaimsWrapper> MapClaimsWrapper(IClaimsWrapperMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
