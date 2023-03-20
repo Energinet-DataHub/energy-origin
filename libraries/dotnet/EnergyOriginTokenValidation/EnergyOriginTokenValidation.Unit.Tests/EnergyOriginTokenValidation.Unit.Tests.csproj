@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\libraries\dotnet\AuthLibrary\AuthLibrary\AuthLibrary.csproj" />
+    <ProjectReference Include="..\EnergyOriginTokenValidation\EnergyOriginTokenValidation.csproj" />
   </ItemGroup>
 
 </Project>
