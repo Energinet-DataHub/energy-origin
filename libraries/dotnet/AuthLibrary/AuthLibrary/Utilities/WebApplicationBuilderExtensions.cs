@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AuthLibrary.Utilities;
 
-public static class Extensions
+public static class WebApplicationBuilderExtensions
 {
-    public static void AddTokenValidation(this WebApplicationBuilder web, byte[] pem)
+    public static void AddTokenValidation(this WebApplicationBuilder web, byte[] pem, string audience = "audience", string issuer = "issuer")
     {
         web.Services.AddAuthentication().AddJwtBearer(options =>
         {
@@ -20,8 +20,8 @@ public static class Extensions
             options.TokenValidationParameters = new()
             {
                 IssuerSigningKey = new RsaSecurityKey(rsa),
-                ValidAudience = "Users",
-                ValidIssuer = "Us",
+                ValidAudience = audience,
+                ValidIssuer = issuer,
             };
         });
     }

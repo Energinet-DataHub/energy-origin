@@ -8,6 +8,7 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using API.Values;
+using AuthLibrary.Options;
 using AuthLibrary.Utilities;
 using IdentityModel;
 using IdentityModel.Client;
@@ -35,26 +36,26 @@ public class OidcControllerTests
     private readonly ILogger<OidcController> logger = Mock.Of<ILogger<OidcController>>();
     private readonly MockHttpMessageHandler http = new();
 
-    //public OidcControllerTests()
-    //{
-    //    IdentityModelEventSource.ShowPII = true;
+    public OidcControllerTests()
+    {
+        IdentityModelEventSource.ShowPII = true;
 
-    //    var configuration = new ConfigurationBuilder()
-    //        .SetBasePath(Directory.GetCurrentDirectory())
-    //        .AddJsonFile("appsettings.Test.json", false)
-    //        .Build();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Test.json", false)
+            .Build();
 
-    //    oidcOptions = Options.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
-    //    tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+        oidcOptions = Options.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
+        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
 
-    //    issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
-    //    mapper = new UserDescriptMapper(
-    //        new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
-    //        Mock.Of<ILogger<UserDescriptMapper>>()
-    //    );
+        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
+        mapper = new UserDescriptMapper(
+            new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
+            Mock.Of<ILogger<UserDescriptMapper>>()
+        );
 
-    //    Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
-    //}
+        Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
+    }
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()

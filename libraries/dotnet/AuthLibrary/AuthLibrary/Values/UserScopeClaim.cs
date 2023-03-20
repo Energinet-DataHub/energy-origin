@@ -9,5 +9,5 @@ public struct UserScopeClaim
     public const string Meters = "meters";
     public const string Certificates = "certificates";
 
-    public const string AllAcceptedScopes = $"{AcceptedTerms} {Dashboard} {Production} {Meters} {Certificates}";
+    //public const string AllAcceptedScopes = $"{AcceptedTerms} {Dashboard} {Production} {Meters} {Certificates}";
 }

@@ -45,7 +45,7 @@ public class TokenIssuer : ITokenIssuer
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var scope = version == options.CurrentVersion || versionBypass ? UserScopeClaim.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        var scope = version == options.CurrentVersion || versionBypass ? AcceptedScopes.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
         return new(descriptor.Id?.ToString(), version, scope);
     }

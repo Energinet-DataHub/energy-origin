@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AuthLibrary.Options;
 using Microsoft.Extensions.Options;
 
 namespace AuthLibrary.Utilities;

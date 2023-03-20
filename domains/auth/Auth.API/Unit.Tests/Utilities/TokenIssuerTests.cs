@@ -34,9 +34,9 @@ public class TokenIssuerTests
 
     [Theory]
     [InlineData(UserScopeClaim.NotAcceptedTerms, 0, false)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, false)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 0, true)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, true)]
+    [InlineData(AcceptedScopes.AllAcceptedScopes, 1, false)]
+    [InlineData(AcceptedScopes.AllAcceptedScopes, 0, true)]
+    [InlineData(AcceptedScopes.AllAcceptedScopes, 1, true)]
     public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
     {
         var descriptor = PrepareUser(version: version);
