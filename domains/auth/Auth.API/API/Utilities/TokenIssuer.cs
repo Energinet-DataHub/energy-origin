@@ -56,10 +56,11 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.ProviderId, descriptor.ProviderId },
             { UserClaimName.TermsVersion, state.AcceptedVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
-            { UserClaimName.Tin, descriptor.Tin },
-            { UserClaimName.CompanyName, descriptor.CompanyName }
+            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
         };
+
+        if (descriptor.Tin is not null) claims.Add(UserClaimName.Tin, descriptor.Tin);
+        if (descriptor.CompanyName is not null) claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
 
         var identity = new List<Claim>
         {

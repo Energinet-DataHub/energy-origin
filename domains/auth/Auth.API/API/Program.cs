@@ -42,6 +42,7 @@ builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<IdentityProviderOptions>(builder.Configuration.GetSection(IdentityProviderOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {

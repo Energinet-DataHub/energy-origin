@@ -21,8 +21,8 @@ public class UserDescriptorMapper : IUserDescriptorMapper
         Id = user.Id,
         ProviderId = user.ProviderId,
         Name = user.Name,
-        Tin = user.Company.Tin,
-        CompanyName = user.Company.Name,
+        Tin = user.Company?.Tin,
+        CompanyName = user.Company?.Name,
         AcceptedTermsVersion = user.AcceptedTermsVersion,
         AllowCPRLookup = user.AllowCPRLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
@@ -34,20 +34,6 @@ public class UserDescriptorMapper : IUserDescriptorMapper
         if (user == null)
         {
             MissingProperty(nameof(user));
-            return null;
-        }
-
-        var companyName = user.FindFirstValue(UserClaimName.CompanyName);
-        if (companyName == null)
-        {
-            MissingProperty(nameof(UserClaimName.CompanyName));
-            return null;
-        }
-
-        var tin = user.FindFirstValue(UserClaimName.Tin);
-        if (tin == null)
-        {
-            MissingProperty(nameof(UserClaimName.Tin));
             return null;
         }
 
@@ -111,8 +97,8 @@ public class UserDescriptorMapper : IUserDescriptorMapper
             Id = userId,
             ProviderId = providerId,
             Name = name,
-            Tin = tin,
-            CompanyName = companyName,
+            Tin = user.FindFirstValue(UserClaimName.Tin),
+            CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
             AcceptedTermsVersion = version,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,

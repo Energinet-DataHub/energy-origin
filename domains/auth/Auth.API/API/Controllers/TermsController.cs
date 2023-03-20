@@ -31,8 +31,8 @@ public class TermsController : ControllerBase
                 AllowCPRLookup = descriptor.AllowCPRLookup,
                 Company = await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
                 {
-                    Name = descriptor.CompanyName,
-                    Tin = descriptor.Tin
+                    Name = descriptor.CompanyName!,
+                    Tin = descriptor.Tin!
                 }
             };
         }

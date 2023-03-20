@@ -12,5 +12,5 @@ public record User
     public bool AllowCPRLookup { get; set; }
 
     public Guid? CompanyId { get; set; }
-    public virtual Company Company { get; set; } = null!;
+    public virtual Company? Company { get; set; }
 }

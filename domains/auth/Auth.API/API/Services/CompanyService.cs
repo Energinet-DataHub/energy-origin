@@ -11,6 +11,6 @@ public class CompanyService : ICompanyService
     public CompanyService(ICompanyRepository companyRepository) => this.companyRepository = companyRepository;
 
     public async Task<Company> UpsertCompanyAsync(Company company) => await companyRepository.UpsertCompanyAsync(company);
-    public async Task<Company?> GetCompanyByIdAsync(Guid companyId) => await companyRepository.GetCompanyByIdAsync(companyId);
-    public async Task<Company?> GetCompanyByTinAsync(string tin) => await companyRepository.GetCompanyByTinAsync(tin);
+    public async Task<Company?> GetCompanyByIdAsync(Guid? companyId) => companyId is null ? null : await companyRepository.GetCompanyByIdAsync(companyId.Value);
+    public async Task<Company?> GetCompanyByTinAsync(string? tin) => tin is null ? null : await companyRepository.GetCompanyByTinAsync(tin);
 }

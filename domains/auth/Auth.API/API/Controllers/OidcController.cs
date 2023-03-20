@@ -27,6 +27,7 @@ public class OidcController : ControllerBase
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
         IOptions<TokenOptions> tokenOptions,
+        IOptions<IdentityProviderOptions> providerOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
@@ -65,7 +66,7 @@ public class OidcController : ControllerBase
         string token;
         try
         {
-            var descriptor = await MapUserDescriptor(mapper, service, oidcOptions.Value, discoveryDocument, response);
+            var descriptor = await MapUserDescriptor(mapper, service, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
             token = issuer.Issue(descriptor);
         }
         catch (Exception exception)
@@ -89,7 +90,7 @@ public class OidcController : ControllerBase
         return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserService service, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -110,23 +111,59 @@ public class OidcController : ControllerBase
         var access = handler.ValidateToken(response.AccessToken, parameters, out _);
 
         var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        var scope = access.FindFirstValue("scope");
-        var providerId = userInfo.FindFirstValue("idp_identity_id");
-        var name = userInfo.FindFirstValue("nemid.common_name");
-        var tin = userInfo.FindFirstValue("nemid.cvr");
-        var companyName = userInfo.FindFirstValue("nemid.company_name");
 
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
-        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
-        ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
-        ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
 
         if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
         {
             throw new SecurityTokenException("Subject mismatched found in tokens received.");
         }
+
+        var providerName = userInfo.FindFirstValue("idp");
+        var identityType = userInfo.FindFirstValue("identity_type");
+
+        ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
+        ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
+
+        if (providerOptions.Providers.Contains(IdentityProviderOptions.GetIdentityProviderEnum(providerName, identityType)) is false) throw new NotSupportedException();
+
+        var scope = access.FindFirstValue("scope");
+        var providerId = userInfo.FindFirstValue("idp_identity_id");
+
+        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
+        ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
+
+        string? name = null;
+        string? tin = null;
+        string? companyName = null;
+
+        switch (providerName)
+        {
+            case "nemid":
+                name = userInfo.FindFirstValue("nemid.common_name");
+
+                if (identityType == "professional")
+                {
+                    tin = userInfo.FindFirstValue("nemid.cvr");
+                    companyName = userInfo.FindFirstValue("nemid.company_name");
+
+                    ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
+                    ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
+                }
+                break;
+            case "mitid":
+                name = userInfo.FindFirstValue("mitid.identity_name");
+
+                if (identityType == "professional")
+                {
+                    throw new NotImplementedException();
+                }
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
 
         var user = await service.GetUserByProviderIdAsync(providerId) ?? new User
         {
@@ -135,11 +172,13 @@ public class OidcController : ControllerBase
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCPRLookup = false,
-            Company = new Company()
-            {
-                Tin = tin,
-                Name = companyName
-            }
+            Company = identityType == "professional"
+                ? new Company()
+                {
+                    Tin = tin!,
+                    Name = companyName!
+                }
+                : null
         };
         return mapper.Map(user, response.AccessToken, response.IdentityToken);
     }

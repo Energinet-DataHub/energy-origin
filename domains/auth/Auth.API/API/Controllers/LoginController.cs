@@ -27,11 +27,11 @@ public class LoginController : ControllerBase
             clientId: oidcOptions.Value.ClientId,
             responseType: "code",
             redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
-            scope: "openid nemid ssn userinfo_token",
+            scope: "openid nemid mitid ssn userinfo_token",
             extra: new Parameters(new List<KeyValuePair<string, string>>()
             {
                 new KeyValuePair<string, string>("idp_params","{\"nemid\": {\"amr_values\": \"nemid.otp nemid.keyfile\"}}"),
-                new KeyValuePair<string, string>("idp_values","nemid")
+                new KeyValuePair<string, string>("idp_values","nemid mitid")
             }));
 
         return RedirectPreserveMethod(url);

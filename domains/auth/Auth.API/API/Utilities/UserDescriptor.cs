@@ -5,8 +5,8 @@ public class UserDescriptor
     public Guid? Id { get; init; }
     public string ProviderId { get; init; } = null!;
     public string Name { get; init; } = null!;
-    public string CompanyName { get; init; } = null!;
-    public string Tin { get; init; } = null!;
+    public string? CompanyName { get; init; }
+    public string? Tin { get; init; }
     public int AcceptedTermsVersion { get; init; }
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
