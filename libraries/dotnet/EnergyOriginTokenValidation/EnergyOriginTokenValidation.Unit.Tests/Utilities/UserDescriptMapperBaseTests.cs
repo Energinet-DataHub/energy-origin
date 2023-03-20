@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using EnergyOriginTokenValidation.Options;
 using EnergyOriginTokenValidation.Utilities;
 using EnergyOriginTokenValidation.Values;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace EnergyOriginTokenValidation.Unit.Tests.Utilities;
 
@@ -20,11 +20,9 @@ public class UserDescriptMapperBaseTests
             Key = "secretsecretsecretsecret"
         };
 
-        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
-
+        cryptography = new Cryptography(Options.Create(options));
         mapper = new UserDescriptMapperBase(cryptography, logger);
     }
-
 
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingClaimPrincipal()
