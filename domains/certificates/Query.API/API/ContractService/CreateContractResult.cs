@@ -8,7 +8,7 @@ public abstract record CreateContractResult
 
     public record NotProductionMeteringPoint : CreateContractResult;
 
-    public record ContractAlreadyExists(CertificateIssuingContract Existing) : CreateContractResult;
+    public record ContractAlreadyExists(CertificateIssuingContract? Existing) : CreateContractResult;
 
     private CreateContractResult() { }
 }

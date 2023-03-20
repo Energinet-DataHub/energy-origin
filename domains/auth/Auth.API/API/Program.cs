@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using API.Middleware;
@@ -12,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -102,6 +103,27 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddPrometheusExporter())
+    .WithTracing(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddJaegerExporter(options =>
+            {
+                var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
+
+                if (config is null) return;
+
+                options.AgentHost = config.AgentHost;
+                options.AgentPort = config.AgentPort;
+            }));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -114,6 +136,7 @@ else
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
