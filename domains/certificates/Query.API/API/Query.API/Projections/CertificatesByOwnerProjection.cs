@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,46 +23,42 @@ public class CertificatesByOwnerProjection : IProjection
 
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
-        CertificatesByOwnerView view = null;
-
         var events = streams
             .SelectMany(x => x.Events)
             .OrderBy(s => s.Sequence)
             .Select(s => s.Data);
 
-        foreach (var @event in events)
-        {
-            if (@event is ProductionCertificateCreated productionCertificateCreated)
+        var view =
+            events.Aggregate<object, CertificatesByOwnerView>(null, (currentView, @event) => @event switch
             {
-                view = CreateCertificatesByOwnerView(operations, productionCertificateCreated);
-            }
-            else if (@event is ProductionCertificateIssued productionCertificateIssued)
-            {
-                view = ApplyProductionCertificateIssued(productionCertificateIssued, view);
-            }
-            else if (@event is ProductionCertificateRejected productionCertificateRejected)
-            {
-                view = ApplyProductionCertificateRejected(productionCertificateRejected, view);
-            }
-            else if (@event is ProductionCertificateTransferred productionCertificateTransferred)
-            {
-                view = ApplyProductionCertificateTransferred(operations, productionCertificateTransferred);
-            }
-        }
+                ProductionCertificateCreated productionCertificateCreated => CreateCertificatesByOwnerView(operations,
+                    productionCertificateCreated),
+                ProductionCertificateIssued productionCertificateIssued => ApplyProductionCertificateIssued(operations,
+                    productionCertificateIssued, currentView),
+                ProductionCertificateRejected productionCertificateRejected => ApplyProductionCertificateRejected(
+                    operations, productionCertificateRejected, currentView),
+                ProductionCertificateTransferred productionCertificateTransferred =>
+                    ApplyProductionCertificateTransferred(operations, productionCertificateTransferred),
+                _ => currentView
+            } ?? throw new InvalidOperationException());
 
         operations.Store(view);
     }
 
-    private static CertificatesByOwnerView ApplyProductionCertificateRejected(
+    private static CertificatesByOwnerView ApplyProductionCertificateRejected(IDocumentOperations operations,
         ProductionCertificateRejected productionCertificateRejected, CertificatesByOwnerView? view)
     {
+        view ??= GetCertificatesByOwnerView(operations, productionCertificateRejected.CertificateId);
+
         view.Certificates[productionCertificateRejected.CertificateId].Status = CertificateStatus.Rejected;
         return view;
     }
 
-    private static CertificatesByOwnerView ApplyProductionCertificateIssued(
-        ProductionCertificateIssued productionCertificateIssued, CertificatesByOwnerView view)
+    private static CertificatesByOwnerView ApplyProductionCertificateIssued(IDocumentOperations operations,
+        ProductionCertificateIssued productionCertificateIssued, CertificatesByOwnerView? view)
     {
+        view ??= GetCertificatesByOwnerView(operations, productionCertificateIssued.CertificateId);
+
         view.Certificates[productionCertificateIssued.CertificateId].Status = CertificateStatus.Issued;
         return view;
     }
@@ -139,5 +136,18 @@ public class CertificatesByOwnerProjection : IProjection
     {
         source.Certificates.Remove(productionCertificateTransferred.CertificateId);
         operations.Update(source);
+    }
+
+    private static CertificatesByOwnerView? GetCertificatesByOwnerView(IDocumentOperations operations,
+        Guid certificateId)
+    {
+        var owner = operations.Events.QueryRawEventDataOnly<ProductionCertificateCreated>()
+            .Where(e => e.CertificateId == certificateId)
+            .Select(e => e.MeteringPointOwner).First();
+
+        return operations.Load<CertificatesByOwnerView>(owner) ?? throw new CertificateDomainException(
+            certificateId,
+            $"Cannot find CertificatesByOwnerView for certificate {certificateId}."
+        );
     }
 }
