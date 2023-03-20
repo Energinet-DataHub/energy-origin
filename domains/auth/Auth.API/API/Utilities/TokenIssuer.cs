@@ -15,7 +15,7 @@ public class TokenIssuer : ITokenIssuer
 {
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
-
+    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
     public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
     {
         this.termsOptions = termsOptions.Value;
