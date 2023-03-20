@@ -8,6 +8,8 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using API.Values;
+using AuthLibrary.Options;
+using AuthLibrary.Utilities;
 using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Http;
