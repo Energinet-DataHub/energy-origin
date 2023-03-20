@@ -6,6 +6,6 @@ type: application
 version: 0.0.30
 
 dependencies:
-- name: postgresql
-  version: 12.2.2
+- name: postgresql-ha
+  version: 11.1.6
   repository: https://charts.bitnami.com/bitnami
