@@ -1,4 +1,4 @@
-namespace AuthLibrary.Utilities;
+namespace EnergyOriginTokenValidation.Utilities;
 
 public interface ICryptography
 {

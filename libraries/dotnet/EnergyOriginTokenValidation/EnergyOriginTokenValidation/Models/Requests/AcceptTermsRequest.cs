@@ -1,3 +1,3 @@
-namespace AuthLibrary.Models.Requests;
+namespace EnergyOriginTokenValidation.Models.Requests;
 
 public record AcceptTermsRequest(int Version);

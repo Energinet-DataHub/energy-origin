@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AuthLibrary.Options;
-using AuthLibrary.Utilities;
-using AuthLibrary.Values;
+using EnergyOriginTokenValidation.Options;
+using EnergyOriginTokenValidation.Utilities;
+using EnergyOriginTokenValidation.Values;
 using Microsoft.Extensions.Logging;
 
-namespace AuthLibrary.Unit.Tests.Utilities;
+namespace EnergyOriginTokenValidation.Unit.Tests.Utilities;
 
 public class UserDescriptMapperBaseTests
 {

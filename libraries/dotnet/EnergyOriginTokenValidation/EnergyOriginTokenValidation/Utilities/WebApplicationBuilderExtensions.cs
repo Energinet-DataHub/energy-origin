@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthLibrary.Utilities;
+namespace EnergyOriginTokenValidation.Utilities;
 
 public static class WebApplicationBuilderExtensions
 {

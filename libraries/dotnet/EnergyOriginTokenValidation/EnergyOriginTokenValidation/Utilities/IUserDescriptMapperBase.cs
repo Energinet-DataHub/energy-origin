@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace AuthLibrary.Utilities;
+namespace EnergyOriginTokenValidation.Utilities;
 
 public interface IUserDescriptMapperBase
 {

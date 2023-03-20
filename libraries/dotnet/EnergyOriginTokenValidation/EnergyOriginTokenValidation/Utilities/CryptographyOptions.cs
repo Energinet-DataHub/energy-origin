@@ -1,4 +1,4 @@
-namespace AuthLibrary.Options;
+namespace EnergyOriginTokenValidation.Utilities;
 
 public class CryptographyOptions
 {

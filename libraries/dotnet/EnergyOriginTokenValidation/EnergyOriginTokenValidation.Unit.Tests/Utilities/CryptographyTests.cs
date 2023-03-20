@@ -1,7 +1,7 @@
-using AuthLibrary.Options;
-using AuthLibrary.Utilities;
+using EnergyOriginTokenValidation.Utilities;
+using Microsoft.Extensions.Options;
 
-namespace AuthLibrary.Unit.Tests.Utilities;
+namespace EnergyOriginTokenValidation.Unit.Tests.Utilities;
 
 public class CryptographyTests
 {
@@ -13,8 +13,8 @@ public class CryptographyTests
         {
             Key = "secretsecretsecretsecret"
         };
-
-        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
+        
+        cryptography = new Cryptography(Options.Create(options));
     }
 
     [Fact]
