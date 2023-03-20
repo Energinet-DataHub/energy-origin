@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Protobuf;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,6 +23,19 @@ public class RegistryWorker : BackgroundService
     {
         this.logger = logger;
 
+        try
+        {
+            var k = Key.Import(SignatureAlgorithm.Ed25519, registryOptions.Value.IssuerPrivateKeyPem,
+                KeyBlobFormat.PkixPrivateKeyText);
+            var rawPublicKeyBytes = k.PublicKey.Export(KeyBlobFormat.RawPublicKey);
+            var rawPublicKey = ByteString.CopyFrom(rawPublicKeyBytes).ToBase64();
+            logger.LogInformation("Issuer public key: {publicKey}", rawPublicKey);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("Failed to generate issuer key. Exception: {ex}", ex);
+        }
+        
         ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
         issuerKey = IssuerKey.LoadPrivateKey();
 

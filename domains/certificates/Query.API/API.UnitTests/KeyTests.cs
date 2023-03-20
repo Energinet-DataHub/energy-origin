@@ -1,3 +1,4 @@
+using System.Text;
 using API.RegistryConnector;
 using FluentAssertions;
 using Google.Protobuf;
@@ -36,7 +37,7 @@ public class KeyTests
     public void can_be_imported_from_string()
     {
         var key = Key.Create(SignatureAlgorithm.Ed25519, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextExport });
-
+        
         var export = key.Export(KeyBlobFormat.RawPrivateKey);
 
         var base64Str = ByteString.CopyFrom(export).ToBase64();
@@ -75,5 +76,16 @@ public class KeyTests
 
         var publicByteString = ByteString.CopyFrom(key.PublicKey.Export(KeyBlobFormat.RawPublicKey));
         publicByteString.ToBase64().Should().Be(IssuerKey.PublicKey);
+    }
+
+    [Fact]
+    public void pem_test()
+    {
+        var bs = ByteString.FromBase64(
+            "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1DNENBUUF3QlFZREsyVndCQ0lFSUJhb2FjVHVWL05ub3ROQTBlVzJxbFJZZ3Q2WTRsaWlXSzV5VDRFZ3JKR20KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=");
+        
+        var import = Key.Import(SignatureAlgorithm.Ed25519, bs.Span, KeyBlobFormat.PkixPrivateKeyText);
+
+        import.Should().NotBeNull();
     }
 }
