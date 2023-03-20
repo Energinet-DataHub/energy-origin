@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Query.API.Projections.Views;
 using Marten;
 using Microsoft.Extensions.Logging;
 
@@ -25,17 +23,11 @@ public class SyncState : ISyncState
         {
             await using var querySession = documentStore.QuerySession();
 
-            var projection = await querySession.LoadAsync<CertificatesByOwnerView>(contract.MeteringPointOwner);
-            if (projection == null)
-                return contract.StartDate.ToUnixTimeSeconds();
+            var projection = await querySession.LoadAsync<SyncStateView>(contract.GSRN);
 
-            var maxDateTo = projection.Certificates.Values
-                .Where(c => contract.GSRN.Equals(c.GSRN, StringComparison.InvariantCultureIgnoreCase))
-                .Select(c => c.DateTo)
-                .DefaultIfEmpty(0)
-                .Max();
-
-            return Math.Max(maxDateTo, contract.StartDate.ToUnixTimeSeconds());
+            return projection == null
+                ? contract.StartDate.ToUnixTimeSeconds()
+                : Math.Max(projection.SyncDateTo, contract.StartDate.ToUnixTimeSeconds());
         }
         catch (Exception e)
         {

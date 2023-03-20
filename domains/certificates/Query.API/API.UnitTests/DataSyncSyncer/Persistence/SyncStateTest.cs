@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Persistence;
-using API.Query.API.Projections.Views;
 using CertificateEvents.Primitives;
 using FluentAssertions;
 using Marten;
@@ -39,13 +38,7 @@ public class SyncStateTest
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
     {
-        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
-
-        var certDateFrom = contract.StartDate.ToUnixTimeSeconds();
-        var certDateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
-
-        view.Certificates.Add(Guid.NewGuid(),
-            new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = contract.GSRN });
+        var view = new SyncStateView { GSRN = contract.GSRN, SyncDateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds() };
 
         var storeMock = CreateStoreMock(view);
 
@@ -53,59 +46,13 @@ public class SyncStateTest
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
 
-        actualPeriodStartTime.Should().Be(certDateTo);
+        actualPeriodStartTime.Should().Be(view.SyncDateTo);
     }
 
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
-        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
-
-        view.Certificates.Add(Guid.NewGuid(),
-            new CertificateView { DateFrom = 1000, DateTo = 2000, GSRN = contract.GSRN });
-
-        var storeMock = CreateStoreMock(view);
-
-        var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
-
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
-
-        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
-    }
-
-    [Fact]
-    public async Task GetPeriodStartTime_TwoCertificatesInStore_ReturnsNewestDate()
-    {
-        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
-
-        var cert1DateFrom = contract.StartDate.ToUnixTimeSeconds();
-        var cert1DateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
-
-        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert1DateFrom, DateTo = cert1DateTo, GSRN = contract.GSRN });
-
-        var cert2DateFrom = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
-        var cert2DateTo = contract.StartDate.AddHours(2).ToUnixTimeSeconds();
-
-        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = cert2DateFrom, DateTo = cert2DateTo, GSRN = contract.GSRN });
-
-        var storeMock = CreateStoreMock(view);
-
-        var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
-
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
-
-        actualPeriodStartTime.Should().Be(cert2DateTo);
-    }
-
-    [Fact]
-    public async Task GetPeriodStartTime_NoCertificatesForThatGsrnInStore_ReturnsContractStartDate()
-    {
-        var view = new CertificatesByOwnerView { Owner = contract.MeteringPointOwner };
-
-        var certDateFrom = contract.StartDate.ToUnixTimeSeconds();
-        var certDateTo = contract.StartDate.AddHours(1).ToUnixTimeSeconds();
-
-        view.Certificates.Add(Guid.NewGuid(), new CertificateView { DateFrom = certDateFrom, DateTo = certDateTo, GSRN = "someOtherGsrn" });
+        var view = new SyncStateView { GSRN = contract.GSRN, SyncDateTo = contract.StartDate.AddHours(-1).ToUnixTimeSeconds() };
 
         var storeMock = CreateStoreMock(view);
 
@@ -132,10 +79,10 @@ public class SyncStateTest
         storeMock.Verify();
     }
 
-    private static Mock<IDocumentStore> CreateStoreMock(CertificatesByOwnerView? data)
+    private static Mock<IDocumentStore> CreateStoreMock(SyncStateView? data)
     {
         var querySessionMock = new Mock<IQuerySession>();
-        querySessionMock.Setup(m => m.LoadAsync<CertificatesByOwnerView>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        querySessionMock.Setup(m => m.LoadAsync<SyncStateView>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
         var storeMock = new Mock<IDocumentStore>();

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    container_name: local_pgdb
+    container_name: postgres
     restart: always
     ports:
       - "5432:5432"
@@ -10,11 +10,11 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     volumes:
-      - local_pgdata:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin4_container
+    container_name: pgadmin
     restart: always
     ports:
       - "5050:80"
@@ -24,8 +24,23 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - pgadmin:/var/lib/pgadmin
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
 
 volumes:
-  local_pgdata:
-  pgadmin-data:
+  postgres:
+  pgadmin:

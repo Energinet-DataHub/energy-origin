@@ -11,7 +11,7 @@ using Xunit.Categories;
 namespace Tests;
 
 [UnitTest]
-public sealed class DataSyncServiceTest
+public sealed class DataSyncServiceTests
 {
     [Fact]
     public async void DataSync_GetListOfMeteringPoints_success()
