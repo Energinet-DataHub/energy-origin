@@ -42,7 +42,6 @@ builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
-builder.Services.Configure<JaegerOptions>(builder.Configuration.GetSection(JaegerOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -116,7 +115,9 @@ builder.Services.AddOpenTelemetry()
             {
                 var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
 
-                options.AgentHost = config!.AgentHost;
+                if (config is null) return;
+
+                options.AgentHost = config.AgentHost;
                 options.AgentPort = config.AgentPort;
             }));
 
@@ -126,14 +127,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    app.UseOpenTelemetryPrometheusScrapingEndpoint();
 }
 else
 {
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
