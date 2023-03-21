@@ -2,35 +2,21 @@ using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Repositories.Data;
 using API.Utilities;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Testcontainers.PostgreSql;
 
 namespace Tests.Integration;
 
 public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().Build();
+
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
     public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
-
-    // https://github.com/testcontainers/testcontainers-dotnet/issues/750#issuecomment-1412257694
-    // Should be fixed in V2.5.
-#pragma warning disable 618
-    private readonly PostgreSqlTestcontainer testContainer
-        = new ContainerBuilder<PostgreSqlTestcontainer>()
-       .WithDatabase(new PostgreSqlTestcontainerConfiguration
-       {
-           Database = "Database",
-           Username = "admin",
-           Password = "admin",
-       })
-       .Build();
-#pragma warning restore 618
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -40,7 +26,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
-            services.AddDbContext<DataContext>(options => options.UseNpgsql(testContainer.ConnectionString));
+            services.AddDbContext<DataContext>(options => options.UseNpgsql(testContainer.GetConnectionString()));
             services.AddScoped<IUserDataContext, DataContext>();
         });
     }
