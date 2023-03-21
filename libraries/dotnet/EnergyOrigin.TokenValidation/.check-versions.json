@@ -1,6 +1,6 @@
 [
     {
-        "yaml-file": "libraries/dotnet/EnergyOriginTokenValidation/version.yaml",
+        "yaml-file": "libraries/dotnet/EnergyOrigin.TokenValidation/version.yaml",
         "yaml-path": "version"
     }
 ]

@@ -8,7 +8,7 @@ namespace EnergyOriginTokenValidation.Utilities;
 
 public static class WebApplicationBuilderExtensions
 {
-   public class ValidationParameters : TokenValidationParameters
+    public class ValidationParameters : TokenValidationParameters
     {
         public ValidationParameters(byte[] pem)
         {

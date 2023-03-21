@@ -13,7 +13,7 @@ public class CryptographyTests
         {
             Key = "secretsecretsecretsecret"
         };
-        
+
         cryptography = new Cryptography(Options.Create(options));
     }
 
