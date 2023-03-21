@@ -25,4 +25,11 @@ public class WebApplicationBuilderExtensionsTests
 
         Assert.Throws<ArgumentException>(() => new ValidationParameters(pem));
     }
+
+    [Fact]
+    public void AddTokenValidation_ShouldThrowError_WhenPemIsEmptyByteArray()
+    {
+        Assert.Throws<ArgumentException>(() => new ValidationParameters(new byte[0]));
+    }
+
 }

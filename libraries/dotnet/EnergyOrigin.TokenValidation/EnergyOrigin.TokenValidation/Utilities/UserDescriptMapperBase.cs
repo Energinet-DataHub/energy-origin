@@ -85,7 +85,7 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             ProviderId = providerId,
             Name = name,
             Tin = user.FindFirstValue(UserClaimName.Tin),
-            AcceptedCurrentTermsVersion = version,
+            AcceptedTermsVersion = version,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,

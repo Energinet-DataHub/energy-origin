@@ -52,7 +52,7 @@ public class UserDescriptMapperBaseTests
         Assert.Equal(id, descriptor.Id?.ToString());
         Assert.Equal(providerId, descriptor.ProviderId);
         Assert.Equal(name, descriptor.Name);
-        Assert.Equal(version, descriptor.AcceptedCurrentTermsVersion);
+        Assert.Equal(version, descriptor.AcceptedTermsVersion);
         Assert.Null(descriptor.Tin);
         Assert.True(descriptor.AllowCPRLookup);
         Assert.Equal(accessToken, descriptor.AccessToken);
@@ -86,7 +86,7 @@ public class UserDescriptMapperBaseTests
         Assert.NotNull(descriptor);
         Assert.Equal(providerId, descriptor.ProviderId);
         Assert.Equal(name, descriptor.Name);
-        Assert.Equal(version, descriptor.AcceptedCurrentTermsVersion);
+        Assert.Equal(version, descriptor.AcceptedTermsVersion);
         Assert.Null(descriptor.Tin);
         Assert.True(descriptor.AllowCPRLookup);
         Assert.Equal(accessToken, descriptor.AccessToken);

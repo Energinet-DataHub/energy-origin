@@ -9,6 +9,6 @@ public struct UserClaimName
     public const string Tin = "tin";
     public const string ProviderId = "ext";
     public const string CurrentTermsVersion = "trm";
-    public const string AcceptedCurrentTermsVersion = "atv";
+    public const string AcceptedTermsVersion = "atv";
     public const string AllowCPRLookup = "acl";
 }
