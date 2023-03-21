@@ -1,7 +1,7 @@
-using EnergyOriginTokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.Extensions.Options;
 
-namespace EnergyOriginTokenValidation.Unit.Tests.Utilities;
+namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
 public class CryptographyTests
 {

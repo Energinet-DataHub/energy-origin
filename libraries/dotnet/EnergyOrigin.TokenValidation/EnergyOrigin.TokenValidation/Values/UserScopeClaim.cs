@@ -1,4 +1,4 @@
-namespace EnergyOriginTokenValidation.Values;
+namespace EnergyOrigin.TokenValidation.Values;
 
 public struct UserScopeClaim
 {

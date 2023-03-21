@@ -1,4 +1,4 @@
-namespace EnergyOriginTokenValidation.Values;
+namespace EnergyOrigin.TokenValidation.Values;
 
 // NOTE: Prefer claim names from this list when not presented in `JwtRegisteredClaimNames`: https://www.iana.org/assignments/jwt/jwt.xhtml
 public struct UserClaimName
@@ -8,6 +8,7 @@ public struct UserClaimName
     public const string IdentityToken = "eit";
     public const string Tin = "tin";
     public const string ProviderId = "ext";
-    public const string TermsVersion = "trm";
+    public const string CurrentTermsVersion = "trm";
+    public const string AcceptedTermsVersion = "atv";
     public const string AllowCPRLookup = "acl";
 }

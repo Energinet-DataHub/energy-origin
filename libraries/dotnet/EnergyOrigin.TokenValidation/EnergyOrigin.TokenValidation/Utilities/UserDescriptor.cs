@@ -1,4 +1,4 @@
-namespace EnergyOriginTokenValidation.Utilities;
+namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptor
 {

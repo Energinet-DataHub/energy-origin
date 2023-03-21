@@ -1,6 +1,6 @@
-using static EnergyOriginTokenValidation.Utilities.WebApplicationBuilderExtensions;
+using static EnergyOrigin.TokenValidation.Utilities.WebApplicationBuilderExtensions;
 
-namespace EnergyOriginTokenValidation.Unit.Tests.Utilities;
+namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
 public class WebApplicationBuilderExtensionsTests
 {

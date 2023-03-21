@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 
-namespace EnergyOriginTokenValidation.Utilities;
+namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class Cryptography : ICryptography
 {

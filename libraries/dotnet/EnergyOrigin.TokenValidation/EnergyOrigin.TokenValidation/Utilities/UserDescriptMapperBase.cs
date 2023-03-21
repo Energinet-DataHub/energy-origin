@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using EnergyOriginTokenValidation.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Logging;
 
-namespace EnergyOriginTokenValidation.Utilities;
+namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptMapperBase : IUserDescriptMapperBase
 {
