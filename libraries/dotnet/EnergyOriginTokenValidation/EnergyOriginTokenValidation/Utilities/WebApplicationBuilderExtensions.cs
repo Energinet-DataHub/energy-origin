@@ -8,24 +8,24 @@ namespace EnergyOriginTokenValidation.Utilities;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddTokenValidation(this WebApplicationBuilder builder, byte[] pem, string? audience = default, string? issuer = default)
+   public class ValidationParameters : TokenValidationParameters
     {
-        builder.Services.AddAuthentication().AddJwtBearer(options =>
+        public ValidationParameters(byte[] pem)
         {
             var rsa = RSA.Create();
             rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
+            IssuerSigningKey = new RsaSecurityKey(rsa);
+            ValidateIssuerSigningKey = true;
+        }
+    }
 
+    public static void AddTokenValidation(this WebApplicationBuilder builder, ValidationParameters validationParameters)
+    {
+        builder.Services.AddAuthentication().AddJwtBearer(options =>
+        {
             options.MapInboundClaims = false;
 
-            options.TokenValidationParameters = new()
-            {
-                IssuerSigningKey = new RsaSecurityKey(rsa),
-                ValidAudience = audience,
-                ValidIssuer = issuer,
-                ValidateAudience = audience != null,
-                ValidateIssuer = issuer != null,
-                ValidateIssuerSigningKey = true
-            };
+            options.TokenValidationParameters = validationParameters;
         });
     }
 }
