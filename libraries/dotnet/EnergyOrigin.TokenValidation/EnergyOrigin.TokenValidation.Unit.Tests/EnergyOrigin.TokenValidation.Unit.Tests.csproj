@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EnergyOriginTokenValidation\EnergyOriginTokenValidation.csproj" />
+    <ProjectReference Include="..\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
   </ItemGroup>
 
 </Project>

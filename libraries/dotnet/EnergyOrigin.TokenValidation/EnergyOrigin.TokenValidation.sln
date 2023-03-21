@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOriginTokenValidation", "EnergyOriginTokenValidation\EnergyOriginTokenValidation.csproj", "{846AA75C-3925-48AD-9080-0217B8397539}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.TokenValidation", "EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj", "{846AA75C-3925-48AD-9080-0217B8397539}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOriginTokenValidation.Unit.Tests", "EnergyOriginTokenValidation.Unit.Tests\EnergyOriginTokenValidation.Unit.Tests.csproj", "{FFB804B4-8514-4F6F-A86F-39627BF7E6AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.TokenValidation.Unit.Tests", "EnergyOrigin.TokenValidation.Unit.Tests\EnergyOrigin.TokenValidation.Unit.Tests.csproj", "{FFB804B4-8514-4F6F-A86F-39627BF7E6AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
