@@ -38,9 +38,9 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             return null;
         }
 
-        if (!int.TryParse(user.FindFirstValue(UserClaimName.TermsVersion), out var version))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentTermsVersion), out var version))
         {
-            MissingProperty(nameof(UserClaimName.TermsVersion));
+            MissingProperty(nameof(UserClaimName.CurrentTermsVersion));
             return null;
         }
 
@@ -85,7 +85,7 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             ProviderId = providerId,
             Name = name,
             Tin = user.FindFirstValue(UserClaimName.Tin),
-            AcceptedTermsVersion = version,
+            AcceptedCurrentTermsVersion = version,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,

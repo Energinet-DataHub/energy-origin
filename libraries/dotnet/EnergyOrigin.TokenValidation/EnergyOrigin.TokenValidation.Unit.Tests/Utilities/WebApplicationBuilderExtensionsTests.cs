@@ -1,3 +1,4 @@
+using EnergyOrigin.TokenValidation.Utilities;
 using static EnergyOrigin.TokenValidation.Utilities.WebApplicationBuilderExtensions;
 
 namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
