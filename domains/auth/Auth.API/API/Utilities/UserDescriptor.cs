@@ -5,6 +5,7 @@ public class UserDescriptor
     public Guid? Id { get; init; }
     public string ProviderId { get; init; } = null!;
     public string Name { get; init; } = null!;
+    public Guid? CompanyId { get; init; }
     public string? CompanyName { get; init; }
     public string? Tin { get; init; }
     public int AcceptedTermsVersion { get; init; }

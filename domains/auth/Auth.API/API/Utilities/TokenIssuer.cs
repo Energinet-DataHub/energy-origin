@@ -69,6 +69,9 @@ public class TokenIssuer : ITokenIssuer
         if (state.Id != null)
         {
             identity.Add(new Claim(JwtRegisteredClaimNames.Sub, state.Id));
+
+            claims.Add(UserClaimName.Subject, descriptor.CompanyId?.ToString() ?? state.Id);
+            claims.Add(UserClaimName.Actor, state.Id);
         }
 
         return new()

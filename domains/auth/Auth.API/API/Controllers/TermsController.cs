@@ -29,11 +29,13 @@ public class TermsController : ControllerBase
                 Name = descriptor.Name,
                 ProviderId = descriptor.ProviderId,
                 AllowCPRLookup = descriptor.AllowCPRLookup,
-                Company = await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
-                {
-                    Name = descriptor.CompanyName!,
-                    Tin = descriptor.Tin!
-                }
+                Company = descriptor.Tin is not null
+                    ? await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
+                    {
+                        Name = descriptor.CompanyName!,
+                        Tin = descriptor.Tin!
+                    }
+                    : null
             };
         }
         else

@@ -133,6 +133,8 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
 
+        var fullProviderId = $"{providerName}={providerId}";
+
         string? name = null;
         string? tin = null;
         string? companyName = null;
@@ -165,16 +167,17 @@ public class OidcController : ControllerBase
 
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
 
-        var user = await service.GetUserByProviderIdAsync(providerId) ?? new User
+        var user = await service.GetUserByProviderIdAsync(fullProviderId) ?? new User
         {
             Id = null,
-            ProviderId = providerId,
+            ProviderId = fullProviderId,
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCPRLookup = false,
             Company = identityType == "professional"
                 ? new Company()
                 {
+                    Id = null,
                     Tin = tin!,
                     Name = companyName!
                 }

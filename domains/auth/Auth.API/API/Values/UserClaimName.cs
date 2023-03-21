@@ -4,11 +4,14 @@ namespace API.Values;
 public struct UserClaimName
 {
     public const string Scope = "scope";
+    public const string Subject = "subject";
+    public const string Actor = "actor";
     public const string AccessToken = "eat";
     public const string IdentityToken = "eit";
-    public const string Tin = "tin";
     public const string ProviderId = "ext";
     public const string TermsVersion = "trm";
     public const string AllowCPRLookup = "acl";
+    public const string Tin = "tin";
     public const string CompanyName = "cpn";
+    public const string CompanyId = "coi";
 }

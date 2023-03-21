@@ -13,4 +13,7 @@ public record User
 
     public Guid? CompanyId { get; set; }
     public virtual Company? Company { get; set; }
+
+    public string ProviderName => ProviderId.Split("=").First();
+    public Guid ProviderGuid => Guid.Parse(ProviderId.Split("=").Last());
 }

@@ -21,6 +21,7 @@ public class UserDescriptorMapper : IUserDescriptorMapper
         Id = user.Id,
         ProviderId = user.ProviderId,
         Name = user.Name,
+        CompanyId = user.CompanyId,
         Tin = user.Company?.Tin,
         CompanyName = user.Company?.Name,
         AcceptedTermsVersion = user.AcceptedTermsVersion,
@@ -77,26 +78,12 @@ public class UserDescriptorMapper : IUserDescriptorMapper
             return null;
         }
 
-        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        Guid? userId;
-        if (id == null)
-        {
-            userId = null;
-        }
-        else if (Guid.TryParse(id, out var parsed))
-        {
-            userId = parsed;
-        }
-        else
-        {
-            return null;
-        }
-
         return new(cryptography)
         {
-            Id = userId,
+            Id = Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out var userId) ? userId : null,
             ProviderId = providerId,
             Name = name,
+            CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,
             Tin = user.FindFirstValue(UserClaimName.Tin),
             CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
             AcceptedTermsVersion = version,
