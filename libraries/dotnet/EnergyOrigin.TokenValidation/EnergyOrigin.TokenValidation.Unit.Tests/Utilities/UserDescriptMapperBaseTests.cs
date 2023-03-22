@@ -34,6 +34,7 @@ public class UserDescriptMapperBaseTests
         var identityToken = Guid.NewGuid().ToString();
         var providerId = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
+        var currentTermVersion = version + 1;
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, id),
@@ -43,6 +44,7 @@ public class UserDescriptMapperBaseTests
             new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
             new Claim(UserClaimName.ProviderId, providerId),
             new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+            new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
             new Claim(UserClaimName.AllowCPRLookup, "true"),
         }, "mock"));
 
@@ -53,6 +55,7 @@ public class UserDescriptMapperBaseTests
         Assert.Equal(providerId, descriptor.ProviderId);
         Assert.Equal(name, descriptor.Name);
         Assert.Equal(version, descriptor.AcceptedTermsVersion);
+        Assert.Equal(currentTermVersion, descriptor.CurrentTermsVersion);
         Assert.Null(descriptor.Tin);
         Assert.True(descriptor.AllowCPRLookup);
         Assert.Equal(accessToken, descriptor.AccessToken);
@@ -70,6 +73,7 @@ public class UserDescriptMapperBaseTests
         var identityToken = Guid.NewGuid().ToString();
         var providerId = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
+        var currentTermVersion = version + 1;
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
             new Claim(JwtRegisteredClaimNames.Name, name),
@@ -78,6 +82,7 @@ public class UserDescriptMapperBaseTests
             new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
             new Claim(UserClaimName.ProviderId, providerId),
             new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+            new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
             new Claim(UserClaimName.AllowCPRLookup, "true"),
         }, "mock"));
 
@@ -87,6 +92,7 @@ public class UserDescriptMapperBaseTests
         Assert.Equal(providerId, descriptor.ProviderId);
         Assert.Equal(name, descriptor.Name);
         Assert.Equal(version, descriptor.AcceptedTermsVersion);
+        Assert.Equal(currentTermVersion, descriptor.CurrentTermsVersion);
         Assert.Null(descriptor.Tin);
         Assert.True(descriptor.AllowCPRLookup);
         Assert.Equal(accessToken, descriptor.AccessToken);
@@ -111,6 +117,7 @@ public class UserDescriptMapperBaseTests
         var identityToken = Guid.NewGuid().ToString();
         var providerId = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
+        var currentTermVersion = version + 1;
 
         var cases = new Dictionary<string, Claim[]>
         {
@@ -119,6 +126,7 @@ public class UserDescriptMapperBaseTests
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
                 new Claim(UserClaimName.AllowCPRLookup, "true"),
             }},
             { UserClaimName.AccessToken, new Claim[] {
@@ -126,6 +134,7 @@ public class UserDescriptMapperBaseTests
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
                 new Claim(UserClaimName.AllowCPRLookup, "true"),
             }},
             { UserClaimName.IdentityToken, new Claim[] {
@@ -133,6 +142,7 @@ public class UserDescriptMapperBaseTests
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
                 new Claim(UserClaimName.AllowCPRLookup, "true"),
             }},
             { UserClaimName.ProviderId, new Claim[] {
@@ -140,6 +150,7 @@ public class UserDescriptMapperBaseTests
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
                 new Claim(UserClaimName.AllowCPRLookup, "true"),
             }},
                 { UserClaimName.AcceptedTermsVersion, new Claim[] {
@@ -148,12 +159,22 @@ public class UserDescriptMapperBaseTests
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
                 new Claim(UserClaimName.AllowCPRLookup, "true"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
             }},
                 { UserClaimName.AllowCPRLookup, new Claim[] {
                 new Claim(JwtRegisteredClaimNames.Name, name),
                 new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
                 new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
                 new Claim(UserClaimName.ProviderId, providerId),
+                new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
+                new Claim(UserClaimName.CurrentTermsVersion, $"{currentTermVersion}"),
+            }},
+                 { UserClaimName.CurrentTermsVersion, new Claim[] {
+                new Claim(JwtRegisteredClaimNames.Name, name),
+                new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
+                new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
+                new Claim(UserClaimName.ProviderId, providerId),
+                new Claim(UserClaimName.AllowCPRLookup, "true"),
                 new Claim(UserClaimName.AcceptedTermsVersion, $"{version}"),
             }},
         };
