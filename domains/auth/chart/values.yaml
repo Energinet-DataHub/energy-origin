@@ -1,3 +1,30 @@
 api:
-  replicaCount: 1
+  replicaCount: 2
   image: {}
+  env:
+    Cryptography__Key:
+    Terms__CurrentVersion:
+    Database__Host:
+    Database__Port: 5432
+    Database__Name: postgres
+    Database__User: postgres
+    Database__Password:
+    Token__Issuer:
+    Token__Audience:
+    Token__CookieDuration:
+    Token__Duration:
+    Token__PublicKeyPem:
+    Token__PrivateKeyPem:
+    Oidc__AuthorityUri:
+    Oidc__ClientId:
+    Oidc__ClientSecret:
+    Oidc__CacheDuration:
+    Oidc__AuthorityCallbackUri:
+    Oidc__FrontendRedirectUri:
+  setup:
+    database:
+      PGHOST:
+      PGUSER: postgres
+      PGPASSWORD:
+      PGNAME: postgres
+      PGPORT: 5432

@@ -87,7 +87,7 @@ public class OidcController : ControllerBase
             Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
         });
 
-        return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
+        return RedirectPreserveMethod(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri);
     }
 
     private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
