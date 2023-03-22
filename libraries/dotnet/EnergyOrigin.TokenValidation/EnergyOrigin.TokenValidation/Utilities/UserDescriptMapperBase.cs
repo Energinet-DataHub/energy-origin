@@ -38,9 +38,15 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             return null;
         }
 
-        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentTermsVersion), out var version))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentTermsVersion), out var currentVersion))
         {
             MissingProperty(nameof(UserClaimName.CurrentTermsVersion));
+            return null;
+        }
+
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.AcceptedTermsVersion), out var acceptedVersion))
+        {
+            MissingProperty(nameof(UserClaimName.AcceptedTermsVersion));
             return null;
         }
 
