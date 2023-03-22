@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-api-init-db-cm
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    internal.config.kubernetes.io/needsHashSuffix: enabled
+data:
+  run.sh: |
+    pg_isready -U ${PGUSER:-postgres} -h ${PGHOST:-localhost} -p ${PGPORT:-5432}
+    psql ${PGNAME:-postgres} -U ${PGUSER:-postgres} -p ${PGPORT:-5432} -h ${PGHOST:-localhost} -f /sql/API.migrations.sql
+  API.migrations.sql: |-
+{{ .Files.Get "API.migrations.sql" | indent 4 }}

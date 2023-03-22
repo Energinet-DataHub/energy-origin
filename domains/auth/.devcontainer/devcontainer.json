@@ -4,17 +4,24 @@
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "settings": {
-        "editor.formatOnSave": true,
-        "omnisharp.enableRoslynAnalyzers": true
-    },
-    "extensions": [
-        "EditorConfig.EditorConfig",
-        "ms-dotnettools.csharp",
-        "formulahendry.dotnet-test-explorer",
-        "ryanluker.vscode-coverage-gutters"
-    ],
-    "postCreateCommand": "dotnet restore",
+    "postCreateCommand": "dotnet tool install --global dotnet-outdated-tool ; dotnet tool install --global dotnet-ef ; dotnet restore",
     "remoteUser": "vscode",
-    "features": {}
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:~/.dotnet/tools"
+    },
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "ms-dotnettools.csharp",
+                "formulahendry.dotnet-test-explorer",
+                "ryanluker.vscode-coverage-gutters"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "omnisharp.enableRoslynAnalyzers": true
+            }
+        }
+    }
 }

@@ -8,10 +8,7 @@ public static class HttpClientExtensions
     public static Task<HttpResponseMessage> SendAsync(
         this HttpClient client,
         IHtmlFormElement form,
-        IHtmlElement submitButton)
-    {
-        return client.SendAsync(form, submitButton, new Dictionary<string, string>());
-    }
+        IHtmlElement submitButton) => client.SendAsync(form, submitButton, new Dictionary<string, string>());
 
     public static Task<HttpResponseMessage> SendAsync(
         this HttpClient client,

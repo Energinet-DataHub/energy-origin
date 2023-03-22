@@ -37,7 +37,7 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost()
     {
-        logger.LogDebug($"OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}");
+        logger.LogDebug("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}", ClientId, Name, RedirectUri);
 
         var (isValid, validationError) = client.Validate(ClientId, RedirectUri);
         if (!isValid)
@@ -48,7 +48,7 @@ public class SigninModel : PageModel
         var userDescriptor = Users.FirstOrDefault(u => string.Equals(u.Name, Name, StringComparison.InvariantCultureIgnoreCase));
         if (userDescriptor == null)
         {
-            logger.LogError($"OnPost: User '{Name}' not found");
+            logger.LogError("OnPost: User '{Name}' not found", Name);
             return BadRequest($"User '{Name}' not found");
         }
 
@@ -63,7 +63,7 @@ public class SigninModel : PageModel
 
         var uri = builder.ToString();
 
-        logger.LogInformation($"Login success: Name={Name}");
+        logger.LogInformation("Login success: Name={Name}", Name);
 
         return Redirect(uri);
     }

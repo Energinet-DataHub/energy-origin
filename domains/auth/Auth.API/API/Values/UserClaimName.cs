@@ -8,6 +8,7 @@ public struct UserClaimName
     public const string IdentityToken = "eit";
     public const string Tin = "tin";
     public const string ProviderId = "ext";
-    public const string TermsVersion = "trm";
+    public const string AcceptedTermsVersion = "atv";
+    public const string CurrentTermsVersion = "trm";
     public const string AllowCPRLookup = "acl";
 }
