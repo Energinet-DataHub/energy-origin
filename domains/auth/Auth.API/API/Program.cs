@@ -49,11 +49,11 @@ builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsO
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
-//builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
-//{
-//    ValidAudience = tokenOptions.Audience,
-//    ValidIssuer = tokenOptions.Issuer
-//});
+builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
+{
+    ValidAudience = tokenOptions.Audience,
+    ValidIssuer = tokenOptions.Issuer
+});
 
 builder.Services.AddSwaggerGen(c =>
 {

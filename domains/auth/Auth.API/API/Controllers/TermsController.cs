@@ -15,7 +15,7 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        [FromServices] IUserDescriptMapperBase descriptMapper,
+        [FromServices] IUserDescriptMapper descriptMapper,
         [FromServices] IUserService userService,
         [FromBody] AcceptTermsRequest acceptedTermsVersion)
     {
