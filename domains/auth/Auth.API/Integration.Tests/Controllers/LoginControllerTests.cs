@@ -13,10 +13,7 @@ namespace Tests.Integration.LoginController;
 public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    public LoginControllerTests(AuthWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public LoginControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()

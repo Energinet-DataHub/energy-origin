@@ -7,6 +7,7 @@ using System.Web;
 using API.Options;
 using API.Values;
 using IdentityModel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -28,10 +29,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         User
     }
 
-    public OidcControllerTests(AuthWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public OidcControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
@@ -68,20 +66,13 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
         var result = await client.GetAsync(queryString);
-        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-
-        var body = await result.Content.ReadAsStringAsync();
-        Assert.Contains("<html><head><meta ", body);
-        Assert.Contains(" http-equiv=", body);
-        Assert.Contains("refresh", body);
-        Assert.Contains("<body />", body);
-        Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
+        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, result.Headers.Location?.AbsoluteUri);
 
         var header = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
-        Assert.True(header.Count() >= 1);
+        Assert.True(header.Any());
         Assert.Contains("Authentication=", header.First());
         Assert.Contains("; secure", header.First());
         Assert.Contains("; expires=", header.First());

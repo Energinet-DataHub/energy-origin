@@ -1,3 +1,4 @@
+using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock;
 using Oidc.Mock.Extensions;
@@ -12,12 +13,13 @@ builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(ne
 builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddFromJsonFile<User[]>(builder.Configuration[Configuration.UsersFilePathKey]);
+builder.Services.AddFromJsonFile<User[]>(builder.Configuration[Configuration.UsersFilePathKey]!);
 builder.Services.AddSingleton(_ =>
     new Client(
-        builder.Configuration[Configuration.ClientIdKey],
-        builder.Configuration[Configuration.ClientSecretKey],
-        builder.Configuration[Configuration.ClientRedirectUriKey]));
+        builder.Configuration[Configuration.ClientIdKey]!,
+        builder.Configuration[Configuration.ClientSecretKey]!,
+        builder.Configuration[Configuration.ClientRedirectUriKey]!));
+builder.Services.AddSingleton(x => new Options(Host: builder.Configuration[Configuration.Host]!));
 
 var app = builder.Build();
 
@@ -40,7 +42,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/healthz");
 
 app.Run();
 

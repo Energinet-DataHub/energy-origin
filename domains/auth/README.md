@@ -22,3 +22,5 @@ base64 <filename.pem | tr -d \\n | tr \\n \\\\n
 ```
 
 __Note__: You will need to change `filename.pem` to the filename of the key you want to convert.
+
+__Note__: You will need to base64 encode the key again when using it in a kubernetes secret.

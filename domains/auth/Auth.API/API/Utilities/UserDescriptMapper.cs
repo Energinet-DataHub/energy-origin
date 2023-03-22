@@ -50,9 +50,9 @@ public class UserDescriptMapper : IUserDescriptMapper
             return null;
         }
 
-        if (!int.TryParse(user.FindFirstValue(UserClaimName.TermsVersion), out var version))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.AcceptedTermsVersion), out var version))
         {
-            MissingProperty(nameof(UserClaimName.TermsVersion));
+            MissingProperty(nameof(UserClaimName.AcceptedTermsVersion));
             return null;
         }
 

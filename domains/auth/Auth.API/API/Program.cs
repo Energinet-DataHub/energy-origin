@@ -28,7 +28,15 @@ builder.Logging.AddSerilog(logger);
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 
+var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
+var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
+
 builder.Services.Configure<TokenOptions>(tokenConfiguration);
+builder.Services.Configure<DatabaseOptions>(databaseConfiguration);
+builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
+builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
 builder.Services.AddHttpClient();
@@ -37,11 +45,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
-
-builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
-builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
-builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
-builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
@@ -82,7 +85,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
