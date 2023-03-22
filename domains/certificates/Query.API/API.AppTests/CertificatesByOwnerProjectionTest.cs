@@ -49,7 +49,7 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
 
         var certificate = await repository.Get(productionCertificate.Id);
         certificate?.Transfer(source, target);
-        await repository.Save(certificate);
+        await repository.Save(certificate!);
 
         var targetView = session.Load<CertificatesByOwnerView>(target);
         var sourceView = session.Load<CertificatesByOwnerView>(source);
@@ -76,7 +76,7 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
 
         var certificate = await repository.Get(productionCertificate.Id);
         certificate?.Issue();
-        await repository.Save(certificate);
+        await repository.Save(certificate!);
 
         var view = session.Load<CertificatesByOwnerView>(owner);
         await Verifier.Verify(view);
@@ -100,7 +100,7 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
 
         var certificate = await repository.Get(productionCertificate.Id);
         certificate?.Reject("test");
-        await repository.Save(certificate);
+        await repository.Save(certificate!);
 
         var view = session.Load<CertificatesByOwnerView>(owner);
         await Verifier.Verify(view);
