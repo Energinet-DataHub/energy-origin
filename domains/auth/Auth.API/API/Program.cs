@@ -4,8 +4,7 @@ using API.Repositories;
 using API.Repositories.Data;
 using API.Services;
 using API.Utilities;
-using AuthLibrary.Options;
-using AuthLibrary.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -42,7 +41,11 @@ builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsO
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 
-builder.AddTokenValidation(tokenOptions.PublicKeyPem, tokenOptions.Audience, tokenOptions.Issuer);
+//builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
+//{
+//    ValidAudience = tokenOptions.Audience,
+//    ValidIssuer = tokenOptions.Issuer
+//});
 
 builder.Services.AddSwaggerGen(c =>
 {

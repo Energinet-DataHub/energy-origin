@@ -5,7 +5,7 @@ using System.Text.Json;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
-using AuthLibrary.Models.Requests;
+using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,4 +1,4 @@
-using AuthLibrary.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 
 namespace API.Utilities;
 

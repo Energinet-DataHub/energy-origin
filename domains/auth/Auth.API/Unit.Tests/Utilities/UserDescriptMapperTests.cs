@@ -1,7 +1,6 @@
 using API.Models.Entities;
 using API.Utilities;
-using AuthLibrary.Options;
-using AuthLibrary.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 

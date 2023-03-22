@@ -3,8 +3,8 @@ using API.Controllers;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
-using AuthLibrary.Models.Requests;
-using AuthLibrary.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Tests.Controllers;

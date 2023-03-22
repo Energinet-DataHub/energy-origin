@@ -4,8 +4,8 @@ using API.Models.Entities;
 using API.Services;
 using API.Utilities;
 using API.Values;
-using AuthLibrary.Utilities;
-using AuthLibrary.Values;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +28,7 @@ public class TokenControllerTests
 
     [Theory]
     [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(true, AcceptedScopes.AllAcceptedScopes, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
+    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
     [InlineData(false, UserScopeClaim.NotAcceptedTerms, null)]
     public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
     {

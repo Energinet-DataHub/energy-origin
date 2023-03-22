@@ -4,8 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Options;
 using API.Values;
-using AuthLibrary.Utilities;
-using AuthLibrary.Values;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -45,7 +45,7 @@ public class TokenIssuer : ITokenIssuer
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var scope = version == options.CurrentVersion || versionBypass ? AcceptedScopes.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
         return new(descriptor.Id?.ToString(), version, scope);
     }
@@ -57,7 +57,7 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.ProviderId, descriptor.ProviderId },
-            { UserClaimName.TermsVersion, state.AcceptedVersion },
+            { UserClaimName.CurrentTermsVersion, state.AcceptedVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
         };
         if (descriptor.Tin != null)

@@ -1,5 +1,5 @@
 using API.Models.Entities;
-using AuthLibrary.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 
 namespace API.Utilities;
 
