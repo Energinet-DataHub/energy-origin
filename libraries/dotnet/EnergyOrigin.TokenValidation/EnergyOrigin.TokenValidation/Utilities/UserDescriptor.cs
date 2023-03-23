@@ -1,4 +1,3 @@
-using System.Linq;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 
