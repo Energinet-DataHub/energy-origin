@@ -50,4 +50,15 @@ public static class WireMockServerExtensions
 
         return server;
     }
+
+    public static WireMockServer MockRelationsEndpoint(this WireMockServer server, int statusCode = 200)
+    {
+        server.Given(
+            Request.Create().WithPath("/relations").UsingPost()
+        ).RespondWith(
+            Response.Create().WithStatusCode(statusCode)
+        );
+
+        return server;
+    }
 }

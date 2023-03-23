@@ -4,7 +4,6 @@ using System.Security.Claims;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
-using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,10 +111,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
         });
 
-        var result = await client.GetAsync("auth/token");
-
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
     }
 
     [Fact]
@@ -133,9 +129,6 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => userService));
         });
 
-        var result = await client.GetAsync("auth/token");
-
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
     }
 }
