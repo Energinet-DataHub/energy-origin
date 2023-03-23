@@ -5,7 +5,6 @@ using API.Models.Entities;
 using API.Options;
 using API.Services;
 using API.Utilities;
-using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using API.Models.Entities;
 using EnergyOrigin.TokenValidation.Utilities;
 
