@@ -131,7 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
+else if (!app.Environment.IsTest())
 {
     app.UseMiddleware<ExceptionMiddleware>();
 }
