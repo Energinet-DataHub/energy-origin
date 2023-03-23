@@ -4,7 +4,6 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using EnergyOrigin.TokenValidation.Models.Requests;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

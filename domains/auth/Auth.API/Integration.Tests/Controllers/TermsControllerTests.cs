@@ -8,7 +8,6 @@ using API.Services;
 using API.Utilities;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using Integration.Tests;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
