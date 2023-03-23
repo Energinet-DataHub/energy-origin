@@ -2,11 +2,11 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Options;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
 using Integration.Tests;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.TestHost;
@@ -38,7 +38,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
@@ -80,7 +80,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsDTO(1);
+        var dto = new AcceptTermsRequest(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
@@ -110,7 +110,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
         });
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
@@ -131,7 +131,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => userService));
         });
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));

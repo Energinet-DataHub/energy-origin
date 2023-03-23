@@ -1,11 +1,12 @@
 using System.Net;
 using System.Security.Claims;
 using API.Controllers;
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Options;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -74,7 +75,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsDTO(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -115,7 +116,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsDTO(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -141,7 +142,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsDTO(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(1)));
     }
 
     [Fact]
@@ -163,6 +164,6 @@ public class TermsControllerTests
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsDTO(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(1)));
     }
 }

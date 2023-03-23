@@ -6,6 +6,8 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -32,9 +34,9 @@ public class TokenIssuerTests
 
     [Theory]
     [InlineData(UserScopeClaim.NotAcceptedTerms, 0, false)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, false)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 0, true)]
-    [InlineData(UserScopeClaim.AllAcceptedScopes, 1, true)]
+    [InlineData($"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 1, false)]
+    [InlineData($"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 0, true)]
+    [InlineData($"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 1, true)]
     public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
     {
         var descriptor = PrepareUser(version: version);

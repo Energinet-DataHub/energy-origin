@@ -1,9 +1,10 @@
 using System.Net.Http.Headers;
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Options;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -23,7 +24,7 @@ public class TermsController : ControllerBase
         IUserService userService,
         IHttpClientFactory clientFactory,
         IOptions<DataSyncOptions> options,
-        [FromBody] AcceptTermsDTO acceptedTermsVersion)
+        [FromBody] AcceptTermsRequest acceptedTermsVersion)
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
