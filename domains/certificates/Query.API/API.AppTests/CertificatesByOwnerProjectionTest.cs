@@ -37,19 +37,13 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
         var source = Guid.NewGuid().ToString();
         var target = Guid.NewGuid().ToString();
 
-        var productionCertificate = new ProductionCertificate(
-            "DK1",
-            new Period(123L, 123L),
-            new Technology("F0123", "T0123"),
-            source,
-            "gsrn", 2L
-        );
+        var productionCertificate = CreateProductionCertificate(source);
         productionCertificate.Issue();
         await repository.Save(productionCertificate);
 
         var certificate = await repository.Get(productionCertificate.Id);
-        certificate?.Transfer(source, target);
-        await repository.Save(certificate!);
+        certificate!.Transfer(source, target);
+        await repository.Save(certificate);
 
         var targetView = session.Load<CertificatesByOwnerView>(target);
         var sourceView = session.Load<CertificatesByOwnerView>(source);
@@ -63,20 +57,12 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
     {
         var owner = Guid.NewGuid().ToString();
 
-        var productionCertificate = new ProductionCertificate(
-            "DK1",
-            new Period(123L, 123L),
-            new Technology("F0123", "T0123"),
-            owner,
-            "gsrn",
-            2L
-        );
-
+        var productionCertificate = CreateProductionCertificate(owner);
         await repository.Save(productionCertificate);
 
         var certificate = await repository.Get(productionCertificate.Id);
-        certificate?.Issue();
-        await repository.Save(certificate!);
+        certificate!.Issue();
+        await repository.Save(certificate);
 
         var view = session.Load<CertificatesByOwnerView>(owner);
         await Verifier.Verify(view);
@@ -87,20 +73,13 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
     {
         var owner = Guid.NewGuid().ToString();
 
-        var productionCertificate = new ProductionCertificate(
-            "DK1",
-            new Period(123L, 123L),
-            new Technology("F0123", "T0123"),
-            owner,
-            "gsrn",
-            2L
-        );
+        var productionCertificate = CreateProductionCertificate(owner);
 
         await repository.Save(productionCertificate);
 
         var certificate = await repository.Get(productionCertificate.Id);
-        certificate?.Reject("test");
-        await repository.Save(certificate!);
+        certificate!.Reject("test");
+        await repository.Save(certificate);
 
         var view = session.Load<CertificatesByOwnerView>(owner);
         await Verifier.Verify(view);
@@ -111,22 +90,8 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
     {
         var owner = Guid.NewGuid().ToString();
 
-        var productionCertificate = new ProductionCertificate(
-            "DK1",
-            new Period(123L, 123L),
-            new Technology("F0123", "T0123"),
-            owner,
-            "gsrn",
-            2L
-        );
-        var productionCertificate1 = new ProductionCertificate(
-            "DK1",
-            new Period(123L, 123L),
-            new Technology("F0123", "T0123"),
-            owner,
-            "gsrn",
-            2L
-        );
+        var productionCertificate = CreateProductionCertificate(owner);
+        var productionCertificate1 = CreateProductionCertificate(owner);
 
         await repository.Save(productionCertificate);
         await repository.Save(productionCertificate1);
@@ -134,4 +99,14 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
         var view = session.Load<CertificatesByOwnerView>(owner);
         await Verifier.Verify(view);
     }
+
+    private static ProductionCertificate CreateProductionCertificate(string owner) =>
+        new ProductionCertificate(
+            "DK1",
+            new Period(123L, 123L),
+            new Technology("F0123", "T0123"),
+            owner,
+            "gsrn",
+            2L
+        );
 }
