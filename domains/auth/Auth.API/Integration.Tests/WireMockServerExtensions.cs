@@ -61,5 +61,4 @@ public static class WireMockServerExtensions
 
         return server;
     }
-
 }
