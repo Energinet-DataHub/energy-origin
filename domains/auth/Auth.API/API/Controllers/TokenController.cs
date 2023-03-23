@@ -1,6 +1,7 @@
 using System.Security.Claims;
-using API.Services;
-using API.Utilities;
+using API.Repositories.Data;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ public class TokenController : ControllerBase
         if (descriptor.Id is not null)
         {
             var user = await userService.GetUserByIdAsync(descriptor.Id.Value) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id.Value}");
-            descriptor = mapper.Map(user, descriptor.AccessToken!, descriptor.IdentityToken!);
+            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken!, descriptor.IdentityToken!);
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 

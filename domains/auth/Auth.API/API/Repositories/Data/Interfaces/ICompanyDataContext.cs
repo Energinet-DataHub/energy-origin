@@ -1,7 +1,7 @@
 using API.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Data;
+namespace API.Repositories.Data.Interfaces;
 
 public interface ICompanyDataContext : IBaseDataContext
 {

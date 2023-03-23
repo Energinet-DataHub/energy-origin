@@ -8,7 +8,8 @@ public struct UserClaimName
     public const string Actor = "actor";
     public const string AccessToken = "eat";
     public const string IdentityToken = "eit";
-    public const string ProviderId = "ext";
+    public const string ProviderKeys = "pke";
+    public const string ProviderType = "pty";
     public const string TermsVersion = "trm";
     public const string AllowCPRLookup = "acl";
     public const string Tin = "tin";

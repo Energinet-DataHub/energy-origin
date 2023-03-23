@@ -4,13 +4,18 @@ using API.Middleware;
 using API.Options;
 using API.Repositories;
 using API.Repositories.Data;
+using API.Repositories.Data.Interfaces;
+using API.Repositories.Interfaces;
 using API.Services;
+using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -83,7 +88,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("Db")));
+builder.Services.AddDbContext<DataContext>((sp, options) =>
+{
+    options.UseNpgsql(sp.GetRequiredService<NpgsqlDataSourceBuilder>().Build());
+});
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -103,6 +112,9 @@ builder.Services.AddScoped<IUserDataContext, DataContext>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyDataContext, DataContext>();
+builder.Services.AddScoped<IUserProviderService, UserProviderService>();
+builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
+builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>

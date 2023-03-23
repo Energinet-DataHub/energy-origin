@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Utilities;
 using API.Values;
 using IdentityModel.Client;
@@ -10,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 
 namespace API.Controllers;
 
@@ -23,7 +24,8 @@ public class OidcController : ControllerBase
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptorMapper mapper,
-        IUserService service,
+        IUserProviderService userProviderService,
+        IUserService userService,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
         IOptions<TokenOptions> tokenOptions,
@@ -66,7 +68,7 @@ public class OidcController : ControllerBase
         string token;
         try
         {
-            var descriptor = await MapUserDescriptor(mapper, service, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
+            var descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
             token = issuer.Issue(descriptor);
         }
         catch (Exception exception)
@@ -90,7 +92,7 @@ public class OidcController : ControllerBase
         return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserService service, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -125,41 +127,50 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
 
-        if (providerOptions.Providers.Contains(IdentityProviderOptions.GetIdentityProviderEnum(providerName, identityType)) is false) throw new NotSupportedException();
+        var providerType = GetIdentityProviderEnum(providerName, identityType);
+
+        if (providerOptions.Providers.Contains(providerType) is false) throw new NotSupportedException();
 
         var scope = access.FindFirstValue("scope");
-        var providerId = userInfo.FindFirstValue("idp_identity_id");
 
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
-        ArgumentException.ThrowIfNullOrEmpty(providerId, nameof(providerId));
-
-        var fullProviderId = $"{providerName}={providerId}";
 
         string? name = null;
         string? tin = null;
         string? companyName = null;
+        var keys = new Dictionary<ProviderKeyType, string>();
 
-        switch (providerName)
+        switch (providerType)
         {
-            case "nemid":
-                name = userInfo.FindFirstValue("nemid.common_name");
+            case ProviderType.MitID_Professional:
+                name = userInfo.FindFirstValue("mitid.identity_name");
+                tin = userInfo.FindFirstValue("nemlogin.cvr");
+                companyName = userInfo.FindFirstValue("nemlogin.org_name");
 
-                if (identityType == "professional")
-                {
-                    tin = userInfo.FindFirstValue("nemid.cvr");
-                    companyName = userInfo.FindFirstValue("nemid.company_name");
-
-                    ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
-                    ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
-                }
+                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException());
+                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
                 break;
-            case "mitid":
+            case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
-                if (identityType == "professional")
-                {
-                    throw new NotImplementedException();
-                }
+                // TODO: When testing it's sometimes unable to fetch nemid.pid. Is this an issue?
+                if (userInfo.FindFirstValue("nemid.pid") is not null) keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
+                break;
+            case ProviderType.NemID_Professional:
+                name = userInfo.FindFirstValue("nemid.common_name");
+                tin = userInfo.FindFirstValue("nemid.cvr");
+                companyName = userInfo.FindFirstValue("nemid.company_name");
+
+                // TODO: Documentation says that the primary identifier for Erhverv should be cvr + rid, which is found in idp_identity_id,
+                // but I can't verify if the same is true for MitID Erhverv because of missing test login, so we should look into this when we can.
+                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.rid") ?? throw new ArgumentNullException());
+                break;
+            case ProviderType.NemID_Private:
+                name = userInfo.FindFirstValue("nemid.common_name");
+
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException());
                 break;
             default:
                 throw new NotImplementedException();
@@ -167,22 +178,50 @@ public class OidcController : ControllerBase
 
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
 
-        var user = await service.GetUserByProviderIdAsync(fullProviderId) ?? new User
+        if (identityType == ProviderGroup.Professional)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
+            ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
+        }
+
+        var tokenUserProviders = keys.Select(x => new UserProvider()
+        {
+            ProviderType = providerType,
+            ProviderKeyType = x.Key,
+            UserProviderKey = x.Value
+        }).ToList();
+
+        var user = (await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.User ?? new User
         {
             Id = null,
-            ProviderId = fullProviderId,
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCPRLookup = false,
-            Company = identityType == "professional"
-                ? new Company()
-                {
-                    Id = null,
-                    Tin = tin!,
-                    Name = companyName!
-                }
-                : null
+            Company = identityType == ProviderGroup.Professional
+            ? new Company()
+            {
+                Id = null,
+                Tin = tin!,
+                Name = companyName!
+            }
+            : null
         };
-        return mapper.Map(user, response.AccessToken, response.IdentityToken);
+
+        var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
+
+        user.UserProviders.AddRange(newUserProviders);
+
+        if (user.Id is not null) await userService.UpsertUserAsync(user);
+
+        return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
     }
+
+    public static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+    {
+        (ProviderName.MitID, ProviderGroup.Private) => ProviderType.MitID_Private,
+        (ProviderName.MitID, ProviderGroup.Professional) => ProviderType.MitID_Professional,
+        (ProviderName.NemID, ProviderGroup.Private) => ProviderType.NemID_Private,
+        (ProviderName.NemID, ProviderGroup.Professional) => ProviderType.NemID_Professional,
+        _ => throw new NotImplementedException()
+    };
 }

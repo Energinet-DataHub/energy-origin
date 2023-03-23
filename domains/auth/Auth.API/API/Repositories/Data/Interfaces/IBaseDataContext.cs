@@ -1,4 +1,4 @@
-namespace API.Repositories.Data;
+namespace API.Repositories.Data.Interfaces;
 
 public interface IBaseDataContext
 {

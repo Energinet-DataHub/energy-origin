@@ -1,7 +1,7 @@
 using API.Models.DTOs;
 using API.Models.Entities;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +27,6 @@ public class TermsController : ControllerBase
             user = new User
             {
                 Name = descriptor.Name,
-                ProviderId = descriptor.ProviderId,
                 AllowCPRLookup = descriptor.AllowCPRLookup,
                 Company = descriptor.Tin is not null
                     ? await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
@@ -35,7 +34,15 @@ public class TermsController : ControllerBase
                         Name = descriptor.CompanyName!,
                         Tin = descriptor.Tin!
                     }
-                    : null
+                    : null,
+                UserProviders = descriptor.ProviderKeys
+                    .Select(x => new UserProvider()
+                    {
+                        ProviderType = descriptor.ProviderType,
+                        ProviderKeyType = x.Key,
+                        UserProviderKey = x.Value
+                    })
+                    .ToList()
             };
         }
         else

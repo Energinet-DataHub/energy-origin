@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Options;
+using API.Utilities.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace API.Utilities;

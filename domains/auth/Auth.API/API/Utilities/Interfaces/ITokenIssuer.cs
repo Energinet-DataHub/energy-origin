@@ -1,4 +1,4 @@
-namespace API.Utilities;
+namespace API.Utilities.Interfaces;
 
 public interface ITokenIssuer
 {

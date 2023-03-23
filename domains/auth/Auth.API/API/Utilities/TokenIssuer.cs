@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
+using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -54,7 +55,8 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
-            { UserClaimName.ProviderId, descriptor.ProviderId },
+            { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
+            { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.TermsVersion, state.AcceptedVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
         };
