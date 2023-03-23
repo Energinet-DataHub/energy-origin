@@ -1,4 +1,4 @@
-namespace API.Utilities.Interfaces;
+namespace EnergyOrigin.TokenValidation.Utilities.Interfaces;
 
 public interface ICryptography
 {

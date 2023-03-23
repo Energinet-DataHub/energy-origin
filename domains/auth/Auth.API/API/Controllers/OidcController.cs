@@ -4,6 +4,7 @@ using API.Models.Entities;
 using API.Options;
 using API.Utilities;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 
 namespace API.Controllers;
 
@@ -89,7 +91,7 @@ public class OidcController : ControllerBase
             Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
         });
 
-        return Ok($"""<html><head><meta http-equiv="refresh" content="0; URL='{oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}'"/></head><body /></html>""");
+        return RedirectPreserveMethod(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri);
     }
 
     private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)

@@ -2,11 +2,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Options;
-using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace API.Utilities;
+namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class Cryptography : ICryptography
 {

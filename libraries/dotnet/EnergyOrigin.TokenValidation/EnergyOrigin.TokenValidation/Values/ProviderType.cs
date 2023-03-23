@@ -1,4 +1,4 @@
-namespace API.Values;
+namespace EnergyOrigin.TokenValidation.Values;
 
 public enum ProviderType
 {

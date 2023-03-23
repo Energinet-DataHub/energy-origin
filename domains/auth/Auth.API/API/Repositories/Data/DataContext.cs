@@ -1,6 +1,6 @@
 using API.Models.Entities;
 using API.Repositories.Data.Interfaces;
-using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

@@ -8,6 +8,7 @@ using API.Options;
 using API.Services;
 using API.Utilities;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Http;
@@ -90,15 +91,14 @@ public class OidcControllerTests
         var action = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
-        Assert.IsType<OkObjectResult>(action);
+        Assert.IsType<RedirectResult>(action);
 
-        var result = action as OkObjectResult;
-        var body = result!.Value as string;
-        Assert.Contains("<html><head><meta ", body);
-        Assert.Contains(" http-equiv=", body);
-        Assert.Contains("refresh", body);
-        Assert.Contains("<body />", body);
-        Assert.Contains(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, body);
+        var result = (RedirectResult)action;
+        Assert.True(result.PreserveMethod);
+        Assert.False(result.Permanent);
+
+        var uri = new Uri(result.Url);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, uri.AbsoluteUri);
 
         Assert.NotNull(accessor.HttpContext);
         var header = accessor.HttpContext!.Response.Headers.SetCookie;

@@ -1,4 +1,4 @@
-namespace API.Options;
+namespace EnergyOrigin.TokenValidation.Options;
 
 public class CryptographyOptions
 {

@@ -1,5 +1,4 @@
-using API.Models.Entities;
-using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 
 namespace API.Options;
 

@@ -1,9 +1,8 @@
-using API.Options;
-using API.Utilities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 
-namespace Tests.Utilities;
+namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
 public class CryptographyTests
 {
@@ -11,14 +10,12 @@ public class CryptographyTests
 
     public CryptographyTests()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.Test.json", false)
-            .Build();
+        var options = new CryptographyOptions()
+        {
+            Key = "secretsecretsecretsecret"
+        };
 
-        var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
-
-        cryptography = new Cryptography(Options.Create(options));
+        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     [Fact]

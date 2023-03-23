@@ -1,6 +1,7 @@
 ﻿using System;
 using API.Models.Entities;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

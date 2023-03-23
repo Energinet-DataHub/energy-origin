@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using API.Middleware;
 using API.Options;
 using API.Repositories;
@@ -9,20 +7,22 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Utilities;
 using API.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
 
 var logger = new LoggerConfiguration()
-    .WriteTo.Console(new JsonFormatter())
+.WriteTo.Console(new JsonFormatter())
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,8 +33,16 @@ builder.Logging.AddSerilog(logger);
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 
+var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
+var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
+
 builder.Services.Configure<TokenOptions>(tokenConfiguration);
+builder.Services.Configure<DatabaseOptions>(databaseConfiguration);
+builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
+builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<DataSyncOptions>(builder.Configuration.GetSection(DataSyncOptions.Prefix));
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -49,19 +57,10 @@ builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenO
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 builder.Services.Configure<IdentityProviderOptions>(builder.Configuration.GetSection(IdentityProviderOptions.Prefix));
 
-builder.Services.AddAuthentication().AddJwtBearer(options =>
+builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
 {
-    var rsa = RSA.Create();
-    rsa.ImportFromPem(Encoding.UTF8.GetString(tokenOptions.PublicKeyPem));
-
-    options.MapInboundClaims = false;
-
-    options.TokenValidationParameters = new()
-    {
-        IssuerSigningKey = new RsaSecurityKey(rsa),
-        ValidAudience = tokenOptions.Audience,
-        ValidIssuer = tokenOptions.Issuer,
-    };
+    ValidAudience = tokenOptions.Audience,
+    ValidIssuer = tokenOptions.Issuer
 });
 
 builder.Services.AddSwaggerGen(c =>
@@ -88,7 +87,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton(new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("Db")));
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
 builder.Services.AddDbContext<DataContext>((sp, options) =>
 {
     options.UseNpgsql(sp.GetRequiredService<NpgsqlDataSourceBuilder>().Build());
@@ -144,7 +143,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
+else if (!app.Environment.IsTest())
 {
     app.UseMiddleware<ExceptionMiddleware>();
 }

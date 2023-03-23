@@ -7,8 +7,7 @@ public static class StringExtensions
 {
     public static string ToMd5(this string input)
     {
-        using var md5 = MD5.Create();
-        var bytes = md5.ComputeHash(Encoding.ASCII.GetBytes(input));
+        var bytes = MD5.HashData(Encoding.ASCII.GetBytes(input));
         return Convert.ToHexString(bytes);
     }
 

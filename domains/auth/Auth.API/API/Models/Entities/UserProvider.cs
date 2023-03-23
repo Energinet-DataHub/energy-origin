@@ -1,4 +1,4 @@
-using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Models.Entities;

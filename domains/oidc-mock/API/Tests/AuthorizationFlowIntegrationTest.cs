@@ -20,16 +20,13 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     private const string clientSecret = "secret";
     private const string redirectUri = "https://example.com/callback";
 
-    public AuthorizationFlowIntegrationTest()
-    {
-        factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder
-                .UseEnvironment("Test")
-                .UseSetting(Configuration.UsersFilePathKey, "test-users.json")
-                .UseSetting(Configuration.ClientIdKey, clientId)
-                .UseSetting(Configuration.ClientSecretKey, clientSecret)
-                .UseSetting(Configuration.ClientRedirectUriKey, redirectUri));
-    }
+    public AuthorizationFlowIntegrationTest() => factory = new WebApplicationFactory<Program>()
+        .WithWebHostBuilder(builder => builder
+            .UseEnvironment("Test")
+            .UseSetting(Configuration.UsersFilePathKey, "test-users.json")
+            .UseSetting(Configuration.ClientIdKey, clientId)
+            .UseSetting(Configuration.ClientSecretKey, clientSecret)
+            .UseSetting(Configuration.ClientRedirectUriKey, redirectUri));
 
     [Fact]
     public async Task CompleteFlowTest()
@@ -128,5 +125,6 @@ public class AuthorizationFlowIntegrationTest : IDisposable
     public void Dispose()
     {
         factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

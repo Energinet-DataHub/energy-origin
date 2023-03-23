@@ -3,8 +3,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using API.Utilities.Interfaces;
-using API.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,7 +15,7 @@ public class TokenIssuer : ITokenIssuer
 {
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
-
+    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
     public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
     {
         this.termsOptions = termsOptions.Value;
@@ -27,7 +28,7 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, descriptor, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(termsOptions, tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -44,12 +45,12 @@ public class TokenIssuer : ITokenIssuer
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var scope = version == options.CurrentVersion || versionBypass ? UserScopeClaim.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
         return new(descriptor.Id?.ToString(), version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object> {
             { UserClaimName.Scope, state.Scope },
@@ -57,7 +58,8 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
-            { UserClaimName.TermsVersion, state.AcceptedVersion },
+            { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
+            { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
         };
 
@@ -80,9 +82,9 @@ public class TokenIssuer : ITokenIssuer
         {
             Subject = new ClaimsIdentity(identity),
             NotBefore = issueAt,
-            Expires = issueAt.Add(options.Duration),
-            Issuer = options.Issuer,
-            Audience = options.Audience,
+            Expires = issueAt.Add(tokenOptions.Duration),
+            Issuer = tokenOptions.Issuer,
+            Audience = tokenOptions.Audience,
             SigningCredentials = credentials,
             Claims = claims
         };

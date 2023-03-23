@@ -1,9 +1,8 @@
 using System.Linq;
-using API.Models.Entities;
-using API.Utilities.Interfaces;
-using API.Values;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 
-namespace API.Utilities;
+namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptor
 {
@@ -14,6 +13,7 @@ public class UserDescriptor
     public string? CompanyName { get; init; }
     public string? Tin { get; init; }
     public int AcceptedTermsVersion { get; init; }
+    public int CurrentTermsVersion { get; init; }
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
