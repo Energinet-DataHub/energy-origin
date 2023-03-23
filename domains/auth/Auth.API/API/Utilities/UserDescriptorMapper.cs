@@ -10,10 +10,7 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
 {
     private readonly ICryptography cryptography;
 
-    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography, logger)
-    {
-        this.cryptography = cryptography;
-    }
+    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography, logger) => this.cryptography = cryptography;
 
     public UserDescriptor Map(User user, ProviderType providerType, string accessToken, string identityToken) => new(cryptography)
     {
