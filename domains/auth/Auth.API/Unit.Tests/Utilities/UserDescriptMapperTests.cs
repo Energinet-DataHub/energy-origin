@@ -3,6 +3,7 @@ using API.Utilities;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Tests.Utilities;
 
@@ -21,7 +22,7 @@ public class UserDescriptMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
+        cryptography = new Cryptography(Options.Create(options));
 
         mapper = new UserDescriptMapper(cryptography, logger);
     }

@@ -15,9 +15,9 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        [FromServices] IUserDescriptMapper descriptMapper,
-        [FromServices] IUserService userService,
-        [FromBody] AcceptTermsRequest acceptedTermsVersion)
+         IUserDescriptMapper descriptMapper,
+         IUserService userService,
+         AcceptTermsRequest acceptedTermsVersion)
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
