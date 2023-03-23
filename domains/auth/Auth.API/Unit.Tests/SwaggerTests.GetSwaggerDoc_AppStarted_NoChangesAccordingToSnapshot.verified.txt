@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.0.1",
   "info": {
     "title": "API",
@@ -76,17 +76,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AcceptTermsDTO"
+                "$ref": "#/components/schemas/AcceptTermsRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AcceptTermsDTO"
+                "$ref": "#/components/schemas/AcceptTermsRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AcceptTermsDTO"
+                "$ref": "#/components/schemas/AcceptTermsRequest"
               }
             }
           }
@@ -113,7 +113,7 @@
   },
   "components": {
     "schemas": {
-      "AcceptTermsDTO": {
+      "AcceptTermsRequest": {
         "type": "object",
         "properties": {
           "version": {
