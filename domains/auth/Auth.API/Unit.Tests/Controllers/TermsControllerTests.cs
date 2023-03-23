@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using API.Controllers;
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Tests.Controllers;
@@ -49,7 +50,7 @@ public class TermsControllerTests
                 AcceptedTermsVersion = oldAcceptedTermsVersion
             });
 
-        var result = await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsDTO(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -87,7 +88,7 @@ public class TermsControllerTests
                 AcceptedTermsVersion = 0
             });
 
-        var result = await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsDTO(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -110,7 +111,7 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsDTO(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsRequest(1)));
     }
 
     [Fact]
@@ -132,6 +133,6 @@ public class TermsControllerTests
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsDTO(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(mapper, userService, new AcceptTermsRequest(1)));
     }
 }

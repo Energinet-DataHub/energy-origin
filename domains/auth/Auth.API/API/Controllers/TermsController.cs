@@ -1,7 +1,8 @@
-using API.Models.DTOs;
 using API.Models.Entities;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +15,9 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        IUserDescriptMapper descriptMapper,
-        IUserService userService,
-        [FromBody] AcceptTermsDTO acceptedTermsVersion)
+         IUserDescriptMapper descriptMapper,
+         IUserService userService,
+         AcceptTermsRequest acceptedTermsVersion)
     {
         var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
 
