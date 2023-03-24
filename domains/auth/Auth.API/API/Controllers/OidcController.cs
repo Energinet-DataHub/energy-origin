@@ -91,8 +91,9 @@ public class OidcController : ControllerBase
         accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
         {
             IsEssential = true,
-            Secure = true,
-            Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
+            Secure = false,
+            Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration),
+            SameSite = SameSiteMode.Lax
         });
 
         if (oidcState?.State != null)
