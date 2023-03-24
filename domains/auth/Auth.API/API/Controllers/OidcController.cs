@@ -20,14 +20,12 @@ public class OidcController : ControllerBase
     [HttpGet()]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
-        IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptMapper mapper,
         IUserService service,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
-        IOptions<TokenOptions> tokenOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
@@ -87,15 +85,6 @@ public class OidcController : ControllerBase
             );
             return RedirectPreserveMethod(url);
         }
-
-        // accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
-        // {
-        //     IsEssential = true,
-        //     Secure = redirectionUri.StartsWith("https:"),
-        //     Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration),
-        //     SameSite = redirectionUri.StartsWith("https:") ? SameSiteMode.Strict : SameSiteMode.Lax,
-        //     Domain = new Uri(redirectionUri).Host
-        // });
 
         if (oidcState?.State != null)
         {
