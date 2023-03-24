@@ -127,7 +127,7 @@ public class CertificatesByOwnerProjection : IProjection
                      );
         var cert = source.Certificates[productionCertificateTransferred.CertificateId];
 
-        RemoveCertificateFromSource(operations, source, productionCertificateTransferred);
+        RemoveCertificateFromSource(source, productionCertificateTransferred);
         AddCertificateToTarget(operations, productionCertificateTransferred, cert);
     }
 
@@ -155,7 +155,7 @@ public class CertificatesByOwnerProjection : IProjection
         views[Guid.NewGuid()] = view;
     }
 
-    private static void RemoveCertificateFromSource(IDocumentOperations operations, CertificatesByOwnerView source,
+    private static void RemoveCertificateFromSource(CertificatesByOwnerView source,
         ProductionCertificateTransferred productionCertificateTransferred)
     {
         source.Certificates.Remove(productionCertificateTransferred.CertificateId);
