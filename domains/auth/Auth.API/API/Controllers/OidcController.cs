@@ -91,9 +91,10 @@ public class OidcController : ControllerBase
         accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
         {
             IsEssential = true,
-            Secure = false,
+            Secure = redirectionUri.StartsWith("https:"),
             Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration),
-            SameSite = SameSiteMode.Lax
+            SameSite = redirectionUri.StartsWith("https:") ? SameSiteMode.Strict : SameSiteMode.Lax,
+            Domain = new Uri(redirectionUri).Host
         });
 
         if (oidcState?.State != null)
