@@ -19,13 +19,12 @@ public class UserProviderRepository : IUserProviderRepository
         return userProvider;
     }
     public async Task<UserProvider?> GetUserProviderByIdAsync(Guid id) => await dataContext.UserProviders.FirstOrDefaultAsync(x => x.Id == id);
-    public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders) =>
-        await dataContext.UserProviders.Include(x => x.User)
-            .Join(ConvertInMemoryListToDatabaseQueryable(userProviders),
-                db => new { keyType = db.ProviderKeyType, key = db.UserProviderKey, type = db.ProviderType },
-                im => new { keyType = im.ProviderKeyType, key = im.UserProviderKey, type = im.ProviderType },
-                (db, im) => db)
-            .SingleOrDefaultAsync();
+    public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders) => await dataContext.UserProviders.Include(x => x.User).ThenInclude(x => x.UserProviders)
+        .Join(ConvertInMemoryListToDatabaseQueryable(userProviders),
+            db => new { keyType = db.ProviderKeyType, key = db.UserProviderKey, type = db.ProviderType },
+            im => new { keyType = im.ProviderKeyType, key = im.UserProviderKey, type = im.ProviderType },
+            (db, im) => db)
+        .FirstOrDefaultAsync();
 
     private IQueryable<UserProvider> ConvertInMemoryListToDatabaseQueryable(List<UserProvider> userProviders)
     {

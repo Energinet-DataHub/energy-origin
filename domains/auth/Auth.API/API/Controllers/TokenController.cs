@@ -1,10 +1,6 @@
 using System.Security.Claims;
-using API.Repositories.Data;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
-using API.Values;
-using API.Services;
-using API.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
