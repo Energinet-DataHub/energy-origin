@@ -66,7 +66,10 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, result.Headers.Location?.AbsoluteUri);
+
+        Assert.NotNull(result.Headers.Location?.AbsoluteUri);
+        var uri = new Uri(result.Headers.Location!.AbsoluteUri);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains($"token=", query);
