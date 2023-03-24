@@ -1,16 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Logging;
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
-public class UserDescriptMapperBase : IUserDescriptMapperBase
+public class UserDescriptorMapperBase : IUserDescriptorMapperBase
 {
     private readonly ICryptography cryptography;
-    private readonly ILogger<UserDescriptMapperBase> logger;
+    private readonly ILogger<UserDescriptorMapperBase> logger;
 
-    public UserDescriptMapperBase(ICryptography cryptography, ILogger<UserDescriptMapperBase> logger)
+    public UserDescriptorMapperBase(ICryptography cryptography, ILogger<UserDescriptorMapperBase> logger)
     {
         this.cryptography = cryptography;
         this.logger = logger;
@@ -24,10 +25,9 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             return null;
         }
 
-        var providerId = user.FindFirstValue(UserClaimName.ProviderId);
-        if (providerId == null)
+        if (Enum.TryParse<ProviderType>(user.FindFirstValue(UserClaimName.ProviderType), out var providerType) == false)
         {
-            MissingProperty(nameof(UserClaimName.ProviderId));
+            MissingProperty(nameof(UserClaimName.ProviderType));
             return null;
         }
 
@@ -70,32 +70,27 @@ public class UserDescriptMapperBase : IUserDescriptMapperBase
             return null;
         }
 
-        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        Guid? userId;
-        if (id == null)
+        var encryptedProviderKeys = user.FindFirstValue(UserClaimName.ProviderKeys);
+        if (encryptedProviderKeys == null)
         {
-            userId = null;
-        }
-        else if (Guid.TryParse(id, out var parsed))
-        {
-            userId = parsed;
-        }
-        else
-        {
+            MissingProperty(nameof(UserClaimName.ProviderKeys));
             return null;
         }
 
         return new(cryptography)
         {
-            Id = userId,
-            ProviderId = providerId,
+            Id = Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out var userId) ? userId : null,
+            ProviderType = providerType,
             Name = name,
+            CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,
             Tin = user.FindFirstValue(UserClaimName.Tin),
+            CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
             AcceptedTermsVersion = acceptedVersion,
             CurrentTermsVersion = currentVersion,
             AllowCPRLookup = allowCPRLookup,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,
+            EncryptedProviderKeys = encryptedProviderKeys
         };
     }
 
