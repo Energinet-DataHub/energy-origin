@@ -59,7 +59,7 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
             { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
-            { "subject", state.Id ?? "" },
+            { "subject", state.Id ?? "" }, // TODO: needs alignment with company-update
             { "actor", state.Id ?? "" }
         };
         if (descriptor.Tin != null)
