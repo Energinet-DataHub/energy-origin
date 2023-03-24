@@ -10,6 +10,7 @@ using CertificateEvents;
 using Marten;
 using Marten.Events;
 using Marten.Events.Projections;
+using Marten.Linq.LastModified;
 
 namespace API.Query.API.Projections;
 
@@ -26,6 +27,13 @@ public class CertificatesByOwnerProjection : IProjection
 
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
+        var duplicatedStream = streams
+            .SelectMany(x => x.Events)
+            .DistinctBy(x => x.StreamId);
+
+        if (duplicatedStream.Count() != 1)
+            throw new ProjectionException(Guid.Empty, "Only one certificate is allowed in the stream");
+
         var events = streams
             .SelectMany(x => x.Events)
             .OrderBy(s => s.Sequence)
