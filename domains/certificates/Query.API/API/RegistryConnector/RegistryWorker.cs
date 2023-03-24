@@ -15,31 +15,18 @@ namespace API.RegistryConnector;
 public class RegistryWorker : BackgroundService
 {
     private readonly ILogger<RegistryWorker> logger;
+    private readonly RegistryOptions registryOptions;
     private readonly RegisterClient registerClient;
     private readonly Key ownerKey;
-    private readonly Key issuerKey;
 
     public RegistryWorker(ILogger<RegistryWorker> logger, IOptions<RegistryOptions> registryOptions)
     {
         this.logger = logger;
-
-        try
-        {
-            var k = Key.Import(SignatureAlgorithm.Ed25519, registryOptions.Value.IssuerPrivateKeyPem,
-                KeyBlobFormat.PkixPrivateKeyText);
-            var rawPublicKeyBytes = k.PublicKey.Export(KeyBlobFormat.RawPublicKey);
-            var rawPublicKey = ByteString.CopyFrom(rawPublicKeyBytes).ToBase64();
-            logger.LogInformation("Issuer public key: {publicKey}", rawPublicKey);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning("Failed to generate issuer key. Exception: {ex}", ex);
-        }
+        this.registryOptions = registryOptions.Value;
 
         ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
-        issuerKey = IssuerKey.LoadPrivateKey();
 
-        registerClient = new RegisterClient(registryOptions.Value.Url);
+        registerClient = new RegisterClient(this.registryOptions.Url);
 
         registerClient.Events += OnRegistryEvents;
     }
@@ -49,14 +36,28 @@ public class RegistryWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Key issuerKey;
+        try
+        {
+            issuerKey = Key.Import(SignatureAlgorithm.Ed25519, registryOptions.IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKeyText);
+            var rawPublicKeyBytes = issuerKey.PublicKey.Export(KeyBlobFormat.RawPublicKey);
+            var rawPublicKey = ByteString.CopyFrom(rawPublicKeyBytes).ToBase64();
+            logger.LogInformation("Issuer public key: {publicKey}", rawPublicKey);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("Failed to load issuer key. Exception: {ex}", ex);
+            return;
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            await SendCommand();
+            await SendCommand(issuerKey);
             await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 
-    private async Task SendCommand()
+    private async Task SendCommand(Key issuerKey)
     {
         const long gsrn = 57000001234567;
         var quantity = new ShieldedValue(150);

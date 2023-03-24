@@ -67,18 +67,6 @@ public class KeyTests
     }
 
     [Fact]
-    public void works_with_IssuerKey()
-    {
-        var byteString = ByteString.FromBase64(IssuerKey.PrivateKey);
-        var key = Key.Import(SignatureAlgorithm.Ed25519, byteString.Span, KeyBlobFormat.RawPrivateKey);
-
-        key.Should().NotBeNull();
-
-        var publicByteString = ByteString.CopyFrom(key.PublicKey.Export(KeyBlobFormat.RawPublicKey));
-        publicByteString.ToBase64().Should().Be(IssuerKey.PublicKey);
-    }
-
-    [Fact]
     public void pem_test()
     {
         var bs = ByteString.FromBase64(
