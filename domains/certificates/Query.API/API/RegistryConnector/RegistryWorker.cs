@@ -35,7 +35,7 @@ public class RegistryWorker : BackgroundService
         {
             logger.LogWarning("Failed to generate issuer key. Exception: {ex}", ex);
         }
-        
+
         ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
         issuerKey = IssuerKey.LoadPrivateKey();
 
@@ -52,7 +52,7 @@ public class RegistryWorker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             await SendCommand();
-            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 
