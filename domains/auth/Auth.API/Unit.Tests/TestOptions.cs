@@ -11,14 +11,16 @@ public static class TestOptions
         string? authorityCallback = default,
         string? frontendRedirect = default,
         string? clientId = default,
-        TimeSpan? cacheDuration = default
+        TimeSpan? cacheDuration = default,
+        bool? allowRedirection = default
     ) => Options.Create(new OidcOptions
     {
         AuthorityUri = new Uri(authority ?? options.AuthorityUri.AbsoluteUri),
         AuthorityCallbackUri = new Uri(authorityCallback ?? options.AuthorityCallbackUri.AbsoluteUri),
         FrontendRedirectUri = new Uri(frontendRedirect ?? options.FrontendRedirectUri.AbsoluteUri),
         ClientId = clientId ?? options.ClientId,
-        CacheDuration = cacheDuration ?? options.CacheDuration
+        CacheDuration = cacheDuration ?? options.CacheDuration,
+        AllowRedirection = allowRedirection ?? options.AllowRedirection
     });
 
     public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Options.Create(new TermsOptions
