@@ -88,21 +88,21 @@ public class OidcController : ControllerBase
             return RedirectPreserveMethod(url);
         }
 
-        accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
-        {
-            IsEssential = true,
-            Secure = redirectionUri.StartsWith("https:"),
-            Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration),
-            SameSite = redirectionUri.StartsWith("https:") ? SameSiteMode.Strict : SameSiteMode.Lax,
-            Domain = new Uri(redirectionUri).Host
-        });
+        // accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
+        // {
+        //     IsEssential = true,
+        //     Secure = redirectionUri.StartsWith("https:"),
+        //     Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration),
+        //     SameSite = redirectionUri.StartsWith("https:") ? SameSiteMode.Strict : SameSiteMode.Lax,
+        //     Domain = new Uri(redirectionUri).Host
+        // });
 
         if (oidcState?.State != null)
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState!.State);
         }
 
-        return RedirectPreserveMethod(redirectionUri);
+        return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
     private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptMapper mapper, IUserService service, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
