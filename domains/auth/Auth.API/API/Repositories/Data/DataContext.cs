@@ -18,7 +18,6 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
     {
         this.configuration = configuration;
 
-        dataSourceBuilder.MapEnum<ProviderType>();
         dataSourceBuilder.MapEnum<ProviderKeyType>();
     }
 
@@ -26,7 +25,6 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasPostgresEnum<ProviderType>();
         modelBuilder.HasPostgresEnum<ProviderKeyType>();
     }
 }

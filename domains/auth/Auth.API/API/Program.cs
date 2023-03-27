@@ -88,9 +88,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
-builder.Services.AddDbContext<DataContext>((sp, options) =>
+builder.Services.AddDbContext<DataContext>((serviceProvider, options) =>
 {
-    options.UseNpgsql(sp.GetRequiredService<NpgsqlDataSourceBuilder>().Build());
+    options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build());
 });
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>

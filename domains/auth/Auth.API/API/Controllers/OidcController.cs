@@ -131,7 +131,10 @@ public class OidcController : ControllerBase
 
         var providerType = GetIdentityProviderEnum(providerName, identityType);
 
-        if (providerOptions.Providers.Contains(providerType) is false) throw new NotSupportedException();
+        if (providerOptions.Providers.Contains(providerType) is false)
+        {
+            throw new NotSupportedException();
+        }
 
         var scope = access.FindFirstValue("scope");
 
@@ -145,19 +148,25 @@ public class OidcController : ControllerBase
         switch (providerType)
         {
             case ProviderType.MitID_Professional:
-                name = userInfo.FindFirstValue("mitid.identity_name");
-                tin = userInfo.FindFirstValue("nemlogin.cvr");
-                companyName = userInfo.FindFirstValue("nemlogin.org_name");
+                //name = userInfo.FindFirstValue("mitid.identity_name");
+                //tin = userInfo.FindFirstValue("nemlogin.cvr");
+                //companyName = userInfo.FindFirstValue("nemlogin.org_name");
 
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException());
-                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
-                break;
+                //keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException());
+                //keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
+                //keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
+
+                //break;
+
+                throw new NotImplementedException();
             case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
                 // TODO: When testing it's sometimes unable to fetch nemid.pid. Is this an issue?
-                if (userInfo.FindFirstValue("nemid.pid") is not null) keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
+                if (userInfo.FindFirstValue("nemid.pid") is not null)
+                {
+                    keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
+                }
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
                 break;
             case ProviderType.NemID_Professional:
@@ -172,7 +181,7 @@ public class OidcController : ControllerBase
             case ProviderType.NemID_Private:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException());
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException(""));
                 break;
             default:
                 throw new NotImplementedException();
@@ -186,12 +195,7 @@ public class OidcController : ControllerBase
             ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
         }
 
-        var tokenUserProviders = keys.Select(x => new UserProvider()
-        {
-            ProviderType = providerType,
-            ProviderKeyType = x.Key,
-            UserProviderKey = x.Value
-        }).ToList();
+        var tokenUserProviders = UserProvider.GetUserProviders(keys);
 
         var user = (await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.User ?? new User
         {
@@ -199,14 +203,12 @@ public class OidcController : ControllerBase
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCPRLookup = false,
-            Company = identityType == ProviderGroup.Professional
-            ? new Company()
+            Company = identityType == ProviderGroup.Private ? null : new Company()
             {
                 Id = null,
                 Tin = tin!,
                 Name = companyName!
             }
-            : null
         };
 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);

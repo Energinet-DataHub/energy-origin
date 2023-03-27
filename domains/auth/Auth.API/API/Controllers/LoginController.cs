@@ -1,5 +1,8 @@
+using API.Models.Entities;
 using API.Options;
+using API.Repositories.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -12,7 +15,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
+    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IdentityProviderOptions providerOptions, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)

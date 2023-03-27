@@ -33,6 +33,8 @@ public class TermsController : ControllerBase
             throw new ArgumentException("The user has already accepted the same or a newer version of terms.");
         }
 
+        var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
+
         User user;
         if (descriptor.Id is null)
         {
@@ -40,21 +42,12 @@ public class TermsController : ControllerBase
             {
                 Name = descriptor.Name,
                 AllowCPRLookup = descriptor.AllowCPRLookup,
-                Company = descriptor.Tin is not null
-                    ? await companyService.GetCompanyByTinAsync(descriptor.Tin) ?? new Company()
-                    {
-                        Name = descriptor.CompanyName!,
-                        Tin = descriptor.Tin!
-                    }
-                    : null,
-                UserProviders = descriptor.ProviderKeys
-                    .Select(x => new UserProvider()
-                    {
-                        ProviderType = descriptor.ProviderType,
-                        ProviderKeyType = x.Key,
-                        UserProviderKey = x.Value
-                    })
-                    .ToList()
+                Company = descriptor.Tin is null ? null : company ?? new Company()
+                {
+                    Name = descriptor.CompanyName!,
+                    Tin = descriptor.Tin!
+                },
+                UserProviders = UserProvider.GetUserProviders(descriptor.ProviderKeys)
             };
         }
         else
@@ -76,7 +69,7 @@ public class TermsController : ControllerBase
             //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
             var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
             {
-                { "ssn", null },
+                { "ssn", descriptor.CompanyId?.ToString() ?? descriptor.Id.ToString() },
                 { "tin", user.Company?.Tin }
             });
 
