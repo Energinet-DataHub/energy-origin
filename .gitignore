@@ -1,6 +1,7 @@
 # CUSTOM
 **/Chart.lock
 .idea.*/
+*.received.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/helm,rider,linux,macos,python,csharp,windows,visualstudio,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=helm,rider,linux,macos,python,csharp,windows,visualstudio,visualstudiocode,jetbrains
@@ -992,6 +993,3 @@ $RECYCLE.BIN/
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/helm,rider,linux,macos,python,csharp,windows,visualstudio,visualstudiocode,jetbrains
-
-# Verify files
-*.received.txt

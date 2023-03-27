@@ -11,7 +11,6 @@ api:
     Database__Password:
     Token__Issuer:
     Token__Audience:
-    Token__CookieDuration:
     Token__Duration:
     Token__PublicKeyPem:
     Token__PrivateKeyPem:
