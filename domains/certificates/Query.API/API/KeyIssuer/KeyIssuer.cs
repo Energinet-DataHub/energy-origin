@@ -20,11 +20,11 @@ public class KeyIssuer : IKeyIssuer
 
     public async Task<string> Create(string meteringPointOwner, CancellationToken cancellationToken)
     {
-        var generated = repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
+        var keyDocumentExist = await repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
 
-        if (generated.Result != null)
+        if (keyDocumentExist != null)
         {
-            return generated.Result.PublicKey;
+            return keyDocumentExist.PublicKey;
         }
 
         using var key = Key.Create(algorithm);
