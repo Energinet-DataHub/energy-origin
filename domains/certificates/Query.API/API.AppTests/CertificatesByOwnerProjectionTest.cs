@@ -14,7 +14,7 @@ using Xunit;
 namespace API.AppTests;
 
 [UsesVerify]
-public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>
+public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly ProductionCertificateRepository repository;
     private readonly IDocumentSession session;
@@ -48,8 +48,21 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
         var targetView = session.Load<CertificatesByOwnerView>(target);
         var sourceView = session.Load<CertificatesByOwnerView>(source);
 
-        sourceView?.Certificates.Should().BeEmpty();
+        sourceView!.Certificates.Should().BeEmpty();
         await Verifier.Verify(targetView);
+    }
+
+    [Fact]
+    public async Task Apply_CertificateIsCreatedAndIssued_HasOneIssuedCertificate()
+    {
+        var owner = Guid.NewGuid().ToString();
+
+        var productionCertificate = CreateProductionCertificate(owner);
+        productionCertificate.Issue();
+        await repository.Save(productionCertificate);
+
+        var view = session.Load<CertificatesByOwnerView>(owner);
+        await Verifier.Verify(view);
     }
 
     [Fact]
@@ -101,7 +114,7 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
     }
 
     private static ProductionCertificate CreateProductionCertificate(string owner) =>
-        new ProductionCertificate(
+        new(
             "DK1",
             new Period(123L, 123L),
             new Technology("F0123", "T0123"),
@@ -109,4 +122,6 @@ public class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer
             "gsrn",
             2L
         );
+
+    public void Dispose() => session.Dispose();
 }
