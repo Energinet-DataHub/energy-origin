@@ -5,6 +5,7 @@ using System.Linq;
 using API.ContractService;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
+using API.KeyIssuer;
 using API.Query.API;
 using API.RabbitMq;
 using API.TransferCertificateHandler;
@@ -64,6 +65,7 @@ builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddTransferCertificateHandler();
+builder.Services.AddKeyIssuerService();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

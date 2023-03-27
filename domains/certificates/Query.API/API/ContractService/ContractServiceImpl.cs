@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
+using API.KeyIssuer;
 using CertificateEvents.Primitives;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
@@ -15,11 +16,13 @@ internal class ContractServiceImpl : IContractService
 {
     private readonly IMeteringPointsClient client;
     private readonly ICertificateIssuingContractRepository repository;
+    private readonly IKeyIssuer keyIssuer;
 
-    public ContractServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository)
+    public ContractServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository, IKeyIssuer keyIssuer)
     {
         this.client = client;
         this.repository = repository;
+        this.keyIssuer = keyIssuer;
     }
 
     public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken)
@@ -44,6 +47,8 @@ internal class ContractServiceImpl : IContractService
             return new ContractAlreadyExists(document);
         }
 
+        var publicKey = await keyIssuer.Create(meteringPointOwner, cancellationToken);
+
         try
         {
             var contract = new CertificateIssuingContract
@@ -55,8 +60,10 @@ internal class ContractServiceImpl : IContractService
                 MeteringPointType = MeteringPointType.Production,
                 MeteringPointOwner = meteringPointOwner,
                 StartDate = startDate,
-                Created = DateTimeOffset.UtcNow
+                Created = DateTimeOffset.UtcNow,
+                PublicKey = publicKey
             };
+
             await repository.Save(contract);
 
             return new Success(contract);

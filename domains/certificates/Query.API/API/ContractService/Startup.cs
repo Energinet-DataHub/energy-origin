@@ -2,6 +2,7 @@ using System;
 using API.Configurations;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
+using API.KeyIssuer;
 using Marten;
 using Marten.Schema;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,8 @@ public static class Startup
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
         services.AddScoped<ICertificateIssuingContractRepository, CertificateIssuingContractRepository>();
+
+        services.AddScoped<IKeyIssuer, KeyIssuer.KeyIssuer>();
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {
