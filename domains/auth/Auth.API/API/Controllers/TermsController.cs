@@ -19,7 +19,6 @@ public class TermsController : ControllerBase
     public async Task<IActionResult> AcceptTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
-        IUserDescriptorMapper descriptMapper,
         IUserDescriptorMapper mapper,
         IUserService userService,
         ICompanyService companyService,
@@ -28,6 +27,11 @@ public class TermsController : ControllerBase
         [FromBody] AcceptTermsRequest acceptedTermsVersion)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+
+        if (descriptor.AcceptedTermsVersion >= acceptedTermsVersion.Version)
+        {
+            throw new ArgumentException("The user has already accepted the same or a newer version of terms.");
+        }
 
         User user;
         if (descriptor.Id is null)
