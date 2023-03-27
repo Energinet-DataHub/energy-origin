@@ -2,12 +2,16 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using API.Models.DTOs;
 using API.Models.Entities;
+using API.Options;
 using API.Services;
 using API.Utilities;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using WireMock.Server;
 
 namespace Tests.Integration.Controllers;
 
@@ -19,11 +23,21 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
     {
+        var server = WireMockServer.Start();
+        var options = Options.Create(new DataSyncOptions()
+        {
+            Uri = new Uri($"http://localhost:{server.Port}/")
+        });
+
         var user = await factory.AddUserToDatabaseAsync();
+        var client = factory
+           .CreateAuthenticatedClient(user, config: builder =>
+               builder.ConfigureTestServices(services =>
+                   services.AddScoped(x => options)));
 
-        var client = factory.CreateAuthenticatedClient(user);
+        server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
@@ -52,9 +66,20 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AcceptedTermsVersion = 0
         };
 
-        var client = factory.CreateAuthenticatedClient(user);
+        var server = WireMockServer.Start();
+        var options = Options.Create(new DataSyncOptions()
+        {
+            Uri = new Uri($"http://localhost:{server.Port}/")
+        });
 
-        var dto = new AcceptTermsDTO(1);
+        var client = factory
+           .CreateAuthenticatedClient(user, config: builder =>
+               builder.ConfigureTestServices(services =>
+                   services.AddScoped(x => options)));
+
+        server.MockRelationsEndpoint();
+
+        var dto = new AcceptTermsRequest(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
 
@@ -84,12 +109,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
         });
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
 
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
     }
 
     [Fact]
@@ -107,11 +130,9 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(x => userService));
         });
 
-        var dto = new AcceptTermsDTO(2);
+        var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
 
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
     }
 }

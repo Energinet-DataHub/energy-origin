@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using API.Services;
 using API.Utilities;
-using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

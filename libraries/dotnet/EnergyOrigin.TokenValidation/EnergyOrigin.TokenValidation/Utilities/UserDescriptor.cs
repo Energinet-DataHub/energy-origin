@@ -7,6 +7,7 @@ public class UserDescriptor
     public string Name { get; init; } = null!;
     public string? Tin { get; init; }
     public int AcceptedTermsVersion { get; init; }
+    public int CurrentTermsVersion { get; init; }
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
