@@ -2,6 +2,7 @@ using System;
 
 namespace API.Query.API.Projections.Exceptions;
 
+[Serializable]
 public class ProjectionException : Exception
 {
 
