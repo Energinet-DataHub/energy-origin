@@ -13,6 +13,7 @@ using IdentityModel;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +29,6 @@ public class OidcControllerTests
     private readonly IOptions<TokenOptions> tokenOptions;
     private readonly ITokenIssuer issuer;
     private readonly IUserDescriptMapper mapper;
-    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
     private readonly IUserService service = Mock.Of<IUserService>();
     private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
@@ -52,8 +52,6 @@ public class OidcControllerTests
             new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
             Mock.Of<ILogger<UserDescriptMapper>>()
         );
-
-        Mock.Get(accessor).Setup(it => it.HttpContext).Returns(new DefaultHttpContext());
     }
 
     [Fact]
@@ -86,7 +84,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
@@ -96,14 +94,99 @@ public class OidcControllerTests
         Assert.False(result.Permanent);
 
         var uri = new Uri(result.Url);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, uri.AbsoluteUri);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
 
-        Assert.NotNull(accessor.HttpContext);
-        var header = accessor.HttpContext!.Response.Headers.SetCookie;
-        Assert.True(header.Count >= 1);
-        Assert.Contains("Authentication=", header[0]);
-        Assert.Contains("; secure", header[0]);
-        Assert.Contains("; expires=", header[0]);
+        var map = QueryHelpers.ParseNullableQuery(uri.Query);
+        Assert.NotNull(map);
+        Assert.True(map.ContainsKey("token"));
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured()
+    {
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var redirection = "https://goodguys.com";
+        var oidcState = new OidcState(State: null, RedirectionUri: redirection);
+
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+
+        Assert.NotNull(action);
+        var result = (RedirectResult)action;
+
+        var uri = new Uri(result.Url);
+        var redirectionUri = new Uri(redirection);
+        Assert.Equal(redirectionUri.Host, uri.Host);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldNotReturnRedirectToOverridenUri_WhenConfiguredButNotAllowed()
+    {
+        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: false);
+
+        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name }
+        });
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var redirectionUri = "http://hackerz.com";
+        var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri);
+
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+
+        Assert.NotNull(action);
+        var result = (RedirectResult)action;
+
+        var uri = new Uri(result.Url);
+        Assert.NotEqual(new Uri(redirectionUri).Host, uri.Host);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
     }
 
     [Fact]
@@ -113,7 +196,7 @@ public class OidcControllerTests
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -136,7 +219,7 @@ public class OidcControllerTests
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        _ = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        _ = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -160,7 +243,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -188,7 +271,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        _ = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        _ = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -228,7 +311,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -265,7 +348,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -302,7 +385,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -344,7 +427,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -372,7 +455,7 @@ public class OidcControllerTests
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new OidcController().CallbackAsync(accessor, cache, factory, mapper, service, issuer, oidcOptions, tokenOptions, logger, null, error, errorDescription);
+        var result = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, null, error, errorDescription);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
