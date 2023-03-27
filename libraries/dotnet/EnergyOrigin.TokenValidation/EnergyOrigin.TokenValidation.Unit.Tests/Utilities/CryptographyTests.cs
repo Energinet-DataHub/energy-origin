@@ -1,5 +1,6 @@
+using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
-using Microsoft.Extensions.Options;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 
 namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
@@ -14,7 +15,7 @@ public class CryptographyTests
             Key = "secretsecretsecretsecret"
         };
 
-        cryptography = new Cryptography(Options.Create(options));
+        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     [Fact]
