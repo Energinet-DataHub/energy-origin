@@ -66,13 +66,13 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, result.Headers.Location?.AbsoluteUri);
 
-        var header = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
-        Assert.True(header.Any());
-        Assert.Contains("Authentication=", header.First());
-        Assert.Contains("; secure", header.First());
-        Assert.Contains("; expires=", header.First());
+        Assert.NotNull(result.Headers.Location?.AbsoluteUri);
+        var uri = new Uri(result.Headers.Location!.AbsoluteUri);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+        Assert.Contains($"token=", query);
     }
 
     [Fact]
