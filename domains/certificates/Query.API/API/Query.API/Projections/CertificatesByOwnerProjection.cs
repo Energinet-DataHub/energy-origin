@@ -5,19 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Query.API.Projections.Exceptions;
 using API.Query.API.Projections.Views;
-using Baseline;
 using CertificateEvents;
 using Marten;
 using Marten.Events;
 using Marten.Events.Projections;
-using Marten.Linq.LastModified;
 
 namespace API.Query.API.Projections;
 
 public class CertificatesByOwnerProjection : IProjection
 {
-    private readonly HashSet<CertificatesByOwnerView> views = new();
-
     public Task ApplyAsync(IDocumentOperations operations, IReadOnlyList<StreamAction> streams,
         CancellationToken cancellation)
     {
@@ -27,6 +23,7 @@ public class CertificatesByOwnerProjection : IProjection
 
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
+        var views = new HashSet<CertificatesByOwnerView>();
         var duplicatedStream = streams
             .SelectMany(x => x.Events)
             .DistinctBy(x => x.StreamId);
@@ -45,18 +42,18 @@ public class CertificatesByOwnerProjection : IProjection
             {
                 case ProductionCertificateCreated productionCertificateCreated:
                     CreateCertificatesByOwnerView(operations,
-                        productionCertificateCreated);
+                        productionCertificateCreated, views);
                     break;
                 case ProductionCertificateIssued productionCertificateIssued:
                     ApplyProductionCertificateIssued(operations,
-                        productionCertificateIssued);
+                        productionCertificateIssued, views);
                     break;
                 case ProductionCertificateRejected productionCertificateRejected:
                     ApplyProductionCertificateRejected(
-                        operations, productionCertificateRejected);
+                        operations, productionCertificateRejected, views);
                     break;
                 case ProductionCertificateTransferred productionCertificateTransferred:
-                    ApplyProductionCertificateTransferred(operations, productionCertificateTransferred);
+                    ApplyProductionCertificateTransferred(operations, productionCertificateTransferred, views);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -67,7 +64,7 @@ public class CertificatesByOwnerProjection : IProjection
     }
 
     private void ApplyProductionCertificateRejected(IDocumentOperations operations,
-        ProductionCertificateRejected productionCertificateRejected)
+        ProductionCertificateRejected productionCertificateRejected, ISet<CertificatesByOwnerView> views)
     {
         var view = views
                        .FirstOrDefault(it =>
@@ -79,7 +76,7 @@ public class CertificatesByOwnerProjection : IProjection
     }
 
     private void ApplyProductionCertificateIssued(IDocumentOperations operations,
-        ProductionCertificateIssued productionCertificateIssued)
+        ProductionCertificateIssued productionCertificateIssued, ISet<CertificatesByOwnerView> views)
     {
         var view = views
                        .FirstOrDefault(it =>
@@ -91,7 +88,7 @@ public class CertificatesByOwnerProjection : IProjection
     }
 
     private void CreateCertificatesByOwnerView(IDocumentOperations operations,
-        ProductionCertificateCreated productionCertificateCreated)
+        ProductionCertificateCreated productionCertificateCreated, ISet<CertificatesByOwnerView> views)
     {
         var view = operations.Load<CertificatesByOwnerView>(productionCertificateCreated.MeteringPointOwner);
         var certificateView = new CertificateView
@@ -127,11 +124,11 @@ public class CertificatesByOwnerProjection : IProjection
     }
 
     private void ApplyProductionCertificateTransferred(IDocumentOperations operations,
-        ProductionCertificateTransferred productionCertificateTransferred)
+        ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
     {
         var source = views
-            .FirstOrDefault(it =>
-                it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
+                         .FirstOrDefault(it =>
+                             it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
                      ?? operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source)
                      ?? throw new ProjectionException(
                          productionCertificateTransferred.CertificateId,
@@ -139,16 +136,17 @@ public class CertificatesByOwnerProjection : IProjection
                      );
         var cert = source.Certificates[productionCertificateTransferred.CertificateId];
 
-        RemoveCertificateFromSource(source, productionCertificateTransferred);
-        AddCertificateToTarget(operations, productionCertificateTransferred, cert);
+        RemoveCertificateFromSource(source, productionCertificateTransferred, views);
+        AddCertificateToTarget(operations, productionCertificateTransferred, cert, views);
     }
 
     private void AddCertificateToTarget(IDocumentOperations operations,
-        ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView)
+        ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView,
+        ISet<CertificatesByOwnerView> views)
     {
         var view = views
-            .FirstOrDefault(it =>
-                it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
+                       .FirstOrDefault(it =>
+                           it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
                    ?? operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
 
         if (view == null)
@@ -171,7 +169,7 @@ public class CertificatesByOwnerProjection : IProjection
     }
 
     private void RemoveCertificateFromSource(CertificatesByOwnerView source,
-        ProductionCertificateTransferred productionCertificateTransferred)
+        ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
     {
         source.Certificates.Remove(productionCertificateTransferred.CertificateId);
         views.Add(source);
