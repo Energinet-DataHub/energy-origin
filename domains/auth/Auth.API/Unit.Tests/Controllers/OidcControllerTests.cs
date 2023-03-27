@@ -131,8 +131,8 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var redirectionUri = "https://example.com";
-        var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri);
+        var redirection = "https://goodguys.com";
+        var oidcState = new OidcState(State: null, RedirectionUri: redirection);
 
         var action = await new OidcController().CallbackAsync(cache, factory, mapper, service, issuer, oidcOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
@@ -140,7 +140,8 @@ public class OidcControllerTests
         var result = (RedirectResult)action;
 
         var uri = new Uri(result.Url);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+        var redirectionUri = new Uri(redirection);
+        Assert.Equal(redirectionUri.Host, uri.Host);
     }
 
     [Fact]
