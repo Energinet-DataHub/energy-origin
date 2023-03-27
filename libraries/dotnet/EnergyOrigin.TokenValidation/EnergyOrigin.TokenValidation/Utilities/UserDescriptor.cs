@@ -16,7 +16,6 @@ public class UserDescriptor
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
-    public string EncryptedProviderKeys { get; init; } = null!;
 
     /// <summary>
     /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2:ProviderKey2"

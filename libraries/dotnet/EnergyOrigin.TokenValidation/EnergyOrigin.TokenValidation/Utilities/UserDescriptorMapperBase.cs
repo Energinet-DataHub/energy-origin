@@ -89,7 +89,6 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
         }
         else
         {
-            MissingProperty(nameof(UserClaimName.ProviderKeys));
             return null;
         }
 
