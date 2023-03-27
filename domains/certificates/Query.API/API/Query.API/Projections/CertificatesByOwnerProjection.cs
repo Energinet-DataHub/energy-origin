@@ -16,7 +16,7 @@ namespace API.Query.API.Projections;
 
 public class CertificatesByOwnerProjection : IProjection
 {
-    private HashSet<CertificatesByOwnerView> views;
+    private readonly HashSet<CertificatesByOwnerView> views = new();
 
     public Task ApplyAsync(IDocumentOperations operations, IReadOnlyList<StreamAction> streams,
         CancellationToken cancellation)
@@ -27,7 +27,6 @@ public class CertificatesByOwnerProjection : IProjection
 
     public void Apply(IDocumentOperations operations, IReadOnlyList<StreamAction> streams)
     {
-        views = new HashSet<CertificatesByOwnerView>();
         var duplicatedStream = streams
             .SelectMany(x => x.Events)
             .DistinctBy(x => x.StreamId);
