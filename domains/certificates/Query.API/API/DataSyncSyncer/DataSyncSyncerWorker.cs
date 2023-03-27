@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AggregateRepositories;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
 using Marten;
@@ -39,6 +40,12 @@ internal class DataSyncSyncerWorker : BackgroundService
             var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
+                if (string.IsNullOrEmpty(contract.PublicKey))
+                {
+                    documentStore.Save()
+
+                }
+
                 var measurements = await dataSyncService.FetchMeasurements(contract,
                     stoppingToken);
 
