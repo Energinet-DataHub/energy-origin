@@ -4,6 +4,5 @@ public enum ProviderKeyType
 {
     PID,
     RID,
-    MitID_UUID,
-    EIA
+    MitID_UUID
 }
