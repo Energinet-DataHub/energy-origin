@@ -1,3 +1,5 @@
+using API.Utilities;
+
 namespace API.Options;
 
 public class OidcOptions
@@ -10,4 +12,5 @@ public class OidcOptions
     public string ClientSecret { get; init; } = null!;
     public Uri AuthorityCallbackUri { get; init; } = null!;
     public Uri FrontendRedirectUri { get; init; } = null!;
+    public bool AllowRedirection { get; init; }
 }
