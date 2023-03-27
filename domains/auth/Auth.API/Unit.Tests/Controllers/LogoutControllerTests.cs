@@ -89,6 +89,47 @@ public class LogoutControllerTests
     }
 
     [Fact]
+    public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
+    {
+        var options = TestOptions.Oidc(oidcOptions);
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var redirectionUri = Guid.NewGuid().ToString();
+
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger, redirectionUri);
+
+        var redirectResult = (RedirectResult)result;
+        var uri = new Uri(redirectResult.Url);
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.Contains($"post_logout_redirect_uri={redirectionUri}", query);
+    }
+
+    [Fact]
+    public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
+    {
+        var options = TestOptions.Oidc(oidcOptions, allowRedirection: false);
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var redirectionUri = Guid.NewGuid().ToString();
+
+        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger, redirectionUri);
+
+        var redirectResult = (RedirectResult)result;
+        var uri = new Uri(redirectResult.Url);
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.DoesNotContain($"post_logout_redirect_uri={redirectionUri}", query);
+        Assert.Contains($"post_logout_redirect_uri={options.Value.FrontendRedirectUri.AbsoluteUri}", query);
+    }
+
+    [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
     {
         var options = TestOptions.Oidc(oidcOptions);

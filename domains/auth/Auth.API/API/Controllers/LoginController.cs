@@ -1,8 +1,6 @@
-using API.Models.Entities;
 using API.Options;
-using API.Repositories.Interfaces;
+using API.Utilities;
 using API.Values;
-using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -15,7 +13,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IdentityProviderOptions providerOptions, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger)
+    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -24,13 +22,18 @@ public class LoginController : ControllerBase
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
 
+        var oidcState = new OidcState(
+            State: state,
+            RedirectionUri: overrideRedirectionUri
+        );
         var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
-
         var url = requestUrl.CreateAuthorizeUrl(
             clientId: oidcOptions.Value.ClientId,
             responseType: "code",
             redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
-            scope: "openid mitid nemlogin nemid private_to_business nemid.pid ssn userinfo_token",
+            scope: "openid mitid nemid ssn userinfo_token",
+            state: oidcState.Encode(),
+            //scope: "openid mitid nemlogin nemid private_to_business nemid.pid ssn userinfo_token",
             extra: new Parameters(new List<KeyValuePair<string, string>>()
             {
                 new KeyValuePair<string, string>("idp_params", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}, "mitid_erhverv": {"allow_private":true}}"""),

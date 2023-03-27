@@ -22,7 +22,6 @@ public class OidcController : ControllerBase
     [HttpGet()]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
-        IHttpContextAccessor accessor,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptorMapper mapper,
@@ -35,19 +34,27 @@ public class OidcController : ControllerBase
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
-        [FromQuery(Name = "error_description")] string? errorDescription)
+        [FromQuery(Name = "error_description")] string? errorDescription,
+        [FromQuery] string? state = default)
     {
+        var oidcState = OidcState.Decode(state);
+        var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
+        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
+        {
+            redirectionUri = oidcState!.RedirectionUri;
+        }
+
         if (code == null)
         {
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
 
         var client = clientFactory.CreateClient();
@@ -64,7 +71,7 @@ public class OidcController : ControllerBase
         {
             request.ClientSecret = "<removed>";
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@request}", request);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
         }
 
         string token;
@@ -79,19 +86,17 @@ public class OidcController : ControllerBase
 
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
-                QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
+                QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );
             return RedirectPreserveMethod(url);
         }
 
-        accessor.HttpContext!.Response.Cookies.Append("Authentication", token, new CookieOptions
+        if (oidcState?.State != null)
         {
-            IsEssential = true,
-            Secure = true,
-            Expires = DateTimeOffset.UtcNow.Add(tokenOptions.Value.CookieDuration)
-        });
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState!.State);
+        }
 
-        return RedirectPreserveMethod(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri);
+        return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
     private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)

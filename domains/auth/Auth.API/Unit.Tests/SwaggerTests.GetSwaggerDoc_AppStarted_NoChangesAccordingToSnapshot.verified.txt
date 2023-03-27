@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.1",
   "info": {
     "title": "API",
@@ -9,6 +9,24 @@
       "get": {
         "tags": [
           "Login"
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "overrideRedirectionUri",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -21,6 +39,16 @@
       "get": {
         "tags": [
           "Logout"
+        ],
+        "parameters": [
+          {
+            "name": "overrideRedirectionUri",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -53,6 +81,14 @@
           },
           {
             "name": "error_description",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
             "in": "query",
             "style": "form",
             "schema": {
