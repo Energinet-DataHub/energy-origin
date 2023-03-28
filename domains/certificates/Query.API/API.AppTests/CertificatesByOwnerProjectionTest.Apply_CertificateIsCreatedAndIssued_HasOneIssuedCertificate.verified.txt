@@ -1,0 +1,16 @@
+﻿{
+  Owner: Guid_1,
+  Certificates: {
+    Guid_2: {
+      CertificateId: Guid_2,
+      DateFrom: 123,
+      DateTo: 123,
+      Quantity: 2,
+      GSRN: gsrn,
+      GridArea: DK1,
+      TechCode: T0123,
+      FuelCode: F0123,
+      Status: Issued
+    }
+  }
+}

@@ -17,8 +17,8 @@ namespace API.AppTests;
 
 public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
+    IClassFixture<MartenDbContainer>,
     IDisposable
 {
     private readonly QueryApiWebApplicationFactory factory;
@@ -62,7 +62,8 @@ public sealed class TransferTests :
 
         var bodyWithWrongOwnerAsSource = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
+        var transferResult =
+            await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
