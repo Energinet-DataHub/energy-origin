@@ -77,24 +77,9 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
-        var id = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        Guid? userId;
-        if (id == null)
-        {
-            userId = null;
-        }
-        else if (Guid.TryParse(id, out var parsed))
-        {
-            userId = parsed;
-        }
-        else
-        {
-            return null;
-        }
-
         return new(cryptography)
         {
-            Id = userId,
+            Id = user.FindFirstValue(UserClaimName.Actor) is not null ? Guid.Parse(user.FindFirstValue(UserClaimName.Actor)!) : null,
             ProviderType = providerType,
             Name = name,
             CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,

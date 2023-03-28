@@ -28,10 +28,12 @@ public class UserDescriptor
         .Split(" ")
         .Select(x =>
         {
-            var keyValue = x.Split(":");
+            var keyValue = x.Split("=");
             return new KeyValuePair<ProviderKeyType, string>(Enum.Parse<ProviderKeyType>(keyValue.First()), keyValue.Last());
         })
         .ToDictionary(x => x.Key, x => x.Value);
+
+    public Guid? Subject => CompanyId ?? Id;
 
     private readonly ICryptography cryptography;
 
