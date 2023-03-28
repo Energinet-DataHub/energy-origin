@@ -138,7 +138,7 @@ public class OidcController : ControllerBase
 
         if (providerOptions.Providers.Contains(providerType) is false)
         {
-            throw new NotSupportedException();
+            throw new NotSupportedException("The selected ProviderType is not enabled.");
         }
 
         var scope = access.FindFirstValue("scope");
@@ -153,6 +153,8 @@ public class OidcController : ControllerBase
         switch (providerType)
         {
             case ProviderType.MitID_Professional:
+                // TODO: Make sure this implementation is correct when implementing MitID Erhverv.
+
                 //name = userInfo.FindFirstValue("mitid.identity_name");
                 //tin = userInfo.FindFirstValue("nemlogin.cvr");
                 //companyName = userInfo.FindFirstValue("nemlogin.org_name");
@@ -163,33 +165,31 @@ public class OidcController : ControllerBase
 
                 //break;
 
-                throw new NotImplementedException();
+                throw new NotImplementedException("ProviderType.MitID_Professional hasn't been implemented yet.");
             case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
-                // TODO: When testing it's sometimes unable to fetch nemid.pid. Is this an issue?
                 if (userInfo.FindFirstValue("nemid.pid") is not null)
                 {
                     keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
                 }
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException("mitid.uuid"));
                 break;
             case ProviderType.NemID_Professional:
                 name = userInfo.FindFirstValue("nemid.common_name");
                 tin = userInfo.FindFirstValue("nemid.cvr");
                 companyName = userInfo.FindFirstValue("nemid.company_name");
 
-                // TODO: Documentation says that the primary identifier for Erhverv should be cvr + rid, which is found in idp_identity_id,
-                // but I can't verify if the same is true for MitID Erhverv because of missing test login, so we should look into this when we can.
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.rid") ?? throw new ArgumentNullException());
+                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.ssn") ?? throw new ArgumentNullException("nemid.ssn"));
+                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.rid") ?? throw new ArgumentNullException("nemid.rid"));
                 break;
             case ProviderType.NemID_Private:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException(""));
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException("nemid.pid"));
                 break;
             default:
-                throw new NotImplementedException();
+                throw new NotSupportedException("An unsupported ProviderType was supplied.");
         }
 
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
@@ -220,12 +220,15 @@ public class OidcController : ControllerBase
 
         user.UserProviders.AddRange(newUserProviders);
 
-        if (user.Id is not null) await userService.UpsertUserAsync(user);
+        if (user.Id is not null)
+        {
+            await userService.UpsertUserAsync(user);
+        } 
 
         return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
     }
 
-    public static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+    private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitID, ProviderGroup.Private) => ProviderType.MitID_Private,
         (ProviderName.MitID, ProviderGroup.Professional) => ProviderType.MitID_Professional,

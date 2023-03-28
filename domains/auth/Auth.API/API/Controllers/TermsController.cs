@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using API.Options;
+using API.Utilities;
 
 namespace API.Controllers;
 
@@ -69,13 +70,13 @@ public class TermsController : ControllerBase
             //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
             var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
             {
-                { "ssn", descriptor.CompanyId?.ToString() ?? descriptor.Id.ToString() },
-                { "tin", user.Company?.Tin }
+                { "ssn", descriptor.GetSubject()},
+                { "tin", descriptor.Tin }
             });
 
             if (!result.IsSuccessStatusCode)
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", user.Id); // TODO: This should be logging the subject when merged with "company changes".
+                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.GetSubject());
             }
         }
 
