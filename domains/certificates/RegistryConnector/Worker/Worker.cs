@@ -9,7 +9,7 @@ using NSec.Cryptography;
 using ProjectOrigin.Electricity.Client;
 using ProjectOrigin.Electricity.Client.Models;
 
-namespace RegistryConnector;
+namespace RegistryConnector.Worker;
 
 public class Worker : BackgroundService
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace RegistryConnector;
+namespace RegistryConnector.Worker;
 
 public class RegistryOptions
 {

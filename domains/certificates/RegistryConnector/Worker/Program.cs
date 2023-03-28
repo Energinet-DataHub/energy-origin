@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RegistryConnector;
+using RegistryConnector.Worker;
 using Serilog;
 using Serilog.Formatting.Json;
 
