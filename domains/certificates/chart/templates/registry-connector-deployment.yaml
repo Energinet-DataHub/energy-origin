@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-registry-connector
+  name: {{ .Release.Name }}-registry-connector
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.registry-connector.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-registry-connector
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-registry-connector
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-registry-connector
+          image: '{{ .Values.registry-connector.image.name }}:{{ .Values.registry-connector.image.tag }}'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          env:
+            - name: RABBITMQ__HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+                  key: host
+            - name: RABBITMQ__PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+                  key: port
+            - name: RABBITMQ__USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+                  key: username
+            - name: RABBITMQ__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-rabbitmq-cluster-default-user
+                  key: password
