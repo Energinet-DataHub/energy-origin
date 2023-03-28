@@ -6,7 +6,7 @@ metadata:
   name: {{ .Release.Name }}-registry-connector
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.registry-connector.replicaCount }}
+  replicas: {{ .Values.registryconnector.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-registry-connector
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-registry-connector
-          image: '{{ .Values.registry-connector.image.name }}:{{ .Values.registry-connector.image.tag }}'
+          image: '{{ .Values.registryconnector.image.name }}:{{ .Values.registryconnector.image.tag }}'
           readinessProbe:
             httpGet:
               path: /health

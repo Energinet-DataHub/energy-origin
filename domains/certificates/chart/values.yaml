@@ -1,7 +1,7 @@
 api:
   replicaCount: 1
   image: {}
-registry-connector:
+registryconnector:
   replicaCount: 3
   image: {}
 postgres:
