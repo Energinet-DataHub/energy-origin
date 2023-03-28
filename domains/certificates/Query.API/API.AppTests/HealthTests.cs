@@ -15,7 +15,7 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task Health_IsCalled_ReturnsOk()
     {
         var client = factory.CreateClient();

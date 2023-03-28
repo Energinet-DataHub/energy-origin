@@ -15,7 +15,7 @@ public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
         this.factory.RabbitMqOptions = null;
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task Health_IsCalledWhenRabbitMqIsDown_ReturnsServiceUnavailable()
     {
         var client = factory.CreateClient();

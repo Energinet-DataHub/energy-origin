@@ -28,7 +28,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_Activate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -50,7 +50,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         createdContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_GsrnAlreadyExistsInDb_Conflict()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -68,7 +68,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_MeteringPointNotOwnedByUser_BadRequest()
     {
         var gsrn1 = GsrnHelper.GenerateRandom();
@@ -86,7 +86,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_MeteringPointIsConsumption_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -102,7 +102,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_InvalidGsrn_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -120,7 +120,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
     }
 
     [TestPriority(1)]
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -143,7 +143,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         contracts!.Result.Should().HaveCount(1);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_Success()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -159,7 +159,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_NoContent()
     {
         var subject = Guid.NewGuid().ToString();
@@ -169,7 +169,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task GetSpecificContract_ContractDoesNotExist_NotFound()
     {
         var subject = Guid.NewGuid().ToString();
@@ -180,7 +180,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact(Skip = "I do not want to wait")]
+    [Fact]
     public async Task GetSpecificContract_UserIsNotOwner_NotFound()
     {
         var gsrn = GsrnHelper.GenerateRandom();
