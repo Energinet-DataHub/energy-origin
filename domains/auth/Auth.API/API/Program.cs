@@ -22,7 +22,7 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Options;
 
 var logger = new LoggerConfiguration()
-.WriteTo.Console(new JsonFormatter())
+    .WriteTo.Console(new JsonFormatter())
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,10 +88,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
-builder.Services.AddDbContext<DataContext>((serviceProvider, options) =>
-{
-    options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build());
-});
+builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {

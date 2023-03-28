@@ -41,6 +41,7 @@ public class UserDescriptMapperBaseTests
         var currentTermsVersion = version + 1;
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
+            new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Name, name),
             new Claim(UserClaimName.Actor, id),
             new Claim(UserClaimName.Scope, scope),

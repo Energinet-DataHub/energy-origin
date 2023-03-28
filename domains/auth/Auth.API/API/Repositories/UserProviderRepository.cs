@@ -1,10 +1,7 @@
-using System.Linq;
 using API.Models.Entities;
 using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.NameTranslation;
 
 namespace API.Repositories;
 
@@ -25,13 +22,13 @@ public class UserProviderRepository : IUserProviderRepository
     public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders)
     {
         IQueryable<UserProvider>? query = null;
-        foreach (var up in userProviders)
+        foreach (var userProvider in userProviders)
         {
-            var temp = dataContext.UserProviders.Where(x => x.ProviderKeyType == up.ProviderKeyType && x.UserProviderKey == up.UserProviderKey);
+            var temp = dataContext.UserProviders.Where(x => x.ProviderKeyType == userProvider.ProviderKeyType && x.UserProviderKey == userProvider.UserProviderKey);
 
             query = query == null ? temp : query.Union(temp);
         }
 
-        return await query!.FirstOrDefaultAsync();
+        return await query?.FirstOrDefaultAsync()!;
     }
 }

@@ -84,9 +84,11 @@ public class TokenIssuer : ITokenIssuer
         {
             identity.Add(new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString()!));
             claims.Add(UserClaimName.Subject, descriptor.Subject);
-
-            claims.Add(UserClaimName.Actor, descriptor.Id!);
-            claims.Add(UserClaimName.ActorLegacy, descriptor.Id!);
+        }
+        if (descriptor.Id != null)
+        {
+            claims.Add(UserClaimName.Actor, descriptor.Id);
+            claims.Add(UserClaimName.ActorLegacy, descriptor.Id);
         }
 
         return new()

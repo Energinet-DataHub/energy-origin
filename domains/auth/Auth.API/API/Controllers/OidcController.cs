@@ -136,11 +136,6 @@ public class OidcController : ControllerBase
 
         var providerType = GetIdentityProviderEnum(providerName, identityType);
 
-        if (providerOptions.Providers.Contains(providerType) is false)
-        {
-            throw new NotSupportedException("The selected ProviderType is not enabled.");
-        }
-
         var scope = access.FindFirstValue("scope");
 
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
@@ -153,18 +148,6 @@ public class OidcController : ControllerBase
         switch (providerType)
         {
             case ProviderType.MitID_Professional:
-                // TODO: Make sure this implementation is correct when implementing MitID Erhverv.
-
-                //name = userInfo.FindFirstValue("mitid.identity_name");
-                //tin = userInfo.FindFirstValue("nemlogin.cvr");
-                //companyName = userInfo.FindFirstValue("nemlogin.org_name");
-
-                //keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException());
-                //keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
-                //keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException());
-
-                //break;
-
                 throw new NotImplementedException("ProviderType.MitID_Professional hasn't been implemented yet.");
             case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
@@ -187,8 +170,6 @@ public class OidcController : ControllerBase
 
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException("nemid.pid"));
                 break;
-            default:
-                throw new NotSupportedException("An unsupported ProviderType was supplied.");
         }
 
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
@@ -199,7 +180,7 @@ public class OidcController : ControllerBase
             ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
         }
 
-        var tokenUserProviders = UserProvider.GetUserProviders(keys);
+        var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
 
@@ -235,6 +216,6 @@ public class OidcController : ControllerBase
         (ProviderName.MitID, ProviderGroup.Professional) => ProviderType.MitID_Professional,
         (ProviderName.NemID, ProviderGroup.Private) => ProviderType.NemID_Private,
         (ProviderName.NemID, ProviderGroup.Professional) => ProviderType.NemID_Professional,
-        _ => throw new NotImplementedException()
+        _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 }

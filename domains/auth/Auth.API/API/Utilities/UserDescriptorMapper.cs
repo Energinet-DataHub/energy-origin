@@ -24,6 +24,6 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         AllowCPRLookup = user.AllowCPRLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
-        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))) // TODO: Fix formatting.
+        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}")))
     };
 }

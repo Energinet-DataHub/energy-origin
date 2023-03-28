@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Models.Entities;
 
-[Index(nameof(ProviderKeyType), nameof(UserProviderKey), nameof(UserId), IsUnique = true)]
+[Index(nameof(ProviderKeyType), nameof(UserProviderKey), IsUnique = true)]
 public record UserProvider
 {
     public Guid? Id { get; set; }
@@ -13,7 +13,7 @@ public record UserProvider
     public Guid UserId { get; set; }
     public virtual User User { get; set; } = null!;
 
-    public static List<UserProvider> GetUserProviders(Dictionary<ProviderKeyType, string> dictionary)
+    public static List<UserProvider> ConvertDictionaryToUserProviders(Dictionary<ProviderKeyType, string> dictionary)
     {
         return dictionary.Select(x => new UserProvider()
         {

@@ -77,9 +77,11 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
+        var actor = user.FindFirstValue(UserClaimName.Actor);
+
         return new(cryptography)
         {
-            Id = user.FindFirstValue(UserClaimName.Actor) is not null ? Guid.Parse(user.FindFirstValue(UserClaimName.Actor)!) : null,
+            Id = actor is not null ? Guid.Parse(actor) : null,
             ProviderType = providerType,
             Name = name,
             CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,

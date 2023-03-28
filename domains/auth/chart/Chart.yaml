@@ -3,7 +3,7 @@ name: eo-auth
 description: A chart containing the auth domain.
 
 type: application
-version: 0.0.34
+version: 0.0.35
 
 dependencies:
 - name: postgresql-ha

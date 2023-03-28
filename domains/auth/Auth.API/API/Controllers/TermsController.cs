@@ -29,9 +29,9 @@ public class TermsController : ControllerBase
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
-        if (descriptor.AcceptedTermsVersion >= acceptedTermsVersion.Version)
+        if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
         {
-            throw new ArgumentException("The user has already accepted the same or a newer version of terms.");
+            throw new ArgumentException("The user has already accepted a newer version of terms.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -48,7 +48,7 @@ public class TermsController : ControllerBase
                     Name = descriptor.CompanyName!,
                     Tin = descriptor.Tin!
                 },
-                UserProviders = UserProvider.GetUserProviders(descriptor.ProviderKeys)
+                UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys)
             };
         }
         else
@@ -68,8 +68,8 @@ public class TermsController : ControllerBase
                 var client = clientFactory.CreateClient();
                 client.DefaultRequestHeaders.Authorization = authentication;
 
-                // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
-                //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
+                // NOTE: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
+                //       However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
                 var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
             {
                 { "ssn", descriptor.Subject},
