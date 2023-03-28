@@ -63,7 +63,7 @@ public class CertificatesByOwnerProjection : IProjection
         operations.Store(views.ToArray());
     }
 
-    private void ApplyProductionCertificateRejected(IDocumentOperations operations,
+    private static void ApplyProductionCertificateRejected(IDocumentOperations operations,
         ProductionCertificateRejected productionCertificateRejected, ISet<CertificatesByOwnerView> views)
     {
         var view = views
@@ -75,7 +75,7 @@ public class CertificatesByOwnerProjection : IProjection
         views.Add(view);
     }
 
-    private void ApplyProductionCertificateIssued(IDocumentOperations operations,
+    private static void ApplyProductionCertificateIssued(IDocumentOperations operations,
         ProductionCertificateIssued productionCertificateIssued, ISet<CertificatesByOwnerView> views)
     {
         var view = views
@@ -87,7 +87,7 @@ public class CertificatesByOwnerProjection : IProjection
         views.Add(view);
     }
 
-    private void CreateCertificatesByOwnerView(IDocumentOperations operations,
+    private static void CreateCertificatesByOwnerView(IDocumentOperations operations,
         ProductionCertificateCreated productionCertificateCreated, ISet<CertificatesByOwnerView> views)
     {
         var view = operations.Load<CertificatesByOwnerView>(productionCertificateCreated.MeteringPointOwner);
@@ -123,7 +123,7 @@ public class CertificatesByOwnerProjection : IProjection
         views.Add(view);
     }
 
-    private void ApplyProductionCertificateTransferred(IDocumentOperations operations,
+    private static void ApplyProductionCertificateTransferred(IDocumentOperations operations,
         ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
     {
         var source = views
@@ -140,7 +140,7 @@ public class CertificatesByOwnerProjection : IProjection
         AddCertificateToTarget(operations, productionCertificateTransferred, cert, views);
     }
 
-    private void AddCertificateToTarget(IDocumentOperations operations,
+    private static void AddCertificateToTarget(IDocumentOperations operations,
         ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView,
         ISet<CertificatesByOwnerView> views)
     {
@@ -168,7 +168,7 @@ public class CertificatesByOwnerProjection : IProjection
         views.Add(view);
     }
 
-    private void RemoveCertificateFromSource(CertificatesByOwnerView source,
+    private static void RemoveCertificateFromSource(CertificatesByOwnerView source,
         ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
     {
         source.Certificates.Remove(productionCertificateTransferred.CertificateId);
