@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using RegistryConnector;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -16,6 +18,9 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
+builder.Services.Configure<RegistryOptions>(builder.Configuration.GetSection(RegistryOptions.Registry));
+builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
 
