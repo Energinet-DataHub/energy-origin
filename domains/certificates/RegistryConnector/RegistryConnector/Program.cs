@@ -1,12 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RegistryConnector;
+using Microsoft.AspNetCore.Builder;
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services =>
-    {
-        services.AddHostedService<Worker>();
-    })
-    .Build();
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
-host.Run();
+app.MapGet("/", () => "Hello World!");
+
+app.Run();
