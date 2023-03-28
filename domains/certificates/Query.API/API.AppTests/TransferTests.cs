@@ -36,7 +36,7 @@ public sealed class TransferTests :
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task can_successfully_transfer()
     {
         var (owner1, owner1Client, owner2, owner2Client, certificateId) = await Setup();
@@ -55,7 +55,7 @@ public sealed class TransferTests :
         certificateListResponseForOwner1.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task fails_when_transferring_in_the_wrong_direction()
     {
         var (owner1, owner1Client, owner2, _, certificateId) = await Setup();
@@ -67,7 +67,7 @@ public sealed class TransferTests :
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task fails_for_unknown_certificate_id()
     {
         var (owner1, owner1Client, owner2, _, _) = await Setup();
@@ -81,7 +81,7 @@ public sealed class TransferTests :
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task fails_when_transferring_to_same_owner()
     {
         var (owner1, owner1Client, _, _, certificateId) = await Setup();

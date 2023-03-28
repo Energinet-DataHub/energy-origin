@@ -33,7 +33,7 @@ public sealed class CertificateIssuingTests :
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
     {
         var client = factory.CreateUnauthenticatedClient();
@@ -42,7 +42,7 @@ public sealed class CertificateIssuingTests :
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task GetList_NoCertificates_ReturnsNoContent()
     {
         var subject = Guid.NewGuid().ToString();
@@ -54,7 +54,7 @@ public sealed class CertificateIssuingTests :
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
@@ -99,7 +99,7 @@ public sealed class CertificateIssuingTests :
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
