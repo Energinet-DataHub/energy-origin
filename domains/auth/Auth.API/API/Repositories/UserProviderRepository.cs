@@ -32,6 +32,6 @@ public class UserProviderRepository : IUserProviderRepository
             query = query == null ? temp : query.Union(temp);
         }
 
-        return await query!.Include(x => x.User).ThenInclude(x => x.UserProviders).FirstOrDefaultAsync();
+        return await query!.FirstOrDefaultAsync();
     }
 }

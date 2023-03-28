@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using API.Options;
-using API.Utilities;
 
 namespace API.Controllers;
 
@@ -18,6 +17,7 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
+        IHostEnvironment env,
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
         IUserDescriptorMapper mapper,
@@ -61,22 +61,25 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+        if (env.IsDevelopment() is false)
         {
-            var client = clientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = authentication;
-
-            // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
-            //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
-            var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
+            if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
             {
-                { "ssn", descriptor.GetSubject()},
+                var client = clientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = authentication;
+
+                // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
+                //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
+                var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
+            {
+                { "ssn", descriptor.Subject},
                 { "tin", descriptor.Tin }
             });
 
-            if (!result.IsSuccessStatusCode)
-            {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.GetSubject());
+                if (!result.IsSuccessStatusCode)
+                {
+                    logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
+                }
             }
         }
 

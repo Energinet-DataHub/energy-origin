@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Models.Entities;
 
-[Index(nameof(Tin))]
+[Index(nameof(Tin), IsUnique = true)]
 public record Company
 {
     public Guid? Id { get; init; }

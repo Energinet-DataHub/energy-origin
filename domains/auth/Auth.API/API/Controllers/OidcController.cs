@@ -180,8 +180,7 @@ public class OidcController : ControllerBase
                 tin = userInfo.FindFirstValue("nemid.cvr");
                 companyName = userInfo.FindFirstValue("nemid.company_name");
 
-                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.ssn") ?? throw new ArgumentNullException("nemid.ssn"));
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.rid") ?? throw new ArgumentNullException("nemid.rid"));
+                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.ssn") ?? throw new ArgumentNullException("nemid.ssn"));
                 break;
             case ProviderType.NemID_Private:
                 name = userInfo.FindFirstValue("nemid.common_name");
@@ -202,7 +201,9 @@ public class OidcController : ControllerBase
 
         var tokenUserProviders = UserProvider.GetUserProviders(keys);
 
-        var user = (await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.User ?? new User
+        var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
+
+        user ??= new User
         {
             Id = null,
             Name = name,

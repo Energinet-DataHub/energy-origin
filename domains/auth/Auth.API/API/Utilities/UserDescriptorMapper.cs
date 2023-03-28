@@ -12,7 +12,7 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
 
     public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography, logger) => this.cryptography = cryptography;
 
-    public UserDescriptor Map(User user, ProviderType providerType, string accessToken, string identityToken) => new(cryptography)
+    public UserDescriptor Map(User user, ProviderType providerType, string accessToken, string identityToken) => new (cryptography)
     {
         Id = user.Id,
         ProviderType = providerType,
@@ -24,6 +24,6 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         AllowCPRLookup = user.AllowCPRLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
-        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}:{x.UserProviderKey}")))
+        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))) // TODO: Fix formatting.
     };
 }

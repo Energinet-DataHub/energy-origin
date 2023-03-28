@@ -63,19 +63,30 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
         };
 
-        if (descriptor.Tin is not null) claims.Add(UserClaimName.Tin, descriptor.Tin);
-        if (descriptor.CompanyName is not null) claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
+        if (descriptor.CompanyId is not null)
+        {
+            claims.Add(UserClaimName.CompanyId, descriptor.CompanyId);
+        }
+        if (descriptor.Tin is not null)
+        {
+            claims.Add(UserClaimName.Tin, descriptor.Tin);
+        }
+        if (descriptor.CompanyName is not null)
+        {
+            claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
+        }
 
         var identity = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
         };
-        if (state.Id != null)
+        if (descriptor.Subject != null)
         {
-            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, state.Id));
+            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString()!));
+            claims.Add(UserClaimName.Subject, descriptor.Subject);
 
-            claims.Add(UserClaimName.Subject, descriptor.CompanyId?.ToString() ?? state.Id);
-            claims.Add(UserClaimName.Actor, state.Id);
+            claims.Add(UserClaimName.Actor, descriptor.Id!);
+            claims.Add(UserClaimName.ActorLegacy, descriptor.Id!);
         }
 
         return new()
