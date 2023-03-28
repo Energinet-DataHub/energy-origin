@@ -26,6 +26,10 @@ spec:
             httpGet:
               path: /health
               port: http
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
           env:
             - name: RABBITMQ__HOST
               valueFrom:
