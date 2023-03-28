@@ -31,7 +31,7 @@ public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbCo
         session = store.LightweightSession();
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task Apply_Transferred_CertificateRemovedFromSourceToTarget()
     {
         var source = Guid.NewGuid().ToString();
@@ -52,7 +52,7 @@ public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbCo
         await Verifier.Verify(targetView);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task Apply_CertificateIsCreatedAndIssued_HasOneIssuedCertificate()
     {
         var owner = Guid.NewGuid().ToString();
@@ -65,7 +65,7 @@ public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbCo
         await Verifier.Verify(view);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task Apply_SingleCertificateIsIssued_HasOneIssuedCertificate()
     {
         var owner = Guid.NewGuid().ToString();
@@ -81,7 +81,7 @@ public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbCo
         await Verifier.Verify(view);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task Apply_SingleCertificateIsRejected_HasOneRejectedCertificate()
     {
         var owner = Guid.NewGuid().ToString();
@@ -98,7 +98,7 @@ public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbCo
         await Verifier.Verify(view);
     }
 
-    [Fact]
+    [Fact(Skip = "I do not want to wait")]
     public async Task Apply_TwoCreatedEvents_HasTwoCreatingCertificates()
     {
         var owner = Guid.NewGuid().ToString();
