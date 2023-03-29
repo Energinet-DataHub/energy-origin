@@ -36,13 +36,13 @@ public class UserDescriptMapperBaseTests
         var providerType = ProviderType.MitID_Private;
         var providerKeyType = ProviderKeyType.MitID_UUID;
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeys = $"{providerKeyType}:{providerKey}";
+        var providerKeys = $"{providerKeyType}={providerKey}";
         var version = Random.Shared.Next();
         var currentTermsVersion = version + 1;
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, id),
             new Claim(JwtRegisteredClaimNames.Name, name),
+            new Claim(UserClaimName.Actor, id),
             new Claim(UserClaimName.Scope, scope),
             new Claim(UserClaimName.AccessToken, cryptography.Encrypt(accessToken)),
             new Claim(UserClaimName.IdentityToken, cryptography.Encrypt(identityToken)),
@@ -56,7 +56,7 @@ public class UserDescriptMapperBaseTests
         var descriptor = mapper.Map(user);
 
         Assert.NotNull(descriptor);
-        Assert.Equal(id, descriptor.Id?.ToString());
+        Assert.Equal(id, descriptor.Id!.ToString());
         Assert.Equal(providerType, descriptor.ProviderType);
         Assert.Equal(name, descriptor.Name);
         Assert.Equal(version, descriptor.AcceptedTermsVersion);
@@ -83,7 +83,7 @@ public class UserDescriptMapperBaseTests
         var providerType = ProviderType.MitID_Private;
         var providerKeyType = ProviderKeyType.MitID_UUID;
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeys = $"{providerKeyType}:{providerKey}";
+        var providerKeys = $"{providerKeyType}={providerKey}";
         var version = Random.Shared.Next();
         var currentTermsVersion = version + 1;
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
@@ -134,7 +134,7 @@ public class UserDescriptMapperBaseTests
         var providerType = ProviderType.MitID_Private;
         var providerKeyType = ProviderKeyType.MitID_UUID;
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeys = $"{providerKeyType}:{providerKey}";
+        var providerKeys = $"{providerKeyType}={providerKey}";
         var version = Random.Shared.Next();
         var currentTermsVersion = version + 1;
 
@@ -239,5 +239,25 @@ public class UserDescriptMapperBaseTests
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once
         );
+    }
+
+    [Fact]
+    public void Map_ShouldThrowException_WhenActorFormatWrong()
+    {
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(JwtRegisteredClaimNames.Name, Guid.NewGuid().ToString()),
+            new Claim(UserClaimName.Actor, "random-string"),
+            new Claim(UserClaimName.Scope, Guid.NewGuid().ToString()),
+            new Claim(UserClaimName.AccessToken, Guid.NewGuid().ToString()),
+            new Claim(UserClaimName.IdentityToken, Guid.NewGuid().ToString()),
+            new Claim(UserClaimName.ProviderKeys, Guid.NewGuid().ToString()),
+            new Claim(UserClaimName.ProviderType, ProviderType.MitID_Private.ToString()),
+            new Claim(UserClaimName.AcceptedTermsVersion, "1"),
+            new Claim(UserClaimName.CurrentTermsVersion, "2"),
+            new Claim(UserClaimName.AllowCPRLookup, "true"),
+        }, "mock"));
+
+        Assert.Throws<FormatException>(() => mapper.Map(user));
     }
 }
