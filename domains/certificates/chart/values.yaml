@@ -1,6 +1,9 @@
 api:
   replicaCount: 1
   image: {}
+registryconnector:
+  replicaCount: 3
+  image: {}
 postgres:
   replicaCount: 1
   image:
