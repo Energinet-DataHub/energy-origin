@@ -12,4 +12,4 @@ spec:
       owner: auth
 
   storage:
-    size: {{ default 1Gi .Values.cnpg.storageSize }}
+    size: {{ default "1Gi" .Values.cnpg.storageSize }}
