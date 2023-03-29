@@ -11,9 +11,11 @@ public class UserProviderService : IUserProviderService
     public UserProviderService(IUserProviderRepository repository) => this.repository = repository;
 
     public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders) => userProviders.Any() == false ? null : await repository.FindUserProviderMatchAsync(userProviders);
-    public List<UserProvider> GetNonMatchingUserProviders(List<UserProvider> newUserProviders, List<UserProvider> oldUserProviders) =>
-        newUserProviders
+    public List<UserProvider> GetNonMatchingUserProviders(List<UserProvider> newUserProviders, List<UserProvider> oldUserProviders)
+    {
+        return newUserProviders
             .ExceptBy(oldUserProviders
                 .Select(x => (x.ProviderKeyType, x.UserProviderKey)), x => (x.ProviderKeyType, x.UserProviderKey))
             .ToList();
+    }
 }

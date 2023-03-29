@@ -1,12 +1,16 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
+using API.Options;
 using API.Repositories.Data;
-using API.Utilities;
+using API.Repositories.Data.Interfaces;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Testcontainers.PostgreSql;
 
 namespace Tests.Integration;
@@ -26,11 +30,14 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
-            services.AddDbContext<DataContext>(options => options.UseNpgsql(testContainer.GetConnectionString()));
+            services.Remove(services.First(x => x.ServiceType == typeof(NpgsqlDataSourceBuilder)));
+            services.AddSingleton(new NpgsqlDataSourceBuilder(testContainer.GetConnectionString()));
+            services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
             services.AddScoped<IUserDataContext, DataContext>();
+            
         });
+        
     }
-
     public HttpClient CreateAnonymousClient(Action<IWebHostBuilder>? config = null)
     {
         var factory = config is not null ? WithWebHostBuilder(config) : this;
@@ -41,11 +48,11 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
         var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
-        var descriptor = mapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        var descriptor = mapper.Map(user, providerType, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
         return client;
     }
@@ -54,7 +61,6 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     {
         user ??= new User()
         {
-            ProviderId = Guid.NewGuid().ToString(),
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
             AllowCPRLookup = true

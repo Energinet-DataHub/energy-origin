@@ -4,6 +4,7 @@ using System.Text;
 using API.Models.Entities;
 using API.Options;
 using API.Services;
+using API.Services.Interfaces;
 using API.Utilities;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -115,7 +116,7 @@ public class TokenIssuerTests
 
         Assert.NotNull(validatedToken);
     }
-
+   
     [Fact]
     public void Issue_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
     {
@@ -124,7 +125,7 @@ public class TokenIssuerTests
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name, version, tin, accesToken, identityToken);
+        var descriptor = PrepareUser(name, version, accesToken, identityToken);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
@@ -132,10 +133,8 @@ public class TokenIssuerTests
         Assert.NotNull(jwt);
         Assert.Equal(descriptor.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
         Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
-        Assert.Equal(tin, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.Tin)?.Value);
         Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AcceptedTermsVersion)?.Value);
         Assert.Equal("1", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.CurrentTermsVersion)?.Value);
-        Assert.Equal(descriptor.ProviderId, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.ProviderId)?.Value);
         Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
         Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
         Assert.Equal(accesToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
@@ -156,12 +155,12 @@ public class TokenIssuerTests
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
 
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? tin = default, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
+    //TODO
+    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
     {
         var user = new User()
         {
             Id = hasId ? Guid.NewGuid() : null,
-            ProviderId = Guid.NewGuid().ToString(),
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
             AllowCPRLookup = true
@@ -169,10 +168,10 @@ public class TokenIssuerTests
         var descriptor = new UserDescriptor(null!)
         {
             Id = user.Id,
-            ProviderId = user.ProviderId,
             Name = user.Name,
             AcceptedTermsVersion = user.AcceptedTermsVersion,
             AllowCPRLookup = user.AllowCPRLookup,
+            ProviderType = ProviderType.NemID_Professional,
             EncryptedAccessToken = accesToken ?? "",
             EncryptedIdentityToken = identityToken ?? ""
         };

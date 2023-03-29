@@ -49,7 +49,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
         var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitID  },
+            { "identity_type", ProviderGroup.Private}
         });
 
         server.MockConfigEndpoint()

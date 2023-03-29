@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,12 +27,12 @@ public class TokenControllerTests
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private)]
+    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null, ProviderType.NemID_Professional)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId, ProviderType providerType)
     {
-        var token = Guid.NewGuid().ToString();
+        var token = Guid.NewGuid().ToString();        
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
@@ -47,7 +48,7 @@ public class TokenControllerTests
             });
 
         Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
             .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
@@ -59,7 +60,6 @@ public class TokenControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
                 AllowCPRLookup = false,
                 AcceptedTermsVersion = 1
             });
@@ -100,7 +100,6 @@ public class TokenControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCPRLookup = false,
                 AcceptedTermsVersion = 1

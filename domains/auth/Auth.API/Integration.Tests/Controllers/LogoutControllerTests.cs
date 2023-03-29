@@ -2,6 +2,7 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,8 +29,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
+        var providerType = ProviderType.NemID_Professional;
+
         var client = factory
-            .CreateAuthenticatedClient(user, identityToken: identityToken, config: builder =>
+            .CreateAuthenticatedClient(user, providerType, identityToken: identityToken, config: builder =>
                 builder.ConfigureTestServices(services =>
                     services.AddScoped(x => oidcOptions)));
 
@@ -50,8 +53,8 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
         var user = await factory.AddUserToDatabaseAsync();
-
-        var client = factory.CreateAuthenticatedClient(user);
+        var providerType = ProviderType.NemID_Professional;
+        var client = factory.CreateAuthenticatedClient(user, providerType);
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
