@@ -26,11 +26,10 @@ internal class KeyHandler : IKeyIssuer
         {
             return keyDocumentExist.PublicKey;
         }
-
-        using var key = Key.Create(algorithm);
+        
+        using var key = Key.Create(algorithm, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextArchiving });
         var data = Encoding.UTF8.GetBytes(meteringPointOwner);
         var signature = algorithm.Sign(key, data);
-
         var encodedPrivateKey = Encode(key.Export(KeyBlobFormat.NSecPrivateKey));
         var encodedPublicKey = Encode(key.PublicKey.Export(KeyBlobFormat.NSecPublicKey));
 
