@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using API.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -17,7 +18,6 @@ public class TermsController : ControllerBase
     [HttpPut()]
     [Route("terms/accept")]
     public async Task<IActionResult> AcceptTermsAsync(
-        IHostEnvironment env,
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
         IUserDescriptorMapper mapper,
@@ -61,7 +61,7 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        if (env.IsDevelopment() is false)
+        if (options.Value.Uri?.AbsoluteUri?.IsNullOrEmpty() == false)
         {
             if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
             {
@@ -71,10 +71,10 @@ public class TermsController : ControllerBase
                 // NOTE: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
                 //       However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
                 var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
-            {
-                { "ssn", descriptor.Subject},
-                { "tin", descriptor.Tin }
-            });
+                {
+                    { "ssn", descriptor.Subject},
+                    { "tin", descriptor.Tin }
+                });
 
                 if (!result.IsSuccessStatusCode)
                 {
