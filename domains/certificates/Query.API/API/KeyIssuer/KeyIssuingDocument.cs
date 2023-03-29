@@ -1,7 +1,4 @@
-﻿using System;
-using Marten.Schema;
-
-namespace API.KeyIssuer;
+﻿ namespace API.KeyIssuer;
 
 public class KeyIssuingDocument
 {
