@@ -20,7 +20,7 @@ jobs:
     env:
       SOLUTION_NAME: "energinet-datahub_energy-origin_certificates"
       SOLUTION_PATH: "domains/certificates"
-      DOTNET_VERSION: "6.0.302"
+      DOTNET_VERSION: "7.0.202"
 
     steps:
       - uses: actions/checkout@v3
