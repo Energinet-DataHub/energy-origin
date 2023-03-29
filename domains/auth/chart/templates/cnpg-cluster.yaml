@@ -1,0 +1,15 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Release.Name }}-cnpg-cluster
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:{{ default 15.2 .Values.cnpg.imageVersion }}
+  instances: {{ default 3 .Values.cnpg.replicaCount }}
+
+  bootstrap:
+    initdb:
+      database: auth-database
+      owner: auth
+
+  storage:
+    size: {{ default 1Gi .Values.cnpg.storageSize }}
