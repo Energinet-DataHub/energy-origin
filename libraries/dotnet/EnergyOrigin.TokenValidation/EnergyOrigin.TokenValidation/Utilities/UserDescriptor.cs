@@ -5,7 +5,7 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptor
 {
-    public Guid? Id { get; init; }
+    public Guid Id { get; init; }
     public ProviderType ProviderType { get; init; }
     public string Name { get; init; } = null!;
     public Guid? CompanyId { get; init; }
@@ -16,6 +16,7 @@ public class UserDescriptor
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
+    public bool UserStored { get; init; }
 
     /// <summary>
     /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2:ProviderKey2"
@@ -33,7 +34,7 @@ public class UserDescriptor
         })
         .ToDictionary(x => x.Key, x => x.Value);
 
-    public Guid? Subject => CompanyId ?? Id;
+    public Guid Subject => CompanyId ?? Id;
 
     private readonly ICryptography cryptography;
 
