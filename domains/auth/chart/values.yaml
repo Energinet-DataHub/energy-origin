@@ -4,7 +4,6 @@ api:
   env:
     Cryptography__Key:
     Terms__CurrentVersion:
-    Database__Host:
     Database__Port: 5432
     Database__Password:
     Token__Issuer:
@@ -20,10 +19,8 @@ api:
     Oidc__FrontendRedirectUri:
   setup:
     database:
-      PGHOST:
-      PGUSER: postgres
+      PGUSER:
       PGPASSWORD:
-      PGPORT: 5432
 cnpg:
   cluster:
     replicaCount:
