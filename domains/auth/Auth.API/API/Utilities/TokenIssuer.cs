@@ -58,7 +58,9 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ProviderId, descriptor.ProviderId },
             { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
             { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
+            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { "subject", state.Id ?? "" },
+            { "actor", state.Id ?? "" }
         };
         if (descriptor.Tin != null)
         {
