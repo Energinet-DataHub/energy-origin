@@ -62,7 +62,6 @@ public class TokenIssuer : ITokenIssuer
             { "subject", state.Id ?? "" },
             { "actor", state.Id ?? "" }
         };
-
         if (descriptor.Tin != null)
         {
             claims.Add(UserClaimName.Tin, descriptor.Tin);
