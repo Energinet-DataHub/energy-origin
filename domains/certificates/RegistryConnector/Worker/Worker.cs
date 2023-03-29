@@ -48,21 +48,20 @@ public class Worker : BackgroundService
         var commandBuilder = new ElectricityCommandBuilder();
 
         var federatedCertifcateId = new FederatedCertifcateId(
-            "RegistryA",    // The identifier for the registry
-            Guid.NewGuid()  // The unique id of the certificate, this should be saved.
-        );
+            "RegistryA",
+            Guid.NewGuid());
 
         commandBuilder.IssueConsumptionCertificate(
-            federatedCertifcateId,
-            new DateInterval(
+            id: federatedCertifcateId,
+            inteval: new DateInterval(
                 new DateTimeOffset(2022, 10, 1, 12, 0, 0, TimeSpan.Zero),
                 new DateTimeOffset(2022, 10, 1, 13, 0, 0, TimeSpan.Zero)
             ),
-            "DK1",
-            gsrn,
-            quantity,
-            ownerKey.PublicKey,
-            issuerKey
+            gridArea: "DK1",
+            gsrn: gsrn,
+            quantity: quantity,
+            owner: ownerKey.PublicKey,
+            issuingBodySigner: issuerKey
         );
 
         var commandId = await commandBuilder.Execute(registerClient);
