@@ -7,12 +7,12 @@ using NSec.Cryptography;
 
 namespace API.KeyIssuer;
 
-public class KeyIssuer : IKeyIssuer
+internal class KeyHandler : IKeyIssuer
 {
     private readonly SignatureAlgorithm algorithm;
     private readonly IKeyIssuingRepository repository;
 
-    public KeyIssuer(IKeyIssuingRepository repository)
+    public KeyHandler(IKeyIssuingRepository repository)
     {
         algorithm = SignatureAlgorithm.Ed25519;
         this.repository = repository;
@@ -31,12 +31,14 @@ public class KeyIssuer : IKeyIssuer
         var data = Encoding.UTF8.GetBytes(meteringPointOwner);
         var signature = algorithm.Sign(key, data);
 
+        var encodedPrivateKey = Encode(key.Export(KeyBlobFormat.NSecPrivateKey));
         var encodedPublicKey = Encode(key.PublicKey.Export(KeyBlobFormat.NSecPublicKey));
 
         var keyDocument = new KeyIssuingDocument
         {
             MeteringPointOwner = meteringPointOwner,
             PublicKey = encodedPublicKey,
+            PrivateKey = encodedPrivateKey,
             Signature = Encode(signature)
         };
 

@@ -27,8 +27,6 @@ public static class Startup
 
         services.AddScoped<ICertificateIssuingContractRepository, CertificateIssuingContractRepository>();
 
-        services.AddScoped<IKeyIssuer, KeyIssuer.KeyIssuer>();
-
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value;

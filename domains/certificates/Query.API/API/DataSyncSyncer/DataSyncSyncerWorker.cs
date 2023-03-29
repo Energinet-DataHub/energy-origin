@@ -40,11 +40,13 @@ internal class DataSyncSyncerWorker : BackgroundService
             var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
+                /*
                 if (string.IsNullOrEmpty(contract.PublicKey))
                 {
                     documentStore.Save()
 
                 }
+                */
 
                 var measurements = await dataSyncService.FetchMeasurements(contract,
                     stoppingToken);
