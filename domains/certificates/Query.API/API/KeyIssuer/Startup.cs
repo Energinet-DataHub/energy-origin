@@ -1,4 +1,4 @@
-﻿using API.KeyIssuer.Repositories;
+using API.KeyIssuer.Repositories;
 using Marten;
 using Marten.Schema;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ internal class KeyHandler : IKeyIssuer
         {
             return keyDocumentExist.PublicKey;
         }
-        
+
         using var key = Key.Create(algorithm, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextArchiving });
         var data = Encoding.UTF8.GetBytes(meteringPointOwner);
         var signature = algorithm.Sign(key, data);
