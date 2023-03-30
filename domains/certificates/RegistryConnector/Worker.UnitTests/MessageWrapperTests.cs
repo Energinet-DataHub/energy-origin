@@ -33,14 +33,14 @@ public class MessageWrapperTests : IAsyncDisposable
     {
         await harness.Start();
 
-        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" });
+        await harness.Bus.Publish(new SomeIncomingMessage(Guid.NewGuid(), "foo"));
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
-        var wrapper = observer.WrappedIncomingMessage;
+        var wrapper = observer.WrappedIncomingMessage!;
 
         await harness.Bus.Publish(
-            new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
+            new SomeOutgoingMessage(wrapper.Message.SomeId, 42),
             ctx => wrapper.SetIdsForOutgoingMessage(ctx));
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
@@ -58,15 +58,15 @@ public class MessageWrapperTests : IAsyncDisposable
         var correlationId = Guid.NewGuid();
 
         await harness.Bus.Publish(
-            new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" },
+            new SomeIncomingMessage(Guid.NewGuid(), "foo"),
             ctx => ctx.CorrelationId = correlationId);
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
-        var wrapper = observer.WrappedIncomingMessage;
+        var wrapper = observer.WrappedIncomingMessage!;
 
         await harness.Bus.Publish(
-            new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
+            new SomeOutgoingMessage(wrapper.Message.SomeId, 42),
             ctx => wrapper.SetIdsForOutgoingMessage(ctx));
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
@@ -82,12 +82,12 @@ public class MessageWrapperTests : IAsyncDisposable
         await harness.Start();
 
         var someId = Guid.NewGuid();
-        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = someId, SomeValue = "foo" });
+        await harness.Bus.Publish(new SomeIncomingMessage(someId, "foo"));
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
         await harness.Bus.Publish(
-            new SomeOutgoingMessage { SomeId = someId, SomeValue = 42 });
+            new SomeOutgoingMessage(someId, 42));
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
 
@@ -96,17 +96,9 @@ public class MessageWrapperTests : IAsyncDisposable
         observer.OutgoingCorrelationId.Should().BeNull();
     }
 
-    private record SomeIncomingMessage
-    {
-        public Guid SomeId { get; init; }
-        public string SomeValue { get; init; } = "";
-    }
+    private record SomeIncomingMessage(Guid SomeId, string SomeValue);
 
-    private record SomeOutgoingMessage
-    {
-        public Guid SomeId { get; init; }
-        public int SomeValue { get; init; }
-    }
+    private record SomeOutgoingMessage(Guid SomeId, int SomeValue);
 
     private class SomeMessageConsumer : IConsumer<SomeIncomingMessage>, IConsumer<SomeOutgoingMessage>
     {
@@ -117,16 +109,17 @@ public class MessageWrapperTests : IAsyncDisposable
 
     private class ReceiveObserver : IReceiveObserver
     {
-        public MessageWrapper<SomeIncomingMessage> WrappedIncomingMessage { get; set; }
-        public Guid? IncomingConversationId { get; set; }
-        public Guid? IncomingCorrelationId { get; set; }
-        public Guid? IncomingInitiatorId { get; set; }
+        public MessageWrapper<SomeIncomingMessage>? WrappedIncomingMessage { get; private set; }
+        public Guid? IncomingConversationId { get; private set; }
+        public Guid? IncomingCorrelationId { get; private set; }
+        public Guid? IncomingInitiatorId { get; private set; }
 
         public Guid? OutgoingConversationId { get; private set; }
         public Guid? OutgoingCorrelationId { get; private set; }
         public Guid? OutgoingInitiatorId { get; private set; }
 
-        public Task PreReceive(ReceiveContext context) => Task.CompletedTask;
+        public Task PreReceive(ReceiveContext context)
+            => Task.CompletedTask;
 
         public Task PostConsume<T>(ConsumeContext<T> context, TimeSpan duration, string consumerType) where T : class
         {
@@ -149,11 +142,14 @@ public class MessageWrapperTests : IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        public Task PostReceive(ReceiveContext context) => Task.CompletedTask;
+        public Task PostReceive(ReceiveContext context)
+            => Task.CompletedTask;
 
-        public Task ConsumeFault<T>(ConsumeContext<T> context, TimeSpan duration, string consumerType, Exception exception) where T : class => Task.CompletedTask;
+        public Task ConsumeFault<T>(ConsumeContext<T> context, TimeSpan duration, string consumerType, Exception exception) where T : class
+            => Task.CompletedTask;
 
-        public Task ReceiveFault(ReceiveContext context, Exception exception) => Task.CompletedTask;
+        public Task ReceiveFault(ReceiveContext context, Exception exception)
+            => Task.CompletedTask;
     }
 
     public ValueTask DisposeAsync() => provider.DisposeAsync();
