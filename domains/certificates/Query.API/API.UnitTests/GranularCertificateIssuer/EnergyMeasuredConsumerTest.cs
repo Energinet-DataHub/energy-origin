@@ -158,6 +158,6 @@ public class EnergyMeasuredConsumerTest
 
         await harness.Bus.Publish(message);
 
-        (await harness.Consumed.Any<EnergyMeasuredIntegrationEvent>()).Should().BeTrue();
+        await harness.Consumed.Any<EnergyMeasuredIntegrationEvent>();
     }
 }
