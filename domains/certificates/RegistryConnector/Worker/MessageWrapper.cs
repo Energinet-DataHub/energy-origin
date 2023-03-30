@@ -19,7 +19,7 @@ namespace RegistryConnector.Worker
 
         public void SetIdsForOutgoingMessage<TOutgoing>(PublishContext<TOutgoing> ctx) where TOutgoing : class
         {
-            // Based on https://masstransit.io/documentation/concepts/messages#message-correlation
+            // Ids set based on description from https://masstransit.io/documentation/concepts/messages#message-correlation
             ctx.ConversationId = conversationId;
             ctx.InitiatorId = correlationId;
         }
