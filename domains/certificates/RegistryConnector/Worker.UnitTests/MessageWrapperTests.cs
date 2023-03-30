@@ -86,8 +86,7 @@ public class MessageWrapperTests : IAsyncDisposable
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
-        await harness.Bus.Publish(
-            new SomeOutgoingMessage(someId, 42));
+        await harness.Bus.Publish(new SomeOutgoingMessage(someId, 42));
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
 
