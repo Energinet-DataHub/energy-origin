@@ -8,32 +8,78 @@ using Xunit;
 
 namespace RegistryConnector.Worker.UnitTests;
 
-public class MessageWrapper<TIncoming> where TIncoming : class
+public class MessageWrapperTests
 {
-    private readonly Guid? correlationId;
-    private readonly Guid? conversationId;
-    private readonly Guid? initiatorId;
-
-    public MessageWrapper(ConsumeContext<TIncoming> context)
+    [Fact]
+    public async Task ids_are_set_for_a_message_without_correlation_id()
     {
-        Message = context.Message;
-        correlationId = context.CorrelationId;
-        conversationId = context.ConversationId;
-        initiatorId = context.InitiatorId;
+        var receiveObserver = new ReceiveObserver();
+
+        await using var provider = new ServiceCollection()
+            .AddMassTransitTestHarness(cfg =>
+            {
+                cfg.AddReceiveObserver(_ => receiveObserver);
+                cfg.AddConsumer<SomeMessageConsumer>();
+            })
+            .BuildServiceProvider(true);
+
+        var harness = provider.GetRequiredService<ITestHarness>();
+
+        await harness.Start();
+
+        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo"});
+
+        await harness.Consumed.Any<SomeIncomingMessage>();
+
+        var wrapper = receiveObserver.WrappedIncomingMessage;
+
+        await harness.Bus.Publish(
+            new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
+            ctx => wrapper.SetIdsForOutgoingMessage(ctx));
+
+        await harness.Consumed.Any<SomeOutgoingMessage>();
+
+        receiveObserver.OutgoingConversationId.Should().Be(receiveObserver.IncomingConversationId);
+        receiveObserver.OutgoingInitiatorId.Should().BeNull();
+        receiveObserver.OutgoingCorrelationId.Should().BeNull();
     }
 
-    public TIncoming Message { get; }
-
-    public void SetIdsForOutgoingMessage<TOutgoing>(PublishContext<TOutgoing> ctx) where TOutgoing : class
+    [Fact]
+    public async Task ids_are_set_for_a_message_with_correlation_id()
     {
-        // Based on https://masstransit.io/documentation/concepts/messages#message-correlation
-        ctx.ConversationId = conversationId;
-        ctx.InitiatorId = correlationId;
-    }
-}
+        var receiveObserver = new ReceiveObserver();
 
-public class UnitTest1
-{
+        await using var provider = new ServiceCollection()
+            .AddMassTransitTestHarness(cfg =>
+            {
+                cfg.AddReceiveObserver(_ => receiveObserver);
+                cfg.AddConsumer<SomeMessageConsumer>();
+            })
+            .BuildServiceProvider(true);
+
+        var harness = provider.GetRequiredService<ITestHarness>();
+
+        await harness.Start();
+
+        var correlationId = Guid.NewGuid();
+
+        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" }, ctx => ctx.CorrelationId = correlationId);
+
+        await harness.Consumed.Any<SomeIncomingMessage>();
+
+        var wrapper = receiveObserver.WrappedIncomingMessage;
+
+        await harness.Bus.Publish(
+            new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
+            ctx => wrapper.SetIdsForOutgoingMessage(ctx));
+
+        await harness.Consumed.Any<SomeOutgoingMessage>();
+
+        receiveObserver.OutgoingConversationId.Should().Be(receiveObserver.IncomingConversationId);
+        receiveObserver.OutgoingInitiatorId.Should().Be(correlationId);
+        receiveObserver.OutgoingCorrelationId.Should().BeNull();
+    }
+
     private record SomeIncomingMessage
     {
         public Guid SomeId { get; init; }
@@ -45,15 +91,6 @@ public class UnitTest1
         public Guid SomeId { get; init; }
         public int SomeValue { get; init; }
     }
-
-    //private class MessageWrapperList
-    //{
-    //    private readonly List<MessageWrapper<SomeIncomingMessage>> wrappers = new();
-
-    //    public void Add(MessageWrapper<SomeIncomingMessage> wrapper) => wrappers.Add(wrapper);
-
-    //    public IReadOnlyList<MessageWrapper<SomeIncomingMessage>> Get() => wrappers;
-    //}
 
     private class SomeMessageConsumer : IConsumer<SomeIncomingMessage>, IConsumer<SomeOutgoingMessage>
     {
@@ -92,7 +129,7 @@ public class UnitTest1
                 OutgoingInitiatorId = context.InitiatorId;
                 OutgoingCorrelationId = context.CorrelationId;
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -101,39 +138,5 @@ public class UnitTest1
         public Task ConsumeFault<T>(ConsumeContext<T> context, TimeSpan duration, string consumerType, Exception exception) where T : class => Task.CompletedTask;
 
         public Task ReceiveFault(ReceiveContext context, Exception exception) => Task.CompletedTask;
-    }
-
-    [Fact]
-    public async Task ids_are_correctly_set_for_a_message_without_correlation_id()
-    {
-        var receiveObserver = new ReceiveObserver();
-
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddReceiveObserver(_ => receiveObserver);
-                cfg.AddConsumer<SomeMessageConsumer>();
-            })
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo"});
-
-        (await harness.Consumed.Any<SomeIncomingMessage>()).Should().BeTrue();
-
-        var wrapper = receiveObserver.WrappedIncomingMessage;
-
-        await harness.Bus.Publish(
-            new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
-            ctx => wrapper.SetIdsForOutgoingMessage(ctx));
-
-        (await harness.Consumed.Any<SomeOutgoingMessage>()).Should().BeTrue();
-
-        receiveObserver.OutgoingConversationId.Should().Be(receiveObserver.IncomingConversationId);
-        receiveObserver.OutgoingInitiatorId.Should().BeNull();
-        receiveObserver.OutgoingCorrelationId.Should().BeNull();
     }
 }
