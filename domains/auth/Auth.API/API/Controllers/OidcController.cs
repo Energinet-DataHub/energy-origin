@@ -2,17 +2,17 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
+using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using API.Services.Interfaces;
-using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Values;
 
 namespace API.Controllers;
 
@@ -29,7 +29,6 @@ public class OidcController : ControllerBase
         IUserService userService,
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
-        IOptions<TokenOptions> tokenOptions,
         IOptions<IdentityProviderOptions> providerOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
@@ -130,15 +129,17 @@ public class OidcController : ControllerBase
 
         var providerName = userInfo.FindFirstValue("idp");
         var identityType = userInfo.FindFirstValue("identity_type");
+        var scope = access.FindFirstValue("scope");
 
+        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
 
         var providerType = GetIdentityProviderEnum(providerName, identityType);
-
-        var scope = access.FindFirstValue("scope");
-
-        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
+        if (!providerOptions.Providers.Contains(providerType))
+        {
+            throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
+        }
 
         string? name = null;
         string? tin = null;
@@ -156,19 +157,19 @@ public class OidcController : ControllerBase
                 {
                     keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
                 }
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new ArgumentNullException("mitid.uuid"));
+                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
             case ProviderType.NemID_Professional:
                 name = userInfo.FindFirstValue("nemid.common_name");
                 tin = userInfo.FindFirstValue("nemid.cvr");
                 companyName = userInfo.FindFirstValue("nemid.company_name");
 
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.ssn") ?? throw new ArgumentNullException("nemid.ssn"));
+                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
                 break;
             case ProviderType.NemID_Private:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("nemid.pid") ?? throw new ArgumentNullException("nemid.pid"));
+                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
 
@@ -205,7 +206,7 @@ public class OidcController : ControllerBase
         if (user.Id is not null)
         {
             await userService.UpsertUserAsync(user);
-        } 
+        }
 
         return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
     }

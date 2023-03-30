@@ -13,13 +13,9 @@ public record UserProvider
     public Guid UserId { get; set; }
     public virtual User User { get; set; } = null!;
 
-    public static List<UserProvider> ConvertDictionaryToUserProviders(Dictionary<ProviderKeyType, string> dictionary)
+    public static List<UserProvider> ConvertDictionaryToUserProviders(Dictionary<ProviderKeyType, string> dictionary) => dictionary.Select(x => new UserProvider()
     {
-        return dictionary.Select(x => new UserProvider()
-        {
-            ProviderKeyType = x.Key,
-            UserProviderKey = x.Value
-        })
-        .ToList();
-    }
+        ProviderKeyType = x.Key,
+        UserProviderKey = x.Value
+    }).ToList();
 }

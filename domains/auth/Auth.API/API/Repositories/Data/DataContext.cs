@@ -8,18 +8,11 @@ namespace API.Repositories.Data;
 
 public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext
 {
-    private readonly IConfiguration configuration;
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Company> Companies { get; set; } = null!;
+    public DbSet<UserProvider> UserProviders { get; set; } = null!;
 
-    public DbSet<User> Users { get; set; }
-    public DbSet<Company> Companies { get; set; }
-    public DbSet<UserProvider> UserProviders { get; set; }
-
-    public DataContext(DbContextOptions options, NpgsqlDataSourceBuilder dataSourceBuilder, IConfiguration configuration) : base(options)
-    {
-        this.configuration = configuration;
-
-        dataSourceBuilder.MapEnum<ProviderKeyType>();
-    }
+    public DataContext(DbContextOptions options, NpgsqlDataSourceBuilder dataSourceBuilder) : base(options) => dataSourceBuilder.MapEnum<ProviderKeyType>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

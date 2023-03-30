@@ -42,7 +42,7 @@ public class LoginController : ControllerBase
         return RedirectPreserveMethod(url);
     }
 
-    private (string, List<KeyValuePair<string, string>>) GetIdentityProviderArguments(IdentityProviderOptions providerOptions)
+    private static (string, List<KeyValuePair<string, string>>) GetIdentityProviderArguments(IdentityProviderOptions providerOptions)
     {
         var scope = "openid ssn userinfo_token";
         var idp_values = string.Empty;
