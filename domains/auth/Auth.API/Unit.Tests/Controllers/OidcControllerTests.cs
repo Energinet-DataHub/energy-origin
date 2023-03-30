@@ -6,7 +6,6 @@ using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -15,7 +14,6 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using IdentityModel;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -34,7 +32,6 @@ public class OidcControllerTests
     private readonly IOptions<IdentityProviderOptions> providerOptions;
     private readonly ITokenIssuer issuer;
     private readonly IUserDescriptorMapper mapper;
-    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
     private readonly IUserService service = Mock.Of<IUserService>();
     private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
@@ -112,6 +109,7 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured()
     {
+        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: true);
         var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(

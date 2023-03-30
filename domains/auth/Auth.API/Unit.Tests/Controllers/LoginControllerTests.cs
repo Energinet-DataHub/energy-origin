@@ -1,12 +1,9 @@
-using System.Text;
 using System.Web;
 using API.Controllers;
 using API.Options;
 using API.Utilities;
 using API.Values;
-using EnergyOrigin.TokenValidation.Options;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;

@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
-using API.Options;
 using API.Repositories.Data;
 using API.Repositories.Data.Interfaces;
 using API.Utilities.Interfaces;

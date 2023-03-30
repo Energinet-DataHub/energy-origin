@@ -1,5 +1,4 @@
-﻿using System;
-using EnergyOrigin.TokenValidation.Values;
+﻿using EnergyOrigin.TokenValidation.Values;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

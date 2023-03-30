@@ -1,11 +1,7 @@
 using System.Net;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using API.Models.Entities;
 using API.Options;
-using API.Services;
-using API.Utilities;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Values;
 using Integration.Tests;

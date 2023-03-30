@@ -65,7 +65,8 @@ public class TermsControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCPRLookup = true,
-                AcceptedTermsVersion = oldAcceptedTermsVersion
+                AcceptedTermsVersion = oldAcceptedTermsVersion,
+                UserStored = true
             });
 
         Mock.Get(userService)
@@ -98,7 +99,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldCreateUser_WhenUserDoesNotExist()
     {
-        var id = null as Guid?;
+        var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
         var companyName = null as string;
         var tin = null as string;
@@ -118,7 +119,8 @@ public class TermsControllerTests
                 Tin = tin,
                 AllowCPRLookup = allowCprLookup,
                 AcceptedTermsVersion = 0,
-                EncryptedProviderKeys = poviderEncrypted
+                EncryptedProviderKeys = poviderEncrypted,
+                UserStored = false
             });
 
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);

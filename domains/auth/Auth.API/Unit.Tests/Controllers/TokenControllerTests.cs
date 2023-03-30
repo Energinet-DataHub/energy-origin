@@ -27,10 +27,10 @@ public class TokenControllerTests
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private)]
-    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private)]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null, ProviderType.NemID_Professional)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId, ProviderType providerType)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private, true)]
+    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
     {
         var token = Guid.NewGuid().ToString();        
 
@@ -42,9 +42,10 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: new UserDescriptor(cryptography)
             {
-                Id = userId != null ? Guid.Parse(userId) : null,
+                Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
-                EncryptedIdentityToken = Guid.NewGuid().ToString()
+                EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                UserStored = isStored
             });
 
         Mock.Get(mapper)
@@ -102,7 +103,8 @@ public class TokenControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCPRLookup = false,
-                AcceptedTermsVersion = 1
+                AcceptedTermsVersion = 1,
+                UserStored = true
             });
 
         Mock.Get(userService)

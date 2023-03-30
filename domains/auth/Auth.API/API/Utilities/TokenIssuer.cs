@@ -47,12 +47,13 @@ public class TokenIssuer : ITokenIssuer
 
         var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id?.ToString(), version, scope);
+        return new(descriptor.Id.ToString(), version, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
-        var claims = new Dictionary<string, object> {
+        var claims = new Dictionary<string, object>
+        {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
@@ -60,7 +61,11 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
             { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
+            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { UserClaimName.UserStored, descriptor.UserStored },
+            { UserClaimName.Subject, descriptor.Subject },
+            { UserClaimName.Actor, descriptor.Id },
+            { UserClaimName.ActorLegacy, descriptor.Id }
         };
 
         if (descriptor.CompanyId is not null)
@@ -78,18 +83,9 @@ public class TokenIssuer : ITokenIssuer
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
+            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name),
+            new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
         };
-        if (descriptor.Subject != null)
-        {
-            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString()!));
-            claims.Add(UserClaimName.Subject, descriptor.Subject);
-        }
-        if (descriptor.Id != null)
-        {
-            claims.Add(UserClaimName.Actor, descriptor.Id);
-            claims.Add(UserClaimName.ActorLegacy, descriptor.Id);
-        }
 
         return new()
         {

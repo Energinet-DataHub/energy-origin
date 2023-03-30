@@ -37,10 +37,16 @@ public class TermsController : ControllerBase
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
 
         User user;
-        if (descriptor.Id is null)
+        if (descriptor.UserStored)
+        {
+            var id = descriptor.Id;
+            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
+        }
+        else
         {
             user = new User
             {
+                Id = descriptor.Id,
                 Name = descriptor.Name,
                 AllowCPRLookup = descriptor.AllowCPRLookup,
                 Company = descriptor.Tin is null ? null : company ?? new Company()
@@ -50,11 +56,6 @@ public class TermsController : ControllerBase
                 },
                 UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys)
             };
-        }
-        else
-        {
-            var id = descriptor.Id.Value;
-            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
 
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;

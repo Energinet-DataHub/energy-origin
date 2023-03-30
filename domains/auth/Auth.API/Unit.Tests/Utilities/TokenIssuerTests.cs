@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -131,7 +130,7 @@ public class TokenIssuerTests
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(descriptor.Id?.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.Equal(descriptor.Id.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
         Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
         Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AcceptedTermsVersion)?.Value);
         Assert.Equal("1", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.CurrentTermsVersion)?.Value);
@@ -144,36 +143,39 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
-        var descriptor = PrepareUser(addToMock: false, hasId: false);
+        var descriptor = PrepareUser(addToMock: false, isStored: false);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Null(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.NotNull(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
+        Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
 
     //TODO
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool hasId = true)
+    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
     {
         var user = new User()
         {
-            Id = hasId ? Guid.NewGuid() : null,
+            Id = Guid.NewGuid(),
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
             AllowCPRLookup = true
+            
         };
         var descriptor = new UserDescriptor(null!)
         {
-            Id = user.Id,
+            Id = user.Id.Value,
             Name = user.Name,
             AcceptedTermsVersion = user.AcceptedTermsVersion,
             AllowCPRLookup = user.AllowCPRLookup,
             ProviderType = ProviderType.NemID_Professional,
             EncryptedAccessToken = accesToken ?? "",
-            EncryptedIdentityToken = identityToken ?? ""
+            EncryptedIdentityToken = identityToken ?? "",
+            UserStored = isStored
         };
         if (addToMock)
         {
