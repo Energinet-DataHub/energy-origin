@@ -62,25 +62,23 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        if (options.Value.Uri?.AbsoluteUri?.IsNullOrEmpty() == false)
+        var relationUri = options.Value.Uri.AbsoluteUri;
+        if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
-            if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+            var client = clientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = authentication;
+
+            // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
+            //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
+            var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{relationUri}/relations", new()
             {
-                var client = clientFactory.CreateClient();
-                client.DefaultRequestHeaders.Authorization = authentication;
+                { "ssn", null },
+                { "tin", descriptor.Tin }
+            });
 
-                // NOTE: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
-                //       However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
-                var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
-                {
-                    { "ssn", descriptor.Subject},
-                    { "tin", descriptor.Tin }
-                });
-
-                if (!result.IsSuccessStatusCode)
-                {
-                    logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
-                }
+            if (!result.IsSuccessStatusCode)
+            {
+                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
             }
         }
 
