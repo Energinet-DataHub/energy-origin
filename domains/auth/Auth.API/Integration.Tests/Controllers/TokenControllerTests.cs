@@ -88,9 +88,9 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        
+
         var newToken = await result.Content.ReadAsStringAsync();
-        
+
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 

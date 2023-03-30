@@ -33,9 +33,9 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddSingleton(new NpgsqlDataSourceBuilder(testContainer.GetConnectionString()));
             services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
             services.AddScoped<IUserDataContext, DataContext>();
-            
+
         });
-        
+
     }
     public HttpClient CreateAnonymousClient(Action<IWebHostBuilder>? config = null)
     {

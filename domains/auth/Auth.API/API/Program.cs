@@ -7,8 +7,10 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
-using EnergyOrigin.TokenValidation.Utilities;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,8 +20,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Json;
-using EnergyOrigin.TokenValidation.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Options;
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console(new JsonFormatter())

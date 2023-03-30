@@ -26,7 +26,7 @@ public class LoginControllerTests
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
         var identityProviderOption = new IdentityProviderOptions()
         {
-         Providers  = new List<EnergyOrigin.TokenValidation.Values.ProviderType>() { EnergyOrigin.TokenValidation.Values.ProviderType.NemID_Professional}
+            Providers = new List<EnergyOrigin.TokenValidation.Values.ProviderType>() { EnergyOrigin.TokenValidation.Values.ProviderType.NemID_Professional }
         };
         identityProviderOptions = Options.Create(identityProviderOption);
     }

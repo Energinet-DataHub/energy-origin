@@ -26,7 +26,7 @@ public class TermsControllerTests
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
-    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();    
+    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
     private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
     private readonly MockHttpMessageHandler http = new();
     private readonly IOptions<DataSyncOptions> options;

@@ -1,6 +1,6 @@
 using API.Models.Entities;
-using EnergyOrigin.TokenValidation.Utilities;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 

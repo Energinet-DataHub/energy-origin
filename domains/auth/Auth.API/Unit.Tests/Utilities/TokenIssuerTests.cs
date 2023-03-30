@@ -115,7 +115,7 @@ public class TokenIssuerTests
 
         Assert.NotNull(validatedToken);
     }
-   
+
     [Fact]
     public void Issue_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
     {
@@ -164,7 +164,7 @@ public class TokenIssuerTests
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
             AllowCPRLookup = true
-            
+
         };
         var descriptor = new UserDescriptor(null!)
         {

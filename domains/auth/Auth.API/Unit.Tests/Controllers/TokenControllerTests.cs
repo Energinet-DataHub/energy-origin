@@ -32,7 +32,7 @@ public class TokenControllerTests
     [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
     public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
     {
-        var token = Guid.NewGuid().ToString();        
+        var token = Guid.NewGuid().ToString();
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))

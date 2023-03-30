@@ -1,12 +1,12 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
+using API.Options;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using EnergyOrigin.TokenValidation.Models.Requests;
-using API.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
