@@ -27,7 +27,7 @@ public class MessageWrapperTests
 
         await harness.Start();
 
-        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo"});
+        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" });
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 

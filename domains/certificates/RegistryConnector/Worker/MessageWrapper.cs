@@ -1,5 +1,5 @@
-using MassTransit;
 using System;
+using MassTransit;
 
 namespace RegistryConnector.Worker
 {
