@@ -7,7 +7,12 @@ metadata:
     internal.config.kubernetes.io/needsHashSuffix: enabled
 data:
   run.sh: |
-    pg_isready -U ${PGUSER:-postgres} -h ${PGHOST:-localhost} -p ${PGPORT:-5432}
-    psql ${PGNAME:-postgres} -U ${PGUSER:-postgres} -p ${PGPORT:-5432} -h ${PGHOST:-localhost} -f /sql/API.migrations.sql
-  API.migrations.sql: |-
+    pg_isready -U ${PGUSER:-postgres} -h {{ .Release.Name }}-cnpg-cluster-rw -p 5432
+    cat /sql/API.migrations.sql /sql/API.grants.sql | psql auth-database -U ${PGUSER:-postgres} -p 5432 -h {{ .Release.Name }}-cnpg-cluster-rw -f -
+  API.migrations.sql: |
 {{ .Files.Get "API.migrations.sql" | indent 4 }}
+  API.grants.sql: |
+    START TRANSACTION;
+    REVOKE ALL ON ALL TABLES IN SCHEMA public FROM auth;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO auth;
+    COMMIT;
