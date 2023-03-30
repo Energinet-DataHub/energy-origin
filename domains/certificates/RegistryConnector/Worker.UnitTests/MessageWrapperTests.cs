@@ -13,12 +13,12 @@ public class MessageWrapperTests
     [Fact]
     public async Task ids_are_set_for_a_message_without_correlation_id()
     {
-        var receiveObserver = new ReceiveObserver();
+        var observer = new ReceiveObserver();
 
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg =>
             {
-                cfg.AddReceiveObserver(_ => receiveObserver);
+                cfg.AddReceiveObserver(_ => observer);
                 cfg.AddConsumer<SomeMessageConsumer>();
             })
             .BuildServiceProvider(true);
@@ -31,7 +31,7 @@ public class MessageWrapperTests
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
-        var wrapper = receiveObserver.WrappedIncomingMessage;
+        var wrapper = observer.WrappedIncomingMessage;
 
         await harness.Bus.Publish(
             new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
@@ -39,20 +39,20 @@ public class MessageWrapperTests
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
 
-        receiveObserver.OutgoingConversationId.Should().Be(receiveObserver.IncomingConversationId);
-        receiveObserver.OutgoingInitiatorId.Should().BeNull();
-        receiveObserver.OutgoingCorrelationId.Should().BeNull();
+        observer.OutgoingConversationId.Should().Be(observer.IncomingConversationId);
+        observer.OutgoingInitiatorId.Should().BeNull();
+        observer.OutgoingCorrelationId.Should().BeNull();
     }
 
     [Fact]
     public async Task ids_are_set_for_a_message_with_correlation_id()
     {
-        var receiveObserver = new ReceiveObserver();
+        var observer = new ReceiveObserver();
 
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg =>
             {
-                cfg.AddReceiveObserver(_ => receiveObserver);
+                cfg.AddReceiveObserver(_ => observer);
                 cfg.AddConsumer<SomeMessageConsumer>();
             })
             .BuildServiceProvider(true);
@@ -63,11 +63,13 @@ public class MessageWrapperTests
 
         var correlationId = Guid.NewGuid();
 
-        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" }, ctx => ctx.CorrelationId = correlationId);
+        await harness.Bus.Publish(
+            new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" },
+            ctx => ctx.CorrelationId = correlationId);
 
         await harness.Consumed.Any<SomeIncomingMessage>();
 
-        var wrapper = receiveObserver.WrappedIncomingMessage;
+        var wrapper = observer.WrappedIncomingMessage;
 
         await harness.Bus.Publish(
             new SomeOutgoingMessage { SomeId = wrapper.Message.SomeId, SomeValue = 42 },
@@ -75,9 +77,9 @@ public class MessageWrapperTests
 
         await harness.Consumed.Any<SomeOutgoingMessage>();
 
-        receiveObserver.OutgoingConversationId.Should().Be(receiveObserver.IncomingConversationId);
-        receiveObserver.OutgoingInitiatorId.Should().Be(correlationId);
-        receiveObserver.OutgoingCorrelationId.Should().BeNull();
+        observer.OutgoingConversationId.Should().Be(observer.IncomingConversationId);
+        observer.OutgoingInitiatorId.Should().Be(correlationId);
+        observer.OutgoingCorrelationId.Should().BeNull();
     }
 
     private record SomeIncomingMessage
