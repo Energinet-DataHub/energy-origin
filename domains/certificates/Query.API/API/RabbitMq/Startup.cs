@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace API.RabbitMq;
 
@@ -52,7 +53,7 @@ public static class Startup
 public class ChannelWorker : BackgroundService
 {
     private readonly ILogger<ChannelWorker> logger;
-    private readonly ChannelReader<MassTransitWrapper<Message1>> reader;
+    private readonly ChannelReader<MessageWrapper<Message1>> reader;
     private readonly IBus bus;
 
     public ChannelWorker(IChannelHolder channelHolder, IBus bus, ILogger<ChannelWorker> logger)
@@ -68,7 +69,7 @@ public class ChannelWorker : BackgroundService
         {
             var wrapper = await reader.ReadAsync(stoppingToken);
             await bus.Publish(
-                new Message2(wrapper.Message.SomeId, 43),
+                new Message2 { SomeId = wrapper.Message.SomeId, SomeValue = 43},
                 ctx => wrapper.SetIdsForOutgoingMessage(ctx),
                 stoppingToken);
 
@@ -77,21 +78,21 @@ public class ChannelWorker : BackgroundService
     }
 }
 
-public class MassTransitWrapper<T> where T : class
+public class MessageWrapper<TIncoming> where TIncoming : class
 {
     private readonly Guid? correlationId;
     private readonly Guid? conversationId;
     private readonly Guid? initiatorId;
 
-    public MassTransitWrapper(ConsumeContext<T> context)
+    public MessageWrapper(ConsumeContext<TIncoming> context)
     {
+        Message = context.Message;
         correlationId = context.CorrelationId;
         conversationId = context.ConversationId;
         initiatorId = context.InitiatorId;
-        Message = context.Message;
     }
 
-    public T Message { get; }
+    public TIncoming Message { get; }
 
     public void SetIdsForOutgoingMessage<TOutgoing>(PublishContext<TOutgoing> ctx) where TOutgoing : class
     {
@@ -103,27 +104,45 @@ public class MassTransitWrapper<T> where T : class
 
 public interface IChannelHolder
 {
-    ChannelReader<MassTransitWrapper<Message1>> Reader { get; }
-    ChannelWriter<MassTransitWrapper<Message1>> Writer { get; }
+    ChannelReader<MessageWrapper<Message1>> Reader { get; }
+    ChannelWriter<MessageWrapper<Message1>> Writer { get; }
 }
 
 public class ChannelHolder : IChannelHolder
 {
-    private readonly Channel<MassTransitWrapper<Message1>> channel;
+    private readonly Channel<MessageWrapper<Message1>> channel;
 
-    public ChannelHolder() => channel = Channel.CreateUnbounded<MassTransitWrapper<Message1>>();
+    public ChannelHolder() => channel = Channel.CreateUnbounded<MessageWrapper<Message1>>();
 
-    public ChannelReader<MassTransitWrapper<Message1>> Reader => channel.Reader;
-    public ChannelWriter<MassTransitWrapper<Message1>> Writer => channel.Writer;
+    public ChannelReader<MessageWrapper<Message1>> Reader => channel.Reader;
+    public ChannelWriter<MessageWrapper<Message1>> Writer => channel.Writer;
 }
 
-public record Message1(Guid SomeId, string SomeValue);
-public record Message2(Guid SomeId, int SomeValue);
+public record Message1
+{
+    public Guid SomeId { get; init; }
+    public string SomeValue { get; init; } = "";
+    public Guid? CorrelationId { get; init; }
+}
 
-public class SomeMessageConsumer : IConsumer<Message1>, IConsumer<Message2>
+public record Message2
+{
+    public Guid SomeId { get; init; }
+    public int SomeValue { get; init; }
+    public Guid? CorrelationId { get; init; }
+}
+
+public record Message3
+{
+    public Guid SomeId { get; init; }
+    public bool SomeValue { get; init; }
+    public Guid? CorrelationId { get; init; }
+}
+
+public class SomeMessageConsumer : IConsumer<Message1>, IConsumer<Message2>, IConsumer<Message3>
 {
     private readonly ILogger<SomeMessageConsumer> logger;
-    private readonly ChannelWriter<MassTransitWrapper<Message1>> writer;
+    private readonly ChannelWriter<MessageWrapper<Message1>> writer;
 
     public SomeMessageConsumer(ILogger<SomeMessageConsumer> logger, IChannelHolder holder)
     {
@@ -135,11 +154,22 @@ public class SomeMessageConsumer : IConsumer<Message1>, IConsumer<Message2>
     {
         WriteToLog(context);
 
-        await writer.WriteAsync(new MassTransitWrapper<Message1>(context), context.CancellationToken);
-        //await context.Publish(new Message2(context.Message.SomeId, 42));
+        await writer.WriteAsync(new MessageWrapper<Message1>(context), context.CancellationToken);
+        await context.Publish(new Message2 {SomeId = context.Message.SomeId, SomeValue = 42});
     }
 
     public Task Consume(ConsumeContext<Message2> context)
+    {
+        WriteToLog(context);
+
+        var serializeObject = JsonConvert.SerializeObject(context);
+        logger.LogInformation(serializeObject);
+
+        return Task.CompletedTask;
+        //await context.Publish(new Message3 { SomeId = context.Message.SomeId, SomeValue = true});
+    }
+
+    public Task Consume(ConsumeContext<Message3> context)
     {
         WriteToLog(context);
 
@@ -159,12 +189,14 @@ public class MessageController : ControllerBase
     public async Task<IActionResult> Get([FromServices] IPublishEndpoint endpoint)
     {
         var correlationId = Guid.NewGuid();
-        await endpoint.Publish(new Message1(correlationId, "foo"), ctx =>
-        {
-            ctx.CorrelationId = correlationId;
-        });
+        await endpoint.Publish(new Message1{SomeId = correlationId, SomeValue = "foo", CorrelationId = correlationId}
+        //    ,
+        //    ctx =>
+        //{
+        //    ctx.CorrelationId = correlationId;
+        //}
+            );
 
         return Ok();
-        
     }
 }
