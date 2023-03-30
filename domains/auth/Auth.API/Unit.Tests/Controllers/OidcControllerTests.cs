@@ -72,7 +72,6 @@ public class OidcControllerTests
             },
             KeySetUsing(tokenOptions.Value.PublicKeyPem)
         );
-
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var providerId = Guid.NewGuid().ToString();
@@ -83,8 +82,12 @@ public class OidcControllerTests
         });
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitID  },
+            { "identity_type", ProviderGroup.Private}
         });
+
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
 
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
@@ -103,7 +106,7 @@ public class OidcControllerTests
 
         var map = QueryHelpers.ParseNullableQuery(uri.Query);
         Assert.NotNull(map);
-        Assert.True(map.ContainsKey("id_token_hint"));
+        Assert.True(map.ContainsKey("token"));
     }
 
     [Fact]
@@ -180,8 +183,12 @@ public class OidcControllerTests
         });
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitID  },
+            { "identity_type", ProviderGroup.Private}
         });
+
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
 
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
