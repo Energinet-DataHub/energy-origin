@@ -8,14 +8,16 @@ using Xunit;
 
 namespace RegistryConnector.Worker.UnitTests;
 
-public class MessageWrapperTests
+public class MessageWrapperTests : IAsyncDisposable
 {
-    [Fact]
-    public async Task ids_are_set_for_a_message_without_correlation_id()
-    {
-        var observer = new ReceiveObserver();
+    private readonly ReceiveObserver observer;
+    private readonly ServiceProvider provider;
+    private readonly ITestHarness harness;
 
-        await using var provider = new ServiceCollection()
+    public MessageWrapperTests()
+    {
+        observer = new ReceiveObserver();
+        provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg =>
             {
                 cfg.AddReceiveObserver(_ => observer);
@@ -23,8 +25,12 @@ public class MessageWrapperTests
             })
             .BuildServiceProvider(true);
 
-        var harness = provider.GetRequiredService<ITestHarness>();
+        harness = provider.GetRequiredService<ITestHarness>();
+    }
 
+    [Fact]
+    public async Task ids_are_set_for_a_message_without_correlation_id()
+    {
         await harness.Start();
 
         await harness.Bus.Publish(new SomeIncomingMessage { SomeId = Guid.NewGuid(), SomeValue = "foo" });
@@ -47,18 +53,6 @@ public class MessageWrapperTests
     [Fact]
     public async Task ids_are_set_for_a_message_with_correlation_id()
     {
-        var observer = new ReceiveObserver();
-
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
-            {
-                cfg.AddReceiveObserver(_ => observer);
-                cfg.AddConsumer<SomeMessageConsumer>();
-            })
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
         await harness.Start();
 
         var correlationId = Guid.NewGuid();
@@ -79,6 +73,26 @@ public class MessageWrapperTests
 
         observer.OutgoingConversationId.Should().Be(observer.IncomingConversationId);
         observer.OutgoingInitiatorId.Should().Be(correlationId);
+        observer.OutgoingCorrelationId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task conversation_id_not_set_when_not_using_wrapper()
+    {
+        await harness.Start();
+
+        var someId = Guid.NewGuid();
+        await harness.Bus.Publish(new SomeIncomingMessage { SomeId = someId, SomeValue = "foo" });
+
+        await harness.Consumed.Any<SomeIncomingMessage>();
+
+        await harness.Bus.Publish(
+            new SomeOutgoingMessage { SomeId = someId, SomeValue = 42 });
+
+        await harness.Consumed.Any<SomeOutgoingMessage>();
+
+        observer.OutgoingConversationId!.Value.Should().NotBe(observer.IncomingConversationId!.Value);
+        observer.OutgoingInitiatorId.Should().BeNull();
         observer.OutgoingCorrelationId.Should().BeNull();
     }
 
@@ -141,4 +155,6 @@ public class MessageWrapperTests
 
         public Task ReceiveFault(ReceiveContext context, Exception exception) => Task.CompletedTask;
     }
+
+    public ValueTask DisposeAsync() => provider.DisposeAsync();
 }
