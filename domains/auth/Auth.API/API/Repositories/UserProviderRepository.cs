@@ -11,14 +11,6 @@ public class UserProviderRepository : IUserProviderRepository
 
     public UserProviderRepository(IUserProviderDataContext dataContext) => this.dataContext = dataContext;
 
-    public async Task<UserProvider> UpsertUserProviderAsync(UserProvider userProvider)
-    {
-        dataContext.UserProviders.Update(userProvider);
-        await dataContext.SaveChangesAsync();
-        return userProvider;
-    }
-    public async Task<UserProvider?> GetUserProviderByIdAsync(Guid id) => await dataContext.UserProviders.FirstOrDefaultAsync(x => x.Id == id);
-
     public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders)
     {
         IQueryable<UserProvider>? query = null;

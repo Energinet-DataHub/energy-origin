@@ -52,7 +52,6 @@ public class TermsControllerTests
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
-        var providerId = Guid.NewGuid().ToString();
         var allowCprLookup = false;
         var oldAcceptedTermsVersion = 1;
         var newAcceptedTermsVersion = 2;
@@ -101,8 +100,8 @@ public class TermsControllerTests
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
-        var companyName = null as string;
-        var tin = null as string;
+        var companyName = Guid.NewGuid().ToString();
+        var tin = Guid.NewGuid().ToString();
         var allowCprLookup = false;
         var newAcceptedTermsVersion = 1;
         var providerKey = Guid.NewGuid().ToString();
@@ -135,7 +134,13 @@ public class TermsControllerTests
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
                 && y.AllowCPRLookup == allowCprLookup
-                && y.Id == id)),
+                && y.Id == id
+                && y.Company != null
+                && y.Company.Tin == tin
+                && y.Company.Name == companyName
+                && y.UserProviders.Count() == 1
+                && y.UserProviders.First().ProviderKeyType == providerKeyType
+                && y.UserProviders.First().UserProviderKey == providerKey)),
             Times.Once
         );
     }
@@ -176,5 +181,18 @@ public class TermsControllerTests
            .ReturnsAsync(value: null);
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(2)));
+    }
+
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                AcceptedTermsVersion = 2
+            });
+
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
     }
 }
