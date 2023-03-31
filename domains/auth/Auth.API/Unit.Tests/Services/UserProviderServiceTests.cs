@@ -33,16 +33,14 @@ public class UserProviderServiceTests
     [Fact]
     public async Task FindUserProviderMatchAsync_ShouldReturnNull_WhenUserProviderMatchIsNotFound()
     {
-        var userProviders = new List<UserProvider>()
-        {
-            new UserProvider()
-        };
-
         Mock.Get(repository)
             .Setup(x => x.FindUserProviderMatchAsync(It.IsAny<List<UserProvider>>()))
             .ReturnsAsync(value: null);
 
-        var result = await userProviderService.FindUserProviderMatchAsync(userProviders);
+        var result = await userProviderService.FindUserProviderMatchAsync(new List<UserProvider>()
+        {
+            new UserProvider()
+        });
 
         Assert.Null(result);
     }
@@ -50,10 +48,6 @@ public class UserProviderServiceTests
     [Fact]
     public async Task FindUserProviderMatchAsync_ShouldReturnNull_WhenEmptyListIsProvided()
     {
-        Mock.Get(repository)
-            .Setup(x => x.FindUserProviderMatchAsync(It.IsAny<List<UserProvider>>()))
-            .ReturnsAsync(value: null);
-
         var result = await userProviderService.FindUserProviderMatchAsync(new List<UserProvider>());
 
         Assert.Null(result);
