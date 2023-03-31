@@ -56,10 +56,10 @@ public class TermsController : ControllerBase
                 }
             };
             await userService.InsertUserAsync(user);
+            user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;
-        user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         await userService.UpsertUserAsync(user);
 
         var relationUri = options.Value.Uri.AbsoluteUri;
