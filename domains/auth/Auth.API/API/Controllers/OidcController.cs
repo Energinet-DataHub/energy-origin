@@ -129,7 +129,7 @@ public class OidcController : ControllerBase
 
         var providerName = userInfo.FindFirstValue("idp");
         var identityType = userInfo.FindFirstValue("identity_type");
-        var scope = access.FindFirstValue("scope");
+        var scope = access.FindFirstValue(UserClaimName.Scope);
 
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
@@ -153,9 +153,10 @@ public class OidcController : ControllerBase
             case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
-                if (userInfo.FindFirstValue("nemid.pid") is not null)
+                var pid = userInfo.FindFirstValue("nemid.pid");
+                if (pid is not null)
                 {
-                    keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid")!);
+                    keys.Add(ProviderKeyType.PID, pid);
                 }
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
@@ -169,7 +170,7 @@ public class OidcController : ControllerBase
             case ProviderType.NemID_Private:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid")); // TODO: Check if nemid.pid is included when only using nemid scope.
+                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
 
@@ -185,6 +186,7 @@ public class OidcController : ControllerBase
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
 
+        // Test when user is null and not null?
         user ??= new User
         {
             Id = null,
