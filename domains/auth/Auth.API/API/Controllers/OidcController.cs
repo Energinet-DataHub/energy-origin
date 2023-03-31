@@ -186,7 +186,6 @@ public class OidcController : ControllerBase
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
 
-        // Test when user is null and not null?
         user ??= new User
         {
             Id = null,
