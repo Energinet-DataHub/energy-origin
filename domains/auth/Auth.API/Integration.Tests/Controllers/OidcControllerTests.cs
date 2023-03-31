@@ -150,6 +150,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains($"token=", query);
 
+        Assert.Equal(2, user!.UserProviders.Count());
         Assert.Contains(user!.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
     }
 
