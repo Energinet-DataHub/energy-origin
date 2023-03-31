@@ -38,13 +38,13 @@ public class TermsControllerTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
-        var cryptoOptions = new CryptographyOptions()
+        var cryptographyOptions = new CryptographyOptions()
         {
             Key = "secretsecretsecretsecret"
         };
 
         options = Options.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        cryptography = new Cryptography(Options.Create(cryptoOptions));
+        cryptography = new Cryptography(Options.Create(cryptographyOptions));
     }
 
     [Fact]
