@@ -35,6 +35,14 @@ public class TermsController : ControllerBase
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
+        if (company == null && descriptor.Tin != null)
+        {
+            company = new Company()
+            {
+                Name = descriptor.CompanyName!,
+                Tin = descriptor.Tin!
+            };
+        }
 
         User user;
         if (descriptor.UserStored)
@@ -49,13 +57,9 @@ public class TermsController : ControllerBase
                 Id = descriptor.Id,
                 Name = descriptor.Name,
                 AllowCPRLookup = descriptor.AllowCPRLookup,
-                Company = descriptor.Tin is null ? null : company ?? new Company()
-                {
-                    Name = descriptor.CompanyName!,
-                    Tin = descriptor.Tin!
-                }
             };
             await userService.InsertUserAsync(user);
+            user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
