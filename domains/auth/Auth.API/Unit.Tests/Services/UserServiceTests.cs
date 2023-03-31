@@ -1,6 +1,7 @@
 using API.Models.Entities;
-using API.Repositories;
+using API.Repositories.Interfaces;
 using API.Services;
+using API.Services.Interfaces;
 
 namespace Tests.Services;
 
@@ -21,10 +22,8 @@ public class UserServiceTests
             .ReturnsAsync(value: new User()
             {
                 Id = id,
-                ProviderId = Guid.NewGuid().ToString(),
                 Name = "Amigo",
                 AcceptedTermsVersion = 2,
-                Tin = null,
                 AllowCPRLookup = true
             });
 
@@ -32,29 +31,6 @@ public class UserServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(id, result?.Id);
-    }
-
-    [Fact]
-    public async Task GetUserByProviderId_ShouldReturnUser_WhenUserExists()
-    {
-        var providerId = Guid.NewGuid().ToString();
-
-        Mock.Get(repository)
-            .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(value: new User()
-            {
-                Id = Guid.NewGuid(),
-                ProviderId = providerId,
-                Name = "Amigo",
-                AcceptedTermsVersion = 2,
-                Tin = null,
-                AllowCPRLookup = true
-            });
-
-        var result = await userService.GetUserByProviderIdAsync(providerId);
-
-        Assert.NotNull(result);
-        Assert.Equal(providerId, result?.ProviderId);
     }
 
     [Fact]
@@ -67,37 +43,5 @@ public class UserServiceTests
         var result = await userService.GetUserByIdAsync(Guid.NewGuid());
 
         Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task GetUserByProviderId_ShouldReturnNull_WhenNoUserExists()
-    {
-        Mock.Get(repository)
-            .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(value: null);
-
-        var result = await userService.GetUserByProviderIdAsync(Guid.NewGuid().ToString());
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task GetUserById_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
-    {
-        Mock.Get(repository)
-            .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ThrowsAsync(new Exception());
-
-        await Assert.ThrowsAsync<Exception>(async () => await userService.GetUserByIdAsync(Guid.NewGuid()));
-    }
-
-    [Fact]
-    public async Task GetUserByProviderId_ShouldLogErrorAndThrowException_WhenExceptionIsThrown()
-    {
-        Mock.Get(repository)
-            .Setup(it => it.GetUserByProviderIdAsync(It.IsAny<string>()))
-            .ThrowsAsync(new Exception());
-
-        await Assert.ThrowsAsync<Exception>(async () => await userService.GetUserByProviderIdAsync(Guid.NewGuid().ToString()));
     }
 }

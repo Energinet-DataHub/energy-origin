@@ -2,8 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,14 +77,14 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString()
         };
-        var client = factory.CreateAuthenticatedClient(user);
+        var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
-
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
         var newToken = await result.Content.ReadAsStringAsync();
+
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 
@@ -100,10 +100,9 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
     {
         var user = await factory.AddUserToDatabaseAsync();
-
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            var mapper = Mock.Of<IUserDescriptMapper>();
+            var mapper = Mock.Of<IUserDescriptorMapper>();
             _ = Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
@@ -118,7 +117,6 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
-
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();

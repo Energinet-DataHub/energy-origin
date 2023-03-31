@@ -1,5 +1,5 @@
 using API.Options;
-using API.Utilities;
+using API.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -11,7 +11,7 @@ public class LogoutController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptMapper descriptMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && overrideRedirectionUri != null)

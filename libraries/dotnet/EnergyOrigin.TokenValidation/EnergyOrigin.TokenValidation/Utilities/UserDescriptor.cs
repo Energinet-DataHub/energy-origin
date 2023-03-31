@@ -19,7 +19,7 @@ public class UserDescriptor
     public bool UserStored { get; init; }
 
     /// <summary>
-    /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2:ProviderKey2"
+    /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2=ProviderKey2"
     /// </summary>
     public string EncryptedProviderKeys { get; init; } = null!;
 

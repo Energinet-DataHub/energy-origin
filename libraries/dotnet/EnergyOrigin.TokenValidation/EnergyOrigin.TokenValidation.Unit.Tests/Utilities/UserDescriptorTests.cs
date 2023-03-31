@@ -53,12 +53,6 @@ public class UserDescriptorTests
 
         var keys = descriptor.ProviderKeys;
 
-        Assert.Equal(3, dict.Count);
-        Assert.Equal(keys.ElementAt(0).Key, dict.ElementAt(0).Key);
-        Assert.Equal(keys.ElementAt(0).Value, dict.ElementAt(0).Value);
-        Assert.Equal(keys.ElementAt(1).Key, dict.ElementAt(1).Key);
-        Assert.Equal(keys.ElementAt(1).Value, dict.ElementAt(1).Value);
-        Assert.Equal(keys.ElementAt(2).Key, dict.ElementAt(2).Key);
-        Assert.Equal(keys.ElementAt(2).Value, dict.ElementAt(2).Value);
+        Assert.Equal(keys, dict);
     }
 }

@@ -1,6 +1,6 @@
 using EnergyOrigin.TokenValidation.Utilities;
 
-namespace API.Utilities;
+namespace API.Utilities.Interfaces;
 
 public interface ITokenIssuer
 {

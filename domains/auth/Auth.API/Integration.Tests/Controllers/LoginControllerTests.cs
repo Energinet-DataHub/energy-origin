@@ -32,12 +32,17 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
                 builder.ConfigureTestServices(services =>
                     services.AddScoped(x => oidcOptions)));
 
+        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value.GetIdentityProviderArguments();
+
         var result = await client.GetAsync("auth/login");
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
 
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
         Assert.Contains($"client_id={oidcOptions.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri}", query);
+        Assert.Contains($"idp_values={arguments.First().Value}", query);
+        Assert.Contains($"idp_params={arguments.Last().Value}", query);
+        Assert.Contains($"scope={scope}", query);
     }
 
     [Fact]

@@ -1,21 +1,22 @@
-using System.Text;
 using System.Web;
 using API.Controllers;
 using API.Options;
 using API.Utilities;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Tests.Controllers;
 
 public class LoginControllerTests
 {
     private readonly OidcOptions oidcOptions;
-
+    private readonly IOptions<IdentityProviderOptions> identityProviderOptions;
     public LoginControllerTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -24,6 +25,11 @@ public class LoginControllerTests
             .Build();
 
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
+        var identityProviderOption = new IdentityProviderOptions()
+        {
+            Providers = new List<ProviderType>() { ProviderType.NemID_Professional }
+        };
+        identityProviderOptions = Options.Create(identityProviderOption);
     }
 
     [Fact]
@@ -38,7 +44,7 @@ public class LoginControllerTests
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
-        var result = await new LoginController().LoginAsync(cache, options, logger);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -71,7 +77,7 @@ public class LoginControllerTests
         var state = Guid.NewGuid().ToString();
         var redirectionUri = Guid.NewGuid().ToString();
 
-        var result = await new LoginController().LoginAsync(cache, options, logger, state, redirectionUri);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger, state, redirectionUri);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -102,7 +108,7 @@ public class LoginControllerTests
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
-        var result = await new LoginController().LoginAsync(cache, options, logger);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -130,7 +136,7 @@ public class LoginControllerTests
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
-        var result = await new LoginController().LoginAsync(cache, options, logger);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
