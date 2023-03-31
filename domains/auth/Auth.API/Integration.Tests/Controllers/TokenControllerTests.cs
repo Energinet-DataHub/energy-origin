@@ -22,8 +22,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(int version)
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType);
+        var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
         user.AcceptedTermsVersion = version;
@@ -52,8 +51,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var user = await factory.AddUserToDatabaseAsync();
         user.AcceptedTermsVersion = 0;
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType);
+        var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
         var result = await client.GetAsync("auth/token");
@@ -79,8 +77,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString()
         };
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType);
+        var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
         await Task.Delay(TimeSpan.FromSeconds(1));
@@ -106,8 +103,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
             _ = Mock.Get(mapper)
@@ -124,8 +120,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
             _ = Mock.Get(userService)

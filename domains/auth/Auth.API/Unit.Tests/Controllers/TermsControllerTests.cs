@@ -38,13 +38,13 @@ public class TermsControllerTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
-        var crypthoOptions = new CryptographyOptions()
+        var cryptoOptions = new CryptographyOptions()
         {
             Key = "secretsecretsecretsecret"
         };
 
         options = Options.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        cryptography = new Cryptography(Options.Create(crypthoOptions));
+        cryptography = new Cryptography(Options.Create(cryptoOptions));
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class TermsControllerTests
         var newAcceptedTermsVersion = 2;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitID_UUID;
-        var poviderEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
+        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
@@ -68,7 +68,7 @@ public class TermsControllerTests
                 Tin = Guid.NewGuid().ToString(),
                 AllowCPRLookup = true,
                 AcceptedTermsVersion = oldAcceptedTermsVersion,
-                EncryptedProviderKeys = poviderEncrypted,
+                EncryptedProviderKeys = providerEncrypted,
                 UserStored = true
             });
 
@@ -110,7 +110,7 @@ public class TermsControllerTests
         var newAcceptedTermsVersion = 1;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitID_UUID;
-        var poviderEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
+        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
@@ -122,7 +122,7 @@ public class TermsControllerTests
                 Tin = tin,
                 AllowCPRLookup = allowCprLookup,
                 AcceptedTermsVersion = 0,
-                EncryptedProviderKeys = poviderEncrypted,
+                EncryptedProviderKeys = providerEncrypted,
                 UserStored = false
             });
 

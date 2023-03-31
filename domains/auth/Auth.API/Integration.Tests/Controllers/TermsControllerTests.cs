@@ -29,13 +29,12 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-        var providerType = ProviderType.NemID_Professional;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.RID;
         var user = await factory.AddUserToDatabaseAsync();
         user.UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } };
         var client = factory
-           .CreateAuthenticatedClient(user, providerType, config: builder =>
+           .CreateAuthenticatedClient(user, config: builder =>
                builder.ConfigureTestServices(services =>
                    services.AddScoped(x => options)));
 
@@ -57,7 +56,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
     {
-        var providerType = ProviderType.NemID_Professional;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitID_UUID;
         var user = new User()
@@ -77,7 +75,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var client = factory
-           .CreateAuthenticatedClient(user, providerType, config: builder =>
+           .CreateAuthenticatedClient(user, config: builder =>
                builder.ConfigureTestServices(services =>
                    services.AddScoped(x => options)));
 
@@ -99,9 +97,8 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var providerType = ProviderType.NemID_Professional;
 
-        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
             _ = Mock.Get(mapper)
@@ -121,8 +118,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var providerType = ProviderType.NemID_Professional;
-        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
             _ = Mock.Get(userService)

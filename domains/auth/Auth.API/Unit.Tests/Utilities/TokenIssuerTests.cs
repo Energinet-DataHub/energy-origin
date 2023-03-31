@@ -155,7 +155,6 @@ public class TokenIssuerTests
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
 
-    //TODO
     private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
     {
         var user = new User()

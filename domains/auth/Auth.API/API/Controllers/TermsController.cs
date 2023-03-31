@@ -31,7 +31,7 @@ public class TermsController : ControllerBase
 
         if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
         {
-            throw new ArgumentException("The user has already accepted a newer version of terms.");
+            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
