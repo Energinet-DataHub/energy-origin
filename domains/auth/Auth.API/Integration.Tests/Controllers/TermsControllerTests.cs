@@ -29,10 +29,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-        var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.RID;
         var user = await factory.AddUserToDatabaseAsync();
-        user.UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } };
         var client = factory
            .CreateAuthenticatedClient(user, config: builder =>
                builder.ConfigureTestServices(services =>
