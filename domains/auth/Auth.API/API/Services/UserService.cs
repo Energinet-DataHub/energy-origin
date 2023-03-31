@@ -12,4 +12,5 @@ public class UserService : IUserService
 
     public async Task<User> UpsertUserAsync(User user) => await repository.UpsertUserAsync(user);
     public async Task<User?> GetUserByIdAsync(Guid? id) => id is null ? null : await repository.GetUserByIdAsync(id.Value);
+    public async Task<User> InsertUserAsync(User user) => await repository.InsertUserAsync(user);
 }

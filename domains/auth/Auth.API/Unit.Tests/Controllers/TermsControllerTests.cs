@@ -55,16 +55,20 @@ public class TermsControllerTests
         var allowCprLookup = false;
         var oldAcceptedTermsVersion = 1;
         var newAcceptedTermsVersion = 2;
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var poviderEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = id,
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCPRLookup = true,
                 AcceptedTermsVersion = oldAcceptedTermsVersion,
+                EncryptedProviderKeys = poviderEncrypted,
                 UserStored = true
             });
 

@@ -53,13 +53,13 @@ public class TermsController : ControllerBase
                 {
                     Name = descriptor.CompanyName!,
                     Tin = descriptor.Tin!
-                },
-                UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys)
+                }
             };
+            await userService.InsertUserAsync(user);
         }
 
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;
-
+        user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         await userService.UpsertUserAsync(user);
 
         var relationUri = options.Value.Uri.AbsoluteUri;

@@ -1,7 +1,11 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using API.Models.Entities;
 using API.Options;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Values;
 using Integration.Tests;
@@ -17,7 +21,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     private readonly AuthWebApplicationFactory factory;
     public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
-
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
     {
@@ -27,8 +30,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var providerType = ProviderType.NemID_Professional;
-
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.RID;
         var user = await factory.AddUserToDatabaseAsync();
+        user.UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } };
         var client = factory
            .CreateAuthenticatedClient(user, providerType, config: builder =>
                builder.ConfigureTestServices(services =>
@@ -39,8 +44,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
-
-        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == user.Id)!;
+        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
@@ -50,83 +54,87 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
 
-    //[Fact]
-    //public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
-    //{
-    //    var user = new User()
-    //    {
-    //        Id = null,
-    //        Name = Guid.NewGuid().ToString(),
-    //        AllowCPRLookup = false,
-    //        AcceptedTermsVersion = 0
-    //    };
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
+    {
+        var providerType = ProviderType.NemID_Professional;
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var user = new User()
+        {
+            Id = null,
+            Name = Guid.NewGuid().ToString(),
+            AllowCPRLookup = false,
+            AcceptedTermsVersion = 0,
+            Company = null,
+            CompanyId = null,
+            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+        };
 
-    //    var server = WireMockServer.Start();
-    //    var options = Options.Create(new DataSyncOptions()
-    //    {
-    //        Uri = new Uri($"http://localhost:{server.Port}/")
-    //    });
+        var server = WireMockServer.Start();
+        var options = Options.Create(new DataSyncOptions()
+        {
+            Uri = new Uri($"http://localhost:{server.Port}/")
+        });
+        var client = factory
+           .CreateAuthenticatedClient(user, providerType, config: builder =>
+               builder.ConfigureTestServices(services =>
+                   services.AddScoped(x => options)));
 
-    //    var client = factory
-    //       .CreateAuthenticatedClient(user, config: builder =>
-    //           builder.ConfigureTestServices(services =>
-    //               services.AddScoped(x => options)));
+        server.MockRelationsEndpoint();
 
-    //    server.MockRelationsEndpoint();
+        var dto = new AcceptTermsRequest(1);
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+        var result = await client.PutAsync("terms/accept", httpContent);
+        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id != null)!;
 
-    //    var dto = new AcceptTermsRequest(1);
-    //    var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-    //    var result = await client.PutAsync("terms/accept", httpContent);
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(user.Name.ToString(), dbUser.Name);
+        Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
+        Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
+    }
 
-    //    var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.ProviderId == user.ProviderId)!;
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var providerType = ProviderType.NemID_Professional;
 
-    //    Assert.NotNull(result);
-    //    Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-    //    Assert.Equal(user.ProviderId, dbUser.ProviderId);
-    //    Assert.Equal(user.Name, dbUser.Name);
-    //    Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
-    //    Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
-    //}
+        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        {
+            var mapper = Mock.Of<IUserDescriptorMapper>();
+            _ = Mock.Get(mapper)
+                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+                .Returns(value: null!);
 
-    //[Fact]
-    //public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
-    //{
-    //    var user = await factory.AddUserToDatabaseAsync();
+            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
+        });
 
-    //    var client = factory.CreateAuthenticatedClient(user, config: builder =>
-    //    {
-    //        var mapper = Mock.Of<IUserDescriptorMapper>();
-    //        _ = Mock.Get(mapper)
-    //            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-    //            .Returns(value: null!);
+        var dto = new AcceptTermsRequest(2);
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
-    //        builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
-    //    });
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+    }
 
-    //    var dto = new AcceptTermsRequest(2);
-    //    var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var providerType = ProviderType.NemID_Professional;
+        var client = factory.CreateAuthenticatedClient(user, providerType, config: builder =>
+        {
+            var userService = Mock.Of<IUserService>();
+            _ = Mock.Get(userService)
+                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+                .Returns(value: null!);
 
-    //    await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
-    //}
+            builder.ConfigureTestServices(services => services.AddScoped(x => userService));
+        });
 
-    //[Fact]
-    //public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
-    //{
-    //    var user = await factory.AddUserToDatabaseAsync();
+        var dto = new AcceptTermsRequest(2);
+        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
-    //    var client = factory.CreateAuthenticatedClient(user, config: builder =>
-    //    {
-    //        var userService = Mock.Of<IUserService>();
-    //        _ = Mock.Get(userService)
-    //            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-    //            .Returns(value: null!);
-
-    //        builder.ConfigureTestServices(services => services.AddScoped(x => userService));
-    //    });
-
-    //    var dto = new AcceptTermsRequest(2);
-    //    var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-
-    //    await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
-    //}
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+    }
 }
