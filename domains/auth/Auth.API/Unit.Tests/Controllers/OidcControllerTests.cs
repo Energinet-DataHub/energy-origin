@@ -178,14 +178,26 @@ public class OidcControllerTests
             new Dictionary<string, object>()
             {
                 { "idp", "wrong" },
-                { "identity_type", "wrong" }
+                { "identity_type", ProviderGroup.Private },
+                { "mitid.uuid", Guid.NewGuid().ToString() },
+                { "mitid.identity_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitID },
+                { "identity_type", "wrong" },
+                { "mitid.uuid", Guid.NewGuid().ToString() },
+                { "mitid.identity_name", Guid.NewGuid().ToString() }
             }
         }
     };
 
     [Theory]
     [MemberData(nameof(ClaimsTestDataWrong))]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenIsMissingName(Dictionary<string, object> claims)
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenArgumentsAreWrong(Dictionary<string, object> claims)
     {
         var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
 
