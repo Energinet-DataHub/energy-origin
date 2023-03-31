@@ -77,11 +77,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString()
         };
-        var client = factory.CreateAuthenticatedClient(user);
+        var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
-
-        await Task.Delay(TimeSpan.FromSeconds(1));
-
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
