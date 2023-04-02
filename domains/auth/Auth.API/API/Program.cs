@@ -2,13 +2,20 @@ using API.Middleware;
 using API.Options;
 using API.Repositories;
 using API.Repositories.Data;
+using API.Repositories.Data.Interfaces;
+using API.Repositories.Interfaces;
 using API.Services;
+using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -48,6 +55,7 @@ builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
+builder.Services.Configure<IdentityProviderOptions>(builder.Configuration.GetSection(IdentityProviderOptions.Prefix));
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
 {
@@ -79,7 +87,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
+builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -90,12 +99,18 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
-builder.Services.AddSingleton<IUserDescriptMapper, UserDescriptMapper>();
+builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserDataContext, DataContext>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyDataContext, DataContext>();
+builder.Services.AddScoped<IUserProviderService, UserProviderService>();
+builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
+builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>

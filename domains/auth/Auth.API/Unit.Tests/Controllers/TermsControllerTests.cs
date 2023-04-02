@@ -3,10 +3,13 @@ using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -22,10 +25,12 @@ public class TermsControllerTests
     private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
+    private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
     private readonly MockHttpMessageHandler http = new();
     private readonly IOptions<DataSyncOptions> options;
+    private readonly ICryptography cryptography;
 
     public TermsControllerTests()
     {
@@ -33,8 +38,13 @@ public class TermsControllerTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
+        var cryptographyOptions = new CryptographyOptions()
+        {
+            Key = "secretsecretsecretsecret"
+        };
 
         options = Options.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
+        cryptography = new Cryptography(Options.Create(cryptographyOptions));
     }
 
     [Fact]
@@ -42,22 +52,24 @@ public class TermsControllerTests
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
-        var providerId = Guid.NewGuid().ToString();
-        var tin = null as string;
         var allowCprLookup = false;
         var oldAcceptedTermsVersion = 1;
         var newAcceptedTermsVersion = 2;
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = id,
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCPRLookup = true,
-                AcceptedTermsVersion = oldAcceptedTermsVersion
+                AcceptedTermsVersion = oldAcceptedTermsVersion,
+                EncryptedProviderKeys = providerEncrypted,
+                UserStored = true
             });
 
         Mock.Get(userService)
@@ -66,8 +78,6 @@ public class TermsControllerTests
             {
                 Id = id,
                 Name = name,
-                ProviderId = providerId,
-                Tin = tin,
                 AllowCPRLookup = allowCprLookup,
                 AcceptedTermsVersion = oldAcceptedTermsVersion
             });
@@ -75,7 +85,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -83,8 +93,6 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.ProviderId == providerId
-                && y.Tin == tin
                 && y.AllowCPRLookup == allowCprLookup
                 && y.Id == id)),
             Times.Once
@@ -94,29 +102,34 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldCreateUser_WhenUserDoesNotExist()
     {
-        var id = null as Guid?;
+        var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
-        var providerId = Guid.NewGuid().ToString();
-        var tin = null as string;
+        var companyName = Guid.NewGuid().ToString();
+        var tin = Guid.NewGuid().ToString();
         var allowCprLookup = false;
         var newAcceptedTermsVersion = 1;
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = id,
                 Name = name,
-                ProviderId = providerId,
+                CompanyName = companyName,
                 Tin = tin,
                 AllowCPRLookup = allowCprLookup,
-                AcceptedTermsVersion = 0
+                AcceptedTermsVersion = 0,
+                EncryptedProviderKeys = providerEncrypted,
+                UserStored = false
             });
 
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -124,10 +137,14 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.ProviderId == providerId
-                && y.Tin == tin
                 && y.AllowCPRLookup == allowCprLookup
-                && y.Id == id)),
+                && y.Id == id
+                && y.Company != null
+                && y.Company.Tin == tin
+                && y.Company.Name == companyName
+                && y.UserProviders.Count() == 1
+                && y.UserProviders.First().ProviderKeyType == providerKeyType
+                && y.UserProviders.First().UserProviderKey == providerKey)),
             Times.Once
         );
     }
@@ -142,7 +159,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
     }
 
     [Fact]
@@ -154,7 +171,6 @@ public class TermsControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCPRLookup = false,
                 AcceptedTermsVersion = 1
@@ -164,6 +180,23 @@ public class TermsControllerTests
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, factory, options, new AcceptTermsRequest(1)));
+        Mock.Get(companyService)
+           .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
+           .ReturnsAsync(value: null);
+
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(2)));
+    }
+
+    [Fact]
+    public async Task AcceptTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: new UserDescriptor(null!)
+            {
+                AcceptedTermsVersion = 2
+            });
+
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
     }
 }

@@ -4,9 +4,10 @@ using System.Text;
 using System.Text.Json;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
+using EnergyOrigin.TokenValidation.Values;
 using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-
         var user = await factory.AddUserToDatabaseAsync();
         var client = factory
            .CreateAuthenticatedClient(user, config: builder =>
@@ -40,14 +40,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dto = new AcceptTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
-
-        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == user.Id)!;
+        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(user.ProviderId, dbUser.ProviderId);
         Assert.Equal(user.Name, dbUser.Name);
-        Assert.Equal(user.Tin, dbUser.Tin);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
@@ -56,14 +53,17 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
     {
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitID_UUID;
         var user = new User()
         {
             Id = null,
             Name = Guid.NewGuid().ToString(),
-            ProviderId = Guid.NewGuid().ToString(),
-            Tin = null,
             AllowCPRLookup = false,
-            AcceptedTermsVersion = 0
+            AcceptedTermsVersion = 0,
+            Company = null,
+            CompanyId = null,
+            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
@@ -71,7 +71,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-
         var client = factory
            .CreateAuthenticatedClient(user, config: builder =>
                builder.ConfigureTestServices(services =>
@@ -82,14 +81,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dto = new AcceptTermsRequest(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
-
-        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.ProviderId == user.ProviderId)!;
+        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id != null)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(user.ProviderId, dbUser.ProviderId);
-        Assert.Equal(user.Name, dbUser.Name);
-        Assert.Equal(user.Tin, dbUser.Tin);
+        Assert.Equal(user.Name.ToString(), dbUser.Name);
         Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
@@ -101,7 +97,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            var mapper = Mock.Of<IUserDescriptMapper>();
+            var mapper = Mock.Of<IUserDescriptorMapper>();
             _ = Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
@@ -119,7 +115,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
     {
         var user = await factory.AddUserToDatabaseAsync();
-
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();

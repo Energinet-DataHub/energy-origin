@@ -53,8 +53,14 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
-          {{- if .Values.api.env}}
           env:
+            - name: Database__Name
+              value: auth-database
+            - name: Database__User
+              value: auth
+            - name: Database__Host
+              value: {{ .Release.Name }}-cnpg-cluster-rw
+          {{- if .Values.api.env}}
           {{- range $name, $value := .Values.api.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}

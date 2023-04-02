@@ -4,10 +4,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using API.Models.Entities;
 using API.Options;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -29,7 +32,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     public OidcControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithCookie_WhenInvoked()
+    public async Task CallbackAsync_ShouldReturnRedirectToFrontend_WhenInvoked()
     {
         var server = WireMockServer.Start();
 
@@ -49,7 +52,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
         var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitID  },
+            { "identity_type", ProviderGroup.Private}
         });
 
         server.MockConfigEndpoint()
@@ -73,6 +78,80 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains($"token=", query);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldUpdateUserProvidersOnUser_WhenInvokedAndUserExists()
+    {
+        var server = WireMockServer.Start();
+
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
+        var oidcOptions = Options.Create(new OidcOptions()
+        {
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com")
+        });
+
+        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+
+        var mitidUuid = Guid.NewGuid().ToString();
+        var pid = Guid.NewGuid().ToString();
+
+        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+            { "mitid.uuid", mitidUuid },
+            { "mitid.identity_name", Guid.NewGuid().ToString() },
+            { "nemid.pid", pid },
+            { "idp", ProviderName.MitID },
+            { "identity_type", ProviderGroup.Private }
+        });
+
+        server.MockConfigEndpoint()
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockTokenEndpoint(accessToken, userToken, identityToken);
+
+        var user = await factory.AddUserToDatabaseAsync(new User()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            AcceptedTermsVersion = 1,
+            AllowCPRLookup = true,
+            UserProviders = new List<UserProvider>()
+            {
+                new UserProvider()
+                {
+                    ProviderKeyType = ProviderKeyType.PID,
+                    UserProviderKey = pid
+                }
+            }
+        });
+
+        var client = factory
+            .CreateAnonymousClient(builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(x => oidcOptions)));
+
+        var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
+        var result = await client.GetAsync(queryString);
+
+        user = factory.DataContext.Users.Include(x => x.UserProviders).FirstOrDefault(x => x.Id == user.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
+
+        Assert.NotNull(result.Headers.Location?.AbsoluteUri);
+        var uri = new Uri(result.Headers.Location!.AbsoluteUri);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+
+        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+        Assert.Contains($"token=", query);
+
+        Assert.Equal(2, user!.UserProviders.Count());
+        Assert.Contains(user!.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
     }
 
     [Fact]

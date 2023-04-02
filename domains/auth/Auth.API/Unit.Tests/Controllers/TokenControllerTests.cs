@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
-    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
@@ -26,10 +27,10 @@ public class TokenControllerTests
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private, true)]
+    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
     {
         var token = Guid.NewGuid().ToString();
 
@@ -41,13 +42,14 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: new UserDescriptor(cryptography)
             {
-                Id = userId != null ? Guid.Parse(userId) : null,
+                Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
-                EncryptedIdentityToken = Guid.NewGuid().ToString()
+                EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                UserStored = isStored
             });
 
         Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
             .Returns(value: new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
@@ -59,8 +61,6 @@ public class TokenControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
-                Tin = null,
                 AllowCPRLookup = false,
                 AcceptedTermsVersion = 1
             });
@@ -101,10 +101,10 @@ public class TokenControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCPRLookup = false,
-                AcceptedTermsVersion = 1
+                AcceptedTermsVersion = 1,
+                UserStored = true
             });
 
         Mock.Get(userService)

@@ -1,6 +1,10 @@
 using API.Models.Entities;
 using API.Utilities;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,9 +13,9 @@ namespace Tests.Utilities;
 
 public class UserDescriptMapperTests
 {
-    private readonly IUserDescriptMapper mapper;
+    private readonly IUserDescriptorMapper mapper;
     private readonly ICryptography cryptography;
-    private readonly ILogger<UserDescriptMapper> logger = Mock.Of<ILogger<UserDescriptMapper>>();
+    private readonly ILogger<UserDescriptorMapper> logger = Mock.Of<ILogger<UserDescriptorMapper>>();
 
     public UserDescriptMapperTests()
     {
@@ -24,7 +28,7 @@ public class UserDescriptMapperTests
 
         cryptography = new Cryptography(Options.Create(options));
 
-        mapper = new UserDescriptMapper(cryptography, logger);
+        mapper = new UserDescriptorMapper(cryptography, logger);
     }
 
     [Fact]
@@ -33,27 +37,25 @@ public class UserDescriptMapperTests
         var user = new User()
         {
             Id = Guid.NewGuid(),
-            ProviderId = Guid.NewGuid().ToString(),
             Name = "Amigo",
             AcceptedTermsVersion = 0,
-            Tin = null,
             AllowCPRLookup = true
         };
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
+        var providerType = ProviderType.NemID_Professional;
 
-        var descriptor = mapper.Map(user, accesToken, identityToken);
+        var descriptor = mapper.Map(user, providerType, accesToken, identityToken);
 
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);
-        Assert.Equal(user.ProviderId, descriptor.ProviderId);
         Assert.Equal(user.Name, descriptor.Name);
         Assert.Equal(user.AcceptedTermsVersion, descriptor.AcceptedTermsVersion);
-        Assert.Equal(user.Tin, descriptor.Tin);
         Assert.Equal(user.AllowCPRLookup, descriptor.AllowCPRLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);
         Assert.Equal(identityToken, descriptor.IdentityToken);
+        Assert.Equal(providerType, descriptor.ProviderType);
         Assert.NotEqual(identityToken, descriptor.EncryptedIdentityToken);
     }
 }

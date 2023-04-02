@@ -1,12 +1,13 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
-using API.Utilities;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -19,51 +20,69 @@ public class TermsController : ControllerBase
     public async Task<IActionResult> AcceptTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
-        IUserDescriptMapper descriptMapper,
+        IUserDescriptorMapper mapper,
         IUserService userService,
+        ICompanyService companyService,
         IHttpClientFactory clientFactory,
         IOptions<DataSyncOptions> options,
         [FromBody] AcceptTermsRequest acceptedTermsVersion)
     {
-        var descriptor = descriptMapper.Map(User) ?? throw new NullReferenceException($"UserDescriptMapper failed: {User}");
+        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+
+        if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
+        {
+            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
+        }
+
+        var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
+        if (company == null && descriptor.Tin != null)
+        {
+            company = new Company()
+            {
+                Name = descriptor.CompanyName!,
+                Tin = descriptor.Tin!
+            };
+        }
 
         User user;
-        if (descriptor.Id is null)
+        if (descriptor.UserStored)
         {
-            user = new User
-            {
-                Name = descriptor.Name,
-                ProviderId = descriptor.ProviderId,
-                Tin = descriptor.Tin,
-                AllowCPRLookup = descriptor.AllowCPRLookup
-            };
+            var id = descriptor.Id;
+            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
         else
         {
-            var id = descriptor.Id.Value;
-            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
+            user = new User
+            {
+                Id = descriptor.Id,
+                Name = descriptor.Name,
+                AllowCPRLookup = descriptor.AllowCPRLookup,
+            };
+            await userService.InsertUserAsync(user);
+            user.Company = company;
+            user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;
-
         await userService.UpsertUserAsync(user);
 
-        if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+        var relationUri = options.Value.Uri.AbsoluteUri;
+        if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = authentication;
 
             // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
             //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
-            var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{options.Value.Uri.AbsoluteUri}/relations", new()
+            var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{relationUri}/relations", new()
             {
                 { "ssn", null },
-                { "tin", user.Tin }
+                { "tin", descriptor.Tin }
             });
 
             if (!result.IsSuccessStatusCode)
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", user.Id); // TODO: This should be logging the subject when merged with "company changes".
+                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
             }
         }
 

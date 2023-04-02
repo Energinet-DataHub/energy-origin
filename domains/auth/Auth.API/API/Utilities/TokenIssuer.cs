@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
+using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Options;
@@ -46,33 +47,45 @@ public class TokenIssuer : ITokenIssuer
 
         var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id?.ToString(), version, scope);
+        return new(descriptor.Id.ToString(), version, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
-        var claims = new Dictionary<string, object> {
+        var claims = new Dictionary<string, object>
+        {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
-            { UserClaimName.ProviderId, descriptor.ProviderId },
+            { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
+            { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
             { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup }
+            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { UserClaimName.UserStored, descriptor.UserStored },
+            { UserClaimName.Subject, descriptor.Subject },
+            { UserClaimName.Actor, descriptor.Id },
+            { UserClaimName.ActorLegacy, descriptor.Id }
         };
-        if (descriptor.Tin != null)
+
+        if (descriptor.CompanyId is not null)
+        {
+            claims.Add(UserClaimName.CompanyId, descriptor.CompanyId);
+        }
+        if (descriptor.Tin is not null)
         {
             claims.Add(UserClaimName.Tin, descriptor.Tin);
+        }
+        if (descriptor.CompanyName is not null)
+        {
+            claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
         }
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
+            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name),
+            new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
         };
-        if (state.Id != null)
-        {
-            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, state.Id));
-        }
 
         return new()
         {

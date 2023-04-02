@@ -13,7 +13,7 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, IOptions<IdentityProviderOptions> providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -21,6 +21,8 @@ public class LoginController : ControllerBase
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.Value.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
+
+        var (scope, arguments) = providerOptions.Value.GetIdentityProviderArguments();
 
         var oidcState = new OidcState(
             State: state,
@@ -31,12 +33,9 @@ public class LoginController : ControllerBase
             clientId: oidcOptions.Value.ClientId,
             responseType: "code",
             redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
-            scope: "openid mitid nemid ssn userinfo_token",
             state: oidcState.Encode(),
-            extra: new Parameters(new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("idp_params","{\"nemid\": {\"amr_values\": \"nemid.otp nemid.keyfile\"}}")
-            }));
+            scope: scope,
+            extra: new Parameters(arguments));
 
         return RedirectPreserveMethod(url);
     }

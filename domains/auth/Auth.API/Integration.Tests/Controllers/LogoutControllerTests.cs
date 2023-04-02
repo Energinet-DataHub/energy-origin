@@ -2,6 +2,7 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,7 +51,6 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var oidcOptions = factory.ServiceProvider.GetRequiredService<IOptions<OidcOptions>>();
         var user = await factory.AddUserToDatabaseAsync();
-
         var client = factory.CreateAuthenticatedClient(user);
 
         var result = await client.GetAsync("auth/logout");

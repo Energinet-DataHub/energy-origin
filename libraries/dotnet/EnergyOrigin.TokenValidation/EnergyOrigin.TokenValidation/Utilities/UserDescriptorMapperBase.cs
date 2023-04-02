@@ -56,6 +56,12 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
+        if (!bool.TryParse(user.FindFirstValue(UserClaimName.UserStored), out var userStored))
+        {
+            MissingProperty(nameof(UserClaimName.UserStored));
+            return null;
+        }
+
         var encryptedAccessToken = user.FindFirstValue(UserClaimName.AccessToken);
         if (encryptedAccessToken == null)
         {
@@ -77,9 +83,16 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
+        var actor = user.FindFirstValue(UserClaimName.Actor);
+        if (actor == null)
+        {
+            MissingProperty(nameof(UserClaimName.Actor));
+            return null;
+        }
+
         return new(cryptography)
         {
-            Id = user.FindFirstValue(UserClaimName.Actor) is not null ? Guid.Parse(user.FindFirstValue(UserClaimName.Actor)!) : null,
+            Id = Guid.Parse(actor),
             ProviderType = providerType,
             Name = name,
             CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,
@@ -88,6 +101,7 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             AcceptedTermsVersion = acceptedVersion,
             CurrentTermsVersion = currentVersion,
             AllowCPRLookup = allowCPRLookup,
+            UserStored = userStored,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,
             EncryptedProviderKeys = encryptedProviderKeys

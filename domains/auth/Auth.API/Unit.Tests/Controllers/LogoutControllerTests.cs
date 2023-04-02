@@ -2,9 +2,10 @@ using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Options;
-using API.Utilities;
+using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace Tests.Controllers;
 public class LogoutControllerTests
 {
     private readonly OidcOptions oidcOptions;
-    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
 
     public LogoutControllerTests()
