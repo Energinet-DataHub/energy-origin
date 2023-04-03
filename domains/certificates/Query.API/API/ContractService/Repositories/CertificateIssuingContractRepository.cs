@@ -22,6 +22,12 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
         return session.SaveChangesAsync();
     }
 
+    public Task Update(CertificateIssuingContract certificateIssuingContract)
+    {
+        session.Update(certificateIssuingContract);
+        return session.SaveChangesAsync();
+    }
+
     public Task<CertificateIssuingContract?> GetByGsrn(string gsrn, CancellationToken cancellationToken) => session
         .Query<CertificateIssuingContract>()
         .Where(x => x.GSRN == gsrn)

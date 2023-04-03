@@ -14,6 +14,11 @@
             Starting date for generation of certificates in Unix time
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Requests.CreateContract.EndDate">
+            <summary>
+            OPTIONAL: End date for generation of certificates in Unix time
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.TransferCertificate.CertificateId">
             <summary>
             Id of the certificate
@@ -86,7 +91,7 @@
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
-            Create a contract that activates granular certificate generation for a metering point 
+            Create a contract that activates granular certificate generation for a metering point
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">

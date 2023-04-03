@@ -8,6 +8,7 @@ using API.ContractService.Repositories;
 using CertificateEvents.Primitives;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
+using static API.ContractService.EndContractResult;
 
 namespace API.ContractService;
 
@@ -22,7 +23,8 @@ internal class ContractServiceImpl : IContractService
         this.repository = repository;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset endDate,
+        CancellationToken cancellationToken)
     {
         var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == gsrn);
@@ -55,8 +57,10 @@ internal class ContractServiceImpl : IContractService
                 MeteringPointType = MeteringPointType.Production,
                 MeteringPointOwner = meteringPointOwner,
                 StartDate = startDate,
+                EndDate = DateTimeOffset.Compare(endDate, startDate) >= 1 ? endDate : null,
                 Created = DateTimeOffset.UtcNow
             };
+
             await repository.Save(contract);
 
             return new Success(contract);
@@ -64,6 +68,22 @@ internal class ContractServiceImpl : IContractService
         catch (DocumentAlreadyExistsException)
         {
             return new ContractAlreadyExists(null);
+        }
+    }
+
+    public async Task<EndContractResult> EndContract(string gsrn, DateTimeOffset endDate, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var contract = await repository.GetByGsrn(gsrn, cancellationToken);
+            contract!.EndDate = endDate;
+            await repository.Update(contract);
+
+            return new Ended(true);
+        }
+        catch (NonExistentDocumentException)
+        {
+            return new NonExistingContract(null);
         }
     }
 

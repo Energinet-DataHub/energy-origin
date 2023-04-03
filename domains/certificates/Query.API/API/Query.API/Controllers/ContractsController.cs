@@ -20,7 +20,7 @@ namespace API.Query.API.Controllers;
 public class ContractsController : ControllerBase
 {
     /// <summary>
-    /// Create a contract that activates granular certificate generation for a metering point 
+    /// Create a contract that activates granular certificate generation for a metering point
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
@@ -42,8 +42,10 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.Create(createContract.GSRN, meteringPointOwner,
-            DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate), cancellationToken);
+        var result = await service.Create(createContract.GSRN, meteringPointOwner!,
+            DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
+            DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate),
+            cancellationToken);
 
         return result switch
         {
@@ -97,5 +99,15 @@ public class ContractsController : ControllerBase
         return contracts.IsEmpty()
             ? NoContent()
             : Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) });
+    }
+
+
+    [HttpDelete]
+    [ProducesResponseType(typeof(Contract), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> EndContract()
+    {
+
     }
 }

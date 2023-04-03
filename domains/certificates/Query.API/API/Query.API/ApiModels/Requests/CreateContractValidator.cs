@@ -10,10 +10,17 @@ public class CreateContractValidator : AbstractValidator<CreateContract>
     {
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay).ToUnixTimeSeconds();
+        var utcMidnightNextDay = now.AddDays(1).Subtract(now.TimeOfDay).ToUnixTimeSeconds();
 
         RuleFor(cs => cs.StartDate)
             .GreaterThanOrEqualTo(_ => utcMidnight)
             .LessThan(253402300800).WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)");
+
+        RuleFor(cs => cs.EndDate)
+            .GreaterThanOrEqualTo(_ => utcMidnightNextDay)
+            .LessThan(253402300800)
+            .WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)");
+
 
         RuleFor(cs => cs.GSRN)
             .Cascade(CascadeMode.Stop)
