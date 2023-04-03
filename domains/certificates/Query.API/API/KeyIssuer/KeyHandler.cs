@@ -3,8 +3,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using API.KeyIssuer.Repositories;
-using NSec.Cryptography;
 using Marten.Exceptions;
+using NSec.Cryptography;
 
 namespace API.KeyIssuer;
 
