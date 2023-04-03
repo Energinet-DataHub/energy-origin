@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Marten;
@@ -20,8 +19,7 @@ internal class KeyIssuingRepository : IKeyIssuingRepository
         return session.SaveChangesAsync();
     }
 
-    public Task<KeyIssuingDocument?> GetByMeteringPointOwner(string meteringPointOwner, CancellationToken cancellationToken) => session
-            .Query<KeyIssuingDocument>()
-            .Where(x => x.MeteringPointOwner == meteringPointOwner)
-            .SingleOrDefaultAsync(cancellationToken);
+    public Task<KeyIssuingDocument?> GetByMeteringPointOwner(string meteringPointOwner,
+        CancellationToken cancellationToken) =>
+        session.DocumentStore.QuerySession().LoadAsync<KeyIssuingDocument>(meteringPointOwner, cancellationToken);
 }

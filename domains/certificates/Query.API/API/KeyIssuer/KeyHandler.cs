@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.KeyIssuer.Repositories;
 using NSec.Cryptography;
+using Marten.Exceptions;
 
 namespace API.KeyIssuer;
 
@@ -20,11 +21,11 @@ internal class KeyHandler : IKeyIssuer
 
     public async Task<string> Create(string meteringPointOwner, CancellationToken cancellationToken)
     {
-        var keyDocumentExist = await repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
+        var document = await repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
 
-        if (keyDocumentExist != null)
+        if (document != null)
         {
-            return keyDocumentExist.PublicKey;
+            return document.PublicKey;
         }
 
         using var key = Key.Create(algorithm, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextArchiving });
@@ -41,9 +42,20 @@ internal class KeyHandler : IKeyIssuer
             Signature = Encode(signature)
         };
 
-        await repository.Save(keyDocument);
+        try
+        {
+            await repository.Save(keyDocument);
+            return encodedPublicKey;
+        }
+        catch (DocumentAlreadyExistsException)
+        {
+            while (document == null)
+            {
+                document = await repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
+            }
 
-        return encodedPublicKey;
+            return document.PublicKey;
+        }
     }
 
     public async Task<bool> Verify(string publicKey, string meteringPointOwner, CancellationToken cancellationToken)
