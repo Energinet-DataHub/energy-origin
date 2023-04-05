@@ -39,7 +39,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             var allContracts = await GetAllContracts(stoppingToken);
             foreach (var contract in allContracts)
             {
-                if (contract.EndDate == null && contract.EndDate < DateTime.Now)
+                if (contract.EndDate != null && contract.EndDate < DateTime.Now)
                 {
                     continue;
                 }
