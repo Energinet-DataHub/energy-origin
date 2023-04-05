@@ -19,7 +19,8 @@ public class CreateContractValidator : AbstractValidator<CreateContract>
         RuleFor(cs => cs.EndDate)
             .GreaterThanOrEqualTo(_ => utcMidnightNextDay)
             .LessThan(253402300800)
-            .WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)");
+            .WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)")
+            .When(s => s.EndDate != default);
 
 
         RuleFor(cs => cs.GSRN)

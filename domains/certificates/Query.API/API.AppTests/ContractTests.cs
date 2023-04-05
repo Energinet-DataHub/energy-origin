@@ -245,8 +245,9 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
     public async Task CreateContract_WithoutEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
-        var subject = Guid.NewGuid().ToString();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
+        var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var body = new
