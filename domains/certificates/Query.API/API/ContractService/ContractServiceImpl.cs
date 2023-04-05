@@ -73,22 +73,19 @@ internal class ContractServiceImpl : IContractService
 
     public async Task<EndContractResult> EndContract(string gsrn, string meteringPointOwner, DateTimeOffset endDate, CancellationToken cancellationToken)
     {
-        try
-        {
-            var contract = await repository.GetByGsrn(gsrn, cancellationToken);
-            if (contract.MeteringPointOwner != meteringPointOwner)
-            {
-                return new MeteringPointOwnerNoMatch();
-            }
-            contract.EndDate = endDate;
-            await repository.Update(contract);
-
-            return new Ended();
-        }
-        catch (NonExistentDocumentException)
+        var contract = await repository.GetByGsrn(gsrn, cancellationToken);
+        if (contract == null)
         {
             return new NonExistingContract();
         }
+        if (contract!.MeteringPointOwner != meteringPointOwner)
+        {
+            return new MeteringPointOwnerNoMatch();
+        }
+        contract.EndDate = endDate;
+        await repository.Update(contract);
+
+        return new Ended();
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)

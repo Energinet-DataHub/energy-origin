@@ -102,8 +102,10 @@ public class ContractsController : ControllerBase
             : Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) });
     }
 
-
-    [HttpDelete]
+    /// <summary>
+    /// Ends the contract on a specific date
+    /// </summary>
+    [HttpPatch]
     [ProducesResponseType(typeof(Contract), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [Route("api/certificates/contracts")]
@@ -120,6 +122,11 @@ public class ContractsController : ControllerBase
         {
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
+        }
+
+        if (endContract.EndDate == default)
+        {
+            endContract.EndDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         }
 
         var result = await service.EndContract(endContract.GSRN, meteringPointOwner!,
