@@ -12,6 +12,7 @@ using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
+using static API.ContractService.EndContractResult;
 
 namespace API.Query.API.Controllers;
 
@@ -106,8 +107,31 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(Contract), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [Route("api/certificates/contracts")]
-    public async Task<ActionResult> EndContract()
+    public async Task<ActionResult> EndContract(
+        [FromBody] EndContract endContract,
+        [FromServices] IValidator<EndContract> validator,
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
     {
+        var meteringPointOwner = User.FindFirstValue("subject");
 
+        var validationResult = await validator.ValidateAsync(endContract, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await service.EndContract(endContract.GSRN, meteringPointOwner!,
+            DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate),
+            cancellationToken);
+
+        return result switch
+        {
+            NonExistingContract => BadRequest($"No contract for GSRN {endContract.GSRN} found"),
+            MeteringPointOwnerNoMatch => Forbid(),
+            Ended => Ok(),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
     }
 }
