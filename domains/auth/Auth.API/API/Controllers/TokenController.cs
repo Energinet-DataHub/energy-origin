@@ -21,9 +21,10 @@ public class TokenController : ControllerBase
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var versionBypass = false;
 
-        if (descriptor.UserStored)
+        var user = await userService.GetUserByIdAsync(descriptor.Id);
+
+        if (user != null)
         {
-            var user = await userService.GetUserByIdAsync(descriptor.Id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {descriptor.Id}");
             descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken!, descriptor.IdentityToken!);
 
             var scope = User.FindFirstValue(UserClaimName.Scope);

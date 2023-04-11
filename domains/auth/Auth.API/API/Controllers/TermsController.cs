@@ -85,8 +85,6 @@ public class TermsController : ControllerBase
             }
         }
 
-        await Task.Delay(5000);
-
         return NoContent();
     }
 }
