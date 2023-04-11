@@ -10,9 +10,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Unit.Tests;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class LoginControllerTests
 {
