@@ -39,7 +39,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
-                options.StartTimeout = TimeSpan.FromSeconds(5);
+                options.StartTimeout = TimeSpan.FromSeconds(30);
                 options.StopTimeout = TimeSpan.FromSeconds(5);
                 // Ensure masstransit bus is started when we run our health checks
                 options.WaitUntilStarted = RabbitMqOptions != null;
