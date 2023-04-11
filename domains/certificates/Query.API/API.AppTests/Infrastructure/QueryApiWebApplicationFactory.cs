@@ -37,11 +37,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            //  Ensure masstransit bus is started when we run our health checks
-            if (RabbitMqOptions != null)
-                services.AddOptions<MassTransitHostOptions>().Configure(options => options.WaitUntilStarted = true);
+            services.AddOptions<MassTransitHostOptions>().Configure(options =>
+            {
+                options.StartTimeout = TimeSpan.FromSeconds(5);
+                options.StopTimeout = TimeSpan.FromSeconds(5);
+                // Ensure masstransit bus is started when we run our health checks
+                options.WaitUntilStarted = RabbitMqOptions != null;
+            });
 
-            //Remove DataSyncSyncerWorker
+            // Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
