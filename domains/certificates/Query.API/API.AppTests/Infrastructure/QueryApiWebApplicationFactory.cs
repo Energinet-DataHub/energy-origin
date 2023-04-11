@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using API.AppTests.Mocks;
 using API.DataSyncSyncer;
 using API.RabbitMq.Configurations;
-using DotNet.Testcontainers.Configurations;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -18,9 +17,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
-using Serilog.Extensions.Logging;
-using Serilog.Formatting.Raw;
 
 namespace API.AppTests.Infrastructure;
 
