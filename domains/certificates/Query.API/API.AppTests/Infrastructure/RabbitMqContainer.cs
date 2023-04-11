@@ -30,5 +30,5 @@ public class RabbitMqContainer : IAsyncLifetime
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
-    public Task DisposeAsync() => testContainer.StopAsync();
+    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask(); // StopAsync() // Måske ligesom marten db container her
 }

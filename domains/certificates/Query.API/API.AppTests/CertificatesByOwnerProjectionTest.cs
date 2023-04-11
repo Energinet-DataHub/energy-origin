@@ -15,6 +15,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Collection("Startup")]
 [WriteToConsole]
 [UsesVerify]
 public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>, IDisposable

@@ -16,6 +16,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Collection("Startup")]
 [WriteToConsole]
 public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,

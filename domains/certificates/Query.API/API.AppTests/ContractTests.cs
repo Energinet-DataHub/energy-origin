@@ -14,6 +14,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Collection("Startup")]
 [WriteToConsole]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
 public sealed class ContractTests :
