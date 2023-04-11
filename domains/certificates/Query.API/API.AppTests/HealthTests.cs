@@ -6,7 +6,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection("Startup")]
+[Collection(StartupCollection.Name)]
 [WriteToConsole]
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {

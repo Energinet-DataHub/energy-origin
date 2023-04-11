@@ -10,7 +10,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection("Startup")]
+[Collection(StartupCollection.Name)]
 [WriteToConsole]
 [UsesVerify]
 public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>

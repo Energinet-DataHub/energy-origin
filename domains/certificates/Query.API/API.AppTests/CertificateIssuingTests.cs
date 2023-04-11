@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
-using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Infrastructure.WriteToConsole;
 using API.AppTests.Mocks;
@@ -16,7 +15,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection("Startup")]
+[Collection(StartupCollection.Name)]
 [WriteToConsole]
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,

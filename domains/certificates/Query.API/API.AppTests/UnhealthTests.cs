@@ -7,7 +7,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection("Startup")]
+[Collection(StartupCollection.Name)]
 [WriteToConsole]
 public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
 {

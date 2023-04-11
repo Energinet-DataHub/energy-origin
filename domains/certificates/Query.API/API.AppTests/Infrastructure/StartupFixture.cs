@@ -18,5 +18,5 @@ public class StartupFixture
 [CollectionDefinition("Startup")]
 public class StartupCollection : ICollectionFixture<StartupFixture>
 {
-
+    public const string Name = "Startup";
 }
