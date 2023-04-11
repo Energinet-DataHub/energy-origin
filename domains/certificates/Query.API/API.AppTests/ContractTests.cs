@@ -13,7 +13,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Before]
+[WriteToConsole]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
 public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
 {

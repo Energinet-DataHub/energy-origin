@@ -14,7 +14,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Before]
+[WriteToConsole]
 [UsesVerify]
 public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>, IDisposable
 {

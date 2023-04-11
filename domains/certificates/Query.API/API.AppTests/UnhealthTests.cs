@@ -6,7 +6,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Before]
+[WriteToConsole]
 public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;

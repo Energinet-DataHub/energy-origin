@@ -6,7 +6,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Before]
+[WriteToConsole]
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;

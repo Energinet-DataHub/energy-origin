@@ -15,7 +15,7 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Before]
+[WriteToConsole]
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
