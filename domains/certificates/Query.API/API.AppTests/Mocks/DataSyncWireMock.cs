@@ -9,10 +9,11 @@ public sealed class DataSyncWireMock : IDisposable
 {
     private readonly WireMockServer server;
 
-    public DataSyncWireMock(int port) => server = WireMockServer.Start(port);
+    public DataSyncWireMock() => server = WireMockServer.Start();
 
     public string Url => server.Url!;
 
+    //TODO: Can we somehow reset everything? Maybe between each test case?
     public void SetupMeteringPointsResponse(string gsrn, string type = "production") =>
         server
             .Given(Request.Create().WithPath("/meteringPoints"))

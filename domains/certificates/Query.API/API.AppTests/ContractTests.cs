@@ -15,14 +15,22 @@ namespace API.AppTests;
 
 [WriteToConsole]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
-public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
+public sealed class ContractTests :
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+    IClassFixture<RabbitMqContainer>,
+    IClassFixture<DataSyncWireMock>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten, RabbitMqContainer rabbitMqContainer)
+    public ContractTests(
+        QueryApiWebApplicationFactory factory,
+        MartenDbContainer marten,
+        RabbitMqContainer rabbitMqContainer,
+        DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9001);
+        this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = marten.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
@@ -205,6 +213,4 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    public void Dispose() => dataSyncWireMock.Dispose();
 }

@@ -20,15 +20,18 @@ public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
-    IDisposable
+    IClassFixture<DataSyncWireMock>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
-        RabbitMqContainer rabbitMqContainer)
+    public CertificateIssuingTests(
+        QueryApiWebApplicationFactory factory,
+        MartenDbContainer martenDbContainer,
+        RabbitMqContainer rabbitMqContainer,
+        DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9003);
+        this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
@@ -193,6 +196,4 @@ public sealed class CertificateIssuingTests :
         options
             .WithStrictOrderingFor(l => l.Result)
             .For(l => l.Result).Exclude(c => c.Id);
-
-    public void Dispose() => dataSyncWireMock.Dispose();
 }

@@ -20,7 +20,7 @@ public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<MartenDbContainer>,
-    IDisposable
+    IClassFixture<DataSyncWireMock>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -28,9 +28,10 @@ public sealed class TransferTests :
     public TransferTests(
         QueryApiWebApplicationFactory factory,
         MartenDbContainer martenDbContainer,
-        RabbitMqContainer rabbitMqContainer)
+        RabbitMqContainer rabbitMqContainer,
+        DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9004);
+        this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
@@ -129,6 +130,4 @@ public sealed class TransferTests :
 
         return (owner1, owner1Client, owner2, owner2Client, certificateId);
     }
-
-    public void Dispose() => dataSyncWireMock.Dispose();
 }
