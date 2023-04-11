@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Xunit.Sdk;
 
-namespace API.AppTests.Helpers;
+namespace API.AppTests.Infrastructure.WriteToConsole;
 
 internal class WriteToConsoleAttribute : BeforeAfterTestAttribute
 {

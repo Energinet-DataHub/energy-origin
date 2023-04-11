@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AggregateRepositories;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
+using API.AppTests.Infrastructure.WriteToConsole;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
+using API.AppTests.Infrastructure.WriteToConsole;
 using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;

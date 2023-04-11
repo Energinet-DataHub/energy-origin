@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
+using API.AppTests.Infrastructure.WriteToConsole;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
