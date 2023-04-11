@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
+using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Before]
 [UsesVerify]
 public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
 {

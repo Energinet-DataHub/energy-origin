@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
+using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
@@ -14,6 +15,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Before]
 public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,

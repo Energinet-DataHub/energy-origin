@@ -15,6 +15,7 @@ using Xunit;
 
 namespace API.AppTests;
 
+[Before]
 public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<RabbitMqContainer>,

@@ -1,10 +1,12 @@
 using System.Net;
 using System.Threading.Tasks;
+using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using Xunit;
 
 namespace API.AppTests;
 
+[Before]
 public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
