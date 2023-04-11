@@ -7,7 +7,6 @@ using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -85,6 +84,8 @@ public class TermsController : ControllerBase
                 logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
             }
         }
+
+        await Task.Delay(5000);
 
         return NoContent();
     }
