@@ -23,7 +23,7 @@ internal class ContractServiceImpl : IContractService
         this.repository = repository;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset endDate,
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate,
         CancellationToken cancellationToken)
     {
         var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
@@ -57,7 +57,7 @@ internal class ContractServiceImpl : IContractService
                 MeteringPointType = MeteringPointType.Production,
                 MeteringPointOwner = meteringPointOwner,
                 StartDate = startDate,
-                EndDate = DateTimeOffset.Compare(endDate, startDate) >= 1 ? endDate : null,
+                EndDate = endDate,
                 Created = DateTimeOffset.UtcNow
             };
 

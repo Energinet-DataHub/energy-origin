@@ -13,5 +13,5 @@ public class EndContract
     /// <summary>
     /// End Date for generation of certificates in Unix time
     /// </summary>
-    public long EndDate { get; set; }
+    public long? EndDate { get; set; }
 }

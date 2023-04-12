@@ -121,6 +121,42 @@
             "description": "Success"
           }
         }
+      },
+      "patch": {
+        "tags": [
+          "Contracts"
+        ],
+        "summary": "Ends the contract on a specific date",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
       }
     },
     "/api/certificates/contracts/{id}": {
@@ -337,6 +373,28 @@
             "type": "integer",
             "description": "Starting date for generation of certificates in Unix time",
             "format": "int64"
+          },
+          "endDate": {
+            "type": "integer",
+            "description": "OPTIONAL: End date for generation of certificates in Unix time",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EndContract": {
+        "type": "object",
+        "properties": {
+          "gsrn": {
+            "type": "string",
+            "description": "Global Service Relation Number (GSRN) for the metering point"
+          },
+          "endDate": {
+            "type": "integer",
+            "description": "End Date for generation of certificates in Unix time",
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false

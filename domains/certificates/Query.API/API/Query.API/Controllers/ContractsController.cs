@@ -45,7 +45,7 @@ public class ContractsController : ControllerBase
 
         var result = await service.Create(createContract.GSRN, meteringPointOwner!,
             DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
-            DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate),
+            createContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate) : null,
             cancellationToken);
 
         return result switch
@@ -106,8 +106,9 @@ public class ContractsController : ControllerBase
     /// Ends the contract on a specific date
     /// </summary>
     [HttpPatch]
-    [ProducesResponseType(typeof(Contract), 200)]
+    [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 403)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> EndContract(
         [FromBody] EndContract endContract,
@@ -124,18 +125,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        if (endContract.EndDate == default)
-        {
-            endContract.EndDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        }
-
         var result = await service.EndContract(endContract.GSRN, meteringPointOwner!,
-            DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate),
+            endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
             cancellationToken);
 
         return result switch
         {
-            NonExistingContract => BadRequest($"No contract for GSRN {endContract.GSRN} found"),
+            NonExistingContract => NotFound($"No contract for GSRN {endContract.GSRN} found"),
             MeteringPointOwnerNoMatch => Forbid(),
             Ended => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")

@@ -343,7 +343,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var response = await client.PatchAsJsonAsync("api/certificates/contracts", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
