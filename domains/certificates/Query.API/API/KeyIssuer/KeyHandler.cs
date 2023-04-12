@@ -69,7 +69,7 @@ internal class KeyHandler : IKeyIssuer
         var keyDocument = await repository.GetByMeteringPointOwner(meteringPointOwner, cancellationToken);
         if (keyDocument == null)
         {
-            throw new Exception("Not existing");
+            throw new MartenException("Document does not exist");
         }
 
         var data = Encoding.UTF8.GetBytes(meteringPointOwner);
