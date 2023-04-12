@@ -18,5 +18,5 @@ public class CreateContract
     /// <summary>
     /// OPTIONAL: End date for generation of certificates in Unix time
     /// </summary>
-    public long EndDate { get; set; }
+    public long? EndDate { get; set; }
 }
