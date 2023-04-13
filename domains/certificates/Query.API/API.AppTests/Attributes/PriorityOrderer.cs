@@ -7,7 +7,7 @@ namespace API.AppTests.Attributes;
 
 public class PriorityOrderer : ITestCaseOrderer
 {
-    private const string @namespace = "API.AppTests.Infrastructure.Attributes";
+    private const string @namespace = "API.AppTests.Attributes";
     public const string TypeName = $"{@namespace}.{nameof(PriorityOrderer)}";
 
     public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)
