@@ -6,9 +6,12 @@ using Xunit;
 
 namespace API.AppTests.Testcontainers;
 
-public class RabbitMqContainer : IAsyncLifetime
+public partial class RabbitMqContainer : IAsyncLifetime
 {
     private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
+
+    [GeneratedRegex("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:(\\d+)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex HostnameAndPortRegex();
 
     public RabbitMqContainer() =>
         testContainer = new RabbitMqBuilder()
@@ -20,8 +23,7 @@ public class RabbitMqContainer : IAsyncLifetime
     {
         get
         {
-            var r = new Regex("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:(\\d+)");
-            var match = r.Match(testContainer.GetConnectionString());
+            var match = HostnameAndPortRegex().Match(testContainer.GetConnectionString());
 
             return new RabbitMqOptions
             {
