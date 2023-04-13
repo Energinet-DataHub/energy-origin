@@ -37,7 +37,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            OptionsServiceCollectionExtensions.AddOptions<MassTransitHostOptions>(services).Configure(options =>
+            services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);
                 options.StopTimeout = TimeSpan.FromSeconds(5);
