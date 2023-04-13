@@ -21,8 +21,8 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task Health_IsCalled_ReturnsOk()
     {
-        var client = factory.CreateClient();
-        var healthResponse = await client.GetAsync("health");
+        using var client = factory.CreateClient();
+        using var healthResponse = await client.GetAsync("health");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Helpers;
 using API.AppTests.Infrastructure;
 using API.AppTests.Infrastructure.WriteToConsole;
 using Xunit;
@@ -22,8 +21,8 @@ public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
     [Fact]
     public async Task Health_IsCalledWhenRabbitMqIsDown_ReturnsServiceUnavailable()
     {
-        var client = factory.CreateClient();
-        var healthResponse = await client.GetAsync("health");
+        using var client = factory.CreateClient();
+        using var healthResponse = await client.GetAsync("health");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, healthResponse.StatusCode);
     }
 }

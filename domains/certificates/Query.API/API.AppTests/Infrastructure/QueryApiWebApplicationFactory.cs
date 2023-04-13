@@ -97,7 +97,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         using var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }

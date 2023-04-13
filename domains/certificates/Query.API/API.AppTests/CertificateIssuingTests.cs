@@ -42,8 +42,8 @@ public sealed class CertificateIssuingTests :
     [Fact]
     public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
     {
-        var client = factory.CreateUnauthenticatedClient();
-        var certificatesResponse = await client.GetAsync("api/certificates");
+        using var client = factory.CreateUnauthenticatedClient();
+        using var certificatesResponse = await client.GetAsync("api/certificates");
 
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
@@ -55,7 +55,7 @@ public sealed class CertificateIssuingTests :
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var response = await client.GetAsync("api/certificates");
+        using var response = await client.GetAsync("api/certificates");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }

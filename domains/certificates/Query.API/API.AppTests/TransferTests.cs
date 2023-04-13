@@ -43,18 +43,18 @@ public sealed class TransferTests :
     [Fact]
     public async Task can_successfully_transfer()
     {
-        var (owner1, owner1Client, owner2, owner2Client, certificateId) = await Setup();
+        using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var body = new { CertificateId = certificateId, Source = owner1, Target = owner2 };
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
+        var body = new { CertificateId = setup.CertificateId, Source = setup.Owner1, Target = setup.Owner2 };
+        using var transferResult = await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var certificateListForOwner2 = await owner2Client.GetFromJsonAsync<CertificateList>("api/certificates");
+        var certificateListForOwner2 = await setup.Owner2Client.GetFromJsonAsync<CertificateList>("api/certificates");
 
         certificateListForOwner2!.Result.Should().HaveCount(1);
 
-        var certificateListResponseForOwner1 = await owner1Client.GetAsync("api/certificates");
+        using var certificateListResponseForOwner1 = await setup.Owner1Client.GetAsync("api/certificates");
 
         certificateListResponseForOwner1.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -62,12 +62,12 @@ public sealed class TransferTests :
     [Fact]
     public async Task fails_when_transferring_in_the_wrong_direction()
     {
-        var (owner1, owner1Client, owner2, _, certificateId) = await Setup();
+        using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var bodyWithWrongOwnerAsSource = new { CertificateId = certificateId, Source = owner2, Target = owner1 };
+        var bodyWithWrongOwnerAsSource = new { CertificateId = setup.CertificateId, Source = setup.Owner2, Target = setup.Owner1 };
 
-        var transferResult =
-            await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
+        using var transferResult =
+            await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -75,13 +75,13 @@ public sealed class TransferTests :
     [Fact]
     public async Task fails_for_unknown_certificate_id()
     {
-        var (owner1, owner1Client, owner2, _, _) = await Setup();
+        using var setup = await Setup.Create(factory, dataSyncWireMock);
 
         var unknownCertificateId = Guid.NewGuid();
 
-        var body = new { CertificateId = unknownCertificateId, Source = owner1, Target = owner2 };
+        var body = new { CertificateId = unknownCertificateId, Source = setup.Owner1, Target = setup.Owner2 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
+        using var transferResult = await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -89,47 +89,71 @@ public sealed class TransferTests :
     [Fact]
     public async Task fails_when_transferring_to_same_owner()
     {
-        var (owner1, owner1Client, _, _, certificateId) = await Setup();
+        using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var bodyWithSameOwner = new { CertificateId = certificateId, Source = owner1, Target = owner1 };
+        var bodyWithSameOwner = new { CertificateId = setup.CertificateId, Source = setup.Owner1, Target = setup.Owner1 };
 
-        var transferResult = await owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithSameOwner);
+        using var transferResult = await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithSameOwner);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    /// <summary>
-    /// Creates a contract for "owner1" and then publishes a measurement. Wait for a certificate to be generated for the measurement
-    /// </summary>
-    private async Task<(string owner1, HttpClient owner1Client, string owner2, HttpClient, Guid certificateId)> Setup()
+    private sealed class Setup : IDisposable
     {
-        var owner1 = Guid.NewGuid().ToString();
-        var owner2 = Guid.NewGuid().ToString();
+        public string Owner1 { get; }
+        public HttpClient Owner1Client { get; }
+        public string Owner2 { get; }
+        public HttpClient Owner2Client { get; }
+        public Guid CertificateId { get; }
 
-        var gsrn = GsrnHelper.GenerateRandom();
+        private Setup(string owner1, HttpClient owner1Client, string owner2, HttpClient owner2Client, Guid certificateId)
+        {
+            Owner1 = owner1;
+            Owner1Client = owner1Client;
+            Owner2 = owner2;
+            Owner2Client = owner2Client;
+            CertificateId = certificateId;
+        }
 
-        var now = DateTimeOffset.UtcNow;
-        var utcMidnight = now.Subtract(now.TimeOfDay);
+        /// <summary>
+        /// Creates a contract for "owner1" and then publishes a measurement. Wait for a certificate to be generated for the measurement
+        /// </summary>
+        public static async Task<Setup> Create(QueryApiWebApplicationFactory factory, DataSyncWireMock dataSyncWireMock)
+        {
+            var owner1 = Guid.NewGuid().ToString();
+            var owner2 = Guid.NewGuid().ToString();
 
-        await factory.AddContract(owner1, gsrn, utcMidnight, dataSyncWireMock);
+            var gsrn = GsrnHelper.GenerateRandom();
 
-        var measurement = new EnergyMeasuredIntegrationEvent(
-            GSRN: gsrn,
-            DateFrom: utcMidnight.ToUnixTimeSeconds(),
-            DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
+            var now = DateTimeOffset.UtcNow;
+            var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.GetMassTransitBus().Publish(measurement);
+            await factory.AddContract(owner1, gsrn, utcMidnight, dataSyncWireMock);
 
-        var owner1Client = factory.CreateAuthenticatedClient(owner1);
-        var owner2Client = factory.CreateAuthenticatedClient(owner2);
+            var measurement = new EnergyMeasuredIntegrationEvent(
+                GSRN: gsrn,
+                DateFrom: utcMidnight.ToUnixTimeSeconds(),
+                DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                Quantity: 42,
+                Quality: MeasurementQuality.Measured);
 
-        var certificateListForOwner1 =
-            await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+            await factory.GetMassTransitBus().Publish(measurement);
 
-        var certificateId = certificateListForOwner1.Result.Single().Id;
+            var owner1Client = factory.CreateAuthenticatedClient(owner1);
+            var owner2Client = factory.CreateAuthenticatedClient(owner2);
 
-        return (owner1, owner1Client, owner2, owner2Client, certificateId);
+            var certificateListForOwner1 =
+                await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+
+            var certificateId = certificateListForOwner1.Result.Single().Id;
+
+            return new Setup(owner1, owner1Client, owner2, owner2Client, certificateId);
+        }
+
+        public void Dispose()
+        {
+            Owner1Client.Dispose();
+            Owner2Client.Dispose();
+        }
     }
 }

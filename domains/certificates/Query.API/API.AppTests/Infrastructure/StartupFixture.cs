@@ -10,7 +10,7 @@ public class StartupFixture
     public StartupFixture()
     {
         var loggerConfiguration = new LoggerConfiguration().WriteTo.Console();
-        var provider = new SerilogLoggerProvider(loggerConfiguration.CreateLogger());
+        using var provider = new SerilogLoggerProvider(loggerConfiguration.CreateLogger());
         TestcontainersSettings.Logger = provider.CreateLogger("Testcontainers");
     }
 }
