@@ -3,18 +3,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.AppTests.Attributes;
-using API.AppTests.Factories;
-using API.AppTests.Helpers;
-using API.AppTests.Mocks;
-using API.AppTests.Testcontainers;
+using API.IntegrationTests.Attributes;
+using API.IntegrationTests.Factories;
+using API.IntegrationTests.Helpers;
+using API.IntegrationTests.Mocks;
+using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
-[TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
+[TestCaseOrderer(PriorityOrderer.TypeName, "API.IntegrationTests")]
 public sealed class ContractTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,

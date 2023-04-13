@@ -1,10 +1,10 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Factories;
-using API.AppTests.Testcontainers;
+using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
 public class HealthTests :
     TestBase,

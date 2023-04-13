@@ -4,17 +4,17 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.AppTests.Extensions;
-using API.AppTests.Factories;
-using API.AppTests.Helpers;
-using API.AppTests.Mocks;
-using API.AppTests.Testcontainers;
+using API.IntegrationTests.Extensions;
+using API.IntegrationTests.Factories;
+using API.IntegrationTests.Helpers;
+using API.IntegrationTests.Mocks;
+using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using MeasurementEvents;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
 public sealed class TransferTests :
     TestBase,
@@ -142,7 +142,7 @@ public sealed class TransferTests :
             var owner2Client = factory.CreateAuthenticatedClient(owner2);
 
             var certificateListForOwner1 =
-                await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+                await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => Enumerable.Any<Certificate>(res.Result));
 
             var certificateId = certificateListForOwner1.Result.Single().Id;
 

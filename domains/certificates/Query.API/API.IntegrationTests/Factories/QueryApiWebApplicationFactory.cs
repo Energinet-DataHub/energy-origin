@@ -7,8 +7,8 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using API.AppTests.Mocks;
 using API.DataSyncSyncer;
+using API.IntegrationTests.Mocks;
 using API.RabbitMq.Configurations;
 using FluentAssertions;
 using MassTransit;
@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.AppTests.Factories;
+namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {

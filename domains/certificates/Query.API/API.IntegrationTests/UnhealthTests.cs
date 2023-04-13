@@ -1,9 +1,9 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Factories;
+using API.IntegrationTests.Factories;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
 public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
