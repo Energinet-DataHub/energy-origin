@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.AppTests.Infrastructure.Factories;
+namespace API.AppTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -46,7 +46,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             });
 
             // Remove DataSyncSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+            services.Remove(Enumerable.First<ServiceDescriptor>(services, s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
 

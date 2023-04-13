@@ -1,8 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AggregateRepositories;
-using API.AppTests.Infrastructure.TestBase;
-using API.AppTests.Infrastructure.Testcontainers;
+using API.AppTests.Testcontainers;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;

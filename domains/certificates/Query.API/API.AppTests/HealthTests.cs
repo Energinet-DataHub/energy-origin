@@ -1,8 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure.Factories;
-using API.AppTests.Infrastructure.TestBase;
-using API.AppTests.Infrastructure.Testcontainers;
+using API.AppTests.Factories;
+using API.AppTests.Testcontainers;
 using Xunit;
 
 namespace API.AppTests;

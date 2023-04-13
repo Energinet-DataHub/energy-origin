@@ -3,7 +3,7 @@ using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace API.AppTests.Infrastructure.Attributes;
+namespace API.AppTests.Attributes;
 
 public class PriorityOrderer : ITestCaseOrderer
 {

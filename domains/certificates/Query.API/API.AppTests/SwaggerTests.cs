@@ -1,7 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure.Factories;
-using API.AppTests.Infrastructure.TestBase;
+using API.AppTests.Factories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;

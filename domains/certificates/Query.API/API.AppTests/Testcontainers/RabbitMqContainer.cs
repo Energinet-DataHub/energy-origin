@@ -4,7 +4,7 @@ using API.RabbitMq.Configurations;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-namespace API.AppTests.Infrastructure.Testcontainers;
+namespace API.AppTests.Testcontainers;
 
 public class RabbitMqContainer : IAsyncLifetime
 {

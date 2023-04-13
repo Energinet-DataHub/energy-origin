@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace API.AppTests.Infrastructure.Testcontainers;
+namespace API.AppTests.Testcontainers;
 
 public class MartenDbContainer : IAsyncLifetime
 {

@@ -33,8 +33,4 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Infrastructure\TestBase\" />
-  </ItemGroup>
-
 </Project>
