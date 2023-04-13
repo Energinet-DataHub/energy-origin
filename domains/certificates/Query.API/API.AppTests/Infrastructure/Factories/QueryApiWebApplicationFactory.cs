@@ -46,7 +46,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             });
 
             // Remove DataSyncSyncerWorker
-            services.Remove(Enumerable.First<ServiceDescriptor>(services, s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
 
