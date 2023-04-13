@@ -1,34 +1,46 @@
+using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.RabbitMq.Configurations;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
+using Testcontainers.RabbitMq;
 using Xunit;
 
 namespace API.AppTests.Infrastructure.Testcontainers;
 
 public class RabbitMqContainer : IAsyncLifetime
 {
-    private readonly RabbitMqTestcontainer testContainer;
+    private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
 
     public RabbitMqContainer() =>
-        testContainer = new TestcontainersBuilder<RabbitMqTestcontainer>()
-            .WithMessageBroker(new RabbitMqTestcontainerConfiguration
-            {
-                Username = "guest",
-                Password = "guest"
-            })
+        testContainer = new RabbitMqBuilder()
+            .WithUsername("guest")
+            .WithPassword("guest")
             .Build();
 
-    public RabbitMqOptions Options => new()
+    public RabbitMqOptions Options
     {
-        Host = testContainer.Hostname,
-        Port = testContainer.Port,
-        Username = testContainer.Username,
-        Password = testContainer.Password
-    };
+        get
+        {
+            var r = new Regex("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:(\\d+)");
+            var match = r.Match(testContainer.GetConnectionString());
 
-    public async Task InitializeAsync() => await testContainer.StartAsync();
+            return new RabbitMqOptions
+            {
+                Host = testContainer.Hostname,
+                Port = int.Parse(match.Groups[1].Value),
+                Username = "guest",
+                Password = "guest"
+            };
+        }
+    }
+
+    public async Task InitializeAsync()
+    {
+        await testContainer.StartAsync();
+
+        var connectionString = testContainer.GetConnectionString();
+        Console.WriteLine(connectionString);
+    }
 
     public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
 }
