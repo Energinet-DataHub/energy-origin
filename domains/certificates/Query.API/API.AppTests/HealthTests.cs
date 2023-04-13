@@ -1,14 +1,16 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure.Attributes;
 using API.AppTests.Infrastructure.Factories;
+using API.AppTests.Infrastructure.TestBase;
 using API.AppTests.Infrastructure.Testcontainers;
 using Xunit;
 
 namespace API.AppTests;
 
-[WriteToConsole]
-public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
+public class HealthTests :
+    TestBase,
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 

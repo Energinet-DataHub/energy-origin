@@ -1,7 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure.Attributes;
 using API.AppTests.Infrastructure.Factories;
+using API.AppTests.Infrastructure.TestBase;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
@@ -9,9 +9,8 @@ using Xunit;
 
 namespace API.AppTests;
 
-[WriteToConsole]
 [UsesVerify]
-public class SwaggerTests : IClassFixture<QueryApiWebApplicationFactory>
+public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 

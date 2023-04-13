@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure.Attributes;
 using API.AppTests.Infrastructure.Factories;
+using API.AppTests.Infrastructure.TestBase;
 using API.AppTests.Infrastructure.Testcontainers;
 using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
@@ -14,9 +15,9 @@ using Xunit;
 
 namespace API.AppTests;
 
-[WriteToConsole]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
 public sealed class ContractTests :
+    TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,

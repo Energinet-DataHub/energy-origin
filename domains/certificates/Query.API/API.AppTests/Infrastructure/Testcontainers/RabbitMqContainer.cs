@@ -1,4 +1,3 @@
-using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.RabbitMq.Configurations;
@@ -34,13 +33,7 @@ public class RabbitMqContainer : IAsyncLifetime
         }
     }
 
-    public async Task InitializeAsync()
-    {
-        await testContainer.StartAsync();
-
-        var connectionString = testContainer.GetConnectionString();
-        Console.WriteLine(connectionString);
-    }
+    public async Task InitializeAsync() => await testContainer.StartAsync();
 
     public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
 }

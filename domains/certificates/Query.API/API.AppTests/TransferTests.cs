@@ -6,8 +6,8 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Helpers;
-using API.AppTests.Infrastructure.Attributes;
 using API.AppTests.Infrastructure.Factories;
+using API.AppTests.Infrastructure.TestBase;
 using API.AppTests.Infrastructure.Testcontainers;
 using API.AppTests.Mocks;
 using API.Query.API.ApiModels.Responses;
@@ -17,8 +17,8 @@ using Xunit;
 
 namespace API.AppTests;
 
-[WriteToConsole]
 public sealed class TransferTests :
+    TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<MartenDbContainer>,

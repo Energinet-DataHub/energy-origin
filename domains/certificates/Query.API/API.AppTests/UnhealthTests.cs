@@ -1,13 +1,12 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure.Attributes;
 using API.AppTests.Infrastructure.Factories;
+using API.AppTests.Infrastructure.TestBase;
 using Xunit;
 
 namespace API.AppTests;
 
-[WriteToConsole]
-public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
+public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
