@@ -57,7 +57,10 @@ public class IdentityProviderOptions
 
             if (Providers.Contains(ProviderType.MitID_Private))
             {
-                scope = string.Join(" ", scope, "mitid", "nemid.pid");
+                // nemid.pid needs to be added to the scope to be able to map nemid_private and mitid_private users,
+                // but there seems to be a bug from SignaturGruppen when adding nemid.pid to the scope when trying to login as mitid_erhverv.
+                // We get the following error which isn't even available in the documentation: "access_denied: user_navigation_error"
+                scope = string.Join(" ", scope, "mitid");
                 idp_values = string.Join(idp_values.IsNullOrEmpty() ? null : " ", idp_values, "mitid");
             }
 

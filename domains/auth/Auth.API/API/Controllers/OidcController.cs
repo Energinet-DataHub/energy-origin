@@ -149,7 +149,16 @@ public class OidcController : ControllerBase
         switch (providerType)
         {
             case ProviderType.MitID_Professional:
-                throw new NotImplementedException("ProviderType.MitID_Professional hasn't been implemented yet.");
+                name = userInfo.FindFirstValue("nemlogin.name");
+                tin = userInfo.FindFirstValue("nemlogin.cvr");
+                companyName = userInfo.FindFirstValue("nemlogin.org_name");
+
+                var rid = userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException();
+
+                keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
+
+                break;
             case ProviderType.MitID_Private:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
@@ -215,7 +224,7 @@ public class OidcController : ControllerBase
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitID, ProviderGroup.Private) => ProviderType.MitID_Private,
-        (ProviderName.MitID, ProviderGroup.Professional) => ProviderType.MitID_Professional,
+        (ProviderName.MitIDProfessional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
         (ProviderName.NemID, ProviderGroup.Private) => ProviderType.NemID_Private,
         (ProviderName.NemID, ProviderGroup.Professional) => ProviderType.NemID_Professional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
