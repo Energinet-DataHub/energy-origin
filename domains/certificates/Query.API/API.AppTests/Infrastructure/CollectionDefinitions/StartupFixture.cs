@@ -3,7 +3,7 @@ using Serilog;
 using Serilog.Extensions.Logging;
 using Xunit;
 
-namespace API.AppTests.Infrastructure;
+namespace API.AppTests.Infrastructure.CollectionDefinitions;
 
 public class StartupFixture
 {

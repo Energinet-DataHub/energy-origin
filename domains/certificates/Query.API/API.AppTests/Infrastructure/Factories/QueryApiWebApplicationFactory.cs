@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.AppTests.Infrastructure;
+namespace API.AppTests.Infrastructure.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -37,7 +37,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            services.AddOptions<MassTransitHostOptions>().Configure(options =>
+            OptionsServiceCollectionExtensions.AddOptions<MassTransitHostOptions>(services).Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);
                 options.StopTimeout = TimeSpan.FromSeconds(5);
@@ -46,7 +46,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             });
 
             // Remove DataSyncSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+            services.Remove(Enumerable.First<ServiceDescriptor>(services, s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
     }
 

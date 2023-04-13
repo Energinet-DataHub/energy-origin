@@ -1,6 +1,6 @@
 using System;
 
-namespace API.AppTests.Infrastructure.TestPriority;
+namespace API.AppTests.Infrastructure.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class TestPriorityAttribute : Attribute
