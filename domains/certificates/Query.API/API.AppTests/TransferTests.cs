@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using API.AppTests.Extensions;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure.Attributes;
-using API.AppTests.Infrastructure.CollectionDefinitions;
 using API.AppTests.Infrastructure.Factories;
 using API.AppTests.Infrastructure.Testcontainers;
 using API.AppTests.Mocks;
@@ -18,7 +17,6 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection(StartupCollection.Name)]
 [WriteToConsole]
 public sealed class TransferTests :
     IClassFixture<QueryApiWebApplicationFactory>,
@@ -47,7 +45,7 @@ public sealed class TransferTests :
     {
         using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var body = new { CertificateId = setup.CertificateId, Source = setup.Owner1, Target = setup.Owner2 };
+        var body = new { setup.CertificateId, Source = setup.Owner1, Target = setup.Owner2 };
         using var transferResult = await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", body);
 
         transferResult.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -66,7 +64,7 @@ public sealed class TransferTests :
     {
         using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var bodyWithWrongOwnerAsSource = new { CertificateId = setup.CertificateId, Source = setup.Owner2, Target = setup.Owner1 };
+        var bodyWithWrongOwnerAsSource = new { setup.CertificateId, Source = setup.Owner2, Target = setup.Owner1 };
 
         using var transferResult =
             await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithWrongOwnerAsSource);
@@ -93,7 +91,7 @@ public sealed class TransferTests :
     {
         using var setup = await Setup.Create(factory, dataSyncWireMock);
 
-        var bodyWithSameOwner = new { CertificateId = setup.CertificateId, Source = setup.Owner1, Target = setup.Owner1 };
+        var bodyWithSameOwner = new { setup.CertificateId, Source = setup.Owner1, Target = setup.Owner1 };
 
         using var transferResult = await setup.Owner1Client.PostAsJsonAsync("api/certificates/transfer", bodyWithSameOwner);
 

@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using AggregateRepositories;
 using API.AppTests.Infrastructure.Attributes;
-using API.AppTests.Infrastructure.CollectionDefinitions;
 using API.AppTests.Infrastructure.Testcontainers;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
@@ -15,7 +14,6 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection(StartupCollection.Name)]
 [WriteToConsole]
 [UsesVerify]
 public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>, IDisposable

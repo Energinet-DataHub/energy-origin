@@ -5,7 +5,6 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.AppTests.Helpers;
 using API.AppTests.Infrastructure.Attributes;
-using API.AppTests.Infrastructure.CollectionDefinitions;
 using API.AppTests.Infrastructure.Factories;
 using API.AppTests.Infrastructure.Testcontainers;
 using API.AppTests.Mocks;
@@ -15,7 +14,6 @@ using Xunit;
 
 namespace API.AppTests;
 
-[Collection(StartupCollection.Name)]
 [WriteToConsole]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
 public sealed class ContractTests :

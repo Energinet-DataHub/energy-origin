@@ -1,13 +1,11 @@
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Infrastructure.Attributes;
-using API.AppTests.Infrastructure.CollectionDefinitions;
 using API.AppTests.Infrastructure.Factories;
 using Xunit;
 
 namespace API.AppTests;
 
-[Collection(StartupCollection.Name)]
 [WriteToConsole]
 public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
 {
