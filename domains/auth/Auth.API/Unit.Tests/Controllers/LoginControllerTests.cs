@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class LoginControllerTests
 {
@@ -29,7 +29,7 @@ public class LoginControllerTests
         {
             Providers = new List<ProviderType>() { ProviderType.NemID_Professional }
         };
-        identityProviderOptions = Options.Create(identityProviderOption);
+        identityProviderOptions = Moptions.Create(identityProviderOption);
     }
 
     [Fact]

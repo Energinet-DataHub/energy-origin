@@ -2,14 +2,12 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
-using EnergyOrigin.TokenValidation.Values;
-using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
 
-namespace Tests.Integration.Controllers;
+namespace Integration.Tests.Controllers;
 
 public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
 {

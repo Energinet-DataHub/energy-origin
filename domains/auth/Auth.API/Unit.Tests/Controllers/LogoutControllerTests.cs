@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class LogoutControllerTests
 {

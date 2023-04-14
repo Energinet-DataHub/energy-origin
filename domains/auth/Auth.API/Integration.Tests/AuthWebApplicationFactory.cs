@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace Tests.Integration;
+namespace Integration.Tests;
 
 public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {

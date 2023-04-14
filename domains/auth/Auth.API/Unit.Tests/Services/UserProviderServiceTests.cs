@@ -4,7 +4,7 @@ using API.Services;
 using API.Services.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 
-namespace Tests.Services;
+namespace Unit.Tests.Services;
 
 public class UserProviderServiceTests
 {

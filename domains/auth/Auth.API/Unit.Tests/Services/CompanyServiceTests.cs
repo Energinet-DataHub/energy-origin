@@ -3,7 +3,7 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 
-namespace Tests.Services;
+namespace Unit.Tests.Services;
 
 public class CompanyServiceTests
 {

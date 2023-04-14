@@ -2,13 +2,12 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
-using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
 
-namespace Tests.Integration.LoginController;
+namespace Integration.Tests.Controllers;
 
 public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
