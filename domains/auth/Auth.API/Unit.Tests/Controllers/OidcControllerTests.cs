@@ -93,6 +93,19 @@ public class OidcControllerTests
                 { "nemid.company_name", Guid.NewGuid().ToString() },
                 { "nemid.common_name", Guid.NewGuid().ToString() }
             }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitID_Professional },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemlogin.name", Guid.NewGuid().ToString() },
+                { "nemlogin.cvr", Guid.NewGuid().ToString() },
+                { "nemlogin.org_name", Guid.NewGuid().ToString() },
+                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
+            }
         }
     };
 
@@ -171,6 +184,18 @@ public class OidcControllerTests
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.company_name", Guid.NewGuid().ToString() },
                 { "nemid.common_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitID_Professional },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemlogin.name", Guid.NewGuid().ToString() },
+                { "nemlogin.cvr", Guid.NewGuid().ToString() },
+                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
             }
         },
         new object[]
