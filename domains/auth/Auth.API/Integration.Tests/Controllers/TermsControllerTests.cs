@@ -8,13 +8,12 @@ using API.Services.Interfaces;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Values;
-using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
 
-namespace Tests.Integration.Controllers;
+namespace Integration.Tests.Controllers;
 
 public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
@@ -81,7 +80,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dto = new AcceptTermsRequest(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
-        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id != null)!;
+        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);

@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class TermsControllerTests
 {
@@ -43,8 +43,8 @@ public class TermsControllerTests
             Key = "secretsecretsecretsecret"
         };
 
-        options = Options.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        cryptography = new Cryptography(Options.Create(cryptographyOptions));
+        options = Moptions.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
+        cryptography = new Cryptography(Moptions.Create(cryptographyOptions));
     }
 
     [Fact]

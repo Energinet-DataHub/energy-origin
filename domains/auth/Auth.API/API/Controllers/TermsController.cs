@@ -7,7 +7,6 @@ using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -66,7 +65,7 @@ public class TermsController : ControllerBase
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;
         await userService.UpsertUserAsync(user);
 
-        var relationUri = options.Value.Uri.AbsoluteUri;
+        var relationUri = options.Value.Uri?.AbsoluteUri;
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();
