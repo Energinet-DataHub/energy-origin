@@ -8,11 +8,6 @@ internal class WriteToConsoleAttribute : BeforeAfterTestAttribute
 {
     public override void Before(MethodInfo methodUnderTest)
     {
-#if CI
-        Console.WriteLine("Running on CI");
-#else
-        Console.WriteLine("Not running on CI");
-#endif
         Console.WriteLine();
         Console.WriteLine($"[Starting {methodUnderTest.DeclaringType}.{methodUnderTest.Name}]");
     }
