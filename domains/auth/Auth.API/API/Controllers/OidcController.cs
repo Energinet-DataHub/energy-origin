@@ -154,7 +154,7 @@ public class OidcController : ControllerBase
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
 
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
-                if (rid is not null)
+                if (tin is not null && rid is not null)
                 {
                     keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
                 }
