@@ -98,7 +98,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitIDProfessional },
+                { "idp", ProviderName.MitID_Professional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
@@ -190,7 +190,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitIDProfessional },
+                { "idp", ProviderName.MitID_Professional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },

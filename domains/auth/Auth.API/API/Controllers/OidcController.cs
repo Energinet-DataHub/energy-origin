@@ -153,10 +153,12 @@ public class OidcController : ControllerBase
                 tin = userInfo.FindFirstValue("nemlogin.cvr");
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
 
-                var rid = userInfo.FindFirstValue("nemlogin.nemid.rid") ?? throw new ArgumentNullException();
-
-                keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
-                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new ArgumentNullException());
+                var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
+                if (rid is not null)
+                {
+                    keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                }
+                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
             case ProviderType.MitID_Private:
@@ -224,7 +226,7 @@ public class OidcController : ControllerBase
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitID, ProviderGroup.Private) => ProviderType.MitID_Private,
-        (ProviderName.MitIDProfessional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
+        (ProviderName.MitID_Professional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
         (ProviderName.NemID, ProviderGroup.Private) => ProviderType.NemID_Private,
         (ProviderName.NemID, ProviderGroup.Professional) => ProviderType.NemID_Professional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
