@@ -24,24 +24,14 @@ public class IdentityProviderOptions
         {
             scope = string.Join(" ", scope, "nemid");
             idp_values = "nemid";
+            idp_params =
+                """
+                "nemid": {"amr_values": "nemid.otp nemid.keyfile"}
+                """;
 
             if (Providers.Contains(ProviderType.NemID_Private) && Providers.Contains(ProviderType.NemID_Professional))
             {
                 scope = string.Join(" ", scope, "private_to_business");
-                idp_params =
-                    """
-                    "nemid": {"amr_values": "nemid.otp nemid.keyfile"}
-                    """;
-            }
-            else
-            {
-                idp_params = Providers.Contains(ProviderType.NemID_Private)
-                    ? """
-                    "nemid": {"amr_values": "nemid.otp"}
-                    """
-                    : """
-                    "nemid": {"amr_values": "nemid.keyfile"}
-                    """;
             }
         }
 
