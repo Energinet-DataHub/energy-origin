@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AggregateRepositories;
-using API.AppTests.Infrastructure;
+using API.AppTests.Testcontainers;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;
@@ -14,7 +14,7 @@ using Xunit;
 namespace API.AppTests;
 
 [UsesVerify]
-public sealed class CertificatesByOwnerProjectionTest : IClassFixture<MartenDbContainer>, IDisposable
+public sealed class CertificatesByOwnerProjectionTest : TestBase, IClassFixture<MartenDbContainer>, IDisposable
 {
     private readonly ProductionCertificateRepository repository;
     private readonly IDocumentSession session;

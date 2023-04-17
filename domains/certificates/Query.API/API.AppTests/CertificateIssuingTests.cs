@@ -3,8 +3,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.AppTests.Extensions;
-using API.AppTests.Infrastructure;
+using API.AppTests.Factories;
 using API.AppTests.Mocks;
+using API.AppTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
@@ -15,18 +16,22 @@ using Xunit;
 namespace API.AppTests;
 
 public sealed class CertificateIssuingTests :
+    TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
-    IDisposable
+    IClassFixture<DataSyncWireMock>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public CertificateIssuingTests(QueryApiWebApplicationFactory factory, MartenDbContainer martenDbContainer,
-        RabbitMqContainer rabbitMqContainer)
+    public CertificateIssuingTests(
+        QueryApiWebApplicationFactory factory,
+        MartenDbContainer martenDbContainer,
+        RabbitMqContainer rabbitMqContainer,
+        DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9003);
+        this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
@@ -36,8 +41,8 @@ public sealed class CertificateIssuingTests :
     [Fact]
     public async Task GetList_UnauthenticatedUser_ReturnsUnauthorized()
     {
-        var client = factory.CreateUnauthenticatedClient();
-        var certificatesResponse = await client.GetAsync("api/certificates");
+        using var client = factory.CreateUnauthenticatedClient();
+        using var certificatesResponse = await client.GetAsync("api/certificates");
 
         Assert.Equal(HttpStatusCode.Unauthorized, certificatesResponse.StatusCode);
     }
@@ -49,7 +54,7 @@ public sealed class CertificateIssuingTests :
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var response = await client.GetAsync("api/certificates");
+        using var response = await client.GetAsync("api/certificates");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -191,6 +196,4 @@ public sealed class CertificateIssuingTests :
         options
             .WithStrictOrderingFor(l => l.Result)
             .For(l => l.Result).Exclude(c => c.Id);
-
-    public void Dispose() => dataSyncWireMock.Dispose();
 }

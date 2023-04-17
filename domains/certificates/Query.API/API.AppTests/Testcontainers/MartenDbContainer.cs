@@ -1,27 +1,22 @@
 using System.Threading.Tasks;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
+using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace API.AppTests.Infrastructure;
+namespace API.AppTests.Testcontainers;
 
 public class MartenDbContainer : IAsyncLifetime
 {
-    private readonly PostgreSqlTestcontainer testContainer;
+    private readonly PostgreSqlContainer testContainer;
 
     public MartenDbContainer() =>
-        testContainer = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-            .WithDatabase(new PostgreSqlTestcontainerConfiguration
-            {
-                Database = "marten",
-                Username = "postgres",
-                Password = "postgres",
-            })
+        testContainer = new PostgreSqlBuilder()
+            .WithDatabase("marten")
+            .WithPassword("postgres")
+            .WithUsername("postgres")
             .WithImage("sibedge/postgres-plv8")
             .Build();
 
-    public string ConnectionString => testContainer.ConnectionString;
+    public string ConnectionString => testContainer.GetConnectionString();
 
     public async Task InitializeAsync()
     {
