@@ -28,8 +28,14 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
+        var hint = descriptMapper.Map(User)?.IdentityToken;
+        if (hint == null)
+        {
+            return RedirectPreserveMethod(redirectionUri);
+        }
+
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: descriptMapper.Map(User)?.IdentityToken,
+            idTokenHint: hint,
             postLogoutRedirectUri: redirectionUri
         );
 

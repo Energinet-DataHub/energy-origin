@@ -58,6 +58,7 @@ public class LoginControllerTests
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"state=", query);
+        Assert.Contains($"prompt=login", query);
         Assert.Contains($"client_id={options.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={options.Value.AuthorityCallbackUri.AbsoluteUri}", query);
     }

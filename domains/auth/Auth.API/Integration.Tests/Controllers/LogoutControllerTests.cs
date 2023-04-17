@@ -82,8 +82,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+        var uri = new Uri(query!);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
-        Assert.Contains($"post_logout_redirect_uri={oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}", query);
+        Assert.DoesNotContain($"post_logout_redirect_uri={oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}", query);
         Assert.DoesNotContain($"id_token_hint", query);
     }
 }
