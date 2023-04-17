@@ -34,6 +34,7 @@ public class LoginController : ControllerBase
             responseType: "code",
             redirectUri: oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri,
             state: oidcState.Encode(),
+            prompt: "login",
             scope: scope,
             extra: new Parameters(arguments));
 
