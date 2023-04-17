@@ -2,12 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
-using API.Services.Interfaces;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Tests.Integration;
 
 namespace Integration.Tests.Controllers;
 
@@ -70,14 +68,16 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldReturnTokenWithTermsScope_WhenUserHasNotAcceptedTermsPreviously()
+    public async Task RefreshAsync_ShouldReturnTokenWithTermsScope_WhenUserRefreshesWithUnacceptedTerms()
     {
         var user = new User()
         {
-            Id = null,
+            Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString()
         };
         var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
+        user.AcceptedTermsVersion = 1;
+        await factory.AddUserToDatabaseAsync(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
@@ -93,7 +93,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
         Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, newScope);
+        Assert.Contains(UserScopeClaim.AcceptedTerms, newScope);
     }
 
     [Fact]
@@ -114,19 +114,29 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    public async Task RefreshAsync_ShouldReturnTokenWithTermsScope_WhenUserHasNotAcceptedTermsPreviously()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        var user = new User()
         {
-            var userService = Mock.Of<IUserService>();
-            _ = Mock.Get(userService)
-                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-                .Returns(value: null!);
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString()
+        };
+        var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
+        var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
+        var result = await client.GetAsync("auth/token");
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
-            builder.ConfigureTestServices(services => services.AddScoped(x => userService));
-        });
+        var newToken = await result.Content.ReadAsStringAsync();
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
+        Assert.NotNull(newToken);
+        Assert.NotEqual(oldToken, newToken);
+
+        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        Assert.NotNull(oldScope);
+        Assert.NotNull(newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedTerms, newScope);
     }
 }

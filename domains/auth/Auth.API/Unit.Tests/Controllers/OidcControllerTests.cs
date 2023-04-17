@@ -24,7 +24,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RichardSzalay.MockHttp;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class OidcControllerTests
 {
@@ -49,13 +49,13 @@ public class OidcControllerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        oidcOptions = Options.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
-        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
-        providerOptions = Options.Create(configuration.GetSection(IdentityProviderOptions.Prefix).Get<IdentityProviderOptions>()!);
+        oidcOptions = Moptions.Create(configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!);
+        tokenOptions = Moptions.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+        providerOptions = Moptions.Create(configuration.GetSection(IdentityProviderOptions.Prefix).Get<IdentityProviderOptions>()!);
 
-        issuer = new TokenIssuer(Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
+        issuer = new TokenIssuer(Moptions.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!), tokenOptions);
         mapper = new UserDescriptorMapper(
-            new Cryptography(Options.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
+            new Cryptography(Moptions.Create(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!)),
             Mock.Of<ILogger<UserDescriptorMapper>>()
         );
     }
@@ -92,6 +92,19 @@ public class OidcControllerTests
                 { "nemid.ssn", Guid.NewGuid().ToString() },
                 { "nemid.company_name", Guid.NewGuid().ToString() },
                 { "nemid.common_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitID_Professional },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemlogin.name", Guid.NewGuid().ToString() },
+                { "nemlogin.cvr", Guid.NewGuid().ToString() },
+                { "nemlogin.org_name", Guid.NewGuid().ToString() },
+                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
             }
         }
     };
@@ -171,6 +184,18 @@ public class OidcControllerTests
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.company_name", Guid.NewGuid().ToString() },
                 { "nemid.common_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitID_Professional },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemlogin.name", Guid.NewGuid().ToString() },
+                { "nemlogin.cvr", Guid.NewGuid().ToString() },
+                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
             }
         },
         new object[]
@@ -587,7 +612,7 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
     {
-        var providerOptions = Options.Create(new IdentityProviderOptions
+        var providerOptions = Moptions.Create(new IdentityProviderOptions
         {
             Providers = new List<ProviderType>()
         });

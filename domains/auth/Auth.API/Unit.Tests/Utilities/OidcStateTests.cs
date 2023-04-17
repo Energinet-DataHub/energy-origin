@@ -1,9 +1,8 @@
-
 using System.Text;
 using System.Text.Json;
 using API.Utilities;
 
-namespace Tests.Utilities;
+namespace Unit.Tests.Utilities;
 
 public class OidcStateTests
 {

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Tests.Utilities;
+namespace Unit.Tests.Utilities;
 
 public class UserDescriptMapperTests
 {
@@ -26,7 +26,7 @@ public class UserDescriptMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        cryptography = new Cryptography(Options.Create(options));
+        cryptography = new Cryptography(Moptions.Create(options));
 
         mapper = new UserDescriptorMapper(cryptography, logger);
     }

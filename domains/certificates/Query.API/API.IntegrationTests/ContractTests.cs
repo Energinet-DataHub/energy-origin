@@ -74,8 +74,8 @@ public sealed class ContractTests :
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        using var response2 = await client.PostAsJsonAsync("api/certificates/contracts", body);
-        response2.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        using var conflictResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]

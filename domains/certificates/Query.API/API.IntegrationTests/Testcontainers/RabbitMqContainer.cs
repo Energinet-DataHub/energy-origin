@@ -10,8 +10,8 @@ public partial class RabbitMqContainer : IAsyncLifetime
 {
     private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
 
-    [GeneratedRegex("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:(\\d+)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
-    private static partial Regex HostnameAndPortRegex();
+    [GeneratedRegex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:(\d+)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex IpAndPortRegex();
 
     public RabbitMqContainer() =>
         testContainer = new RabbitMqBuilder()
@@ -23,7 +23,7 @@ public partial class RabbitMqContainer : IAsyncLifetime
     {
         get
         {
-            var match = HostnameAndPortRegex().Match(testContainer.GetConnectionString());
+            var match = IpAndPortRegex().Match(testContainer.GetConnectionString());
 
             return new RabbitMqOptions
             {
