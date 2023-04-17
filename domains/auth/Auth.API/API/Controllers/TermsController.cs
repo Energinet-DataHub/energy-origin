@@ -65,7 +65,7 @@ public class TermsController : ControllerBase
         user.AcceptedTermsVersion = acceptedTermsVersion.Version;
         await userService.UpsertUserAsync(user);
 
-        var relationUri = options.Value.Uri?.AbsoluteUri;
+        var relationUri = options.Value.Uri?.AbsoluteUri.TrimEnd('/');
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();
