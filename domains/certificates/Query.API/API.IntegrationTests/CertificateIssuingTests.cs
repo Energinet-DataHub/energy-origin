@@ -82,7 +82,7 @@ public sealed class CertificateIssuingTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var certificateList =
-            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => Enumerable.Any<Certificate>(res.Result));
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
         var expected = new CertificateList
         {

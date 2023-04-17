@@ -142,7 +142,7 @@ public sealed class TransferTests :
             var owner2Client = factory.CreateAuthenticatedClient(owner2);
 
             var certificateListForOwner1 =
-                await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => Enumerable.Any<Certificate>(res.Result));
+                await owner1Client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
 
             var certificateId = certificateListForOwner1.Result.Single().Id;
 
