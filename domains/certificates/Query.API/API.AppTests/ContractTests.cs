@@ -3,10 +3,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.AppTests.Attributes;
+using API.AppTests.Factories;
 using API.AppTests.Helpers;
-using API.AppTests.Infrastructure;
-using API.AppTests.Infrastructure.TestPriority;
 using API.AppTests.Mocks;
+using API.AppTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
@@ -14,14 +15,23 @@ using Xunit;
 namespace API.AppTests;
 
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.AppTests")]
-public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<MartenDbContainer>, IClassFixture<RabbitMqContainer>, IDisposable
+public sealed class ContractTests :
+    TestBase,
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
+    IClassFixture<RabbitMqContainer>,
+    IClassFixture<DataSyncWireMock>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
 
-    public ContractTests(QueryApiWebApplicationFactory factory, MartenDbContainer marten, RabbitMqContainer rabbitMqContainer)
+    public ContractTests(
+        QueryApiWebApplicationFactory factory,
+        MartenDbContainer marten,
+        RabbitMqContainer rabbitMqContainer,
+        DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock = new DataSyncWireMock(port: 9001);
+        this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = marten.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
@@ -39,13 +49,13 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContractUri = response.Headers.Location;
 
-        var createdContractResponse = await client.GetAsync(createdContractUri);
+        using var createdContractResponse = await client.GetAsync(createdContractUri);
 
         createdContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -61,11 +71,11 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        response = await client.PostAsJsonAsync("api/certificates/contracts", body);
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        using var conflictResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]
@@ -81,7 +91,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn = gsrn2, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -97,7 +107,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -114,7 +124,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn = invalidGsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -126,7 +136,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
 
-        var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+        using var client = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
 
@@ -155,7 +165,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
         await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var response = await client.GetAsync("api/certificates/contracts");
+        using var response = await client.GetAsync("api/certificates/contracts");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -165,7 +175,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var response = await client.GetAsync("api/certificates/contracts");
+        using var response = await client.GetAsync("api/certificates/contracts");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -176,7 +186,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var contractId = Guid.NewGuid().ToString();
-        var response = await client.GetAsync($"api/certificates/contracts/{contractId}");
+        using var response = await client.GetAsync($"api/certificates/contracts/{contractId}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -191,7 +201,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
 
         var body = new { gsrn, startDate = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        var response = await client1.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client1.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -200,10 +210,7 @@ public sealed class ContractTests : IClassFixture<QueryApiWebApplicationFactory>
         var subject2 = Guid.NewGuid().ToString();
         using var client2 = factory.CreateAuthenticatedClient(subject2);
 
-        var getSpecificContractResponse = await client2.GetAsync(createdContractUri);
-
+        using var getSpecificContractResponse = await client2.GetAsync(createdContractUri);
         getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    public void Dispose() => dataSyncWireMock.Dispose();
 }
