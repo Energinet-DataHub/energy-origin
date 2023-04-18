@@ -1,3 +1,4 @@
+using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Oidc.Mock.Extensions;
@@ -7,9 +8,11 @@ namespace Oidc.Mock.Pages.Connect;
 
 public class SigninModel : PageModel
 {
+    private readonly Options options;
     private readonly ILogger<SigninModel> logger;
     private readonly Client client;
 
+    public string LoginLink => $"{options.Host}/api/auth/login";
     public User[] Users { get; }
 
     [FromForm]
@@ -24,16 +27,16 @@ public class SigninModel : PageModel
     [FromQuery(Name = "state")]
     public string? State { get; set; }
 
-    public SigninModel(User[] users, Client client, ILogger<SigninModel> logger)
+    public SigninModel(User[] users, Client client, ILogger<SigninModel> logger, Options options)
     {
         this.client = client;
         this.logger = logger;
+        this.options = options;
         Users = users;
     }
 
     public void OnGet()
     {
-
     }
 
     public IActionResult OnPost()

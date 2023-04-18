@@ -22,4 +22,15 @@
             </button>
         }
     </form>
+    <div>
+        <a id="loginLink" href="@Model.LoginLink">Login</a>
+    </div>
 </main>
+
+<script>
+    var currentHost = window.location.hostname;
+    if (currentHost === "demo.energioprindelse.dk") {
+        var elementToHide = document.getElementById("loginLink");
+        elementToHide.style.display = "none";
+    }
+</script>
