@@ -2,6 +2,7 @@ namespace EnergyOrigin.TokenValidation.Values;
 
 public struct UserScopeClaim
 {
+
     public const string AcceptedTerms = "accepted-terms";
     public const string NotAcceptedTerms = "not-accepted-terms";
     public const string Dashboard = "dashboard";
