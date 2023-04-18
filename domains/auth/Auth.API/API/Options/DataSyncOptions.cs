@@ -5,6 +5,7 @@ namespace API.Options;
 public class DataSyncOptions
 {
     public const string Prefix = "DataSync";
-    //[Required]
+
+    [Required]
     public Uri? Uri { get; init; }
 }

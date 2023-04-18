@@ -5,6 +5,7 @@ namespace API.Options;
 public class OidcOptions
 {
     public const string Prefix = "Oidc";
+
     [Required]
     public Uri AuthorityUri { get; init; } = null!;
     [Range(typeof(TimeSpan), "00:01:00", "24:00:00")]

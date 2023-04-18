@@ -5,6 +5,7 @@ namespace API.Options;
 public class DatabaseOptions
 {
     public const string Prefix = "Database";
+
     [Required]
     public string Host { get; init; } = null!;
     [Required]
