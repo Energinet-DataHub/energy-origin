@@ -49,7 +49,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
-builder.Services.AddAuthorization();
+//builder.Services.AddAuthorization();
 
 builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
 builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
