@@ -150,6 +150,14 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception e)
+{
+    app.Logger.LogError(e, "An exception has occurred while starting up.");
+    throw;
+}
 
 public partial class Program { }
