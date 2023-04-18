@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Models;
-
 namespace Oidc.Mock.Pages.Connect;
 
 public class SigninModel : PageModel
@@ -12,7 +11,7 @@ public class SigninModel : PageModel
     private readonly ILogger<SigninModel> logger;
     private readonly Client client;
 
-    public string LoginLink => $"{options.Host}/api/auth/login";
+    public string LoginLink => $"https://pp.netseidbroker.dk/op/connect/authorize?client_id=0a775a87-878c-4b83-abe3-ee29c720c3e7&response_type=code&scope=openid%20ssn%20userinfo_token%20nemid%20private_to_business%20mitid%20nemlogin&redirect_uri=https%3A%2F%2F{options.Host}%2Fauth%2Foidc%2Fcallback&state=eyJTdGF0ZSI6bnVsbCwiUmVkaXJlY3Rpb25VcmkiOm51bGx9&prompt=login&idp_values=nemid%20mitid%20mitid_erhverv&idp_params=%7B%22nemid%22%3A%20%7B%22amr_values%22%3A%20%22nemid.otp%20nemid.keyfile%22%7D%7D";
     public User[] Users { get; }
 
     [FromForm]
