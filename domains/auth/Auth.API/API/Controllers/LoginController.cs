@@ -12,13 +12,6 @@ namespace API.Controllers;
 public class LoginController : ControllerBase
 {
     [HttpGet()]
-    [Route("test")]
-    public IActionResult Test(IOptions<TermsOptions> options, IOptions<TokenOptions> toptions)
-    {
-        return Ok("hehe");
-    }
-
-    [HttpGet()]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, IOptions<IdentityProviderOptions> providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
     {
