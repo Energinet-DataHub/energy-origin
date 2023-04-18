@@ -36,13 +36,14 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
 var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 
-builder.Services.Configure<TokenOptions>(tokenConfiguration);
+//builder.Services.Configure<TokenOptions>(tokenConfiguration);
 builder.Services.Configure<DatabaseOptions>(databaseConfiguration);
 builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
-builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
+//builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
 builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
 builder.Services.Configure<DataSyncOptions>(builder.Configuration.GetSection(DataSyncOptions.Prefix));
+builder.Services.Configure<IdentityProviderOptions>(builder.Configuration.GetSection(IdentityProviderOptions.Prefix));
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -51,11 +52,8 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
-builder.Services.Configure<CryptographyOptions>(builder.Configuration.GetSection(CryptographyOptions.Prefix));
-builder.Services.Configure<TermsOptions>(builder.Configuration.GetSection(TermsOptions.Prefix));
-builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection(TokenOptions.Prefix));
-builder.Services.Configure<OidcOptions>(builder.Configuration.GetSection(OidcOptions.Prefix));
-builder.Services.Configure<IdentityProviderOptions>(builder.Configuration.GetSection(IdentityProviderOptions.Prefix));
+builder.Services.AddOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
 {
