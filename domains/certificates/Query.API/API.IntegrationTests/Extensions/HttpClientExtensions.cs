@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace API.AppTests.Extensions;
+namespace API.IntegrationTests.Extensions;
 
 public static class HttpClientExtensions
 {

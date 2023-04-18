@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace API.AppTests.Helpers;
+namespace API.IntegrationTests.Helpers;
 
 public static class GsrnHelper
 {

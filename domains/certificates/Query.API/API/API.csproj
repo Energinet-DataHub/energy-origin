@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="API.AppTests" />
+    <InternalsVisibleTo Include="API.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>
