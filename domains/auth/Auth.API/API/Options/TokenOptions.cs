@@ -8,7 +8,7 @@ public class TokenOptions
 
     [Required]
     public string Audience { get; init; } = null!;
-    [Range(typeof(TimeSpan), "00:01:00", "24:00:00", ErrorMessage = "hehe")]
+    [Range(typeof(TimeSpan), "00:01:00", "24:00:00")]
     public TimeSpan Duration { get; init; }
     public string Issuer { get; init; } = null!;
     [Required]
