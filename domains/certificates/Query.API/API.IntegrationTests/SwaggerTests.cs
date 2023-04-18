@@ -1,12 +1,12 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Factories;
+using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
 [UsesVerify]
 public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>

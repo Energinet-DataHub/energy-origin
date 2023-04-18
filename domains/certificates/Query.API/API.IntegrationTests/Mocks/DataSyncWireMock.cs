@@ -3,7 +3,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace API.AppTests.Mocks;
+namespace API.IntegrationTests.Mocks;
 
 public sealed class DataSyncWireMock : IDisposable
 {

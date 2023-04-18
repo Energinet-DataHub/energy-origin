@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Extensions;
-using API.AppTests.Factories;
-using API.AppTests.Mocks;
-using API.AppTests.Testcontainers;
+using API.IntegrationTests.Extensions;
+using API.IntegrationTests.Factories;
+using API.IntegrationTests.Mocks;
+using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
@@ -13,7 +13,7 @@ using MassTransit;
 using MeasurementEvents;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
 public sealed class CertificateIssuingTests :
     TestBase,
