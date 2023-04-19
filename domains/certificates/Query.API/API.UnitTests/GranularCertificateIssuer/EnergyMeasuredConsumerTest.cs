@@ -75,6 +75,53 @@ public class EnergyMeasuredConsumerTest
     }
 
     [Theory]
+    [InlineData(MeasurementQuality.Calculated)]
+    [InlineData(MeasurementQuality.Revised)]
+    [InlineData(MeasurementQuality.Estimated)]
+    public async Task Consume_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality)
+    {
+        var contractServiceMock = new Mock<IContractService>();
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockContract);
+
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
+
+        var message = new EnergyMeasuredIntegrationEvent(
+            GSRN: mockContract.GSRN,
+            DateFrom: now.ToUnixTimeSeconds(),
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
+            Quantity: 42,
+            Quality: measurementQuality);
+
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+
+
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Consume_MeasurementQualityEqualsMeasured_EventSaved()
+    {
+        var contractServiceMock = new Mock<IContractService>();
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockContract);
+
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
+
+        var message = new EnergyMeasuredIntegrationEvent(
+            GSRN: mockContract.GSRN,
+            DateFrom: now.ToUnixTimeSeconds(),
+            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+
+
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
     [InlineData(1, 0)]
     [InlineData(0, 1)]
     public async Task Consume_StartDateInTheFuture_NoEventsSaved(int days, int seconds)
@@ -160,4 +207,7 @@ public class EnergyMeasuredConsumerTest
 
         (await harness.Consumed.Any<EnergyMeasuredIntegrationEvent>()).Should().BeTrue();
     }
+
+
+
 }

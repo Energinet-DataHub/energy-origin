@@ -65,6 +65,10 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         if (energyMeasuredIntegrationEvent.Quantity <= 0)
             return false;
 
+        if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
+            return false;
+
+
         return true;
     }
 
