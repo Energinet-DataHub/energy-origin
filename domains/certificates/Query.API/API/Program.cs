@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using API.Application.RegistryConnector;
 using API.ContractService;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProjectOrigin.Electricity.Client;
 using Serilog;
 using Serilog.Formatting.Json;
 using Weasel.Core;
@@ -64,6 +66,7 @@ builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer(builder.Configuration);
 builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddTransferCertificateHandler();
+builder.Services.RegisterPoClient(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -81,6 +84,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 app.MapHealthChecks("/health");
+
+var poClient = app.Services.GetService<RegisterClient>();
+poClient.Events += app.Services.GetService<PoRegistryEventListener>().OnRegistryEvents;
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
