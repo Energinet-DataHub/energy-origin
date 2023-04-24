@@ -8,7 +8,8 @@ namespace Unit.Tests;
 
 public static class DiscoveryDocument
 {
-    public static DiscoveryDocumentResponse Load(IEnumerable<KeyValuePair<string, string>> items, JsonWebKeySet? keySet = null)
+    public static DiscoveryDocumentResponse Load(IEnumerable<KeyValuePair<string, string>> items,
+        JsonWebKeySet? keySet = null)
     {
         var builder = new StringBuilder();
         builder = builder.Append("{ ");
@@ -21,7 +22,8 @@ public static class DiscoveryDocument
         var element = JsonDocument.Parse(json).RootElement;
 
         var document = new DiscoveryDocumentResponse();
-        var reflection = document.GetType().GetProperty(nameof(document.Json), BindingFlags.Public | BindingFlags.Instance);
+        var reflection = document.GetType()
+            .GetProperty(nameof(document.Json), BindingFlags.Public | BindingFlags.Instance);
         reflection!.SetValue(document, element);
 
         document.KeySet = keySet;

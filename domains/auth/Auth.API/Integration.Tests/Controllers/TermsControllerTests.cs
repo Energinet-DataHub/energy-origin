@@ -24,15 +24,15 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions()
+        var options = Options.Create(new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var user = await factory.AddUserToDatabaseAsync();
         var client = factory
-           .CreateAuthenticatedClient(user, config: builder =>
-               builder.ConfigureTestServices(services =>
-                   services.AddScoped(_ => options)));
+            .CreateAuthenticatedClient(user, config: builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -54,7 +54,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitID_UUID;
-        var user = new User()
+        var user = new User
         {
             Id = null,
             Name = Guid.NewGuid().ToString(),
@@ -62,18 +62,19 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AcceptedTermsVersion = 0,
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider>
+                { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions()
+        var options = Options.Create(new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var client = factory
-           .CreateAuthenticatedClient(user, config: builder =>
-               builder.ConfigureTestServices(services =>
-                   services.AddScoped(_ => options)));
+            .CreateAuthenticatedClient(user, config: builder =>
+                builder.ConfigureTestServices(services =>
+                    services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 

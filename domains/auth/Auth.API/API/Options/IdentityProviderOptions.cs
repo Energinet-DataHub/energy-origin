@@ -8,15 +8,11 @@ public class IdentityProviderOptions
 {
     public const string Prefix = "IdentityProvider";
 
-    [Required]
-    public List<ProviderType> Providers { get; init; } = null!;
+    [Required] public List<ProviderType> Providers { get; init; } = null!;
 
     public (string, List<KeyValuePair<string, string>>) GetIdentityProviderArguments()
     {
-        if (Providers.Any() == false)
-        {
-            throw new ArgumentException("No identity providers were found.");
-        }
+        if (Providers.Any() == false) throw new ArgumentException("No identity providers were found.");
 
         var scope = "openid ssn userinfo_token";
         var idpValues = string.Empty;
@@ -32,9 +28,7 @@ public class IdentityProviderOptions
                 """;
 
             if (Providers.Contains(ProviderType.NemID_Private) && Providers.Contains(ProviderType.NemID_Professional))
-            {
                 scope = string.Join(" ", scope, "private_to_business");
-            }
         }
 
         if (Providers.Contains(ProviderType.MitID_Private) || Providers.Contains(ProviderType.MitID_Professional))
@@ -60,14 +54,10 @@ public class IdentityProviderOptions
         var arguments = new List<KeyValuePair<string, string>>();
 
         if (idpValues.IsNullOrEmpty() == false)
-        {
             arguments.Add(new KeyValuePair<string, string>("idp_values", idpValues));
-        }
 
         if (idpParams.IsNullOrEmpty() == false)
-        {
             arguments.Add(new KeyValuePair<string, string>("idp_params", idpParams));
-        }
 
         return (scope, arguments);
     }

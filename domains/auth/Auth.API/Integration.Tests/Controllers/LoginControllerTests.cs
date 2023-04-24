@@ -19,7 +19,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
-        var oidcOptions = Options.Create(new OidcOptions()
+        var oidcOptions = Options.Create(new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
@@ -31,7 +31,8 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
                 builder.ConfigureTestServices(services =>
                     services.AddScoped(_ => oidcOptions)));
 
-        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value.GetIdentityProviderArguments();
+        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value
+            .GetIdentityProviderArguments();
 
         var result = await client.GetAsync("auth/login");
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);

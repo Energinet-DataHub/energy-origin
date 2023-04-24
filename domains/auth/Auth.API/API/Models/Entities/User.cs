@@ -6,9 +6,7 @@ public record User
     public string Name { get; set; } = null!;
     public int AcceptedTermsVersion { get; set; }
     public bool AllowCprLookup { get; set; }
-
     public Guid? CompanyId { get; set; }
     public virtual Company? Company { get; set; }
-
-    public virtual List<UserProvider> UserProviders { get; set; } = new List<UserProvider>();
+    public virtual List<UserProvider> UserProviders { get; set; } = new();
 }
