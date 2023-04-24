@@ -29,7 +29,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory
             .CreateAnonymousClient(builder =>
                 builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+                    services.AddScoped(_ => oidcOptions)));
 
         var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value.GetIdentityProviderArguments();
 

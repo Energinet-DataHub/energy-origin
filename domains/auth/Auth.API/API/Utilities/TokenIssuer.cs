@@ -47,7 +47,7 @@ public class TokenIssuer : ITokenIssuer
 
         var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id.ToString(), version, scope);
+        return new UserState(version, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
@@ -106,5 +106,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(string? Id, int AcceptedVersion, string Scope);
+    private record UserState(int AcceptedVersion, string Scope);
 }

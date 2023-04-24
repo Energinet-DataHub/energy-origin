@@ -62,7 +62,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
-            AllowCPRLookup = true
+            AllowCprLookup = true
         };
 
         var dbContext = DataContext;

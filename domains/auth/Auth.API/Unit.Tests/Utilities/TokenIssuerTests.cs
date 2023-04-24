@@ -120,11 +120,10 @@ public class TokenIssuerTests
     public void Issue_ShouldReturnATokenWithUsersProperties_WhenIssuingForAUser()
     {
         var name = Guid.NewGuid().ToString();
-        var tin = Guid.NewGuid().ToString();
-        var accesToken = Guid.NewGuid().ToString();
+        var accessToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name, version, accesToken, identityToken);
+        var descriptor = PrepareUser(name, version, accessToken, identityToken);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
@@ -136,7 +135,7 @@ public class TokenIssuerTests
         Assert.Equal("1", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.CurrentTermsVersion)?.Value);
         Assert.Equal(descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "true");
         Assert.Equal(!descriptor.AllowCPRLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCPRLookup)?.Value == "false");
-        Assert.Equal(accesToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
+        Assert.Equal(accessToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
         Assert.Equal(identityToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
     }
 
@@ -155,14 +154,14 @@ public class TokenIssuerTests
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Moptions.Create(terms ?? termsOptions.Value), Moptions.Create(token ?? tokenOptions.Value));
 
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
+    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
     {
         var user = new User()
         {
             Id = Guid.NewGuid(),
             Name = name ?? "Amigo",
             AcceptedTermsVersion = version,
-            AllowCPRLookup = true
+            AllowCprLookup = true
 
         };
         var descriptor = new UserDescriptor(null!)
@@ -170,9 +169,9 @@ public class TokenIssuerTests
             Id = user.Id.Value,
             Name = user.Name,
             AcceptedTermsVersion = user.AcceptedTermsVersion,
-            AllowCPRLookup = user.AllowCPRLookup,
+            AllowCPRLookup = user.AllowCprLookup,
             ProviderType = ProviderType.NemID_Professional,
-            EncryptedAccessToken = accesToken ?? "",
+            EncryptedAccessToken = accessToken ?? "",
             EncryptedIdentityToken = identityToken ?? "",
             UserStored = isStored
         };

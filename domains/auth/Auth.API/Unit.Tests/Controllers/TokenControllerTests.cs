@@ -61,7 +61,7 @@ public class TokenControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                AllowCPRLookup = false,
+                AllowCprLookup = false,
                 AcceptedTermsVersion = 1
             });
 

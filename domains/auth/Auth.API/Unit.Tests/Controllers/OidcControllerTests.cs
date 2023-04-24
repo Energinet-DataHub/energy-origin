@@ -66,7 +66,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", ProviderGroup.Private },
                 { "mitid.uuid", Guid.NewGuid().ToString() },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -76,7 +76,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Private },
                 { "nemid.common_name", Guid.NewGuid().ToString() },
                 { "nemid.pid", Guid.NewGuid().ToString() }
@@ -86,7 +86,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.ssn", Guid.NewGuid().ToString() },
@@ -98,7 +98,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID_Professional },
+                { "idp", ProviderName.MitIdProfessional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
@@ -125,8 +125,6 @@ public class OidcControllerTests
         );
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
         var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
         var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
@@ -161,7 +159,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", ProviderGroup.Private },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
             }
@@ -170,7 +168,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Private },
                 { "nemid.pid", Guid.NewGuid().ToString() }
             }
@@ -179,7 +177,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.company_name", Guid.NewGuid().ToString() },
@@ -190,7 +188,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID_Professional },
+                { "idp", ProviderName.MitIdProfessional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
@@ -212,7 +210,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", "wrong" },
                 { "mitid.uuid", Guid.NewGuid().ToString() },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -236,8 +234,6 @@ public class OidcControllerTests
         );
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
         var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
         var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
@@ -261,14 +257,14 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: true);
-        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+        var testOidcOptions = TestOptions.Oidc(oidcOptions.Value, allowRedirection: true);
+        var tokenEndpoint = new Uri($"http://{testOidcOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("issuer", $"https://{testOidcOptions.Value.AuthorityUri.Host}/op"),
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+                new("end_session_endpoint", $"http://{testOidcOptions.Value.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.Value.PublicKeyPem)
         );
@@ -277,14 +273,14 @@ public class OidcControllerTests
 
         var providerId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -296,7 +292,7 @@ public class OidcControllerTests
         var redirection = "https://goodguys.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirection);
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, testOidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
@@ -309,15 +305,15 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldNotReturnRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: false);
+        var testOidcOptions = TestOptions.Oidc(oidcOptions.Value, allowRedirection: false);
 
-        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+        var tokenEndpoint = new Uri($"http://{testOidcOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("issuer", $"https://{testOidcOptions.Value.AuthorityUri.Host}/op"),
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+                new("end_session_endpoint", $"http://{testOidcOptions.Value.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.Value.PublicKeyPem)
         );
@@ -326,14 +322,14 @@ public class OidcControllerTests
 
         var providerId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -345,14 +341,14 @@ public class OidcControllerTests
         var redirectionUri = "http://hackerz.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri);
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, testOidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
 
         var uri = new Uri(result.Url);
         Assert.NotEqual(new Uri(redirectionUri).Host, uri.Host);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(testOidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
     }
 
     [Fact]
@@ -580,7 +576,7 @@ public class OidcControllerTests
     [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>());
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
@@ -612,7 +608,7 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
     {
-        var providerOptions = Moptions.Create(new IdentityProviderOptions
+        var testProviderOptions = Moptions.Create(new IdentityProviderOptions
         {
             Providers = new List<ProviderType>()
         });
@@ -643,7 +639,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, testProviderOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
@@ -692,7 +688,7 @@ public class OidcControllerTests
         var ssn = Guid.NewGuid().ToString();
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.NemID },
+            { "idp", ProviderName.NemId },
             { "identity_type", ProviderGroup.Professional },
             { "nemid.cvr", tin },
             { "nemid.ssn", ssn },
@@ -771,7 +767,7 @@ public class OidcControllerTests
         });
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.MitID },
+            { "idp", ProviderName.MitId },
             { "identity_type", ProviderGroup.Private },
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -782,8 +778,6 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var mockMapper = Mock.Of<IUserDescriptorMapper>();
-
         Mock.Get(service)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid?>()))
             .ReturnsAsync(value: new User()
@@ -791,7 +785,7 @@ public class OidcControllerTests
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AcceptedTermsVersion = 1,
-                AllowCPRLookup = true
+                AllowCprLookup = true
             });
 
         var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);

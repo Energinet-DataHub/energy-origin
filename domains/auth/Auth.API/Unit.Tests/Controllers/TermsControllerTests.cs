@@ -78,7 +78,7 @@ public class TermsControllerTests
             {
                 Id = id,
                 Name = name,
-                AllowCPRLookup = allowCprLookup,
+                AllowCprLookup = allowCprLookup,
                 AcceptedTermsVersion = oldAcceptedTermsVersion
             });
 
@@ -93,7 +93,7 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.AllowCPRLookup == allowCprLookup
+                && y.AllowCprLookup == allowCprLookup
                 && y.Id == id)),
             Times.Once
         );
@@ -137,7 +137,7 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.AllowCPRLookup == allowCprLookup
+                && y.AllowCprLookup == allowCprLookup
                 && y.Id == id
                 && y.Company != null
                 && y.Company.Tin == tin
