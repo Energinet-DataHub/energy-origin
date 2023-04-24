@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.IdentityModel.Tokens;
 
@@ -7,6 +8,7 @@ public class IdentityProviderOptions
 {
     public const string Prefix = "IdentityProvider";
 
+    [Required]
     public List<ProviderType> Providers { get; init; } = null!;
 
     public (string, List<KeyValuePair<string, string>>) GetIdentityProviderArguments()
