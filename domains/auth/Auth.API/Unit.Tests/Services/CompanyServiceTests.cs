@@ -27,7 +27,7 @@ public class CompanyServiceTests
         var result = await companyService.GetCompanyByTinAsync(tin);
 
         Assert.NotNull(result);
-        Assert.Equal(tin, result?.Tin);
+        Assert.Equal(tin, result.Tin);
     }
 
     [Theory]

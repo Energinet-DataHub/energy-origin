@@ -13,34 +13,39 @@ namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
-    private readonly TokenController tokenController = new();
+    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
+    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
+    private readonly TokenController tokenController = new();
     private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
-    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
 
     public TokenControllerTests() =>
-        tokenController.ControllerContext = new ControllerContext()
+        tokenController.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext() { User = claimsPrincipal }
+            HttpContext = new DefaultHttpContext { User = claimsPrincipal }
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private, true)]
-    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
+        ProviderType.NemID_Private, true)]
+    [InlineData(true,
+        $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}",
+        "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
+        ProviderType.NemID_Professional, false)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass,
+        string scope, string userId, ProviderType providerType, bool isStored)
     {
         var token = Guid.NewGuid().ToString();
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
-            .Returns(value: Guid.NewGuid().ToString());
+            .Returns(Guid.NewGuid().ToString());
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
@@ -50,28 +55,28 @@ public class TokenControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
             });
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: new User()
+            .ReturnsAsync(new User
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                AllowCPRLookup = false,
+                AllowCprLookup = false,
                 AcceptedTermsVersion = 1
             });
 
         Mock.Get(issuer)
             .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), null))
-            .Returns(value: token);
+            .Returns(token);
 
         Mock.Get(claimsPrincipal)
             .Setup(x => x.FindFirst(UserClaimName.Scope))
-            .Returns(value: new Claim(UserClaimName.Scope, scope));
+            .Returns(new Claim(UserClaimName.Scope, scope));
 
         var result = await tokenController.RefreshAsync(mapper, userService, issuer);
         Assert.NotNull(result);
@@ -89,6 +94,7 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
+        await Assert.ThrowsAsync<NullReferenceException>(async () =>
+            await tokenController.RefreshAsync(mapper, userService, issuer));
     }
 }

@@ -27,7 +27,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var context = factory.DataContext;
         context.Users.Update(user);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
@@ -37,8 +37,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 
-        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
-        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
+        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
         Assert.Equal(oldScope, newScope);
@@ -60,8 +62,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 
-        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
-        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
+        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
         Assert.NotEqual(oldScope, newScope);
@@ -88,8 +92,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 
-        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
-        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
+        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
         Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
@@ -107,7 +113,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
+            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
@@ -132,8 +138,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newToken);
         Assert.NotEqual(oldToken, newToken);
 
-        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
-        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
+        var oldScope = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
+        var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims
+            .First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
         Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
