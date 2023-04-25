@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Tests.Utilities;
+namespace Unit.Tests.Utilities;
 
 public class TokenIssuerTests
 {
@@ -27,8 +27,8 @@ public class TokenIssuerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        termsOptions = Options.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
-        tokenOptions = Options.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+        termsOptions = Moptions.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
+        tokenOptions = Moptions.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
     }
 
     [Theory]
@@ -153,7 +153,7 @@ public class TokenIssuerTests
         Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Options.Create(terms ?? termsOptions.Value), Options.Create(token ?? tokenOptions.Value));
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Moptions.Create(terms ?? termsOptions.Value), Moptions.Create(token ?? tokenOptions.Value));
 
     private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accesToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
     {

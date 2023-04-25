@@ -2,14 +2,12 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
-using EnergyOrigin.TokenValidation.Values;
-using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
 
-namespace Tests.Integration.Controllers;
+namespace Integration.Tests.Controllers;
 
 public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
@@ -84,8 +82,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
+        var uri = new Uri(query!);
+        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
-        Assert.Contains($"post_logout_redirect_uri={oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}", query);
+        Assert.DoesNotContain($"post_logout_redirect_uri={oidcOptions.Value.FrontendRedirectUri.AbsoluteUri}", query);
         Assert.DoesNotContain($"id_token_hint", query);
     }
 }

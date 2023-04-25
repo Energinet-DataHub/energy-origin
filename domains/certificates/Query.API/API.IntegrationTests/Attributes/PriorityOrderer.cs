@@ -3,11 +3,11 @@ using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace API.AppTests.Infrastructure.TestPriority;
+namespace API.IntegrationTests.Attributes;
 
 public class PriorityOrderer : ITestCaseOrderer
 {
-    private const string @namespace = "API.AppTests.Infrastructure.TestPriority";
+    private const string @namespace = "API.IntegrationTests.Attributes";
     public const string TypeName = $"{@namespace}.{nameof(PriorityOrderer)}";
 
     public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)

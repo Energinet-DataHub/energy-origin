@@ -3,20 +3,23 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace API.AppTests.Mocks;
+namespace API.IntegrationTests.Mocks;
 
 public sealed class DataSyncWireMock : IDisposable
 {
     private readonly WireMockServer server;
 
-    public DataSyncWireMock(int port) => server = WireMockServer.Start(port);
+    public DataSyncWireMock() => server = WireMockServer.Start();
 
     public string Url => server.Url!;
 
-    public void SetupMeteringPointsResponse(string gsrn, string type = "production") =>
+    public void SetupMeteringPointsResponse(string gsrn, string type = "production")
+    {
+        server.ResetMappings();
         server
             .Given(Request.Create().WithPath("/meteringPoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn, type)));
+    }
 
     private static string BuildMeteringPointsResponse(string gsrn, string type)
         => "{\"meteringPoints\":[{\"gsrn\": \"" + gsrn + "\",\"gridArea\": \"DK1\",\"type\": \"" + type + "\"}]}";

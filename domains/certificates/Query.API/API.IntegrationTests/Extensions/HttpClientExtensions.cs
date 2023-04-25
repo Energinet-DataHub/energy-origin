@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace API.AppTests.Extensions;
+namespace API.IntegrationTests.Extensions;
 
 public static class HttpClientExtensions
 {
@@ -21,12 +21,14 @@ public static class HttpClientExtensions
 
         do
         {
-            var response = await client.GetAsync(requestUri);
-            if (response.StatusCode == HttpStatusCode.OK)
+            using (var response = await client.GetAsync(requestUri))
             {
-                var content = await response.Content.ReadFromJsonAsync<T>();
-                if (content != null && condition(content))
-                    return content;
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var content = await response.Content.ReadFromJsonAsync<T>();
+                    if (content != null && condition(content))
+                        return content;
+                }
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class LoginControllerTests
 {
@@ -29,7 +29,7 @@ public class LoginControllerTests
         {
             Providers = new List<ProviderType>() { ProviderType.NemID_Professional }
         };
-        identityProviderOptions = Options.Create(identityProviderOption);
+        identityProviderOptions = Moptions.Create(identityProviderOption);
     }
 
     [Fact]
@@ -58,6 +58,7 @@ public class LoginControllerTests
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"state=", query);
+        Assert.Contains($"prompt=login", query);
         Assert.Contains($"client_id={options.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={options.Value.AuthorityCallbackUri.AbsoluteUri}", query);
     }

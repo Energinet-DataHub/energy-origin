@@ -1,11 +1,11 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure;
+using API.IntegrationTests.Factories;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
-public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
+public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
@@ -18,8 +18,8 @@ public class UnhealthTests : IClassFixture<QueryApiWebApplicationFactory>
     [Fact]
     public async Task Health_IsCalledWhenRabbitMqIsDown_ReturnsServiceUnavailable()
     {
-        var client = factory.CreateClient();
-        var healthResponse = await client.GetAsync("health");
+        using var client = factory.CreateClient();
+        using var healthResponse = await client.GetAsync("health");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, healthResponse.StatusCode);
     }
 }

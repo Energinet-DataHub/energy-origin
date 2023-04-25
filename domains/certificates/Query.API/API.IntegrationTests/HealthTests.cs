@@ -1,11 +1,15 @@
 using System.Net;
 using System.Threading.Tasks;
-using API.AppTests.Infrastructure;
+using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using Xunit;
 
-namespace API.AppTests;
+namespace API.IntegrationTests;
 
-public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RabbitMqContainer>
+public class HealthTests :
+    TestBase,
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
@@ -18,11 +22,9 @@ public class HealthTests : IClassFixture<QueryApiWebApplicationFactory>, IClassF
     [Fact]
     public async Task Health_IsCalled_ReturnsOk()
     {
-        var client = factory.CreateClient();
-        var healthResponse = await client.GetAsync("health");
+        using var client = factory.CreateClient();
+        using var healthResponse = await client.GetAsync("health");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
-
-
 }

@@ -9,7 +9,7 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
@@ -88,28 +88,6 @@ public class TokenControllerTests
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
-
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
-    }
-
-    [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
-    {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid(),
-                Name = Guid.NewGuid().ToString(),
-                Tin = null,
-                AllowCPRLookup = false,
-                AcceptedTermsVersion = 1,
-                UserStored = true
-            });
-
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: null);
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
     }

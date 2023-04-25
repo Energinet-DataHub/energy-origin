@@ -14,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Tests.Integration;
 using WireMock.Server;
 
 namespace Integration.Tests.Controllers;
@@ -150,7 +149,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains($"token=", query);
 
-        Assert.Equal(2, user!.UserProviders.Count());
+        Assert.Equal(2, user!.UserProviders.Count);
         Assert.Contains(user!.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
     }
 

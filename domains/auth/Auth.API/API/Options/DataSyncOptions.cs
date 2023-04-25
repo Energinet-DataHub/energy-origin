@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.Options;
 
 public class DataSyncOptions
 {
     public const string Prefix = "DataSync";
 
-    public Uri Uri { get; init; } = null!;
+    [Required]
+    public Uri? Uri { get; init; }
 }

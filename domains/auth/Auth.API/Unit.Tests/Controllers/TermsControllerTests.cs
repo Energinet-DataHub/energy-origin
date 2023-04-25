@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class TermsControllerTests
 {
@@ -43,8 +43,8 @@ public class TermsControllerTests
             Key = "secretsecretsecretsecret"
         };
 
-        options = Options.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        cryptography = new Cryptography(Options.Create(cryptographyOptions));
+        options = Moptions.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
+        cryptography = new Cryptography(Moptions.Create(cryptographyOptions));
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class TermsControllerTests
                 AcceptedTermsVersion = oldAcceptedTermsVersion
             });
 
-        http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
@@ -126,7 +126,7 @@ public class TermsControllerTests
                 UserStored = false
             });
 
-        http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
@@ -156,7 +156,7 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        http.When(HttpMethod.Post, options.Value.Uri.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
