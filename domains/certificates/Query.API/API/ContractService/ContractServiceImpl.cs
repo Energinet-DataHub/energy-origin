@@ -78,7 +78,7 @@ internal class ContractServiceImpl : IContractService
         {
             return new NonExistingContract();
         }
-        if (contract!.MeteringPointOwner != meteringPointOwner)
+        if (contract.MeteringPointOwner != meteringPointOwner)
         {
             return new MeteringPointOwnerNoMatch();
         }
