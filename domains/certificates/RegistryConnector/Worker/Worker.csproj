@@ -19,4 +19,8 @@
     <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 
 namespace API.DataSyncSyncer.Client;
 

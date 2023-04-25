@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
+using Domain.Certificates.Primitives;
 using Marten;
 using MassTransit;
 using MeasurementEvents;
@@ -34,21 +35,51 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await using (var session = documentStore.OpenSession())
+        {
+            session.Insert(new CertificateIssuingContract
+            {
+                ContractNumber = 1,
+                Created = DateTimeOffset.Now,
+                GridArea = "DK1",
+                GSRN = "GSRN",
+                Id = Guid.NewGuid(),
+                MeteringPointOwner = "SomeMeteringPointOwner",
+                MeteringPointType = MeteringPointType.Production,
+                StartDate = DateTimeOffset.Now.AddHours(-1)
+            });
+            await session.SaveChangesAsync(stoppingToken);
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            var allContracts = await GetAllContracts(stoppingToken);
-            foreach (var contract in allContracts)
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            var measurements = new List<DataSyncDto>
             {
-                var measurements = await dataSyncService.FetchMeasurements(contract,
-                    stoppingToken);
+                new DataSyncDto("GSRN",
+                    DateTimeOffset.Now.AddHours(-1).ToUnixTimeSeconds(),
+                    DateTimeOffset.Now.ToUnixTimeSeconds(),
+                    42,
+                    MeasurementQuality.Measured
+                )
+            };
 
-                if (measurements.Any())
-                {
-                    await PublishIntegrationEvents(measurements, stoppingToken);
-                }
-            }
+            await PublishIntegrationEvents(measurements, stoppingToken);
 
-            await SleepToNearestHour(stoppingToken);
+            //var allContracts = await GetAllContracts(stoppingToken);
+            //foreach (var contract in allContracts)
+            //{
+            //    var measurements = await dataSyncService.FetchMeasurements(contract,
+            //        stoppingToken);
+
+            //    if (measurements.Any())
+            //    {
+            //        await PublishIntegrationEvents(measurements, stoppingToken);
+            //    }
+            //}
+
+            //await SleepToNearestHour(stoppingToken);
         }
     }
 

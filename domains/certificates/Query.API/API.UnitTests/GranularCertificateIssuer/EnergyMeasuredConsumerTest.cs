@@ -5,7 +5,7 @@ using AggregateRepositories;
 using API.ContractService;
 using API.GranularCertificateIssuer;
 using CertificateEvents.Aggregates;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;

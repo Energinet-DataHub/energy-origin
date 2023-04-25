@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using CertificateEvents;
+using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,9 +8,9 @@ using NSec.Cryptography;
 using ProjectOrigin.Electricity.Client;
 using ProjectOrigin.Electricity.Client.Models;
 
-namespace API.Application.RegistryConnector
+namespace RegistryConnector.Worker.Application.EventHandlers
 {
-    public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreated>
+    public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
     {
         private readonly ILogger<ProductionCertificateCreatedEventHandler> logger;
         private readonly RegisterClient registerClient;
@@ -24,7 +24,7 @@ namespace API.Application.RegistryConnector
             issuerKey = Key.Import(SignatureAlgorithm.Ed25519, registryOptions.Value.IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKeyText);
         }
 
-        public async Task Consume(ConsumeContext<ProductionCertificateCreated> context)
+        public async Task Consume(ConsumeContext<ProductionCertificateCreatedEvent> context)
         {
             var ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
 

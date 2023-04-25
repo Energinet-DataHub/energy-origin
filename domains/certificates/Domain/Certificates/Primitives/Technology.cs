@@ -1,4 +1,4 @@
-namespace CertificateEvents.Primitives;
+namespace Domain.Certificates.Primitives;
 
 public record Technology(
     string FuelCode, // stamdata

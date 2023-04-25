@@ -1,7 +1,7 @@
 using System.Text;
 using ProjectOrigin.Electricity.Client.Models;
 
-namespace API.Application.RegistryConnector
+namespace RegistryConnector.Worker
 {
     public static class HexHelper
     {

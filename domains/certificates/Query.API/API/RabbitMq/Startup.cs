@@ -1,5 +1,4 @@
 using System;
-using API.Application.RegistryConnector;
 using API.GranularCertificateIssuer;
 using API.RabbitMq.Configurations;
 using API.TransferCertificateHandler;
@@ -23,7 +22,6 @@ public static class Startup
 
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
             o.AddConsumer<TransferCertificateConsumer>();
-            o.AddConsumer<ProductionCertificateCreatedEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

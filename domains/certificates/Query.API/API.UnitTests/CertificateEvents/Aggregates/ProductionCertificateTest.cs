@@ -1,7 +1,7 @@
 using System;
 using CertificateEvents.Aggregates;
 using CertificateEvents.Exceptions;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using FluentAssertions;
 using Xunit;
 

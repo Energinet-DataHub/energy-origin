@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.Electricity.Client.Models;
 
-namespace API.Application.RegistryConnector
+namespace RegistryConnector.Worker.Application.PoEventHandlers
 {
-    public class PoRegistryEventListener
+    public class PoRegistryEventHandler
     {
-        private readonly ILogger<PoRegistryEventListener> logger;
+        private readonly ILogger<PoRegistryEventHandler> logger;
 
-        public PoRegistryEventListener(ILogger<PoRegistryEventListener> logger)
+        public PoRegistryEventHandler(ILogger<PoRegistryEventHandler> logger)
         {
             this.logger = logger;
         }

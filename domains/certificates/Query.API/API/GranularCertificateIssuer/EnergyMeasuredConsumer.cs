@@ -4,7 +4,8 @@ using AggregateRepositories;
 using API.ContractService;
 using CertificateEvents;
 using CertificateEvents.Aggregates;
-using CertificateEvents.Primitives;
+using Domain;
+using Domain.Certificates.Primitives;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             message.Quantity);
 
         //TODO: look into this: https://stackoverflow.com/questions/30780979/best-way-to-ensure-an-event-is-eventually-published-to-a-message-queuing-sytem
+        //TODO: Add event to contracts and use here
         await bus.Publish(new ProductionCertificateCreated(productionCertificate.Id,
             contract.GridArea,
             new Period(message.DateFrom, message.DateTo),

@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Persistence;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using FluentAssertions;
 using Marten;
 using Microsoft.Extensions.Logging;

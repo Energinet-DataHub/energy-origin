@@ -6,7 +6,7 @@ using API.ContractService;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using Microsoft.Extensions.Logging;
 
 namespace API.DataSyncSyncer;

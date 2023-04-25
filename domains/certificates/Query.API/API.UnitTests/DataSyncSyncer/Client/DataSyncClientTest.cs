@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using FluentAssertions;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;

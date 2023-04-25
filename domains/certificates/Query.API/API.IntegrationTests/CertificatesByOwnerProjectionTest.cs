@@ -5,7 +5,7 @@ using API.IntegrationTests.Testcontainers;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;
-using CertificateEvents.Primitives;
+using Domain.Certificates.Primitives;
 using FluentAssertions;
 using Marten;
 using VerifyXunit;

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RegistryConnector.Worker;
+using RegistryConnector.Worker.Application;
+using RegistryConnector.Worker.Application.EventHandlers;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -29,9 +31,13 @@ builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.RegisterApplication(builder.Configuration);
+
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
+
+    o.AddConsumer<ProductionCertificateCreatedEventHandler>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
@@ -50,5 +56,6 @@ builder.Services.AddMassTransit(o =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
+app.RegisterPoEventHandlers();
 
 app.Run();
