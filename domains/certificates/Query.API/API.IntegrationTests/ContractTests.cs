@@ -144,7 +144,7 @@ public sealed class ContractTests :
 
         var body = new
         {
-            gsrn,
+            invalidGsrn,
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
@@ -266,7 +266,7 @@ public sealed class ContractTests :
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
         };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -276,7 +276,7 @@ public sealed class ContractTests :
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -296,7 +296,7 @@ public sealed class ContractTests :
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
         };
 
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -305,7 +305,7 @@ public sealed class ContractTests :
             gsrn
         };
 
-        var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -325,9 +325,9 @@ public sealed class ContractTests :
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        var response = await client.PatchAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PatchAsJsonAsync("api/certificates/contracts", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public sealed class ContractTests :
             endDate = DateTimeOffset.Now.AddDays(-3).ToUnixTimeSeconds()
         };
 
-        var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
