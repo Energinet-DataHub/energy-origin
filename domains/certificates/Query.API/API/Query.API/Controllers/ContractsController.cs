@@ -24,7 +24,7 @@ public class ContractsController : ControllerBase
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
