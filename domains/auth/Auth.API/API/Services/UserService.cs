@@ -1,17 +1,16 @@
 using API.Models.Entities;
-using API.Repositories;
+using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 
 namespace API.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository userRepository;
+    private readonly IUserRepository repository;
 
-    public UserService(IUserRepository userRepository) => this.userRepository = userRepository;
+    public UserService(IUserRepository repository) => this.repository = repository;
 
-    public async Task<User> UpsertUserAsync(User user) => await userRepository.UpsertUserAsync(user);
-
-    public async Task<User?> GetUserByIdAsync(Guid userId) => await userRepository.GetUserByIdAsync(userId);
-
-    public async Task<User?> GetUserByProviderIdAsync(string providerId) => await userRepository.GetUserByProviderIdAsync(providerId);
+    public async Task<User> UpsertUserAsync(User user) => await repository.UpsertUserAsync(user);
+    public async Task<User?> GetUserByIdAsync(Guid? id) => id is null ? null : await repository.GetUserByIdAsync(id.Value);
+    public async Task<User> InsertUserAsync(User user) => await repository.InsertUserAsync(user);
 }

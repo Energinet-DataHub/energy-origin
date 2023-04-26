@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Responses;
-using API.Query.API.Projections;
+using API.Query.API.Projections.Views;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

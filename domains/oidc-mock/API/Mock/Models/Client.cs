@@ -4,32 +4,32 @@ public record Client(string ClientId, string ClientSecret, string RedirectUri)
 {
     public (bool isValid, string validationError) Validate(string? clientId, string? redirectUri)
     {
+        var valid = true;
+        var error = string.Empty;
+
         if (string.IsNullOrWhiteSpace(clientId) || !string.Equals(clientId, ClientId, StringComparison.InvariantCultureIgnoreCase))
         {
-            return (false, "Invalid client_id");
+            error = "Invalid client_id";
+            valid = false;
         }
 
         if (string.IsNullOrWhiteSpace(redirectUri) || !string.Equals(redirectUri, RedirectUri, StringComparison.InvariantCultureIgnoreCase))
         {
-            return (false, "Invalid redirect_uri");
+            error = "Invalid redirect_uri";
+            valid = false;
         }
 
-        return (true, string.Empty);
+        return (valid, error);
     }
 
     public (bool isValid, string validationError) Validate(string? clientId, string? clientSecret, string? redirectUri)
     {
-        var result = Validate(clientId, redirectUri);
-        if (!result.isValid)
-        {
-            return result;
-        }
-
         if (string.IsNullOrWhiteSpace(clientSecret) || !string.Equals(clientSecret, ClientSecret, StringComparison.InvariantCultureIgnoreCase))
         {
             return (false, "Invalid client_secret");
         }
 
-        return (true, string.Empty);
+        var result = Validate(clientId, redirectUri);
+        return !result.isValid ? result : (true, string.Empty);
     }
 }

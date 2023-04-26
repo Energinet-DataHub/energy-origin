@@ -4,11 +4,11 @@ using CertificateEvents.Primitives;
 namespace CertificateEvents;
 
 public record ProductionCertificateCreated(
-    Guid CertificateId, // Guid.newGuid()
-    string GridArea, // stamdata
+    Guid CertificateId,
+    string GridArea,
     Period Period,
-    Technology Technology, // stamdata
-    string MeteringPointOwner, // stamdata - meterpoint owners key
-    ShieldedValue<string> ShieldedGSRN, //Group.commit(EnergyMeasured.GSRN)
-    ShieldedValue<long> ShieldedQuantity //Group.commit(EnergyMeasured.Quantity)
+    Technology Technology,
+    string MeteringPointOwner,
+    ShieldedValue<string> ShieldedGSRN,
+    ShieldedValue<long> ShieldedQuantity
 );

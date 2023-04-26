@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
 using CertificateEvents.Primitives;
+using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
 
 namespace API.ContractService;
@@ -43,19 +44,27 @@ internal class ContractServiceImpl : IContractService
             return new ContractAlreadyExists(document);
         }
 
-        var userObject = new CertificateIssuingContract
+        try
         {
-            Id = Guid.Empty,
-            GSRN = gsrn,
-            GridArea = matchingMeteringPoint.GridArea,
-            MeteringPointType = MeteringPointType.Production,
-            MeteringPointOwner = meteringPointOwner,
-            StartDate = startDate,
-            Created = DateTimeOffset.UtcNow
-        };
-        await repository.Save(userObject);
+            var contract = new CertificateIssuingContract
+            {
+                Id = Guid.Empty,
+                ContractNumber = 0,
+                GSRN = gsrn,
+                GridArea = matchingMeteringPoint.GridArea,
+                MeteringPointType = MeteringPointType.Production,
+                MeteringPointOwner = meteringPointOwner,
+                StartDate = startDate,
+                Created = DateTimeOffset.UtcNow
+            };
+            await repository.Save(contract);
 
-        return new Success(userObject);
+            return new Success(contract);
+        }
+        catch (DocumentAlreadyExistsException)
+        {
+            return new ContractAlreadyExists(null);
+        }
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)

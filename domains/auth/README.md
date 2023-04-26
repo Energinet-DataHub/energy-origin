@@ -22,3 +22,13 @@ base64 <filename.pem | tr -d \\n | tr \\n \\\\n
 ```
 
 __Note__: You will need to change `filename.pem` to the filename of the key you want to convert.
+
+__Note__: You will need to base64 encode the key again when using it in a kubernetes secret.
+
+### Migration generation
+
+Here is an example of how to generate migrations SQL for the API project:
+
+```shell
+dotnet ef migrations script --idempotent --project Auth.API/API/API.csproj --output chart/API.migrations.sql
+```

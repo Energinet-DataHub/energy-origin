@@ -1,76 +1,82 @@
 using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
-using API.Services;
-using API.Utilities;
-using API.Values;
+using API.Services.Interfaces;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Tests.Controllers;
+namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
-    private readonly TokenController tokenController = new();
-    private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
-    private readonly IUserDescriptMapper mapper = Mock.Of<IUserDescriptMapper>();
-    private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
+    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
+    private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
+    private readonly TokenController tokenController = new();
+    private readonly IUserService userService = Mock.Of<IUserService>();
 
     public TokenControllerTests() =>
-        tokenController.ControllerContext = new ControllerContext()
+        tokenController.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext() { User = claimsPrincipal }
+            HttpContext = new DefaultHttpContext { User = claimsPrincipal }
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(true, UserScopeClaim.AllAcceptedScopes, "625fa04a-4b17-4727-8066-82cf5b5a8b0d")]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, null)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string? userId)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
+        ProviderType.NemID_Private, true)]
+    [InlineData(true,
+        $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}",
+        "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
+        ProviderType.NemID_Professional, false)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass,
+        string scope, string userId, ProviderType providerType, bool isStored)
     {
         var token = Guid.NewGuid().ToString();
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
-            .Returns(value: Guid.NewGuid().ToString());
+            .Returns(Guid.NewGuid().ToString());
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
-                Id = userId != null ? Guid.Parse(userId) : null,
+                Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
-                EncryptedIdentityToken = Guid.NewGuid().ToString()
+                EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                UserStored = isStored
             });
 
         Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
             });
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: new User()
+            .ReturnsAsync(new User
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
-                Tin = null,
-                AllowCPRLookup = false,
+                AllowCprLookup = false,
                 AcceptedTermsVersion = 1
             });
 
         Mock.Get(issuer)
             .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), null))
-            .Returns(value: token);
+            .Returns(token);
 
         Mock.Get(claimsPrincipal)
             .Setup(x => x.FindFirst(UserClaimName.Scope))
-            .Returns(value: new Claim(UserClaimName.Scope, scope));
+            .Returns(new Claim(UserClaimName.Scope, scope));
 
         var result = await tokenController.RefreshAsync(mapper, userService, issuer);
         Assert.NotNull(result);
@@ -88,28 +94,7 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
-    }
-
-    [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
-    {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid(),
-                Name = Guid.NewGuid().ToString(),
-                ProviderId = Guid.NewGuid().ToString(),
-                Tin = null,
-                AllowCPRLookup = false,
-                AcceptedTermsVersion = 1
-            });
-
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: null);
-
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
+        await Assert.ThrowsAsync<NullReferenceException>(async () =>
+            await tokenController.RefreshAsync(mapper, userService, issuer));
     }
 }

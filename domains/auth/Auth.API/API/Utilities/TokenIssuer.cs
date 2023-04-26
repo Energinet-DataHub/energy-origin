@@ -3,7 +3,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using API.Options;
-using API.Values;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -11,6 +13,9 @@ namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
+    public const string AllAcceptedScopes =
+        $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
 
@@ -26,7 +31,8 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, descriptor, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(termsOptions, tokenOptions, credentials, descriptor, state,
+            issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -43,42 +49,49 @@ public class TokenIssuer : ITokenIssuer
     {
         var version = descriptor.AcceptedTermsVersion;
 
-        var scope = version == options.CurrentVersion || versionBypass ? UserScopeClaim.AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        var scope = version == options.CurrentVersion || versionBypass
+            ? AllAcceptedScopes
+            : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id?.ToString(), version, scope);
+        return new UserState(version, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions options, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions,
+        SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
-        var claims = new Dictionary<string, object> {
+        var claims = new Dictionary<string, object>
+        {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
-            { UserClaimName.ProviderId, descriptor.ProviderId },
-            { UserClaimName.TermsVersion, state.AcceptedVersion },
+            { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
+            { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
+            { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
+            { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
             { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { UserClaimName.UserStored, descriptor.UserStored },
+            { UserClaimName.Subject, descriptor.Subject },
+            { UserClaimName.Actor, descriptor.Id },
+            { UserClaimName.ActorLegacy, descriptor.Id }
         };
-        if (descriptor.Tin != null)
-        {
-            claims.Add(UserClaimName.Tin, descriptor.Tin);
-        }
+
+        if (descriptor.CompanyId is not null) claims.Add(UserClaimName.CompanyId, descriptor.CompanyId);
+        if (descriptor.Tin is not null) claims.Add(UserClaimName.Tin, descriptor.Tin);
+        if (descriptor.CompanyName is not null) claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name)
+            new(JwtRegisteredClaimNames.Name, descriptor.Name),
+            new(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
         };
-        if (state.Id != null)
-        {
-            identity.Add(new Claim(JwtRegisteredClaimNames.Sub, state.Id));
-        }
 
-        return new()
+        return new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(identity),
             NotBefore = issueAt,
-            Expires = issueAt.Add(options.Duration),
-            Issuer = options.Issuer,
-            Audience = options.Audience,
+            Expires = issueAt.Add(tokenOptions.Duration),
+            Issuer = tokenOptions.Issuer,
+            Audience = tokenOptions.Audience,
             SigningCredentials = credentials,
             Claims = claims
         };
@@ -91,5 +104,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(string? Id, int AcceptedVersion, string Scope);
+    private record UserState(int AcceptedVersion, string Scope);
 }

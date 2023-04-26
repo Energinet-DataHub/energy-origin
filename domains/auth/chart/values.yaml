@@ -1,3 +1,30 @@
 api:
-  replicaCount: 1
+  replicaCount: 3
   image: {}
+  env:
+    Cryptography__Key:
+    Terms__CurrentVersion:
+    Database__Port: 5432
+    Database__Password:
+    Token__Issuer:
+    Token__Audience:
+    Token__Duration:
+    Token__PublicKeyPem:
+    Token__PrivateKeyPem:
+    Oidc__AuthorityUri:
+    Oidc__ClientId:
+    Oidc__ClientSecret:
+    Oidc__CacheDuration:
+    Oidc__AuthorityCallbackUri:
+    Oidc__FrontendRedirectUri:
+  setup:
+    database:
+      PGUSER:
+      PGPASSWORD:
+cnpg:
+  cluster:
+    replicaCount:
+    imageVersion:
+    storageSize:
+  bouncer:
+    replicaCount:

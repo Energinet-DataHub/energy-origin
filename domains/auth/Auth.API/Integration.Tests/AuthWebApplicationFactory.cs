@@ -1,36 +1,34 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Repositories.Data;
-using API.Utilities;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
+using API.Repositories.Data.Interfaces;
+using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using Testcontainers.PostgreSql;
 
-namespace Tests.Integration;
+namespace Integration.Tests;
 
 public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().Build();
+
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
     public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
 
-    // https://github.com/testcontainers/testcontainers-dotnet/issues/750#issuecomment-1412257694
-    // Should be fixed in V2.5.
-#pragma warning disable 618
-    private readonly PostgreSqlTestcontainer testContainer
-        = new ContainerBuilder<PostgreSqlTestcontainer>()
-       .WithDatabase(new PostgreSqlTestcontainerConfiguration
-       {
-           Database = "Database",
-           Username = "admin",
-           Password = "admin",
-       })
-       .Build();
-#pragma warning restore 618
+    public async Task InitializeAsync()
+    {
+        await testContainer.StartAsync();
+        var dbContext = DataContext;
+        await dbContext.Database.MigrateAsync();
+    }
+
+    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -40,7 +38,10 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
-            services.AddDbContext<DataContext>(options => options.UseNpgsql(testContainer.ConnectionString));
+            services.Remove(services.First(x => x.ServiceType == typeof(NpgsqlDataSourceBuilder)));
+            services.AddSingleton(new NpgsqlDataSourceBuilder(testContainer.GetConnectionString()));
+            services.AddDbContext<DataContext>((serviceProvider, options) =>
+                options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
             services.AddScoped<IUserDataContext, DataContext>();
         });
     }
@@ -55,24 +56,26 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateAuthenticatedClient(User user, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemID_Professional,
+        string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null,
+        Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
-        var userDescriptMapper = ServiceProvider.GetRequiredService<IUserDescriptMapper>();
-        var userDescriptor = userDescriptMapper.Map(user, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(userDescriptor, versionBypass, issueAt));
+        var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
+        var descriptor = mapper.Map(user, providerType, accessToken ?? Guid.NewGuid().ToString(),
+            identityToken ?? Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
         return client;
     }
 
     public async Task<User> AddUserToDatabaseAsync(User? user = null)
     {
-        user ??= new User()
+        user ??= new User
         {
-            ProviderId = Guid.NewGuid().ToString(),
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
-            Tin = null,
-            AllowCPRLookup = true
+            AllowCprLookup = true
         };
 
         var dbContext = DataContext;
@@ -81,13 +84,4 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
         return user;
     }
-
-    public async Task InitializeAsync()
-    {
-        await testContainer.StartAsync();
-        var dbContext = DataContext;
-        await dbContext.Database.MigrateAsync();
-    }
-
-    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
 }

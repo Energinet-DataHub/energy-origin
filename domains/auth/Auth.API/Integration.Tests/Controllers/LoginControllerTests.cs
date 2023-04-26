@@ -2,28 +2,24 @@ using System.Net;
 using System.Web;
 using API.Options;
 using API.Values;
-using Integration.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
 
-namespace Tests.Integration.LoginController;
+namespace Integration.Tests.Controllers;
 
 public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    public LoginControllerTests(AuthWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public LoginControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task LoginAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
         var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
-        var oidcOptions = Options.Create(new OidcOptions()
+        var oidcOptions = Options.Create(new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
@@ -33,7 +29,10 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory
             .CreateAnonymousClient(builder =>
                 builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+                    services.AddScoped(_ => oidcOptions)));
+
+        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value
+            .GetIdentityProviderArguments();
 
         var result = await client.GetAsync("auth/login");
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
@@ -41,6 +40,9 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
         Assert.Contains($"client_id={oidcOptions.Value.ClientId}", query);
         Assert.Contains($"redirect_uri={oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri}", query);
+        Assert.Contains($"idp_values={arguments.First().Value}", query);
+        Assert.Contains($"idp_params={arguments.Last().Value}", query);
+        Assert.Contains($"scope={scope}", query);
     }
 
     [Fact]

@@ -11,7 +11,7 @@ public static class JwtExtensions
         var bytes = Convert.FromBase64String(paddedPayload);
         return Encoding.UTF8.GetString(bytes);
 
-        string GetPadding(string base64EncodedString) =>
+        static string GetPadding(string base64EncodedString) =>
             (base64EncodedString.Length % 4) switch
             {
                 2 => "==",
