@@ -33,7 +33,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
         if (!validationResult.IsValid)
