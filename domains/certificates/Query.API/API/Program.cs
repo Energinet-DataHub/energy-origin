@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
     .Filter
     .ByExcluding("RequestPath like '/health%'")
-    .Enrich.WithSpan(); //Ensures that e have traceid and spanid in logs
+    .Enrich.WithSpan();
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
