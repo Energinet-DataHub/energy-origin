@@ -44,6 +44,6 @@ public class TransferCertificateController : ControllerBase
             return Ok();
 
         var failureReason = ((Failure)response.Message).Reason;
-        return BadRequest(failureReason);
+        return ValidationProblem(failureReason);
     }
 }
