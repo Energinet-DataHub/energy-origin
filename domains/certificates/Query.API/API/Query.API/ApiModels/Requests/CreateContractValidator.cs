@@ -12,22 +12,14 @@ public class CreateContractValidator : AbstractValidator<CreateContract>
 
         RuleFor(cs => cs.StartDate)
             .GreaterThanOrEqualTo(_ => utcMidnight)
-            .LessThan(253402300800).WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)");
+            .MustBeBeforeYear10000();
 
         RuleFor(cs => cs.EndDate)
             .GreaterThanOrEqualTo(cs => cs.StartDate)
-            .LessThan(253402300800)
-            .WithMessage("{PropertyName} must be before 253402300800 (10000-01-01T00:00:00+00:00)")
+            .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
 
         RuleFor(cs => cs.GSRN)
             .MustBeValidGsrn();
-            
-            
-
-        //RuleFor(cs => cs.GSRN)
-        //    .Cascade(CascadeMode.Stop)
-        //    .NotEmpty()
-        //    .Must(gsrn => Regex.IsMatch(gsrn, "^\\d{18}$", RegexOptions.None, TimeSpan.FromSeconds(1))).WithMessage("Invalid {PropertyName}. Must be 18 digits");
     }
 }
