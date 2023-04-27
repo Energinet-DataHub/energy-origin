@@ -43,9 +43,11 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        var endDate = createContract.EndDate == null ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate);
+
         var result = await service.Create(createContract.GSRN, meteringPointOwner!,
             DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
-            createContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate) : null,
+            endDate,
             cancellationToken);
 
         return result switch
@@ -125,13 +127,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.EndContract(endContract.GSRN, meteringPointOwner!,
+        var result = await service.EndContract(meteringPointOwner!, endContract.ContractId,
             endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
             cancellationToken);
 
         return result switch
         {
-            NonExistingContract => NotFound($"No contract for GSRN {endContract.GSRN} found"),
+            NonExistingContract => NotFound($"No contract with id {endContract.ContractId} found"),
             MeteringPointOwnerNoMatch => Forbid(),
             Ended => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")

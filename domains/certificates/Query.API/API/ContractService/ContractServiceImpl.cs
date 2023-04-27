@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
 using CertificateEvents.Primitives;
+using Marten;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.EndContractResult;
@@ -39,11 +40,14 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var document = await repository.GetByGsrn(gsrn, cancellationToken);
+        var documents = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        if (document != null)
+        foreach (var x in documents)
         {
-            return new ContractAlreadyExists(document);
+            if ((startDate > x.StartDate && startDate < x.EndDate) || (endDate > x.StartDate && endDate < x.EndDate))
+            {
+                return new ContractAlreadyExists(x);
+            }
         }
 
         try
@@ -71,17 +75,25 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
-    public async Task<EndContractResult> EndContract(string gsrn, string meteringPointOwner, DateTimeOffset endDate, CancellationToken cancellationToken)
+    public async Task<EndContractResult> EndContract(string meteringPointOwner, Guid contractId, DateTimeOffset? endDate, CancellationToken cancellationToken)
     {
-        var contract = await repository.GetByGsrn(gsrn, cancellationToken);
+        var contract = await repository.GetById(contractId, cancellationToken);
+
         if (contract == null)
         {
             return new NonExistingContract();
         }
-        if (contract.MeteringPointOwner != meteringPointOwner)
+
+        if (contract!.MeteringPointOwner != meteringPointOwner)
         {
             return new MeteringPointOwnerNoMatch();
         }
+
+        if (endDate == null)
+        {
+            endDate = DateTimeOffset.Now;
+        }
+
         contract.EndDate = endDate;
         await repository.Update(contract);
 
@@ -103,5 +115,5 @@ internal class ContractServiceImpl : IContractService
             : contract;
     }
 
-    public Task<CertificateIssuingContract?> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 }
