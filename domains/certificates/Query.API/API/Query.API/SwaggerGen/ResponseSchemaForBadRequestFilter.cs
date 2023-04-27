@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -10,12 +11,18 @@ public class ResponseSchemaForBadRequestFilter : IOperationFilter
     {
         if (operation.Responses.TryGetValue("400", out var badRequestApiResponse))
         {
-            context.SchemaRepository.Schemas.Remove(nameof(ProblemDetails));
-            var validationProblemDetailsSchema = context.SchemaGenerator.GenerateSchema(typeof(ValidationProblemDetails), context.SchemaRepository);
+            var openApiMediaTypes = badRequestApiResponse.Content.Values;
 
-            foreach (var openApiMediaType in badRequestApiResponse.Content)
+            if (openApiMediaTypes.All(mediaType => mediaType.Schema.Reference.Id.Equals(nameof(ProblemDetails))))
             {
-                openApiMediaType.Value.Schema.Reference = validationProblemDetailsSchema.Reference;
+                context.SchemaRepository.Schemas.Remove(nameof(ProblemDetails));
+                var validationProblemDetailsSchema =
+                    context.SchemaGenerator.GenerateSchema(typeof(ValidationProblemDetails), context.SchemaRepository);
+
+                foreach (var openApiMediaType in openApiMediaTypes)
+                {
+                    openApiMediaType.Schema.Reference = validationProblemDetailsSchema.Reference;
+                }
             }
         }
     }
