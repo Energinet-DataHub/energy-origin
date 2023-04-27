@@ -10,21 +10,24 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
 {
     private readonly ICryptography cryptography;
 
-    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography, logger) => this.cryptography = cryptography;
+    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography,
+        logger) => this.cryptography = cryptography;
 
-    public UserDescriptor Map(User user, ProviderType providerType, string accessToken, string identityToken) => new(cryptography)
-    {
-        Id = user.Id ?? Guid.NewGuid(),
-        ProviderType = providerType,
-        Name = user.Name,
-        CompanyId = user.CompanyId,
-        Tin = user.Company?.Tin,
-        CompanyName = user.Company?.Name,
-        AcceptedTermsVersion = user.AcceptedTermsVersion,
-        AllowCPRLookup = user.AllowCPRLookup,
-        EncryptedAccessToken = cryptography.Encrypt(accessToken),
-        EncryptedIdentityToken = cryptography.Encrypt(identityToken),
-        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
-        UserStored = user.Id != null
-    };
+    public UserDescriptor Map(User user, ProviderType providerType, string accessToken, string identityToken) =>
+        new(cryptography)
+        {
+            Id = user.Id ?? Guid.NewGuid(),
+            ProviderType = providerType,
+            Name = user.Name,
+            CompanyId = user.CompanyId,
+            Tin = user.Company?.Tin,
+            CompanyName = user.Company?.Name,
+            AcceptedTermsVersion = user.AcceptedTermsVersion,
+            AllowCPRLookup = user.AllowCprLookup,
+            EncryptedAccessToken = cryptography.Encrypt(accessToken),
+            EncryptedIdentityToken = cryptography.Encrypt(identityToken),
+            EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ",
+                user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
+            UserStored = user.Id != null
+        };
 }

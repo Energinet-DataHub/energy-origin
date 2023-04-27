@@ -30,7 +30,8 @@ public class TermsController : ControllerBase
 
         if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
         {
-            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
+            throw new ArgumentException(
+                $"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -47,7 +48,8 @@ public class TermsController : ControllerBase
         if (descriptor.UserStored)
         {
             var id = descriptor.Id;
-            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
+            user = await userService.GetUserByIdAsync(id) ??
+                   throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
         }
         else
         {
@@ -55,7 +57,7 @@ public class TermsController : ControllerBase
             {
                 Id = descriptor.Id,
                 Name = descriptor.Name,
-                AllowCPRLookup = descriptor.AllowCPRLookup,
+                AllowCprLookup = descriptor.AllowCPRLookup,
             };
             await userService.InsertUserAsync(user);
             user.Company = company;
@@ -66,7 +68,9 @@ public class TermsController : ControllerBase
         await userService.UpsertUserAsync(user);
 
         var relationUri = options.Value.Uri?.AbsoluteUri.TrimEnd('/');
-        if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+        if (relationUri != null &&
+            AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization,
+                out var authentication))
         {
             var client = clientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = authentication;

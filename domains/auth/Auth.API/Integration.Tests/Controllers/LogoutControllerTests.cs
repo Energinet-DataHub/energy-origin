@@ -30,7 +30,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory
             .CreateAuthenticatedClient(user, identityToken: identityToken, config: builder =>
                 builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+                    services.AddScoped(_ => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
@@ -76,7 +76,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory
             .CreateAnonymousClient(config: builder =>
                 builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+                    services.AddScoped(_ => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);

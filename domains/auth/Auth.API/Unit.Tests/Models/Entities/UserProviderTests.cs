@@ -1,7 +1,7 @@
 using API.Models.Entities;
 using EnergyOrigin.TokenValidation.Values;
 
-namespace Unit.Tests.Services;
+namespace Unit.Tests.Models.Entities;
 
 public class UserProviderTests
 {
