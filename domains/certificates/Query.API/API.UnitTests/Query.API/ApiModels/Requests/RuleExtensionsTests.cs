@@ -1,6 +1,6 @@
-using API.Query.API.ApiModels.Requests;
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
+using API.Query.API.ApiModels.Requests;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Xunit;
