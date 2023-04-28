@@ -18,11 +18,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Formatting.Json;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddPrometheusExporter());
 
 var loggerConfiguration = new LoggerConfiguration()
     .Filter
@@ -79,9 +88,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+
+
+
 var app = builder.Build();
 app.MapHealthChecks("/health");
 
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
