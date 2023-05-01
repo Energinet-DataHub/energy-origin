@@ -21,16 +21,16 @@ namespace Unit.Tests.Controllers;
 
 public class TermsControllerTests
 {
-    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
-    private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
-    private readonly ICryptography cryptography;
-    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
-    private readonly MockHttpMessageHandler http = new();
-    private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
-    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
-    private readonly IOptions<DataSyncOptions> options;
     private readonly TermsController termsController = new();
+    private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
+    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
+    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
+    private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
+    private readonly MockHttpMessageHandler http = new();
+    private readonly IOptions<DataSyncOptions> options;
+    private readonly ICryptography cryptography;
 
     public TermsControllerTests()
     {
@@ -85,17 +85,16 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService,
-            factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
         Mock.Get(userService).Verify(x => x.UpsertUserAsync(
-                It.Is<User>(y =>
-                    y.AcceptedTermsVersion == newAcceptedTermsVersion
-                    && y.Name == name
-                    && y.AllowCprLookup == allowCprLookup
-                    && y.Id == id)),
+            It.Is<User>(y =>
+                y.AcceptedTermsVersion == newAcceptedTermsVersion
+                && y.Name == name
+                && y.AllowCprLookup == allowCprLookup
+                && y.Id == id)),
             Times.Once
         );
     }
@@ -130,23 +129,22 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService,
-            factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
+        var result = await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
         Mock.Get(userService).Verify(x => x.UpsertUserAsync(
-                It.Is<User>(y =>
-                    y.AcceptedTermsVersion == newAcceptedTermsVersion
-                    && y.Name == name
-                    && y.AllowCprLookup == allowCprLookup
-                    && y.Id == id
-                    && y.Company != null
-                    && y.Company.Tin == tin
-                    && y.Company.Name == companyName
-                    && y.UserProviders.Count() == 1
-                    && y.UserProviders.First().ProviderKeyType == providerKeyType
-                    && y.UserProviders.First().UserProviderKey == providerKey)),
+            It.Is<User>(y =>
+                y.AcceptedTermsVersion == newAcceptedTermsVersion
+                && y.Name == name
+                && y.AllowCprLookup == allowCprLookup
+                && y.Id == id
+                && y.Company != null
+                && y.Company.Tin == tin
+                && y.Company.Name == companyName
+                && y.UserProviders.Count() == 1
+                && y.UserProviders.First().ProviderKeyType == providerKeyType
+                && y.UserProviders.First().UserProviderKey == providerKey)),
             Times.Once
         );
     }
@@ -156,13 +154,12 @@ public class TermsControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: null);
+            .Returns(null);
 
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger,
-            accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
     }
 
     [Fact]
@@ -181,14 +178,13 @@ public class TermsControllerTests
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: null);
+            .ReturnsAsync(null);
 
         Mock.Get(companyService)
-            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
-            .ReturnsAsync(value: null);
+           .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
+           .ReturnsAsync(null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger,
-            accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(2)));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(2)));
     }
 
     [Fact]
@@ -201,7 +197,6 @@ public class TermsControllerTests
                 AcceptedTermsVersion = 2
             });
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptTermsAsync(logger, accessor,
-            mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(1)));
     }
 }

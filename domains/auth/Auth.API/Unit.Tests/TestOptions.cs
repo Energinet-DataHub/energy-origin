@@ -23,11 +23,10 @@ public static class TestOptions
         AllowRedirection = allowRedirection ?? options.AllowRedirection
     });
 
-    public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Moptions.Create(
-        new TermsOptions
-        {
-            CurrentVersion = version ?? options.CurrentVersion
-        });
+    public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Moptions.Create(new TermsOptions
+    {
+        CurrentVersion = version ?? options.CurrentVersion,
+    });
 
     public static IOptions<TokenOptions> Token(
         TokenOptions options,

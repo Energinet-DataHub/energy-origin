@@ -13,12 +13,12 @@ namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
-    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
-    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
+    private readonly TokenController tokenController = new();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
-    private readonly TokenController tokenController = new();
     private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
+    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
 
     public TokenControllerTests() =>
         tokenController.ControllerContext = new ControllerContext
@@ -27,15 +27,10 @@ public class TokenControllerTests
         };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
-        ProviderType.NemID_Private, true)]
-    [InlineData(true,
-        $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}",
-        "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d",
-        ProviderType.NemID_Professional, false)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass,
-        string scope, string userId, ProviderType providerType, bool isStored)
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private, true)]
+    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
+    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
     {
         var token = Guid.NewGuid().ToString();
 
@@ -92,9 +87,8 @@ public class TokenControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: null);
+            .Returns(null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () =>
-            await tokenController.RefreshAsync(mapper, userService, issuer));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
     }
 }

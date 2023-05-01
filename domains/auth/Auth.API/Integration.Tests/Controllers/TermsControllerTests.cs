@@ -29,10 +29,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory
-            .CreateAuthenticatedClient(user, config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -62,8 +59,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AcceptedTermsVersion = 0,
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>
-                { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
@@ -71,10 +67,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-        var client = factory
-            .CreateAuthenticatedClient(user, config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -85,7 +78,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(user.Name, dbUser.Name);
+        Assert.Equal(user.Name.ToString(), dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
