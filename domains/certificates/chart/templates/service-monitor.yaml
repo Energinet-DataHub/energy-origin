@@ -13,6 +13,6 @@ spec:
       interval: 15s
       scrapeTimeout: 14s
   selector:
-    matchLabels:
-      app: {{ .Release.Name }}-api
+    matchExpressions:
+      - {key: app, operator: In, values: [{{ .Release.Name }}-api, {{ .Release.Name }}-registry-connector]}
 {{- end -}}
