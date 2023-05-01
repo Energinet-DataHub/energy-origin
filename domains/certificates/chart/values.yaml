@@ -12,3 +12,5 @@ postgres:
   size: 10Gi
 rabbitmq:
   replicaCount: 1
+metrics:
+  serviceMonitorReleaseLabel: kube-prometheus-stack-migration-45
