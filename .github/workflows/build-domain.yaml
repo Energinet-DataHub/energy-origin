@@ -50,13 +50,10 @@ jobs:
 
           done
 
-      - uses: CodeReaper/find-diff-action@v1
+      - uses: CodeReaper/find-diff-action@v2
         id: diff
         with:
-          paths: domains
-          type: directories
-          minimumDepth: 1
-          maximumDepth: 1
+          paths: domains/*/
 
       - name: Set default matrices
         shell: bash
@@ -107,10 +104,25 @@ jobs:
           echo '::endgroup::'
           printf '${{ env.projects }}' | jq -r '.'
 
+  editorconfig-check:
+    name: Check editorconfig rules
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: editorconfig-checker/action-editorconfig-checker@v1.0.0
+
+      - name: Check
+        shell: bash
+        run: editorconfig-checker
+
   build-projects:
     name: Build projects
     runs-on: ubuntu-latest
-    needs: setup
+    needs:
+      - setup
+      - editorconfig-check
     if: ${{ needs.setup.outputs.projects != '[]' }}
     strategy:
       matrix:
