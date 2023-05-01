@@ -14,5 +14,9 @@ spec:
       scrapeTimeout: 14s
   selector:
     matchExpressions:
-      - {key: app, operator: In, values: [{{ .Release.Name }}-api, {{ .Release.Name }}-registry-connector]}
+      - key: app
+        operator: In
+        values:
+          - {{ .Release.Name }}-api
+          - {{ .Release.Name }}-registry-connector
 {{- end -}}
