@@ -25,17 +25,9 @@ using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddPrometheusExporter());
-
 var loggerConfiguration = new LoggerConfiguration()
-    .Filter
-    .ByExcluding("RequestPath like '/health%'");
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'");
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
@@ -43,6 +35,15 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.AddControllers();
 
@@ -88,14 +89,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
-
-
-
 var app = builder.Build();
+
 app.MapHealthChecks("/health");
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
