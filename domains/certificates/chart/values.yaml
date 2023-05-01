@@ -13,4 +13,6 @@ postgres:
 rabbitmq:
   replicaCount: 1
 metrics:
-  serviceMonitorReleaseLabel: kube-prometheus-stack-migration-45
+  prometheus:
+    enabled: true
+    # serviceMonitorReleaseLabel:
