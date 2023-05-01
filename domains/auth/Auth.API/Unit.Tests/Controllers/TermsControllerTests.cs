@@ -154,7 +154,7 @@ public class TermsControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(null);
+            .Returns(value: null);
 
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
@@ -178,11 +178,11 @@ public class TermsControllerTests
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(null);
+            .ReturnsAsync(value: null);
 
         Mock.Get(companyService)
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
-           .ReturnsAsync(null);
+           .ReturnsAsync(value: null);
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptTermsRequest(2)));
     }

@@ -87,7 +87,7 @@ public class TokenControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(null);
+            .Returns(value: null);
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
     }
