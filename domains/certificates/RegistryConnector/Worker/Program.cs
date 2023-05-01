@@ -64,3 +64,7 @@ app.MapHealthChecks("/health");
 app.MapPrometheusScrapingEndpoint();
 
 app.Run();
+
+public partial class Program
+{
+}
