@@ -15,4 +15,4 @@ rabbitmq:
 metrics:
   prometheus:
     enabled: true
-    # serviceMonitorReleaseLabel: ""
+    additionalLabels: {}

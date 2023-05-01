@@ -3,9 +3,11 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ .Release.Name }}-service-monitor
-  {{- with .Values.metrics.prometheus.serviceMonitorReleaseLabel }}
+  {{- if .Values.metrics.prometheus.additionalLabels }}
   labels:
-    release: {{ . }}
+    {{- range $key, $val := .Values.metrics.prometheus.additionalLabels }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
   {{- end }}
 spec:
   endpoints:
