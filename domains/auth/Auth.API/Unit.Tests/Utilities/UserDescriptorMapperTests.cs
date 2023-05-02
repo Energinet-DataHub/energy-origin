@@ -10,13 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Unit.Tests.Utilities;
 
-public class UserDescriptMapperTests
+public class UserDescriptorMapperTests
 {
     private readonly IUserDescriptorMapper mapper;
     private readonly ICryptography cryptography;
     private readonly ILogger<UserDescriptorMapper> logger = Mock.Of<ILogger<UserDescriptorMapper>>();
 
-    public UserDescriptMapperTests()
+    public UserDescriptorMapperTests()
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())

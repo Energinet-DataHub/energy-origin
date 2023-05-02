@@ -19,7 +19,7 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
-        var oidcOptions = Options.Create(new OidcOptions()
+        var oidcOptions = Options.Create(new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),

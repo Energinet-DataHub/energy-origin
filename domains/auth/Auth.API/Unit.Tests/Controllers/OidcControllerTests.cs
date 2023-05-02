@@ -65,9 +65,9 @@ public class OidcControllerTests
     {
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", ProviderGroup.Private },
                 { "mitid.uuid", Guid.NewGuid().ToString() },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -75,9 +75,9 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Private },
                 { "nemid.common_name", Guid.NewGuid().ToString() },
                 { "nemid.pid", Guid.NewGuid().ToString() }
@@ -85,9 +85,9 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.ssn", Guid.NewGuid().ToString() },
@@ -97,9 +97,9 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.MitID_Professional },
+                { "idp", ProviderName.MitIdProfessional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
@@ -116,7 +116,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", ProviderGroup.Private },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
             }
@@ -125,7 +125,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Private },
                 { "nemid.pid", Guid.NewGuid().ToString() }
             }
@@ -134,7 +134,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.company_name", Guid.NewGuid().ToString() },
@@ -145,7 +145,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID_Professional },
+                { "idp", ProviderName.MitIdProfessional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
@@ -167,7 +167,7 @@ public class OidcControllerTests
         {
             new Dictionary<string, object>()
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", "wrong" },
                 { "mitid.uuid", Guid.NewGuid().ToString() },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -285,7 +285,7 @@ public class OidcControllerTests
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -334,7 +334,7 @@ public class OidcControllerTests
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -693,7 +693,7 @@ public class OidcControllerTests
         var ssn = Guid.NewGuid().ToString();
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.NemID },
+            { "idp", ProviderName.NemId },
             { "identity_type", ProviderGroup.Professional },
             { "nemid.cvr", tin },
             { "nemid.ssn", ssn },
@@ -772,7 +772,7 @@ public class OidcControllerTests
         });
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.MitID },
+            { "idp", ProviderName.MitId },
             { "identity_type", ProviderGroup.Private },
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", Guid.NewGuid().ToString() }

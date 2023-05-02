@@ -30,7 +30,7 @@ public class UserServiceTests
         var result = await userService.GetUserByIdAsync(id);
 
         Assert.NotNull(result);
-        Assert.Equal(id, result?.Id);
+        Assert.Equal(id, result.Id);
     }
 
     [Fact]

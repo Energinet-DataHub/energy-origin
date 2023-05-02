@@ -55,7 +55,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID },
+            { "idp", ProviderName.MitId },
             { "identity_type", ProviderGroup.Private }
         });
 
@@ -105,7 +105,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             { "mitid.uuid", mitidUuid },
             { "mitid.identity_name", Guid.NewGuid().ToString() },
             { "nemid.pid", pid },
-            { "idp", ProviderName.MitID },
+            { "idp", ProviderName.MitId },
             { "identity_type", ProviderGroup.Private }
         });
 
@@ -119,7 +119,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
             AllowCprLookup = true,
-            UserProviders = new List<UserProvider>()
+            UserProviders = new List<UserProvider>
             {
                 new()
                 {
@@ -155,7 +155,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start();
 
-        var oidcOptions = Options.Create(new OidcOptions()
+        var oidcOptions = Options.Create(new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
@@ -188,7 +188,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var wrongIssuer = "http://example-wrong-issuer.com";
 
         var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
-        var oidcOptions = Options.Create(new OidcOptions()
+        var oidcOptions = Options.Create(new OidcOptions
         {
             AuthorityUri = new Uri(correctIssuer),
             ClientId = Guid.NewGuid().ToString(),

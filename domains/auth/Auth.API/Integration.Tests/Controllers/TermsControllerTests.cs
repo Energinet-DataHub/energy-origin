@@ -78,7 +78,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(user.Name.ToString(), dbUser.Name);
+        Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
@@ -91,7 +91,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
-            _ = Mock.Get(mapper)
+            Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
@@ -111,7 +111,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
-            _ = Mock.Get(userService)
+            Mock.Get(userService)
                 .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
                 .Returns(value: null!);
 
