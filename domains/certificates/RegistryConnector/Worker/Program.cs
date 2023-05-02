@@ -8,13 +8,15 @@ using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'");
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.WithSpan();
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()

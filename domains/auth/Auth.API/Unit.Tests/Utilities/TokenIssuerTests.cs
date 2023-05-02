@@ -156,7 +156,7 @@ public class TokenIssuerTests
 
     private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
     {
-        var user = new User()
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Name = name ?? "Amigo",
