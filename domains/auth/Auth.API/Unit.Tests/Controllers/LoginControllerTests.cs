@@ -17,7 +17,6 @@ public class LoginControllerTests
 {
     private readonly OidcOptions oidcOptions;
     private readonly IOptions<IdentityProviderOptions> identityProviderOptions;
-
     public LoginControllerTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -38,11 +37,10 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>()
-            { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
 
         var cache = Mock.Of<IDiscoveryCache>();
-        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
@@ -70,20 +68,17 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>()
-            { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
 
         var cache = Mock.Of<IDiscoveryCache>();
-        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
         var state = Guid.NewGuid().ToString();
         var redirectionUri = Guid.NewGuid().ToString();
 
-        var result =
-            await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger, state,
-                redirectionUri);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger, state, redirectionUri);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -107,11 +102,10 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>()
-            { new("error", "it went all wrong") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         var cache = Mock.Of<IDiscoveryCache>();
-        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
@@ -136,22 +130,21 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>()
-            { new("error", "it went all wrong") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
         var cache = Mock.Of<IDiscoveryCache>();
-        _ = Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var logger = Mock.Of<ILogger<LoginController>>();
 
         await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
-                It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once
         );
     }

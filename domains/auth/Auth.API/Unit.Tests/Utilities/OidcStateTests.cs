@@ -13,7 +13,7 @@ public class OidcStateTests
     [InlineData(null, null)]
     public void OidcState_ShouldBeDecodable_WhenEncoded(string? frontendState, string? uri)
     {
-        var state = new OidcState(frontendState, uri);
+        var state = new OidcState(State: frontendState, RedirectionUri: uri);
         var encoded = state.Encode();
         var decoded = OidcState.Decode(encoded);
 
@@ -44,13 +44,11 @@ public class OidcStateTests
     [InlineData("")]
     [InlineData("bananana")]
     [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==")]
-    public void OidcState_ShouldThrowJsonException_WhenGivenNonsense(string nonsense) =>
-        Assert.Throws<JsonException>(() => OidcState.Decode(nonsense));
+    public void OidcState_ShouldThrowJsonException_WhenGivenNonsense(string nonsense) => Assert.Throws<JsonException>(() => OidcState.Decode(nonsense));
 
     [Theory]
     [InlineData("{}")]
     [InlineData("Hello")]
     [InlineData("https://example.com/")]
-    public void OidcState_ShouldThrowFormatException_WhenGivenNonsense(string nonsense) =>
-        Assert.Throws<FormatException>(() => OidcState.Decode(nonsense));
+    public void OidcState_ShouldThrowFormatException_WhenGivenNonsense(string nonsense) => Assert.Throws<FormatException>(() => OidcState.Decode(nonsense));
 }
