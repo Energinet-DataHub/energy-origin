@@ -842,8 +842,8 @@ public class OidcControllerTests
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, subject: subject, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
-            { "identity_type", ProviderGroup.Private}
+            { "idp", ProviderName.MitId },
+            { "identity_type", ProviderGroup.Private }
         });
 
         Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
