@@ -20,4 +20,6 @@ public class OidcOptions
     public Uri FrontendRedirectUri { get; init; } = null!;
     [Range(typeof(bool), "false", "true")]
     public bool AllowRedirection { get; init; }
+    [Range(typeof(bool), "false", "true")]
+    public bool ReuseSubject { get; init; }
 }

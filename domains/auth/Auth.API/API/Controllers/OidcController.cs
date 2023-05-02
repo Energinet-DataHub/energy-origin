@@ -196,10 +196,10 @@ public class OidcController : ControllerBase
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
-
+        var knownUser = user != null;
         user ??= new User
         {
-            Id = null,
+            Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCprLookup = false,
@@ -215,7 +215,7 @@ public class OidcController : ControllerBase
 
         user.UserProviders.AddRange(newUserProviders);
 
-        if (user.Id is not null)
+        if (knownUser)
         {
             await userService.UpsertUserAsync(user);
         }
