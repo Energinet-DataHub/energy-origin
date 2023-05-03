@@ -7,13 +7,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RegistryConnector.Worker;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var loggerConfiguration = new LoggerConfiguration()
     .Filter
-    .ByExcluding("RequestPath like '/health%'");
+    .ByExcluding("RequestPath like '/health%'")
+    .Enrich.WithSpan();
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()

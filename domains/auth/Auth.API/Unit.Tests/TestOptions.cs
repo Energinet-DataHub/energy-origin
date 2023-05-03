@@ -12,7 +12,8 @@ public static class TestOptions
         string? frontendRedirect = default,
         string? clientId = default,
         TimeSpan? cacheDuration = default,
-        bool? allowRedirection = default
+        bool? allowRedirection = default,
+        bool? reuseSubject = default
     ) => Moptions.Create(new OidcOptions
     {
         AuthorityUri = new Uri(authority ?? options.AuthorityUri.AbsoluteUri),
@@ -20,14 +21,14 @@ public static class TestOptions
         FrontendRedirectUri = new Uri(frontendRedirect ?? options.FrontendRedirectUri.AbsoluteUri),
         ClientId = clientId ?? options.ClientId,
         CacheDuration = cacheDuration ?? options.CacheDuration,
-        AllowRedirection = allowRedirection ?? options.AllowRedirection
+        AllowRedirection = allowRedirection ?? options.AllowRedirection,
+        ReuseSubject = reuseSubject ?? options.ReuseSubject
     });
 
-    public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Moptions.Create(
-        new TermsOptions
-        {
-            CurrentVersion = version ?? options.CurrentVersion
-        });
+    public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Moptions.Create(new TermsOptions
+    {
+        CurrentVersion = version ?? options.CurrentVersion,
+    });
 
     public static IOptions<TokenOptions> Token(
         TokenOptions options,
