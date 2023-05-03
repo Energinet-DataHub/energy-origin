@@ -19,7 +19,7 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
         IDiscoveryCache discoveryCache,
@@ -112,7 +112,7 @@ public class OidcController : ControllerBase
         {
             MapInboundClaims = false
         };
-        var parameters = new TokenValidationParameters()
+        var parameters = new TokenValidationParameters
         {
             IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
             ValidIssuer = discoveryDocument.Issuer,
@@ -223,7 +223,7 @@ public class OidcController : ControllerBase
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
-                : new Company()
+                : new Company
                 {
                     Id = null,
                     Tin = tin!,
