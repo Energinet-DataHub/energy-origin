@@ -22,7 +22,6 @@ indent_style = space
 indent_size = 4
 indent_style = space
 
-
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
@@ -32,7 +31,6 @@ csharp_new_line_before_members_in_object_initializers = false
 csharp_new_line_before_members_in_anonymous_types = false
 csharp_new_line_between_query_expression_clauses = true
 max_line_length = 999
-csharp_braces_for_ifelse = required
 
 # Indentation preferences
 csharp_indent_block_contents = true
