@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API</name>
+    </assembly>
+    <members>
+        <member name="M:API.Controllers.WeatherForecastController.Get">
+            <summary>
+            This comment is included
+            </summary>
+        </member>
+        <member name="P:API.WeatherForecast.TemperatureC">
+            <summary>
+            This is also a comment
+            </summary>
+        </member>
+    </members>
+</doc>

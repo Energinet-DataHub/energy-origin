@@ -6,6 +6,9 @@ public class WeatherForecast
 {
     public DateOnly Date { get; set; }
 
+    /// <summary>
+    /// This is also a comment
+    /// </summary>
     public int TemperatureC { get; set; }
 
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);

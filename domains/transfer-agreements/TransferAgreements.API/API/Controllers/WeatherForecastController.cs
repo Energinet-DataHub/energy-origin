@@ -22,6 +22,9 @@ public class WeatherForecastController : ControllerBase
         this.logger = logger;
     }
 
+    /// <summary>
+    /// This comment is included
+    /// </summary>
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
