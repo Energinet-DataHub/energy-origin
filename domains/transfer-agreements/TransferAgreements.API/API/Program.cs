@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -22,6 +23,15 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.AddHealthChecks();
 
@@ -42,6 +52,8 @@ builder.Services.AddSwaggerGen(o =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer-agreements/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
