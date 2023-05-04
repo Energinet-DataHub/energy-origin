@@ -39,8 +39,7 @@ public class TransferAgreementsController : ControllerBase
     [Route("api/transfer-agreements/subject")]
     public IActionResult GetSubject() => Ok(new
     {
-        User.Identity.Name,
-        User.Claims
+        name = User.Identity?.Name,
+        claims = User.Claims.Select(c => c.ToString()).ToArray()
     });
-
 }

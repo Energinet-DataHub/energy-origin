@@ -60,8 +60,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            //ValidateLifetime = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
