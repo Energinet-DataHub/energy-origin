@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using API.ApiModels.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +24,11 @@ public class TransferAgreementsController : ControllerBase
         {
             Result =
                 Enumerable.Range(1, 5).Select(index => new WeatherForecast
-                    {
-                        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        TemperatureC = Random.Shared.Next(-20, 55),
-                        Summary = summaries[Random.Shared.Next(summaries.Length)]
-                    })
+                {
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    TemperatureC = Random.Shared.Next(-20, 55),
+                    Summary = summaries[Random.Shared.Next(summaries.Length)]
+                })
                     .ToArray()
         });
 }
