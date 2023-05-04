@@ -4,14 +4,29 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Controllers.WeatherForecastController.Get">
+        <member name="P:API.ApiModels.Responses.WeatherForecast.Date">
             <summary>
-            This comment is included
+            This is a fine comment
             </summary>
         </member>
-        <member name="P:API.WeatherForecast.TemperatureC">
+        <member name="P:API.ApiModels.Responses.WeatherForecast.TemperatureC">
             <summary>
             This is also a comment
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.WeatherForecast.TemperatureF">
+            <summary>
+            Look. Another comment
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.WeatherForecast.Summary">
+            <summary>
+            Wow! I love comments
+            </summary>
+        </member>
+        <member name="M:API.Controllers.TransferAgreementsController.Get">
+            <summary>
+            This comment is included
             </summary>
         </member>
     </members>

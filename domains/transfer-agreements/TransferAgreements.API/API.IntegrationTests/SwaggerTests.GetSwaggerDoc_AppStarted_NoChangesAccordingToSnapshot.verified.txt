@@ -5,39 +5,29 @@
     "version": "v1"
   },
   "paths": {
-    "/WeatherForecast": {
+    "/api/transfer-agreements": {
       "get": {
         "tags": [
-          "WeatherForecast"
+          "TransferAgreements"
         ],
         "summary": "This comment is included",
-        "operationId": "GetWeatherForecast",
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/WeatherForecastList"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/WeatherForecastList"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/WeatherForecastList"
                 }
               }
             }
@@ -105,12 +95,26 @@
           },
           "temperatureF": {
             "type": "integer",
+            "description": "Look. Another comment",
             "format": "int32",
             "readOnly": true
           },
           "summary": {
             "type": "string",
+            "description": "Wow! I love comments",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherForecastList": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherForecast"
+            }
           }
         },
         "additionalProperties": false
