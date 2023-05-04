@@ -4,24 +4,28 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<DocumentationFile>documentation.xml</DocumentationFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile>documentation.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
-	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" />
-	<PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
-	<PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
-	<PackageReference Include="Serilog.Expressions" Version="3.4.1" />
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
+    <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-	<None Update="documentation.xml">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <InternalsVisibleTo Include="API.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="documentation.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
