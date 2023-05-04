@@ -34,6 +34,18 @@
           }
         }
       }
+    },
+    "/api/transfer-agreements/subject": {
+      "get": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     }
   },
   "components": {

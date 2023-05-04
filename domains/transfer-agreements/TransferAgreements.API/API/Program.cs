@@ -1,9 +1,12 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using Serilog;
@@ -49,6 +52,20 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = false,
+            ValidateAudience = false,
+            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
+            //ValidateLifetime = false,
+            SignatureValidator = (token, _) => new JwtSecurityToken(token)
+        };
+    });
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -63,6 +80,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

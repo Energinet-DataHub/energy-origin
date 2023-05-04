@@ -1,15 +1,16 @@
 using System;
 using System.Linq;
 using API.ApiModels.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Authorize]
 [ApiController]
 public class TransferAgreementsController : ControllerBase
 {
-    private static readonly string[] summaries = new[]
-    {
+    private static readonly string[] summaries = {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
@@ -32,4 +33,14 @@ public class TransferAgreementsController : ControllerBase
                     })
                     .ToArray()
         });
+
+
+    [HttpGet]
+    [Route("api/transfer-agreements/subject")]
+    public IActionResult GetSubject() => Ok(new
+    {
+        User.Identity.Name,
+        User.Claims
+    });
+
 }
