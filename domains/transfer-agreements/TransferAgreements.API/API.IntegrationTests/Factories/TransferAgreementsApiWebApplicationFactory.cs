@@ -32,6 +32,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var claims = new[]
         {
             new Claim("subject", subject),
+            new Claim("sub", subject),
             new Claim("scope", scope),
             new Claim("actor", actor)
         };

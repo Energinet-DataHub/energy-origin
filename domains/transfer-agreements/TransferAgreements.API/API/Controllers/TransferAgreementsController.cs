@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using API.ApiModels.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,12 +35,15 @@ public class TransferAgreementsController : ControllerBase
                     .ToArray()
         });
 
-
     [HttpGet]
     [Route("api/transfer-agreements/subject")]
     public IActionResult GetSubject() => Ok(new
     {
-        name = User.Identity?.Name,
+        subject = User.FindFirstValue("subject"),
+        sub = User.FindFirstValue("sub"),
+        name = User.FindFirstValue(ClaimTypes.Name),
+        nameIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier),
+        identityName = User.Identity?.Name,
         claims = User.Claims.Select(c => c.ToString()).ToArray()
     });
 }

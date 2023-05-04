@@ -21,7 +21,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
     {
-        using var client = factory.CreateClient();
+        using var client = factory.CreateUnauthenticatedClient();
         using var swaggerUiResponse = await client.GetAsync("swagger");
 
         swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -30,7 +30,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ContentTypeIsHtml()
     {
-        using var client = factory.CreateClient();
+        using var client = factory.CreateUnauthenticatedClient();
         using var swaggerUiResponse = await client.GetAsync("swagger");
 
         swaggerUiResponse.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
@@ -50,7 +50,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
     {
-        using var client = factory.CreateClient();
+        using var client = factory.CreateUnauthenticatedClient();
         using var swaggerDocResponse = await client.GetAsync("api-docs/transfer-agreements/v1/swagger.json");
 
         swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -70,7 +70,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
     {
-        using var client = factory.CreateClient();
+        using var client = factory.CreateUnauthenticatedClient();
         using var swaggerDocResponse = await client.GetAsync("api-docs/transfer-agreements/v1/swagger.json");
 
         var json = await swaggerDocResponse.Content.ReadAsStringAsync();
