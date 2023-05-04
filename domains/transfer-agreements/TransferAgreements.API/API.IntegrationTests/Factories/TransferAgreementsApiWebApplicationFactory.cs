@@ -13,11 +13,11 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 {
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string subject)
+    public HttpClient CreateAuthenticatedClient(string sub)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub));
 
         return client;
     }
@@ -25,14 +25,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private static string GenerateToken(
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string subject = "bdcb3287-3dd3-44cd-8423-1f94437648cc")
+        string sub = "bdcb3287-3dd3-44cd-8423-1f94437648cc")
     {
         var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
 
         var claims = new[]
         {
-            new Claim("subject", subject),
-            new Claim("sub", subject),
+            new Claim("sub", sub),
             new Claim("scope", scope),
             new Claim("actor", actor)
         };

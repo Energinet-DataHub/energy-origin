@@ -40,6 +40,7 @@
         "tags": [
           "TransferAgreements"
         ],
+        "summary": "An example of how to get the UUID for the signed in user",
         "responses": {
           "200": {
             "description": "Success"

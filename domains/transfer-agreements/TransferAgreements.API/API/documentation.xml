@@ -29,5 +29,10 @@
             This comment is included
             </summary>
         </member>
+        <member name="M:API.Controllers.TransferAgreementsController.GetSubject">
+            <summary>
+            An example of how to get the UUID for the signed in user
+            </summary>
+        </member>
     </members>
 </doc>

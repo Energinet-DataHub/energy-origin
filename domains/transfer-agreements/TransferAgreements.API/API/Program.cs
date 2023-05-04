@@ -57,6 +57,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         o.TokenValidationParameters = new TokenValidationParameters
         {
+            //NameClaimType = "sub",
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,

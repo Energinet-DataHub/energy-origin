@@ -35,15 +35,10 @@ public class TransferAgreementsController : ControllerBase
                     .ToArray()
         });
 
+    /// <summary>
+    /// An example of how to get the UUID for the signed in user
+    /// </summary>
     [HttpGet]
     [Route("api/transfer-agreements/subject")]
-    public IActionResult GetSubject() => Ok(new
-    {
-        subject = User.FindFirstValue("subject"),
-        sub = User.FindFirstValue("sub"),
-        name = User.FindFirstValue(ClaimTypes.Name),
-        nameIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier),
-        identityName = User.Identity?.Name,
-        claims = User.Claims.Select(c => c.ToString()).ToArray()
-    });
+    public IActionResult GetSubject() => Ok(User.FindFirstValue(ClaimTypes.NameIdentifier));
 }

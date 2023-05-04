@@ -6,21 +6,24 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class SomeTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+/// <summary>
+/// Delete this test. Is only an example of how to get sub UUID
+/// </summary>
+public class SubjectTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public SomeTest(TransferAgreementsApiWebApplicationFactory factory)
+    public SubjectTest(TransferAgreementsApiWebApplicationFactory factory)
         => this.factory = factory;
 
     [Fact]
     public async Task Something()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+        var sub = Guid.NewGuid().ToString();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
         var subjectResponse = await authenticatedClient.GetStringAsync("api/transfer-agreements/subject");
 
-        //subjectResponse.Should().Be("foo");
-        subjectResponse.Should().NotBeEmpty();
+        subjectResponse.Should().Be(sub);
     }
 }
