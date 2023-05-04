@@ -55,12 +55,14 @@ builder.Services.AddSwaggerGen(o =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
+        // TODO: Is the following needed in this form after the new Auth service release?
         o.TokenValidationParameters = new TokenValidationParameters
         {
-            //NameClaimType = "sub",
             ValidateIssuer = false,
             ValidateIssuerSigningKey = false,
             ValidateAudience = false,
+            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
+            ValidateLifetime = false,
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
