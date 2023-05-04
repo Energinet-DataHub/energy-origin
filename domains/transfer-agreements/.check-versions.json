@@ -1,0 +1,10 @@
+[
+    {
+        "yaml-file": "domains/transfer-agreements/chart/Chart.yaml",
+        "yaml-path": "version"
+    },
+    {
+        "yaml-file": "domains/transfer-agreements/TransferAgreements.API/chart-overrides.yaml",
+        "yaml-path": "version"
+    }
+]

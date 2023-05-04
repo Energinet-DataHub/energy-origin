@@ -1,0 +1,3 @@
+api:
+  replicaCount: 3
+  image: {}
