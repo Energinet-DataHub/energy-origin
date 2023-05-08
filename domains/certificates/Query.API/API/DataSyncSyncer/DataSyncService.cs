@@ -45,10 +45,7 @@ public class DataSyncService
                 var client = factory.CreateClient();
                 var result = await client.RequestAsync(
                     contract.GSRN,
-                    new Period(
-                        DateFrom: dateFrom.Value,
-                        DateTo: nearestHour
-                    ),
+                    new Period(dateFrom.Value, nearestHour),
                     contract.MeteringPointOwner,
                     cancellationToken
                 );
