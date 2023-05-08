@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using API.ApiModels.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,4 +42,16 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet]
     [Route("api/transfer-agreements/subject")]
     public IActionResult GetSubject() => Ok(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+    [HttpPost]
+    [Route("api/transfer-agreements")]
+    public static IActionResult Create()
+    {
+
+
+        return NoContent();
+
+
+
+    }
 }
