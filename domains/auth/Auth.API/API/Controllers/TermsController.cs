@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
+using API.Utilities;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
@@ -81,9 +82,17 @@ public class TermsController : ControllerBase
 
             if (!result.IsSuccessStatusCode)
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {subject}", descriptor.Subject);
+                logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}", descriptor.Subject);
             }
         }
+
+        logger.AuditLog(
+            "{User} changed accepted terms version from {OldVersion} to {NewVersion} at {TimeStamp}.",
+            user.Id.ToString(),
+            descriptor.AcceptedTermsVersion,
+            acceptedTermsVersion.Version,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
+        );
 
         return NoContent();
     }
