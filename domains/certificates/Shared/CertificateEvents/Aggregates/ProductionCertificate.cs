@@ -1,8 +1,9 @@
 using System;
 using System.Numerics;
 using CertificateEvents.Exceptions;
-using Domain;
-using Domain.Certificates.Primitives;
+using DomainCertificate;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 
 namespace CertificateEvents.Aggregates;
 
@@ -36,8 +37,8 @@ public class ProductionCertificate : AggregateBase
             period,
             technology,
             meteringPointOwner,
-            new ShieldedValue<string>(Value: gsrn, R: BigInteger.Zero),
-            new ShieldedValue<long>(Value: quantity, R: BigInteger.Zero));
+            new ShieldedValue<string>(Shielded: gsrn, R: BigInteger.Zero),
+            new ShieldedValue<long>(Shielded: quantity, R: BigInteger.Zero));
 
         Apply(@event);
         AddUncommittedEvent(@event);

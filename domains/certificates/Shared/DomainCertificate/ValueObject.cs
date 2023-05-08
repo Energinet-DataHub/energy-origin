@@ -1,4 +1,4 @@
-namespace Domain
+namespace DomainCertificate
 {
     public abstract class ValueObject
     {

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Application;
 using RegistryConnector.Worker.Application.EventHandlers;
+using RegistryConnector.Worker.Cache;
 using Serilog;
 using Serilog.Formatting.Json;
 
@@ -25,13 +26,12 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.Configure<RegistryOptions>(builder.Configuration.GetSection(RegistryOptions.Registry));
-
+builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
+builder.Services.RegisterApplication(builder.Configuration);
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.RegisterApplication(builder.Configuration);
 
 builder.Services.AddMassTransit(o =>
 {

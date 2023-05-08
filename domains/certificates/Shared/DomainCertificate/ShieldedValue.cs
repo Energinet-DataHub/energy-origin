@@ -1,14 +1,14 @@
 using System.Numerics;
 
-namespace Domain;
+namespace DomainCertificate;
 
 /// <summary>
 /// This class is made to support Pedersen-commitment.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-/// <param name="Value">Stamdata</param>
+/// <param name="Shielded">Stamdata</param>
 /// <param name="R">Random number</param>
 public record ShieldedValue<T>(
-    T Value, // stamdata
+    T Shielded, // stamdata
     BigInteger R  // group.RandomR()
 );

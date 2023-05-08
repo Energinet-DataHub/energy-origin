@@ -1,6 +1,7 @@
 using System;
-using Domain;
-using Domain.Certificates.Primitives;
+using DomainCertificate;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 
 namespace CertificateEvents;
 

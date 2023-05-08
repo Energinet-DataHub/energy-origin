@@ -1,4 +1,4 @@
-namespace Domain.Certificates.Primitives;
+namespace DomainCertificate.Primitives;
 
 public enum MeteringPointType
 {

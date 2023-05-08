@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
-using Domain.Certificates.Primitives;
+using DomainCertificate.ValueObjects;
 using FluentAssertions;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
@@ -52,8 +52,8 @@ public class DataSyncClientTest
         await Assert.ThrowsAsync<HttpRequestException>(() => dataSyncClient.RequestAsync(
             GSRN: validGsrn,
             period: new Period(
-                DateFrom: date.ToUnixTimeSeconds(),
-                DateTo: date.AddDays(1).ToUnixTimeSeconds()
+                date.ToUnixTimeSeconds(),
+                date.AddDays(1).ToUnixTimeSeconds()
             ),
             meteringPointOwner: validOwner,
             cancellationToken: CancellationToken.None

@@ -23,10 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\Shared\AggregateRepositories\AggregateRepositories.csproj" />
     <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\DomainCertificate\DomainCertificate.csproj" />
     <ProjectReference Include="..\..\Shared\MeasurementEvents\MeasurementEvents.csproj" />
   </ItemGroup>
 

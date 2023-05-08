@@ -2,10 +2,11 @@ using System.Numerics;
 using System.Threading.Tasks;
 using AggregateRepositories;
 using API.ContractService;
-using CertificateEvents;
 using CertificateEvents.Aggregates;
-using Domain;
-using Domain.Certificates.Primitives;
+using Contracts.Certificates;
+using DomainCertificate;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
@@ -47,19 +48,16 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             message.GSRN,
             message.Quantity);
 
-        //TODO: look into this: https://stackoverflow.com/questions/30780979/best-way-to-ensure-an-event-is-eventually-published-to-a-message-queuing-sytem
-        //TODO: Add event to contracts and use here
-        await bus.Publish(new ProductionCertificateCreated(productionCertificate.Id,
+        //TODO: look into having save and publish in same transaction
+        await repository.Save(productionCertificate, context.CancellationToken);
+
+        await bus.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
             contract.GridArea,
             new Period(message.DateFrom, message.DateTo),
             new Technology(FuelCode: "F00000000", TechCode: "T070000"),
             contract.MeteringPointOwner,
-            new ShieldedValue<string>(message.GSRN, BigInteger.Zero),
+            new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
             new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
-        // The certificate is issued immediately here. This will be changed when integrating with Project Origin Registry
-        productionCertificate.Issue();
-
-        await repository.Save(productionCertificate, context.CancellationToken);
 
         logger.LogInformation("Created production certificate for {message}", message);
     }

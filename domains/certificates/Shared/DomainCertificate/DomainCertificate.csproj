@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ProjectOrigin.Electricity.Client" Version="0.1.0-alpha.18" />
+  </ItemGroup>
+
 </Project>

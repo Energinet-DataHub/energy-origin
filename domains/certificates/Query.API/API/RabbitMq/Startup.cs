@@ -22,6 +22,8 @@ public static class Startup
 
             o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
             o.AddConsumer<TransferCertificateConsumer>();
+            o.AddConsumer<CertificateIssuedInPoEventHandler>();
+            o.AddConsumer<CertificateRejectedInPoEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

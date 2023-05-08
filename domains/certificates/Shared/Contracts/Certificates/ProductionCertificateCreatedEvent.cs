@@ -1,10 +1,11 @@
 using System;
-using Domain;
-using Domain.Certificates.Primitives;
+using DomainCertificate;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 
 namespace Contracts.Certificates
 {
-    public record class ProductionCertificateCreatedEvent(
+    public record ProductionCertificateCreatedEvent(
         Guid CertificateId,
         string GridArea,
         Period Period,

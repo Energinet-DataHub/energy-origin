@@ -2,8 +2,9 @@ using System;
 using System.Numerics;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents;
-using Domain;
-using Domain.Certificates.Primitives;
+using DomainCertificate;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 using FluentAssertions;
 using Xunit;
 
@@ -14,11 +15,11 @@ public class SyncStateProjectionTest
     private readonly ProductionCertificateCreated createdEvent = new(
         CertificateId: Guid.NewGuid(),
         GridArea: "gridArea",
-        Period: new Period(DateFrom: 1, DateTo: 42),
+        Period: new Period(1, 42),
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
-        ShieldedGSRN: new ShieldedValue<string>(Value: "gsrn", R: BigInteger.Zero),
-        ShieldedQuantity: new ShieldedValue<long>(Value: 42, R: BigInteger.Zero));
+        ShieldedGSRN: new ShieldedValue<string>(Shielded: "gsrn", R: BigInteger.Zero),
+        ShieldedQuantity: new ShieldedValue<long>(Shielded: 42, R: BigInteger.Zero));
 
     [Fact]
     public void can_update_view_on_first_event()

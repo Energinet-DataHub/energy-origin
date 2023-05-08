@@ -1,5 +1,5 @@
 using System;
-using Domain.Certificates.Primitives;
+using DomainCertificate.Primitives;
 
 namespace API.ContractService;
 

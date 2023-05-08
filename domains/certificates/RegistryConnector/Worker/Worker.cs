@@ -1,89 +1,37 @@
 using System;
-using System.Text;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using Contracts.Certificates;
+using MassTransit;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NSec.Cryptography;
-using ProjectOrigin.Electricity.Client;
-using ProjectOrigin.Electricity.Client.Models;
 
 namespace RegistryConnector.Worker;
 
 public class Worker : BackgroundService
 {
-    private readonly ILogger<Worker> logger;
-    private readonly RegisterClient registerClient;
-    private readonly Key issuerKey;
+    private readonly IBus bus;
 
-    public Worker(IOptions<RegistryOptions> registryOptions, ILogger<Worker> logger)
+    public Worker(IBus bus)
     {
-        this.logger = logger;
-        registerClient = new RegisterClient(registryOptions.Value.Url);
-        registerClient.Events += OnRegistryEvents;
-
-        issuerKey = Key.Import(SignatureAlgorithm.Ed25519, registryOptions.Value.IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKeyText);
+        this.bus = bus;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var ownerKey = Key.Create(SignatureAlgorithm.Ed25519);
+        //while (!stoppingToken.IsCancellationRequested)
+        //{
+        //    await bus.Publish(new ProductionCertificateCreatedEvent(Guid.NewGuid(),
+        //        "DK1",
+        //        new Period(
+        //            new DateTimeOffset(2022, 10, 1, 12, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds(),
+        //            new DateTimeOffset(2022, 10, 1, 13, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds()),
+        //        new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+        //        "SomeMeteringPointOwner",
+        //        new ShieldedValue<Gsrn>(new Gsrn("57000001234567"), BigInteger.Zero),
+        //        new ShieldedValue<long>(150, BigInteger.Zero)));
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await SendCommand(ownerKey);
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-        }
-    }
-
-    private void OnRegistryEvents(CommandStatusEvent cse)
-        => logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", ToHex(cse.Id), cse.State, cse.Error);
-
-    private async Task SendCommand(Key ownerKey)
-    {
-        const long gsrn = 57000001234567;
-        var quantity = new ShieldedValue(150);
-
-        var commandBuilder = new ElectricityCommandBuilder();
-
-        var federatedCertifcateId = new FederatedCertifcateId(
-            "RegistryA",
-            Guid.NewGuid());
-
-        commandBuilder.IssueConsumptionCertificate(
-            id: federatedCertifcateId,
-            inteval: new DateInterval(
-                new DateTimeOffset(2022, 10, 1, 12, 0, 0, TimeSpan.Zero),
-                new DateTimeOffset(2022, 10, 1, 13, 0, 0, TimeSpan.Zero)
-            ),
-            gridArea: "DK1",
-            gsrn: gsrn,
-            quantity: quantity,
-            owner: ownerKey.PublicKey,
-            issuingBodySigner: issuerKey
-        );
-
-        var commandId = await commandBuilder.Execute(registerClient);
-
-        logger.LogInformation("Sent command. Id={id}", ToHex(commandId));
-    }
-
-    private static string ToHex(CommandId commandId)
-    {
-        var bytes = commandId.Hash;
-        var result = new StringBuilder(bytes.Length * 2);
-
-        foreach (var b in bytes)
-            result.Append(b.ToString("x2"));
-
-        return result.ToString();
-    }
-
-    public override void Dispose()
-    {
-        registerClient.Events -= OnRegistryEvents;
-
-        base.Dispose();
+        //    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        //}
     }
 }

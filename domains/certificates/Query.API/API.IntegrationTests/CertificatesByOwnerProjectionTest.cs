@@ -5,7 +5,8 @@ using API.IntegrationTests.Testcontainers;
 using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;
-using Domain.Certificates.Primitives;
+using DomainCertificate.Primitives;
+using DomainCertificate.ValueObjects;
 using FluentAssertions;
 using Marten;
 using VerifyXunit;
@@ -116,7 +117,7 @@ public sealed class CertificatesByOwnerProjectionTest : TestBase, IClassFixture<
     private static ProductionCertificate CreateProductionCertificate(string owner) =>
         new(
             "DK1",
-            new Period(123L, 123L),
+            new Period(123L, 124L),
             new Technology("F0123", "T0123"),
             owner,
             "gsrn",

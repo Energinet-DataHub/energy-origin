@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using Domain.Certificates.Primitives;
+using DomainCertificate.Primitives;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
 
