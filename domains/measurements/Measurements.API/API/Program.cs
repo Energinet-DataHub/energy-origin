@@ -8,6 +8,7 @@ using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
