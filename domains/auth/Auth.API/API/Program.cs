@@ -19,16 +19,22 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-
-var logger = new LoggerConfiguration()
-    .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
+var log = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.WithSpan();
+
+var console = builder.Environment.IsDevelopment()
+    ? log.WriteTo.Console()
+    : log.WriteTo.Console(new JsonFormatter());
+
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger);
+builder.Logging.AddSerilog(console.CreateLogger());
 
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
