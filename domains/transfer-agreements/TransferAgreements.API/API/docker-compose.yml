@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  api:
+    container_name: transfer-agreements-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=transfer_agreements;Username=postgres;Password=mysecretpassword;
+
+  db:
+    container_name: transfer-agreements-db
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=transfer_agreements
+    volumes:
+      - transfer-agreements-db-data:/var/lib/postgresql/data
+
+volumes:
+  transfer-agreements-db-data:

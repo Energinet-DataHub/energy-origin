@@ -20,4 +20,7 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV Marten__ConnectionSettings__ConnectionString="Host=localhost;Port=5432;Database=transfer_agreements;Username=postgres;Password=postgres;"
+ENV Marten__ConnectionSettings__DatabaseName=transfer_agreements
 ENTRYPOINT ["dotnet", "API.dll"]
+
