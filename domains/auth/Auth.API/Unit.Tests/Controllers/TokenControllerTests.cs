@@ -8,12 +8,14 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
+    private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
@@ -73,7 +75,7 @@ public class TokenControllerTests
             .Setup(x => x.FindFirst(UserClaimName.Scope))
             .Returns(new Claim(UserClaimName.Scope, scope));
 
-        var result = await tokenController.RefreshAsync(mapper, userService, issuer);
+        var result = await tokenController.RefreshAsync(logger, mapper, userService, issuer);
         Assert.NotNull(result);
         Assert.IsType<OkObjectResult>(result);
 
@@ -89,6 +91,6 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(mapper, userService, issuer));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(logger, mapper, userService, issuer));
     }
 }
