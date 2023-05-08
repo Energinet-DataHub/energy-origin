@@ -28,8 +28,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
 builder.Services.RegisterApplication(builder.Configuration);
-builder.Services.AddHostedService<Worker>();
-
 builder.Services.AddHealthChecks();
 
 
