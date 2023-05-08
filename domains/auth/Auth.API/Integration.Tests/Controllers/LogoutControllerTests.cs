@@ -27,10 +27,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
-        var client = factory
-            .CreateAuthenticatedClient(user, identityToken: identityToken, config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+        var client = factory.CreateAuthenticatedClient(user, identityToken: identityToken, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);
@@ -73,10 +70,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
             FrontendRedirectUri = new Uri("https://example.com")
         });
 
-        var client = factory
-            .CreateAnonymousClient(config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(x => oidcOptions)));
+        var client = factory.CreateAnonymousClient(config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
         Assert.NotNull(result);

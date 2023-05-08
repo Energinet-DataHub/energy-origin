@@ -24,15 +24,12 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions()
+        var options = Options.Create(new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory
-           .CreateAuthenticatedClient(user, config: builder =>
-               builder.ConfigureTestServices(services =>
-                   services.AddScoped(x => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -45,7 +42,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.Id, dbUser.Id);
-        Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
+        Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
 
@@ -54,11 +51,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitID_UUID;
-        var user = new User()
+        var user = new User
         {
             Id = null,
             Name = Guid.NewGuid().ToString(),
-            AllowCPRLookup = false,
+            AllowCprLookup = false,
             AcceptedTermsVersion = 0,
             Company = null,
             CompanyId = null,
@@ -66,14 +63,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions()
+        var options = Options.Create(new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-        var client = factory
-           .CreateAuthenticatedClient(user, config: builder =>
-               builder.ConfigureTestServices(services =>
-                   services.AddScoped(x => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -84,8 +78,8 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Equal(user.Name.ToString(), dbUser.Name);
-        Assert.Equal(user.AllowCPRLookup, dbUser.AllowCPRLookup);
+        Assert.Equal(user.Name, dbUser.Name);
+        Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
     }
 
@@ -97,11 +91,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
-            _ = Mock.Get(mapper)
+            Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
+            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
         var dto = new AcceptTermsRequest(2);
@@ -117,11 +111,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
-            _ = Mock.Get(userService)
+            Mock.Get(userService)
                 .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services => services.AddScoped(x => userService));
+            builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
         });
 
         var dto = new AcceptTermsRequest(2);

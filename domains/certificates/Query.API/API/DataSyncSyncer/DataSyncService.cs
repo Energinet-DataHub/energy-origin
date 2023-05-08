@@ -36,16 +36,19 @@ public class DataSyncService
         }
 
         var now = DateTimeOffset.UtcNow;
-        var midnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        var nearestHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
 
-        if (dateFrom < midnight)
+        if (dateFrom < nearestHour)
         {
             try
             {
                 var client = factory.CreateClient();
                 var result = await client.RequestAsync(
                     contract.GSRN,
-                    new Period(dateFrom.Value,midnight),
+                    new Period(
+                        DateFrom: dateFrom.Value,
+                        DateTo: nearestHour
+                    ),
                     contract.MeteringPointOwner,
                     cancellationToken
                 );
@@ -55,7 +58,7 @@ public class DataSyncService
                     result.Count,
                     contract.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
-                    DateTimeOffset.FromUnixTimeSeconds(midnight).ToString("o"));
+                    DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
 
                 return result;
             }

@@ -38,7 +38,7 @@ public class TermsControllerTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
-        var cryptographyOptions = new CryptographyOptions()
+        var cryptographyOptions = new CryptographyOptions
         {
             Key = "secretsecretsecretsecret"
         };
@@ -61,7 +61,7 @@ public class TermsControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = id,
                 Name = Guid.NewGuid().ToString(),
@@ -74,11 +74,11 @@ public class TermsControllerTests
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: new User()
+            .ReturnsAsync(new User
             {
                 Id = id,
                 Name = name,
-                AllowCPRLookup = allowCprLookup,
+                AllowCprLookup = allowCprLookup,
                 AcceptedTermsVersion = oldAcceptedTermsVersion
             });
 
@@ -93,7 +93,7 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.AllowCPRLookup == allowCprLookup
+                && y.AllowCprLookup == allowCprLookup
                 && y.Id == id)),
             Times.Once
         );
@@ -114,7 +114,7 @@ public class TermsControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = id,
                 Name = name,
@@ -137,7 +137,7 @@ public class TermsControllerTests
             It.Is<User>(y =>
                 y.AcceptedTermsVersion == newAcceptedTermsVersion
                 && y.Name == name
-                && y.AllowCPRLookup == allowCprLookup
+                && y.AllowCprLookup == allowCprLookup
                 && y.Id == id
                 && y.Company != null
                 && y.Company.Tin == tin
@@ -167,7 +167,7 @@ public class TermsControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(new UserDescriptor(null!)
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
@@ -192,7 +192,7 @@ public class TermsControllerTests
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(new UserDescriptor(null!)
             {
                 AcceptedTermsVersion = 2
             });

@@ -21,7 +21,7 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         Tin = user.Company?.Tin,
         CompanyName = user.Company?.Name,
         AcceptedTermsVersion = user.AcceptedTermsVersion,
-        AllowCPRLookup = user.AllowCPRLookup,
+        AllowCPRLookup = user.AllowCprLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
         EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),

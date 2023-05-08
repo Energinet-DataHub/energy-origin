@@ -27,7 +27,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var context = factory.DataContext;
         context.Users.Update(user);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
@@ -103,11 +103,11 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
-            _ = Mock.Get(mapper)
+            Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
-            builder.ConfigureTestServices(services => services.AddScoped(x => mapper));
+            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));

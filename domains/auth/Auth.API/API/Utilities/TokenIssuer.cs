@@ -13,9 +13,11 @@ namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
+    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
-    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+
     public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
     {
         this.termsOptions = termsOptions.Value;
@@ -47,7 +49,7 @@ public class TokenIssuer : ITokenIssuer
 
         var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
 
-        return new(descriptor.Id.ToString(), version, scope);
+        return new(version, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
@@ -106,5 +108,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(string? Id, int AcceptedVersion, string Scope);
+    private record UserState(int AcceptedVersion, string Scope);
 }

@@ -21,9 +21,9 @@ public class TokenControllerTests
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
 
     public TokenControllerTests() =>
-        tokenController.ControllerContext = new ControllerContext()
+        tokenController.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext() { User = claimsPrincipal }
+            HttpContext = new DefaultHttpContext { User = claimsPrincipal }
         };
 
     [Theory]
@@ -36,11 +36,11 @@ public class TokenControllerTests
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
-            .Returns(value: Guid.NewGuid().ToString());
+            .Returns(Guid.NewGuid().ToString());
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
@@ -50,28 +50,28 @@ public class TokenControllerTests
 
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(value: new UserDescriptor(cryptography)
+            .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
             });
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: new User()
+            .ReturnsAsync(new User
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                AllowCPRLookup = false,
+                AllowCprLookup = false,
                 AcceptedTermsVersion = 1
             });
 
         Mock.Get(issuer)
             .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), null))
-            .Returns(value: token);
+            .Returns(token);
 
         Mock.Get(claimsPrincipal)
             .Setup(x => x.FindFirst(UserClaimName.Scope))
-            .Returns(value: new Claim(UserClaimName.Scope, scope));
+            .Returns(new Claim(UserClaimName.Scope, scope));
 
         var result = await tokenController.RefreshAsync(mapper, userService, issuer);
         Assert.NotNull(result);

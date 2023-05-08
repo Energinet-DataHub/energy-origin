@@ -21,6 +21,15 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public IServiceProvider ServiceProvider => Services.CreateScope().ServiceProvider;
     public DataContext DataContext => ServiceProvider.GetRequiredService<DataContext>();
 
+    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
+
+    public async Task InitializeAsync()
+    {
+        await testContainer.StartAsync();
+        var dbContext = DataContext;
+        await dbContext.Database.MigrateAsync();
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
@@ -58,11 +67,11 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     public async Task<User> AddUserToDatabaseAsync(User? user = null)
     {
-        user ??= new User()
+        user ??= new User
         {
             Name = Guid.NewGuid().ToString(),
             AcceptedTermsVersion = 1,
-            AllowCPRLookup = true
+            AllowCprLookup = true
         };
 
         var dbContext = DataContext;
@@ -71,13 +80,4 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
         return user;
     }
-
-    public async Task InitializeAsync()
-    {
-        await testContainer.StartAsync();
-        var dbContext = DataContext;
-        await dbContext.Database.MigrateAsync();
-    }
-
-    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
 }

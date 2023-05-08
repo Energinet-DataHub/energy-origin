@@ -66,7 +66,7 @@ runs:
       run: echo "::warning::Using deprecated action, migrate workflow towards newer release actions."
 
     - name: Install yamlpath
-      uses: Energinet-DataHub/.github/.github/actions/yamlpath-install@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
 
     - name: If pr then override containers version in chart
       if: github.event_name == 'pull_request'
@@ -82,7 +82,7 @@ runs:
 
     - name: Release helm chart
       id: release-chart
-      uses: Energinet-DataHub/.github/.github/actions/helm-release-chart@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/helm-release-chart@main
       with:
         deploy_key: ${{ inputs.deploy-key }}
         chart_folder: ${{ inputs.chart-folder }}

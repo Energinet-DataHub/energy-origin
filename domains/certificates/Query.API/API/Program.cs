@@ -1,6 +1,5 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
 using API.ContractService;
 using API.DataSyncSyncer;
@@ -17,37 +16,26 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var loggerConfiguration = new LoggerConfiguration()
-    .Filter
-    .ByExcluding("RequestPath like '/health%'");
+var log = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.WithSpan();
 
-loggerConfiguration = builder.Environment.IsDevelopment()
-    ? loggerConfiguration.WriteTo.Console()
-    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+var console = builder.Environment.IsDevelopment()
+    ? log.WriteTo.Console()
+    : log.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+builder.Logging.AddSerilog(console.CreateLogger());
 
 builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(o =>
-{
-    o.SupportNonNullableReferenceTypes();
-    o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
-    o.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "Certificates Query API"
-    });
-});
 
 builder.Services.AddMarten(options =>
 {

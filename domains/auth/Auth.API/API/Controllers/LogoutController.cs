@@ -11,7 +11,7 @@ public class LogoutController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && overrideRedirectionUri != null)
@@ -28,7 +28,7 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var hint = descriptMapper.Map(User)?.IdentityToken;
+        var hint = descriptorMapper.Map(User)?.IdentityToken;
         if (hint == null)
         {
             return RedirectPreserveMethod(redirectionUri);

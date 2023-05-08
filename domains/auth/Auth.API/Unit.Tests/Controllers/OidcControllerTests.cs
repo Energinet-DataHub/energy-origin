@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RichardSzalay.MockHttp;
+using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
 
 namespace Unit.Tests.Controllers;
 
@@ -64,9 +65,9 @@ public class OidcControllerTests
     {
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.MitID },
+                { "idp", ProviderName.MitId },
                 { "identity_type", ProviderGroup.Private },
                 { "mitid.uuid", Guid.NewGuid().ToString() },
                 { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -74,9 +75,9 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Private },
                 { "nemid.common_name", Guid.NewGuid().ToString() },
                 { "nemid.pid", Guid.NewGuid().ToString() }
@@ -84,9 +85,9 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.NemID },
+                { "idp", ProviderName.NemId },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemid.cvr", Guid.NewGuid().ToString() },
                 { "nemid.ssn", Guid.NewGuid().ToString() },
@@ -96,15 +97,80 @@ public class OidcControllerTests
         },
         new object[]
         {
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
-                { "idp", ProviderName.MitID_Professional },
+                { "idp", ProviderName.MitIdProfessional },
                 { "identity_type", ProviderGroup.Professional },
                 { "nemlogin.name", Guid.NewGuid().ToString() },
                 { "nemlogin.cvr", Guid.NewGuid().ToString() },
                 { "nemlogin.org_name", Guid.NewGuid().ToString() },
                 { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
                 { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
+            }
+        }
+    };
+
+    public static IEnumerable<object[]> ClaimsTestDataWrong => new List<object[]>
+    {
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitId },
+                { "identity_type", ProviderGroup.Private },
+                { "mitid.identity_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.NemId },
+                { "identity_type", ProviderGroup.Private },
+                { "nemid.pid", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.NemId },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemid.cvr", Guid.NewGuid().ToString() },
+                { "nemid.company_name", Guid.NewGuid().ToString() },
+                { "nemid.common_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitIdProfessional },
+                { "identity_type", ProviderGroup.Professional },
+                { "nemlogin.name", Guid.NewGuid().ToString() },
+                { "nemlogin.cvr", Guid.NewGuid().ToString() },
+                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", "wrong" },
+                { "identity_type", ProviderGroup.Private },
+                { "mitid.uuid", Guid.NewGuid().ToString() },
+                { "mitid.identity_name", Guid.NewGuid().ToString() }
+            }
+        },
+        new object[]
+        {
+            new Dictionary<string, object>()
+            {
+                { "idp", ProviderName.MitId },
+                { "identity_type", "wrong" },
+                { "mitid.uuid", Guid.NewGuid().ToString() },
+                { "mitid.identity_name", Guid.NewGuid().ToString() }
             }
         }
     };
@@ -155,71 +221,6 @@ public class OidcControllerTests
         Assert.True(map.ContainsKey("token"));
     }
 
-    public static IEnumerable<object[]> ClaimsTestDataWrong => new List<object[]>
-    {
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", ProviderName.MitID },
-                { "identity_type", ProviderGroup.Private },
-                { "mitid.identity_name", Guid.NewGuid().ToString() }
-            }
-        },
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", ProviderName.NemID },
-                { "identity_type", ProviderGroup.Private },
-                { "nemid.pid", Guid.NewGuid().ToString() }
-            }
-        },
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", ProviderName.NemID },
-                { "identity_type", ProviderGroup.Professional },
-                { "nemid.cvr", Guid.NewGuid().ToString() },
-                { "nemid.company_name", Guid.NewGuid().ToString() },
-                { "nemid.common_name", Guid.NewGuid().ToString() }
-            }
-        },
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", ProviderName.MitID_Professional },
-                { "identity_type", ProviderGroup.Professional },
-                { "nemlogin.name", Guid.NewGuid().ToString() },
-                { "nemlogin.cvr", Guid.NewGuid().ToString() },
-                { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
-                { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() }
-            }
-        },
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", "wrong" },
-                { "identity_type", ProviderGroup.Private },
-                { "mitid.uuid", Guid.NewGuid().ToString() },
-                { "mitid.identity_name", Guid.NewGuid().ToString() }
-            }
-        },
-        new object[]
-        {
-            new Dictionary<string, object>()
-            {
-                { "idp", ProviderName.MitID },
-                { "identity_type", "wrong" },
-                { "mitid.uuid", Guid.NewGuid().ToString() },
-                { "mitid.identity_name", Guid.NewGuid().ToString() }
-            }
-        }
-    };
-
     [Theory]
     [MemberData(nameof(ClaimsTestDataWrong))]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenArgumentsAreWrong(Dictionary<string, object> claims)
@@ -261,14 +262,14 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: true);
+        var testOptions = TestOptions.Oidc(oidcOptions.Value, allowRedirection: true);
         var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("issuer", $"https://{testOptions.Value.AuthorityUri.Host}/op"),
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+                new("end_session_endpoint", $"http://{testOptions.Value.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.Value.PublicKeyPem)
         );
@@ -277,14 +278,14 @@ public class OidcControllerTests
 
         var providerId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -296,7 +297,7 @@ public class OidcControllerTests
         var redirection = "https://goodguys.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirection);
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
@@ -309,15 +310,15 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldNotReturnRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        var oidcOptions = TestOptions.Oidc(this.oidcOptions.Value, allowRedirection: false);
+        var testOptions = TestOptions.Oidc(oidcOptions.Value, allowRedirection: false);
 
-        var tokenEndpoint = new Uri($"http://{oidcOptions.Value.AuthorityUri.Host}/connect/token");
+        var tokenEndpoint = new Uri($"http://{testOptions.Value.AuthorityUri.Host}/connect/token");
 
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.Value.AuthorityUri.Host}/op"),
+                new("issuer", $"https://{testOptions.Value.AuthorityUri.Host}/op"),
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.Value.AuthorityUri.Host}/connect/endsession")
+                new("end_session_endpoint", $"http://{testOptions.Value.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.Value.PublicKeyPem)
         );
@@ -326,14 +327,14 @@ public class OidcControllerTests
 
         var providerId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
-            { "idp", ProviderName.MitID  },
+            { "idp", ProviderName.MitId  },
             { "identity_type", ProviderGroup.Private}
         });
 
@@ -345,14 +346,14 @@ public class OidcControllerTests
         var redirectionUri = "http://hackerz.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri);
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
 
         var uri = new Uri(result.Url);
         Assert.NotEqual(new Uri(redirectionUri).Host, uri.Host);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(testOptions.Value.FrontendRedirectUri.Host, uri.Host);
     }
 
     [Fact]
@@ -580,7 +581,7 @@ public class OidcControllerTests
     [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>());
 
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
@@ -612,7 +613,7 @@ public class OidcControllerTests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
     {
-        var providerOptions = Moptions.Create(new IdentityProviderOptions
+        var testProviderOptions = Moptions.Create(new IdentityProviderOptions
         {
             Providers = new List<ProviderType>()
         });
@@ -643,7 +644,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, testProviderOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
@@ -692,7 +693,7 @@ public class OidcControllerTests
         var ssn = Guid.NewGuid().ToString();
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.NemID },
+            { "idp", ProviderName.NemId },
             { "identity_type", ProviderGroup.Professional },
             { "nemid.cvr", tin },
             { "nemid.ssn", ssn },
@@ -709,7 +710,7 @@ public class OidcControllerTests
 
         Mock.Get(mockMapper)
             .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<ProviderType>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(value: new UserDescriptor(null!)
+            .Returns(new UserDescriptor(null!)
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
@@ -771,7 +772,7 @@ public class OidcControllerTests
         });
 
         var userToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
-            { "idp", ProviderName.MitID },
+            { "idp", ProviderName.MitId },
             { "identity_type", ProviderGroup.Private },
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", Guid.NewGuid().ToString() }
@@ -782,16 +783,14 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var mockMapper = Mock.Of<IUserDescriptorMapper>();
-
         Mock.Get(service)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid?>()))
-            .ReturnsAsync(value: new User()
+            .ReturnsAsync(value: new User
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AcceptedTermsVersion = 1,
-                AllowCPRLookup = true
+                AllowCprLookup = true
             });
 
         var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
@@ -813,7 +812,62 @@ public class OidcControllerTests
         Mock.Get(service).Verify(x => x.UpsertUserAsync(It.IsAny<User>()), Times.Once);
     }
 
-    private static IdentityModel.Jwk.JsonWebKeySet KeySetUsing(byte[] pem)
+    [Theory]
+    [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", true, true)]
+    [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", false, false)]
+    [InlineData(null, false, true)]
+    public async Task CallbackAsync_ShouldUseSubjectUserId_WhenConfigured(string? subject, bool matches, bool enabled)
+    {
+        var testOptions = TestOptions.Oidc(oidcOptions.Value, reuseSubject: enabled);
+
+        var tokenEndpoint = new Uri($"http://{testOptions.Value.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{testOptions.Value.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{testOptions.Value.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.Value.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, subject: subject);
+        var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, subject: subject, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions.Value, document.Issuer, testOptions.Value.ClientId, subject: subject, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitId },
+            { "identity_type", ProviderGroup.Private }
+        });
+
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var action = await new OidcController().CallbackAsync(cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, null);
+
+        Assert.NotNull(action);
+        Assert.IsType<RedirectResult>(action);
+
+        var result = (RedirectResult)action;
+        var map = QueryHelpers.ParseNullableQuery(new Uri(result.Url).Query);
+
+        Assert.NotNull(map);
+        Assert.True(map.ContainsKey("token"));
+
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(map["token"]).Claims.ToDictionary(x => x.Type, x => x.Value);
+        Assert.True(claims.ContainsKey(UserClaimName.Subject));
+        Assert.Equal(matches, subject == claims[UserClaimName.Subject]);
+    }
+
+    private static JsonWebKeySet KeySetUsing(byte[] pem)
     {
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
@@ -827,7 +881,7 @@ public class OidcControllerTests
             {"n", modulus}
         })));
 
-        return new IdentityModel.Jwk.JsonWebKeySet
+        return new JsonWebKeySet
         {
             Keys = new() { new() {
                 Kid = Base64Url.Encode(kid),
@@ -848,7 +902,7 @@ public class OidcControllerTests
         var updatedClaims = claims ?? new Dictionary<string, object>();
         updatedClaims.Add("sub", subject ?? "subject");
 
-        var descriptor = new SecurityTokenDescriptor()
+        var descriptor = new SecurityTokenDescriptor
         {
             Audience = audience,
             Issuer = issuer,

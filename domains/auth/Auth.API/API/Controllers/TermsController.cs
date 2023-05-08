@@ -55,7 +55,7 @@ public class TermsController : ControllerBase
             {
                 Id = descriptor.Id,
                 Name = descriptor.Name,
-                AllowCPRLookup = descriptor.AllowCPRLookup,
+                AllowCprLookup = descriptor.AllowCPRLookup,
             };
             await userService.InsertUserAsync(user);
             user.Company = company;

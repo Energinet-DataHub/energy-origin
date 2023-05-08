@@ -40,7 +40,7 @@ public class OidcController : ControllerBase
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
         {
-            redirectionUri = oidcState!.RedirectionUri;
+            redirectionUri = oidcState.RedirectionUri;
         }
 
         if (code == null)
@@ -92,7 +92,7 @@ public class OidcController : ControllerBase
 
         if (oidcState?.State != null)
         {
-            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState!.State);
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
@@ -196,13 +196,13 @@ public class OidcController : ControllerBase
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
-
+        var knownUser = user != null;
         user ??= new User
         {
-            Id = null,
+            Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
             AcceptedTermsVersion = 0,
-            AllowCPRLookup = false,
+            AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private ? null : new Company()
             {
                 Id = null,
@@ -215,7 +215,7 @@ public class OidcController : ControllerBase
 
         user.UserProviders.AddRange(newUserProviders);
 
-        if (user.Id is not null)
+        if (knownUser)
         {
             await userService.UpsertUserAsync(user);
         }
@@ -225,10 +225,10 @@ public class OidcController : ControllerBase
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
-        (ProviderName.MitID, ProviderGroup.Private) => ProviderType.MitID_Private,
-        (ProviderName.MitID_Professional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
-        (ProviderName.NemID, ProviderGroup.Private) => ProviderType.NemID_Private,
-        (ProviderName.NemID, ProviderGroup.Professional) => ProviderType.NemID_Professional,
+        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitID_Private,
+        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
+        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemID_Private,
+        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemID_Professional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 }
