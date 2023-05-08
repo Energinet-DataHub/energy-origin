@@ -87,10 +87,9 @@ public class TermsController : ControllerBase
         }
 
         logger.AuditLog(
-            "{User} changed accepted terms version from {OldVersion} to {NewVersion} at {TimeStamp}.",
+            "{User} updated accepted terms {@Versions} at {TimeStamp}.",
             user.Id.ToString(),
-            descriptor.AcceptedTermsVersion,
-            acceptedTermsVersion.Version,
+            new { Old = descriptor.AcceptedTermsVersion, New = acceptedTermsVersion.Version },
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
