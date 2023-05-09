@@ -5,7 +5,10 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace API.IntegrationTests.Factories;
 
@@ -20,6 +23,31 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub));
 
         return client;
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        // Configure Serilog for integration tests
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateLogger();
+
+        builder.ConfigureLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.AddSerilog();
+        });
+
+
+
+        return base.CreateHost(builder);
+    }
+    
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        Log.CloseAndFlush();
     }
 
     private static string GenerateToken(

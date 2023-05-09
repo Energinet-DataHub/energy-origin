@@ -1,29 +1,23 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.ApiModels {
+namespace API.ApiModels.Responses;
 
-    public class TransferAgreement
+public class TransferAgreementResponse
     {
-        [Required]
         [JsonPropertyName("id")]
         public Guid Id { get; set; }
 
-        [Required]
         [JsonPropertyName("startDate")]
         public DateTimeOffset StartDate { get; set; }
 
-        [Required]
         [JsonPropertyName("endDate")]
         public DateTimeOffset EndDate { get; set; }
 
-        [Required]
         [JsonPropertyName("sender")]
-        public Subject Sender { get; set; }
+        public SubjectResponse Sender { get; set; }
 
-        [Required]
         [JsonPropertyName("receiver")]
-        public Subject Receiver { get; set; }
+        public SubjectResponse Receiver { get; set; }
     }
-}

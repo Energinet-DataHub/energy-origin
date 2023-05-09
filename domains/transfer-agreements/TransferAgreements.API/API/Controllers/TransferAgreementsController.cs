@@ -1,67 +1,109 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using API.ApiModels;
-using API.Data;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using API.ApiModels.Requests;
+using API.ApiModels.Responses;
+using API.Data;
 
-namespace API.Controllers
-{
-    [ApiController]
-    public class TransferAgreementController : ControllerBase
+namespace API.Controllers;
+
+[ApiController]
+    public class TransferAgreementsController : ControllerBase
     {
         private readonly ApplicationDbContext context;
 
-        public TransferAgreementController(ApplicationDbContext context)
+        public TransferAgreementsController(ApplicationDbContext context) => this.context = context;
+
+        [HttpGet("api/transfer-agreements")]
+        public async Task<ActionResult<IEnumerable<TransferAgreementResponse>>> Index([FromQuery] SubjectIdRequest request)
         {
-            this.context = context;
+            var subjectId = request.SubjectId;
+
+            var transferAgreements = await context.TransferAgreements
+                .Include(ta => ta.Sender)
+                .Include(ta => ta.Receiver)
+                .Where(ta => ta.Sender.Id == subjectId || ta.Receiver.Id == subjectId)
+                .ToListAsync();
+
+            var result = transferAgreements.Select(ta => new TransferAgreementResponse
+            {
+                Id = ta.Id,
+                StartDate = ta.StartDate,
+                EndDate = ta.EndDate,
+                Sender = new SubjectResponse
+                {
+                    Id = ta.Sender.Id,
+                    Name = ta.Sender.Name,
+                    Tin = ta.Sender.Tin
+                },
+                Receiver = new SubjectResponse
+                {
+                    Id = ta.Receiver.Id,
+                    Name = ta.Receiver.Name,
+                    Tin = ta.Receiver.Tin
+                }
+            });
+
+            return Ok(result);
         }
 
         [HttpPost("api/transfer-agreements")]
-        public async Task<ActionResult<TransferAgreement>> Create([FromBody] TransferAgreement transferAgreement)
+        public async Task<ActionResult> Create([FromBody] TransferAgreementCreateRequest request)
         {
-            // Validate the input model
-            if (!ModelState.IsValid)
+            var sender = await context.Subjects.FindAsync(request.SenderId);
+            if (sender == null) return BadRequest($"Invalid sender ID: {request.SenderId}");
+
+            var receiver = await context.Subjects.FindAsync(request.ReceiverId);
+            if (receiver == null) return BadRequest($"Invalid receiver ID: {request.ReceiverId}");
+
+            var transferAgreement = new TransferAgreement
             {
-                return BadRequest(ModelState);
-            }
-
-            // Ensure the sender and receiver subjects exist
-            var sender = await context.Subjects.FindAsync(transferAgreement.SenderTin, transferAgreement.SenderName);
-            var receiver = await context.Subjects.FindAsync(transferAgreement.ReceiverTin, transferAgreement.ReceiverName);
-
-            if (sender == null || receiver == null)
-            {
-                return BadRequest("Sender or receiver not found.");
-            }
-
-            transferAgreement.Sender = sender;
-            transferAgreement.Receiver = receiver;
-
-            // Add the transfer agreement to the database
+                Id = Guid.NewGuid(),
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                Sender = sender,
+                Receiver = receiver
+            };
             context.TransferAgreements.Add(transferAgreement);
             await context.SaveChangesAsync();
 
-            // Return the created transfer agreement
-            return CreatedAtAction(nameof(GetById), new { id = transferAgreement.Id }, transferAgreement);
+            return Ok();
         }
 
-        // Add a method to retrieve a transfer agreement by ID
-        [HttpGet("api/transfer-agreement/{id}")]
-        public async Task<ActionResult<TransferAgreement>> GetById(Guid id)
+        [HttpGet("api/transfer-agreements/{id}")]
+        public async Task<ActionResult<TransferAgreementResponse>> Show(Guid id)
         {
             var transferAgreement = await context.TransferAgreements
                 .Include(ta => ta.Sender)
                 .Include(ta => ta.Receiver)
                 .FirstOrDefaultAsync(ta => ta.Id == id);
 
-            if (transferAgreement == null)
+            if (transferAgreement == null) return NotFound();
+
+            var response = new TransferAgreementResponse
             {
-                return NotFound();
-            }
+                Id = transferAgreement.Id,
+                StartDate = transferAgreement.StartDate,
+                EndDate = transferAgreement.EndDate,
+                Sender = new SubjectResponse
+                {
+                    Id = transferAgreement.Sender.Id,
+                    Name = transferAgreement.Sender.Name,
+                    Tin = transferAgreement.Sender.Tin
+                },
+                Receiver = new SubjectResponse
+                {
+                    Id = transferAgreement.Receiver.Id,
+                    Name = transferAgreement.Receiver.Name,
+                    Tin = transferAgreement.Receiver.Tin
+                }
+            };
 
-            return transferAgreement;
+            return Ok(response);
         }
-    }
-
     }

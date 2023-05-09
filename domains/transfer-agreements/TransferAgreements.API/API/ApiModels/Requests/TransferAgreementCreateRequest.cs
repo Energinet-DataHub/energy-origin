@@ -1,15 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.ApiModels {
-
-    public class TransferAgreement
+namespace API.ApiModels.Requests
+{
+    public class TransferAgreementCreateRequest
     {
-        [Required]
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-
         [Required]
         [JsonPropertyName("startDate")]
         public DateTimeOffset StartDate { get; set; }
@@ -19,11 +15,11 @@ namespace API.ApiModels {
         public DateTimeOffset EndDate { get; set; }
 
         [Required]
-        [JsonPropertyName("sender")]
-        public Subject Sender { get; set; }
+        [JsonPropertyName("senderId")]
+        public Guid SenderId { get; set; }
 
         [Required]
-        [JsonPropertyName("receiver")]
-        public Subject Receiver { get; set; }
+        [JsonPropertyName("receiverId")]
+        public Guid ReceiverId { get; set; }
     }
 }

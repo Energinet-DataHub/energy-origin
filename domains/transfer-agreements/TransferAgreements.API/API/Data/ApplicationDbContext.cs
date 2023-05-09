@@ -1,22 +1,34 @@
-﻿using Microsoft.EntityFrameworkCore;
-using API.ApiModels;
+﻿using API.ApiModels;
+using Microsoft.EntityFrameworkCore;
 
-namespace API.Data{
-
-public class ApplicationDbContext : DbContext
+namespace API.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public class ApplicationDbContext : DbContext
     {
-    }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, DbSet<TransferAgreement> transferAgreements, DbSet<Subject> subjects)
+            : base(options)
+        {
+            TransferAgreements = transferAgreements;
+            Subjects = subjects;
+        }
 
-    public DbSet<TransferAgreement> TransferAgreements { get; set; }
-    public DbSet<Subject> Subjects { get; set; }
+        public DbSet<TransferAgreement> TransferAgreements { get; set; }
+        public DbSet<Subject> Subjects { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<TransferAgreement>()
-            .HasMan
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Subject>().HasKey(x => x.Id);
+            modelBuilder.Entity<Subject>().Property(x => x.Id).ValueGeneratedNever();
+            modelBuilder.Entity<TransferAgreement>().HasKey(x => x.Id);
+            modelBuilder.Entity<TransferAgreement>().Property(x => x.Id).ValueGeneratedNever();
+            modelBuilder.Entity<TransferAgreement>()
+                .HasOne(x => x.Sender)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<TransferAgreement>()
+                .HasOne(x => x.Receiver)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
-}
 }
