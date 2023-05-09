@@ -5,11 +5,9 @@ namespace API.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, DbSet<TransferAgreement> transferAgreements, DbSet<Subject> subjects)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            TransferAgreements = transferAgreements;
-            Subjects = subjects;
         }
 
         public DbSet<TransferAgreement> TransferAgreements { get; set; }
