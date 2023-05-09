@@ -46,7 +46,8 @@ public class TokenControllerTests
                 Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
                 EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                UserStored = isStored
+                UserStored = isStored,
+                ProviderType = providerType
             });
 
         Mock.Get(mapper)

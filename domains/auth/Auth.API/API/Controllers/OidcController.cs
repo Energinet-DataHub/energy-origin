@@ -98,7 +98,7 @@ public class OidcController : ControllerBase
 
         logger.AuditLog(
             "{User} logged in for {Subject} at {TimeStamp}.",
-            descriptor.Id.ToString(),
+            descriptor.Id,
             descriptor.Subject,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );

@@ -39,7 +39,7 @@ public class TokenController : ControllerBase
 
         logger.AuditLog(
             "{User} exchanged token for {Subject} at {TimeStamp}.",
-            descriptor.Id.ToString(),
+            descriptor.Id,
             descriptor.Subject,
             now.ToUnixTimeSeconds()
         );

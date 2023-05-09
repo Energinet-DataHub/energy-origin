@@ -35,7 +35,6 @@ var console = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
-// builder.Logging.AddSerilog(new LoggerConfiguration().Filter.ByIncludingOnly($"StartsWith(@m, '{API.Utilities.LoggerExtensions.AUDIT_MARKER}')").WriteTo.Console().CreateLogger());
 
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
