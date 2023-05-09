@@ -19,7 +19,7 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
         IDiscoveryCache discoveryCache,
@@ -81,7 +81,7 @@ public class OidcController : ControllerBase
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Failure occured after acquiring token");
+            logger.LogError(exception, "Failure occured after acquiring token.");
 
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
