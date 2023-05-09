@@ -38,7 +38,7 @@ public class TokenController : ControllerBase
         var token = tokenIssuer.Issue(descriptor, versionBypass, issueAt: now.UtcDateTime);
 
         logger.AuditLog(
-            "{User} exchanged token for {Subject} at {TimeStamp}.",
+            "{User} updated token for {Subject} at {TimeStamp}.",
             descriptor.Id,
             descriptor.Subject,
             now.ToUnixTimeSeconds()

@@ -97,7 +97,7 @@ public class OidcController : ControllerBase
         var token = issuer.Issue(descriptor);
 
         logger.AuditLog(
-            "{User} logged in for {Subject} at {TimeStamp}.",
+            "{User} created token for {Subject} at {TimeStamp}.",
             descriptor.Id,
             descriptor.Subject,
             DateTimeOffset.Now.ToUnixTimeSeconds()
