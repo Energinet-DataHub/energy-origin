@@ -138,7 +138,7 @@ public class OidcController : ControllerBase
         var providerType = GetIdentityProviderEnum(providerName, identityType);
         if (!providerOptions.Providers.Contains(providerType))
         {
-            throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
+            throw new NotSupportedException($"Hest provider: {providerType}. Supported providers: {providerOptions.Providers}");
         }
 
         string? name = null;
