@@ -12,8 +12,14 @@ using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using API.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
