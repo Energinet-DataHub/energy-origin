@@ -15,6 +15,7 @@ public class Subject
         public string Name { get; set; }
 
         [Required]
+        [StringLength(8, MinimumLength = 8)]
         [JsonPropertyName("tin")]
         public int Tin { get; set; }
     }

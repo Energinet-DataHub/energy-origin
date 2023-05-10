@@ -26,9 +26,9 @@ namespace API.IntegrationTests {
             var transferAgreement = new TransferAgreement
             {
                 Id = Guid.NewGuid(),
-                StartDate = 1662016400, // example Unix epoch timestamp
-                EndDate = 1662102800, // example Unix epoch timestamp
-                Tin = 12345678 // example 8-digit number
+                // StartDate = 1662016400,
+                // EndDate = 1662102800
+
             };
 
             // Act

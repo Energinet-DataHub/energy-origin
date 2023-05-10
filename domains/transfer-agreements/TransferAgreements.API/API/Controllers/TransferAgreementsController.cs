@@ -56,10 +56,12 @@ namespace API.Controllers;
         public async Task<ActionResult> Create([FromBody] TransferAgreementCreateRequest request)
         {
             var sender = await context.Subjects.FindAsync(request.SenderId);
-            if (sender == null) return BadRequest($"Invalid sender ID: {request.SenderId}");
+            if (sender == null) return ValidationProblem($"Invalid sender ID: {request.SenderId}");
 
             var receiver = await context.Subjects.FindAsync(request.ReceiverId);
-            if (receiver == null) return BadRequest($"Invalid receiver ID: {request.ReceiverId}");
+            if (receiver == null) return ValidationProblem($"Invalid receiver ID: {request.ReceiverId}");
+
+            if (receiver == sender) return ValidationProblem($"Receiver ID can't be the same as Sender ID: {request.ReceiverId}");
 
             var transferAgreement = new TransferAgreement
             {
@@ -72,7 +74,7 @@ namespace API.Controllers;
             context.TransferAgreements.Add(transferAgreement);
             await context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(transferAgreement);
         }
 
         [HttpGet("api/transfer-agreements/{id}")]

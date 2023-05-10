@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230510002155_InitialCreate")]
+    [Migration("20230510131620_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -28,6 +28,7 @@ namespace API.Migrations
             modelBuilder.Entity("API.ApiModels.Subject", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasAnnotation("Relational:JsonPropertyName", "id");
 
@@ -38,10 +39,17 @@ namespace API.Migrations
                         .HasAnnotation("Relational:JsonPropertyName", "name");
 
                     b.Property<int>("Tin")
+                        .HasMaxLength(8)
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "tin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("Tin")
+                        .IsUnique();
 
                     b.ToTable("Subjects");
 
@@ -51,6 +59,7 @@ namespace API.Migrations
             modelBuilder.Entity("API.ApiModels.TransferAgreement", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasAnnotation("Relational:JsonPropertyName", "id");
 

@@ -1,9 +1,9 @@
 ﻿using API.ApiModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Data
-{
-    public class ApplicationDbContext : DbContext
+namespace API.Data;
+
+public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -16,9 +16,11 @@ namespace API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Subject>().HasKey(x => x.Id);
-            modelBuilder.Entity<Subject>().Property(x => x.Id).ValueGeneratedNever();
+            modelBuilder.Entity<Subject>().Property(x => x.Id);
+            modelBuilder.Entity<Subject>().HasIndex(x => x.Tin).IsUnique();
+            modelBuilder.Entity<Subject>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<TransferAgreement>().HasKey(x => x.Id);
-            modelBuilder.Entity<TransferAgreement>().Property(x => x.Id).ValueGeneratedNever();
+            modelBuilder.Entity<TransferAgreement>().Property(x => x.Id);
             modelBuilder.Entity<TransferAgreement>()
                 .HasOne(x => x.Sender)
                 .WithMany()
@@ -27,6 +29,7 @@ namespace API.Data
                 .HasOne(x => x.Receiver)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+
         }
     }
-}

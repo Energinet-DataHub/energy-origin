@@ -1,0 +1,15 @@
+﻿INSERT INTO "Subjects" ("Id", "Name, "Tin")
+VALUES
+  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Apple Inc.', 12345678),
+  ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Microsoft Corp.', 23456789),
+  ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Amazon.com Inc.', 34567890),
+  ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Google LLC.', 45678901),
+  ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'Facebook Inc.', 56789012);
+
+INSERT INTO "TransferAgreements" ("Id", "StartDate", "EndDate", "SenderId", "ReceiverId")
+VALUES
+  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', TIMESTAMP WITH TIME ZONE '2023-01-01', TIMESTAMP WITH TIME ZONE '2023-12-31', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12'),
+  ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', TIMESTAMP WITH TIME ZONE '2023-01-01', TIMESTAMP WITH TIME ZONE '2023-12-31', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13'),
+  ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18', TIMESTAMP WITH TIME ZONE '2023-01-01', TIMESTAMP WITH TIME ZONE '2023-12-31', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14'),
+  ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19', TIMESTAMP WITH TIME ZONE '2023-01-01', TIMESTAMP WITH TIME ZONE '2023-12-31', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15'),
+  ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20', TIMESTAMP WITH TIME ZONE '2023-01-01', TIMESTAMP WITH TIME ZONE '2023-12-31', 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');

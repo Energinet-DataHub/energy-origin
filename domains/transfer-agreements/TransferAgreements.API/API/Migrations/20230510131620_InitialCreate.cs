@@ -17,7 +17,7 @@ namespace API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Tin = table.Column<int>(type: "integer", nullable: false)
+                    Tin = table.Column<int>(type: "integer", maxLength: 8, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,6 +52,18 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Subjects_Name",
+                table: "Subjects",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subjects_Tin",
+                table: "Subjects",
+                column: "Tin",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TransferAgreements_ReceiverId",
                 table: "TransferAgreements",
                 column: "ReceiverId");
@@ -60,7 +72,9 @@ namespace API.Migrations
                 name: "IX_TransferAgreements_SenderId",
                 table: "TransferAgreements",
                 column: "SenderId");
+
         }
+
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
