@@ -59,3 +59,7 @@ app.MapHealthChecks("/health");
 app.RegisterPoEventHandlers();
 
 app.Run();
+
+public partial class Program
+{
+}

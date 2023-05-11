@@ -4,43 +4,42 @@ using Microsoft.Extensions.Logging;
 using ProjectOrigin.Electricity.Client.Models;
 using RegistryConnector.Worker.Cache;
 
-namespace RegistryConnector.Worker.Application.PoEventHandlers
+namespace RegistryConnector.Worker.Application.PoEventHandlers;
+
+public class PoRegistryEventHandler
 {
-    public class PoRegistryEventHandler
+    private readonly ILogger<PoRegistryEventHandler> logger;
+    private readonly ICertificateEventsInMemoryCache cache;
+    private readonly IBus bus;
+
+    public PoRegistryEventHandler(ILogger<PoRegistryEventHandler> logger, ICertificateEventsInMemoryCache cache, IBus bus)
     {
-        private readonly ILogger<PoRegistryEventHandler> logger;
-        private readonly ICertificateEventsInMemoryCache cache;
-        private readonly IBus bus;
+        this.logger = logger;
+        this.cache = cache;
+        this.bus = bus;
+    }
 
-        public PoRegistryEventHandler(ILogger<PoRegistryEventHandler> logger, ICertificateEventsInMemoryCache cache, IBus bus)
+    public async void OnRegistryEvents(CommandStatusEvent cse)
+    {
+        logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", HexHelper.ToHex(cse.Id), cse.State, cse.Error);
+
+        var createdEvent = cache.PopCertificateWithCommandId(cse.Id);
+
+        if (createdEvent == null)
         {
-            this.logger = logger;
-            this.cache = cache;
-            this.bus = bus;
+            logger.LogError($"createEvent with id {HexHelper.ToHex(cse.Id)} was not found.");
+            return;
         }
 
-        public async void OnRegistryEvents(CommandStatusEvent cse)
+        if (cse.State == CommandState.Failed)
         {
-            logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", HexHelper.ToHex(cse.Id), cse.State, cse.Error);
-
-            var createdEvent = cache.PopCertificateWithCommandId(cse.Id);
-
-            if (createdEvent == null)
-            {
-                logger.LogError($"createEvent with id {HexHelper.ToHex(cse.Id)} was not found.");
-                return;
-            }
-
-            if (cse.State == CommandState.Failed)
-            {
-                var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.CertificateId, cse.Error);
-                await bus.Publish(rejectedEvent);
-                return;
-            }
-
-            var issuedInPoEvent = new CertificateIssuedInPoEvent(createdEvent.CertificateId);
-
-            await bus.Publish(issuedInPoEvent);
+            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.CertificateId, cse.Error);
+            await bus.Publish(rejectedEvent);
+            return;
         }
+
+        var issuedInPoEvent = new CertificateIssuedInPoEvent(createdEvent.CertificateId);
+
+        await bus.Publish(issuedInPoEvent);
     }
 }

@@ -20,22 +20,33 @@ public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
-    IClassFixture<DataSyncWireMock>
+    IClassFixture<DataSyncWireMock>,
+    IClassFixture<RegistryConnectorApplicationFactory>,
+    IClassFixture<ProjectOriginContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
+    private readonly RegistryConnectorApplicationFactory registryConnectorFactory;
 
     public CertificateIssuingTests(
         QueryApiWebApplicationFactory factory,
         MartenDbContainer martenDbContainer,
         RabbitMqContainer rabbitMqContainer,
-        DataSyncWireMock dataSyncWireMock)
+        DataSyncWireMock dataSyncWireMock,
+        RegistryConnectorApplicationFactory registryConnectorFactory,
+        ProjectOriginContainer poContainer)
     {
         this.dataSyncWireMock = dataSyncWireMock;
+        this.registryConnectorFactory = registryConnectorFactory;
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
+        this.registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
+        this.registryConnectorFactory.RegistryOptions = poContainer.Options;
+
+        //Must call CreateClient to start the webapp
+        var regConClient = registryConnectorFactory.CreateClient();
     }
 
     [Fact]

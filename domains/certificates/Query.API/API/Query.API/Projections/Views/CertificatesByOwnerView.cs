@@ -15,6 +15,8 @@ public class CertificatesByOwnerView
     public CertificateList ToApiModel()
     {
         var certificates = Certificates.Values
+            //TODO What to do with Creating and Rejected certificates?
+            .Where(x => x.Status == CertificateStatus.Issued)
             .Select(c => new Certificate
             {
                 Id = c.CertificateId,
