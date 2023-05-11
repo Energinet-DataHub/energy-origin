@@ -1,7 +1,7 @@
 # Telemetry
 
-* Status: Proposed
-* Deciders: 
+* Status: Accepted
+* Deciders: @MortMH, @CodeReaper, @duizer, @ckr123
 * Date: 2023-05-09
 
 ---
