@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AggregateRepositories;
@@ -58,7 +59,7 @@ public class EnergyMeasuredConsumerTest
         mockContract.MeteringPointType = MeteringPointType.Consumption;
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockContract);
+            .ReturnsAsync(new[] {mockContract});
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
@@ -82,7 +83,7 @@ public class EnergyMeasuredConsumerTest
     {
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockContract);
+            .ReturnsAsync(new[] {mockContract});
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
@@ -108,7 +109,7 @@ public class EnergyMeasuredConsumerTest
 
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockContract);
+            .ReturnsAsync(new[] {mockContract});
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
@@ -131,7 +132,7 @@ public class EnergyMeasuredConsumerTest
     {
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockContract);
+            .ReturnsAsync(new[] {mockContract});
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
@@ -152,7 +153,7 @@ public class EnergyMeasuredConsumerTest
     {
         var contractServiceMock = new Mock<IContractService>();
         contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockContract);
+            .ReturnsAsync(new[] {mockContract});
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 

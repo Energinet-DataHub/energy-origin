@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.ContractService;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
@@ -268,11 +269,13 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
+        var responseBody = response.Content.ReadFromJsonAsync<CertificateIssuingContract>().Result;
+
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var endContractBody = new
         {
-            gsrn,
+            responseBody!.Id,
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 

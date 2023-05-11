@@ -3,6 +3,7 @@ using AggregateRepositories;
 using API.ContractService;
 using CertificateEvents.Aggregates;
 using CertificateEvents.Primitives;
+using Marten;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
@@ -26,28 +27,36 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var message = context.Message;
 
-        var contract = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
+        var contracts = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
 
-        if (!ShouldEventBeProduced(contract, message))
+        if (contracts.IsEmpty())
         {
-            logger.LogInformation("No production certificate created for {message}", message);
             return;
         }
 
-        var productionCertificate = new ProductionCertificate(
-            contract!.GridArea,
-            new Period(message.DateFrom, message.DateTo),
-            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-            contract.MeteringPointOwner,
-            message.GSRN,
-            message.Quantity);
+        foreach (var contract in contracts)
+        {
+            if (!ShouldEventBeProduced(contract, message))
+            {
+                logger.LogInformation("No production certificate created for {Message}", message);
+                return;
+            }
 
-        // The certificate is issued immediately here. This will be changed when integrating with Project Origin Registry
-        productionCertificate.Issue();
+            var productionCertificate = new ProductionCertificate(
+                contract!.GridArea,
+                new Period(message.DateFrom, message.DateTo),
+                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+                contract.MeteringPointOwner,
+                message.GSRN,
+                message.Quantity);
 
-        await repository.Save(productionCertificate, context.CancellationToken);
+            // The certificate is issued immediately here. This will be changed when integrating with Project Origin Registry
+            productionCertificate.Issue();
 
-        logger.LogInformation("Created production certificate for {message}", message);
+            await repository.Save(productionCertificate, context.CancellationToken);
+
+            logger.LogInformation("Created production certificate for {Message}", message);
+        }
     }
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract? contract,

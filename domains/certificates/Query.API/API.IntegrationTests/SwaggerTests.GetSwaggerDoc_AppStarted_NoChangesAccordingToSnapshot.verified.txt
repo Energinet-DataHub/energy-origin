@@ -386,9 +386,10 @@
       "EndContract": {
         "type": "object",
         "properties": {
-          "gsrn": {
+          "contractId": {
             "type": "string",
-            "description": "Global Service Relation Number (GSRN) for the metering point"
+            "description": "Global Service Relation Number (GSRN) for the metering point",
+            "format": "uuid"
           },
           "endDate": {
             "type": "integer",

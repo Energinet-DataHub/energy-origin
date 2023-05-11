@@ -19,7 +19,7 @@
             OPTIONAL: End date for generation of certificates in Unix time
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.EndContract.GSRN">
+        <member name="P:API.Query.API.ApiModels.Requests.EndContract.ContractId">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
