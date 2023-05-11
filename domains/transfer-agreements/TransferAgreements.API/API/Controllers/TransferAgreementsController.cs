@@ -58,10 +58,10 @@ namespace API.Controllers;
             var sender = await context.Subjects.FindAsync(request.SenderId);
             if (sender == null) return ValidationProblem($"Invalid sender ID: {request.SenderId}");
 
-            var receiver = await context.Subjects.FindAsync(request.ReceiverId);
-            if (receiver == null) return ValidationProblem($"Invalid receiver ID: {request.ReceiverId}");
+            var receiver = await context.Subjects.FirstOrDefaultAsync(s => s.Tin == request.ReceiverTin);
+            if (receiver == null) return ValidationProblem($"Invalid receiver ID: {request.ReceiverTin}");
 
-            if (receiver == sender) return ValidationProblem($"Receiver ID can't be the same as Sender ID: {request.ReceiverId}");
+            if (receiver == sender) return ValidationProblem($"Receiver can't be the same as Sender: {request.ReceiverTin}");
 
             var transferAgreement = new TransferAgreement
             {

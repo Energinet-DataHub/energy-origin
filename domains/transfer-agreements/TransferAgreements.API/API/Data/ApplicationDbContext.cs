@@ -29,7 +29,5 @@ public class ApplicationDbContext : DbContext
                 .HasOne(x => x.Receiver)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
-
-
         }
     }

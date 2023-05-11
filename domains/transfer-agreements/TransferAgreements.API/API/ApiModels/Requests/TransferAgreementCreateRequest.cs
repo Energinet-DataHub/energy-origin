@@ -19,7 +19,7 @@ namespace API.ApiModels.Requests
         public Guid SenderId { get; set; }
 
         [Required]
-        [JsonPropertyName("receiverId")]
-        public Guid ReceiverId { get; set; }
+        [JsonPropertyName("receiverTin")]
+        public int ReceiverTin { get; set; }
     }
 }
