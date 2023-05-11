@@ -14,7 +14,7 @@ We are building multiple services and we must be able to react if a service is n
 
 ## Considered Options
 
-* Health checks
+* [Health checks](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-7.0)
 
 A health check is a process that periodically checks the status of a service by sending a request and checking for a response. A service that responds with a status code within a certain range (e.g., 200-299) is considered healthy, while a service that does not respond or responds with an error status code is considered unhealthy.
 
