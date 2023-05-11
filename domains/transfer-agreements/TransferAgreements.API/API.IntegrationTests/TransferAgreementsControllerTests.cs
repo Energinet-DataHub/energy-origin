@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.ApiModels;
+using API.Api.ApiModels;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;

@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.ApiModels;
-
+using API.Api.ApiModels;
+using API.Api.ApiModels.Requests;
+using API.Api.ApiModels.Responses;
+using API.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using API.ApiModels.Requests;
-using API.ApiModels.Responses;
-using API.Data;
 
-namespace API.Controllers;
+namespace API.Api.Controllers;
 
 [ApiController]
     public class TransferAgreementsController : ControllerBase

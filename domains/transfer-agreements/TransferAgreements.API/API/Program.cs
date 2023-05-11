@@ -1,8 +1,11 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using API.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,9 +15,6 @@ using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-using API.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +94,9 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program
+namespace API
 {
+    public partial class Program
+    {
+    }
 }

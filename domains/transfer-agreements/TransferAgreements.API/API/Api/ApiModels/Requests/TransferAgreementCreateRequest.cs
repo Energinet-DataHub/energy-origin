@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.ApiModels.Requests
+namespace API.Api.ApiModels.Requests
 {
     public class TransferAgreementCreateRequest
     {

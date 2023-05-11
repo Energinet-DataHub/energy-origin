@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.ApiModels;
+namespace API.Api.ApiModels;
 public class Subject
     {
         [Required]
