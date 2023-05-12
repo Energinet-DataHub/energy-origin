@@ -2,7 +2,9 @@
 
 # Decision records
 
-## Domain
+---
+
+## Domain placement
 
 Date: 2023-05-05
 
@@ -22,6 +24,8 @@ It appears to be its own functionality building on top of what the certificates 
 
 Deploying this as its own system will require a lot of work and we will immediately hit issues with using energioprindelse's public APIs.
 
+---
+
 ## Data store
 
 Date: 2023-05-11
@@ -37,6 +41,8 @@ Options:
 ### Decision
 
 Postgres + EF Core because it is simpler and more known
+
+---
 
 ## Identification of receving party
 
