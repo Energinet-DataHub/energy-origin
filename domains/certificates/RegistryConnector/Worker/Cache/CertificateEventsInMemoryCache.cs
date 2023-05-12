@@ -7,17 +7,17 @@ namespace RegistryConnector.Worker.Cache;
 public class CertificateEventsInMemoryCache : ICertificateEventsInMemoryCache
 {
     private readonly ILogger<CertificateEventsInMemoryCache> logger;
-    private Dictionary<string, ProductionCertificateCreatedEvent> certificateEvents;
+    private Dictionary<string, MessageWrapper<ProductionCertificateCreatedEvent>> certificateEvents;
 
     public CertificateEventsInMemoryCache(ILogger<CertificateEventsInMemoryCache> logger)
     {
         this.logger = logger;
-        certificateEvents = new Dictionary<string, ProductionCertificateCreatedEvent>();
+        certificateEvents = new Dictionary<string, MessageWrapper<ProductionCertificateCreatedEvent>>();
     }
 
-    public void AddCertificateWithCommandId(CommandId commandId, ProductionCertificateCreatedEvent msg) => certificateEvents.Add(HexHelper.ToHex(commandId), msg);
+    public void AddCertificateWithCommandId(CommandId commandId, MessageWrapper<ProductionCertificateCreatedEvent> msg) => certificateEvents.Add(HexHelper.ToHex(commandId), msg);
 
-    public ProductionCertificateCreatedEvent? PopCertificateWithCommandId(CommandId commandId)
+    public MessageWrapper<ProductionCertificateCreatedEvent>? PopCertificateWithCommandId(CommandId commandId)
     {
         var hex = HexHelper.ToHex(commandId);
         if (!certificateEvents.Remove(HexHelper.ToHex(commandId), out var certificate))

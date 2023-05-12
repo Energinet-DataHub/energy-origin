@@ -53,7 +53,9 @@ namespace RegistryConnector.Worker.Application.EventHandlers
 
             var commandId = await commandBuilder.Execute(registerClient);
 
-            cache.AddCertificateWithCommandId(commandId, context.Message);
+            var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(context);
+
+            cache.AddCertificateWithCommandId(commandId, wrappedMsg);
 
             logger.LogInformation("Sent command. Id={id}", HexHelper.ToHex(commandId));
         }

@@ -18,14 +18,12 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
     private readonly ILogger<EnergyMeasuredConsumer> logger;
     private readonly IProductionCertificateRepository repository;
     private readonly IContractService contractService;
-    private readonly IBus bus;
 
-    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IProductionCertificateRepository repository, IContractService contractService, IBus bus)
+    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IProductionCertificateRepository repository, IContractService contractService)
     {
         this.logger = logger;
         this.repository = repository;
         this.contractService = contractService;
-        this.bus = bus;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
@@ -51,7 +49,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         //TODO: look into having save and publish in same transaction
         await repository.Save(productionCertificate, context.CancellationToken);
 
-        await bus.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
+        await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
             contract.GridArea,
             new Period(message.DateFrom, message.DateTo),
             new Technology(FuelCode: "F00000000", TechCode: "T070000"),

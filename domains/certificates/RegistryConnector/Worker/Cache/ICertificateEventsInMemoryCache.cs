@@ -5,7 +5,7 @@ namespace RegistryConnector.Worker.Cache
 {
     public interface ICertificateEventsInMemoryCache
     {
-        void AddCertificateWithCommandId(CommandId commandId, ProductionCertificateCreatedEvent msg);
-        ProductionCertificateCreatedEvent? PopCertificateWithCommandId(CommandId commandId);
+        void AddCertificateWithCommandId(CommandId commandId, MessageWrapper<ProductionCertificateCreatedEvent> msg);
+        MessageWrapper<ProductionCertificateCreatedEvent>? PopCertificateWithCommandId(CommandId commandId);
     }
 }

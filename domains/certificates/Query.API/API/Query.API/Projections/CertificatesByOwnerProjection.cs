@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,8 +60,9 @@ public class CertificatesByOwnerProjection : IProjection
                     throw new InvalidOperationException();
             }
         }
-
-        operations.Store(views.ToArray());
+        using var session = operations.DocumentStore.LightweightSession(IsolationLevel.Serializable);
+        session.Store(views.ToArray());
+        session.SaveChanges();
     }
 
     private static void ApplyProductionCertificateRejected(IDocumentOperations operations,

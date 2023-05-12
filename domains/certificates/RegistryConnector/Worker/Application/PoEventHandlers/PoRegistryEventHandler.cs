@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -33,13 +35,13 @@ public class PoRegistryEventHandler
 
         if (cse.State == CommandState.Failed)
         {
-            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.CertificateId, cse.Error);
-            await bus.Publish(rejectedEvent);
+            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.Message.CertificateId, cse.Error);
+            await bus.Publish(rejectedEvent, createdEvent.SetIdsForOutgoingMessage);
             return;
         }
 
-        var issuedInPoEvent = new CertificateIssuedInPoEvent(createdEvent.CertificateId);
+        var issuedInPoEvent = new CertificateIssuedInPoEvent(createdEvent.Message.CertificateId);
 
-        await bus.Publish(issuedInPoEvent);
+        await bus.Publish(issuedInPoEvent, createdEvent.SetIdsForOutgoingMessage);
     }
 }
