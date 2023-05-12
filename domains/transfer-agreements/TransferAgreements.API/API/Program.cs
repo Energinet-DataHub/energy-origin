@@ -1,13 +1,16 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using API.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -20,12 +23,18 @@ var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/metrics%'")
     .Enrich.WithSpan();
 
+var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
+var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
+
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
