@@ -30,7 +30,8 @@ We need a data store.
 
 Options:
 
-- MartenDB (Document Store part)
+- MartenDB (Event Store)
+- MartenDB (Document Store)
 - Postgres + EF Core
 
 ### Decision
