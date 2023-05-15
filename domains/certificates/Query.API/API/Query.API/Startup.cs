@@ -19,6 +19,7 @@ public static class Startup
         {
             o.OperationFilter<ResponseSchemaForBadRequestFilter>();
             o.SupportNonNullableReferenceTypes();
+            // test sobnar
             o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
             o.SwaggerDoc("v1", new OpenApiInfo
             {
