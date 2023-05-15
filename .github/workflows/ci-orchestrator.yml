@@ -30,8 +30,8 @@ jobs:
       uses: dorny/paths-filter@v2
       with:
         filters: |
-            certificates:
-            - 'domains/certificates/**'
+          certificates:
+            - '../../domains/certificates/**'
 
   build-domain:
     uses: ./.github/workflows/build-domain.yaml
@@ -51,13 +51,13 @@ jobs:
 
   sonar-analysis:
     needs: Run-sonar
-    if: ${{ needs.Run-sonar.outputs.certificates == 'true' }}
+    if: needs.Run-sonar.outputs.certificates == 'true'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
   sonar-analysis-ignore:
     needs: Run-sonar
-    if: ${{ needs.Run-sonar.outputs.certificates == 'false' }}
+    if: needs.Run-sonar.outputs.certificates == 'false'
     uses: ./.github/workflows/sonar-analysis-ignore.yml
     secrets: inherit
 
