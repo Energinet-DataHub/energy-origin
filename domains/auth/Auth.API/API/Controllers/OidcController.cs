@@ -33,13 +33,15 @@ public class OidcController : ControllerBase
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
-        [FromQuery(Name = "error_description")]
-        string? errorDescription,
+        [FromQuery(Name = "error_description")] string? errorDescription,
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
-        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null) redirectionUri = oidcState.RedirectionUri;
+        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
+        {
+            redirectionUri = oidcState.RedirectionUri;
+        }
 
         if (code == null)
         {
@@ -88,7 +90,10 @@ public class OidcController : ControllerBase
             return RedirectPreserveMethod(url);
         }
 
-        if (oidcState?.State != null) redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
+        if (oidcState?.State != null)
+        {
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
+        }
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
@@ -117,7 +122,10 @@ public class OidcController : ControllerBase
 
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
 
-        if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub)) throw new SecurityTokenException("Subject mismatched found in tokens received.");
+        if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
+        {
+            throw new SecurityTokenException("Subject mismatched found in tokens received.");
+        }
 
         var providerName = userInfo.FindFirstValue("idp");
         var identityType = userInfo.FindFirstValue("identity_type");
@@ -128,7 +136,10 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
 
         var providerType = GetIdentityProviderEnum(providerName, identityType);
-        if (!providerOptions.Providers.Contains(providerType)) throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
+        if (!providerOptions.Providers.Contains(providerType))
+        {
+            throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
+        }
 
         string? name = null;
         string? tin = null;
@@ -143,7 +154,10 @@ public class OidcController : ControllerBase
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
 
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
-                if (tin is not null && rid is not null) keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                if (tin is not null && rid is not null)
+                {
+                    keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                }
                 keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
@@ -151,7 +165,10 @@ public class OidcController : ControllerBase
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
                 var pid = userInfo.FindFirstValue("nemid.pid");
-                if (pid is not null) keys.Add(ProviderKeyType.PID, pid);
+                if (pid is not null)
+                {
+                    keys.Add(ProviderKeyType.PID, pid);
+                }
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
             case ProviderType.NemID_Professional:
@@ -200,7 +217,10 @@ public class OidcController : ControllerBase
 
         user.UserProviders.AddRange(newUserProviders);
 
-        if (knownUser) await userService.UpsertUserAsync(user);
+        if (knownUser)
+        {
+            await userService.UpsertUserAsync(user);
+        }
 
         return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
     }
