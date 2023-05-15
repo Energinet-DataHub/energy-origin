@@ -83,7 +83,6 @@ csharp_prefer_simple_using_statement = true:warning
 csharp_style_prefer_switch_expression = true:suggestion
 dotnet_style_readonly_field = true:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
-csharp_braces_for_ifelse = required
 
 # Expression-level preferences
 dotnet_style_object_initializer = true:suggestion
