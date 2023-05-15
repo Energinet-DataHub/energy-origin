@@ -1,8 +1,6 @@
 name: SonarCloud
 on:
-  workflow_call:
-    paths-ignore:
-      - domains/certificates/**
+  workflow_call: {}
 jobs:
   sonar-analysis:
     name: sonar-analysis
