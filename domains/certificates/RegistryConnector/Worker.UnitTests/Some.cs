@@ -15,7 +15,7 @@ namespace RegistryConnector.Worker.UnitTests
     public static class Some
     {
         private static readonly string hex = "5a8ce02164be34b1b046d8c8d844607bfffa2b5c767a48565e6fb6490bad9b30";
-        private static readonly byte[] commandIdHash = {26,29,31,227,125,21,41,199,11,127,63,88,214,204,167,243,177,165,242,43,127,154,47,116,12,230,13,8,69,227,43};
+        private static readonly byte[] commandIdHash = { 26, 29, 31, 227, 125, 21, 41, 199, 11, 127, 63, 88, 214, 204, 167, 243, 177, 165, 242, 43, 127, 154, 47, 116, 12, 230, 13, 8, 69, 227, 43};
 
         public static CommandId CommandId = new CommandId(commandIdHash);
 
