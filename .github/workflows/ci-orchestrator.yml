@@ -25,6 +25,8 @@ jobs:
 
   Run-sonar:
     runs-on: ubuntu-latest
+    outputs:
+      certificates_output: ${{ steps.dorny.outputs.certificates }}
     steps:
     - name: sonar
       uses: dorny/paths-filter@v2
@@ -52,13 +54,13 @@ jobs:
 
   sonar-analysis:
     needs: Run-sonar
-    if: steps.dorny.outputs.certificates == 'true'
+    if: needs.Run-sonar.outputs.certificates_output == 'true'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
   sonar-analysis-ignore:
     needs: Run-sonar
-    if: steps.dorny.outputs.certificates == 'false'
+    if: needs.Run-sonar.outputs.certificates_output == 'false'
     uses: ./.github/workflows/sonar-analysis-ignore.yml
     secrets: inherit
 
