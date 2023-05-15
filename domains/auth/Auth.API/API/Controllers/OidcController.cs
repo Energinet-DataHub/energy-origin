@@ -45,6 +45,7 @@ public class OidcController : ControllerBase
 
         if (code == null)
         {
+            // hehe
             logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
