@@ -28,6 +28,7 @@ jobs:
     steps:
     - name: sonar
       uses: dorny/paths-filter@v2
+      id: dorny
       with:
         filters: |
           certificates:
@@ -51,13 +52,13 @@ jobs:
 
   sonar-analysis:
     needs: Run-sonar
-    if: needs.Run-sonar.outputs.certificates == 'true'
+    if: steps.dorny.outputs.certificates == 'true'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
   sonar-analysis-ignore:
     needs: Run-sonar
-    if: needs.Run-sonar.outputs.certificates == 'false'
+    if: steps.dorny.outputs.certificates == 'false'
     uses: ./.github/workflows/sonar-analysis-ignore.yml
     secrets: inherit
 
