@@ -20,10 +20,10 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            o.AddConsumer<EnergyMeasuredConsumer>(cc => cc.UseConcurrentMessageLimit(1));
+            o.AddConsumer<EnergyMeasuredConsumer>();
             o.AddConsumer<TransferCertificateConsumer>();
-            o.AddConsumer<CertificateIssuedInPoEventHandler>(cc => cc.UseConcurrentMessageLimit(1));
-            o.AddConsumer<CertificateRejectedInPoEventHandler>(cc => cc.UseConcurrentMessageLimit(1));
+            o.AddConsumer<CertificateIssuedInPoEventHandler>();
+            o.AddConsumer<CertificateRejectedInPoEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

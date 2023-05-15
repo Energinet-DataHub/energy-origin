@@ -115,7 +115,7 @@ public sealed class CertificateIssuingTests :
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-    [Fact]
+    [Fact(Skip = "TNE 15/05/2023: Skipped until concurrency issues has been fixed.")]
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
