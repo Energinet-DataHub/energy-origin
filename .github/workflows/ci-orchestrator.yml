@@ -24,11 +24,14 @@ on:
 jobs:
 
   Run-sonar:
-    uses: dorny/paths-filter@v2
-    with:
-      filters: |
-          certificates:
-           - 'domains/certificates/**'
+    runs-on: ubuntu-latest
+    steps:
+    - name: sonar
+      uses: dorny/paths-filter@v2
+      with:
+        filters: |
+            certificates:
+            - 'domains/certificates/**'
 
   build-domain:
     uses: ./.github/workflows/build-domain.yaml
