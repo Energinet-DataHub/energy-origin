@@ -15,6 +15,9 @@ The reason for this split is certain constraints. The constraints are:
 ### Container diagram
 ![Container diagram](../diagrams/certificates.current.container.drawio.svg)
 
+### Message flow
+![Message flow](../diagrams/certificates.current.messageflow.drawio.svg)
+
 ## Component diagram: Certificate API
 
 The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the DataSyncSyncer.
