@@ -15,6 +15,13 @@ namespace RegistryConnector.Worker
             conversationId = context.ConversationId;
         }
 
+        public MessageWrapper(TIncoming message, Guid correlationId, Guid conversationId)
+        {
+            Message = message;
+            this.correlationId = correlationId;
+            this.conversationId = conversationId;
+        }
+
         public TIncoming Message { get; }
 
         public void SetIdsForOutgoingMessage<TOutgoing>(PublishContext<TOutgoing> ctx) where TOutgoing : class

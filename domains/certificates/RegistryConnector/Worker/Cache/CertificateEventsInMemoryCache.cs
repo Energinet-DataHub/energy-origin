@@ -7,7 +7,7 @@ namespace RegistryConnector.Worker.Cache;
 public class CertificateEventsInMemoryCache : ICertificateEventsInMemoryCache
 {
     private readonly ILogger<CertificateEventsInMemoryCache> logger;
-    private Dictionary<string, MessageWrapper<ProductionCertificateCreatedEvent>> certificateEvents;
+    private readonly Dictionary<string, MessageWrapper<ProductionCertificateCreatedEvent>> certificateEvents;
 
     public CertificateEventsInMemoryCache(ILogger<CertificateEventsInMemoryCache> logger)
     {
