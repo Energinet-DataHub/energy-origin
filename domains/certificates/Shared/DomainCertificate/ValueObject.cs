@@ -4,10 +4,12 @@ namespace DomainCertificate
     {
         protected static bool EqualOperator(ValueObject left, ValueObject right)
         {
+#pragma warning disable IDE0041 // Use 'is null' check
             if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
             {
                 return false;
             }
+#pragma warning restore IDE0041 // Use 'is null' check
             return ReferenceEquals(left, right) || left.Equals(right);
         }
 
