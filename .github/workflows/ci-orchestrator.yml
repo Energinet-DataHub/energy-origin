@@ -16,10 +16,10 @@ name: CI orchestrator
 on:
   pull_request:
     branches:
-      - 1085-githubs-ettings
+      - main
   push:
     branches:
-      - 1085-githubs-ettings
+      - main
 
 jobs:
 
