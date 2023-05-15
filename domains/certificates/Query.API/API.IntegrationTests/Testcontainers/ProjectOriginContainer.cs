@@ -13,7 +13,7 @@ public class ProjectOriginContainer : IAsyncLifetime
 {
     private readonly IContainer container;
 
-    private string privateKeyStr ="LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1DNENBUUF3QlFZREsyVndCQ0lFSUJhb2FjVHVWL05ub3ROQTBlVzJxbFJZZ3Q2WTRsaWlXSzV5VDRFZ3JKR20KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=";
+    private string privateKeyStr = "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1DNENBUUF3QlFZREsyVndCQ0lFSUJhb2FjVHVWL05ub3ROQTBlVzJxbFJZZ3Q2WTRsaWlXSzV5VDRFZ3JKR20KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=";
 
     public ProjectOriginContainer()
     {
