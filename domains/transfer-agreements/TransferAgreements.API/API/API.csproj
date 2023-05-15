@@ -44,4 +44,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="ApiModels\Responses\TransferAgreementResponse.cs" />
+  </ItemGroup>
+
 </Project>

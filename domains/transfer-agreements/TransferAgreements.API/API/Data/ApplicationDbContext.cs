@@ -1,6 +1,5 @@
 ﻿using API.ApiModels;
 using Microsoft.EntityFrameworkCore;
-
 namespace API.Data;
 
 public class ApplicationDbContext : DbContext

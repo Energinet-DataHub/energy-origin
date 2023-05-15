@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.ApiModels {
+namespace API.ApiModels;
 
     public class TransferAgreement
     {
@@ -22,4 +22,3 @@ namespace API.ApiModels {
         [JsonPropertyName("receiverTin")]
         public int ReceiverTin { get; set; }
     }
-}

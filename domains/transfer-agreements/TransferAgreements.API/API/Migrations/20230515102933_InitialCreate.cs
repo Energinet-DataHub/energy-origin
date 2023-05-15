@@ -1,11 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+namespace API.Migrations;
 
-#nullable disable
-
-namespace API.Migrations
-{
-    /// <inheritdoc />
+/// <inheritdoc />
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
@@ -33,4 +30,3 @@ namespace API.Migrations
                 name: "TransferAgreements");
         }
     }
-}

@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
+namespace API.Migrations;
 
-namespace API.Migrations
-{
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
@@ -48,4 +46,3 @@ namespace API.Migrations
 #pragma warning restore 612, 618
         }
     }
-}
