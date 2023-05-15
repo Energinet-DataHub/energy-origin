@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        build_domain,
+        build-domain,
         build-libraries,
         check-licenses,
         check-versions,
