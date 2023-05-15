@@ -23,7 +23,20 @@ on:
 
 jobs:
 
-  build_domain:
+  Run-sonar:
+    runs-on: ubuntu-latest
+    outputs:
+      certificates_output: ${{ steps.dorny.outputs.certificates }}
+    steps:
+    - name: sonar
+      uses: dorny/paths-filter@v2
+      id: dorny
+      with:
+        filters: |
+          certificates:
+            - 'domains/certificates/**'
+
+  build-domain:
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
 
@@ -39,15 +52,29 @@ jobs:
     uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
+  sonar-analysis:
+    needs: Run-sonar
+    if: needs.Run-sonar.outputs.certificates_output == 'true'
+    uses: ./.github/workflows/sonar-analysis.yml
+    secrets: inherit
+
+  sonar-analysis-ignore:
+    needs: Run-sonar
+    if: needs.Run-sonar.outputs.certificates_output == 'false'
+    uses: ./.github/workflows/sonar-analysis-ignore.yml
+    secrets: inherit
+
 
   allow_merge_ci_orchestrator:
     runs-on: ubuntu-latest
     needs:
       [
-        build_domain,
+        build-domain,
         build-libraries,
         check-licenses,
         check-versions,
+        sonar-analysis,
+        sonar-analysis-ignore,
       ]
     if: |
       always()
