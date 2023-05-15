@@ -1,6 +1,6 @@
 name: SonarCloud
 on:
-  pull_request:
+  workflow_call:
     paths-ignore:
       - domains/certificates/**
 jobs:

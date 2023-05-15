@@ -1,12 +1,7 @@
 name: SonarCloud
 
 on:
-  pull_request:
-    paths:
-      - domains/certificates/**
-  push:
-    branches:
-      - main
+  workflow_call:
     paths:
       - domains/certificates/**
 
