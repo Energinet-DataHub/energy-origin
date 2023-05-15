@@ -34,7 +34,7 @@ jobs:
       with:
         filters: |
           certificates:
-            - '../../domains/certificates/**'
+            - 'domains/certificates/**'
 
   build-domain:
     uses: ./.github/workflows/build-domain.yaml
