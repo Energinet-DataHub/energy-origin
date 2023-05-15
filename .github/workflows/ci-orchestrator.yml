@@ -23,7 +23,7 @@ on:
 
 jobs:
 
-  build_domain:
+  build-domain:
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
 
@@ -39,6 +39,14 @@ jobs:
     uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
+  sonar-analysis:
+    uses: ./.github/workflows/sonar-analysis.yml
+    secrets: inherit
+
+  sonar-analysis-ignore:
+    uses: ./.github/workflows/sonar-analysis-ignore.yml
+    secrets: inherit
+
 
   allow_merge_ci_orchestrator:
     runs-on: ubuntu-latest
@@ -48,6 +56,8 @@ jobs:
         build-libraries,
         check-licenses,
         check-versions,
+        sonar-analysis,
+        sonar-analysis-ignore,
       ]
     if: |
       always()
