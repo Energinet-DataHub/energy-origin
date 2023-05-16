@@ -42,6 +42,6 @@ spec:
             - name: Database__Host
               value: {{ .Release.Name }}-cnpg-cluster-rw
             - name: Database__Port
-              value: 5432
+              value: "5432"
             - name: Database__Password
               value: {{ .Values.api.databasePassword }}
