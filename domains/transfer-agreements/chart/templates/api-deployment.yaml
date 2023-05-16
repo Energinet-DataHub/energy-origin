@@ -34,3 +34,14 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
+          env:
+            - name: Database__Name
+              value: transfer-database
+            - name: Database__User
+              value: transfer
+            - name: Database__Host
+              value: {{ .Release.Name }}-cnpg-cluster-rw
+            - name: Database__Port
+              value: 5432
+            - name: Database__Password
+              value: {{ .Values.api.databasePassword }}
