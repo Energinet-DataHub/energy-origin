@@ -8,7 +8,7 @@ spec:
 
   bootstrap:
     initdb:
-      database: transfer-agreements-database
+      database: transfer-database
       owner: transfer
 
   storage:
