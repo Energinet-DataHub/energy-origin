@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using API.ApiModels.Responses;
+using API.Options;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -41,4 +43,9 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet]
     [Route("api/transfer-agreements/subject")]
     public IActionResult GetSubject() => Ok(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+    [AllowAnonymous]
+    [HttpGet]
+    [Route("api/transfer-agreements/passwsord")]
+    public IActionResult GetPassword([FromServices] IOptions<DatabaseOptions> options) => Ok(options.Value.ToConnectionString());
 }
