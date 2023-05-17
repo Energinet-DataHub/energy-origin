@@ -34,7 +34,7 @@ spec:
               value: $(password)
           envFrom:
             - secretRef:
-              name: {{ .Release.Name }}-cnpg-cluster-superuser
+                name: {{ .Release.Name }}-cnpg-cluster-superuser
           volumeMounts:
             - name: migrations
               mountPath: /sql
