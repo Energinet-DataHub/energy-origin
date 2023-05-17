@@ -13,6 +13,10 @@ public class LogoutController : ControllerBase
     [Route("auth/logout")]
     public async Task<IActionResult> LogoutAsync(IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
+        logger.LogInformation("This is a LogInformation deletion test");
+        logger.LogWarning("This is a LogWarning deletion test");
+        logger.LogError("This is a LogError deletion test");
+
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && overrideRedirectionUri != null)
         {
