@@ -47,41 +47,6 @@
           }
         }
       }
-    },
-    "/api/transfer-agreements/test1": {
-      "get": {
-        "tags": [
-          "TransferAgreements"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/transfer-agreements/test2/{id}": {
-      "get": {
-        "tags": [
-          "TransferAgreements"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
     }
   },
   "components": {

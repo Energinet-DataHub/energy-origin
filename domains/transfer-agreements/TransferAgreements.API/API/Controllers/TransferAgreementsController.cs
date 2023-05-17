@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-using API.ApiModels;
 using API.ApiModels.Responses;
-using API.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,29 +41,4 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet]
     [Route("api/transfer-agreements/subject")]
     public IActionResult GetSubject() => Ok(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-    [AllowAnonymous]
-    [HttpGet]
-    [Route("api/transfer-agreements/test1")]
-    public IActionResult Test1([FromServices] ApplicationDbContext context)
-    {
-        var transferAgreement = new TransferAgreement
-        {
-            EndDate = DateTimeOffset.UtcNow.AddHours(1),
-            StartDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = 42
-        };
-
-        context.TransferAgreements.Add(transferAgreement);
-
-        context.SaveChanges();
-
-        return Ok(transferAgreement);
-    }
-
-    [AllowAnonymous]
-    [HttpGet]
-    [Route("api/transfer-agreements/test2/{id}")]
-    public IActionResult Test2([FromRoute] Guid id, [FromServices] ApplicationDbContext context)
-        => Ok(context.TransferAgreements.Find(id));
 }
