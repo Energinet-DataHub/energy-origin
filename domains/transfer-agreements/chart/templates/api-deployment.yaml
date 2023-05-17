@@ -47,4 +47,4 @@ spec:
               value: $(password)
           envFrom:
             - secretRef:
-              name: {{ .Release.Name }}-cnpg-cluster-app
+                name: {{ .Release.Name }}-cnpg-cluster-app
