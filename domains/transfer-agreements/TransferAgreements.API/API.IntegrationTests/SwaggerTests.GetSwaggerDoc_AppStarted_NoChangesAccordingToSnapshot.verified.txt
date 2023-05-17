@@ -47,18 +47,6 @@
           }
         }
       }
-    },
-    "/api/transfer-agreements/passwsord": {
-      "get": {
-        "tags": [
-          "TransferAgreements"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
     }
   },
   "components": {
