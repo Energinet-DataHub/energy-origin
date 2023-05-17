@@ -15,6 +15,10 @@ public class LoginController : ControllerBase
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, IOptions<IdentityProviderOptions> providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
     {
+        logger.LogInformation("This is a LogInformation deletion test");
+        logger.LogWarning("This is a LogWarning deletion test");
+        logger.LogError("This is a LogError deletion test");
+
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
