@@ -1,7 +1,6 @@
 api:
   replicaCount: 3
   image: {}
-  databasePassword:
 metrics:
   prometheus:
     enabled: true

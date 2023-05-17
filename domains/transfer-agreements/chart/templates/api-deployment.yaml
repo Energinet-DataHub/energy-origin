@@ -44,4 +44,7 @@ spec:
             - name: Database__Port
               value: "5432"
             - name: Database__Password
-              value: {{ .Values.api.databasePassword }}
+              value: $(password)
+          envFrom:
+            - secretRef:
+              name: {{ .Release.Name }}-cnpg-cluster-app
