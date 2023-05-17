@@ -104,7 +104,7 @@ public class OidcController : ControllerBase
         {
             MapInboundClaims = false
         };
-        var parameters = new TokenValidationParameters()
+        var parameters = new TokenValidationParameters
         {
             IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
             ValidIssuer = discoveryDocument.Issuer,
@@ -203,12 +203,14 @@ public class OidcController : ControllerBase
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCprLookup = false,
-            Company = identityType == ProviderGroup.Private ? null : new Company()
-            {
-                Id = null,
-                Tin = tin!,
-                Name = companyName!
-            }
+            Company = identityType == ProviderGroup.Private
+                ? null
+                : new Company
+                {
+                    Id = null,
+                    Tin = tin!,
+                    Name = companyName!
+                }
         };
 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
