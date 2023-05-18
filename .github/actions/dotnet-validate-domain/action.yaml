@@ -60,7 +60,7 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: |
         for service in $(find . -name "*.csproj"); do
-          dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
+          dotnet list "$service" package --include-transitive --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
           echo Generating $name
           dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
