@@ -40,13 +40,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     public async Task GetSwaggerUI_AppEnvironmentIsProduction_ReturnsNotFound()
     {
         using var client = factory
-            .WithWebHostBuilder(builder => builder
-                .UseEnvironment("Production")
-                .UseSetting("Database:Host", "host")
-                .UseSetting("Database:Port", "4242")
-                .UseSetting("Database:Name", "name")
-                .UseSetting("Database:User", "user")
-                .UseSetting("Database:Password", "password"))
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
         using var swaggerUiResponse = await client.GetAsync("swagger");
 
@@ -66,13 +60,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     public async Task GetSwaggerDoc_AppEnvironmentIsProduction_ReturnsOk()
     {
         using var client = factory
-            .WithWebHostBuilder(builder => builder
-                .UseEnvironment("Production")
-                .UseSetting("Database:Host", "host")
-                .UseSetting("Database:Port", "4242")
-                .UseSetting("Database:Name", "name")
-                .UseSetting("Database:User", "user")
-                .UseSetting("Database:Password", "password"))
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
         using var swaggerDocResponse = await client.GetAsync("api-docs/transfer-agreements/v1/swagger.json");
 

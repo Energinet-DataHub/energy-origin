@@ -7,15 +7,15 @@ public class DatabaseOptions
     public const string Prefix = "Database";
 
     [Required]
-    public string Host { get; init; } = null!;
+    public string Host { get; set; } = null!;
     [Required]
-    public string Port { get; init; } = null!;
+    public string Port { get; set; } = null!;
     [Required]
-    public string Name { get; init; } = null!;
+    public string Name { get; set; } = null!;
     [Required]
-    public string User { get; init; } = null!;
+    public string User { get; set; } = null!;
     [Required]
-    public string Password { get; init; } = null!;
+    public string Password { get; set; } = null!;
 
     public string ToConnectionString()
         => $"Host={Host}; Port={Port}; Database={Name}; Username={User}; Password={Password};";
