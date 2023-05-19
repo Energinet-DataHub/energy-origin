@@ -1,9 +1,7 @@
 name: Check Versions
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call: {}
 
 jobs:
   define-matrix:
