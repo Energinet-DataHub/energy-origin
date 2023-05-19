@@ -28,8 +28,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
+    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureTestServices(s => s.Configure<DatabaseOptions>(o =>
         {
             var connectionStringBuilder = new DbConnectionStringBuilder
@@ -42,7 +41,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             o.User = (string)connectionStringBuilder["Username"];
             o.Password = (string)connectionStringBuilder["Password"];
         }));
-    }
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
