@@ -22,7 +22,7 @@ namespace API.IntegrationTests.Factories;
 
 public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().Build();
+    private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
 
     public Task InitializeAsync() => testContainer.StartAsync();
 
