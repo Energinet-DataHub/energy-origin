@@ -46,8 +46,7 @@ public sealed class TransferTests :
         this.registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         this.registryConnectorFactory.RegistryOptions = poContainer.Options;
 
-        //Must call CreateClient to start the webapp
-        var regConClient = registryConnectorFactory.CreateClient();
+        var regConClient = registryConnectorFactory.StartWebApp();
     }
 
     [Fact]
