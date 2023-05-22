@@ -15,6 +15,30 @@ spec:
       labels:
         app: {{ .Release.Name }}-api
     spec:
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ .Release.Name }}-api-init-db-cm
+      initContainers:
+        - name: {{ .Release.Name }}-api-init-db
+          image: postgres:alpine3.17
+          command:
+            - /bin/sh
+          args:
+            - -e
+            - /sql/run.sh
+          env:
+            - name: PGUSER
+              value: $(username)
+            - name: PGPASSWORD
+              value: $(password)
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-cnpg-cluster-superuser
+          volumeMounts:
+            - name: migrations
+              mountPath: /sql
+              readOnly: true
       containers:
         - name: {{ .Release.Name }}-api
           image: '{{ .Values.api.image.name }}:{{ .Values.api.image.tag }}'
@@ -30,3 +54,17 @@ spec:
             - containerPort: 80
               name: http
               protocol: TCP
+          env:
+            - name: Database__Name
+              value: transfer-database
+            - name: Database__User
+              value: transfer
+            - name: Database__Host
+              value: {{ .Release.Name }}-cnpg-cluster-rw
+            - name: Database__Port
+              value: "5432"
+            - name: Database__Password
+              value: $(password)
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-cnpg-cluster-app
