@@ -356,7 +356,6 @@ public sealed class ContractTests :
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        dataSyncWireMock.Dispose();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
         var endContractBody = new
         {
