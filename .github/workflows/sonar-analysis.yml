@@ -1,14 +1,7 @@
 name: SonarCloud
 
 on:
-  pull_request:
-    paths:
-      - domains/certificates/**
-  push:
-    branches:
-      - main
-    paths:
-      - domains/certificates/**
+  workflow_call: {}
 
 env:
   ORGANIZATION: "energinet-datahub"
