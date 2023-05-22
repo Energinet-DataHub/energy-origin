@@ -32,10 +32,12 @@ jobs:
     secrets: inherit
 
   check-licenses:
+    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-licenses.yml
     secrets: inherit
 
   check-versions:
+    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
