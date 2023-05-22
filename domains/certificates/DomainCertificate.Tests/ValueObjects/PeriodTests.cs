@@ -31,12 +31,12 @@ namespace DomainCertificate.Tests.ValueObjects
         [Fact]
         public void ToDateInterval()
         {
+            var threeMinAnd20Seconds = new TimeSpan(0, 3, 20);
             var period = new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddSeconds(200).ToUnixTimeSeconds());
 
             var dateInterval = period.ToDateInterval();
 
-            //200 seconds = 3 min and 20 seconds
-            Assert.Equal(new TimeSpan(0,3,20), dateInterval.Duration);
+            Assert.Equal(threeMinAnd20Seconds, dateInterval.Duration);
         }
     }
 }

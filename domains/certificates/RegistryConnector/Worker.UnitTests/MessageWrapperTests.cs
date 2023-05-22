@@ -29,7 +29,7 @@ public class MessageWrapperTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task ids_are_set_for_a_message_without_correlation_id()
+    public async Task SetIdsForOutgoingMessage_IdsAreSetForAMessageWithoutCorrelationId()
     {
         await harness.Start();
 
@@ -51,7 +51,7 @@ public class MessageWrapperTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task ids_are_set_for_a_message_with_correlation_id()
+    public async Task SetIdsForOutgoingMessage_IdsAreSetForAMessageWithCorrelationId()
     {
         await harness.Start();
 
@@ -77,7 +77,7 @@ public class MessageWrapperTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task conversation_id_not_set_when_not_using_wrapper()
+    public async Task ConversationIdNotSetWhenNotUsingWrapper()
     {
         await harness.Start();
 
