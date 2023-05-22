@@ -17,7 +17,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Read vaule
+    - name: Read value
       id: get
       shell: bash
-      run: echo "result=$(yq '.${{ inputs.yaml_path }}' < '${{ inputs.yaml_file }}')" >> $GITHUB_OUTPUT
+      run: echo "result=$(yq '.${{ inputs.yaml_path }}' '${{ inputs.yaml_file }}')" >> $GITHUB_OUTPUT

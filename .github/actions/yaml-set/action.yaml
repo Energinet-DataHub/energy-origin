@@ -15,9 +15,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: install yamlpath
-      uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
-
-    - name: Set yaml value
+    - name: Set value
       shell: bash
-      run: yaml-set --change ${{ inputs.yaml_path }} --value ${{ inputs.value }} ${{ inputs.yaml_file }}
+      run: yq '.${{ inputs.yaml_path }} = ".${{ inputs.value }}"' '${{ inputs.yaml_file }}'
