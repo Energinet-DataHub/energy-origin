@@ -10,6 +10,8 @@ using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
+using API.IntegrationTests.Models;
+using API.Query.API.ApiModels.Requests;
 using FluentAssertions;
 using Xunit;
 
@@ -269,14 +271,14 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = response.Content.ReadFromJsonAsync<CertificateIssuingContract>().Result;
+        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var endContractBody = new
+        var endContractBody = new EndContract
         {
-            responseBody!.Id,
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            ContractId = responseBody!.Id,
+            EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
@@ -301,11 +303,13 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
+        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
+
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var endContractBody = new
+        var endContractBody = new EndContract
         {
-            gsrn
+            ContractId = responseBody!.Id
         };
 
         using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
@@ -322,13 +326,13 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new
+        var endContractBody = new EndContract
         {
-            gsrn,
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            ContractId = Guid.NewGuid(),
+            EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        using var response = await client.PatchAsJsonAsync("api/certificates/contracts", body);
+        using var response = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
