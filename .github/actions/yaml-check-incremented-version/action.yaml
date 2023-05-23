@@ -26,7 +26,6 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        exit 0
         gh api repos/${{ github.repository }}/contents/${{ inputs.base-yaml-file || inputs.yaml-file }}?ref=main > main || exit 0
         jq -r '.download_url' main > url || exit 0
         cat url | xargs curl --silent > raw || exit 0
