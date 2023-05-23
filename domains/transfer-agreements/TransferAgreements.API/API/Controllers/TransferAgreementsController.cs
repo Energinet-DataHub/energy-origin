@@ -1,9 +1,6 @@
-using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Data;
 using API.ApiModels.Requests;
-using API.ApiModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +27,7 @@ namespace API.Controllers
                 ReceiverTin = 12345678
             };
 
-            var result = transferAgreementService.CreateTransferAgreement(transferAgreement);
+            var result = await transferAgreementService.CreateTransferAgreement(transferAgreement);
 
             return Ok(result);
         }

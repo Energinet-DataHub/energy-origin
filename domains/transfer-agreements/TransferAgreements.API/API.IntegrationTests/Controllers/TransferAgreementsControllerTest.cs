@@ -25,8 +25,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
-
-
         var transferAgreement = new CreateTransferAgreement()
         {
 
@@ -35,7 +33,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
              ReceiverTin = 12345678
         };
 
-        // Act
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         response.EnsureSuccessStatusCode();
     }

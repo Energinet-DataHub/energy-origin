@@ -49,7 +49,6 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
@@ -61,6 +60,8 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Transfer Agreements API"
     });
 });
+
+builder.Services.AddScoped<ITransferAgreementService, TransferAgreementService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -76,7 +77,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
-
 
 
 var app = builder.Build();
