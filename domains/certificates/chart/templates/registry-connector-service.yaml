@@ -5,7 +5,7 @@ metadata:
   name: {{ .Release.Name }}-registry-connector
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Release.Name }}-registry-connector
+    service: {{ .Release.Name }}-registry-connector
 spec:
   ports:
     - name: http
