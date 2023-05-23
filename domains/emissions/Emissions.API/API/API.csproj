@@ -17,6 +17,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.27.0" />
     <PackageReference Include="EnergyOriginAuthorization" Version="1.1.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
+		<PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
+		<PackageReference Include="Serilog.Expressions" Version="3.4.1" />
   </ItemGroup>
 
 </Project>

@@ -9,18 +9,24 @@ using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 [assembly: InternalsVisibleTo("Tests")]
 
-var logger = new LoggerConfiguration()
-    .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
-
 var builder = WebApplication.CreateBuilder(args);
 
+var log = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.WithSpan();
+
+var console = builder.Environment.IsDevelopment()
+    ? log.WriteTo.Console()
+    : log.WriteTo.Console(new JsonFormatter());
+
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(logger);
+builder.Logging.AddSerilog(console.CreateLogger());
 
 builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
 {
