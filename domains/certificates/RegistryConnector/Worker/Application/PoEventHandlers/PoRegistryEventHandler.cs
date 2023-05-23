@@ -29,7 +29,7 @@ public class PoRegistryEventHandler
 
         if (createdEvent == null)
         {
-            logger.LogError($"createEvent with id {HexHelper.ToHex(cse.Id)} was not found.");
+            logger.LogError("createEvent with id {id} was not found.", HexHelper.ToHex(cse.Id));
             return;
         }
 

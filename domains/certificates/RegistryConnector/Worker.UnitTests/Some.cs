@@ -20,7 +20,7 @@ namespace RegistryConnector.Worker.UnitTests
                 new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()),
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
                 "SomeMeteringPointOwner",
-                new ShieldedValue<Gsrn>(new Gsrn("111111111111111111"), BigInteger.Zero),
+                new ShieldedValue<Gsrn>(new Gsrn("571234567890123456"), BigInteger.Zero),
                 new ShieldedValue<long>(42, BigInteger.Zero));
     }
 }

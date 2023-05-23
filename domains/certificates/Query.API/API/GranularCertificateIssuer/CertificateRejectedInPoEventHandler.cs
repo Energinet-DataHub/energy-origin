@@ -25,7 +25,7 @@ namespace API.GranularCertificateIssuer
 
             if (certificate == null)
             {
-                logger.LogError($"Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.");
+                logger.LogError("Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.", msg.CertificateId);
                 return;
             }
 
