@@ -22,7 +22,7 @@ public class CertificateEventsInMemoryCache : ICertificateEventsInMemoryCache
         var hex = HexHelper.ToHex(commandId);
         if (!certificateEvents.Remove(HexHelper.ToHex(commandId), out var certificate))
         {
-            logger.LogInformation($"certificate with commandId {hex} not found.");
+            logger.LogInformation("certificate with commandId {hex} not found.", hex);
             return null;
         }
 

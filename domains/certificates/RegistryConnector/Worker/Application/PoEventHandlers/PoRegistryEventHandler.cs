@@ -35,7 +35,7 @@ public class PoRegistryEventHandler
 
         if (cse.State == CommandState.Failed)
         {
-            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.Message.CertificateId, cse.Error);
+            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.Message.CertificateId, cse.Error!);
             await bus.Publish(rejectedEvent, createdEvent.SetIdsForOutgoingMessage);
             return;
         }

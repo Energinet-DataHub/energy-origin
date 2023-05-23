@@ -2,9 +2,12 @@ using System.Text.RegularExpressions;
 
 namespace DomainCertificate.ValueObjects;
 
-public class Gsrn : ValueObject
+public partial class Gsrn : ValueObject
 {
-    private readonly Regex regex = new("^57\\d{16}$");
+    [GeneratedRegex("^57\\d{16}$")]
+    private static partial Regex MyRegex();
+    private static readonly Regex regex = MyRegex();
+
     public string Value { get; }
 
     public Gsrn(string value)
@@ -19,4 +22,5 @@ public class Gsrn : ValueObject
     {
         yield return Value;
     }
+
 }

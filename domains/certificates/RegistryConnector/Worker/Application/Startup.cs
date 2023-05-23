@@ -23,10 +23,7 @@ namespace RegistryConnector.Worker.Application
         {
             var poClient = app.Services.GetService<RegisterClient>();
 
-            if (poClient == null)
-                throw new Exception("Project Origin registry client not registered.");
-
-            poClient.Events += app.Services.GetService<PoRegistryEventHandler>()!.OnRegistryEvents;
+            poClient!.Events += app.Services.GetService<PoRegistryEventHandler>()!.OnRegistryEvents;
         }
     }
 }
