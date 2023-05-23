@@ -1,0 +1,41 @@
+﻿receivers:
+  otlp:
+    protocols:
+      grpc: # Default port 4317
+      http: # Default port 4318
+#        cors:
+#          allowed_origins:
+#            - "http://*"
+#            - "https://*"
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317" # Could this be 0.0.0.0?
+    tls:
+      insecure: true
+#  jaeger:
+#    endpoint: "jaeger:14250"
+#    tls:
+#      insecure: true
+  prometheus:
+    endpoint: "collector:9464" # This is the endpoint the exporter will expose /metrics on. The Prometheus config needs to be setup to scrape this endpoint. Should it be 0.0.0.0 or collector?
+    #endpoint: "0.0.0.0:9464"
+    #endpoint: "0.0.0.0:8889"
+#    resource_to_telemetry_conversion:
+#      enabled: true
+#    enable_open_metrics: true
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      #exporters: [jaeger]
+      exporters: [otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

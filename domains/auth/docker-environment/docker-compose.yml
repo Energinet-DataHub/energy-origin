@@ -32,14 +32,37 @@ services:
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - "9090:9090" # Prometheus UI port
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true # This will enable you to use a generic OTLP exporter instead of a specific one for Jaeger.
+#      - METRICS_STORAGE_TYPE=prometheus
     ports:
-      - "16686:16686"
-      - "6831:6831/udp"
+      - "16686:16686" # Jaeger UI port
+      - "4317" # OTLP gRPC default port
+#      - "14268"
+#      - "14250"
+
+  collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: collector
+    command: ["--config=/conf/collector-config.yaml"]
+    volumes:
+      - ./collector-config.yaml:/conf/collector-config.yaml
+    ports:
+      - "9464" # Default OpenTelemetry Prometheus exporter port
+      - "4317:4317" # OTLP gRPC receiver port
+      - "4318:4318" # OTLP http receiver port
+#      - "8888:8888" # Prometheus metrics exposed by the collector port (?)
+#      - "8889:8889" # Prometheus exporter metrics port (?)
+#      - "13133:13133" # health_check extension (?)
+    depends_on:
+      - jaeger
+
+  # Should we set Grafana up here as well?
 
 volumes:
   postgres:

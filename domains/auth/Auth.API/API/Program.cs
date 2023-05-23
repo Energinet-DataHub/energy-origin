@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using API.Middleware;
 using API.Options;
 using API.Repositories;
@@ -16,7 +17,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -116,26 +119,44 @@ builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 
+// How do we setup logging using OTLP?
+
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .AddHttpClientInstrumentation()
+            .AddMeter("HatCo.HatStore") // I think this is a magic string that needs to match the name of the meter instance used to create the metrics.
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("API"))
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddPrometheusExporter())
+            .AddOtlpExporter((o, metricReaderOptions) =>
+            {
+                // This should match the OLTP receiver port.
+                // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
+                o.Endpoint = new Uri("http://localhost:4317");
+
+                // o.ExportProcessorType = ExportProcessorType.Simple;
+                // metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
+            }))
+            //.AddPrometheusExporter())
     .WithTracing(provider =>
         provider
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
-            .AddJaegerExporter(options =>
+            .AddOtlpExporter(o =>
             {
-                var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
-
-                if (config is null) return;
-
-                options.AgentHost = config.AgentHost;
-                options.AgentPort = config.AgentPort;
+                // This should match the OLTP receiver port.
+                // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
+                o.Endpoint = new Uri("http://localhost:4317");
             }));
+            // .AddJaegerExporter(options =>
+            // {
+            //     var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
+            //
+            //     if (config is null) return;
+            //
+            //     options.AgentHost = config.AgentHost;
+            //     options.AgentPort = config.AgentPort;
+            // }));
 
 var app = builder.Build();
 
@@ -149,7 +170,7 @@ else if (!app.Environment.IsTest())
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
+//app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
