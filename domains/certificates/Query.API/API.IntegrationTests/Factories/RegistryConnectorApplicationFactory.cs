@@ -38,5 +38,5 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         });
     }
 
-    public new HttpClient StartWebApp() => CreateClient();
+    public new HttpClient CreateClient() => base.CreateClient();
 }

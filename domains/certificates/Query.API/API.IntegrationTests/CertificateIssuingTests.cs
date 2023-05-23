@@ -46,7 +46,7 @@ public sealed class CertificateIssuingTests :
         this.registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         this.registryConnectorFactory.RegistryOptions = poContainer.Options;
 
-        var regConClient = registryConnectorFactory.StartWebApp();
+        var regConClient = registryConnectorFactory.CreateClient();
     }
 
     [Fact]
