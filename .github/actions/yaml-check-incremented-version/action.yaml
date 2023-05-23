@@ -26,19 +26,20 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        echo "result=not-set" >> $GITHUB_OUTPUT
+        exit 0
         gh api repos/${{ github.repository }}/contents/${{ inputs.base-yaml-file || inputs.yaml-file }}?ref=main > main || exit 0
         jq -r '.download_url' main > url || exit 0
         cat url | xargs curl --silent > raw || exit 0
         yq '.${{ inputs.base-yaml-path || inputs.yaml-path }}' raw > /dev/null || exit 0
-        version=$(yq '.${{ inputs.base-yaml-path || inputs.yaml-path }}')
+        version=$(yq '.${{ inputs.base-yaml-path || inputs.yaml-path }}' raw)
         echo "result=$version" >> $GITHUB_OUTPUT
 
     - name: Verify previous tag
-      if: ${{ steps.previous-tag.outputs.result != 'not-set' }}
+      if: ${{ steps.previous-tag.outputs.result != null }}
       id: is-previous-tag-valid
       shell: bash
       run: |
+        ls -l
         echo '${{ steps.previous-tag.outputs.result }}' | grep -qEe '^[0-9]+\.[0-9]+\.[0-9]+(-[^-]+-[^-]+)?$'
         [ $? -eq 0 ] || { echo '::notice::Invalid version on main - accepting old versions to be invalid since new versions are checked for validity'; }
 
