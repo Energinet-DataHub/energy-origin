@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-api
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Release.Name }}-api
+    service: {{ .Release.Name }}-api
 spec:
   ports:
     - name: http
