@@ -15,7 +15,7 @@ namespace RegistryConnector.Worker.UnitTests
         public static readonly CommandId CommandId = new(commandIdHash);
 
         public static readonly ProductionCertificateCreatedEvent ProductionCertificateCreatedEvent =
-            new (Guid.NewGuid(),
+            new(Guid.NewGuid(),
                 "DK1",
                 new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()),
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
