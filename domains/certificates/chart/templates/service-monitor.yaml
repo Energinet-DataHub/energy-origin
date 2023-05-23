@@ -16,7 +16,7 @@ spec:
       scrapeTimeout: 14s
   selector:
     matchExpressions:
-      - key: app
+      - key: service
         operator: In
         values:
           - {{ .Release.Name }}-api
