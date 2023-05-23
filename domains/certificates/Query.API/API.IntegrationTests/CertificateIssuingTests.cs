@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
@@ -73,7 +74,7 @@ public sealed class CertificateIssuingTests :
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = "111111111111111111";
+        var gsrn = GsrnHelper.GenerateRandom();
 
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
@@ -118,7 +119,7 @@ public sealed class CertificateIssuingTests :
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = "222222222222222222";
+        var gsrn = GsrnHelper.GenerateRandom();
 
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
