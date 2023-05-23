@@ -23,6 +23,8 @@ runs:
     - name: Get previous tag
       id: previous-tag
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         gh api repos/${{ github.repository }}/contents/${{ inputs.base-yaml-file || inputs.yaml-file }}?ref=main > main || exit 0
         jq -r '.download_url' main > url || exit 0
@@ -40,6 +42,8 @@ runs:
     - name: Get current tag
       id: current-tag
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         set -euxo pipefail
 
