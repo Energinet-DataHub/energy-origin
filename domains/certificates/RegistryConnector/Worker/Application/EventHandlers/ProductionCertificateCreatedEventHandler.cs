@@ -40,7 +40,6 @@ namespace RegistryConnector.Worker.Application.EventHandlers
                 "RegistryA",
                 msg.CertificateId);
 
-            //TODO gsrn parse can be wrong if GSRN starts with 0
             commandBuilder.IssueConsumptionCertificate(
                 id: federatedCertifcateId,
                 inteval: msg.Period.ToDateInterval(),

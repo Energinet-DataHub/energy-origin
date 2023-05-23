@@ -151,5 +151,10 @@ public class MessageWrapperTests : IAsyncDisposable
             => Task.CompletedTask;
     }
 
-    public ValueTask DisposeAsync() => provider.DisposeAsync();
+    public ValueTask DisposeAsync()
+    {
+        var res = provider.DisposeAsync();
+        GC.SuppressFinalize(this);
+        return res;
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,13 +16,17 @@ namespace RegistryConnector.Worker.Application
 
             services.AddSingleton<PoRegistryEventHandler>();
 
-            services.AddSingleton(x => new RegisterClient(options.GetValue<string>("Url")));
+            services.AddSingleton(x => new RegisterClient(options.GetValue<string>("Url")!));
         }
 
         public static void RegisterPoEventHandlers(this WebApplication app)
         {
             var poClient = app.Services.GetService<RegisterClient>();
-            poClient.Events += app.Services.GetService<PoRegistryEventHandler>().OnRegistryEvents;
+
+            if (poClient == null)
+                throw new Exception("Project Origin registry client not registered.");
+
+            poClient.Events += app.Services.GetService<PoRegistryEventHandler>()!.OnRegistryEvents;
         }
     }
 }

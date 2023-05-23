@@ -24,7 +24,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
 
         builder.UseSetting("Registry:Url", RegistryOptions?.Url ?? "");
-        builder.UseSetting("Registry:IssuerPrivateKeyPem", RegistryOptions?.IssuerPrivateKeyPem != null ? Convert.ToBase64String(RegistryOptions?.IssuerPrivateKeyPem) : "");
+        builder.UseSetting("Registry:IssuerPrivateKeyPem", RegistryOptions?.IssuerPrivateKeyPem != null ? Convert.ToBase64String(RegistryOptions.IssuerPrivateKeyPem) : "");
 
         builder.ConfigureTestServices(services =>
         {

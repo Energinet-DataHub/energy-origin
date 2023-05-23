@@ -6,7 +6,8 @@ public class Gsrn : ValueObject
 
     public Gsrn(string value)
     {
-        //TODO: GSRN validation. 18 chars?
+        if (value.Length != 18 || !value.StartsWith("57"))
+            throw new ArgumentException("GSRN must be 18 characters long and start with 57.");
 
         Value = value;
     }

@@ -46,7 +46,6 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             message.GSRN,
             message.Quantity);
 
-        //TODO: look into having save and publish in same transaction
         await repository.Save(productionCertificate, context.CancellationToken);
 
         await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
