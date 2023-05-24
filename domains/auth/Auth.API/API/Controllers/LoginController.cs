@@ -14,18 +14,11 @@ public class LoginController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/test")]
-    public async Task<IActionResult> TestMethod()
+    public async Task<IActionResult> TestMethod(Metrics metrics)
     {
-        Meter s_meter = new Meter("HatCo.HatStore", "1.0.0");
-        Counter<int> s_hatsSold = s_meter.CreateCounter<int>(name: "hats-sold",
-            unit: "Hats",
-            description: "The number of hats sold in our store");
-
-        s_hatsSold.Add(4);
-
-        Histogram<int> lol = s_meter.CreateHistogram<int>("name", "unit", "description");
-
-        lol.Record(111);
+        metrics.LogoutCounter.Add(
+            1
+        );
 
         return Ok("Test message");
     }

@@ -26,7 +26,6 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
 
-  # Look into persistent volume for Prometheus.
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -36,20 +35,23 @@ services:
     ports:
       - "9090:9090" # Prometheus UI port
 
-  # Look into persistent volume for Jaeger.
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
     environment:
       - COLLECTOR_OTLP_ENABLED=true # This will enable you to use a generic OTLP exporter instead of a specific one for Jaeger.
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/data
+      - BADGER_DIRECTORY_KEY=/data
 #      - METRICS_STORAGE_TYPE=prometheus
     ports:
       - "16686:16686" # Jaeger UI port
       - "4317" # OTLP gRPC default port
 #      - "14268"
 #      - "14250"
-#  volumes:
-#    - jaeger:/var/lib/postgresql/data
+    volumes:
+      - jaeger:/data
 
   collector:
     image: otel/opentelemetry-collector:latest
@@ -86,4 +88,5 @@ volumes:
   postgres:
   pgadmin:
   prometheus:
+  jaeger:
   grafana:

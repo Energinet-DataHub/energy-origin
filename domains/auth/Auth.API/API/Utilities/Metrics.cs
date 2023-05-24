@@ -10,4 +10,5 @@ public class Metrics
 
     public readonly Counter<int> LogoutCounter = authMeter.CreateCounter<int>("user-logout");
     public readonly Counter<int> LoginCounter = authMeter.CreateCounter<int>("user-login");
+    public readonly Counter<int> TokenRefreshCounter = authMeter.CreateCounter<int>("token-refresh");
 }

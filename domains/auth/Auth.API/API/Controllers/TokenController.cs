@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using API.Services.Interfaces;
+using API.Utilities;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
@@ -14,6 +15,7 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
+        Metrics metrics,
         IUserDescriptorMapper mapper,
         IUserService userService,
         ITokenIssuer tokenIssuer)
@@ -31,6 +33,12 @@ public class TokenController : ControllerBase
 
             if (scope!.Contains(UserScopeClaim.NotAcceptedTerms) == false) versionBypass = true;
         }
+
+        metrics.TokenRefreshCounter.Add(
+            1,
+            new KeyValuePair<string, object?>("UserId", descriptor?.Id),
+            new KeyValuePair<string, object?>("CompanyId", descriptor?.CompanyId)
+        );
 
         return Ok(tokenIssuer.Issue(descriptor, versionBypass));
     }
