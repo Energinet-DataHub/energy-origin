@@ -20,8 +20,8 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            o.AddConsumer<EnergyMeasuredConsumer>();
-            o.AddConsumer<TransferCertificateConsumer>();
+            o.AddConsumer<EnergyMeasuredEventHandler>();
+            o.AddConsumer<TransferCertificateCommandHandler>();
             o.AddConsumer<CertificateIssuedInPoEventHandler>();
             o.AddConsumer<CertificateRejectedInPoEventHandler>();
 

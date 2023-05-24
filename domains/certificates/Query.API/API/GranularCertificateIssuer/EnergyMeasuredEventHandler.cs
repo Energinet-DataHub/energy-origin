@@ -13,13 +13,13 @@ using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
+public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
-    private readonly ILogger<EnergyMeasuredConsumer> logger;
+    private readonly ILogger<EnergyMeasuredEventHandler> logger;
     private readonly IProductionCertificateRepository repository;
     private readonly IContractService contractService;
 
-    public EnergyMeasuredConsumer(ILogger<EnergyMeasuredConsumer> logger, IProductionCertificateRepository repository, IContractService contractService)
+    public EnergyMeasuredEventHandler(ILogger<EnergyMeasuredEventHandler> logger, IProductionCertificateRepository repository, IContractService contractService)
     {
         this.logger = logger;
         this.repository = repository;

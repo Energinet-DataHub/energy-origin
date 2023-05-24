@@ -16,7 +16,7 @@ using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;
 
-public class EnergyMeasuredConsumerTest
+public class EnergyMeasuredEventHandlerTests
 {
     private static readonly DateTimeOffset now = DateTimeOffset.Now;
 
@@ -172,7 +172,7 @@ public class EnergyMeasuredConsumerTest
         IProductionCertificateRepository repository, IContractService contractService)
     {
         await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredConsumer>())
+            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredEventHandler>())
             .AddSingleton(repository)
             .AddSingleton(contractService)
             .BuildServiceProvider(true);
