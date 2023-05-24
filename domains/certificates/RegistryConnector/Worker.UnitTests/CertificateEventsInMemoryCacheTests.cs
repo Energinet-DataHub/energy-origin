@@ -1,5 +1,6 @@
 using System;
 using Contracts.Certificates;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RegistryConnector.Worker.Cache;
@@ -23,7 +24,7 @@ namespace RegistryConnector.Worker.UnitTests
 
             var stored = cache.PopCertificateWithCommandId(commandId);
 
-            Assert.Equal(wrappedMsg, stored);
+            wrappedMsg.Should().Be(stored);
         }
 
         [Fact]
@@ -39,8 +40,8 @@ namespace RegistryConnector.Worker.UnitTests
             var stored1 = cache.PopCertificateWithCommandId(commandId);
             var stored2 = cache.PopCertificateWithCommandId(commandId);
 
-            Assert.Equal(wrappedMsg, stored1);
-            Assert.Null(stored2);
+            wrappedMsg.Should().Be(stored1);
+            stored2.Should().BeNull();
         }
     }
 }
