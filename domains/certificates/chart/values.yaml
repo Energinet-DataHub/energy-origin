@@ -12,3 +12,7 @@ postgres:
   size: 10Gi
 rabbitmq:
   replicaCount: 1
+metrics:
+  prometheus:
+    enabled: true
+    additionalLabels: {}

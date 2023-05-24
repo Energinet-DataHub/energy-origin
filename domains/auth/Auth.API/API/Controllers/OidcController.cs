@@ -19,7 +19,7 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
         IDiscoveryCache discoveryCache,
@@ -80,7 +80,7 @@ public class OidcController : ControllerBase
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Failure occured after acquiring token");
+            logger.LogError(exception, "Failure occured after acquiring token.");
 
             var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
                 response.IdentityToken,
@@ -112,7 +112,7 @@ public class OidcController : ControllerBase
         {
             MapInboundClaims = false
         };
-        var parameters = new TokenValidationParameters()
+        var parameters = new TokenValidationParameters
         {
             IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
             ValidIssuer = discoveryDocument.Issuer,
@@ -211,12 +211,14 @@ public class OidcController : ControllerBase
             Name = name,
             AcceptedTermsVersion = 0,
             AllowCprLookup = false,
-            Company = identityType == ProviderGroup.Private ? null : new Company()
-            {
-                Id = null,
-                Tin = tin!,
-                Name = companyName!
-            }
+            Company = identityType == ProviderGroup.Private
+                ? null
+                : new Company
+                {
+                    Id = null,
+                    Tin = tin!,
+                    Name = companyName!
+                }
         };
 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
