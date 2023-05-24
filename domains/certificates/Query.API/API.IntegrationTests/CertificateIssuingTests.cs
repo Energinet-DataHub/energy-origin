@@ -115,9 +115,7 @@ public sealed class CertificateIssuingTests :
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-#pragma warning disable xUnit1004
-    [Fact(Skip = "TNE 15/05/2023: Skipped until concurrency issues has been fixed.")]
-#pragma warning restore xUnit1004
+    [Fact]
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
