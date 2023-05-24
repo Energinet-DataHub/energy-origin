@@ -108,6 +108,7 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
+builder.Services.AddSingleton<Metrics>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -124,10 +125,12 @@ builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .AddMeter("HatCo.HatStore") // I think this is a magic string that needs to match the name of the meter instance used to create the metrics.
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("API"))
+            .AddMeter(Metrics.Name) // I think this is a magic string that needs to match the name of the meter instance used to create the metrics.
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Auth.API"))
             .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
             .AddOtlpExporter((o, metricReaderOptions) =>
             {
                 // This should match the OLTP receiver port.
@@ -137,26 +140,18 @@ builder.Services.AddOpenTelemetry()
                 // o.ExportProcessorType = ExportProcessorType.Simple;
                 // metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
             }))
-            //.AddPrometheusExporter())
     .WithTracing(provider =>
         provider
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Auth.API"))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation()
             .AddOtlpExporter(o =>
             {
                 // This should match the OLTP receiver port.
                 // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
                 o.Endpoint = new Uri("http://localhost:4317");
             }));
-            // .AddJaegerExporter(options =>
-            // {
-            //     var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
-            //
-            //     if (config is null) return;
-            //
-            //     options.AgentHost = config.AgentHost;
-            //     options.AgentPort = config.AgentPort;
-            // }));
 
 var app = builder.Build();
 

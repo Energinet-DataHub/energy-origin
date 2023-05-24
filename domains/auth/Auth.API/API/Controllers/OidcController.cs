@@ -22,6 +22,7 @@ public class OidcController : ControllerBase
     [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
+        Metrics metrics,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptorMapper mapper,
@@ -74,9 +75,10 @@ public class OidcController : ControllerBase
         }
 
         string token;
+        UserDescriptor descriptor;
         try
         {
-            var descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
             token = issuer.Issue(descriptor);
         }
         catch (Exception exception)
@@ -94,6 +96,13 @@ public class OidcController : ControllerBase
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
+
+        metrics.LoginCounter.Add(
+        1,
+        new KeyValuePair<string, object?>("UserId", descriptor?.Id),
+        new KeyValuePair<string, object?>("CompanyId", descriptor?.CompanyId),
+        new KeyValuePair<string, object?>("IdentityProviderType", descriptor?.ProviderType)
+        );
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
