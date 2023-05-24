@@ -28,13 +28,13 @@ public class PoRegistryEventHandler
 
         MessageWrapper<ProductionCertificateCreatedEvent>? createdEvent = null;
         var i = 0;
-        while(createdEvent == null || i < 10)
+        while(createdEvent == null && i < 10)
         {
             createdEvent = cache.PopCertificateWithCommandId(cse.Id);
             i++;
-            if (createdEvent == null)
-                logger.LogError("createEvent with id {id} was not found. Retry {i} / 10", commandId, i);
+            if (createdEvent != null) continue;
 
+            logger.LogError("createEvent with id {id} was not found. Retry {i} / 10", commandId, i);
             await Task.Delay(TimeSpan.FromMilliseconds(200));
         }
 
