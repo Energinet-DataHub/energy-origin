@@ -64,6 +64,21 @@ services:
 
   # Should we set Grafana up here as well?
 
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+      - ./datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./dashboard.yaml:/etc/grafana/dashboards/dashboard.yaml
+      - ./dotnet-otel-dashboard.json:/etc/grafana/dashboards/dotnet-otel-dashboard.json
+      - ./logs-dashboard.json:/etc/grafana/dashboards/logs-dashboard.json
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres:
   pgadmin:
