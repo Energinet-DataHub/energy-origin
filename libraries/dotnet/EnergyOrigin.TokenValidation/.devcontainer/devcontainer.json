@@ -1,5 +1,5 @@
 {
-    "name": "TokenValidation - REVERT THIS CHANGE",
+    "name": "TokenValidation",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}

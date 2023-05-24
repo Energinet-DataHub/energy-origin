@@ -1,5 +1,5 @@
 {
-    "name": "Auth domain - REVERT THIS CHANGE",
+    "name": "Auth domain",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
