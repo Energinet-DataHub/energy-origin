@@ -5,3 +5,10 @@ metrics:
   prometheus:
     enabled: true
     additionalLabels: {}
+cnpg:
+  cluster:
+    replicaCount:
+    imageVersion:
+    storageSize:
+  bouncer:
+    replicaCount:

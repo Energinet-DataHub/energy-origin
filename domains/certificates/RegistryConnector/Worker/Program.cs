@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Application;
 using RegistryConnector.Worker.Application.EventHandlers;
@@ -26,6 +27,15 @@ var console = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
@@ -57,6 +67,8 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 app.RegisterPoEventHandlers();
+
+app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

@@ -1,0 +1,78 @@
+name: CI orchestrator
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  run-sonar:
+    runs-on: ubuntu-latest
+    outputs:
+      boolean: ${{ steps.diff.outputs.matches }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: sonar
+        uses: CodeReaper/find-diff-action@v2
+        id: diff
+        with:
+          paths: domains/certificates/**
+
+  build-domain:
+    uses: ./.github/workflows/build-domain.yaml
+    secrets: inherit
+
+  build-libraries:
+    uses: ./.github/workflows/build-libraries.yaml
+    secrets: inherit
+
+  check-licenses:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/check-licenses.yml
+    secrets: inherit
+
+  check-versions:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/check-versions.yml
+    secrets: inherit
+
+  sonar-analysis:
+    needs: run-sonar
+    if: needs.run-sonar.outputs.boolean == 'true'
+    uses: ./.github/workflows/sonar-analysis.yml
+    secrets: inherit
+
+  sonar-analysis-ignore:
+    needs: run-sonar
+    if: needs.run-sonar.outputs.boolean == 'false'
+    uses: ./.github/workflows/sonar-analysis-ignore.yml
+    secrets: inherit
+
+  allow-merge-ci-orchestrator:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        build-domain,
+        build-libraries,
+        check-licenses,
+        check-versions,
+        sonar-analysis,
+        sonar-analysis-ignore,
+      ]
+    if: always()
+    steps:
+      - name: Print needs
+        run: |
+          echo '${{ toJSON(needs) }}'
+      - name: Verify if merge is allowed
+        run: |
+          verification=$(echo '${{ toJSON(needs) }}' | jq '.[] | select(.result != "success") | select(.result != "skipped")')
+          if [[ ! -z "$verification" ]]; then
+              echo "Failed"
+              exit 1
+          fi
