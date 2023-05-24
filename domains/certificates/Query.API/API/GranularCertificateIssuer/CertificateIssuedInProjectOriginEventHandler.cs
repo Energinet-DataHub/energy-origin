@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer
 {
-    public class CertificateRejectedInPoEventHandler : IConsumer<CertificateRejectedInPoEvent>
+    public class CertificateIssuedInProjectOriginEventHandler : IConsumer<CertificateIssuedInProjectOriginEvent>
     {
         private readonly IProductionCertificateRepository repository;
-        private readonly ILogger<CertificateRejectedInPoEventHandler> logger;
+        private readonly ILogger<CertificateIssuedInProjectOriginEventHandler> logger;
 
-        public CertificateRejectedInPoEventHandler(IProductionCertificateRepository repository, ILogger<CertificateRejectedInPoEventHandler> logger)
+        public CertificateIssuedInProjectOriginEventHandler(IProductionCertificateRepository repository, ILogger<CertificateIssuedInProjectOriginEventHandler> logger)
         {
             this.repository = repository;
             this.logger = logger;
         }
 
-        public async Task Consume(ConsumeContext<CertificateRejectedInPoEvent> context)
+        public async Task Consume(ConsumeContext<CertificateIssuedInProjectOriginEvent> context)
         {
             var msg = context.Message;
 
@@ -29,10 +29,9 @@ namespace API.GranularCertificateIssuer
                 return;
             }
 
-            certificate.Reject(msg.Reason);
+            certificate.Issue();
 
             await repository.Save(certificate);
-
         }
     }
 }

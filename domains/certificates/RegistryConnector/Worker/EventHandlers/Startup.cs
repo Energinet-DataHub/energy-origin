@@ -1,11 +1,9 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectOrigin.Electricity.Client;
-using RegistryConnector.Worker.Application.PoEventHandlers;
 
-namespace RegistryConnector.Worker.Application
+namespace RegistryConnector.Worker.EventHandlers
 {
     public static class Startup
     {
@@ -14,7 +12,7 @@ namespace RegistryConnector.Worker.Application
             var options = configuration.GetSection(RegistryOptions.Registry);
             services.Configure<RegistryOptions>(options);
 
-            services.AddSingleton<PoRegistryEventHandler>();
+            services.AddSingleton<ProjectOriginRegistryEventHandler>();
 
             services.AddSingleton(x => new RegisterClient(options.GetValue<string>("Url")!));
         }
@@ -23,7 +21,7 @@ namespace RegistryConnector.Worker.Application
         {
             var poClient = app.Services.GetService<RegisterClient>();
 
-            poClient!.Events += app.Services.GetService<PoRegistryEventHandler>()!.OnRegistryEvents;
+            poClient!.Events += app.Services.GetService<ProjectOriginRegistryEventHandler>()!.OnRegistryEvents;
         }
     }
 }

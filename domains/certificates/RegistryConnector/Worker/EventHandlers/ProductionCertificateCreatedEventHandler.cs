@@ -8,7 +8,7 @@ using ProjectOrigin.Electricity.Client;
 using ProjectOrigin.Electricity.Client.Models;
 using RegistryConnector.Worker.Cache;
 
-namespace RegistryConnector.Worker.Application.EventHandlers
+namespace RegistryConnector.Worker.EventHandlers
 {
     public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
     {

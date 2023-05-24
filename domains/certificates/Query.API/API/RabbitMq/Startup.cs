@@ -22,8 +22,8 @@ public static class Startup
 
             o.AddConsumer<EnergyMeasuredEventHandler>();
             o.AddConsumer<TransferCertificateCommandHandler>();
-            o.AddConsumer<CertificateIssuedInPoEventHandler>();
-            o.AddConsumer<CertificateRejectedInPoEventHandler>();
+            o.AddConsumer<CertificateIssuedInProjectOriginEventHandler>();
+            o.AddConsumer<CertificateRejectedInProjectOriginEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

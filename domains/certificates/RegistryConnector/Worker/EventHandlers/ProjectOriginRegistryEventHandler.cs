@@ -6,15 +6,15 @@ using Microsoft.Extensions.Logging;
 using ProjectOrigin.Electricity.Client.Models;
 using RegistryConnector.Worker.Cache;
 
-namespace RegistryConnector.Worker.Application.PoEventHandlers;
+namespace RegistryConnector.Worker.EventHandlers;
 
-public class PoRegistryEventHandler
+public class ProjectOriginRegistryEventHandler
 {
-    private readonly ILogger<PoRegistryEventHandler> logger;
+    private readonly ILogger<ProjectOriginRegistryEventHandler> logger;
     private readonly ICertificateEventsInMemoryCache cache;
     private readonly IBus bus;
 
-    public PoRegistryEventHandler(ILogger<PoRegistryEventHandler> logger, ICertificateEventsInMemoryCache cache, IBus bus)
+    public ProjectOriginRegistryEventHandler(ILogger<ProjectOriginRegistryEventHandler> logger, ICertificateEventsInMemoryCache cache, IBus bus)
     {
         this.logger = logger;
         this.cache = cache;
@@ -39,18 +39,16 @@ public class PoRegistryEventHandler
         }
 
         if (createdEvent == null)
-        {
             return;
-        }
 
         if (cse.State == CommandState.Failed)
         {
-            var rejectedEvent = new CertificateRejectedInPoEvent(createdEvent.Message.CertificateId, cse.Error!);
+            var rejectedEvent = new CertificateRejectedInProjectOriginEvent(createdEvent.Message.CertificateId, cse.Error!);
             await bus.Publish(rejectedEvent, createdEvent.SetIdsForOutgoingMessage);
             return;
         }
 
-        var issuedInPoEvent = new CertificateIssuedInPoEvent(createdEvent.Message.CertificateId);
+        var issuedInPoEvent = new CertificateIssuedInProjectOriginEvent(createdEvent.Message.CertificateId);
 
         await bus.Publish(issuedInPoEvent, createdEvent.SetIdsForOutgoingMessage);
     }
