@@ -26,14 +26,17 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
 
+  # Look into persistent volume for Prometheus.
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
     ports:
       - "9090:9090" # Prometheus UI port
 
+  # Look into persistent volume for Jaeger.
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
@@ -45,6 +48,8 @@ services:
       - "4317" # OTLP gRPC default port
 #      - "14268"
 #      - "14250"
+#  volumes:
+#    - jaeger:/var/lib/postgresql/data
 
   collector:
     image: otel/opentelemetry-collector:latest
@@ -62,23 +67,23 @@ services:
     depends_on:
       - jaeger
 
-  # Should we set Grafana up here as well?
-
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
     volumes:
-      - ./grafana.ini:/etc/grafana/grafana.ini
-      - ./datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
-      - ./dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
-      - ./dotnet-otel-dashboard.json:/etc/grafana/provisioning/dashboards/dotnet-otel-dashboard.json
-      - ./logs-dashboard.json:/etc/grafana/provisioning/dashboards/logs-dashboard.json
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana:/var/lib/grafana
     ports:
       - "3000:3000"
 
 volumes:
   postgres:
   pgadmin:
+  prometheus:
+  grafana:

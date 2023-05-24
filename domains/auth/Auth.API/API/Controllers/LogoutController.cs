@@ -14,6 +14,10 @@ public class LogoutController : ControllerBase
     [Route("auth/logout")]
     public async Task<IActionResult> LogoutAsync(Metrics metrics, IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
+        metrics.LogoutCounter.Add(
+            1
+        );
+
         var user = descriptorMapper.Map(User);
 
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
