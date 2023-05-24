@@ -73,9 +73,9 @@ services:
     volumes:
       - ./grafana.ini:/etc/grafana/grafana.ini
       - ./datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
-      - ./dashboard.yaml:/etc/grafana/dashboards/dashboard.yaml
-      - ./dotnet-otel-dashboard.json:/etc/grafana/dashboards/dotnet-otel-dashboard.json
-      - ./logs-dashboard.json:/etc/grafana/dashboards/logs-dashboard.json
+      - ./dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./dotnet-otel-dashboard.json:/etc/grafana/provisioning/dashboards/dotnet-otel-dashboard.json
+      - ./logs-dashboard.json:/etc/grafana/provisioning/dashboards/logs-dashboard.json
     ports:
       - "3000:3000"
 
