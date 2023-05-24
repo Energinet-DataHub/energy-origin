@@ -35,6 +35,16 @@ services:
     networks:
       - postgres
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - postgres
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin4_container
