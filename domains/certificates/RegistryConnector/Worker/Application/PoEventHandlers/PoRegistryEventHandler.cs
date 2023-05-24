@@ -28,7 +28,7 @@ public class PoRegistryEventHandler
 
         MessageWrapper<ProductionCertificateCreatedEvent>? createdEvent = null;
         var i = 0;
-        while(createdEvent == null && i < 10)
+        while (createdEvent == null && i < 10)
         {
             createdEvent = cache.PopCertificateWithCommandId(cse.Id);
             i++;
