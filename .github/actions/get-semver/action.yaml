@@ -40,10 +40,8 @@ runs:
 
     - name: Get chart version
       id: get_chart_version
-      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-get@main
-      with:
-        yaml_file: ${{ inputs.git_checkout_folder }}/${{ inputs.yaml_file }}
-        yaml_path: ${{ inputs.yaml_path }}
+      shell: bash
+      run: echo "result=$(yq '.${{ inputs.yaml_path }}' ${{ inputs.git_checkout_folder }}/${{ inputs.yaml_file }})" >> $GITHUB_OUTPUT
 
     - name: Generate semver
       id: generate_semver

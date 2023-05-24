@@ -38,7 +38,6 @@ runs:
       id: is-previous-tag-valid
       shell: bash
       run: |
-        ls -l
         echo '${{ steps.previous-tag.outputs.result }}' | grep -qEe '^[0-9]+\.[0-9]+\.[0-9]+(-[^-]+-[^-]+)?$'
         [ $? -eq 0 ] || { echo '::notice::Invalid version on main - accepting old versions to be invalid since new versions are checked for validity'; }
 
@@ -48,7 +47,7 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        set -euxo pipefail
+        set -euo pipefail
 
         version=$(gh api repos/${{ github.repository }}/contents/${{ inputs.yaml-file }}?ref=${{ github.head_ref }} | \
           jq -r '.download_url' | \

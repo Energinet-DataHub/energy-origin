@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Deprecation warning
       shell: bash
-      run: echo "::warning::Using deprecated action, use yaml-get/set or yq directly instead"
+      run: echo "::warning::Using deprecated action, use yq directly instead"
 
     - uses: actions/setup-python@v4
       with:
