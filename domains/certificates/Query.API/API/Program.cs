@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -23,17 +24,26 @@ using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var loggerConfiguration = new LoggerConfiguration()
-    .Filter
-    .ByExcluding("RequestPath like '/health%'")
+var log = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
     .Enrich.WithSpan();
 
-loggerConfiguration = builder.Environment.IsDevelopment()
-    ? loggerConfiguration.WriteTo.Console()
-    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+var console = builder.Environment.IsDevelopment()
+    ? log.WriteTo.Console()
+    : log.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+builder.Logging.AddSerilog(console.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.AddControllers();
 
@@ -68,7 +78,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
 app.MapHealthChecks("/health");
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())

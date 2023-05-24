@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-api
   namespace: {{ .Release.Namespace }}
+  labels:
+    service: {{ .Release.Name }}-api
 spec:
   ports:
     - name: http
