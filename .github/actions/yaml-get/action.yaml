@@ -17,7 +17,14 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Read value
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use yq directly instead"
+
+    - name: install yamlpath
+      uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
+
+    - name: Run yaml get
       id: get
       shell: bash
-      run: echo "result=$(yq '.${{ inputs.yaml_path }}' '${{ inputs.yaml_file }}')" >> $GITHUB_OUTPUT
+      run: echo "result=$(yaml-get --query ${{ inputs.yaml_path }} ${{ inputs.yaml_file }})" >> $GITHUB_OUTPUT
