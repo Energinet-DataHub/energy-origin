@@ -26,6 +26,8 @@ We will use health checks to monitor the availability and health of our services
 
 We will use a health check endpoint provided by the .NET Core Health Checks middleware. This middleware provides a simple way to define health checks for our services. The endpoint can be accessed via an HTTP GET request to a specified URL. We can define custom health checks to test specific aspects of our services, such as database connectivity, valid configuration, external service dependencies or application-specific features.
 
+We will ensure our health checks covers all non-external dependencies before becoming healthy.
+
 ## Rationale
 
 Implementing health checks is relatively simple in our solution and is supported by our infrastructure.
