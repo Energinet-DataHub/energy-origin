@@ -1,6 +1,6 @@
 extern alias registryConnector;
 using System;
-using System.Net.Http;
+using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,7 +10,7 @@ using registryConnector::RegistryConnector.Worker;
 using RabbitMqOptions = API.RabbitMq.Configurations.RabbitMqOptions;
 
 namespace API.IntegrationTests.Factories;
-extern alias registryConnector;
+
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
 {
     public RabbitMqOptions? RabbitMqOptions { get; set; }
@@ -38,5 +38,6 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         });
     }
 
-    public new HttpClient CreateClient() => base.CreateClient();
+    // Accessing the Server property ensures that the server is running
+    public void Start() => Server.Should().NotBeNull();
 }
