@@ -23,13 +23,23 @@ public class PoRegistryEventHandler
 
     public async void OnRegistryEvents(CommandStatusEvent cse)
     {
-        logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", HexHelper.ToHex(cse.Id), cse.State, cse.Error);
+        var commandId = HexHelper.ToHex(cse.Id);
+        logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", commandId, cse.State, cse.Error);
 
-        var createdEvent = cache.PopCertificateWithCommandId(cse.Id);
+        MessageWrapper<ProductionCertificateCreatedEvent>? createdEvent = null;
+        var i = 0;
+        while(createdEvent == null || i < 10)
+        {
+            createdEvent = cache.PopCertificateWithCommandId(cse.Id);
+            i++;
+            if (createdEvent == null)
+                logger.LogError("createEvent with id {id} was not found. Retry {i} / 10", commandId, i);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+        }
 
         if (createdEvent == null)
         {
-            logger.LogError("createEvent with id {id} was not found.", HexHelper.ToHex(cse.Id));
             return;
         }
 
