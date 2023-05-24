@@ -21,7 +21,6 @@ public class ProjectOriginContainer : IAsyncLifetime
             KeyBlobFormat.PkixPrivateKeyText);
 
         container = new ContainerBuilder()
-            .WithName(Guid.NewGuid().ToString("D"))
             .WithImage("ghcr.io/project-origin/electricity-server:0.1.0-alpha.18")
             .WithPortBinding(80, true)
             .WithEnvironment("Issuers__DK1", Convert.ToBase64String(privateKey.PublicKey.Export(KeyBlobFormat.RawPublicKey)))
