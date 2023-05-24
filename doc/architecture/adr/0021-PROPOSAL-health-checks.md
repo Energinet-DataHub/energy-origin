@@ -1,7 +1,7 @@
 # Health chekcs
 
-* Status: Proposed
-* Deciders:
+* Status: Accepted
+* Deciders: @CodeReaper, @MortMH, @rvplauborg, @Sondergaard, @duizer
 * Date: 2023-05-07
 
 ---
@@ -26,7 +26,7 @@ We will use health checks to monitor the availability and health of our services
 
 We will use a health check endpoint provided by the .NET Core Health Checks middleware. This middleware provides a simple way to define health checks for our services. The endpoint can be accessed via an HTTP GET request to a specified URL. We can define custom health checks to test specific aspects of our services, such as database connectivity, valid configuration, external service dependencies or application-specific features.
 
-We will ensure our health checks covers all non-external dependencies before becoming healthy.
+We will ensure our health checks covers all non-external dependencies before becoming healthy. Non-external refers to dependencies that are within the control of the domain. For example, a database is within control of the domain, but a service in another domain is not and nor are external systems (like DataHub). 
 
 ## Rationale
 
