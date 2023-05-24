@@ -83,3 +83,5 @@ runs:
           echo '::error::The version ${current} must be an increment of the current version on main ${previous}.'
           exit 1
         }
+
+        exit 0
