@@ -34,7 +34,8 @@ public class OidcController : ControllerBase
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
-        [FromQuery(Name = "error_description")] string? errorDescription,
+        [FromQuery(Name = "error_description")]
+        string? errorDescription,
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
@@ -105,10 +106,10 @@ public class OidcController : ControllerBase
         );
 
         metrics.LoginCounter.Add(
-        1,
-	        new KeyValuePair<string, object?>("UserId", descriptor.Id),
-	        new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
-	        new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
+            1,
+            new KeyValuePair<string, object?>("UserId", descriptor.Id),
+            new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
+            new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
         );
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
@@ -174,6 +175,7 @@ public class OidcController : ControllerBase
                 {
                     keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
                 }
+
                 keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
@@ -185,6 +187,7 @@ public class OidcController : ControllerBase
                 {
                     keys.Add(ProviderKeyType.PID, pid);
                 }
+
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
             case ProviderType.NemID_Professional:

@@ -15,7 +15,7 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
-    	Metrics metrics,
+        Metrics metrics,
         ILogger<TokenController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,

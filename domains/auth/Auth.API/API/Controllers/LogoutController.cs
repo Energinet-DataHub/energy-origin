@@ -48,10 +48,10 @@ public class LogoutController : ControllerBase
         );
 
         metrics.LogoutCounter.Add(
-        1,
-	        new KeyValuePair<string, object?>("UserId", descriptor.Id),
-	        new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
-	        new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
+            1,
+            new KeyValuePair<string, object?>("UserId", descriptor.Id),
+            new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
+            new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
         );
 
         return RedirectPreserveMethod(url);
