@@ -25,11 +25,11 @@ namespace API.Controllers
         {
             var transferAgreement = new TransferAgreement
             {
-                SenderId = Guid.Parse(User.FindFirstValue("subject")),
+                SenderId = Guid.Parse(User.FindFirstValue("sub")),
                 ActorId = User.FindFirstValue("atr"),
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                ReceiverTin = 12345678
+                ReceiverTin = request.ReceiverTin
             };
 
             var result = await transferAgreementService.CreateTransferAgreement(transferAgreement);

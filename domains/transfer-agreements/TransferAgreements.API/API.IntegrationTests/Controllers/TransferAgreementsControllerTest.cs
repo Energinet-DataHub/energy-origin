@@ -22,8 +22,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
 
-        var subject = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(subject);
+        var sub = Guid.NewGuid().ToString();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
         var transferAgreement = new CreateTransferAgreement()
         {
