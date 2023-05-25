@@ -4,35 +4,34 @@ using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace API.GranularCertificateIssuer
+namespace API.GranularCertificateIssuer;
+
+public class CertificateRejectedInProjectOriginEventHandler : IConsumer<CertificateRejectedInProjectOriginEvent>
 {
-    public class CertificateRejectedInProjectOriginEventHandler : IConsumer<CertificateRejectedInProjectOriginEvent>
+    private readonly IProductionCertificateRepository repository;
+    private readonly ILogger<CertificateRejectedInProjectOriginEventHandler> logger;
+
+    public CertificateRejectedInProjectOriginEventHandler(IProductionCertificateRepository repository, ILogger<CertificateRejectedInProjectOriginEventHandler> logger)
     {
-        private readonly IProductionCertificateRepository repository;
-        private readonly ILogger<CertificateRejectedInProjectOriginEventHandler> logger;
+        this.repository = repository;
+        this.logger = logger;
+    }
 
-        public CertificateRejectedInProjectOriginEventHandler(IProductionCertificateRepository repository, ILogger<CertificateRejectedInProjectOriginEventHandler> logger)
+    public async Task Consume(ConsumeContext<CertificateRejectedInProjectOriginEvent> context)
+    {
+        var msg = context.Message;
+
+        var certificate = await repository.Get(msg.CertificateId);
+
+        if (certificate == null)
         {
-            this.repository = repository;
-            this.logger = logger;
+            logger.LogError("Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.", msg.CertificateId);
+            return;
         }
 
-        public async Task Consume(ConsumeContext<CertificateRejectedInProjectOriginEvent> context)
-        {
-            var msg = context.Message;
+        certificate.Reject(msg.Reason);
 
-            var certificate = await repository.Get(msg.CertificateId);
+        await repository.Save(certificate);
 
-            if (certificate == null)
-            {
-                logger.LogError("Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.", msg.CertificateId);
-                return;
-            }
-
-            certificate.Reject(msg.Reason);
-
-            await repository.Save(certificate);
-
-        }
     }
 }

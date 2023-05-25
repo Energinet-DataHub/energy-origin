@@ -6,42 +6,41 @@ using Moq;
 using RegistryConnector.Worker.Cache;
 using Xunit;
 
-namespace RegistryConnector.Worker.UnitTests
+namespace RegistryConnector.Worker.UnitTests;
+
+public class CertificateEventsInMemoryCacheTests
 {
-    public class CertificateEventsInMemoryCacheTests
+    private readonly Mock<ILogger<CertificateEventsInMemoryCache>> fakeLogger = new();
+
+    [Fact]
+    public void AddCertificateWithCommandId_ExpectMsgInCache()
     {
-        private readonly Mock<ILogger<CertificateEventsInMemoryCache>> fakeLogger = new();
+        var cache = new CertificateEventsInMemoryCache(fakeLogger.Object);
+        var commandId = Some.CommandId;
+        var msg = Some.ProductionCertificateCreatedEvent;
+        var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(msg, Guid.NewGuid(), Guid.NewGuid());
 
-        [Fact]
-        public void AddCertificateWithCommandId_ExpectMsgInCache()
-        {
-            var cache = new CertificateEventsInMemoryCache(fakeLogger.Object);
-            var commandId = Some.CommandId;
-            var msg = Some.ProductionCertificateCreatedEvent;
-            var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(msg, Guid.NewGuid(), Guid.NewGuid());
+        cache.AddCertificateWithCommandId(commandId, wrappedMsg);
 
-            cache.AddCertificateWithCommandId(commandId, wrappedMsg);
+        var stored = cache.PopCertificateWithCommandId(commandId);
 
-            var stored = cache.PopCertificateWithCommandId(commandId);
+        wrappedMsg.Should().Be(stored);
+    }
 
-            wrappedMsg.Should().Be(stored);
-        }
+    [Fact]
+    public void PopCertificateWithCommandId_WhenFound_RemovesCertificateWithCommandId()
+    {
+        var cache = new CertificateEventsInMemoryCache(fakeLogger.Object);
+        var commandId = Some.CommandId;
+        var msg = Some.ProductionCertificateCreatedEvent;
+        var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(msg, Guid.NewGuid(), Guid.NewGuid());
 
-        [Fact]
-        public void PopCertificateWithCommandId_WhenFound_RemovesCertificateWithCommandId()
-        {
-            var cache = new CertificateEventsInMemoryCache(fakeLogger.Object);
-            var commandId = Some.CommandId;
-            var msg = Some.ProductionCertificateCreatedEvent;
-            var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(msg, Guid.NewGuid(), Guid.NewGuid());
+        cache.AddCertificateWithCommandId(commandId, wrappedMsg);
 
-            cache.AddCertificateWithCommandId(commandId, wrappedMsg);
+        var stored1 = cache.PopCertificateWithCommandId(commandId);
+        var stored2 = cache.PopCertificateWithCommandId(commandId);
 
-            var stored1 = cache.PopCertificateWithCommandId(commandId);
-            var stored2 = cache.PopCertificateWithCommandId(commandId);
-
-            wrappedMsg.Should().Be(stored1);
-            stored2.Should().BeNull();
-        }
+        wrappedMsg.Should().Be(stored1);
+        stored2.Should().BeNull();
     }
 }

@@ -1,11 +1,10 @@
 using Contracts.Certificates;
 using ProjectOrigin.Electricity.Client.Models;
 
-namespace RegistryConnector.Worker.Cache
+namespace RegistryConnector.Worker.Cache;
+
+public interface ICertificateEventsInMemoryCache
 {
-    public interface ICertificateEventsInMemoryCache
-    {
-        void AddCertificateWithCommandId(CommandId commandId, MessageWrapper<ProductionCertificateCreatedEvent> msg);
-        MessageWrapper<ProductionCertificateCreatedEvent>? PopCertificateWithCommandId(CommandId commandId);
-    }
+    void AddCertificateWithCommandId(CommandId commandId, MessageWrapper<ProductionCertificateCreatedEvent> msg);
+    MessageWrapper<ProductionCertificateCreatedEvent>? PopCertificateWithCommandId(CommandId commandId);
 }
