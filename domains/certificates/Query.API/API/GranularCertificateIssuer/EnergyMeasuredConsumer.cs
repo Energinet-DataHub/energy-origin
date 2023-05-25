@@ -77,12 +77,9 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
-        if (contract.EndDate != null)
+        if (contract.EndDate != null && energyMeasuredIntegrationEvent.DateTo > contract.EndDate?.ToUnixTimeSeconds())
         {
-            if (energyMeasuredIntegrationEvent.DateTo > contract.EndDate?.ToUnixTimeSeconds())
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;
