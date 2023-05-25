@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Data;
 using API.ApiModels.Requests;
@@ -22,6 +25,8 @@ namespace API.Controllers
         {
             var transferAgreement = new TransferAgreement
             {
+                SenderId = Guid.Parse(User.FindFirstValue("sub")),
+                ActorId = User.FindFirstValue("atr"),
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 ReceiverTin = 12345678
