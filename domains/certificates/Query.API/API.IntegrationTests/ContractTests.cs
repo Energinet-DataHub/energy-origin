@@ -8,10 +8,10 @@ using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Testcontainers;
-using API.Query.API.ApiModels.Responses;
 using API.IntegrationTests.Models;
+using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
 
