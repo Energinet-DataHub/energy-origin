@@ -14,18 +14,18 @@ With the increasing complexity of modern distributed systems, it's becoming more
 
 ## Considered Options
 
-* Direct integration with Prometheus/Jaeger
-* OpenTelemetry
+* Direct integration with telemetry tools (Prometheus/Jaeger)
+* OpenTelemetry and OpenTelemetry Collector
 
 ---
 
 ## Decision Outcome
 
-* OpenTelemetry
+* OpenTelemetry and OpenTelemetry Collector
     * For now we will focus on metrics/tracing, but OpenTelemetry also sets the stage for logging in the future. Until further notice we will continue to use our current Promtail/Grafana setup for logging.
 
 ---
 
 ## Rationale
 
-OpenTelemetry provides a vendor-netrual, standardized, open-source framework for collecting, processing, and exporting telemetry data from various sources, including applications, libraries, and infrastructure components. It offers a wide range of integrations with popular telemetry tools (including Prometheus and Jaeger that we currently use) and helps future-proof for new technologies by making it easy to switch between different tools without having to change the instrumentation code.
+OpenTelemetry provides a vendor-netrual, standardized, open-source framework for collecting, processing, and exporting telemetry data from various sources, including applications, libraries, and infrastructure components. It offers a wide range of integrations with popular telemetry tools and and also a always (including Prometheus and Jaeger that we currently use) and helps future-proof for new technologies by making it easy to switch between different tools without having to change the instrumentation code.
