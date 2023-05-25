@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSec.Cryptography;
 using ProjectOrigin.Electricity.Client;
 using ProjectOrigin.Electricity.Client.Models;
@@ -11,17 +12,19 @@ namespace RegistryConnector.Worker.EventHandlers;
 
 public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
 {
+    private readonly RegistryOptions registryOptions;
     private readonly ILogger<ProductionCertificateCreatedEventHandler> logger;
     private readonly ICertificateEventsInMemoryCache cache;
     private readonly IssuerKey issuerKey;
     private readonly RegisterClient registerClient;
 
-    public ProductionCertificateCreatedEventHandler(
+    public ProductionCertificateCreatedEventHandler(IOptions<RegistryOptions> registryOptions,
         RegisterClient registerClient,
         ILogger<ProductionCertificateCreatedEventHandler> logger,
         ICertificateEventsInMemoryCache cache,
         IssuerKey issuerKey)
     {
+        this.registryOptions = registryOptions.Value;
         this.logger = logger;
         this.cache = cache;
         this.issuerKey = issuerKey;
@@ -35,8 +38,9 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
         var commandBuilder = new ElectricityCommandBuilder();
 
+        //TODO which PO registry should the certificate be issued to? See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1520
         var federatedCertificateId = new FederatedCertifcateId(
-            "RegistryA",
+            registryOptions.RegistryName,
             msg.CertificateId);
 
         //TODO GSRN in Project Origin is a ulong. Should be a string? See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1519
