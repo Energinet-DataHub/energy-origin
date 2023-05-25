@@ -1,4 +1,5 @@
 using DomainCertificate.ValueObjects;
+using FluentAssertions;
 using Xunit;
 
 namespace DomainCertificate.Tests.ValueObjects
@@ -6,14 +7,14 @@ namespace DomainCertificate.Tests.ValueObjects
     public class PeriodTests
     {
         [Theory]
-        [InlineData(1,2)]
+        [InlineData(1, 2)]
         [InlineData(1, 100)]
         public void Ctor_Success(long dateFromSeconds, long dateToSeconds)
         {
             var period = new Period(dateFromSeconds, dateToSeconds);
 
-            Assert.Equal(period.DateFrom, dateFromSeconds);
-            Assert.Equal(period.DateTo, dateToSeconds);
+            period.DateFrom.Should().Be(dateFromSeconds);
+            period.DateTo.Should().Be(dateToSeconds);
         }
 
         [Theory]
@@ -22,10 +23,8 @@ namespace DomainCertificate.Tests.ValueObjects
         [InlineData(200, 1)]
         public void Ctor_Fail(long dateFromSeconds, long dateToSeconds)
         {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                var period = new Period(dateFromSeconds, dateToSeconds);
-            });
+            var createPeriod = () => new Period(dateFromSeconds, dateToSeconds);
+            createPeriod.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -36,7 +35,7 @@ namespace DomainCertificate.Tests.ValueObjects
 
             var dateInterval = period.ToDateInterval();
 
-            Assert.Equal(threeMinAnd20Seconds, dateInterval.Duration);
+            dateInterval.Duration.Should().Be(threeMinAnd20Seconds);
         }
     }
 }

@@ -12,16 +12,13 @@ namespace API.IntegrationTests.Testcontainers;
 public class ProjectOriginContainer : IAsyncLifetime
 {
     private readonly IContainer container;
-
-    private string privateKeyStr = "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1DNENBUUF3QlFZREsyVndCQ0lFSUJhb2FjVHVWL05ub3ROQTBlVzJxbFJZZ3Q2WTRsaWlXSzV5VDRFZ3JKR20KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=";
+    private readonly Key privateKey;
 
     public ProjectOriginContainer()
     {
-        var privateKey = Key.Import(SignatureAlgorithm.Ed25519, Convert.FromBase64String(privateKeyStr),
-            KeyBlobFormat.PkixPrivateKeyText);
+        privateKey = Key.Create(SignatureAlgorithm.Ed25519, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextExport });
 
         container = new ContainerBuilder()
-            .WithName(Guid.NewGuid().ToString("D"))
             .WithImage("ghcr.io/project-origin/electricity-server:0.1.0-alpha.19")
             .WithPortBinding(80, true)
             .WithEnvironment("Issuers__DK1", Convert.ToBase64String(privateKey.PublicKey.Export(KeyBlobFormat.RawPublicKey)))
@@ -35,7 +32,7 @@ public class ProjectOriginContainer : IAsyncLifetime
         new()
         {
             Url = new UriBuilder("http", container.Hostname, container.GetMappedPublicPort(80)).Uri.ToString(),
-            IssuerPrivateKeyPem = Convert.FromBase64String(privateKeyStr)
+            IssuerPrivateKeyPem = privateKey.Export(KeyBlobFormat.PkixPrivateKeyText)
         };
 
     public async Task InitializeAsync() => await container.StartAsync();
