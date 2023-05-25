@@ -21,7 +21,7 @@ namespace RegistryConnector.Worker.EventHandlers
         {
             var poClient = app.Services.GetService<RegisterClient>();
 
-            poClient!.Events += app.Services.GetService<ProjectOriginRegistryEventHandler>()!.OnRegistryEvents;
+            poClient!.Events += async (e) => await app.Services.GetService<ProjectOriginRegistryEventHandler>()!.OnRegistryEvents(e);
         }
     }
 }

@@ -21,7 +21,7 @@ public class ProjectOriginRegistryEventHandler
         this.bus = bus;
     }
 
-    public async void OnRegistryEvents(CommandStatusEvent cse)
+    public async Task OnRegistryEvents(CommandStatusEvent cse)
     {
         var commandId = HexHelper.ToHex(cse.Id);
         logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", commandId, cse.State, cse.Error);
