@@ -5,22 +5,34 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var loggerConfiguration = new LoggerConfiguration()
-    .Filter
-    .ByExcluding("RequestPath like '/health%'");
+var log = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.WithSpan();
 
-loggerConfiguration = builder.Environment.IsDevelopment()
-    ? loggerConfiguration.WriteTo.Console()
-    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+var console = builder.Environment.IsDevelopment()
+    ? log.WriteTo.Console()
+    : log.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+builder.Logging.AddSerilog(console.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.Configure<RegistryOptions>(builder.Configuration.GetSection(RegistryOptions.Registry));
@@ -51,4 +63,10 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
+app.MapPrometheusScrapingEndpoint();
+
 app.Run();
+
+public partial class Program
+{
+}

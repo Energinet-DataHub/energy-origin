@@ -19,7 +19,7 @@ public class TransferCertificateController : ControllerBase
     /// </summary>
     [HttpPost]
     [ProducesResponseType(200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(400)]
     [Route("api/certificates/transfer")]
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
@@ -44,6 +44,6 @@ public class TransferCertificateController : ControllerBase
             return Ok();
 
         var failureReason = ((Failure)response.Message).Reason;
-        return BadRequest(failureReason);
+        return ValidationProblem(failureReason);
     }
 }

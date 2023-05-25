@@ -1,0 +1,4 @@
+version: 0.2.0
+versionPath: api.image.tag
+name: ghcr.io/energinet-datahub/eo-transfer-agreements-api
+namePath: api.image.name

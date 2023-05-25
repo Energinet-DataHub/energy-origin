@@ -25,7 +25,7 @@ public class ContractsController : ControllerBase
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
@@ -34,7 +34,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
         if (!validationResult.IsValid)
@@ -52,8 +52,8 @@ public class ContractsController : ControllerBase
 
         return result switch
         {
-            GsrnNotFound => BadRequest($"GSRN {createContract.GSRN} not found"),
-            NotProductionMeteringPoint => BadRequest($"GSRN {createContract.GSRN} is not a production metering point"),
+            GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
+            NotProductionMeteringPoint => ValidationProblem($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
             Success(var createdContract) => CreatedAtRoute(
                 "GetContract",

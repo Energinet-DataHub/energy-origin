@@ -1,0 +1,14 @@
+api:
+  replicaCount: 3
+  image: {}
+metrics:
+  prometheus:
+    enabled: true
+    additionalLabels: {}
+cnpg:
+  cluster:
+    replicaCount:
+    imageVersion:
+    storageSize:
+  bouncer:
+    replicaCount:

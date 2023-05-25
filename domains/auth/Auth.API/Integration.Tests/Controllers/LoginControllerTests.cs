@@ -26,13 +26,9 @@ public class LoginControllerTests : IClassFixture<AuthWebApplicationFactory>
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug")
         });
 
-        var client = factory
-            .CreateAnonymousClient(builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(_ => oidcOptions)));
+        var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
 
-        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value
-            .GetIdentityProviderArguments();
+        var (scope, arguments) = factory.ServiceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value.GetIdentityProviderArguments();
 
         var result = await client.GetAsync("auth/login");
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);

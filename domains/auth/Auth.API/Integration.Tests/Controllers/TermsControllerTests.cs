@@ -29,10 +29,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory
-            .CreateAuthenticatedClient(user, config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -62,8 +59,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AcceptedTermsVersion = 0,
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>
-                { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
@@ -71,10 +67,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         });
-        var client = factory
-            .CreateAuthenticatedClient(user, config: builder =>
-                builder.ConfigureTestServices(services =>
-                    services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
@@ -98,7 +91,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
-            _ = Mock.Get(mapper)
+            Mock.Get(mapper)
                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
                 .Returns(value: null!);
 
@@ -118,7 +111,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             var userService = Mock.Of<IUserService>();
-            _ = Mock.Get(userService)
+            Mock.Get(userService)
                 .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
                 .Returns(value: null!);
 

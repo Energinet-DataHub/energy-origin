@@ -1,0 +1,23 @@
+{{- if .Values.metrics.prometheus.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-service-monitor
+  {{- if .Values.metrics.prometheus.additionalLabels }}
+  labels:
+    {{- range $key, $val := .Values.metrics.prometheus.additionalLabels }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: http
+      interval: 15s
+      scrapeTimeout: 14s
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - {{ .Release.Name }}-api
+{{- end -}}
