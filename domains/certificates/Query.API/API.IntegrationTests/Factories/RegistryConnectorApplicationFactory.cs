@@ -1,5 +1,6 @@
 extern alias registryConnector;
 using System;
+using Contracts;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using registryConnector::RegistryConnector.Worker;
-using RabbitMqOptions = API.RabbitMq.Configurations.RabbitMqOptions;
 
 namespace API.IntegrationTests.Factories;
 

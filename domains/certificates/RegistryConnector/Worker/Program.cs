@@ -1,4 +1,5 @@
 using System;
+using Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
