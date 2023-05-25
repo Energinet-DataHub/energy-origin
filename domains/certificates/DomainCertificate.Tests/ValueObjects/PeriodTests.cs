@@ -7,7 +7,7 @@ namespace DomainCertificate.Tests.ValueObjects
     public class PeriodTests
     {
         [Theory]
-        [InlineData(1,2)]
+        [InlineData(1, 2)]
         [InlineData(1, 100)]
         public void Ctor_Success(long dateFromSeconds, long dateToSeconds)
         {
