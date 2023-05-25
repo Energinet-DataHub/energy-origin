@@ -51,6 +51,7 @@ namespace RegistryConnector.Worker.UnitTests
             await target.OnRegistryEvents(new CommandStatusEvent(Some.CommandId, CommandState.Succeeded, null));
 
             harness.Published.Count().Should().Be(1);
+            fixture.VerifyOneCallToCachePop();
         }
 
         private class PoRegistryEventHandlerFixture
@@ -85,6 +86,12 @@ namespace RegistryConnector.Worker.UnitTests
             {
                 cacheMock.Verify(x => x.PopCertificateWithCommandId(It.IsAny<CommandId>()), Times.Exactly(10));
             }
+
+            public void VerifyOneCallToCachePop()
+            {
+                cacheMock.Verify(x => x.PopCertificateWithCommandId(It.IsAny<CommandId>()), Times.Once);
+            }
+
         }
     }
 }
