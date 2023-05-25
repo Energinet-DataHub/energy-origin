@@ -18,7 +18,7 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 2,
+    "id": 4,
     "links": [],
     "liveNow": false,
     "panels": [
@@ -47,12 +47,15 @@
                             "viz": false
                         },
                         "lineInterpolation": "linear",
+                        "lineStyle": {
+                            "fill": "solid"
+                        },
                         "lineWidth": 1,
                         "pointSize": 5,
                         "scaleDistribution": {
                             "type": "linear"
                         },
-                        "showPoints": "auto",
+                        "showPoints": "always",
                         "spanNulls": false,
                         "stacking": {
                             "group": "A",
@@ -104,18 +107,58 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
-                    "editorMode": "builder",
-                    "expr": "user_logout_total",
-                    "legendFormat": "__auto",
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "sum(user_login_total)",
+                    "format": "time_series",
+                    "instant": false,
+                    "legendFormat": "Total Logins",
                     "range": true,
                     "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "count(sum(user_login_total) by (UserId))",
+                    "format": "time_series",
+                    "hide": false,
+                    "legendFormat": "Unique Logins (User)",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "count(sum(user_login_total) by (CompanyId))",
+                    "hide": false,
+                    "legendFormat": "Unique Logins (Company)",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(user_login_total) by (IdentityProviderType)",
+                    "hide": false,
+                    "legendFormat": "Unique Logins ({{IdentityProviderType}})",
+                    "range": true,
+                    "refId": "D"
                 }
             ],
             "title": "Panel Title",
             "type": "timeseries"
         }
     ],
-    "refresh": "",
+    "refresh": false,
     "schemaVersion": 38,
     "style": "dark",
     "tags": [],
@@ -123,13 +166,13 @@
         "list": []
     },
     "time": {
-        "from": "now-6h",
-        "to": "now"
+        "from": "2023-05-24T12:45:52.748Z",
+        "to": "2023-05-24T16:30:41.655Z"
     },
     "timepicker": {},
     "timezone": "",
-    "title": "New dashboard",
-    "uid": "ce76a89a-59c0-47be-be9e-6662fbd4ae56",
+    "title": "Logins",
+    "uid": "fe7ab161-c3b3-45e0-9f55-4f63a1e75f86",
     "version": 1,
     "weekStart": ""
 }
