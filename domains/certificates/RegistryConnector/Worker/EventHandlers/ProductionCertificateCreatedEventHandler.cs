@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Contracts.Certificates;
 using MassTransit;
@@ -54,6 +55,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             issuingBodySigner: issuerKey.Value
         );
 
+        //TODO sometimes Execute returns faster than the wrapped msg is saved to cache. See issue: https://github.com/project-origin/registry/issues/61
         var commandId = await commandBuilder.Execute(registerClient);
 
         var wrappedMsg = new MessageWrapper<ProductionCertificateCreatedEvent>(context);

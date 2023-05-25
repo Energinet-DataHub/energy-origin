@@ -1,3 +1,4 @@
+using System;
 using DomainCertificate.ValueObjects;
 using FluentAssertions;
 using Xunit;

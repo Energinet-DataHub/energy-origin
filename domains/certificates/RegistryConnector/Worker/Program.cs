@@ -39,9 +39,8 @@ builder.Services.AddOpenTelemetry()
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
-builder.Services.RegisterApplication(builder.Configuration);
+builder.Services.RegisterEventHandlers(builder.Configuration);
 builder.Services.AddHealthChecks();
-
 
 builder.Services.AddMassTransit(o =>
 {
@@ -66,7 +65,7 @@ builder.Services.AddMassTransit(o =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-app.RegisterPoEventHandlers();
+app.SetupRegistryEvents();
 
 app.MapPrometheusScrapingEndpoint();
 

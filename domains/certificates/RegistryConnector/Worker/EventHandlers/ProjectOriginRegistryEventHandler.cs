@@ -26,24 +26,14 @@ public class ProjectOriginRegistryEventHandler
         var commandId = HexHelper.ToHex(cse.Id);
         logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", commandId, cse.State, cse.Error);
 
-        MessageWrapper<ProductionCertificateCreatedEvent>? createdEvent = null;
-        var i = 0;
-        while (createdEvent == null && i < 10)
-        {
-            createdEvent = cache.PopCertificateWithCommandId(cse.Id);
-            i++;
-            if (createdEvent != null) continue;
-
-            logger.LogError("createEvent with id {id} was not found. Retry {i} / 10", commandId, i);
-            await Task.Delay(TimeSpan.FromMilliseconds(200));
-        }
+        var createdEvent = await GetFromCache(cse, commandId);
 
         if (createdEvent == null)
             return;
 
         if (cse.State == CommandState.Failed)
         {
-            var rejectedEvent = new CertificateRejectedInProjectOriginEvent(createdEvent.Message.CertificateId, cse.Error!);
+            var rejectedEvent = new CertificateRejectedInProjectOriginEvent(createdEvent.Message.CertificateId, cse.Error ?? "No error reported from Project Origin registry.");
             await bus.Publish(rejectedEvent, createdEvent.SetIdsForOutgoingMessage);
             return;
         }
@@ -51,5 +41,19 @@ public class ProjectOriginRegistryEventHandler
         var issuedInPoEvent = new CertificateIssuedInProjectOriginEvent(createdEvent.Message.CertificateId);
 
         await bus.Publish(issuedInPoEvent, createdEvent.SetIdsForOutgoingMessage);
+    }
+
+    private async Task<MessageWrapper<ProductionCertificateCreatedEvent>?> GetFromCache(CommandStatusEvent cse, string commandId)
+    {
+        for (var i = 1; i < 11; i++)
+        {
+            var createdEvent = cache.PopCertificateWithCommandId(cse.Id);
+            if (createdEvent != null) return createdEvent;
+
+            logger.LogWarning("createEvent with id {id} was not found. Retry {i} / 10", commandId, i);
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+        }
+
+        return null;
     }
 }

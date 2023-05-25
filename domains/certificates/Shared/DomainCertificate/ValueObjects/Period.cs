@@ -1,4 +1,6 @@
 using ProjectOrigin.Electricity.Client.Models;
+using System;
+using System.Collections.Generic;
 
 namespace DomainCertificate.ValueObjects;
 
