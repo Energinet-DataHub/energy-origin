@@ -12,7 +12,6 @@ public class EndContractValidator : AbstractValidator<EndContract>
         RuleFor(cs => cs.ContractId)
             .NotEmpty();
 
-
         RuleFor(cs => cs.EndDate)
             .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
             .MustBeBeforeYear10000()

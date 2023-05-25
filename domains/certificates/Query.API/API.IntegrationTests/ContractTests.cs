@@ -269,9 +269,9 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = response.Content.ReadFromJsonAsync<CertificateIssuingContract>().Result;
-
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var responseBody = response.Content.ReadFromJsonAsync<CertificateIssuingContract>().Result;
 
         var endContractBody = new
         {

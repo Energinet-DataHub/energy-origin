@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AggregateRepositories;
 using API.ContractService;
@@ -39,7 +40,7 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             if (!ShouldEventBeProduced(contract, message))
             {
                 logger.LogInformation("No production certificate created for {Message}", message);
-                return;
+                continue;
             }
 
             var productionCertificate = new ProductionCertificate(
@@ -50,7 +51,6 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
                 message.GSRN,
                 message.Quantity);
 
-            // The certificate is issued immediately here. This will be changed when integrating with Project Origin Registry
             productionCertificate.Issue();
 
             await repository.Save(productionCertificate, context.CancellationToken);
@@ -76,6 +76,14 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
+
+        if (contract.EndDate != null)
+        {
+            if (energyMeasuredIntegrationEvent.DateTo > contract.EndDate?.ToUnixTimeSeconds())
+            {
+                return false;
+            }
+        }
 
         return true;
     }
