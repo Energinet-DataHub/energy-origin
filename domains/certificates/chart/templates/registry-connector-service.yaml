@@ -1,10 +1,11 @@
+{{- if .Values.metrics.prometheus.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-api
+  name: {{ .Release.Name }}-registry-connector
   namespace: {{ .Release.Namespace }}
   labels:
-    service: {{ .Release.Name }}-api
+    service: {{ .Release.Name }}-registry-connector
 spec:
   ports:
     - name: http
@@ -12,5 +13,6 @@ spec:
       protocol: TCP
       targetPort: http
   selector:
-    app: {{ .Release.Name }}-api
+    app: {{ .Release.Name }}-registry-connector
   type: ClusterIP
+{{- end -}}

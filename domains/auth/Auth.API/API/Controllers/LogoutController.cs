@@ -14,8 +14,6 @@ public class LogoutController : ControllerBase
     [Route("auth/logout")]
     public async Task<IActionResult> LogoutAsync(Metrics metrics, IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
-        var user = descriptorMapper.Map(User);
-
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && overrideRedirectionUri != null)
         {
@@ -31,22 +29,29 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var hint = user?.IdentityToken;
-        if (hint == null)
+        var descriptor = descriptorMapper.Map(User);
+        if (descriptor == null)
         {
             return RedirectPreserveMethod(redirectionUri);
         }
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: hint,
+            idTokenHint: descriptor.IdentityToken,
             postLogoutRedirectUri: redirectionUri
+        );
+
+        logger.AuditLog(
+            "{User} logged off for {Subject} at {TimeStamp}.",
+            descriptor.Id,
+            descriptor.Subject,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
         metrics.LogoutCounter.Add(
         1,
-        new KeyValuePair<string, object?>("UserId", user?.Id),
-        new KeyValuePair<string, object?>("CompanyId", user?.CompanyId),
-        new KeyValuePair<string, object?>("IdentityProviderType", user?.ProviderType)
+	        new KeyValuePair<string, object?>("UserId", descriptor.Id),
+	        new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
+	        new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
         );
 
         return RedirectPreserveMethod(url);

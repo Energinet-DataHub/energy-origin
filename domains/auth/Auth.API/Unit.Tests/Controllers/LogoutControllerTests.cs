@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Options;
+using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -58,7 +59,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
+        var result = await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -83,7 +84,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
+        var result = await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, options, logger);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -107,7 +108,7 @@ public class LogoutControllerTests
 
         var redirectionUri = "http://redirection.r.us";
 
-        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger, redirectionUri);
+        var result = await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, options, logger, redirectionUri);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -131,7 +132,7 @@ public class LogoutControllerTests
 
         var redirectionUri = Guid.NewGuid().ToString();
 
-        var result = await new LogoutController().LogoutAsync(cache, mapper, testOptions, logger, redirectionUri);
+        var result = await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, testOptions, logger, redirectionUri);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -148,7 +149,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(cache, mapper, options, logger);
+        var result = await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -172,7 +173,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        await new LogoutController().LogoutAsync(cache, mapper, options, logger);
+        await new LogoutController().LogoutAsync(new Metrics(), cache, mapper, options, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),

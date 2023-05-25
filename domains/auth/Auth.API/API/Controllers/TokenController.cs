@@ -15,7 +15,8 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
-        Metrics metrics,
+    	Metrics metrics,
+        ILogger<TokenController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
         ITokenIssuer tokenIssuer)
@@ -34,12 +35,22 @@ public class TokenController : ControllerBase
             if (scope!.Contains(UserScopeClaim.NotAcceptedTerms) == false) versionBypass = true;
         }
 
+        var now = DateTimeOffset.Now;
+        var token = tokenIssuer.Issue(descriptor, versionBypass, issueAt: now.UtcDateTime);
+
+        logger.AuditLog(
+            "{User} updated token for {Subject} at {TimeStamp}.",
+            descriptor.Id,
+            descriptor.Subject,
+            now.ToUnixTimeSeconds()
+        );
+
         metrics.TokenRefreshCounter.Add(
             1,
             new KeyValuePair<string, object?>("UserId", descriptor?.Id),
             new KeyValuePair<string, object?>("CompanyId", descriptor?.CompanyId)
         );
 
-        return Ok(tokenIssuer.Issue(descriptor, versionBypass));
+        return Ok(token);
     }
 }
