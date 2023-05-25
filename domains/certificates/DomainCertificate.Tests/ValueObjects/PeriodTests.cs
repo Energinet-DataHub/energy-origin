@@ -27,15 +27,4 @@ public class PeriodTests
         var createPeriod = () => new Period(dateFromSeconds, dateToSeconds);
         createPeriod.Should().Throw<ArgumentException>();
     }
-
-    [Fact]
-    public void ToDateInterval()
-    {
-        var threeMinAnd20Seconds = new TimeSpan(0, 3, 20);
-        var period = new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddSeconds(200).ToUnixTimeSeconds());
-
-        var dateInterval = period.ToDateInterval();
-
-        dateInterval.Duration.Should().Be(threeMinAnd20Seconds);
-    }
 }

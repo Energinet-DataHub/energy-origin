@@ -1,4 +1,3 @@
-using ProjectOrigin.Electricity.Client.Models;
 using System;
 using System.Collections.Generic;
 
@@ -22,12 +21,6 @@ public class Period : ValueObject
         DateFrom = dateFrom;
         DateTo = dateTo;
     }
-
-    public DateInterval ToDateInterval() =>
-        new(
-            new DateTimeOffset(DateFrom * TimeSpan.TicksPerSecond, TimeSpan.Zero),
-            new DateTimeOffset(DateTo * TimeSpan.TicksPerSecond, TimeSpan.Zero)
-        );
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
