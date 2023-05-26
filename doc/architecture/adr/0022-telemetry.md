@@ -14,7 +14,7 @@ With the increasing complexity of modern distributed systems, it's becoming more
 
 ## Considered Options
 
-* Direct integration with telemetry tools (Prometheus/Jaeger)
+* Custom integration with telemetry tools
 * OpenTelemetry and OpenTelemetry Collector
 
 ---
@@ -28,4 +28,4 @@ With the increasing complexity of modern distributed systems, it's becoming more
 
 ## Rationale
 
-OpenTelemetry provides a vendor-netrual, standardized, open-source framework for collecting, processing, and exporting telemetry data from various sources, including applications, libraries, and infrastructure components. It offers a wide range of integrations with popular telemetry tools and and also a always (including Prometheus and Jaeger that we currently use) and helps future-proof for new technologies by making it easy to switch between different tools without having to change the instrumentation code.
+OpenTelemetry provides a vendor-netrual, standardized, open-source framework for collecting, processing, and exporting telemetry data from various sources, including applications, libraries, and infrastructure components. It offers a wide range of integrations with popular telemetry tools (including Prometheus/Jaeger that we currently use) and through the use of an OpenTelemetry Collector you can completely decouple telemetry tools from application code. This will help us future-proof for new technologies by making it easy to test and/or switch to different tools without having to change any instrumentation code.
