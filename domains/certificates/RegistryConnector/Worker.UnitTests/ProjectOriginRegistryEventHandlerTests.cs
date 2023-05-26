@@ -97,9 +97,5 @@ public class ProjectOriginRegistryEventHandlerTests
         {
             harness.Published.Count().Should().Be(1);
         }
-
-        public void Dispose()
-        {
-        }
     }
 }
