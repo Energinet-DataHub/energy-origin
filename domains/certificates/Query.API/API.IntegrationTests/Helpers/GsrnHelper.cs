@@ -9,7 +9,8 @@ public static class GsrnHelper
     {
         var rand = new Random();
         var sb = new StringBuilder();
-        for (var i = 0; i < 18; i++)
+        sb.Append("57");
+        for (var i = 0; i < 16; i++)
         {
             sb.Append(rand.Next(0, 9));
         }
