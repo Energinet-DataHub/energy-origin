@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -23,6 +24,15 @@ var console = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.Configure<RegistryOptions>(builder.Configuration.GetSection(RegistryOptions.Registry));
@@ -53,4 +63,10 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
+app.MapPrometheusScrapingEndpoint();
+
 app.Run();
+
+public partial class Program
+{
+}
