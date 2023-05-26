@@ -12,7 +12,7 @@ namespace API.UnitTests.Data
         [Fact]
         public async Task CreateTransferAgreement_ShouldAddTransferAgreementToDatabase()
         {
-            // Arrange
+
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
@@ -33,10 +33,8 @@ namespace API.UnitTests.Data
                     ReceiverTin = 12345678
                 };
 
-                // Act
                 var result = await service.CreateTransferAgreement(transferAgreement);
 
-                // Assert
                 result.Should().NotBeNull();
                 result.Id.Should().NotBeEmpty();
 
