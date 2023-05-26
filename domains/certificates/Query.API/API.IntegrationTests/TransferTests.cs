@@ -23,7 +23,7 @@ public sealed class TransferTests :
     IClassFixture<MartenDbContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<ProjectOriginContainer>
+    IClassFixture<ProjectOriginRegistryContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -34,7 +34,7 @@ public sealed class TransferTests :
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
-        ProjectOriginContainer poContainer)
+        ProjectOriginRegistryContainer poRegistryContainer)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
@@ -42,7 +42,7 @@ public sealed class TransferTests :
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.RegistryOptions = poContainer.Options;
+        registryConnectorFactory.RegistryOptions = poRegistryContainer.Options;
 
         registryConnectorFactory.Start();
     }

@@ -33,12 +33,12 @@ public class ProjectOriginRegistryEventHandler
 
         if (cse.State == CommandState.Failed)
         {
-            var rejectedEvent = new CertificateRejectedInProjectOriginEvent(createdEvent.Message.CertificateId, cse.Error ?? "No error reported from Project Origin registry.");
+            var rejectedEvent = new CertificateRejectedInRegistryEvent(createdEvent.Message.CertificateId, cse.Error ?? "No error reported from Project Origin registry.");
             await bus.Publish(rejectedEvent, createdEvent.SetIdsForOutgoingMessage);
             return;
         }
 
-        var issuedInPoEvent = new CertificateIssuedInProjectOriginEvent(createdEvent.Message.CertificateId);
+        var issuedInPoEvent = new CertificateIssuedInRegistryEvent(createdEvent.Message.CertificateId);
 
         await bus.Publish(issuedInPoEvent, createdEvent.SetIdsForOutgoingMessage);
     }

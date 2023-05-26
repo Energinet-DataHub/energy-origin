@@ -9,12 +9,12 @@ using Xunit;
 
 namespace API.IntegrationTests.Testcontainers;
 
-public class ProjectOriginContainer : IAsyncLifetime
+public class ProjectOriginRegistryContainer : IAsyncLifetime
 {
     private readonly IContainer container;
     private readonly Key privateKey;
 
-    public ProjectOriginContainer()
+    public ProjectOriginRegistryContainer()
     {
         privateKey = Key.Create(SignatureAlgorithm.Ed25519, new KeyCreationParameters { ExportPolicy = KeyExportPolicies.AllowPlaintextExport });
 
