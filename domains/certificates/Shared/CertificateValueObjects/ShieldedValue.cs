@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace DomainCertificate;
+namespace CertificateValueObjects;
 
 /// <summary>
 /// This class is made to support Pedersen-commitment.

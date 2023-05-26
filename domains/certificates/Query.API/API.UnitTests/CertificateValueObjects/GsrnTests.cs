@@ -1,9 +1,9 @@
 using System;
-using DomainCertificate.ValueObjects;
+using CertificateValueObjects;
 using FluentAssertions;
 using Xunit;
 
-namespace DomainCertificate.Tests.ValueObjects;
+namespace API.UnitTests.CertificateValueObjects;
 
 public class GsrnTests
 {

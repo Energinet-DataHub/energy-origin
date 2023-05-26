@@ -1,9 +1,7 @@
 using System;
 using System.Numerics;
+using CertificateValueObjects;
 using Contracts.Certificates;
-using DomainCertificate;
-using DomainCertificate.Primitives;
-using DomainCertificate.ValueObjects;
 using ProjectOrigin.Electricity.Client.Models;
 
 namespace RegistryConnector.Worker.UnitTests;

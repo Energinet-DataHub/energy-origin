@@ -2,9 +2,7 @@ using System;
 using System.Numerics;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents;
-using DomainCertificate;
-using DomainCertificate.Primitives;
-using DomainCertificate.ValueObjects;
+using CertificateValueObjects;
 using FluentAssertions;
 using Xunit;
 

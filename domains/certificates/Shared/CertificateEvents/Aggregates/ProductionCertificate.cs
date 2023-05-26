@@ -1,9 +1,7 @@
 using System;
 using System.Numerics;
 using CertificateEvents.Exceptions;
-using DomainCertificate;
-using DomainCertificate.Primitives;
-using DomainCertificate.ValueObjects;
+using CertificateValueObjects;
 
 namespace CertificateEvents.Aggregates;
 

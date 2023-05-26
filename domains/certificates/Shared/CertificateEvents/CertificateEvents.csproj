@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DomainCertificate\DomainCertificate.csproj" />
+    <ProjectReference Include="..\CertificateValueObjects\CertificateValueObjects.csproj" />
   </ItemGroup>
 
 </Project>

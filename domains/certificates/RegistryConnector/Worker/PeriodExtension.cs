@@ -1,5 +1,5 @@
 using System;
-using DomainCertificate.ValueObjects;
+using CertificateValueObjects;
 using ProjectOrigin.Electricity.Client.Models;
 
 namespace RegistryConnector.Worker
