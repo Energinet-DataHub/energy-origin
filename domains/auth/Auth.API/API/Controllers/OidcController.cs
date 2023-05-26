@@ -45,7 +45,7 @@ public class OidcController : ControllerBase
 
         if (code == null)
         {
-            logger.LogWarning("Callback error: {error} - description: {errorDescription}", error, errorDescription);
+            logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
 
@@ -69,15 +69,14 @@ public class OidcController : ControllerBase
         if (response.IsError)
         {
             request.ClientSecret = "<removed>";
-            logger.LogError(response.Exception, "Failed in acquiring token with request details: {@request}", request);
+            logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
         }
 
-        string token;
+        UserDescriptor descriptor;
         try
         {
-            var descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
-            token = issuer.Issue(descriptor);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -94,6 +93,15 @@ public class OidcController : ControllerBase
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
+
+        var token = issuer.Issue(descriptor);
+
+        logger.AuditLog(
+            "{User} created token for {Subject} at {TimeStamp}.",
+            descriptor.Id,
+            descriptor.Subject,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
+        );
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }

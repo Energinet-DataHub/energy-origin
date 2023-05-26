@@ -1,4 +1,5 @@
 using API.Options;
+using API.Utilities;
 using API.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
@@ -28,15 +29,22 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var hint = descriptorMapper.Map(User)?.IdentityToken;
-        if (hint == null)
+        var descriptor = descriptorMapper.Map(User);
+        if (descriptor == null)
         {
             return RedirectPreserveMethod(redirectionUri);
         }
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: hint,
+            idTokenHint: descriptor.IdentityToken,
             postLogoutRedirectUri: redirectionUri
+        );
+
+        logger.AuditLog(
+            "{User} logged off for {Subject} at {TimeStamp}.",
+            descriptor.Id,
+            descriptor.Subject,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
         return RedirectPreserveMethod(url);
