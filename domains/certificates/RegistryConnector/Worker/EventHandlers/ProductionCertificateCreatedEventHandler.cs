@@ -64,5 +64,4 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
         logger.LogInformation("Sent command. Id={id}", commandId.ToHex());
     }
-
 }

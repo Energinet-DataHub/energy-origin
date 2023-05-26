@@ -24,5 +24,4 @@ public partial class Gsrn : ValueObject
     {
         yield return Value;
     }
-
 }

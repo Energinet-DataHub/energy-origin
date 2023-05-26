@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using CertificateValueObjects;
 
-
 namespace API.DataSyncSyncer.Client;
 
 public interface IDataSyncClient
