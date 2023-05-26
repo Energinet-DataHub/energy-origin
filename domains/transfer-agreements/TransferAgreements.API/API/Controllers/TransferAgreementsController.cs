@@ -15,10 +15,7 @@ namespace API.Controllers
     {
         private readonly ITransferAgreementService transferAgreementService;
 
-        public TransferAgreementsController(ITransferAgreementService transferAgreementService)
-        {
-            this.transferAgreementService = transferAgreementService;
-        }
+        public TransferAgreementsController(ITransferAgreementService transferAgreementService) => this.transferAgreementService = transferAgreementService;
 
         [HttpPost("api/transfer-agreements")]
         public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
