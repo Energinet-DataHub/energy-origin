@@ -24,8 +24,8 @@ namespace API.Controllers
             {
                 SenderId = Guid.Parse(User.FindFirstValue("sub")),
                 ActorId = User.FindFirstValue("atr"),
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
+                StartDate = request.StartDate.UtcDateTime,
+                EndDate = request.EndDate.UtcDateTime,
                 ReceiverTin = request.ReceiverTin
             };
 
