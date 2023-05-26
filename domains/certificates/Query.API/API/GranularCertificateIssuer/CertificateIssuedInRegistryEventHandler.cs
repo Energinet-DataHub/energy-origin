@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class CertificateIssuedInProjectOriginEventHandler : IConsumer<CertificateIssuedInProjectOriginEvent>
+public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssuedInRegistryEvent>
 {
     private readonly IProductionCertificateRepository repository;
-    private readonly ILogger<CertificateIssuedInProjectOriginEventHandler> logger;
+    private readonly ILogger<CertificateIssuedInRegistryEventHandler> logger;
 
-    public CertificateIssuedInProjectOriginEventHandler(IProductionCertificateRepository repository, ILogger<CertificateIssuedInProjectOriginEventHandler> logger)
+    public CertificateIssuedInRegistryEventHandler(IProductionCertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
     {
         this.repository = repository;
         this.logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<CertificateIssuedInProjectOriginEvent> context)
+    public async Task Consume(ConsumeContext<CertificateIssuedInRegistryEvent> context)
     {
         var msg = context.Message;
 
