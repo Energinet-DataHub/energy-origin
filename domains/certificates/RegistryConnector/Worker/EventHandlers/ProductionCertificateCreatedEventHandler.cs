@@ -62,7 +62,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
         cache.AddCertificateWithCommandId(commandId, wrappedMsg);
 
-        logger.LogInformation("Sent command. Id={id}", HexHelper.ToHex(commandId));
+        logger.LogInformation("Sent command. Id={id}", commandId.ToHex());
     }
 
 }

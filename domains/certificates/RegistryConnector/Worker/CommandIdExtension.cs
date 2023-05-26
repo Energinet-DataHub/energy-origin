@@ -3,9 +3,9 @@ using ProjectOrigin.Electricity.Client.Models;
 
 namespace RegistryConnector.Worker;
 
-public static class HexHelper
+public static class CommandIdExtension
 {
-    public static string ToHex(CommandId commandId)
+    public static string ToHex(this CommandId commandId)
     {
         var bytes = commandId.Hash;
         var result = new StringBuilder(bytes.Length * 2);

@@ -18,7 +18,7 @@ public class CertificateEventsInMemoryCache : ICertificateEventsInMemoryCache
 
     public void AddCertificateWithCommandId(CommandId commandId, MessageWrapper<ProductionCertificateCreatedEvent> msg)
     {
-        var hex = HexHelper.ToHex(commandId);
+        var hex = commandId.ToHex();
         if (!certificateEvents.TryAdd(hex, msg))
         {
             logger.LogError("Key already exist in cache. CommandId: {hex}", hex);
@@ -28,7 +28,7 @@ public class CertificateEventsInMemoryCache : ICertificateEventsInMemoryCache
 
     public MessageWrapper<ProductionCertificateCreatedEvent>? PopCertificateWithCommandId(CommandId commandId)
     {
-        if (!certificateEvents.Remove(HexHelper.ToHex(commandId), out var certificate))
+        if (!certificateEvents.Remove(commandId.ToHex(), out var certificate))
         {
             return null;
         }

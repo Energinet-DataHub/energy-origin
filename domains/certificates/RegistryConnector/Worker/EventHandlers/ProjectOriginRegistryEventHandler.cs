@@ -23,7 +23,7 @@ public class ProjectOriginRegistryEventHandler
 
     public async Task OnRegistryEvents(CommandStatusEvent cse)
     {
-        var commandId = HexHelper.ToHex(cse.Id);
+        var commandId = cse.Id.ToHex();
         logger.LogInformation("Received event. Id={id}, State={state}, Error={error}", commandId, cse.State, cse.Error);
 
         var createdEvent = await GetFromCache(cse, commandId);
