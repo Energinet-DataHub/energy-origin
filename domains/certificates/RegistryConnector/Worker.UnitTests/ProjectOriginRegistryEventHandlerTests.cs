@@ -53,12 +53,16 @@ public class ProjectOriginRegistryEventHandlerTests
     {
         private readonly Mock<ILogger<ProjectOriginRegistryEventHandler>> loggerMock;
         private readonly Mock<ICertificateEventsInMemoryCache> cacheMock;
-        private ITestHarness? harness;
+        private readonly ITestHarness harness;
 
         public PoRegistryEventHandlerFixture()
         {
             loggerMock = new Mock<ILogger<ProjectOriginRegistryEventHandler>>();
             cacheMock = new Mock<ICertificateEventsInMemoryCache>();
+            var provider = new ServiceCollection()
+                .AddMassTransitTestHarness()
+                .BuildServiceProvider(true);
+            harness = provider.GetRequiredService<ITestHarness>();
         }
 
         public PoRegistryEventHandlerFixture WithNotFoundInCache()
@@ -75,10 +79,6 @@ public class ProjectOriginRegistryEventHandlerTests
 
         public async Task<ProjectOriginRegistryEventHandler> BuildTargetAsync()
         {
-            await using var provider = new ServiceCollection()
-                .AddMassTransitTestHarness()
-                .BuildServiceProvider(true);
-            harness = provider.GetRequiredService<ITestHarness>();
             await harness.Start();
             return new(loggerMock.Object, cacheMock.Object, harness.Bus);
         }
@@ -96,6 +96,10 @@ public class ProjectOriginRegistryEventHandlerTests
         public void VerifyBusCallOnce()
         {
             harness.Published.Count().Should().Be(1);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
