@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Contracts.Certificates;
 using FluentAssertions;
 using MassTransit;
@@ -25,9 +26,9 @@ public class ProjectOriginRegistryEventHandlerTests
     [Fact]
     public async void ShouldRetryCachePop10Times()
     {
-        var target = fixture
+        var target = await fixture
             .WithNotFoundInCache()
-            .BuildTarget();
+            .BuildTargetAsync();
 
         await target.OnRegistryEvents(new CommandStatusEvent(Some.CommandId, CommandState.Succeeded, null));
 
@@ -37,20 +38,14 @@ public class ProjectOriginRegistryEventHandlerTests
     [Fact]
     public async void ShouldCallBusPublishOnSuccessfulCachePop()
     {
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness()
-            .BuildServiceProvider(true);
-        var harness = provider.GetRequiredService<ITestHarness>();
-        await harness.Start();
-
         var wrappedEvent = new MessageWrapper<ProductionCertificateCreatedEvent>(Some.ProductionCertificateCreatedEvent, Guid.NewGuid(), Guid.NewGuid());
-        var target = fixture
+        var target = await fixture
             .WithFoundInCache(wrappedEvent)
-            .BuildTarget(harness.Bus);
+            .BuildTargetAsync();
 
         await target.OnRegistryEvents(new CommandStatusEvent(Some.CommandId, CommandState.Succeeded, null));
 
-        harness.Published.Count().Should().Be(1);
+        fixture.VerifyBusCallOnce();
         fixture.VerifyOneCallToCachePop();
     }
 
@@ -58,13 +53,12 @@ public class ProjectOriginRegistryEventHandlerTests
     {
         private readonly Mock<ILogger<ProjectOriginRegistryEventHandler>> loggerMock;
         private readonly Mock<ICertificateEventsInMemoryCache> cacheMock;
-        private readonly Mock<IBus> busMock;
+        private ITestHarness? harness;
 
         public PoRegistryEventHandlerFixture()
         {
             loggerMock = new Mock<ILogger<ProjectOriginRegistryEventHandler>>();
             cacheMock = new Mock<ICertificateEventsInMemoryCache>();
-            busMock = new Mock<IBus>();
         }
 
         public PoRegistryEventHandlerFixture WithNotFoundInCache()
@@ -79,8 +73,15 @@ public class ProjectOriginRegistryEventHandlerTests
             return this;
         }
 
-        public ProjectOriginRegistryEventHandler BuildTarget() => new(loggerMock.Object, cacheMock.Object, busMock.Object);
-        public ProjectOriginRegistryEventHandler BuildTarget(IBus bus) => new(loggerMock.Object, cacheMock.Object, bus);
+        public async Task<ProjectOriginRegistryEventHandler> BuildTargetAsync()
+        {
+            await using var provider = new ServiceCollection()
+                .AddMassTransitTestHarness()
+                .BuildServiceProvider(true);
+            harness = provider.GetRequiredService<ITestHarness>();
+            await harness.Start();
+            return new(loggerMock.Object, cacheMock.Object, harness.Bus);
+        }
 
         public void Verify10CallsToPop()
         {
@@ -92,5 +93,9 @@ public class ProjectOriginRegistryEventHandlerTests
             cacheMock.Verify(x => x.PopCertificateWithCommandId(It.IsAny<CommandId>()), Times.Once);
         }
 
+        public void VerifyBusCallOnce()
+        {
+            harness.Published.Count().Should().Be(1);
+        }
     }
 }
