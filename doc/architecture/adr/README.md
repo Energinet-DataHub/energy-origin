@@ -22,6 +22,7 @@ All current valid ADR.
 - [ADR-0018 .NET upgrade strategy](0018-.net-upgrade-strategy.md)
 - [ADR-0019 Message broker certificates domain](0019-message-broker-certificates-domain.md)
 - [ADR-0020 Authentication ORM](0020-PROPOSAL-authentication-orm.md)
+- [ADR-0021 Health checks](0021-health-checks.md)
 
 ## Deprecated
 
