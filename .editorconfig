@@ -30,6 +30,7 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = false
 csharp_new_line_before_members_in_anonymous_types = false
 csharp_new_line_between_query_expression_clauses = true
+max_line_length = 999
 
 # Indentation preferences
 csharp_indent_block_contents = true
