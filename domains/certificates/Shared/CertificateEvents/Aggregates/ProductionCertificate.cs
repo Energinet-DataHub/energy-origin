@@ -37,8 +37,8 @@ public class ProductionCertificate : AggregateBase
             period,
             technology,
             meteringPointOwner,
-            new ShieldedValue<string>(Shielded: gsrn, R: BigInteger.Zero),
-            new ShieldedValue<long>(Shielded: quantity, R: BigInteger.Zero));
+            new ShieldedValue<string>(Value: gsrn, R: BigInteger.Zero),
+            new ShieldedValue<long>(Value: quantity, R: BigInteger.Zero));
 
         Apply(@event);
         AddUncommittedEvent(@event);

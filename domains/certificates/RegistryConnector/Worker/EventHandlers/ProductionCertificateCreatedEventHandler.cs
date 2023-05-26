@@ -49,8 +49,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             id: federatedCertificateId,
             inteval: msg.Period.ToDateInterval(),
             gridArea: msg.GridArea,
-            gsrn: ulong.Parse(msg.ShieldedGsrn.Shielded.Value),
-            quantity: new ShieldedValue((uint)msg.ShieldedQuantity.Shielded),
+            gsrn: ulong.Parse(msg.ShieldedGsrn.Value.Value),
+            quantity: new ShieldedValue((uint)msg.ShieldedQuantity.Value),
             owner: ownerKey.PublicKey,
             issuingBodySigner: issuerKey.Value
         );

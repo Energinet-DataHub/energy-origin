@@ -7,7 +7,7 @@ namespace API.DataSyncSyncer.Persistence;
 public class SyncStateProjection : MultiStreamAggregation<SyncStateView, string>
 {
     public SyncStateProjection()
-        => Identity<ProductionCertificateCreated>(e => e.ShieldedGSRN.Shielded);
+        => Identity<ProductionCertificateCreated>(e => e.ShieldedGSRN.Value);
 
     public void Apply(ProductionCertificateCreated @event, SyncStateView view)
     {
