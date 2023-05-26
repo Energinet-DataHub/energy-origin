@@ -24,7 +24,7 @@ public class TransferCertificateController : ControllerBase
     public async Task<IActionResult> TransferCertificate(
         [FromBody] TransferCertificate transferCertificate,
         [FromServices] IValidator<TransferCertificate> validator,
-        [FromServices] IRequestClient<TransferProductionCertificateRequest> requestClient)
+        [FromServices] IRequestClient<TransferProductionCertificateCommand> requestClient)
     {
         var validationResult = await validator.ValidateAsync(transferCertificate);
         if (!validationResult.IsValid)
@@ -33,7 +33,7 @@ public class TransferCertificateController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var request = new TransferProductionCertificateRequest(
+        var request = new TransferProductionCertificateCommand(
             transferCertificate.Source,
             transferCertificate.Target,
             transferCertificate.CertificateId);

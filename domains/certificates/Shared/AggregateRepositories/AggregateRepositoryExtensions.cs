@@ -9,17 +9,27 @@ namespace AggregateRepositories;
 
 public static class AggregateRepositoryExtensions
 {
+    private static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
+
     public static async Task Save(this IDocumentStore store, AggregateBase aggregate, CancellationToken cancellationToken = default)
     {
-        await using var session = store.LightweightSession();
+        await semaphoreSlim.WaitAsync(cancellationToken);
+        try
+        {
+            await using var session = store.LightweightSession();
 
-        var events = aggregate.GetUncommittedEvents().ToArray();
+            var events = aggregate.GetUncommittedEvents().ToArray();
 
-        session.Events.Append(aggregate.Id, aggregate.Version, events);
+            session.Events.Append(aggregate.Id, aggregate.Version, events);
 
-        await session.SaveChangesAsync(cancellationToken);
+            await session.SaveChangesAsync(cancellationToken);
 
-        aggregate.ClearUncommittedEvents();
+            aggregate.ClearUncommittedEvents();
+        }
+        finally
+        {
+            semaphoreSlim.Release();
+        }
     }
 
     public static async Task<T?> Get<T>(this IDocumentStore store, Guid id, int? version = null, CancellationToken cancellationToken = default) where T : AggregateBase

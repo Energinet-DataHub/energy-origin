@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents;
-using CertificateEvents.Primitives;
+using CertificateValueObjects;
 using FluentAssertions;
 using Xunit;
 
@@ -13,7 +13,7 @@ public class SyncStateProjectionTest
     private readonly ProductionCertificateCreated createdEvent = new(
         CertificateId: Guid.NewGuid(),
         GridArea: "gridArea",
-        Period: new Period(DateFrom: 1, DateTo: 42),
+        Period: new Period(1, 42),
         Technology: new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         MeteringPointOwner: "meteringPointOwner",
         ShieldedGSRN: new ShieldedValue<string>(Value: "gsrn", R: BigInteger.Zero),
