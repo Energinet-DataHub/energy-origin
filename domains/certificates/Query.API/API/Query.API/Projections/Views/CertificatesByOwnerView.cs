@@ -15,6 +15,7 @@ public class CertificatesByOwnerView
     public CertificateList ToApiModel()
     {
         var certificates = Certificates.Values
+            .Where(x => x.Status == CertificateStatus.Issued)
             .Select(c => new Certificate
             {
                 Id = c.CertificateId,
