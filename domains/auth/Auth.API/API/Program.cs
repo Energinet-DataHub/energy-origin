@@ -139,7 +139,7 @@ builder.Services.AddOpenTelemetry()
             {
                 // This should match the OLTP receiver port.
                 // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
-                o.Endpoint = new Uri(otlpOptions.ReceiverEndpoint);
+                o.Endpoint = otlpOptions.ReceiverEndpoint;
 
 
 
@@ -156,7 +156,7 @@ builder.Services.AddOpenTelemetry()
             {
                 // This should match the OLTP receiver port.
                 // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
-                o.Endpoint = new Uri(otlpOptions.ReceiverEndpoint);
+                o.Endpoint = otlpOptions.ReceiverEndpoint;
             }));
 
 var app = builder.Build();
