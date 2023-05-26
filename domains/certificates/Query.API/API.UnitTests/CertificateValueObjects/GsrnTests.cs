@@ -33,4 +33,14 @@ public class GsrnTests
 
         createGsrn.Should().Throw<ArgumentException>();
     }
+
+    [Fact]
+    public void Equals_SameValues_ExpectTrue()
+    {
+        var gsrnValue = "571234567890123456";
+        var gsrn1 = new Gsrn(gsrnValue);
+        var gsrn2 = new Gsrn(gsrnValue);
+
+        gsrn1.Equals(gsrn2).Should().BeTrue();
+    }
 }

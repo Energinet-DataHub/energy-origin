@@ -27,4 +27,15 @@ public class PeriodTests
         var createPeriod = () => new Period(dateFromSeconds, dateToSeconds);
         createPeriod.Should().Throw<ArgumentException>();
     }
+
+    [Fact]
+    public void Equals_WhenSameValues_ExpectTrue()
+    {
+        var dateFrom = 123L;
+        var dateTo = 124L;
+        var period1 = new Period(dateFrom, dateTo);
+        var period2 = new Period(dateFrom, dateTo);
+
+        period1.Equals(period2).Should().BeTrue();
+    }
 }
