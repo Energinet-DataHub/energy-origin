@@ -138,10 +138,7 @@ builder.Services.AddOpenTelemetry()
             .AddOtlpExporter((o, metricReaderOptions) =>
             {
                 // This should match the OLTP receiver port.
-                // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
                 o.Endpoint = otlpOptions.ReceiverEndpoint;
-
-
 
                 o.ExportProcessorType = ExportProcessorType.Simple;
                 metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
@@ -155,7 +152,6 @@ builder.Services.AddOpenTelemetry()
             .AddOtlpExporter(o =>
             {
                 // This should match the OLTP receiver port.
-                // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
                 o.Endpoint = otlpOptions.ReceiverEndpoint;
             }));
 

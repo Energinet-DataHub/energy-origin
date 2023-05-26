@@ -16,12 +16,14 @@ namespace Unit.Tests.Controllers;
 public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
+    private readonly Metrics metrics = new();
     private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
+
 
     public TokenControllerTests() => tokenController.ControllerContext = new()
     {
