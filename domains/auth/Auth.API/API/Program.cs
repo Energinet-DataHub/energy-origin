@@ -45,6 +45,9 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
 var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
@@ -58,6 +61,7 @@ builder.Services.AddOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefi
 builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 if (builder.Environment.IsDevelopment() == false)
 {
@@ -135,7 +139,9 @@ builder.Services.AddOpenTelemetry()
             {
                 // This should match the OLTP receiver port.
                 // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
-                o.Endpoint = new Uri("http://localhost:4317");
+                o.Endpoint = new Uri(otlpOptions.ReceiverEndpoint);
+
+
 
                 o.ExportProcessorType = ExportProcessorType.Simple;
                 metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
@@ -150,7 +156,7 @@ builder.Services.AddOpenTelemetry()
             {
                 // This should match the OLTP receiver port.
                 // Would it also work to write "http://collector:4317"? If so, I don't think I need to expose port 4317 on host machine in docker compose.
-                o.Endpoint = new Uri("http://localhost:4317");
+                o.Endpoint = new Uri(otlpOptions.ReceiverEndpoint);
             }));
 
 var app = builder.Build();
@@ -165,7 +171,6 @@ else if (!app.Environment.IsTest())
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-//app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
