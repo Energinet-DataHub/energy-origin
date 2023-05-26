@@ -32,6 +32,5 @@ public class CertificateRejectedInRegistryEventHandler : IConsumer<CertificateRe
         certificate.Reject(msg.Reason);
 
         await repository.Save(certificate);
-
     }
 }
