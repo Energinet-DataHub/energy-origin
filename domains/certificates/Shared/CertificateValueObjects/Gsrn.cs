@@ -15,7 +15,7 @@ public partial class Gsrn : ValueObject
     public Gsrn(string value)
     {
         if (!regex.IsMatch(value) || !value.StartsWith("57"))
-            throw new ArgumentException("GSRN must be 18 characters long and start with 57.");
+            throw new ArgumentException("GSRN must be 18 characters long and start with 57. value: " + value);
 
         Value = value;
     }

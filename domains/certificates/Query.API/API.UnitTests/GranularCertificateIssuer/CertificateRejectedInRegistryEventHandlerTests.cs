@@ -23,7 +23,7 @@ namespace API.UnitTests.GranularCertificateIssuer
         {
             var repositoryMock = new Mock<IProductionCertificateRepository>();
 
-            var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "SomeGSRN", 42);
+            var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42);
             repositoryMock.Setup(x => x.Get(It.IsAny<Guid>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(cert);
 
             var msg = new CertificateRejectedInRegistryEvent(cert.Id, "SomeReason");
