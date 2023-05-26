@@ -26,6 +26,8 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
+        var shouldProduceNoCertificateLogStatement = true;
+
         var message = context.Message;
 
         var contracts = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
@@ -39,7 +41,6 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         {
             if (!ShouldEventBeProduced(contract, message))
             {
-                logger.LogInformation("No production certificate created for {Message}", message);
                 continue;
             }
 
@@ -56,6 +57,12 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
             await repository.Save(productionCertificate, context.CancellationToken);
 
             logger.LogInformation("Created production certificate for {Message}", message);
+            shouldProduceNoCertificateLogStatement = false;
+        }
+
+        if (shouldProduceNoCertificateLogStatement)
+        {
+            logger.LogInformation("No production certificate created for {Message}", message);
         }
     }
 
@@ -77,11 +84,16 @@ public class EnergyMeasuredConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
-        if (contract.EndDate != null && energyMeasuredIntegrationEvent.DateTo > contract.EndDate?.ToUnixTimeSeconds())
+        if (!CheckEndDateNotNullOrAfterEvent(contract.EndDate, energyMeasuredIntegrationEvent.DateTo))
         {
             return false;
         }
 
         return true;
+    }
+
+    private static bool CheckEndDateNotNullOrAfterEvent(DateTimeOffset? contractEndDate, long eventEndDate)
+    {
+        return contractEndDate != null && eventEndDate > contractEndDate?.ToUnixTimeSeconds();
     }
 }

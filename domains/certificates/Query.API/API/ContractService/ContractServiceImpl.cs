@@ -42,10 +42,12 @@ internal class ContractServiceImpl : IContractService
 
         var documents = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        var documentExist = CheckPeriod(documents, startDate, endDate);
-        if (documentExist != null)
+        foreach (var document in documents)
         {
-            return documentExist;
+            if (!CanCreateContract(document, startDate, endDate))
+            {
+                return new ContractAlreadyExists(document);
+            }
         }
 
         try
@@ -115,16 +117,8 @@ internal class ContractServiceImpl : IContractService
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 
-    private ContractAlreadyExists? CheckPeriod(IReadOnlyList<CertificateIssuingContract> documents, DateTimeOffset startDate, DateTimeOffset? endDate)
+    private bool CanCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
     {
-        foreach (var document in documents)
-        {
-            if ((startDate > document.StartDate && startDate < document.EndDate) || (endDate > document.StartDate && endDate < document.EndDate))
-            {
-                return new ContractAlreadyExists(document);
-            }
-        }
-
-        return null;
+        return (startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
     }
 }
