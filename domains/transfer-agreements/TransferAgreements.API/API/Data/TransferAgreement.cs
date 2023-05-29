@@ -14,5 +14,5 @@ public class TransferAgreement
 
     public Guid SenderId { get; set; }
 
-    public int ReceiverTin { get; set; }
+    public string ReceiverTin { get; set; }
 }

@@ -30,7 +30,7 @@ namespace API.UnitTests.Data
                     ActorId = Guid.NewGuid().ToString(),
                     StartDate = DateTimeOffset.UtcNow,
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                    ReceiverTin = 12345678
+                    ReceiverTin = "12345678"
                 };
 
                 var result = await service.CreateTransferAgreement(transferAgreement);
