@@ -14,6 +14,6 @@ public class CreateTransferAgreement
     public DateTimeOffset EndDate { get; set; }
 
     [Required]
-    public int ReceiverTin { get; set; }
+    public string ReceiverTin { get; set; }
 
 }

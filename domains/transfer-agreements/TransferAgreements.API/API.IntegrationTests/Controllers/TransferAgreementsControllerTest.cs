@@ -30,7 +30,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
              StartDate = new DateTimeOffset(DateTime.Now),
              EndDate = new DateTimeOffset(DateTime.Now.AddDays(1)),
-             ReceiverTin = 12345678
+             ReceiverTin = "12345678"
         };
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
