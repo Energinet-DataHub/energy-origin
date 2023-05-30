@@ -30,14 +30,11 @@ runs:
         path: base
         ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
 
-    - name: install yamlpath
-      uses: ./.github/actions/yamlpath-install #TODO: Energinet-DataHub/.github/.github/actions/yamlpath-install@main
-
     - name: Generate semver
       id: output
       shell: bash
       run: |
         cd base
-        version=$(yaml-get --query "${{ inputs.yaml-path }}" "${{ inputs.yaml-file }}")
+        version=$(yq ".${{ inputs.yaml-path }}" "${{ inputs.yaml-file }}")
         version=$(sh ./.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
         echo "version=${version}" >> $GITHUB_OUTPUT
