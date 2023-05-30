@@ -17,6 +17,10 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use yq directly instead"
+
     - name: install yamlpath
       uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
 
