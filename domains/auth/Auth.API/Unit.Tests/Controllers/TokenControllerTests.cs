@@ -114,5 +114,5 @@ public class TokenControllerTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(new Metrics(), logger, mapper, userService, issuer));
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer));
 }
