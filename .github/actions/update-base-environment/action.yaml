@@ -60,11 +60,8 @@ runs:
         grep -v '^---' ${{ env.BASEFILE }} >/dev/null
 
     - name: Update target revision
-      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-set@main
-      with:
-        yaml_file: base/${{ env.BASEFILE }}
-        yaml_path: helmCharts[name="${{ inputs.chart_name }}"].version
-        value: ${{ inputs.chart_version }}
+      shell: bash
+      run: yq -i '(. | .helmCharts[] |  select(.name = "${{ inputs.chart_name }}") | .version ) = "${{ inputs.chart_version }}"' base/${{ env.BASEFILE }}
 
     - name: Branch - commit changes
       id: commit

@@ -4,6 +4,10 @@ description: installs yamlpath
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use yq directly instead"
+
     - uses: actions/setup-python@v4
       with:
         python-version: "3.7" # Version range or exact version of a Python version to use, using SemVer's version range syntax
