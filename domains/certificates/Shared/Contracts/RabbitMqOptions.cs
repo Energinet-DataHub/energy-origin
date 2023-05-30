@@ -1,4 +1,4 @@
-namespace RegistryConnector.Worker;
+namespace Contracts;
 
 public class RabbitMqOptions
 {
