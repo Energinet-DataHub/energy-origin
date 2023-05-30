@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
-using API.RabbitMq.Configurations;
+using Contracts;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;

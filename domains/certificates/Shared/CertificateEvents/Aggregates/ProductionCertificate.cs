@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using CertificateEvents.Exceptions;
-using CertificateEvents.Primitives;
+using CertificateValueObjects;
 
 namespace CertificateEvents.Aggregates;
 
