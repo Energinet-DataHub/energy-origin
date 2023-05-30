@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
@@ -20,7 +21,9 @@ public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
-    IClassFixture<DataSyncWireMock>
+    IClassFixture<DataSyncWireMock>,
+    IClassFixture<RegistryConnectorApplicationFactory>,
+    IClassFixture<ProjectOriginRegistryContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -29,13 +32,18 @@ public sealed class CertificateIssuingTests :
         QueryApiWebApplicationFactory factory,
         MartenDbContainer martenDbContainer,
         RabbitMqContainer rabbitMqContainer,
-        DataSyncWireMock dataSyncWireMock)
+        DataSyncWireMock dataSyncWireMock,
+        RegistryConnectorApplicationFactory registryConnectorFactory,
+        ProjectOriginRegistryContainer poRegistryContainer)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
+        registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
+        registryConnectorFactory.RegistryOptions = poRegistryContainer.Options;
+        registryConnectorFactory.Start();
     }
 
     [Fact]
@@ -63,7 +71,7 @@ public sealed class CertificateIssuingTests :
     public async Task GetList_MeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = "111111111111111111";
+        var gsrn = GsrnHelper.GenerateRandom();
 
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
@@ -108,7 +116,7 @@ public sealed class CertificateIssuingTests :
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
-        var gsrn = "222222222222222222";
+        var gsrn = GsrnHelper.GenerateRandom();
 
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
