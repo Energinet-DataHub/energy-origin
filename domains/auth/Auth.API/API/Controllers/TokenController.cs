@@ -15,7 +15,7 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
-        Metrics metrics,
+        IMetrics metrics,
         ILogger<TokenController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
@@ -45,11 +45,7 @@ public class TokenController : ControllerBase
             now.ToUnixTimeSeconds()
         );
 
-        metrics.TokenRefreshCounter.Add(
-            1,
-            new KeyValuePair<string, object?>("UserId", descriptor?.Id),
-            new KeyValuePair<string, object?>("CompanyId", descriptor?.CompanyId)
-        );
+        metrics.TokenRefresh(descriptor.Id, descriptor.CompanyId);
 
         return Ok(token);
     }

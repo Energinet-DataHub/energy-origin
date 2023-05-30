@@ -4,3 +4,8 @@
     type: prometheus
     url: http://prometheus:9090
     isDefault: true
+  - name: Jaeger
+    access: proxy
+    type: jaeger
+    url: http://jaeger:16686
+    isDefault: false

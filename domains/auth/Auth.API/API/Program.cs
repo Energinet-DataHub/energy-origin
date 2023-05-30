@@ -112,7 +112,7 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
-builder.Services.AddSingleton<Metrics>();
+builder.Services.AddSingleton<IMetrics, Metrics>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -124,34 +124,27 @@ builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 
-// How do we setup logging using OTLP?
-
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .AddMeter(Metrics.Name) // I think this is a magic string that needs to match the name of the meter instance used to create the metrics.
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Auth.API"))
+            .AddMeter(Metrics.Name)
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddOtlpExporter((o, metricReaderOptions) =>
+            .AddOtlpExporter(o =>
             {
-                // This should match the OLTP receiver port.
                 o.Endpoint = otlpOptions.ReceiverEndpoint;
-
-                o.ExportProcessorType = ExportProcessorType.Simple;
-                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
             }))
     .WithTracing(provider =>
         provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Auth.API"))
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
             .AddOtlpExporter(o =>
             {
-                // This should match the OLTP receiver port.
                 o.Endpoint = otlpOptions.ReceiverEndpoint;
             }));
 

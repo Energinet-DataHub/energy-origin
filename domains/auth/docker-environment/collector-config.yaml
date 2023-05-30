@@ -33,9 +33,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      #exporters: [jaeger]
       exporters: [otlp]
+#      exporters: [jaeger]
     metrics:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
+  telemetry:
+    logs:
+      level: "debug"

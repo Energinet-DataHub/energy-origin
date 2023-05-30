@@ -7,6 +7,7 @@ using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -20,10 +21,10 @@ public class LogoutControllerTests
     private readonly OidcOptions oidcOptions;
     private readonly IOptions<OidcOptions> options;
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
+    private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
     private readonly string identityToken;
     private readonly UserDescriptor descriptor;
-    private readonly Metrics metrics = new();
 
     public LogoutControllerTests()
     {
@@ -182,6 +183,28 @@ public class LogoutControllerTests
             It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task LogoutAsync_ShouldCallMetricsLogout_WhenInvokedSuccessfully()
+    {
+        Mock.Get(mapper)
+            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(value: descriptor);
+
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+
+        var cache = Mock.Of<IDiscoveryCache>();
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        _ = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+
+        Mock.Get(metrics).Verify(x => x.Logout(
+                It.IsAny<Guid>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<ProviderType>()),
             Times.Once
         );
     }

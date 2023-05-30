@@ -22,7 +22,7 @@ public class OidcController : ControllerBase
     [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
-        Metrics metrics,
+        IMetrics metrics,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptorMapper mapper,
@@ -105,12 +105,7 @@ public class OidcController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        metrics.LoginCounter.Add(
-            1,
-            new KeyValuePair<string, object?>("UserId", descriptor.Id),
-            new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
-            new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
-        );
+        metrics.Login(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }

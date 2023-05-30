@@ -12,7 +12,7 @@ public class LogoutController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(Metrics metrics, IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LogoutAsync(IMetrics metrics, IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, IOptions<OidcOptions> oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
         var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.Value.AllowRedirection && overrideRedirectionUri != null)
@@ -47,12 +47,7 @@ public class LogoutController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        metrics.LogoutCounter.Add(
-            1,
-            new KeyValuePair<string, object?>("UserId", descriptor.Id),
-            new KeyValuePair<string, object?>("CompanyId", descriptor.CompanyId),
-            new KeyValuePair<string, object?>("IdentityProviderType", descriptor.ProviderType)
-        );
+        metrics.Logout(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
 
         return RedirectPreserveMethod(url);
     }

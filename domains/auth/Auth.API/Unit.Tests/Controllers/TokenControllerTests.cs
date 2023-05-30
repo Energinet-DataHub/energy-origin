@@ -16,14 +16,13 @@ namespace Unit.Tests.Controllers;
 public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
-    private readonly Metrics metrics = new();
+    private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
-
 
     public TokenControllerTests() => tokenController.ControllerContext = new()
     {
@@ -78,7 +77,64 @@ public class TokenControllerTests
             .Setup(x => x.FindFirst(UserClaimName.Scope))
             .Returns(new Claim(UserClaimName.Scope, scope));
 
-        var result = await tokenController.RefreshAsync(new Metrics(), logger, mapper, userService, issuer);
+        var result = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
+        Assert.NotNull(result);
+        Assert.IsType<OkObjectResult>(result);
+
+        Assert.Equal((result as OkObjectResult)!.Value, token);
+
+        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, It.IsAny<DateTime>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldCallMetricsTokenRefresh_WhenInvokedSuccessfully()
+    {
+        // TODO: Fix and clean up this test.
+
+
+        var token = Guid.NewGuid().ToString();
+
+        Mock.Get(cryptography)
+            .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
+            .Returns(Guid.NewGuid().ToString());
+
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(cryptography)
+            {
+                Id = Guid.Parse(userId),
+                EncryptedAccessToken = Guid.NewGuid().ToString(),
+                EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                UserStored = isStored,
+                ProviderType = providerType
+            });
+
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new UserDescriptor(cryptography)
+            {
+                Id = Guid.NewGuid()
+            });
+
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new User
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString(),
+                AllowCprLookup = false,
+                AcceptedTermsVersion = 1
+            });
+
+        Mock.Get(issuer)
+            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
+            .Returns(token);
+
+        Mock.Get(claimsPrincipal)
+            .Setup(x => x.FindFirst(UserClaimName.Scope))
+            .Returns(new Claim(UserClaimName.Scope, scope));
+
+        var result = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
         Assert.NotNull(result);
         Assert.IsType<OkObjectResult>(result);
 
