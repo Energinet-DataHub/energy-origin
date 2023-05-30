@@ -56,8 +56,8 @@
             "format": "date-time"
           },
           "receiverTin": {
-            "type": "integer",
-            "format": "int32"
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
