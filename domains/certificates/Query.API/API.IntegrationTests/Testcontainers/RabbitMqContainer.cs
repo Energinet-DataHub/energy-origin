@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using API.RabbitMq.Configurations;
+using Contracts;
 using Testcontainers.RabbitMq;
 using Xunit;
 

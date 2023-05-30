@@ -1,16 +1,16 @@
 using System.Net;
 using System.Threading.Tasks;
+using API.IntegrationTests.Factories;
 using FluentAssertions;
-using Worker.IntegrationTests.Factories;
 using Xunit;
 
-namespace Worker.IntegrationTests;
+namespace API.IntegrationTests;
 
-public class MetricsTests : IClassFixture<RegistryConnectorApplicationFactory>
+public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>
 {
     private readonly RegistryConnectorApplicationFactory factory;
 
-    public MetricsTests(RegistryConnectorApplicationFactory factory)
+    public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory)
     {
         this.factory = factory;
     }

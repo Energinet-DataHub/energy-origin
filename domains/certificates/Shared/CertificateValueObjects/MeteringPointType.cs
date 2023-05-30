@@ -1,4 +1,4 @@
-namespace CertificateEvents.Primitives;
+namespace CertificateValueObjects;
 
 public enum MeteringPointType
 {

@@ -65,9 +65,6 @@ runs:
       shell: bash
       run: echo "::warning::Using deprecated action, migrate workflow towards newer release actions."
 
-    - name: Install yamlpath
-      uses: Energinet-DataHub/energy-origin/.github/actions/yamlpath-install@main
-
     - name: If pr then override containers version in chart
       if: github.event_name == 'pull_request'
       shell: bash
@@ -77,7 +74,7 @@ runs:
         echo $JSON | jq -c '.[]' | while read i; do
             DEPLOYMENT_NAME=$(echo $i | jq -r .deployment_name)
             TAG=$(echo $i | jq -r .image_tag)
-            yaml-set --change ${{ inputs.version_yaml_path_prefix }}${DEPLOYMENT_NAME}.image.tag --value $TAG $VALUES_FILE
+            yq -i ".${{ inputs.version_yaml_path_prefix }}${DEPLOYMENT_NAME}.image.tag = \"$TAG\"" $VALUES_FILE
         done
 
     - name: Release helm chart

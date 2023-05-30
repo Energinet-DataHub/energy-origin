@@ -7,13 +7,13 @@ using static Contracts.Transfer.TransferProductionCertificateResponse;
 
 namespace API.TransferCertificateHandler;
 
-public class TransferCertificateConsumer : IConsumer<TransferProductionCertificateRequest>
+public class TransferCertificateCommandHandler : IConsumer<TransferProductionCertificateCommand>
 {
     private readonly IProductionCertificateRepository repository;
 
-    public TransferCertificateConsumer(IProductionCertificateRepository repository) => this.repository = repository;
+    public TransferCertificateCommandHandler(IProductionCertificateRepository repository) => this.repository = repository;
 
-    public async Task Consume(ConsumeContext<TransferProductionCertificateRequest> context)
+    public async Task Consume(ConsumeContext<TransferProductionCertificateCommand> context)
     {
         var productionCertificate = await repository.Get(context.Message.CertificateId, cancellationToken: context.CancellationToken);
 
