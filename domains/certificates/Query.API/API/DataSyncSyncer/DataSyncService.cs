@@ -6,7 +6,7 @@ using API.ContractService;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using CertificateEvents.Primitives;
+using CertificateValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace API.DataSyncSyncer;
@@ -45,10 +45,7 @@ public class DataSyncService
                 var client = factory.CreateClient();
                 var result = await client.RequestAsync(
                     contract.GSRN,
-                    new Period(
-                        DateFrom: dateFrom.Value,
-                        DateTo: nearestHour
-                    ),
+                    new Period(dateFrom.Value, nearestHour),
                     contract.MeteringPointOwner,
                     cancellationToken
                 );

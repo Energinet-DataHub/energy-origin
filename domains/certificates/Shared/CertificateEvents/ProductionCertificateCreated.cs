@@ -1,5 +1,5 @@
 using System;
-using CertificateEvents.Primitives;
+using CertificateValueObjects;
 
 namespace CertificateEvents;
 
