@@ -107,8 +107,8 @@ public class TokenControllerTests
         _ = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
 
         Mock.Get(metrics).Verify(x => x.TokenRefresh(
-                userId,
-                companyId),
+            userId,
+            companyId),
             Times.Once
         );
     }

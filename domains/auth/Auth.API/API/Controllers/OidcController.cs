@@ -34,8 +34,7 @@ public class OidcController : ControllerBase
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
-        [FromQuery(Name = "error_description")]
-        string? errorDescription,
+        [FromQuery(Name = "error_description")] string? errorDescription,
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);

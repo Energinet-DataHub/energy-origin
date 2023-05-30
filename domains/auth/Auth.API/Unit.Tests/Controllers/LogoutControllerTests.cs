@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Options;
-using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -202,9 +201,9 @@ public class LogoutControllerTests
         _ = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
 
         Mock.Get(metrics).Verify(x => x.Logout(
-                It.IsAny<Guid>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<ProviderType>()),
+            It.IsAny<Guid>(),
+            It.IsAny<Guid?>(),
+            It.IsAny<ProviderType>()),
             Times.Once
         );
     }

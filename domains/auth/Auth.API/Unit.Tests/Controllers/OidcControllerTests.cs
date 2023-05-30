@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Management;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -193,8 +192,6 @@ public class OidcControllerTests
         );
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
         var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
         var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
@@ -239,8 +236,6 @@ public class OidcControllerTests
         );
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
         var identityToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId);
         var accessToken = TokenUsing(tokenOptions.Value, document.Issuer, oidcOptions.Value.ClientId, claims: new() {
             { "scope", "something" },
@@ -853,7 +848,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null, null);
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
