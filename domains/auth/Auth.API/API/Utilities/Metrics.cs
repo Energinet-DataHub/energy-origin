@@ -8,10 +8,10 @@ public class Metrics : IMetrics
 {
     public const string Name = "Auth.API";
 
-    private static readonly Meter meter = new Meter(Name);
+    private static readonly Meter meter = new(Name);
 
-    private readonly Counter<int> logoutCounter = meter.CreateCounter<int>("user-logout");
     private readonly Counter<int> loginCounter = meter.CreateCounter<int>("user-login");
+    private readonly Counter<int> logoutCounter = meter.CreateCounter<int>("user-logout");
     private readonly Counter<int> tokenRefreshCounter = meter.CreateCounter<int>("token-refresh");
 
     private const string userIdKey = "UserId";

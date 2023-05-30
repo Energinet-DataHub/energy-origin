@@ -89,10 +89,8 @@ public class TokenControllerTests
     [Fact]
     public async Task RefreshAsync_ShouldCallMetricsTokenRefresh_WhenInvokedSuccessfully()
     {
-        // TODO: Fix and clean up this test.
-
-
-        var token = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
@@ -102,45 +100,17 @@ public class TokenControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(new UserDescriptor(cryptography)
             {
-                Id = Guid.Parse(userId),
-                EncryptedAccessToken = Guid.NewGuid().ToString(),
-                EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                UserStored = isStored,
-                ProviderType = providerType
+                Id = userId,
+                CompanyId = companyId
             });
 
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(new UserDescriptor(cryptography)
-            {
-                Id = Guid.NewGuid()
-            });
+        _ = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
 
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new User
-            {
-                Id = Guid.NewGuid(),
-                Name = Guid.NewGuid().ToString(),
-                AllowCprLookup = false,
-                AcceptedTermsVersion = 1
-            });
-
-        Mock.Get(issuer)
-            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
-            .Returns(token);
-
-        Mock.Get(claimsPrincipal)
-            .Setup(x => x.FindFirst(UserClaimName.Scope))
-            .Returns(new Claim(UserClaimName.Scope, scope));
-
-        var result = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
-        Assert.NotNull(result);
-        Assert.IsType<OkObjectResult>(result);
-
-        Assert.Equal((result as OkObjectResult)!.Value, token);
-
-        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, It.IsAny<DateTime>()), Times.Once);
+        Mock.Get(metrics).Verify(x => x.TokenRefresh(
+                userId,
+                companyId),
+            Times.Once
+        );
     }
 
     [Fact]
