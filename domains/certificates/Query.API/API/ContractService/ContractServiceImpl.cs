@@ -41,12 +41,10 @@ internal class ContractServiceImpl : IContractService
 
         var documents = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        foreach (var document in documents)
+        var overlappingContract = documents.FirstOrDefault(d => CannotCreateContract(d, startDate, endDate));
+        if (overlappingContract != null)
         {
-            if (CannotCreateContract(document, startDate, endDate))
-            {
-                return new ContractAlreadyExists(document);
-            }
+            return new ContractAlreadyExists(overlappingContract);
         }
 
         try
