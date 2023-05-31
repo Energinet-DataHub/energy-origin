@@ -33,13 +33,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
 
         var message = context.Message;
 
-        var contract = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
-
-        if (!ShouldEventBeProduced(contract, message))
-        {
-            logger.LogInformation("No production certificate created for {message}", message);
-            return;
-        }
+        var contracts = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
 
         foreach (var contract in contracts)
         {
