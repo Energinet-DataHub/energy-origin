@@ -6,43 +6,50 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace API.Migrations;
+#nullable disable
 
-[DbContext(typeof(ApplicationDbContext))]
-partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+namespace API.Migrations
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-#pragma warning disable 612, 618
-        modelBuilder
-            .HasAnnotation("ProductVersion", "7.0.5")
-            .HasAnnotation("Relational:MaxIdentifierLength", 63);
-
-        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-        modelBuilder.Entity("API.ApiModels.TransferAgreement", b =>
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
-            b.Property<Guid>("Id")
-                .ValueGeneratedOnAdd()
-                .HasColumnType("uuid")
-                .HasAnnotation("Relational:JsonPropertyName", "id");
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            b.Property<DateTimeOffset>("EndDate")
-                .HasColumnType("timestamp with time zone")
-                .HasAnnotation("Relational:JsonPropertyName", "endDate");
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            b.Property<int>("ReceiverTin")
-                .HasColumnType("integer")
-                .HasAnnotation("Relational:JsonPropertyName", "receiverTin");
+            modelBuilder.Entity("API.Data.TransferAgreement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
-            b.Property<DateTimeOffset>("StartDate")
-                .HasColumnType("timestamp with time zone")
-                .HasAnnotation("Relational:JsonPropertyName", "startDate");
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-            b.HasKey("Id");
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone");
 
-            b.ToTable("TransferAgreements");
-        });
+                    b.Property<string>("ReceiverTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransferAgreements");
+                });
 #pragma warning restore 612, 618
+        }
     }
 }

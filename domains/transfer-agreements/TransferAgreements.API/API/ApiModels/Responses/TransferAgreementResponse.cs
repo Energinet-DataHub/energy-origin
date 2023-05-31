@@ -1,9 +1,12 @@
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace API.Data;
+namespace API.ApiModels.Responses;
 
-public class TransferAgreement
+public class TransferAgreementResponse
 {
+
     public Guid Id { get; set; }
 
     public DateTimeOffset StartDate { get; set; }
@@ -14,5 +17,5 @@ public class TransferAgreement
 
     public Guid SenderId { get; set; }
 
-    public string ReceiverTin { get; set; }
+    public int ReceiverTin { get; set; }
 }

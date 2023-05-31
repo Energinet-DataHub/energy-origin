@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
 using API.Data;
 using API.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
@@ -18,7 +20,6 @@ using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
@@ -47,7 +48,6 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
@@ -58,7 +58,35 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Title = "Transfer Agreements API"
     });
+    if (builder.Environment.IsDevelopment())
+    {
+        o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+        });
+        o.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] { }
+            }
+        });
+    }
 });
+
+builder.Services.AddScoped<ITransferAgreementService, TransferAgreementService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -75,6 +103,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -88,7 +117,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 
