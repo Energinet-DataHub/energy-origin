@@ -167,7 +167,7 @@ public class EnergyMeasuredEventHandlerTests
 
         await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,

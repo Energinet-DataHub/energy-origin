@@ -49,9 +49,6 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 message.Quantity);
 
             await repository.Save(productionCertificate, context.CancellationToken);
-            productionCertificate.Issue();
-
-            await repository.Save(productionCertificate, context.CancellationToken);
 
             //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
             //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
@@ -63,8 +60,8 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
                 new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
 
-            logger.LogInformation("Created production certificate for {message}", message);
             logger.LogInformation("Created production certificate for {Message}", message);
+
             shouldProduceNoCertificateLogStatement = false;
         }
 
