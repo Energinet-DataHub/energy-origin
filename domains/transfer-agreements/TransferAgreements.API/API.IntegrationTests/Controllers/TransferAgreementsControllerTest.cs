@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -28,9 +28,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var transferAgreement = new CreateTransferAgreement()
         {
 
-             StartDate = new DateTimeOffset(DateTime.Now),
-             EndDate = new DateTimeOffset(DateTime.Now.AddDays(1)),
-             ReceiverTin = "12345678"
+            StartDate = new DateTimeOffset(DateTime.Now),
+            EndDate = new DateTimeOffset(DateTime.Now.AddDays(1)),
+            ReceiverTin = "12345678"
         };
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
