@@ -124,7 +124,7 @@
             Endpoint to return the Subject UUID. Will be removed from the API in the future
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.TransferCertificateController.TransferCertificate(API.Query.API.ApiModels.Requests.TransferCertificate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.TransferCertificate},MassTransit.IRequestClient{Contracts.Transfer.TransferProductionCertificateRequest})">
+        <member name="M:API.Query.API.Controllers.TransferCertificateController.TransferCertificate(API.Query.API.ApiModels.Requests.TransferCertificate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.TransferCertificate},MassTransit.IRequestClient{Contracts.Transfer.TransferProductionCertificateCommand})">
             <summary>
             Transfers the entire certificate 
             </summary>

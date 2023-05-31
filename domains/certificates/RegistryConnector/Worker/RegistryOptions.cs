@@ -8,4 +8,5 @@ public class RegistryOptions
 
     public string Url { get; set; } = "";
     public byte[] IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
+    public string RegistryName { get; set; } = "RegistryA";
 }

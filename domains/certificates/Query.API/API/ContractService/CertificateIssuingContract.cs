@@ -1,4 +1,5 @@
 using System;
+using CertificateValueObjects;
 using System.Collections.Generic;
 using CertificateEvents.Primitives;
 

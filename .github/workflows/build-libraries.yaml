@@ -65,10 +65,8 @@ jobs:
 
       - name: Resolve version
         id: resolve-version
-        uses: ./.github/actions/yaml-get
-        with:
-          yaml_file: ${{ env.SOLUTION }}/version.yaml
-          yaml_path: version
+        shell: bash
+        run: echo "result=$(yq '.version' ${{ env.SOLUTION }}/version.yaml)" >> $GITHUB_OUTPUT
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
