@@ -39,7 +39,7 @@ public class EnergyMeasuredEventHandlerTests
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
         var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))!
             .ReturnsAsync(value: null);
 
         var message = new EnergyMeasuredIntegrationEvent(
@@ -153,7 +153,7 @@ public class EnergyMeasuredEventHandlerTests
     public async Task Consume_ValidMeasurement_EventsSaved()
     {
         var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))!
             .ReturnsAsync(new[] { mockContract });
 
         var repositoryMock = new Mock<IProductionCertificateRepository>();

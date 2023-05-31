@@ -116,7 +116,7 @@ internal class ContractServiceImpl : IContractService
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 
-    private bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
+    private static bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
     {
         return !(startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
     }
