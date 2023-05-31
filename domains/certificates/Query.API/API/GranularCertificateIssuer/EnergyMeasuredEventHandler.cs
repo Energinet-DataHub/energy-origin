@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using AggregateRepositories;
 using API.ContractService;
 using CertificateEvents.Aggregates;
-using CertificateEvents.Primitives;
-using Marten;
 using CertificateValueObjects;
 using Contracts.Certificates;
 using MassTransit;
@@ -50,22 +48,22 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 message.GSRN,
                 message.Quantity);
 
-        await repository.Save(productionCertificate, context.CancellationToken);
+            await repository.Save(productionCertificate, context.CancellationToken);
             productionCertificate.Issue();
 
             await repository.Save(productionCertificate, context.CancellationToken);
 
-        //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
-        //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
-        await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
-            contract.GridArea,
-            new Period(message.DateFrom, message.DateTo),
-            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-            contract.MeteringPointOwner,
-            new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
-            new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
+            //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
+            //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
+            await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
+                contract.GridArea,
+                new Period(message.DateFrom, message.DateTo),
+                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+                contract.MeteringPointOwner,
+                new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
+                new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
 
-        logger.LogInformation("Created production certificate for {message}", message);
+            logger.LogInformation("Created production certificate for {message}", message);
             logger.LogInformation("Created production certificate for {Message}", message);
             shouldProduceNoCertificateLogStatement = false;
         }
