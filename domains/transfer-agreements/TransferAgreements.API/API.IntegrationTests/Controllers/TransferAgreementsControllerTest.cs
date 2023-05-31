@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
