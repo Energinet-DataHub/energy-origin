@@ -43,7 +43,7 @@ internal class ContractServiceImpl : IContractService
 
         foreach (var document in documents)
         {
-            if (!CanCreateContract(document, startDate, endDate))
+            if (CannotCreateContract(document, startDate, endDate))
             {
                 return new ContractAlreadyExists(document);
             }
@@ -116,8 +116,8 @@ internal class ContractServiceImpl : IContractService
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 
-    private bool CanCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
+    private bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
     {
-        return (startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
+        return !(startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
     }
 }
