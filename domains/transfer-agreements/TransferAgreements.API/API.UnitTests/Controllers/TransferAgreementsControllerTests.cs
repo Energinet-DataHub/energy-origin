@@ -1,12 +1,12 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
+using API.ApiModels;
+using API.ApiModels.Requests;
 using API.Controllers;
 using API.Data;
+using FluentAssertions;
 using Moq;
 using Xunit;
-using System.Threading.Tasks;
-using API.ApiModels.Requests;
-using API.ApiModels;
-using FluentAssertions;
 
 namespace API.UnitTests.Controllers
 {
