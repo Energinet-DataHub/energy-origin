@@ -14,6 +14,7 @@ using MeasurementEvents;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
+using Range = Moq.Range;
 
 namespace API.UnitTests.GranularCertificateIssuer;
 
@@ -166,7 +167,7 @@ public class EnergyMeasuredEventHandlerTests
 
         await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Once);
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,
