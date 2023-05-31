@@ -8,6 +8,7 @@ using API.ContractService.Repositories;
 using CertificateValueObjects;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
+using static API.ContractService.EndContractResult;
 
 namespace API.ContractService;
 
@@ -22,7 +23,8 @@ internal class ContractServiceImpl : IContractService
         this.repository = repository;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate,
+        CancellationToken cancellationToken)
     {
         var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == gsrn);
@@ -37,11 +39,12 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var document = await repository.GetByGsrn(gsrn, cancellationToken);
+        var documents = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        if (document != null)
+        var overlappingContract = documents.FirstOrDefault(d => CannotCreateContract(d, startDate, endDate));
+        if (overlappingContract != null)
         {
-            return new ContractAlreadyExists(document);
+            return new ContractAlreadyExists(overlappingContract);
         }
 
         try
@@ -55,8 +58,10 @@ internal class ContractServiceImpl : IContractService
                 MeteringPointType = MeteringPointType.Production,
                 MeteringPointOwner = meteringPointOwner,
                 StartDate = startDate,
+                EndDate = endDate,
                 Created = DateTimeOffset.UtcNow
             };
+
             await repository.Save(contract);
 
             return new Success(contract);
@@ -65,6 +70,31 @@ internal class ContractServiceImpl : IContractService
         {
             return new ContractAlreadyExists(null);
         }
+    }
+
+    public async Task<EndContractResult> EndContract(string meteringPointOwner, Guid contractId, DateTimeOffset? endDate, CancellationToken cancellationToken)
+    {
+        var contract = await repository.GetById(contractId, cancellationToken);
+
+        if (contract == null)
+        {
+            return new NonExistingContract();
+        }
+
+        if (contract!.MeteringPointOwner != meteringPointOwner)
+        {
+            return new MeteringPointOwnerNoMatch();
+        }
+
+        if (endDate == null)
+        {
+            endDate = DateTimeOffset.Now;
+        }
+
+        contract.EndDate = endDate;
+        await repository.Update(contract);
+
+        return new Ended();
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
@@ -82,5 +112,10 @@ internal class ContractServiceImpl : IContractService
             : contract;
     }
 
-    public Task<CertificateIssuingContract?> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
+
+    private static bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
+    {
+        return !(startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
+    }
 }
