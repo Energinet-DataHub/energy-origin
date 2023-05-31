@@ -13,9 +13,6 @@
         <member name="M:API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="T:API.Migrations.AddTransferAgreementActorIdAndSenderId">
             <inheritdoc />
         </member>
@@ -25,9 +22,6 @@
         <member name="M:API.Migrations.AddTransferAgreementActorIdAndSenderId.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddTransferAgreementActorIdAndSenderId.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="T:API.Migrations.AlterColumnReceiverTin">
             <inheritdoc />
         </member>
@@ -35,9 +29,6 @@
             <inheritdoc />
         </member>
         <member name="M:API.Migrations.AlterColumnReceiverTin.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AlterColumnReceiverTin.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
