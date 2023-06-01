@@ -9,7 +9,7 @@ inputs:
 
   dotnet-version:
     description: The version of dotnet to setup
-    default: 7.0.203
+    default: 7.0.105
     required: true
 
 runs:
