@@ -22,23 +22,24 @@ public class TransferAgreementsController : ControllerBase
 
     {
         var actor = User.FindActorClaim();
-        if(actor == null)
+        if (actor == null)
         {
             return ValidationProblem("Actor Could not be found");
         }
 
         var subject = User.FindSubjectClaim();
-        if(subject == null)
+        if (subject == null)
         {
             return ValidationProblem("Subject could not be found");
         }
 
-        var transferAgreement = new TransferAgreement{
-           StartDate = request.StartDate.UtcDateTime,
-           EndDate = request.EndDate.UtcDateTime,
-           ActorId = actor,
-           SenderId = Guid.Parse(subject),
-           ReceiverTin = request.ReceiverTin
+        var transferAgreement = new TransferAgreement
+        {
+            StartDate = request.StartDate.UtcDateTime,
+            EndDate = request.EndDate.UtcDateTime,
+            ActorId = actor,
+            SenderId = Guid.Parse(subject),
+            ReceiverTin = request.ReceiverTin
         };
 
         var result = await transferAgreementRepository.CreateTransferAgreement(transferAgreement);

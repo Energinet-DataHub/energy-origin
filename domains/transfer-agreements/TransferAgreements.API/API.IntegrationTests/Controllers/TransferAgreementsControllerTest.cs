@@ -35,7 +35,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var transferAgreement = new CreateTransferAgreement(new DateTimeOffset(DateTime.Now), new DateTimeOffset(DateTime.Now.AddDays(1)), "");
 
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new {});
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
