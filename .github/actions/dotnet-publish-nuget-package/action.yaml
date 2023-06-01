@@ -17,6 +17,7 @@ inputs:
 
   dotnet-version:
     description: The version of dotnet to use
+    default: 7.0.x
     required: true
 
   nuget-api-key:

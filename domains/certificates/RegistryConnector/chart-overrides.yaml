@@ -1,4 +1,4 @@
-version: 1.0.9
+version: 1.0.10
 versionPath: registryconnector.image.tag
 name: ghcr.io/energinet-datahub/eo-certificates-registry-connector
 namePath: registryconnector.image.name

@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
+ARG SDK_VERSION
+ARG RUNTIME_VERSION
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.17 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
@@ -6,7 +8,7 @@ EXPOSE 443
 RUN apk add curl
 HEALTHCHECK CMD curl --fail http://localhost/health || exit 1
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
 WORKDIR /src
 COPY ["Query.API/API/API.csproj", "Query.API/API/"]
 RUN dotnet restore "Query.API/API/API.csproj"

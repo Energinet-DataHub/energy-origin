@@ -76,7 +76,7 @@ jobs:
       - name: Pin dotnet version
         shell: bash
         working-directory: ${{ env.SOLUTION }}
-        run: echo '{"sdk":{"version":"${{ inputs.dotnet-version }}"}}' > global.json
+        run: echo '{"sdk":{"version":"${{ env.SDK_VERSION }}"}}' > global.json
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
