@@ -5,9 +5,6 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-RUN apt-get -y update && apt-get -y install wget
-HEALTHCHECK CMD wget -qO- http://localhost/health > /dev/null || exit 1
-
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
 WORKDIR /src
 COPY ["RegistryConnector/Worker/Worker.csproj", "RegistryConnector/Worker/"]
@@ -20,6 +17,10 @@ FROM build AS publish
 RUN dotnet publish "Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+
+RUN apk add --no-cache tzdata
+
 WORKDIR /app
 COPY --from=publish /app/publish .
+HEALTHCHECK CMD wget -qO- http://localhost:80/healthz > /dev/null || exit 1
 ENTRYPOINT ["dotnet", "RegistryConnector.Worker.dll"]
