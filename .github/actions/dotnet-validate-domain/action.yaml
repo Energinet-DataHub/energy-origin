@@ -35,6 +35,16 @@ runs:
 
         dotnet sln list | grep csproj >/dev/null || { printf '::error::No solution or projects found\n'; exit 1; }
 
+    - name: Show dotnet info
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --info
+
+    - name: Show dotnet version
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --version
+
     - name: Restore
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
