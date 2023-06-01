@@ -1,6 +1,6 @@
 # Authentication ORM
 
-* Status: Proposed
+* Status: Accepted
 * Deciders: @MortMH, @Frydensberg1, @CodeReaper, @robertrosborg
 * Date: 2023-02-06
 
