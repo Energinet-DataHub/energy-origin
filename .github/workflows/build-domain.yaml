@@ -153,6 +153,7 @@ jobs:
           image-tag: ${{ steps.resolver.outputs.version }}
           docker-context: ${{ steps.resolver.outputs.domain }}
           dry-run: ${{ matrix.build.draft }}
+          build-args: DOTNET_VERSION=${{ matrix.build.dotnetVersion }}
 
   build-chart:
     name: Build chart

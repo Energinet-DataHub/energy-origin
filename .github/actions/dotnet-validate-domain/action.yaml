@@ -30,9 +30,12 @@ runs:
     - name: Print dotnet information
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: |
-        dotnet --info
-        dotnet --version
+      run: dotnet --info
+
+    - name: Print dotnet version
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --version
 
     - name: Ensure solution or project exists
       shell: bash

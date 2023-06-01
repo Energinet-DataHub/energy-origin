@@ -20,6 +20,9 @@ inputs:
     description: Perform all actions but without committing changes
     required: false
     default: "false"
+  build-args:
+    description: List of build-time variables
+    required: false
 
 runs:
   using: composite
@@ -48,3 +51,4 @@ runs:
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        build-args: ${{ inputs.build-args }}
