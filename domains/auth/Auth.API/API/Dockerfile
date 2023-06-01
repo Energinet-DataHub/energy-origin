@@ -1,10 +1,10 @@
 ARG DOTNET_VERSION=7.0
-FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine3.17 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-alpine3.17 AS build
 WORKDIR /src
 COPY ["Auth.API/API/API.csproj", "Auth.API/API/"]
 RUN dotnet restore "Auth.API/API/API.csproj"
