@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -32,18 +33,28 @@ public class TransferAgreementsControllerTests
         };
     }
 
+
     [Fact]
     public async Task Create_ShouldCallServiceOnce()
     {
-        var request = new CreateTransferAgreement();
+        var request = new CreateTransferAgreement
+        {
+            StartDate = DateTimeOffset.Now,
+            EndDate = DateTimeOffset.Now.AddDays(1),
+            ReceiverTin = "TestReceiverTin"
+        };
 
-        mockTransferAgreementService.Setup(service => service.CreateTransferAgreement(It.IsAny<TransferAgreement>()))
-            .ReturnsAsync(new TransferAgreement());
-
+        var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
+        var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");
 
         await controller.Create(request);
 
-
-        mockTransferAgreementService.Verify(service => service.CreateTransferAgreement(It.IsAny<TransferAgreement>()), Times.AtMostOnce);
+        mockTransferAgreementService.Verify(service => service.CreateTransferAgreement(It.Is<TransferAgreement>(agreement =>
+            agreement.SenderId == userId &&
+            agreement.ActorId == actorId &&
+            agreement.StartDate == request.StartDate.UtcDateTime &&
+            agreement.EndDate == request.EndDate.UtcDateTime &&
+            agreement.ReceiverTin == request.ReceiverTin
+        )), Times.Once);
     }
 }
