@@ -14,11 +14,11 @@ namespace API.UnitTests.Controllers;
 public class TransferAgreementsControllerTests
 {
     private readonly TransferAgreementsController controller;
-    private readonly Mock<ITransferAgreementService> mockTransferAgreementService;
+    private readonly Mock<ITransferAgreementRepository> mockTransferAgreementService;
 
     public TransferAgreementsControllerTests()
     {
-        mockTransferAgreementService = new Mock<ITransferAgreementService>();
+        mockTransferAgreementService = new Mock<ITransferAgreementRepository>();
         controller = new TransferAgreementsController(mockTransferAgreementService.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
@@ -37,12 +37,8 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCallServiceOnce()
     {
-        var request = new CreateTransferAgreement
-        {
-            StartDate = DateTimeOffset.Now,
-            EndDate = DateTimeOffset.Now.AddDays(1),
-            ReceiverTin = "TestReceiverTin"
-        };
+        var request = new CreateTransferAgreement(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1), "TestReceiverTin");
+
 
         var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
         var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");

@@ -2,11 +2,11 @@ using System.Threading.Tasks;
 
 namespace API.Data;
 
-public class TransferAgreementService : ITransferAgreementService
+public class TransferAgreementRepository : ITransferAgreementRepository
 {
     private readonly ApplicationDbContext context;
 
-    public TransferAgreementService(ApplicationDbContext context) => this.context = context;
+    public TransferAgreementRepository(ApplicationDbContext context) => this.context = context;
 
     public async Task<TransferAgreement> CreateTransferAgreement(TransferAgreement transferAgreement)
     {

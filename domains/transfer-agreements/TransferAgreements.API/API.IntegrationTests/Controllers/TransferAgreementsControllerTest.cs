@@ -21,12 +21,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
-        var transferAgreement = new CreateTransferAgreement
-        {
-            StartDate = new DateTimeOffset(DateTime.Now),
-            EndDate = new DateTimeOffset(DateTime.Now.AddDays(1)),
-            ReceiverTin = "12345678"
-        };
+        var transferAgreement = new CreateTransferAgreement(new DateTimeOffset(DateTime.Now), new DateTimeOffset(DateTime.Now.AddDays(1)), "12345678");
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         response.EnsureSuccessStatusCode();
@@ -38,9 +33,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
-        var transferAgreement = new CreateTransferAgreement();
+        var transferAgreement = new CreateTransferAgreement(new DateTimeOffset(DateTime.Now), new DateTimeOffset(DateTime.Now.AddDays(1)), "");
 
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new {});
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

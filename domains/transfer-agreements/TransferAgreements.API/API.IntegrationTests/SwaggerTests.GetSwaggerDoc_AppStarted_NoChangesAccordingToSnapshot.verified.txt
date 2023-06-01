@@ -40,11 +40,6 @@
   "components": {
     "schemas": {
       "CreateTransferAgreement": {
-        "required": [
-          "endDate",
-          "receiverTin",
-          "startDate"
-        ],
         "type": "object",
         "properties": {
           "startDate": {
@@ -56,7 +51,6 @@
             "format": "date-time"
           },
           "receiverTin": {
-            "minLength": 1,
             "type": "string"
           }
         },

@@ -84,7 +84,7 @@ builder.Services.AddSwaggerGen(o =>
     }
 });
 
-builder.Services.AddScoped<ITransferAgreementService, TransferAgreementService>();
+builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
