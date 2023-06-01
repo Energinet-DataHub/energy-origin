@@ -1,9 +1,9 @@
 using System;
 using CertificateValueObjects;
 
-namespace API.ContractService;
+namespace API.IntegrationTests.Models;
 
-public class CertificateIssuingContract
+public class CertificateIssuingContractResponse
 {
     public Guid Id { get; set; }
     public int ContractNumber { get; set; } = 0;
@@ -11,7 +11,7 @@ public class CertificateIssuingContract
     public string GridArea { get; set; } = "";
     public MeteringPointType MeteringPointType { get; set; }
     public string MeteringPointOwner { get; set; } = "";
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset? EndDate { get; set; }
-    public DateTimeOffset Created { get; set; }
+    public long StartDate { get; set; }
+    public long EndDate { get; set; }
+    public long Created { get; set; }
 }

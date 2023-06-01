@@ -22,10 +22,16 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
         return session.SaveChangesAsync();
     }
 
-    public Task<CertificateIssuingContract?> GetByGsrn(string gsrn, CancellationToken cancellationToken) => session
+    public Task Update(CertificateIssuingContract certificateIssuingContract)
+    {
+        session.Update(certificateIssuingContract);
+        return session.SaveChangesAsync();
+    }
+
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(string gsrn, CancellationToken cancellationToken) => session
         .Query<CertificateIssuingContract>()
         .Where(x => x.GSRN == gsrn)
-        .SingleOrDefaultAsync(cancellationToken);
+        .ToListAsync(cancellationToken);
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken) => session
         .Query<CertificateIssuingContract>()

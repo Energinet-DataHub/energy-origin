@@ -113,9 +113,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install yamlpath
-        uses: ./.github/actions/yamlpath-install
-
       - name: Resolve
         shell: bash
         id: resolver
@@ -127,9 +124,9 @@ jobs:
           service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
           overrides="${service}/chart-overrides.yaml"
-          name=$(basename $(yaml-get --query name "$overrides"))
+          name=$(basename $(yq '.name' "$overrides"))
 
-          version=$(yaml-get --query version "$overrides")
+          version=$(yq '.version' "$overrides")
           version=$(sh ./.github/tooling/semver.sh "$version" "$PR")
 
           echo "service=${service}" >> $GITHUB_OUTPUT
@@ -179,9 +176,6 @@ jobs:
           echo "domain=${DOMAIN}" >> $GITHUB_OUTPUT
           echo "chart=${chart}" >> $GITHUB_OUTPUT
 
-      - name: Install yamlpath
-        uses: ./.github/actions/yamlpath-install
-
       - name: Apply chart overrides
         shell: bash
         env:
@@ -192,14 +186,14 @@ jobs:
           output="$DOMAIN/chart/values.yaml"
           printf '%s' "$PROJECTS" | jq -r '.[].path' | grep ^$DOMAIN | while read project; do
               input="$project/../chart-overrides.yaml"
-              value=$(yaml-get --query version "$input")
+              value=$(yq '.version' "$input")
               value=$(sh ./.github/tooling/semver.sh "$value" "$PR")
-              path=$(yaml-get --query versionPath "$input")
-              yaml-set --change "$path" --value "$value" "$output"
+              path=$(yq '.versionPath' "$input")
+              yq -i ".$path = \"$value\"" "$output"
 
-              value=$(yaml-get --query name "$input")
-              path=$(yaml-get --query namePath "$input")
-              yaml-set --change "$path" --value "$value" "$output"
+              value=$(yq '.name' "$input")
+              path=$(yq '.namePath' "$input")
+              yq -i ".$path = \"$value\"" "$output"
           done
 
       - name: Resolve chart version
