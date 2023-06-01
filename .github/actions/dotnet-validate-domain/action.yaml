@@ -17,11 +17,6 @@ runs:
   steps:
     - uses: actions/checkout@v3
 
-    - name: Pin dotnet version
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: echo '{"sdk":{"version":"${{ inputs.dotnet-version }}"}}' > global.json
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:

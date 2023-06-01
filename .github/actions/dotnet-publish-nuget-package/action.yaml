@@ -16,9 +16,8 @@ inputs:
     required: true
 
   dotnet-version:
-    description: The version of dotnet to setup
-    default: 6.0.101
-    required: false
+    description: The version of dotnet to use
+    required: true
 
   nuget-api-key:
     description: A valid api key to publish to the NuGet repository
@@ -34,6 +33,16 @@ runs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Print dotnet information
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --info
+
+    - name: Print dotnet version
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --version
 
     - name: Restore
       shell: bash

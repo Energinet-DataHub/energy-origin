@@ -127,17 +127,25 @@ jobs:
           overrides="${service}/chart-overrides.yaml"
           name=$(basename $(yq '.name' "$overrides"))
 
-          version=$(yq '.version' "$overrides")
-          version=$(sh ./.github/tooling/semver.sh "$version" "$PR")
+          tag=$(yq '.version' "$overrides")
+          tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
+
+          dotnet=${{ matrix.build.dotnetVersion }}
 
           {
             echo "service=${service}"
             echo "project=${PROJECT}"
             echo "docker=${docker}"
             echo "domain=${domain}"
-            echo "version=${version}"
+            echo "tag=${tag}"
             echo "name=${name}"
+            echo "dotnet=${dotnet::${#dotnet}-2}"
           } >> $GITHUB_OUTPUT
+
+      - name: Pin dotnet version
+        shell: bash
+        working-directory: ${{ steps.resolver.outputs.service }}
+        run: echo '{"sdk":{"version":"${{ inputs.dotnet-version }}"}}' > global.json
 
       - name: Test and lint image
         uses: ./.github/actions/dotnet-validate-domain
@@ -150,10 +158,12 @@ jobs:
         with:
           dockerfile: ${{ steps.resolver.outputs.docker }}
           image-name: ${{ steps.resolver.outputs.name }}
-          image-tag: ${{ steps.resolver.outputs.version }}
+          image-tag: ${{ steps.resolver.outputs.tag }}
           docker-context: ${{ steps.resolver.outputs.domain }}
           dry-run: ${{ matrix.build.draft }}
-          build-args: DOTNET_VERSION=${{ matrix.build.dotnetVersion }}
+          build-args: |
+            SDK_VERSION=${{ matrix.build.dotnetVersion }}
+            RUNTIME_VERSION=${{ steps.resolver.outputs.dotnet }}
 
   build-chart:
     name: Build chart
