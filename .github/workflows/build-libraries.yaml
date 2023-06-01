@@ -60,8 +60,8 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
-          [ -f "${{ env.SOLUTION }}/global.json" ] || echo "{}" > "${{ env.SOLUTION }}/global.json"
-          settings=$(jq -srec '.[0] * .[1]' "global.json" "${{ env.SOLUTION }}/global.json")
+          [ -f "$solution/global.json" ] || echo "{}" > "$solution/global.json"
+          settings=$(jq -srec '.[0] * .[1]' "global.json" "$solution/global.json")
           sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
 
           echo "SOLUTION=$solution" >> $GITHUB_ENV

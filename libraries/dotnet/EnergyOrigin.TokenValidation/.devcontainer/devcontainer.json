@@ -1,5 +1,5 @@
 {
-    "name": "TokenValidation - trigger",
+    "name": "TokenValidation",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
