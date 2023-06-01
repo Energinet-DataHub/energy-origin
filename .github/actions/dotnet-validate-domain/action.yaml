@@ -9,8 +9,8 @@ inputs:
 
   dotnet-version:
     description: The version of dotnet to setup
-    default: 7.0.105
-    required: true
+    default: 6.0.101
+    required: false
 
 runs:
   using: composite
@@ -34,16 +34,6 @@ runs:
         find . -name "*.csproj" -exec dotnet sln add {} \;
 
         dotnet sln list | grep csproj >/dev/null || { printf '::error::No solution or projects found\n'; exit 1; }
-
-    - name: Show dotnet info
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet --info
-
-    - name: Show dotnet version
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet --version
 
     - name: Restore
       shell: bash
