@@ -66,12 +66,13 @@ jobs:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
           matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
-            [ -f "$domain/.domain.json" ] || echo "{}" > "$domain/.domain.json"
-            echo '{"draft": false, "dotnetVersion": "6.0.101"}' > "$domain/.default.domain.json"
-            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/.default.domain.json" "$domain/.domain.json")
+            [ -f "$domain/global.json" ] || echo "{}" > "$domain/global.json"
+            echo '{"draft": false}' > "$domain/default.global.json"
+            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/default.global.json" "$domain/../../global.json" "$domain/global.json")
 
             draft=$(printf '%s' "$settings" | jq -rce '.draft')
-            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s"}' "$directory" "$draft"; done | jq -sc '.')
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s","dotnetVersion":"%s"}' "$directory" "$draft" "$sdk"; done | jq -sc '.')
 
             printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
           done | jq -sc '.')
@@ -129,18 +130,20 @@ jobs:
           version=$(yq '.version' "$overrides")
           version=$(sh ./.github/tooling/semver.sh "$version" "$PR")
 
-          echo "service=${service}" >> $GITHUB_OUTPUT
-          echo "project=${PROJECT}" >> $GITHUB_OUTPUT
-          echo "docker=${docker}" >> $GITHUB_OUTPUT
-          echo "domain=${domain}" >> $GITHUB_OUTPUT
-          echo "version=${version}" >> $GITHUB_OUTPUT
-          echo "name=${name}" >> $GITHUB_OUTPUT
+          {
+            echo "service=${service}"
+            echo "project=${PROJECT}"
+            echo "docker=${docker}"
+            echo "domain=${domain}"
+            echo "version=${version}"
+            echo "name=${name}"
+          } >> $GITHUB_OUTPUT
 
       - name: Test and lint image
         uses: ./.github/actions/dotnet-validate-domain
         with:
           solution-file-folder: ${{ steps.resolver.outputs.service }}
-          dotnet-version: ${{ matrix.build.path.dotnetVersion }}
+          dotnet-version: ${{ matrix.build.dotnetVersion }}
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container
