@@ -1,7 +1,8 @@
 using System;
-using System.Linq;
 using System.Security.Claims;
-using API.ApiModels.Responses;
+using System.Threading.Tasks;
+using API.ApiModels.Requests;
+using API.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,34 +12,24 @@ namespace API.Controllers;
 [ApiController]
 public class TransferAgreementsController : ControllerBase
 {
-    private static readonly string[] summaries = {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+    private readonly ITransferAgreementService transferAgreementService;
 
-    /// <summary>
-    /// This comment is included
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(WeatherForecastList), 200)]
-    [Route("api/transfer-agreements")]
-    public IActionResult Get() =>
-        Ok(new WeatherForecastList
+    public TransferAgreementsController(ITransferAgreementService transferAgreementService) => this.transferAgreementService = transferAgreementService;
+
+    [HttpPost("api/transfer-agreements")]
+    public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
+    {
+        var transferAgreement = new TransferAgreement
         {
-            Result =
-                Enumerable.Range(1, 5)
-                    .Select(index => new WeatherForecast
-                    {
-                        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        TemperatureC = Random.Shared.Next(-20, 55),
-                        Summary = summaries[Random.Shared.Next(summaries.Length)]
-                    })
-                    .ToArray()
-        });
+            SenderId = Guid.Parse(User.FindFirstValue("sub")),
+            ActorId = User.FindFirstValue("atr"),
+            StartDate = request.StartDate.UtcDateTime,
+            EndDate = request.EndDate.UtcDateTime,
+            ReceiverTin = request.ReceiverTin
+        };
 
-    /// <summary>
-    /// An example of how to get the UUID for the signed in user
-    /// </summary>
-    [HttpGet]
-    [Route("api/transfer-agreements/subject")]
-    public IActionResult GetSubject() => Ok(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var result = await transferAgreementService.CreateTransferAgreement(transferAgreement);
+
+        return Ok(result);
+    }
 }
