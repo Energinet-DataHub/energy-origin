@@ -13,10 +13,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public SwaggerTests(TransferAgreementsApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public SwaggerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
