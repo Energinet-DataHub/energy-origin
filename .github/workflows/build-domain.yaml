@@ -68,10 +68,11 @@ jobs:
           matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
             [ -f "$domain/domain.json" ] || echo "{}" > "$domain/domain.json"
             echo '{"draft": false}' > "$domain/default.domain.json"
-            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/default.domain.json" "$domain/domain.json")
+            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            settings=$(jq -srec '.[0] * .[1] * .[2] | .path=$path' --arg path "$domain" "$domain/default.domain.json" "$domain/domain.json" "$domain/global.json")
 
             draft=$(printf '%s' "$settings" | jq -rce '.draft')
-            sdk=$(cd "$domain"; dotnet --version)
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
             projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s","dotnetVersion":"%s"}' "$directory" "$draft" "$sdk"; done | jq -sc '.')
 
             printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
