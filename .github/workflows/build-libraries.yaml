@@ -60,9 +60,8 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
-          [ -f "$solution/global.json" ] || echo "{}" > "$solution/global.json"
-          settings=$(jq -srec '.[0] * .[1]' "global.json" "$solution/global.json")
-          sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+          [ -f "$solution/global.json" ] || cp "$solution/../../global.json" "$solution/global.json"
+          sdk=$(jq -rce '.sdk.version' "$solution/global.json")
 
           echo "SOLUTION=$solution" >> $GITHUB_ENV
           echo "PROJECT=$project" >> $GITHUB_ENV
@@ -76,7 +75,7 @@ jobs:
       - name: Pin dotnet version
         shell: bash
         working-directory: ${{ env.SOLUTION }}
-        run: echo '{"sdk":{"version":"${{ env.SDK_VERSION }}"}}' > global.json
+        run: echo '{"sdk":{"rollForward":"disable","version":"${{ env.SDK_VERSION }}"}}' > global.json
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
