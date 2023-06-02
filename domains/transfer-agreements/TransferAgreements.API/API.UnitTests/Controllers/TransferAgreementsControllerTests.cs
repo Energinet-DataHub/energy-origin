@@ -14,12 +14,16 @@ namespace API.UnitTests.Controllers;
 public class TransferAgreementsControllerTests
 {
     private readonly TransferAgreementsController controller;
-    private readonly Mock<ITransferAgreementRepository> mockTransferAgreementService;
+    private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
 
     public TransferAgreementsControllerTests()
     {
-        mockTransferAgreementService = new Mock<ITransferAgreementRepository>();
-        controller = new TransferAgreementsController(mockTransferAgreementService.Object);
+        mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
+        mockTransferAgreementRepository
+            .Setup(o => o.CreateTransferAgreement(It.IsAny<TransferAgreement>()))
+            .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
+
+        controller = new TransferAgreementsController(mockTransferAgreementRepository.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
@@ -37,19 +41,17 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCallServiceOnce()
     {
-        var request = new CreateTransferAgreement(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1), "TestReceiverTin");
-
-
+        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
         var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
         var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");
 
         await controller.Create(request);
 
-        mockTransferAgreementService.Verify(service => service.CreateTransferAgreement(It.Is<TransferAgreement>(agreement =>
+        mockTransferAgreementRepository.Verify(service => service.CreateTransferAgreement(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == userId &&
             agreement.ActorId == actorId &&
-            agreement.StartDate == request.StartDate.UtcDateTime &&
-            agreement.EndDate == request.EndDate.UtcDateTime &&
+            agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
+            agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
             agreement.ReceiverTin == request.ReceiverTin
         )), Times.Once);
     }

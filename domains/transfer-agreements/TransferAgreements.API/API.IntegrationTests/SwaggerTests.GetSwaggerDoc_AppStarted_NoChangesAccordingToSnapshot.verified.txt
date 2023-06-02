@@ -43,12 +43,12 @@
         "type": "object",
         "properties": {
           "startDate": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           },
           "endDate": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           },
           "receiverTin": {
             "type": "string"

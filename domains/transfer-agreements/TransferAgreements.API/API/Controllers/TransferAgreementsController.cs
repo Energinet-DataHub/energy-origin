@@ -19,24 +19,14 @@ public class TransferAgreementsController : ControllerBase
 
     [HttpPost("api/transfer-agreements")]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
-
     {
         var actor = User.FindActorClaim();
-        if (actor == null)
-        {
-            return ValidationProblem("Actor Could not be found");
-        }
-
         var subject = User.FindSubjectClaim();
-        if (subject == null)
-        {
-            return ValidationProblem("Subject could not be found");
-        }
 
         var transferAgreement = new TransferAgreement
         {
-            StartDate = request.StartDate.UtcDateTime,
-            EndDate = request.EndDate.UtcDateTime,
+            StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
+            EndDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate),
             ActorId = actor,
             SenderId = Guid.Parse(subject),
             ReceiverTin = request.ReceiverTin
@@ -44,6 +34,6 @@ public class TransferAgreementsController : ControllerBase
 
         var result = await transferAgreementRepository.CreateTransferAgreement(transferAgreement);
 
-        return Ok(result);
+        return Created($"api/transfer-agreements/{result.Id}", result);
     }
 }
