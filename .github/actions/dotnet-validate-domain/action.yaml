@@ -37,8 +37,9 @@ runs:
       shell: bash
       run: |
         echo '--start-of-list--'
-        find . -name global.json -exec sh -c 'echo "$1:"; cat "$1"' {} \;
+        find . -name global.json
         echo '--end-of-list--'
+        find . -name global.json -exec sh -c 'echo "$1"; cat "$1"; echo' {} \;
 
     - name: Ensure solution or project exists
       shell: bash
