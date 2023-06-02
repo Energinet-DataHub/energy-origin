@@ -60,7 +60,7 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
-          [ -f "$solution/global.json" ] || cp "$solution/../../global.json" "$solution/global.json"
+          [ -f "$solution/global.json" ] || cp "$solution/../../../global.json" "$solution/global.json"
           sdk=$(jq -rce '.sdk.version' "$solution/global.json")
 
           echo "SOLUTION=$solution" >> $GITHUB_ENV
