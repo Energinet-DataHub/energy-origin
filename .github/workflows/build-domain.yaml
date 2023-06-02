@@ -68,7 +68,7 @@ jobs:
           matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
             [ -f "$domain/global.json" ] || echo "{}" > "$domain/global.json"
             echo '{"draft": false}' > "$domain/default.global.json"
-            settings=$(jq -srec '.[0] * .[1] | .path=$path' --arg path "$domain" "$domain/default.global.json" "$domain/../../global.json" "$domain/global.json")
+            settings=$(jq -srec '.[0] * .[1] * .[2] | .path=$path' --arg path "$domain" "$domain/default.global.json" "$domain/../../global.json" "$domain/global.json")
 
             draft=$(printf '%s' "$settings" | jq -rce '.draft')
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
