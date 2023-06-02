@@ -31,11 +31,6 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet --version
 
-    - name: Print debug
-      shell: bash
-      run: |
-        find . -name global.json -exec sh -c 'echo "$1"; cat "$1"; echo' sh {} \;
-
     - name: Ensure solution or project exists
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
