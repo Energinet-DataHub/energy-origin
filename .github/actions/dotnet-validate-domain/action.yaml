@@ -16,8 +16,6 @@ runs:
   using: composite
 
   steps:
-    - uses: actions/checkout@v3
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
@@ -36,9 +34,6 @@ runs:
     - name: Print debug
       shell: bash
       run: |
-        echo '--start-of-list--'
-        find . -name global.json
-        echo '--end-of-list--'
         find . -name global.json -exec sh -c 'echo "$1"; cat "$1"; echo' sh {} \;
 
     - name: Ensure solution or project exists
