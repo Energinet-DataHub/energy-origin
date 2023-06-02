@@ -146,9 +146,10 @@ jobs:
       - name: Pin dotnet version
         shell: bash
         run: |
-          pwd
-          ls
           echo '{"sdk":{"rollForward":"disable","version":"${{ matrix.build.dotnetVersion }}"}}' > "${{ steps.resolver.outputs.domain }}/global.json"
+          dotnet --info
+          cd "${{ steps.resolver.outputs.domain }}"
+          dotnet --info
 
       - name: Test and lint image
         uses: ./.github/actions/dotnet-validate-domain
