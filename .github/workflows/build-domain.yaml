@@ -143,11 +143,6 @@ jobs:
             echo "dotnet=${dotnet::${#dotnet}-2}"
           } >> $GITHUB_OUTPUT
 
-      - name: Pin dotnet version
-        shell: bash
-        working-directory: ${{ steps.resolver.outputs.service }}
-        run: echo '{"sdk":{"version":"${{ inputs.dotnet-version }}"}}' > global.json
-
       - name: Test and lint image
         uses: ./.github/actions/dotnet-validate-domain
         with:
