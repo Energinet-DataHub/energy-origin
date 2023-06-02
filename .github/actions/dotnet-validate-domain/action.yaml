@@ -25,20 +25,18 @@ runs:
 
     - name: Print dotnet information
       shell: bash
-      run: |
-        cd "${{ inputs.solution-file-folder }}"
-        dotnet --info
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --info
 
     - name: Print dotnet version
       shell: bash
-      run: |
-        cd "${{ inputs.solution-file-folder }}"
-        dotnet --version
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --version
 
     - name: Ensure solution or project exists
       shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
       run: |
-        cd "${{ inputs.solution-file-folder }}"
         compgen -G "*.sln" >/dev/null && exit 0
         compgen -G "*.csproj" >/dev/null && exit 0
 
@@ -49,30 +47,28 @@ runs:
 
     - name: Restore
       shell: bash
-      run: |
-        cd "${{ inputs.solution-file-folder }}"
-        dotnet restore
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet restore
 
     - name: Lint
       shell: bash
-      run: |
-        cd "${{ inputs.solution-file-folder }}"
-        dotnet format --verify-no-changes -v diag
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet test --no-restore --verbosity normal
 
     - name: Build
       shell: bash
-      run: |
-        cd "${{ inputs.solution-file-folder }}"
-        dotnet build --no-restore --configuration Release
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet build --no-restore --configuration Release
 
     - name: Migration
       shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
       run: |
-        cd "${{ inputs.solution-file-folder }}"
         for service in $(find . -name "*.csproj"); do
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
