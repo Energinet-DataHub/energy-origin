@@ -53,6 +53,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
+    public async Task SeedData(Action<ApplicationDbContext> seeder)
+    {
+        using (var scope = Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            seeder(dbContext);
+            await dbContext.SaveChangesAsync();
+        }
+    }
+
+
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient(string sub)
