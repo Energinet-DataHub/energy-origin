@@ -10,22 +10,18 @@ jobs:
       matrix: ${{ env.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - uses: CodeReaper/find-diff-action@v1
+      - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains libraries/dotnet
-          type: directories
-          minimumDepth: 1
-          maximumDepth: 1
+          paths: domains/*/ libraries/dotnet/*/
 
       - name: Set default matrix
         shell: bash
         run: |
           echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v3
+        if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}

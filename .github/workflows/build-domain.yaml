@@ -45,13 +45,10 @@ jobs:
 
           done
 
-      - uses: CodeReaper/find-diff-action@v1
+      - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains
-          type: directories
-          minimumDepth: 1
-          maximumDepth: 1
+          paths: domains/*/
 
       - name: Set default matrices
         shell: bash
