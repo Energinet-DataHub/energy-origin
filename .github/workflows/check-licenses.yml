@@ -14,13 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: CodeReaper/find-diff-action@v1
+      - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains libraries/dotnet
-          type: directories
-          minimumDepth: 1
-          maximumDepth: 1
+          paths: domains/*/ libraries/dotnet/*/
 
       - name: Set default matrix
         shell: bash

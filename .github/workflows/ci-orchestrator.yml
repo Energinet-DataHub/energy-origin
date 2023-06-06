@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: sonar
-        uses: CodeReaper/find-diff-action@v2
+        uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
           paths: domains/certificates/**
