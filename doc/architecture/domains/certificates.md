@@ -29,8 +29,10 @@ The sequence diagram below shows the flow of messages between the components whe
 
 ```mermaid
 sequenceDiagram
+    box Certificate API
     participant dss as DataSyncSyncer
     participant gci as GranularCertificateIssuer
+    end
     participant reg as RegistryConnector
 
     dss->>gci: EnergyMeasured
