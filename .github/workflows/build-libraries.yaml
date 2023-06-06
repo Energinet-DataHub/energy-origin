@@ -10,10 +10,6 @@ jobs:
       matrix: ${{ env.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
@@ -23,6 +19,9 @@ jobs:
         shell: bash
         run: |
           echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v3
+        if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
