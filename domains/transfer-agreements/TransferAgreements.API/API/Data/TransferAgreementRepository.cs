@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace API.Data;
@@ -14,4 +15,6 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         await context.SaveChangesAsync();
         return transferAgreement;
     }
+
+    public async Task<TransferAgreement> GetTransferAgreement(Guid id) => await context.TransferAgreements.FindAsync(id);
 }

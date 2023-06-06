@@ -37,4 +37,17 @@ public class TransferAgreementsController : ControllerBase
 
         return Created($"api/transfer-agreements/{result.Id}", result);
     }
+
+    [HttpGet("api/transfer-agreements/{id}")]
+    public async Task<ActionResult> Get(Guid id)
+    {
+        var result = await transferAgreementRepository.GetTransferAgreement(id);
+
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
+    }
 }
