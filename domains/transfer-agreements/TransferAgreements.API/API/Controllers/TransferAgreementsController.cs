@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.Data;
@@ -11,6 +12,7 @@ namespace API.Controllers;
 
 [Authorize]
 [ApiController]
+[Route("api/transfer-agreements")]
 public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
@@ -18,7 +20,7 @@ public class TransferAgreementsController : ControllerBase
     public TransferAgreementsController(ITransferAgreementRepository transferAgreementRepository) => this.transferAgreementRepository = transferAgreementRepository;
 
     [ProducesResponseType(201)]
-    [HttpPost("api/transfer-agreements")]
+    [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
         var actor = User.FindActorClaim();
@@ -38,16 +40,10 @@ public class TransferAgreementsController : ControllerBase
         return Created($"api/transfer-agreements/{result.Id}", result);
     }
 
-    [HttpGet("api/transfer-agreements/{id}")]
-    public async Task<ActionResult> Get(Guid id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult> Get([FromRoute] Guid id)
     {
         var result = await transferAgreementRepository.GetTransferAgreement(id);
-
-        if (result == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(result);
+        return result == null ? NotFound() : Ok(result);
     }
 }

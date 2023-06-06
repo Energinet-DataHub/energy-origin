@@ -16,5 +16,5 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         return transferAgreement;
     }
 
-    public async Task<TransferAgreement> GetTransferAgreement(Guid id) => await context.TransferAgreements.FindAsync(id);
+    public async Task<TransferAgreement?> GetTransferAgreement(Guid id) => await context.TransferAgreements.FindAsync(id);
 }

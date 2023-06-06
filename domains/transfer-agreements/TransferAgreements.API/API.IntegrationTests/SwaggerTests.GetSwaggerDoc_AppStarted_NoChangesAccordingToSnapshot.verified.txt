@@ -35,6 +35,29 @@
           }
         }
       }
+    },
+    "/api/transfer-agreements/{id}": {
+      "get": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     }
   },
   "components": {

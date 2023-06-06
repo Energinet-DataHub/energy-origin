@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -14,16 +15,21 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly HttpClient authenticatedClient;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    {
+        this.factory = factory;
+
+        var sub = Guid.NewGuid().ToString();
+        authenticatedClient = factory.CreateAuthenticatedClient(sub);
+    }
 
     [Fact]
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
-        var sub = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
 
-        var transferAgreement = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
+        var transferAgreement = CreateTransferAgreement();
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         response.EnsureSuccessStatusCode();
@@ -32,9 +38,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldFail_WhenModelInvalid()
     {
-        var sub = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -42,28 +45,20 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Get_ShouldGetTransferAgreement_WhenIdIsValid()
     {
-        var sub = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-
-        var transferAgreement = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "");
-
-        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-        post.EnsureSuccessStatusCode();
-
+        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
         var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
 
         var get = await authenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        get.EnsureSuccessStatusCode();
+
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await get.Content.ReadAsStringAsync());
 
-        postTransferAgreement.Should().BeEquivalentTo(getTransferAgreement);
+        getTransferAgreement.Should().BeEquivalentTo(postTransferAgreement);
     }
 
     [Fact]
-    public async Task Get_ShouldReturnBadRequest_WhenIdIsInValid()
+    public async Task Get_ShouldReturnBadRequest_WhenIdIsInvalidGuid()
     {
-        var sub = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-
         var response = await authenticatedClient.GetAsync("api/transfer-agreements/1234");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -71,10 +66,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Get_ShouldReturnNotFound_WhenResourceIsNotFound()
     {
-        var sub = Guid.NewGuid().ToString();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-
         var response = await authenticatedClient.GetAsync($"api/transfer-agreements/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    private static CreateTransferAgreement CreateTransferAgreement()
+    {
+        return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
     }
 }

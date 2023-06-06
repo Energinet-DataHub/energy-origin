@@ -39,7 +39,7 @@ public class TransferAgreementsControllerTests
 
 
     [Fact]
-    public async Task Create_ShouldCallServiceOnce()
+    public async Task Create_ShouldCallRepositoryOnce()
     {
         var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
         var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
@@ -47,12 +47,21 @@ public class TransferAgreementsControllerTests
 
         await controller.Create(request);
 
-        mockTransferAgreementRepository.Verify(service => service.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
+        mockTransferAgreementRepository.Verify(repository => repository.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == userId &&
             agreement.ActorId == actorId &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
             agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
             agreement.ReceiverTin == request.ReceiverTin
         )), Times.Once);
+    }
+
+    [Fact]
+    public async Task Get_ShouldCallRepositoryOnce()
+    {
+        var id = Guid.NewGuid();
+        await controller.Get(id);
+
+        mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreement(id), Times.Once);
     }
 }
