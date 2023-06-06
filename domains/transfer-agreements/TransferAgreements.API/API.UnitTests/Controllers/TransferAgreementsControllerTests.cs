@@ -20,7 +20,7 @@ public class TransferAgreementsControllerTests
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
         mockTransferAgreementRepository
-            .Setup(o => o.CreateTransferAgreement(It.IsAny<TransferAgreement>()))
+            .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
             .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
 
         controller = new TransferAgreementsController(mockTransferAgreementRepository.Object);
@@ -47,7 +47,7 @@ public class TransferAgreementsControllerTests
 
         await controller.Create(request);
 
-        mockTransferAgreementRepository.Verify(service => service.CreateTransferAgreement(It.Is<TransferAgreement>(agreement =>
+        mockTransferAgreementRepository.Verify(service => service.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == userId &&
             agreement.ActorId == actorId &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&

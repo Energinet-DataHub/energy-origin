@@ -8,7 +8,7 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     public TransferAgreementRepository(ApplicationDbContext context) => this.context = context;
 
-    public async Task<TransferAgreement> CreateTransferAgreement(TransferAgreement transferAgreement)
+    public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {
         context.TransferAgreements.Add(transferAgreement);
         await context.SaveChangesAsync();

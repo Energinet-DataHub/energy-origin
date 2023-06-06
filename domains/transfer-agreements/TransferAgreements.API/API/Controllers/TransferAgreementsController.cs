@@ -17,6 +17,7 @@ public class TransferAgreementsController : ControllerBase
 
     public TransferAgreementsController(ITransferAgreementRepository transferAgreementRepository) => this.transferAgreementRepository = transferAgreementRepository;
 
+    [ProducesResponseType(201)]
     [HttpPost("api/transfer-agreements")]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
@@ -32,7 +33,7 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin = request.ReceiverTin
         };
 
-        var result = await transferAgreementRepository.CreateTransferAgreement(transferAgreement);
+        var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         return Created($"api/transfer-agreements/{result.Id}", result);
     }

@@ -4,5 +4,5 @@ namespace API.Data;
 
 public interface ITransferAgreementRepository
 {
-    Task<TransferAgreement> CreateTransferAgreement(TransferAgreement transferAgreement);
+    Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement);
 }
