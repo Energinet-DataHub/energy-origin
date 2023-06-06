@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
+using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -37,4 +39,21 @@ public class TransferAgreementsController : ControllerBase
 
         return Created($"api/transfer-agreements/{result.Id}", result);
     }
+
+    [ProducesResponseType(200)]
+    [HttpGet("api/transfer-agreements")]
+    public async Task<ActionResult<List<TransferAgreementResponse>>> GetBySubjectId()
+    {
+        var subject = User.FindSubjectClaim();
+
+        if(!Guid.TryParse(subject, out var subjectId))
+        {
+            return BadRequest("Invalid subject ID.");
+        }
+
+        var response = await transferAgreementRepository.GetTransferAgreementsBySubjectId(subjectId);
+
+        return Ok(response);
+    }
+
 }
