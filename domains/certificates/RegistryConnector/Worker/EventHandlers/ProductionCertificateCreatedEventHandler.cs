@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Contracts.Certificates;
 using MassTransit;
@@ -45,14 +44,16 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             msg.CertificateId);
 
         //TODO GSRN in Project Origin is a ulong. Should be a string? See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1519
-        commandBuilder.IssueConsumptionCertificate(
+        commandBuilder.IssueProductionCertificate(
             id: federatedCertificateId,
             inteval: msg.Period.ToDateInterval(),
             gridArea: msg.GridArea,
             gsrn: ulong.Parse(msg.ShieldedGsrn.Value.Value),
             quantity: new ShieldedValue((uint)msg.ShieldedQuantity.Value),
             owner: ownerKey.PublicKey,
-            issuingBodySigner: issuerKey.Value
+            issuingBodySigner: issuerKey.Value,
+            fuelCode: msg.Technology.FuelCode,
+            techCode: msg.Technology.TechCode
         );
 
         //TODO sometimes Execute returns faster than the wrapped msg is saved to cache. See issue: https://github.com/project-origin/registry/issues/61
