@@ -22,3 +22,4 @@ Tasks - for Project Origin:
 Something that is outside the wallet integration task:
 
 * Ensure only one cert per measurement (link to zenhub issue)
+* We have multiple services depending on the same Marten-database making it a single point of failure. Is that something we want in the future? Is there too much functionality in the cert domain? (create zenhub issue for this)
