@@ -25,20 +25,24 @@ Note: `ContractService` is currently getting information about a metering point 
 ![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
 ### Message flow: Issue certificate
-The sequence diagram below shows the flow of messages between the components when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram.
+The sequence diagram below shows the flow of messages between event handlers when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram. The boxes indicates the container holding the event handler.
 
 ```mermaid
 sequenceDiagram
-    box Certificate API
+    box Container: DataSyncSyncer
     participant dss as DataSyncSyncer
-    participant gci as GranularCertificateIssuer
     end
-    participant reg as RegistryConnector
+    box Container: Issuer
+    participant gci as GranularCertificateIssuer
+    participant reg as RegistryIssuer
+    participant wal as WalletSliceReceiver
+    end
 
     dss->>gci: EnergyMeasured
     gci->>reg: ProductionCertificateCreated
     alt is issued in Project Origin Registry
-        reg->>gci: CertificateIssuedInRegistry
+        reg->>wal: CertificateIssuedInRegistry
+        wal->>gci: SliceReceivedInWallet
     else
         reg->>gci: CertificateRejectedInRegistry
     end
