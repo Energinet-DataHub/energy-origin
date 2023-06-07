@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
@@ -72,9 +72,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 
         response.EnsureSuccessStatusCode();
-        var transferAgreements = await response.Content.ReadFromJsonAsync<List<TransferAgreementsResponse>>();
-        transferAgreements.Should().NotBeNull();
-        transferAgreements.Should().HaveCount(2);
+        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var t = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
+
+        t.Should().NotBeNull();
+        t.TransferAgreements.Should().HaveCount(2);
     }
 
 
