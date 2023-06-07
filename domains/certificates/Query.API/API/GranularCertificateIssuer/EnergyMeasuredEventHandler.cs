@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using AggregateRepositories;
@@ -26,37 +27,48 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
+        var shouldProduceNoCertificateLogStatement = true;
+
         var message = context.Message;
 
-        var contract = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
+        var contracts = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
 
-        if (!ShouldEventBeProduced(contract, message))
+        foreach (var contract in contracts)
         {
-            logger.LogInformation("No production certificate created for {message}", message);
-            return;
+            if (!ShouldEventBeProduced(contract, message))
+            {
+                continue;
+            }
+
+            var productionCertificate = new ProductionCertificate(
+                contract!.GridArea,
+                new Period(message.DateFrom, message.DateTo),
+                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+                contract.MeteringPointOwner,
+                message.GSRN,
+                message.Quantity);
+
+            await repository.Save(productionCertificate, context.CancellationToken);
+
+            //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
+            //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
+            await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
+                contract.GridArea,
+                new Period(message.DateFrom, message.DateTo),
+                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+                contract.MeteringPointOwner,
+                new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
+                new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
+
+            logger.LogInformation("Created production certificate for {Message}", message);
+
+            shouldProduceNoCertificateLogStatement = false;
         }
 
-        var productionCertificate = new ProductionCertificate(
-            contract!.GridArea,
-            new Period(message.DateFrom, message.DateTo),
-            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-            contract.MeteringPointOwner,
-            message.GSRN,
-            message.Quantity);
-
-        await repository.Save(productionCertificate, context.CancellationToken);
-
-        //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
-        //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518 
-        await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
-            contract.GridArea,
-            new Period(message.DateFrom, message.DateTo),
-            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-            contract.MeteringPointOwner,
-            new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
-            new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
-
-        logger.LogInformation("Created production certificate for {message}", message);
+        if (shouldProduceNoCertificateLogStatement)
+        {
+            logger.LogInformation("No production certificate created for {Message}", message);
+        }
     }
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract? contract,
@@ -77,6 +89,16 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
+        if (CheckEndDateNotNullOrAfterEvent(contract.EndDate, energyMeasuredIntegrationEvent.DateTo))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool CheckEndDateNotNullOrAfterEvent(DateTimeOffset? contractEndDate, long eventEndDate)
+    {
+        return contractEndDate != null && eventEndDate > contractEndDate?.ToUnixTimeSeconds();
     }
 }

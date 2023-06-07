@@ -10,22 +10,18 @@ jobs:
       matrix: ${{ env.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - uses: CodeReaper/find-diff-action@v1
+      - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: libraries/dotnet
-          type: directories
-          minimumDepth: 1
-          maximumDepth: 1
+          paths: libraries/dotnet/*/
 
       - name: Set default matrix
         shell: bash
         run: |
           echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v3
+        if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
@@ -51,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Resolve paths
+      - name: Resolve values
         shell: bash
         run: |
           solution=$(dirname "${{ matrix.projects.project }}")
@@ -60,13 +56,21 @@ jobs:
           printf 'Solution: %s\n' "$solution"
           printf 'Project: %s\n' "$project"
 
+          [ -f "$solution/global.json" ] || cp "$solution/../../../global.json" "$solution/global.json"
+          sdk=$(jq -rce '.sdk.version' "$solution/global.json")
+
           echo "SOLUTION=$solution" >> $GITHUB_ENV
           echo "PROJECT=$project" >> $GITHUB_ENV
+          echo "SDK_VERSION=$sdk" >> $GITHUB_ENV
 
       - name: Resolve version
         id: resolve-version
         shell: bash
         run: echo "result=$(yq '.version' ${{ env.SOLUTION }}/version.yaml)" >> $GITHUB_OUTPUT
+
+      - name: Pin dotnet version
+        shell: bash
+        run: echo '{"sdk":{"rollForward":"disable","version":"${{ env.SDK_VERSION }}"}}' > "${{ env.SOLUTION }}/global.json"
 
       - name: Build library
         uses: ./.github/actions/dotnet-publish-nuget-package
@@ -75,3 +79,4 @@ jobs:
           project-name: ${{ env.PROJECT }}
           package-version: ${{ steps.resolve-version.outputs.result }}
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}
+          dotnet-version: ${{ env.SDK_VERSION }}

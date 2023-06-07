@@ -12,5 +12,6 @@ public class CertificateIssuingContract
     public MeteringPointType MeteringPointType { get; set; }
     public string MeteringPointOwner { get; set; } = "";
     public DateTimeOffset StartDate { get; set; }
+    public DateTimeOffset? EndDate { get; set; }
     public DateTimeOffset Created { get; set; }
 }
