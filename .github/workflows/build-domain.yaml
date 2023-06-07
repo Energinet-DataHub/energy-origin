@@ -48,7 +48,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains/*/
+          paths: domains/*
 
       - name: Set default matrices
         shell: bash
