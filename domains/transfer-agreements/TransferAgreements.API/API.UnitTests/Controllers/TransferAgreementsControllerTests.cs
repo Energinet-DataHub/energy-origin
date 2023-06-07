@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.Controllers;
 using API.Data;
+using FluentAssertions.Equivalency;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -16,6 +17,9 @@ public class TransferAgreementsControllerTests
     private readonly TransferAgreementsController controller;
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
 
+    private readonly string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
+    private readonly string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
+    private readonly string tin = "11223344";
     public TransferAgreementsControllerTests()
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
@@ -27,8 +31,9 @@ public class TransferAgreementsControllerTests
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            new("sub", "03bad0af-caeb-46e8-809c-1d35a5863bc7"),
-            new("atr", "d4f32241-442c-4043-8795-a4e6bf574e7f")
+            new("sub", subject),
+            new("atr", atr),
+            new("tin", tin)
         }, "mock"));
 
         controller.ControllerContext = new ControllerContext
@@ -36,7 +41,6 @@ public class TransferAgreementsControllerTests
             HttpContext = new DefaultHttpContext { User = user }
         };
     }
-
 
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
@@ -62,6 +66,6 @@ public class TransferAgreementsControllerTests
         var id = Guid.NewGuid();
         await controller.Get(id);
 
-        mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreement(id), Times.Once);
+        mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreement(id, subject, tin), Times.Once);
     }
 }

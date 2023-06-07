@@ -43,7 +43,10 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var result = await transferAgreementRepository.GetTransferAgreement(id);
+        var tin = User.FindFirstValue("tin")!;
+        var subject = User.FindSubjectClaim();
+
+        var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
         return result == null ? NotFound() : Ok(result);
     }
 }

@@ -43,7 +43,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public async Task Get_ShouldGetTransferAgreement_WhenIdIsValid()
+    public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndNotReceiver()
     {
         var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
         var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
@@ -54,6 +54,33 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await get.Content.ReadAsStringAsync());
 
         getTransferAgreement.Should().BeEquivalentTo(postTransferAgreement);
+    }
+
+    [Fact]
+    public async Task Get_ShouldGetTransferAgreement_WhenReceiverIsValidAndNotOwnerIsValid()
+    {
+        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
+        var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
+
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: postTransferAgreement.ReceiverTin);
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        get.EnsureSuccessStatusCode();
+
+        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await get.Content.ReadAsStringAsync());
+        getTransferAgreement.Should().BeEquivalentTo(postTransferAgreement);
+    }
+
+    [Fact]
+    public async Task Get_ShouldReturnNotFound_WhenYourNotTheOwnerOrReceiver()
+    {
+        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
+        var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
+
+        var newOwner = Guid.NewGuid().ToString();
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: newOwner, tin: "");
+
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        get.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
