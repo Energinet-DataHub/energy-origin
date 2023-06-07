@@ -13,7 +13,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains/* libraries/dotnet/*
+          paths: domains/*/ libraries/dotnet/*/
 
       - name: Set default matrix
         shell: bash

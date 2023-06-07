@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -41,19 +42,22 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
     [HttpGet("api/transfer-agreements")]
-    public async Task<ActionResult<List<TransferAgreementResponse>>> GetBySubjectId()
+    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
         var subject = User.FindSubjectClaim();
 
-        if(!Guid.TryParse(subject, out var subjectId))
-        {
-            return BadRequest("Invalid subject ID.");
-        }
 
-        var response = await transferAgreementRepository.GetTransferAgreementsBySubjectId(subjectId);
+        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsBySubjectId(Guid.Parse(subject));
 
-        return Ok(response);
+        var listResponse = transferAgreements.Select(ta => new TransferAgreementDto(
+            ta.Id,
+            ta.StartDate.ToUnixTimeSeconds(),
+            ta.EndDate.ToUnixTimeSeconds(),
+            ta.ReceiverTin)).ToList();
+
+        return Ok(new TransferAgreementsResponse(listResponse));
     }
 
 }

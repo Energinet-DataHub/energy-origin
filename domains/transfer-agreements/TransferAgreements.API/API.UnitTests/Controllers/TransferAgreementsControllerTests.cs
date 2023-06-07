@@ -17,6 +17,7 @@ public class TransferAgreementsControllerTests
 {
     private readonly TransferAgreementsController controller;
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
+    private readonly string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
 
     public TransferAgreementsControllerTests()
     {
@@ -27,13 +28,13 @@ public class TransferAgreementsControllerTests
 
         mockTransferAgreementRepository
             .Setup(o => o.GetTransferAgreementsBySubjectId(It.IsAny<Guid>()))
-            .ReturnsAsync(new List<TransferAgreementResponse>());
+            .ReturnsAsync(new List<TransferAgreement>());
 
         controller = new TransferAgreementsController(mockTransferAgreementRepository.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            new("sub", "03bad0af-caeb-46e8-809c-1d35a5863bc7"),
+            new("sub", subject),
             new("atr", "d4f32241-442c-4043-8795-a4e6bf574e7f")
         }, "mock"));
 
@@ -63,35 +64,35 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-    public async Task GetBySubjectId_ShouldCallServiceOnce()
+    public async Task List_ShouldCallServiceOnce()
     {
-        var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
 
-        await controller.GetBySubjectId();
+        var result = await controller.GetTransferAgreements();
 
-        mockTransferAgreementRepository.Verify(service => service.GetTransferAgreementsBySubjectId(userId), Times.Once);
+        mockTransferAgreementRepository.Verify(service => service.GetTransferAgreementsBySubjectId(Guid.Parse(subject)), Times.Once);
     }
 
     [Fact]
-    public async Task GetBySubjectId_ShouldReturnCorrectNumberOfAgreements()
+    public async Task GetTransferAgreementsBySubjectId_ShouldReturnCorrectNumberOfAgreements()
     {
-        var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
-        var transferAgreements = new List<TransferAgreementResponse>()
+        var transferAgreements = new List<TransferAgreement>()
         {
-            new(Guid.NewGuid(), 1633024867, 1633025867, "1234567890"),
-            new(Guid.NewGuid(), 1633025868, 1633026868, "0987654321")
+            new() { Id = Guid.NewGuid(), StartDate = new DateTimeOffset(DateTime.UtcNow), EndDate = new DateTimeOffset(DateTime.UtcNow.AddDays(1)), ReceiverTin  = "1234567890"} ,
+            new() { Id = Guid.NewGuid(), StartDate = new DateTimeOffset(DateTime.UtcNow), EndDate = new DateTimeOffset(DateTime.UtcNow.AddDays(1)), ReceiverTin  = "1234567899"} ,
         };
 
         mockTransferAgreementRepository
-            .Setup(o => o.GetTransferAgreementsBySubjectId(userId))
+            .Setup(o => o.GetTransferAgreementsBySubjectId(Guid.Parse(subject)))
             .ReturnsAsync(transferAgreements);
 
-        var result = await controller.GetBySubjectId();
+        var result = await controller.GetTransferAgreements();
 
         var okResult = result.Result as OkObjectResult;
-        var agreements = okResult.Value as List<TransferAgreementResponse>;
+        var agreements = (TransferAgreementsResponse)okResult.Value;
 
-        Assert.Equal(transferAgreements.Count, agreements.Count);
+        Assert.Equal(transferAgreements.Count, agreements.TransferAgreements.Count);
+        mockTransferAgreementRepository.Verify(service => service.GetTransferAgreementsBySubjectId(Guid.Parse(subject)), Times.Once);
+
     }
 
 }

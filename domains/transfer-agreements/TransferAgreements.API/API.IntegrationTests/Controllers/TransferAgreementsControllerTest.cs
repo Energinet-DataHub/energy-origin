@@ -72,7 +72,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 
         response.EnsureSuccessStatusCode();
-        var transferAgreements = await response.Content.ReadFromJsonAsync<List<TransferAgreementResponse>>();
+        var transferAgreements = await response.Content.ReadFromJsonAsync<List<TransferAgreementsResponse>>();
         transferAgreements.Should().NotBeNull();
         transferAgreements.Should().HaveCount(2);
     }
