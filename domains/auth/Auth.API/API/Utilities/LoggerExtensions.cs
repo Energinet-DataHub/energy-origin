@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace API.Utilities;
 
 public static class LoggerExtensions

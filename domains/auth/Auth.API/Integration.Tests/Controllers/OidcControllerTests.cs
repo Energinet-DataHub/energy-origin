@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WireMock.Server;
-using JsonWebKey = IdentityModel.Jwk.JsonWebKey;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
 
 namespace Integration.Tests.Controllers;
@@ -147,7 +146,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Contains("token=", query);
 
         Assert.Equal(2, user!.UserProviders.Count);
-        Assert.Contains(user!.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
+        Assert.Contains(user.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
     }
 
     [Fact]
