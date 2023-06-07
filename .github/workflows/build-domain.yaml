@@ -13,8 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Validate required domain structure
         shell: bash
@@ -57,12 +55,12 @@ jobs:
           echo "projects=[]" >> "$GITHUB_ENV"
 
       - name: Build relevant domain/project matrices
-        if: ${{ steps.diff.outputs.pattern != '' }}
+        if: ${{ steps.diff.outputs.list != '' }}
         shell: bash
         env:
-          PATTERN: ${{ steps.diff.outputs.pattern }}
+          LIST: ${{ steps.diff.outputs.list }}
         run: |
-          matrix=$(find domains -mindepth 1 -maxdepth 1 -type d | egrep "$PATTERN" | while read domain; do
+          matrix=$(while read domain; do
             [ -f "$domain/domain.json" ] || echo "{}" > "$domain/domain.json"
             echo '{"draft": false}' > "$domain/default.domain.json"
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
@@ -73,7 +71,7 @@ jobs:
             projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s","dotnetVersion":"%s"}' "$directory" "$draft" "$sdk"; done | jq -sc '.')
 
             printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
-          done | jq -sc '.')
+          done <<< $LIST | jq -sc '.')
 
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
