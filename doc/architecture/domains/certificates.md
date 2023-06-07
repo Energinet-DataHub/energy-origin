@@ -7,7 +7,6 @@ The diagrams below are divided into:
 
 The reason for this split is certain constraints. The constraints are:
 
-* Registry is under development
 * Integration Event Bus does not exist and the inter-domain events are not defined
 
 ## Current architecture (as-is)
@@ -18,21 +17,19 @@ The reason for this split is certain constraints. The constraints are:
 
 ## Component diagram: Certificate API
 
-The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the DataSyncSyncer.
+![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
 Note: `ContractService` is currently getting information about a metering point from `DataSync`. In the future it is expected to get this from the MeteringPoints domain, but this domain does not exist at this point.
 
-![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
-
 ### Message flow: Issue certificate
-The sequence diagram below shows the flow of messages between event handlers when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram. The boxes indicates the container holding the event handler.
+The sequence diagram below shows the flow of messages when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram. The participant is either a publisher or event handler. The light gray boxes indicates the container holding the event handler or publisher.
 
 ```mermaid
 sequenceDiagram
-    box Container: DataSyncSyncer
+    box rgb(245,245,245) Container: DataSyncSyncer
     participant dss as DataSyncSyncer
     end
-    box Container: Issuer
+    box rgb(245,245,245) Container: Issuer
     participant gci as GranularCertificateIssuer
     participant reg as RegistryIssuer
     participant wal as WalletSliceReceiver

@@ -12,7 +12,8 @@ Tasks - internal:
 
 * DataSyncSyncer Sync State issue. It depends on the SyncState-projection that is based on events stored in MartenDB. (link to zenhub issue)
 * MartenDB Migration scripts - is auto-migration (link to zenhub issue)
-*
+* Get rid of the name "Query API"
+* Kill/close down existing transfer cert API endpoints
 
 Tasks - for Project Origin:
 
