@@ -6,5 +6,5 @@ public interface IMetrics
 {
     void Login(Guid userId, Guid? companyId, ProviderType providerType);
     void Logout(Guid userId, Guid? companyId, ProviderType providerType);
-    void TokenRefresh(Guid userId, Guid? companyId);
+    void TokenRefresh(Guid userId, Guid? companyId, ProviderType providerType);
 }

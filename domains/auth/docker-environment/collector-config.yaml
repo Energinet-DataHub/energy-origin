@@ -10,7 +10,7 @@ exporters:
     tls:
       insecure: true
   prometheus:
-    endpoint: "collector:9464" # /metrics will be exposed here. Prometheus should scrape from here.
+    endpoint: "collector:9464" # /metrics will be exposed here.
 
 processors:
   batch:

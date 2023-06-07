@@ -45,7 +45,7 @@ public class TokenController : ControllerBase
             now.ToUnixTimeSeconds()
         );
 
-        metrics.TokenRefresh(descriptor.Id, descriptor.CompanyId);
+        metrics.TokenRefresh(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
 
         return Ok(token);
     }

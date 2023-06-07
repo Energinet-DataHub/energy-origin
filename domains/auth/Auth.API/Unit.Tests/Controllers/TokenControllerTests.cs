@@ -91,6 +91,7 @@ public class TokenControllerTests
     {
         var userId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
+        var providerType = ProviderType.MitID_Professional;
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
@@ -101,14 +102,16 @@ public class TokenControllerTests
             .Returns(new UserDescriptor(cryptography)
             {
                 Id = userId,
-                CompanyId = companyId
+                CompanyId = companyId,
+                ProviderType = providerType
             });
 
         _ = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
 
         Mock.Get(metrics).Verify(x => x.TokenRefresh(
             userId,
-            companyId),
+            companyId,
+            providerType),
             Times.Once
         );
     }

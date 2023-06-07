@@ -34,11 +34,12 @@ public class Metrics : IMetrics
             GetKeyValuePair(identityProviderTypeKey, providerType)
         );
 
-    public void TokenRefresh(Guid userId, Guid? companyId) =>
+    public void TokenRefresh(Guid userId, Guid? companyId, ProviderType providerType) =>
         tokenRefreshCounter.Add(
             1,
             GetKeyValuePair(userIdKey, userId),
-            GetKeyValuePair(companyIdKey, companyId)
+            GetKeyValuePair(companyIdKey, companyId),
+            GetKeyValuePair(identityProviderTypeKey, providerType)
         );
 
     private static KeyValuePair<string, object?> GetKeyValuePair(string key, object? value) => new(key, value);
