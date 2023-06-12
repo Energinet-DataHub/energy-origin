@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -42,6 +43,9 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
 var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
@@ -55,6 +59,7 @@ builder.Services.AddOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefi
 builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 if (builder.Environment.IsDevelopment() == false)
 {
@@ -105,6 +110,7 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
+builder.Services.AddSingleton<IMetrics, Metrics>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -119,22 +125,25 @@ builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .AddHttpClientInstrumentation()
+            .AddMeter(Metrics.Name)
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddPrometheusExporter())
+            .AddProcessInstrumentation()
+            .AddOtlpExporter(o =>
+            {
+                o.Endpoint = otlpOptions.ReceiverEndpoint;
+            }))
     .WithTracing(provider =>
         provider
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
-            .AddJaegerExporter(options =>
+            .AddEntityFrameworkCoreInstrumentation()
+            .AddOtlpExporter(o =>
             {
-                var config = builder.Configuration.GetSection(JaegerOptions.Prefix).Get<JaegerOptions>();
-
-                if (config is null) return;
-
-                options.AgentHost = config.AgentHost;
-                options.AgentPort = config.AgentPort;
+                o.Endpoint = otlpOptions.ReceiverEndpoint;
             }));
 
 var app = builder.Build();
@@ -149,7 +158,6 @@ else if (!app.Environment.IsTest())
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

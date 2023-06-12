@@ -2,6 +2,7 @@ using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
+using API.Utilities;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
@@ -15,6 +16,7 @@ namespace Unit.Tests.Controllers;
 public class TokenControllerTests
 {
     private readonly TokenController tokenController = new();
+    private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
@@ -75,7 +77,7 @@ public class TokenControllerTests
             .Setup(x => x.FindFirst(UserClaimName.Scope))
             .Returns(new Claim(UserClaimName.Scope, scope));
 
-        var result = await tokenController.RefreshAsync(logger, mapper, userService, issuer);
+        var result = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
         Assert.NotNull(result);
         Assert.IsType<OkObjectResult>(result);
 
@@ -85,5 +87,35 @@ public class TokenControllerTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(logger, mapper, userService, issuer));
+    public async Task RefreshAsync_ShouldCallMetricsTokenRefresh_WhenInvokedSuccessfully()
+    {
+        var userId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var providerType = ProviderType.MitID_Professional;
+
+        Mock.Get(cryptography)
+            .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
+            .Returns(Guid.NewGuid().ToString());
+
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(cryptography)
+            {
+                Id = userId,
+                CompanyId = companyId,
+                ProviderType = providerType
+            });
+
+        _ = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
+
+        Mock.Get(metrics).Verify(x => x.TokenRefresh(
+            userId,
+            companyId,
+            providerType),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer));
 }

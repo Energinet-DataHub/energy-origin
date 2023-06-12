@@ -17,7 +17,7 @@ services:
     container_name: pgadmin
     restart: always
     ports:
-      - "5050:80"
+      - "5050:80" # pgAdmin UI port
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.admin
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -31,16 +31,57 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
     ports:
-      - "9090:9090"
+      - "9090:9090" # Prometheus UI port
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/data
+      - BADGER_DIRECTORY_KEY=/data
     ports:
-      - "16686:16686"
-      - "6831:6831/udp"
+      - "16686:16686" # Jaeger UI port
+      - "4317" # OTLP gRPC default port
+    volumes:
+      - jaeger:/data
+
+  collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: collector
+    command: ["--config=/conf/collector-config.yaml"]
+    volumes:
+      - ./collector-config.yaml:/conf/collector-config.yaml
+    ports:
+      - "9464" # Default OpenTelemetry Prometheus exporter port
+      - "4317:4317" # OTLP gRPC receiver port
+      - "4318:4318" # OTLP http receiver port
+#      - "13133:13133" # Health-Check extension port
+    depends_on:
+      - jaeger
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana:/var/lib/grafana
+    ports:
+      - "3000:3000" # Grafana UI port
 
 volumes:
   postgres:
   pgadmin:
+  prometheus:
+  jaeger:
+  grafana:

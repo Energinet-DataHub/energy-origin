@@ -15,6 +15,7 @@ public class TokenController : ControllerBase
     [HttpGet()]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
+        IMetrics metrics,
         ILogger<TokenController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
@@ -43,6 +44,8 @@ public class TokenController : ControllerBase
             descriptor.Subject,
             now.ToUnixTimeSeconds()
         );
+
+        metrics.TokenRefresh(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
 
         return Ok(token);
     }
