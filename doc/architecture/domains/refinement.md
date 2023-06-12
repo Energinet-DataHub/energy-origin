@@ -9,7 +9,7 @@ Epic: https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issu
 
 ## Wallet(section) creation - when does that occur?
 
-[Task 001] Possible task: Update Terms & Conditions to include that a wallet will be created for the user in Energinet's "default" wallet system
+[Task](https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1545): Update Terms & Conditions to include that a wallet will be created for the user in Energinet's "default" wallet system
 
 Think of it as: Wallet section is an "obfuscated" IBAN number - only relevant for receiving slices. Not relevant for queries, claims.
 
@@ -38,8 +38,6 @@ One wallet section per Certificate Issuing Contract:
 - UI should inform the user that a wallet (and wallet section) will be automatically created when creating a contract. Make this a task
 
 - WalletSectionReference can be given as input to creating the contract and this is where issued certificates should be sent to.
-
-  - Should we expose this in the UI? See [Task 001]
 
 ## How do we get the proto-files from PO Wallet?
 
