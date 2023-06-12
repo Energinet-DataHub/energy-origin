@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using API.ApiModels.Requests;
 using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -37,9 +39,11 @@ public class TransferAgreementsController : ControllerBase
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
-        return Created($"api/transfer-agreements/{result.Id}", result);
+        return CreatedAtAction(nameof(Get), new {id = result.Id }, result);
     }
 
+    [ProducesResponseType(typeof(TransferAgreement), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
