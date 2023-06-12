@@ -6,11 +6,11 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Controllers;
 using API.Data;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
-using FluentAssertions;
 
 namespace API.UnitTests.Controllers
 {

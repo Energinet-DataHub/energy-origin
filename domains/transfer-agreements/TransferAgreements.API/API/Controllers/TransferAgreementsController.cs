@@ -41,8 +41,8 @@ public class TransferAgreementsController : ControllerBase
         return Created($"api/transfer-agreements/{result.Id}", result);
     }
 
-    [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
+    [ProducesResponseType(typeof(TransferAgreementsResponse), 404)]
     [HttpGet("api/transfer-agreements")]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {

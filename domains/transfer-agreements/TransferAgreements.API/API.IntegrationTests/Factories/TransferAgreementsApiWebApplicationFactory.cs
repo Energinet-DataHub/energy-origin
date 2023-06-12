@@ -55,12 +55,10 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public async Task SeedData(Action<ApplicationDbContext> seeder)
     {
-        using (var scope = Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            seeder(dbContext);
-            await dbContext.SaveChangesAsync();
-        }
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        seeder(dbContext);
+        await dbContext.SaveChangesAsync();
     }
 
 
