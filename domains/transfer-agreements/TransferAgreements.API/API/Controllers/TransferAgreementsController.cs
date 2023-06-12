@@ -47,15 +47,16 @@ public class TransferAgreementsController : ControllerBase
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
         var subject = User.FindSubjectClaim();
+        var userTin = User.FindTinClaim();
 
-
-        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsBySubjectId(Guid.Parse(subject));
+        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), userTin);
 
         var listResponse = transferAgreements.Select(ta => new TransferAgreementDto(
             ta.Id,
             ta.StartDate.ToUnixTimeSeconds(),
             ta.EndDate.ToUnixTimeSeconds(),
-            ta.ReceiverTin)).ToList();
+            ta.ReceiverTin))
+            .ToList();
 
         return Ok(new TransferAgreementsResponse(listResponse));
     }

@@ -8,6 +8,6 @@ namespace API.Data;
 public interface ITransferAgreementRepository
 {
     Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement);
-    Task<List<TransferAgreement>> GetTransferAgreementsBySubjectId(Guid subjectId);
+    Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin);
 
 }

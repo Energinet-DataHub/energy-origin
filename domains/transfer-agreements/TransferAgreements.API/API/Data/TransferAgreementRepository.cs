@@ -20,10 +20,11 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         return transferAgreement;
     }
 
-    public async Task<List<TransferAgreement>> GetTransferAgreementsBySubjectId(Guid subjectId)
+    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin)
     {
         return await context.TransferAgreements
-            .Where(ta => ta.SenderId == subjectId)
+            .Where(ta => ta.SenderId == subjectId
+                         || ta.ReceiverTin == receiverTin)
             .ToListAsync();
     }
 

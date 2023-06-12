@@ -7,4 +7,5 @@ public static class HttpContextUserExtensions
 {
     public static string FindSubjectClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("sub");
     public static string FindActorClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("atr");
+    public static string FindTinClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("tin");
 }
