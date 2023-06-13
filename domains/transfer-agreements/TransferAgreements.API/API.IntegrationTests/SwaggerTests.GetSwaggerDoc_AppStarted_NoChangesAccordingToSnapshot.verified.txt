@@ -60,25 +60,8 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
-                }
-              }
-            }
+          "204": {
+            "description": "No Content"
           }
         }
       }
