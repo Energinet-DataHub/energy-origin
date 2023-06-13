@@ -14,96 +14,96 @@ using Xunit;
 
 namespace API.UnitTests.Controllers;
 public class TransferAgreementsControllerTests
+{
+    private TransferAgreementsController controller;
+    private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
+    private readonly string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
+    private readonly string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
+    private readonly string tin = "11223344";
+
+    public TransferAgreementsControllerTests()
     {
-        private TransferAgreementsController controller;
-        private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
-        private readonly string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
-        private readonly string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
-        private readonly string tin = "11223344";
+        mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
+        mockTransferAgreementRepository
+            .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
+            .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
 
-        public TransferAgreementsControllerTests()
+        controller = CreateControllerWithMockedUser();
+    }
+
+    private TransferAgreementsController CreateControllerWithMockedUser()
+    {
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
-            mockTransferAgreementRepository
-                .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
-                .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
-
-            controller = CreateControllerWithMockedUser();
-        }
-
-        private TransferAgreementsController CreateControllerWithMockedUser()
-        {
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
                 new("sub", subject),
                 new("atr", atr),
                 new("tin", tin)
-            }, "mock"));
+        }, "mock"));
 
-            var controller = new TransferAgreementsController(mockTransferAgreementRepository.Object);
+        var controller = new TransferAgreementsController(mockTransferAgreementRepository.Object);
 
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = user }
-            };
-
-            return controller;
-        }
-
-        [Fact]
-        public async Task Create_ShouldCallRepositoryOnce()
+        controller.ControllerContext = new ControllerContext
         {
-            var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
-            var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
-            var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");
+            HttpContext = new DefaultHttpContext { User = user }
+        };
 
-            await controller.Create(request);
+        return controller;
+    }
 
-            mockTransferAgreementRepository.Verify(service => service.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
-                agreement.SenderId == userId &&
-                agreement.ActorId == actorId &&
-                agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
-                agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
-                agreement.ReceiverTin == request.ReceiverTin
-            )), Times.Once);
-        }
+    [Fact]
+    public async Task Create_ShouldCallRepositoryOnce()
+    {
+        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
+        var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
+        var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");
 
-        [Fact]
-        public async Task List_ShouldCallRepositoryOnce()
-        {
+        await controller.Create(request);
 
-            mockTransferAgreementRepository
-                .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
-                .ReturnsAsync(new List<TransferAgreement>());
+        mockTransferAgreementRepository.Verify(service => service.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
+            agreement.SenderId == userId &&
+            agreement.ActorId == actorId &&
+            agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
+            agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
+            agreement.ReceiverTin == request.ReceiverTin
+        )), Times.Once);
+    }
 
-            controller = CreateControllerWithMockedUser();
+    [Fact]
+    public async Task List_ShouldCallRepositoryOnce()
+    {
 
-            var result = await controller.GetTransferAgreements();
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
+            .ReturnsAsync(new List<TransferAgreement>());
 
-            mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
-        }
+        controller = CreateControllerWithMockedUser();
 
-        [Fact]
-        public async Task GetTransferAgreementsList_ShouldReturnCorrectNumberOfAgreements()
-        {
-            var transferAgreements = new List<TransferAgreement>()
+        var result = await controller.GetTransferAgreements();
+
+        mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTransferAgreementsList_ShouldReturnCorrectNumberOfAgreements()
+    {
+        var transferAgreements = new List<TransferAgreement>()
             {
                 new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "11223344"} ,
                 new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "00000000"} ,
             };
 
-            mockTransferAgreementRepository
-                .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
-                .ReturnsAsync(transferAgreements);
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
+            .ReturnsAsync(transferAgreements);
 
-            controller = CreateControllerWithMockedUser();
+        controller = CreateControllerWithMockedUser();
 
-            var result = await controller.GetTransferAgreements();
+        var result = await controller.GetTransferAgreements();
 
-            var okResult = result.Result as OkObjectResult;
-            var agreements = (TransferAgreementsResponse)okResult.Value;
+        var okResult = result.Result as OkObjectResult;
+        var agreements = (TransferAgreementsResponse)okResult.Value;
 
-            agreements.Result.Count.Should().Be(transferAgreements.Count);
-            mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
-        }
+        agreements.Result.Count.Should().Be(transferAgreements.Count);
+        mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
     }
+}
