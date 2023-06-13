@@ -77,7 +77,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var t = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
 
         t.Should().NotBeNull();
-        t.TransferAgreements.Should().HaveCount(2);
+        t.Result.Should().HaveCount(2);
     }
 
 

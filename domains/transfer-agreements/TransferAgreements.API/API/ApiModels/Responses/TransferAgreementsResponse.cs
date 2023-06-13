@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 
-namespace API.ApiModels.Responses
-{
+namespace API.ApiModels.Responses;
 
-    public record TransferAgreementsResponse(List<TransferAgreementDto> TransferAgreements);
-
-}
+    public record TransferAgreementsResponse(List<TransferAgreementDto> Result);

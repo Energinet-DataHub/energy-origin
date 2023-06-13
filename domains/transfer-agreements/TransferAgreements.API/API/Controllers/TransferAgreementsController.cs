@@ -42,7 +42,7 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    [ProducesResponseType(typeof(TransferAgreementsResponse), 404)]
+    [ProducesResponseType(204)]
     [HttpGet("api/transfer-agreements")]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
@@ -51,11 +51,16 @@ public class TransferAgreementsController : ControllerBase
 
         var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), userTin);
 
+        if (!transferAgreements.Any())
+        {
+            return NoContent();
+        }
+
         var listResponse = transferAgreements.Select(ta => new TransferAgreementDto(
-            ta.Id,
-            ta.StartDate.ToUnixTimeSeconds(),
-            ta.EndDate.ToUnixTimeSeconds(),
-            ta.ReceiverTin))
+                ta.Id,
+                ta.StartDate.ToUnixTimeSeconds(),
+                ta.EndDate.ToUnixTimeSeconds(),
+                ta.ReceiverTin))
             .ToList();
 
         return Ok(new TransferAgreementsResponse(listResponse));

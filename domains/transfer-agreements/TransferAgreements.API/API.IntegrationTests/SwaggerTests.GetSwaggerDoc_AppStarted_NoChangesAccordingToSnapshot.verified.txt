@@ -127,7 +127,7 @@
       "TransferAgreementsResponse": {
         "type": "object",
         "properties": {
-          "transferAgreements": {
+          "result": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"

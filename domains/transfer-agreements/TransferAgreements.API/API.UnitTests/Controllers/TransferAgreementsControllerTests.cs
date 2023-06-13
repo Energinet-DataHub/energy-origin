@@ -12,9 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-namespace API.UnitTests.Controllers
-{
-    public class TransferAgreementsControllerTests
+namespace API.UnitTests.Controllers;
+public class TransferAgreementsControllerTests
     {
         private TransferAgreementsController controller;
         private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
@@ -89,8 +88,8 @@ namespace API.UnitTests.Controllers
         {
             var transferAgreements = new List<TransferAgreement>()
             {
-                new() { Id = Guid.NewGuid(), StartDate = new DateTimeOffset(DateTime.UtcNow), EndDate = new DateTimeOffset(DateTime.UtcNow.AddDays(1)), ReceiverTin  = "11223344"} ,
-                new() { Id = Guid.NewGuid(), StartDate = new DateTimeOffset(DateTime.UtcNow), EndDate = new DateTimeOffset(DateTime.UtcNow.AddDays(1)), ReceiverTin  = "00000000"} ,
+                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "11223344"} ,
+                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "00000000"} ,
             };
 
             mockTransferAgreementRepository
@@ -104,8 +103,7 @@ namespace API.UnitTests.Controllers
             var okResult = result.Result as OkObjectResult;
             var agreements = (TransferAgreementsResponse)okResult.Value;
 
-            agreements.TransferAgreements.Count.Should().Be(transferAgreements.Count);
+            agreements.Result.Count.Should().Be(transferAgreements.Count);
             mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
         }
     }
-}
