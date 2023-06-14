@@ -24,8 +24,10 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost("api/transfer-agreements")]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
-        var actor = User.FindActorClaim();
-        var subject = User.FindSubjectClaim();
+        var actor = User.FindActorGuidClaim();
+        var subject = User.FindSubjectGuidClaim();
+        var subjectName = User.FindSubjectNameClaim();
+        var subjectTin = User.FindSubjectTinClaim();
 
         var transferAgreement = new TransferAgreement
         {
@@ -33,12 +35,22 @@ public class TransferAgreementsController : ControllerBase
             EndDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate),
             ActorId = actor,
             SenderId = Guid.Parse(subject),
+            SenderName = subjectName,
+            SenderTin = subjectTin,
             ReceiverTin = request.ReceiverTin
         };
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
-        return Created($"api/transfer-agreements/{result.Id}", result);
+        var response = new TransferAgreementDto(
+           Id: result.Id,
+           StartDate: result.StartDate.ToUnixTimeSeconds(),
+           EndDate: result.EndDate.ToUnixTimeSeconds(),
+           SenderName: result.SenderName,
+           SenderTin: result.SenderTin,
+           ReceiverTin: result.ReceiverTin);
+
+        return Created($"api/transfer-agreements/{response.Id}", response);
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
@@ -46,8 +58,8 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("api/transfer-agreements")]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
-        var subject = User.FindSubjectClaim();
-        var userTin = User.FindTinClaim();
+        var subject = User.FindSubjectGuidClaim();
+        var userTin = User.FindSubjectTinClaim();
 
         var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), userTin);
 
@@ -60,6 +72,8 @@ public class TransferAgreementsController : ControllerBase
                 ta.Id,
                 ta.StartDate.ToUnixTimeSeconds(),
                 ta.EndDate.ToUnixTimeSeconds(),
+                ta.SenderName,
+                ta.SenderTin,
                 ta.ReceiverTin))
             .ToList();
 

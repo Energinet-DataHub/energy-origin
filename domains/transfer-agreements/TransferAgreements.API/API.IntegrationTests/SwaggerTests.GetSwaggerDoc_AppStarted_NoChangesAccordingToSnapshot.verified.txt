@@ -101,6 +101,12 @@
             "type": "integer",
             "format": "int64"
           },
+          "senderName": {
+            "type": "string"
+          },
+          "senderTin": {
+            "type": "string"
+          },
           "receiverTin": {
             "type": "string"
           }

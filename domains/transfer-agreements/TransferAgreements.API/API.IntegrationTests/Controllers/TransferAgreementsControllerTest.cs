@@ -46,7 +46,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
     {
         var sub = Guid.NewGuid().ToString();
-        var tin = "11223344";
+        var senderTin = "11223344";
+        var receiverTin = "11223344";
         await factory.SeedData(context =>
         {
             context.TransferAgreements.Add(new TransferAgreement
@@ -56,7 +57,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
                 ActorId = "actor1",
                 SenderId = Guid.NewGuid(),
-                ReceiverTin = tin
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
             });
             context.TransferAgreements.Add(new TransferAgreement
             {
@@ -65,10 +68,12 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 EndDate = DateTimeOffset.UtcNow.AddDays(3),
                 ActorId = "actor2",
                 SenderId = Guid.Parse(sub),
+                SenderName = "Producent A/S",
+                SenderTin = senderTin,
                 ReceiverTin = "87654321"
             });
         });
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, tin: tin);
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, tin: receiverTin);
 
         var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 

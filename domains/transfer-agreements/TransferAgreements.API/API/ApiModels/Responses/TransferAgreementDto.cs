@@ -6,5 +6,7 @@ namespace API.ApiModels.Responses
         Guid Id,
         long StartDate,
         long EndDate,
+        string SenderName,
+        string SenderTin,
         string ReceiverTin);
 }

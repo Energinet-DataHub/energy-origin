@@ -56,6 +56,8 @@ public class TransferAgreementsControllerTests
         var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
         var userId = Guid.Parse(controller.ControllerContext.HttpContext.User.FindFirstValue("sub") ?? string.Empty);
         var actorId = controller.ControllerContext.HttpContext.User.FindFirstValue("atr");
+        var senderName = controller.ControllerContext.HttpContext.User.FindFirstValue("cpn");
+        var senderTin = controller.ControllerContext.HttpContext.User.FindFirstValue("tin");
 
         await controller.Create(request);
 
@@ -64,6 +66,8 @@ public class TransferAgreementsControllerTests
             agreement.ActorId == actorId &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
             agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
+            agreement.SenderName == senderName &&
+            agreement.SenderTin == senderTin &&
             agreement.ReceiverTin == request.ReceiverTin
         )), Times.Once);
     }
@@ -88,8 +92,10 @@ public class TransferAgreementsControllerTests
     {
         var transferAgreements = new List<TransferAgreement>()
             {
-                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "11223344"} ,
-                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), ReceiverTin  = "00000000"} ,
+                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), SenderName = "Producent A/S",
+                    SenderTin = "32132112", ReceiverTin  = "11223344"} ,
+                new() { Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(1), SenderName = "Zeroes A/S",
+                    SenderTin = "13371337", ReceiverTin  = "10010010"} ,
             };
 
         mockTransferAgreementRepository
