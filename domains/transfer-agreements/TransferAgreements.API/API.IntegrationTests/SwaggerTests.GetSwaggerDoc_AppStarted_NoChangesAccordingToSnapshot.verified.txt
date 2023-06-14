@@ -34,6 +34,36 @@
             "description": "Created"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
       }
     }
   },
@@ -52,6 +82,45 @@
           },
           "receiverTin": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "endDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "senderTin": {
+            "type": "string"
+          },
+          "receiverTin": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferAgreementDto"
+            }
           }
         },
         "additionalProperties": false
