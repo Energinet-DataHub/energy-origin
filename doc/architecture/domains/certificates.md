@@ -32,14 +32,14 @@ sequenceDiagram
     box rgb(245,245,245) Container: Issuer
     participant gci as GranularCertificateIssuer
     participant reg as RegistryIssuer
-    participant wal as WalletSliceReceiver
+    participant wal as WalletSliceSender
     end
 
     dss->>gci: EnergyMeasured
     gci->>reg: ProductionCertificateCreated
     alt is issued in Project Origin Registry
+        reg->>gci: CertificateIssuedInRegistry
         reg->>wal: CertificateIssuedInRegistry
-        wal->>gci: SliceReceivedInWallet
     else
         reg->>gci: CertificateRejectedInRegistry
     end
