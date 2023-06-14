@@ -64,13 +64,14 @@ Wallet needs SecretCommitmentInfo (m, R)
 
 # Tasks - internal:
 
-* DataSyncSyncer Sync State issue. It depends on the SyncState-projection that is based on events stored in MartenDB. (link to zenhub issue)
-* MartenDB Migration scripts - is auto-migration ([see zenhub issue](https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/986))
 * Get rid of the name "Query API"
-* Kill/close down existing transfer cert API endpoints
-* Wallet Query does not return time period, GSRN, GridArea, tech+fuel code for the certificates/slices.
-* Replace Registry client with a new one generated from Protobuf-filer for registry (will be available when https://github.com/project-origin/registry/pull/116 is done and released)
-* Migration of existing Contracts to have a WalletSectionReference
+
+* DataSyncSyncer Sync State issue. It depends on the SyncState-projection that is based on events stored in MartenDB. ([link to zenhub issue](https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1574))
+* MartenDB Migration scripts - is auto-migration ([see zenhub issue](https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/986))
+* Kill/close down existing transfer cert API endpoints, [see](https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1573)
+* Wallet Query does not return time period, GSRN, GridArea, tech+fuel code for the certificates/slices. (see https://github.com/project-origin/wallet/issues/34 and https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1573)
+* Replace Registry client with a new one generated from Protobuf-filer for registry (will be available when https://github.com/project-origin/registry/pull/116 is done and released) - https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1559
+* Migration of existing Contracts to have a WalletSectionReference (https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1570)
 
 # Tasks - for Project Origin:
 
