@@ -121,7 +121,7 @@ public class TransferAgreementsControllerTests
         var result = await controller.GetTransferAgreements();
 
         var okResult = result.Result as OkObjectResult;
-        var agreements = (TransferAgreementsResponse) okResult.Value;
+        var agreements = (TransferAgreementsResponse)okResult.Value;
 
         agreements.Result.Count.Should().Be(transferAgreements.Count);
         mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
