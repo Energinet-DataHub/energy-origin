@@ -40,5 +40,17 @@
         <member name="M:API.Migrations.AlterColumnReceiverTin.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

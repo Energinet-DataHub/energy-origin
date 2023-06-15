@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,15 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         await context.SaveChangesAsync();
         return transferAgreement;
     }
+
+    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin)
+    {
+        return await context.TransferAgreements
+            .Where(ta => ta.SenderId == subjectId
+                         || ta.ReceiverTin == receiverTin)
+            .ToListAsync();
+    }
+
 
     public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin)
     {

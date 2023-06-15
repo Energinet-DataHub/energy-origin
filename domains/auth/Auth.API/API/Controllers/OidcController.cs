@@ -22,6 +22,7 @@ public class OidcController : ControllerBase
     [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
+        IMetrics metrics,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
         IUserDescriptorMapper mapper,
@@ -103,6 +104,8 @@ public class OidcController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
+        metrics.Login(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
+
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
@@ -166,6 +169,7 @@ public class OidcController : ControllerBase
                 {
                     keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
                 }
+
                 keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
@@ -177,6 +181,7 @@ public class OidcController : ControllerBase
                 {
                     keys.Add(ProviderKeyType.PID, pid);
                 }
+
                 keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
             case ProviderType.NemID_Professional:

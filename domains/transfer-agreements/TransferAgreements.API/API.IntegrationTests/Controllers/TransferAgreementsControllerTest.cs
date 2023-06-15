@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.Data;
+using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -102,4 +103,49 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
     }
+
+    [Fact]
+    public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
+    {
+        var sub = Guid.NewGuid().ToString();
+        var senderTin = "11223344";
+        var receiverTin = "11223344";
+        await factory.SeedData(context =>
+        {
+            context.TransferAgreements.Add(new TransferAgreement
+            {
+                Id = Guid.NewGuid(),
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(1),
+                ActorId = "actor1",
+                SenderId = Guid.NewGuid(),
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
+            });
+            context.TransferAgreements.Add(new TransferAgreement
+            {
+                Id = Guid.NewGuid(),
+                StartDate = DateTimeOffset.UtcNow.AddDays(2),
+                EndDate = DateTimeOffset.UtcNow.AddDays(3),
+                ActorId = "actor2",
+                SenderId = Guid.Parse(sub),
+                SenderName = "Producent A/S",
+                SenderTin = senderTin,
+                ReceiverTin = "87654321"
+            });
+        });
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, tin: receiverTin);
+
+        var response = await authenticatedClient.GetAsync("api/transfer-agreements");
+
+        response.EnsureSuccessStatusCode();
+        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var t = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
+
+        t.Should().NotBeNull();
+        t.Result.Should().HaveCount(2);
+    }
+
+
 }

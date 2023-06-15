@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
+using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -25,8 +28,10 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
-        var actor = User.FindActorClaim();
-        var subject = User.FindSubjectClaim();
+        var actor = User.FindActorGuidClaim();
+        var subject = User.FindSubjectGuidClaim();
+        var subjectName = User.FindSubjectNameClaim();
+        var subjectTin = User.FindSubjectTinClaim();
 
         var transferAgreement = new TransferAgreement
         {
@@ -34,12 +39,22 @@ public class TransferAgreementsController : ControllerBase
             EndDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate),
             ActorId = actor,
             SenderId = Guid.Parse(subject),
+            SenderName = subjectName,
+            SenderTin = subjectTin,
             ReceiverTin = request.ReceiverTin
         };
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
-        return CreatedAtAction(nameof(Get), new {id = result.Id }, result);
+   		var response = new TransferAgreementDto(
+           Id: result.Id,
+           StartDate: result.StartDate.ToUnixTimeSeconds(),
+           EndDate: result.EndDate.ToUnixTimeSeconds(),
+           SenderName: result.SenderName,
+           SenderTin: result.SenderTin,
+           ReceiverTin: result.ReceiverTin);
+
+        return CreatedAtAction(nameof(Get), new {id = result.Id }, response);
     }
 
     [ProducesResponseType(typeof(TransferAgreement), StatusCodes.Status200OK)]
@@ -53,4 +68,32 @@ public class TransferAgreementsController : ControllerBase
         var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
         return result == null ? NotFound() : Ok(result);
     }
+
+    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
+    [ProducesResponseType(204)]
+    [HttpGet("api/transfer-agreements")]
+    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
+    {
+        var subject = User.FindSubjectGuidClaim();
+        var userTin = User.FindSubjectTinClaim();
+
+        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), userTin);
+
+        if (!transferAgreements.Any())
+        {
+            return NoContent();
+        }
+
+        var listResponse = transferAgreements.Select(ta => new TransferAgreementDto(
+                ta.Id,
+                ta.StartDate.ToUnixTimeSeconds(),
+                ta.EndDate.ToUnixTimeSeconds(),
+                ta.SenderName,
+                ta.SenderTin,
+                ta.ReceiverTin))
+            .ToList();
+
+        return Ok(new TransferAgreementsResponse(listResponse));
+    }
+
 }
