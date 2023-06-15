@@ -50,7 +50,7 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAgreement), 200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
