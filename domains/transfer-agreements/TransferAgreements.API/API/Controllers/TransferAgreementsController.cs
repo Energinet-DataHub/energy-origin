@@ -49,7 +49,7 @@ public class TransferAgreementsController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
 
-    [ProducesResponseType(typeof(TransferAgreement), 200)]
+    [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
