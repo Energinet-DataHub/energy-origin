@@ -114,100 +114,101 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementNotFoundOrUserIdNotMatched()
-{
-    var differentUserId = Guid.NewGuid();
-    var transferAgreement = new TransferAgreement
+    public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementNotFoundOrUserIdNotMatched()
     {
-        Id = Guid.NewGuid(),
-        SenderId = differentUserId,
-        EndDate = DateTimeOffset.UtcNow.AddDays(10)
-    };
+        var differentUserId = Guid.NewGuid();
+        var transferAgreement = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            SenderId = differentUserId,
+            EndDate = DateTimeOffset.UtcNow.AddDays(10)
+        };
 
-    mockTransferAgreementRepository
-        .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
-        .ReturnsAsync(transferAgreement);
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
+            .ReturnsAsync(transferAgreement);
 
-    var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
+        var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
-    result.Result.Should().BeOfType<NotFoundResult>();
-    mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
-    mockTransferAgreementRepository.VerifyNoOtherCalls();
-}
+        result.Result.Should().BeOfType<NotFoundResult>();
+        mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
+        mockTransferAgreementRepository.VerifyNoOtherCalls();
+    }
 
-[Fact]
-public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
-{
-    var transferAgreement = new TransferAgreement
+    [Fact]
+    public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
     {
-        Id = Guid.NewGuid(),
-        SenderId = Guid.Parse(subject),
-        EndDate = DateTimeOffset.UtcNow.AddDays(-1)
-    };
+        var transferAgreement = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            SenderId = Guid.Parse(subject),
+            EndDate = DateTimeOffset.UtcNow.AddDays(-1)
+        };
 
-    mockTransferAgreementRepository
-        .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
-        .ReturnsAsync(transferAgreement);
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
+            .ReturnsAsync(transferAgreement);
 
-    var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
+        var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
-    result.Result.Should().BeOfType<ObjectResult>();
-    mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
-    mockTransferAgreementRepository.VerifyNoOtherCalls();
-}
+        result.Result.Should().BeOfType<ObjectResult>();
+        mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
+        mockTransferAgreementRepository.VerifyNoOtherCalls();
+    }
 
-[Fact]
-public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
-{
-    var transferAgreement = new TransferAgreement
+
+    [Fact]
+    public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
     {
-        Id = Guid.NewGuid(),
-        SenderId = Guid.Parse(subject),
-        EndDate = DateTimeOffset.UtcNow.AddDays(10)
-    };
+        var transferAgreement = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            SenderId = Guid.Parse(subject),
+            EndDate = DateTimeOffset.UtcNow.AddDays(10)
+        };
 
-    mockTransferAgreementRepository
-        .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
-        .ReturnsAsync(transferAgreement);
-    mockTransferAgreementRepository
-        .Setup(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()))
-        .ReturnsAsync(true);
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
+            .ReturnsAsync(transferAgreement);
+        mockTransferAgreementRepository
+            .Setup(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
 
-    var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));
+        var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));
 
-    result.Result.Should().BeOfType<ConflictObjectResult>();
-    mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
-    mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);
-    mockTransferAgreementRepository.VerifyNoOtherCalls();
-}
+        result.Result.Should().BeOfType<ConflictObjectResult>();
+        mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
+        mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);
+        mockTransferAgreementRepository.VerifyNoOtherCalls();
+    }
 
-[Fact]
-public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValid()
-{
-    var transferAgreement = new TransferAgreement
+    [Fact]
+    public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValid()
     {
-        Id = Guid.NewGuid(),
-        SenderId = Guid.Parse(subject),
-        EndDate = DateTimeOffset.UtcNow.AddDays(10)
-    };
+        var transferAgreement = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            SenderId = Guid.Parse(subject),
+            EndDate = DateTimeOffset.UtcNow.AddDays(10)
+        };
 
-    mockTransferAgreementRepository
-        .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
-        .ReturnsAsync(transferAgreement);
-    mockTransferAgreementRepository
-        .Setup(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()))
-        .ReturnsAsync(false);
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreement(It.IsAny<Guid>()))
+            .ReturnsAsync(transferAgreement);
+        mockTransferAgreementRepository
+            .Setup(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(false);
 
-    var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
+        var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
 
-    var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(newEndDate));
+        var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(newEndDate));
 
-    result.Result.Should().BeOfType<OkObjectResult>();
-    transferAgreement.EndDate.Should().BeCloseTo(DateTimeOffset.FromUnixTimeSeconds(newEndDate), TimeSpan.FromSeconds(1));
-    mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
-    mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);
-    mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
-}
+        result.Result.Should().BeOfType<OkObjectResult>();
+        transferAgreement.EndDate.Should().BeCloseTo(DateTimeOffset.FromUnixTimeSeconds(newEndDate), TimeSpan.FromSeconds(1));
+        mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
+        mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);
+        mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
+    }
 
 
 }

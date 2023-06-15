@@ -115,15 +115,15 @@ public class TransferAgreementsController : ControllerBase
 
         await transferAgreementRepository.Save();
 
-            var response = new TransferAgreementDto(
-                Id: transferAgreement.Id,
-                StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-                EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
-                SenderName: transferAgreement.SenderName,
-                SenderTin: transferAgreement.SenderTin,
-                ReceiverTin: transferAgreement.ReceiverTin);
+        var response = new TransferAgreementDto(
+            Id: transferAgreement.Id,
+            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
+            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+            SenderName: transferAgreement.SenderName,
+            SenderTin: transferAgreement.SenderTin,
+            ReceiverTin: transferAgreement.ReceiverTin);
 
-            return Ok(response);
-        }
-
+        return Ok(response);
     }
+
+}

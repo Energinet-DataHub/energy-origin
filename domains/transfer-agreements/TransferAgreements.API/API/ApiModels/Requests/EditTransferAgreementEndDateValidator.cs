@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FluentValidation;
 
 namespace API.ApiModels.Requests;
@@ -15,5 +15,4 @@ public class EditTransferAgreementEndDateValidator : AbstractValidator<EditTrans
             .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
     }
-
 }
