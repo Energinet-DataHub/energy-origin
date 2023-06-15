@@ -46,15 +46,7 @@ public class TransferAgreementsController : ControllerBase
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
-   		var response = new TransferAgreementDto(
-           Id: result.Id,
-           StartDate: result.StartDate.ToUnixTimeSeconds(),
-           EndDate: result.EndDate.ToUnixTimeSeconds(),
-           SenderName: result.SenderName,
-           SenderTin: result.SenderTin,
-           ReceiverTin: result.ReceiverTin);
-
-        return CreatedAtAction(nameof(Get), new {id = result.Id }, response);
+        return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
 
     [ProducesResponseType(typeof(TransferAgreement), StatusCodes.Status200OK)]
@@ -62,16 +54,22 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var tin = User.FindFirstValue("tin")!;
-        var subject = User.FindSubjectClaim();
+        var tin = User.FindSubjectTinClaim()!;
+        var subject = User.FindSubjectGuidClaim();
 
         var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
-        return result == null ? NotFound() : Ok(result);
+
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(ToTransferAgreementDto(result));
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
     [ProducesResponseType(204)]
-    [HttpGet("api/transfer-agreements")]
+    [HttpGet]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
         var subject = User.FindSubjectGuidClaim();
@@ -84,16 +82,21 @@ public class TransferAgreementsController : ControllerBase
             return NoContent();
         }
 
-        var listResponse = transferAgreements.Select(ta => new TransferAgreementDto(
-                ta.Id,
-                ta.StartDate.ToUnixTimeSeconds(),
-                ta.EndDate.ToUnixTimeSeconds(),
-                ta.SenderName,
-                ta.SenderTin,
-                ta.ReceiverTin))
+        var listResponse = transferAgreements.Select(ToTransferAgreementDto)
             .ToList();
 
         return Ok(new TransferAgreementsResponse(listResponse));
     }
 
+    private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement)
+    {
+        return new TransferAgreementDto(
+            Id: transferAgreement.Id,
+            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
+            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+            SenderName: transferAgreement.SenderName,
+            SenderTin: transferAgreement.SenderTin,
+            ReceiverTin: transferAgreement.ReceiverTin
+        );
+    }
 }

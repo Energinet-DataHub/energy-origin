@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -8,6 +9,7 @@ using API.Data;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -29,7 +31,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
-
         var transferAgreement = CreateTransferAgreement();
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
@@ -44,43 +45,105 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndNotReceiver()
+    public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid()
     {
-        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
-        var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
+        var id = Guid.NewGuid();
+        var subject = Guid.NewGuid();
+        var fakeTransferAgreement = new TransferAgreement
+        {
+            Id = id,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(1),
+            ActorId = "actor1",
+            SenderId = subject,
+            SenderName = "nrgi A/S",
+            SenderTin = "44332211",
+            ReceiverTin = "87654321"
+        };
 
-        var get = await authenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        await SeedData(new List<TransferAgreement>()
+        {
+            fakeTransferAgreement
+        });
+
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: "");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
-        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await get.Content.ReadAsStringAsync());
+        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
 
-        getTransferAgreement.Should().BeEquivalentTo(postTransferAgreement);
+        getTransferAgreement.Should().NotBeNull();
+
+        getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
+        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
+        getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
+        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
 
     [Fact]
-    public async Task Get_ShouldGetTransferAgreement_WhenReceiverIsValidAndNotOwnerIsValid()
+    public async Task Get_ShouldGetTransferAgreement_WhenReceiverIsValidAndOwnerIsInvalid()
     {
-        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
-        var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
+        var id = Guid.NewGuid();
+        var receiverTin = "12345678";
+        var fakeTransferAgreement = new TransferAgreement
+        {
+            Id = id,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(1),
+            ActorId = "actor1",
+            SenderId = Guid.NewGuid(),
+            SenderName = "nrgi A/S",
+            SenderTin = "44332211",
+            ReceiverTin = receiverTin
+        };
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: postTransferAgreement.ReceiverTin);
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        await SeedData(new List<TransferAgreement>()
+        {
+            fakeTransferAgreement
+        });
+
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
-        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await get.Content.ReadAsStringAsync());
-        getTransferAgreement.Should().BeEquivalentTo(postTransferAgreement);
+        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
+        getTransferAgreement.Should().NotBeNull();
+
+        getTransferAgreement.Should().NotBeNull();
+
+        getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
+        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
+        getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
+        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
 
     [Fact]
     public async Task Get_ShouldReturnNotFound_WhenYourNotTheOwnerOrReceiver()
     {
-        var post = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement());
-        var postTransferAgreement = JsonConvert.DeserializeObject<TransferAgreement>(await post.Content.ReadAsStringAsync());
+        var id = Guid.NewGuid();
+        await SeedData(new List<TransferAgreement>()
+        {
+            new()
+            {
+                Id = id,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(1),
+                ActorId = "actor1",
+                SenderId = Guid.NewGuid(),
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = "12345678"
+            }
+        });
 
         var newOwner = Guid.NewGuid().ToString();
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: newOwner, tin: "");
 
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{postTransferAgreement.Id}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
         get.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -110,42 +173,48 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         var senderTin = "11223344";
         var receiverTin = "11223344";
-        await factory.SeedData(context =>
-        {
-            context.TransferAgreements.Add(new TransferAgreement
+
+        await SeedData(
+            new List<TransferAgreement>()
             {
-                Id = Guid.NewGuid(),
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
-                SenderId = Guid.NewGuid(),
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = receiverTin
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = DateTimeOffset.UtcNow,
+                    EndDate = DateTimeOffset.UtcNow.AddDays(1),
+                    ActorId = "actor1",
+                    SenderId = Guid.NewGuid(),
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = receiverTin
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = DateTimeOffset.UtcNow.AddDays(2),
+                    EndDate = DateTimeOffset.UtcNow.AddDays(3),
+                    ActorId = "actor2",
+                    SenderId = Guid.Parse(sub),
+                    SenderName = "Producent A/S",
+                    SenderTin = senderTin,
+                    ReceiverTin = "87654321"
+                }
             });
-            context.TransferAgreements.Add(new TransferAgreement
-            {
-                Id = Guid.NewGuid(),
-                StartDate = DateTimeOffset.UtcNow.AddDays(2),
-                EndDate = DateTimeOffset.UtcNow.AddDays(3),
-                ActorId = "actor2",
-                SenderId = Guid.Parse(sub),
-                SenderName = "Producent A/S",
-                SenderTin = senderTin,
-                ReceiverTin = "87654321"
-            });
-        });
+
         var authenticatedClient = factory.CreateAuthenticatedClient(sub, tin: receiverTin);
 
         var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 
         response.EnsureSuccessStatusCode();
         var transferAgreements = await response.Content.ReadAsStringAsync();
-        var t = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
+        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
 
-        t.Should().NotBeNull();
-        t.Result.Should().HaveCount(2);
+        transferAgreementsResponse.Should().NotBeNull();
+        transferAgreementsResponse.Result.Should().HaveCount(2);
     }
 
-
+    private async Task SeedData(List<TransferAgreement> transferAgreements)
+    {
+        await factory.SeedData(context => { context.TransferAgreements.AddRange(transferAgreements); });
+    }
 }
