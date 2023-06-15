@@ -9,14 +9,16 @@ namespace API.IntegrationTests;
 public class HealthTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
+    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, MartenDbContainer martenDbContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
+        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
     }
 
     [Fact]
