@@ -9,5 +9,5 @@ public interface ITransferAgreementRepository
 {
     Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement);
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin);
-
+    Task<TransferAgreement> EditEndDate(Guid id, DateTimeOffset endDate);
 }

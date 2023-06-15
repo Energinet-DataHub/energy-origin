@@ -28,4 +28,11 @@ public class TransferAgreementRepository : ITransferAgreementRepository
             .ToListAsync();
     }
 
+    public async Task<TransferAgreement> EditEndDate(Guid id, DateTimeOffset endDate)
+    {
+        var transferAgreement = await context.TransferAgreements.FindAsync(id);
+        transferAgreement.EndDate = endDate;
+        await context.SaveChangesAsync();
+        return transferAgreement;
+    }
 }

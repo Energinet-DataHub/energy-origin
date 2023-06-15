@@ -9,6 +9,7 @@ using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Controllers;
 
@@ -43,12 +44,12 @@ public class TransferAgreementsController : ControllerBase
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         var response = new TransferAgreementDto(
-           Id: result.Id,
-           StartDate: result.StartDate.ToUnixTimeSeconds(),
-           EndDate: result.EndDate.ToUnixTimeSeconds(),
-           SenderName: result.SenderName,
-           SenderTin: result.SenderTin,
-           ReceiverTin: result.ReceiverTin);
+            Id: result.Id,
+            StartDate: result.StartDate.ToUnixTimeSeconds(),
+            EndDate: result.EndDate.ToUnixTimeSeconds(),
+            SenderName: result.SenderName,
+            SenderTin: result.SenderTin,
+            ReceiverTin: result.ReceiverTin);
 
         return Created($"api/transfer-agreements/{response.Id}", response);
     }
@@ -80,4 +81,21 @@ public class TransferAgreementsController : ControllerBase
         return Ok(new TransferAgreementsResponse(listResponse));
     }
 
+    [ProducesResponseType(204)]
+    [HttpPatch("api/transfer-agreements/{id}")]
+    public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
+    {
+        var endDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
+        var transferAgreement = await transferAgreementRepository.EditEndDate(id, endDate);
+
+        var response = new TransferAgreementDto(
+            Id: transferAgreement.Id,
+            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
+            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+            SenderName: transferAgreement.SenderName,
+            SenderTin: transferAgreement.SenderTin,
+            ReceiverTin: transferAgreement.ReceiverTin);
+
+        return Ok(response);
+    }
 }

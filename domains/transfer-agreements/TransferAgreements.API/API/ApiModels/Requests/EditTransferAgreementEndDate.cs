@@ -1,6 +1,5 @@
-﻿namespace API.ApiModels.Requests;
+namespace API.ApiModels.Requests;
 
 public record EditTransferAgreementEndDate(
-
     long EndDate
-    );
+);
