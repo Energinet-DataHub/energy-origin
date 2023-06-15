@@ -49,8 +49,8 @@ public class TransferAgreementsController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
 
-    [ProducesResponseType(typeof(TransferAgreement), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(TransferAgreement), 200)]
+    [ProducesResponseType(404)]
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
