@@ -77,9 +77,9 @@ Wallet needs SecretCommitmentInfo (m, R)
 
 To be created as issues in EO Zenhub:
 
-- Setup Wallet in Energy Origin
+- Setup Wallet in Energy Origin - https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1557
   - In the wallet, there is currently no validation of the JWT token (true until https://github.com/project-origin/wallet/issues/19 is completed)
-- Configure Wallet to use Registry in Energy Origin
+- Configure Wallet to use Registry in Energy Origin - https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1557
 
 # Something that is outside the wallet integration task:
 
