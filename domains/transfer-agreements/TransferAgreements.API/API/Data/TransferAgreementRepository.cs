@@ -28,11 +28,20 @@ public class TransferAgreementRepository : ITransferAgreementRepository
             .ToListAsync();
     }
 
-    public async Task<TransferAgreement> EditEndDate(Guid id, DateTimeOffset endDate)
+    public async Task Save()
     {
-        var transferAgreement = await context.TransferAgreements.FindAsync(id);
-        transferAgreement.EndDate = endDate;
         await context.SaveChangesAsync();
-        return transferAgreement;
     }
+
+    public async Task<TransferAgreement?> GetTransferAgreement(Guid id) =>
+        await context.TransferAgreements
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+    public async Task<bool> HasDateOverlap(Guid id, DateTimeOffset endDate, Guid senderId, string receiverTin) =>
+        await context.TransferAgreements
+            .AnyAsync(t =>
+                t.Id != id &&
+                t.SenderId == senderId &&
+                t.ReceiverTin == receiverTin &&
+                (endDate >= t.StartDate && endDate <= t.EndDate));
 }

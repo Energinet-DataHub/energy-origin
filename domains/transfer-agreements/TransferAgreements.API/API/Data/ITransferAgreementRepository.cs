@@ -9,5 +9,7 @@ public interface ITransferAgreementRepository
 {
     Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement);
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin);
-    Task<TransferAgreement> EditEndDate(Guid id, DateTimeOffset endDate);
+    Task<TransferAgreement?> GetTransferAgreement(Guid id);
+    Task<bool> HasDateOverlap(Guid id, DateTimeOffset endDate, Guid senderId, string receiverTin);
+    Task Save();
 }

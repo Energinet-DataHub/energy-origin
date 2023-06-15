@@ -7,6 +7,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -82,20 +83,47 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(204)]
+    [ProducesResponseType(400)]
     [HttpPatch("api/transfer-agreements/{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
+        var validator = new EditTransferAgreementEndDateValidator();
+
+        var validateResult = await validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
+
         var endDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
-        var transferAgreement = await transferAgreementRepository.EditEndDate(id, endDate);
+        var senderId = Guid.Parse(User.FindSubjectGuidClaim());
+        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id);
 
-        var response = new TransferAgreementDto(
-            Id: transferAgreement.Id,
-            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
-            SenderName: transferAgreement.SenderName,
-            SenderTin: transferAgreement.SenderTin,
-            ReceiverTin: transferAgreement.ReceiverTin);
+        if (transferAgreement == null || transferAgreement.SenderId != senderId)
+        {
+            return NotFound();
+        }
 
-        return Ok(response);
+        if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
+            return ValidationProblem("Transfer agreement has expired");
+
+        if (await transferAgreementRepository.HasDateOverlap(id, endDate, senderId, transferAgreement.ReceiverTin))
+            return Conflict("Transfer agreement date overlap");
+
+        transferAgreement.EndDate = endDate;
+
+        await transferAgreementRepository.Save();
+
+            var response = new TransferAgreementDto(
+                Id: transferAgreement.Id,
+                StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
+                EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+                SenderName: transferAgreement.SenderName,
+                SenderTin: transferAgreement.SenderTin,
+                ReceiverTin: transferAgreement.ReceiverTin);
+
+            return Ok(response);
+        }
+
     }
-}
