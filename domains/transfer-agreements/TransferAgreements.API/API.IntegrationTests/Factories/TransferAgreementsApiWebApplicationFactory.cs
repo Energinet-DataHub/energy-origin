@@ -57,6 +57,10 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
+        await dbContext.SaveChangesAsync();
+
         seeder(dbContext);
         await dbContext.SaveChangesAsync();
     }
