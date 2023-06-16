@@ -91,7 +91,7 @@ public class TransferAgreementsController : ControllerBase
 
     [ProducesResponseType(204)]
     [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(409)]
     [HttpPatch("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
