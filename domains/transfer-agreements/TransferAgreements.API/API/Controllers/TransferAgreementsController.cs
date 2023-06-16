@@ -91,6 +91,7 @@ public class TransferAgreementsController : ControllerBase
 
     [ProducesResponseType(204)]
     [ProducesResponseType(400)]
+    [ProducesResponseType(409)]
     [HttpPatch("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
@@ -113,7 +114,7 @@ public class TransferAgreementsController : ControllerBase
         }
 
         if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
-            return ValidationProblem("Transfer agreement has expired");
+            return ValidationProblem("Transfer agreement has expired", statusCode: 400);
 
         if (await transferAgreementRepository.HasDateOverlap(id, endDate, senderId, transferAgreement.ReceiverTin))
             return Conflict("Transfer agreement date overlap");

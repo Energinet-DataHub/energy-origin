@@ -169,7 +169,7 @@ public class TransferAgreementsControllerTests
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
-        result.Result.Should().BeOfType<ObjectResult>();
+        result.Result.Should().BeOfType<BadRequestObjectResult>();
         mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(It.IsAny<Guid>()), Times.Once);
         mockTransferAgreementRepository.VerifyNoOtherCalls();
     }
