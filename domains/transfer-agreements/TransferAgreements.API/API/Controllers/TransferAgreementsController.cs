@@ -36,7 +36,7 @@ public class TransferAgreementsController : ControllerBase
         var transferAgreement = new TransferAgreement
         {
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
-            EndDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate),
+            EndDate = request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null,
             ActorId = actor,
             SenderId = Guid.Parse(subject),
             SenderName = subjectName,
@@ -93,7 +93,7 @@ public class TransferAgreementsController : ControllerBase
         return new TransferAgreementDto(
             Id: transferAgreement.Id,
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+            EndDate: transferAgreement.EndDate.HasValue ? transferAgreement.EndDate.Value.ToUnixTimeSeconds() : (long?)null,
             SenderName: transferAgreement.SenderName,
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin

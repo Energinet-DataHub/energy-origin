@@ -121,7 +121,8 @@
           },
           "endDate": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "nullable": true
           },
           "receiverTin": {
             "type": "string"
@@ -142,7 +143,8 @@
           },
           "endDate": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "nullable": true
           },
           "senderName": {
             "type": "string"

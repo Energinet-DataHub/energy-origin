@@ -64,7 +64,7 @@ public class TransferAgreementsControllerTests
             agreement.SenderId == Guid.Parse(subject) &&
             agreement.ActorId == atr &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
-            agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate) &&
+            agreement.EndDate == (request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null) &&
             agreement.SenderName == cpn &&
             agreement.SenderTin == tin &&
             agreement.ReceiverTin == request.ReceiverTin

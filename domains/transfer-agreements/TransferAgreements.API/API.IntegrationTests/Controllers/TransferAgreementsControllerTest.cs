@@ -77,7 +77,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
         getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
         getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
         getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
@@ -116,7 +116,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
         getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
         getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
         getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
