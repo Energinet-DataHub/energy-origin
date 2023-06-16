@@ -365,7 +365,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be("EndDate");
-        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("253402300800");
+        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("seconds");
     }
 
     [Fact]

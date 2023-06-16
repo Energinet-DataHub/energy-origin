@@ -95,6 +95,10 @@ public class TransferAgreementsController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
+
+        var subject = User.FindSubjectGuidClaim();
+        var userTin = User.FindSubjectTinClaim();
+
         var validator = new EditTransferAgreementEndDateValidator();
 
         var validateResult = await validator.ValidateAsync(request);
@@ -106,7 +110,7 @@ public class TransferAgreementsController : ControllerBase
 
         var endDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
         var senderId = Guid.Parse(User.FindSubjectGuidClaim());
-        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id);
+        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, subject, userTin);
 
         if (transferAgreement == null || transferAgreement.SenderId != senderId)
         {

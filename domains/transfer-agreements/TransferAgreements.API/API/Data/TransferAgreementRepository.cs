@@ -41,10 +41,6 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         await context.SaveChangesAsync();
     }
 
-    public async Task<TransferAgreement?> GetTransferAgreement(Guid id) =>
-        await context.TransferAgreements
-            .FirstOrDefaultAsync(t => t.Id == id);
-
     public async Task<bool> HasDateOverlap(Guid id, DateTimeOffset endDate, Guid senderId, string receiverTin) =>
         await context.TransferAgreements
             .AnyAsync(t =>
