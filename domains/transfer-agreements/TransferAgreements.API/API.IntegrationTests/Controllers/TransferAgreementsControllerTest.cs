@@ -218,40 +218,42 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var receiverTin = "11223344";
         var senderId = Guid.NewGuid();
-        var transferAgreement1 = new TransferAgreement
-        {
-            Id = Guid.NewGuid(),
-            SenderId = senderId,
-            StartDate = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ActorId = "actor1",
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = receiverTin
-        };
+        var transferAgreementId = Guid.NewGuid();
 
-        var transferAgreement2 = new TransferAgreement
-        {
-            Id = Guid.NewGuid(),
-            SenderId = senderId,
-            StartDate = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow.AddDays(15),
-            ActorId = "actor1",
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = receiverTin
-        };
 
-        await factory.SeedData(context =>
-        {
-            context.TransferAgreements.AddRange(transferAgreement1, transferAgreement2);
-        });
+        await SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = transferAgreementId,
+                    SenderId = senderId,
+                    StartDate = DateTimeOffset.UtcNow,
+                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                    ActorId = "actor1",
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = receiverTin
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    SenderId = senderId,
+                    StartDate = DateTimeOffset.UtcNow,
+                    EndDate = DateTimeOffset.UtcNow.AddDays(15),
+                    ActorId = "actor1",
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = receiverTin
+                }
+            });
+
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(12).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreement1.Id}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
@@ -263,28 +265,29 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
     {
         var senderId = Guid.NewGuid();
-        var transferAgreement = new TransferAgreement
-        {
-            Id = Guid.NewGuid(),
-            SenderId = senderId,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-5),
-            EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-            ActorId = "actor1",
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreementId = Guid.NewGuid();
 
-        await factory.SeedData(context =>
-        {
-            context.TransferAgreements.Add(transferAgreement);
-        });
+        await SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = transferAgreementId,
+                    SenderId = senderId,
+                    StartDate = DateTimeOffset.UtcNow.AddDays(-5),
+                    EndDate = DateTimeOffset.UtcNow.AddDays(-1),
+                    ActorId = "actor1",
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = "11223344"
+                }
+            });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreement.Id}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -313,28 +316,29 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementSenderIdDoesNotMatch()
     {
         var senderId = Guid.NewGuid();
-        var transferAgreement = new TransferAgreement
-        {
-            Id = Guid.NewGuid(),
-            SenderId = Guid.NewGuid(),
-            StartDate = DateTimeOffset.UtcNow.AddDays(1),
-            EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ActorId = "actor1",
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreementId = Guid.NewGuid();
 
-        await factory.SeedData(context =>
-        {
-            context.TransferAgreements.Add(transferAgreement);
-        });
+        await SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = transferAgreementId,
+                    SenderId = Guid.NewGuid(),
+                    StartDate = DateTimeOffset.UtcNow.AddDays(-5),
+                    EndDate = DateTimeOffset.UtcNow.AddDays(-1),
+                    ActorId = "actor1",
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = "11223344"
+                }
+            });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreement.Id}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -370,22 +374,21 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
-        var transferAgreement = new TransferAgreement
-        {
-            Id = agreementId,
-            SenderId = senderId,
-            StartDate = DateTimeOffset.UtcNow.AddDays(1),
-            EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ActorId = "actor1",
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = "1122334"
-        };
-
-        await factory.SeedData(context =>
-        {
-            context.TransferAgreements.Add(transferAgreement);
-        });
+        await SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = agreementId,
+                    SenderId = senderId,
+                    StartDate = DateTimeOffset.UtcNow.AddDays(1),
+                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                    ActorId = "actor1",
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverTin = "1122334"
+                }
+            });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
