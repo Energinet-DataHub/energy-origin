@@ -298,7 +298,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementIsNull()
+    public async Task EditEndDate_ShouldReturnNotFound_WhenIsNotFoundInDatabase()
     {
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
