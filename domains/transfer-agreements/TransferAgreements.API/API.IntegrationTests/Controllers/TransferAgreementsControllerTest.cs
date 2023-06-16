@@ -344,7 +344,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public void EditTransferAgreementEndDateValidator_ShouldValidateGreaterThanOrEqualToCurrentTimestamp()
+    public void EditTransferAgreementEndDateValidator_ShouldValidateEndDateGreaterThanCurrentTimeStamp()
     {
         var validator = new EditTransferAgreementEndDateValidator();
         var request = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds());
