@@ -26,6 +26,7 @@ public class TransferAgreementsController : ControllerBase
     public TransferAgreementsController(ITransferAgreementRepository transferAgreementRepository) => this.transferAgreementRepository = transferAgreementRepository;
 
     [ProducesResponseType(201)]
+    [ProducesResponseType(409)]
     [ProducesResponseType(400)]
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
