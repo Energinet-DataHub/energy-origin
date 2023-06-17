@@ -5,7 +5,7 @@ namespace API.ApiModels.Requests
 {
     public class CreateTransferAgreementValidator : AbstractValidator<CreateTransferAgreement>
     {
-        public CreateTransferAgreementValidator()
+        public CreateTransferAgreementValidator(string senderTin)
         {
             var now = DateTimeOffset.UtcNow;
 
@@ -23,6 +23,14 @@ namespace API.ApiModels.Requests
                 .WithMessage("End Date must be null or later than now.")
                 .MustBeBeforeYear10000()
                 .When(t => t.EndDate != null);
+
+            RuleFor(t => t.ReceiverTin)
+                .NotEmpty()
+                .Length(8)
+                .Matches("^[0-9]{8}$")
+                .WithMessage("ReceiverTin must be 8 digits without any spaces.")
+                .NotEqual(senderTin)
+                .WithMessage("ReceiverTin cannot be the same as SenderTin.");
         }
     }
 }

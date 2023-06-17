@@ -26,6 +26,7 @@ public class TransferAgreementsController : ControllerBase
     public TransferAgreementsController(ITransferAgreementRepository transferAgreementRepository) => this.transferAgreementRepository = transferAgreementRepository;
 
     [ProducesResponseType(201)]
+    [ProducesResponseType(400)]
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
@@ -33,6 +34,15 @@ public class TransferAgreementsController : ControllerBase
         var subject = User.FindSubjectGuidClaim();
         var subjectName = User.FindSubjectNameClaim();
         var subjectTin = User.FindSubjectTinClaim();
+
+        var validator = new CreateTransferAgreementValidator(subjectTin);
+
+        var validateResult = await validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
 
         var transferAgreement = new TransferAgreement
         {
@@ -44,6 +54,11 @@ public class TransferAgreementsController : ControllerBase
             SenderTin = subjectTin,
             ReceiverTin = request.ReceiverTin
         };
+
+        if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
+        {
+            return Conflict("Transfer agreement date overlap");
+        }
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
@@ -109,6 +124,7 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        var startDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
         var endDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
         var senderId = Guid.Parse(User.FindSubjectGuidClaim());
         var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, subject, userTin);
@@ -121,8 +137,17 @@ public class TransferAgreementsController : ControllerBase
         if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
             return ValidationProblem("Transfer agreement has expired", statusCode: 400);
 
-        if (await transferAgreementRepository.HasDateOverlap(id, endDate, senderId, transferAgreement.ReceiverTin))
+        if (await transferAgreementRepository.HasDateOverlap(new TransferAgreement
+        {
+            Id = transferAgreement.Id,
+            StartDate = transferAgreement.StartDate,
+            EndDate = endDate,
+            SenderId = transferAgreement.SenderId,
+            ReceiverTin = transferAgreement.ReceiverTin
+        }))
+        {
             return Conflict("Transfer agreement date overlap");
+        }
 
         transferAgreement.EndDate = endDate;
 
@@ -131,7 +156,7 @@ public class TransferAgreementsController : ControllerBase
         var response = new TransferAgreementDto(
             Id: transferAgreement.Id,
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate.ToUnixTimeSeconds(),
+            EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
             SenderName: transferAgreement.SenderName,
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin);
