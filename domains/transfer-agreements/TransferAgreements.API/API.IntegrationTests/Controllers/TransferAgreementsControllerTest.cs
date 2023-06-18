@@ -142,7 +142,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderTin = "11223344";
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
-        var invalidReceiverTins = new List<string> { "", "1234567", "ABCDEFG", "11223344" };
+        var invalidReceiverTins = new List<string> { "", "1234567", "ABCDEFG", senderTin };
 
         foreach (var receiverTin in invalidReceiverTins)
         {
@@ -171,7 +171,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 case var tin when !Regex.IsMatch(tin, "^[0-9]{8}$"):
                     break;
 
-                case var tin when tin == "11223344":
+                case var tin when tin == senderTin:
                     break;
             }
         }
