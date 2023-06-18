@@ -125,8 +125,9 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var startDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
-        var endDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate);
+        var endDate = request.EndDate.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
+            : (DateTimeOffset?)null;
         var senderId = Guid.Parse(User.FindSubjectGuidClaim());
         var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, subject, userTin);
 
@@ -170,7 +171,7 @@ public class TransferAgreementsController : ControllerBase
         return new TransferAgreementDto(
             Id: transferAgreement.Id,
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate.HasValue ? transferAgreement.EndDate.Value.ToUnixTimeSeconds() : (long?)null,
+            EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
             SenderName: transferAgreement.SenderName,
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin

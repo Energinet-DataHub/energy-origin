@@ -235,7 +235,36 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
     }
 
+    [Fact]
+    public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValidAndEndDateIsNull()
+    {
+        var transferAgreement = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            SenderId = Guid.Parse(subject),
+            EndDate = DateTimeOffset.UtcNow.AddDays(10),
+            ReceiverTin = tin
+        };
 
+        mockTransferAgreementRepository
+            .Setup(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin))
+            .ReturnsAsync(transferAgreement);
 
+        mockTransferAgreementRepository
+            .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
+            .ReturnsAsync(false);
+
+        controller = CreateControllerWithMockedUser();
+
+        var newEndDate = new EditTransferAgreementEndDate(null);
+
+        var result = await controller.EditEndDate(transferAgreement.Id, newEndDate);
+
+        result.Result.Should().BeOfType<OkObjectResult>();
+        transferAgreement.EndDate.Should().BeNull();
+        mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin), Times.Once);
+        mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()), Times.Once);
+        mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
+    }
 
 }

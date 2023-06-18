@@ -258,7 +258,8 @@
         "properties": {
           "endDate": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "nullable": true
           }
         },
         "additionalProperties": false

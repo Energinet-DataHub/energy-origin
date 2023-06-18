@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -43,6 +44,139 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
+    {
+        var senderId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+        var id = Guid.NewGuid();
+
+        await SeedData(new List<TransferAgreement>()
+        {
+            new()
+            {
+                Id = id,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                ActorId = "actor1",
+                SenderId = senderId,
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = "12345678"
+            }
+        });
+
+        var overlappingRequest = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
+            ReceiverTin: "12345678"
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Create_ShouldFail_WhenStartOrEndDateInvalid()
+    {
+        var senderId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+
+        var now = DateTimeOffset.UtcNow;
+
+        var invalidRequests = new List<CreateTransferAgreement>
+    {
+        new(
+            StartDate: now.AddDays(-1).ToUnixTimeSeconds(),
+            EndDate: null,
+            ReceiverTin: "12345678"
+        ),
+        new(
+            StartDate: now.AddDays(-1).ToUnixTimeSeconds(),
+            EndDate: now.AddDays(4).ToUnixTimeSeconds(),
+            ReceiverTin: "12345678"
+        ),
+        new(
+            StartDate: now.AddDays(3).ToUnixTimeSeconds(),
+            EndDate: now.AddDays(1).ToUnixTimeSeconds(),
+            ReceiverTin: "12345678"
+        ),
+    };
+
+        foreach (var request in invalidRequests)
+        {
+            var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+            switch (request)
+            {
+                case { StartDate: var startDate } when startDate < now.ToUnixTimeSeconds():
+                    validationProblemContent.Should().Contain("cannot be in the past");
+                    break;
+                case { StartDate: var startDate } when startDate > 253402300800:
+                    validationProblemContent.Should().Contain("too high");
+                    break;
+                case { EndDate: var endDate } when endDate != null && endDate <= request.StartDate:
+                    validationProblemContent.Should().Contain("must be null or later than Start Date");
+                    break;
+                case { EndDate: var endDate } when endDate != null && endDate <= now.ToUnixTimeSeconds():
+                    validationProblemContent.Should().Contain("must be null or later than now");
+                    break;
+                case { EndDate: var endDate } when endDate != null && endDate > 253402300800:
+                    validationProblemContent.Should().Contain("too high");
+                    break;
+            }
+        }
+    }
+
+
+    [Fact]
+    public async Task Create_ShouldFail_WhenReceiverTinInvalid()
+    {
+        var senderId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
+
+        var invalidReceiverTins = new List<string> { "", "1234567", "ABCDEFG", "11223344" };
+
+        foreach (var receiverTin in invalidReceiverTins)
+        {
+            var request = new CreateTransferAgreement(
+                StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+                ReceiverTin: receiverTin
+            );
+
+            var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+            validationProblemContent.Should().Contain("ReceiverTin");
+
+            switch (receiverTin)
+            {
+                case "":
+                    break;
+
+                case var tin when tin.Length != 8:
+                    break;
+
+                case var tin when !Regex.IsMatch(tin, "^[0-9]{8}$"):
+                    break;
+
+                case var tin when tin == "11223344":
+                    break;
+            }
+        }
+    }
+
 
     [Fact]
     public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid()
@@ -220,38 +354,35 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-
-        await SeedData(
-            new List<TransferAgreement>()
+        await SeedData(new List<TransferAgreement>()
+        {
+            new()
             {
-                new()
-                {
-                    Id = transferAgreementId,
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow,
-                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = receiverTin
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow,
-                    EndDate = DateTimeOffset.UtcNow.AddDays(15),
-                    ActorId = "actor1",
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = receiverTin
-                }
-            });
-
+                Id = transferAgreementId,
+                SenderId = senderId,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                ActorId = "actor1",
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                SenderId = senderId,
+                StartDate = DateTimeOffset.UtcNow.AddDays(11),
+                EndDate = DateTimeOffset.UtcNow.AddDays(15),
+                ActorId = "actor1",
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
+            }
+        });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
-        var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(12).ToUnixTimeSeconds());
+        var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
         var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 

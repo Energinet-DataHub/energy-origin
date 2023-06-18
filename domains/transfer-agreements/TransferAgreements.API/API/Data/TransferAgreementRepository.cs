@@ -49,38 +49,22 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         var receiverTin = transferAgreement.ReceiverTin;
 
         var overlappingAgreements = await context.TransferAgreements
-            .Where(t => t.SenderId == senderId && t.ReceiverTin == receiverTin && t.Id != transferAgreement.Id)
+            .Where(t => t.SenderId == senderId &&
+                        t.ReceiverTin == receiverTin &&
+                        t.Id != transferAgreement.Id)
             .ToListAsync();
 
         var hasOverlap = overlappingAgreements.Any(a =>
-            (startDate >= a.StartDate && startDate <= a.EndDate) ||
-            (endDate != null && (endDate.Value >= a.StartDate && endDate.Value <= a.EndDate)) ||
-            (endDate == null && a.EndDate == null && startDate <= a.StartDate)
-        );
-
-        if (hasOverlap)
-        {
-            return true;
-        }
-
-        if (transferAgreement.Id != Guid.Empty)
-        {
-            return false;
-        }
-
-        var newAgreements = await context.TransferAgreements
-            .Where(t => t.SenderId == senderId && t.ReceiverTin == receiverTin && t.Id == transferAgreement.Id)
-            .ToListAsync();
-
-        hasOverlap = newAgreements.Any(a =>
-            (startDate >= a.StartDate && startDate <= a.EndDate) ||
-            (endDate != null && (endDate.Value >= a.StartDate && endDate.Value <= a.EndDate)) ||
-            (endDate == null && a.EndDate == null && startDate <= a.StartDate)
+            CannotCreateTransferAgreement(a, startDate, endDate)
         );
 
         return hasOverlap;
     }
 
-
-
+    private static bool CannotCreateTransferAgreement(TransferAgreement transferAgreement,
+        DateTimeOffset startDate,
+        DateTimeOffset? endDate)
+    {
+        return !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
+    }
 }

@@ -11,7 +11,9 @@ namespace API.ApiModels.Requests
 
             RuleFor(t => t.StartDate)
                 .NotEmpty()
+                .WithMessage("Start Date cannot be empty.")
                 .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
+                .WithMessage("Start Date cannot be in the past.")
                 .MustBeBeforeYear10000();
 
             RuleFor(t => t.EndDate)
@@ -26,6 +28,7 @@ namespace API.ApiModels.Requests
 
             RuleFor(t => t.ReceiverTin)
                 .NotEmpty()
+                .WithMessage("ReceiverTin cannot be empty")
                 .Length(8)
                 .Matches("^[0-9]{8}$")
                 .WithMessage("ReceiverTin must be 8 digits without any spaces.")
