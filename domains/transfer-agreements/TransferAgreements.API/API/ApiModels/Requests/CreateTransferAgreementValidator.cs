@@ -20,9 +20,6 @@ namespace API.ApiModels.Requests
                 .Cascade(CascadeMode.Stop)
                 .Must((dto, endDate) => endDate == null || endDate > dto.StartDate)
                 .WithMessage("End Date must be null or later than Start Date.")
-                .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
-                .When(t => t.EndDate != null)
-                .WithMessage("End Date must be null or later than now.")
                 .MustBeBeforeYear10000()
                 .When(t => t.EndDate != null);
 

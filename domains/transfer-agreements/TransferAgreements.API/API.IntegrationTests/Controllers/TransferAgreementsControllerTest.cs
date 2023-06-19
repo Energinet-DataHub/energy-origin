@@ -78,62 +78,56 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
-    [Fact]
-    public async Task Create_ShouldFail_WhenStartOrEndDateInvalid()
+    [Theory]
+    [InlineData(-1, null, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
+    [InlineData(-1, 4, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
+    [InlineData(3, 1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
+    [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
+    public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
     {
         var senderId = Guid.NewGuid();
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var now = DateTimeOffset.UtcNow;
 
-        var invalidRequests = new List<CreateTransferAgreement>
-    {
-        new(
-            StartDate: now.AddDays(-1).ToUnixTimeSeconds(),
-            EndDate: null,
+        var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
+        var endDate = endDayOffset.HasValue ? now.AddDays(endDayOffset.Value).ToUnixTimeSeconds() : (long?)null;
+
+        var request = new CreateTransferAgreement(
+            StartDate: startDate,
+            EndDate: endDate,
             ReceiverTin: "12345678"
-        ),
-        new(
-            StartDate: now.AddDays(-1).ToUnixTimeSeconds(),
-            EndDate: now.AddDays(4).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
-        ),
-        new(
-            StartDate: now.AddDays(3).ToUnixTimeSeconds(),
-            EndDate: now.AddDays(1).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
-        ),
-    };
+        );
 
-        foreach (var request in invalidRequests)
-        {
-            var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
 
-            var validationProblemContent = await response.Content.ReadAsStringAsync();
-
-            switch (request)
-            {
-                case { StartDate: var startDate } when startDate < now.ToUnixTimeSeconds():
-                    validationProblemContent.Should().Contain("cannot be in the past");
-                    break;
-                case { StartDate: var startDate } when startDate > 253402300800:
-                    validationProblemContent.Should().Contain("too high");
-                    break;
-                case { EndDate: var endDate } when endDate != null && endDate <= request.StartDate:
-                    validationProblemContent.Should().Contain("must be null or later than Start Date");
-                    break;
-                case { EndDate: var endDate } when endDate != null && endDate <= now.ToUnixTimeSeconds():
-                    validationProblemContent.Should().Contain("must be null or later than now");
-                    break;
-                case { EndDate: var endDate } when endDate != null && endDate > 253402300800:
-                    validationProblemContent.Should().Contain("too high");
-                    break;
-            }
-        }
+        response.StatusCode.Should().Be(expectedStatusCode);
+        validationProblemContent.Should().Contain(expectedContent);
     }
 
+    [Theory]
+    [InlineData(253402300800L, null, "StartDate")]
+    [InlineData(221860025546L, 253402300800L, "EndDate")]
+    [InlineData(221860025546L, null, null)]
+    public void CreateTransferAgreementEndDateValidator_ShouldValidateMustBeBeforeYear10000(long start, long? end, string? property)
+    {
+        var validator = new CreateTransferAgreementValidator("11223344");
+        var request = new CreateTransferAgreement(start, end, "12345678");
+
+        var result = validator.Validate(request);
+        if (property == null)
+        {
+            result.IsValid.Should().BeTrue();
+        }
+        else
+        {
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
+            result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+        }
+    }
 
     [Fact]
     public async Task Create_ShouldFail_WhenReceiverTinInvalid()
