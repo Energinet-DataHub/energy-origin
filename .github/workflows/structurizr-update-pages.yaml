@@ -1,0 +1,98 @@
+name: Structurizr - Update pages
+
+on:
+  workflow_call: {}
+  workflow_dispatch: {}
+
+jobs:
+  setup:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.changes.outputs.matched }}
+    steps:
+      - name: Check for file changes
+        uses: CodeReaper/find-diff-action@v3
+        if: github.event_name == 'push'
+        id: changes
+        with:
+          paths: |
+            .github/workflows/ci-orchestrator.yaml
+            .github/workflows/structurizr-update-pages.yaml
+            doc/diagrams/**.dsl
+
+      - name: Trigger build by workflow dispatch
+        if: github.event_name == 'workflow_dispatch'
+        id: changes
+        shell: bash
+        run: echo "matched=true" >> $GITHUB_OUTPUT
+
+  build:
+    needs: setup
+    if: ${{ needs.setup.outputs.run == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}/docs/diagrams/c4-model
+    env:
+      OUTPUT_DIRECTORY: ${{ github.workspace }}/docs/diagrams/c4-model/views/
+    services:
+      structurizr-lite:
+        image: structurizr/lite:latest
+        ports:
+          - 8080:8080
+        volumes:
+          - ${{ github.workspace }}:/usr/local/structurizr
+        env:
+          STRUCTURIZR_WORKSPACE_PATH: /docs/diagrams/c4-model
+          STRUCTURIZR_WORKSPACE_FILENAME: views
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+      - name: Prepare export-diagrams script
+        run: |
+          set -e
+          rm -rf */
+          npm i puppeteer
+          curl https://raw.githubusercontent.com/structurizr/puppeteer/cf6f70da15fb18c038e052c9335970eecd77025a/export-diagrams.js --output export-diagrams.js
+
+      - name: Render diagrams png images
+        run: |
+          set -e
+
+          echo '::group::Rendering...'
+          node export-diagrams.js 'http://localhost:8080/workspace/diagrams' png
+          echo '::endgroup::'
+
+          echo '::group::File listing'
+          find .
+          echo '::endgroup::'
+
+          rm *-key.png || true
+          rm -rf ${{ env.OUTPUT_DIRECTORY }} || true
+          mkdir ${{ env.OUTPUT_DIRECTORY }}
+          mv *.png ${{ env.OUTPUT_DIRECTORY }}/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ env.OUTPUT_DIRECTORY }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
