@@ -192,7 +192,7 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository
             .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
             .ReturnsAsync(true);
-        
+
         controller = CreateControllerWithMockedUser();
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));
