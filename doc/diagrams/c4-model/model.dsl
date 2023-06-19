@@ -1,13 +1,5 @@
 # TODO all diagrams should be revised to resemble Energy Origin as-is
 
-# TODO MitId should be a software system in our C4 base system landscape
-group "SignaturGruppen" {
-    mitId = container "MitID" {
-        description "SignaturGruppen is the OIDC provider for users"
-        tags "Out of focus"
-    }
-}
-
 apiGateway = container "API Gateway" {
     description "Routes requests to services and forwards authentication requests"
     technology "Traefik"
@@ -59,5 +51,5 @@ measurementsDomain = group "Measurements Domain" {
 }
 
 transferAgreementsDomain = group "Transfer Agreements Domain" {
-    
+
 }

@@ -4,5 +4,6 @@
         "redhat.vscode-yaml",
         "hediet.vscode-drawio",
         "systemticks.c4-dsl-extension",
+        "ms-azuretools.vscode-docker"
     ]
 }
