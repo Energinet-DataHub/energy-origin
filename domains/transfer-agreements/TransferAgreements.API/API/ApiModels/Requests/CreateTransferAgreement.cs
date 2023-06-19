@@ -7,4 +7,3 @@ public record CreateTransferAgreement(
     long StartDate,
     long EndDate,
     string ReceiverTin);
-
