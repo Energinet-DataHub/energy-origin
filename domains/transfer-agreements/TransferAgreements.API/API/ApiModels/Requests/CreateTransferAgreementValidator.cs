@@ -9,21 +9,21 @@ namespace API.ApiModels.Requests
         {
             var now = DateTimeOffset.UtcNow;
 
-            RuleFor(t => t.StartDate)
+            RuleFor(createTransferAgreement => createTransferAgreement.StartDate)
                 .NotEmpty()
                 .WithMessage("Start Date cannot be empty.")
                 .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
                 .WithMessage("Start Date cannot be in the past.")
                 .MustBeBeforeYear10000();
 
-            RuleFor(t => t.EndDate)
+            RuleFor(createTransferAgreement => createTransferAgreement.EndDate)
                 .Cascade(CascadeMode.Stop)
-                .Must((dto, endDate) => endDate == null || endDate > dto.StartDate)
+                .Must((createTransferAgreement, endDate) => endDate == null || endDate > createTransferAgreement.StartDate)
                 .WithMessage("End Date must be null or later than Start Date.")
                 .MustBeBeforeYear10000()
                 .When(t => t.EndDate != null);
 
-            RuleFor(t => t.ReceiverTin)
+            RuleFor(createTransferAgreement => createTransferAgreement.ReceiverTin)
                 .NotEmpty()
                 .WithMessage("ReceiverTin cannot be empty")
                 .Length(8)

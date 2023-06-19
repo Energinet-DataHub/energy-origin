@@ -64,7 +64,7 @@ public class TransferAgreementsControllerTests
             agreement.SenderId == Guid.Parse(subject) &&
             agreement.ActorId == atr &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
-            agreement.EndDate == (request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null) &&
+            agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate!.Value) &&
             agreement.SenderName == cpn &&
             agreement.SenderTin == tin &&
             agreement.ReceiverTin == request.ReceiverTin
@@ -192,8 +192,7 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository
             .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
             .ReturnsAsync(true);
-
-
+        
         controller = CreateControllerWithMockedUser();
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));

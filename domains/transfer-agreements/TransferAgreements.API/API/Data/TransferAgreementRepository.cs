@@ -43,28 +43,20 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {
-        var startDate = transferAgreement.StartDate;
-        var endDate = transferAgreement.EndDate;
-        var senderId = transferAgreement.SenderId;
-        var receiverTin = transferAgreement.ReceiverTin;
 
         var overlappingAgreements = await context.TransferAgreements
-            .Where(t => t.SenderId == senderId &&
-                        t.ReceiverTin == receiverTin &&
+            .Where(t => t.SenderId == transferAgreement.SenderId &&
+                        t.ReceiverTin == transferAgreement.ReceiverTin &&
                         t.Id != transferAgreement.Id)
             .ToListAsync();
 
-        var hasOverlap = overlappingAgreements.Any(a =>
-            CannotCreateTransferAgreement(a, startDate, endDate)
+        return overlappingAgreements.Any(a =>
+            IsOverlappingTransferAgreement(a, transferAgreement.StartDate, transferAgreement.EndDate)
         );
-
-        return hasOverlap;
     }
 
-    private static bool CannotCreateTransferAgreement(TransferAgreement transferAgreement,
+    private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement,
         DateTimeOffset startDate,
-        DateTimeOffset? endDate)
-    {
-        return !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
-    }
+        DateTimeOffset? endDate) =>
+        !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
 }

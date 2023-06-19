@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -110,7 +108,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Theory]
     [InlineData(253402300800L, null, "StartDate")]
     [InlineData(221860025546L, 253402300800L, "EndDate")]
-    public void CreateTransferAgreementEndDateValidator_ShouldValidateMustBeBeforeYear10000(long start, long? end, string? property)
+    public void CreateTransferAgreement_ShouldValidateDatesInSeconds(long start, long? end, string? property)
     {
         var validator = new CreateTransferAgreementValidator("11223344");
         var request = new CreateTransferAgreement(start, end, "12345678");

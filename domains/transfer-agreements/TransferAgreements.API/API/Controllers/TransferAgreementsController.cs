@@ -58,7 +58,7 @@ public class TransferAgreementsController : ControllerBase
 
         if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
         {
-            return Conflict("Transfer agreement date overlap");
+            return Conflict();
         }
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
