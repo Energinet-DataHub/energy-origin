@@ -49,12 +49,13 @@ builder.Services.AddControllers();
 
 builder.Services.AddMarten(options =>
 {
-    options.Connection(builder.Configuration.GetConnectionString("Marten"));
+    options.Connection(builder.Configuration.GetConnectionString("Marten")!);
 
     options.AutoCreateSchemaObjects = AutoCreate.All;
 });
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("Marten")!);
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
