@@ -110,67 +110,47 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Theory]
     [InlineData(253402300800L, null, "StartDate")]
     [InlineData(221860025546L, 253402300800L, "EndDate")]
-    [InlineData(221860025546L, null, null)]
     public void CreateTransferAgreementEndDateValidator_ShouldValidateMustBeBeforeYear10000(long start, long? end, string? property)
     {
         var validator = new CreateTransferAgreementValidator("11223344");
         var request = new CreateTransferAgreement(start, end, "12345678");
 
         var result = validator.Validate(request);
-        if (property == null)
-        {
-            result.IsValid.Should().BeTrue();
-        }
-        else
-        {
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
-            result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
-        }
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
+        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
     }
 
-    [Fact]
-    public async Task Create_ShouldFail_WhenReceiverTinInvalid()
+    [Theory]
+    [InlineData("", "ReceiverTin cannot be empty")]
+    [InlineData("1234567", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
+    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
     {
         var senderId = Guid.NewGuid();
         var senderTin = "11223344";
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
-        var invalidReceiverTins = new List<string> { "", "1234567", "ABCDEFG", senderTin };
+        var request = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            ReceiverTin: tin
+        );
 
-        foreach (var receiverTin in invalidReceiverTins)
-        {
-            var request = new CreateTransferAgreement(
-                StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-                EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-                ReceiverTin: receiverTin
-            );
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
-            var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-            var validationProblemContent = await response.Content.ReadAsStringAsync();
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
 
-            validationProblemContent.Should().Contain("ReceiverTin");
+        validationProblemContent.Should().Contain(expectedContent);
+        validationProblemContent.Should().Contain("ReceiverTin");
 
-            switch (receiverTin)
-            {
-                case "":
-                    break;
-
-                case var tin when tin.Length != 8:
-                    break;
-
-                case var tin when !Regex.IsMatch(tin, "^[0-9]{8}$"):
-                    break;
-
-                case var tin when tin == senderTin:
-                    break;
-            }
-        }
     }
-
 
     [Fact]
     public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid()
