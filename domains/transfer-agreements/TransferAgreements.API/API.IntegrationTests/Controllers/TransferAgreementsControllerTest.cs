@@ -9,7 +9,6 @@ using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -45,6 +44,113 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
+    public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
+    {
+        var senderId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+        var id = Guid.NewGuid();
+
+        await SeedData(new List<TransferAgreement>()
+        {
+            new()
+            {
+                Id = id,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                ActorId = "actor1",
+                SenderId = senderId,
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = "12345678"
+            }
+        });
+
+        var overlappingRequest = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
+            ReceiverTin: "12345678"
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Theory]
+    [InlineData(-1, null, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
+    [InlineData(-1, 4, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
+    [InlineData(3, 1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
+    [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
+    public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
+    {
+        var senderId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+
+        var now = DateTimeOffset.UtcNow;
+
+        var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
+        var endDate = endDayOffset.HasValue ? now.AddDays(endDayOffset.Value).ToUnixTimeSeconds() : (long?)null;
+
+        var request = new CreateTransferAgreement(
+            StartDate: startDate,
+            EndDate: endDate,
+            ReceiverTin: "12345678"
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(expectedStatusCode);
+        validationProblemContent.Should().Contain(expectedContent);
+    }
+
+    [Theory]
+    [InlineData(253402300800L, null, "StartDate")]
+    [InlineData(221860025546L, 253402300800L, "EndDate")]
+    public void CreateTransferAgreement_ShouldValidateDatesInSeconds(long start, long? end, string? property)
+    {
+        var validator = new CreateTransferAgreementValidator("11223344");
+        var request = new CreateTransferAgreement(start, end, "12345678");
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
+        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+    }
+
+    [Theory]
+    [InlineData("", "ReceiverTin cannot be empty")]
+    [InlineData("1234567", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
+    [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
+    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
+    {
+        var senderId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
+
+        var request = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            ReceiverTin: tin
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+        validationProblemContent.Should().Contain(expectedContent);
+        validationProblemContent.Should().Contain("ReceiverTin");
+
+    }
+
+    [Fact]
     public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid()
     {
         var id = Guid.NewGuid();
@@ -77,7 +183,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
         getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
         getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
         getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
@@ -116,7 +222,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
         getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
         getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
         getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
@@ -220,38 +326,35 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-
-        await SeedData(
-            new List<TransferAgreement>()
+        await SeedData(new List<TransferAgreement>()
+        {
+            new()
             {
-                new()
-                {
-                    Id = transferAgreementId,
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow,
-                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = receiverTin
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow,
-                    EndDate = DateTimeOffset.UtcNow.AddDays(15),
-                    ActorId = "actor1",
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = receiverTin
-                }
-            });
-
+                Id = transferAgreementId,
+                SenderId = senderId,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                ActorId = "actor1",
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                SenderId = senderId,
+                StartDate = DateTimeOffset.UtcNow.AddDays(11),
+                EndDate = DateTimeOffset.UtcNow.AddDays(15),
+                ActorId = "actor1",
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin
+            }
+        });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
-        var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(12).ToUnixTimeSeconds());
+        var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
         var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 

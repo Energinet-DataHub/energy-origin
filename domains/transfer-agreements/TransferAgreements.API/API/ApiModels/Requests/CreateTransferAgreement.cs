@@ -5,5 +5,5 @@ namespace API.ApiModels.Requests;
 
 public record CreateTransferAgreement(
     long StartDate,
-    long EndDate,
+    long? EndDate,
     string ReceiverTin);
