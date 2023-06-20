@@ -34,6 +34,7 @@ var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
     : log.WriteTo.Console(new JsonFormatter());
 
+
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
