@@ -6,7 +6,7 @@ on:
 
 jobs:
   setup:
-    if: github.ref_name == 'main'
+    if: github.ref_name == '1564-c4-models'
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
@@ -91,16 +91,16 @@ jobs:
         with:
           path: ${{ env.OUTPUT_DIRECTORY }}
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     pages: write
+  #     id-token: write
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v2
