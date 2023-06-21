@@ -42,9 +42,9 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ${{ github.workspace }}/docs/diagrams/c4-model
+        working-directory: ${{ github.workspace }}/doc/diagrams/c4-model
     env:
-      OUTPUT_DIRECTORY: ${{ github.workspace }}/docs/diagrams/c4-model/views/
+      OUTPUT_DIRECTORY: ${{ github.workspace }}/doc/diagrams/c4-model/views/
     services:
       structurizr-lite:
         image: structurizr/lite:latest
@@ -53,7 +53,7 @@ jobs:
         volumes:
           - ${{ github.workspace }}:/usr/local/structurizr
         env:
-          STRUCTURIZR_WORKSPACE_PATH: /docs/diagrams/c4-model
+          STRUCTURIZR_WORKSPACE_PATH: /doc/diagrams/c4-model
           STRUCTURIZR_WORKSPACE_FILENAME: views
     steps:
       - name: Checkout
