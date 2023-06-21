@@ -104,10 +104,5 @@
             Ends the contract on a specific date
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.SubjectController.GetSubject">
-            <summary>
-            Endpoint to return the Subject UUID. Will be removed from the API in the future
-            </summary>
-        </member>
     </members>
 </doc>

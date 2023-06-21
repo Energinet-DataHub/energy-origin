@@ -203,19 +203,6 @@
           }
         }
       }
-    },
-    "/api/certificates/subject": {
-      "get": {
-        "tags": [
-          "Subject"
-        ],
-        "summary": "Endpoint to return the Subject UUID. Will be removed from the API in the future",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
     }
   },
   "components": {
