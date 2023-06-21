@@ -6,7 +6,7 @@ on:
 
 jobs:
   setup:
-    # if: ${{ github.ref_name == 'main' }}
+    if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
@@ -31,7 +31,7 @@ jobs:
         run: echo "matched=${{ steps.changes.outputs.matched }}" >> $GITHUB_ENV
 
       - name: Trigger build by workflow dispatch
-        # if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: echo "matched=true" >> $GITHUB_ENV
 
@@ -93,16 +93,16 @@ jobs:
         with:
           path: ${{ env.output }}
 
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v2
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
