@@ -119,3 +119,55 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621130352_AddTransferAgreementsActorName') THEN
+    ALTER TABLE "TransferAgreements" ADD "ActorName" text NOT NULL DEFAULT '';
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621130352_AddTransferAgreementsActorName') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230621130352_AddTransferAgreementsActorName', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621181625_AddAudit') THEN
+    CREATE TABLE "Audits" (
+        "Id" uuid NOT NULL,
+        "TransferAgreementId" uuid NOT NULL,
+        "StartDate" timestamp with time zone NOT NULL,
+        "EndDate" timestamp with time zone NULL,
+        "ActorId" text NOT NULL,
+        "ActorName" text NOT NULL,
+        "SenderId" uuid NOT NULL,
+        "SenderName" text NOT NULL,
+        "SenderTin" text NOT NULL,
+        "ReceiverTin" text NOT NULL,
+        "AuditDate" timestamp with time zone NOT NULL,
+        "AuditAction" text NOT NULL,
+        CONSTRAINT "PK_Audits" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621181625_AddAudit') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230621181625_AddAudit', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
