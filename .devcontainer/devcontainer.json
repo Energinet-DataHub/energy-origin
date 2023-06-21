@@ -13,8 +13,7 @@
                 "EditorConfig.EditorConfig",
                 "redhat.vscode-yaml",
                 "me-dutour-mathieu.vscode-github-actions",
-                "systemticks.c4-dsl-extension",
-                "ms-azuretools.vscode-docker"
+                "systemticks.c4-dsl-extension"
             ],
             "settings": {
                 "editor.formatOnSave": true
