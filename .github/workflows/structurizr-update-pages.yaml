@@ -5,19 +5,8 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Env
-        shell: bash
-        run: env
-
-      - name: Event
-        shell: bash
-        run: cat "$GITHUB_EVENT_PATH"
-
   setup:
-    if: ${{ github.ref_name == '1564-c4-models' }}
+    # if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
