@@ -44,7 +44,7 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}/doc/diagrams/c4-model
     env:
-      OUTPUT_DIRECTORY: ${{ github.workspace }}/doc/diagrams/c4-model/views/
+      OUTPUT_PREFIX: doc/diagrams/c4-model/views/
     services:
       structurizr-lite:
         image: structurizr/lite:latest
@@ -78,18 +78,17 @@ jobs:
           echo '::endgroup::'
 
           echo '::group::File listing'
-          find .
+          find . | grep -v node_modules
           echo '::endgroup::'
 
           rm *-key.png || true
-          rm -rf ${{ env.OUTPUT_DIRECTORY }} || true
-          mkdir ${{ env.OUTPUT_DIRECTORY }}
-          mv *.png ${{ env.OUTPUT_DIRECTORY }}/
+          mkdir -p ${{ env.RUNNER_TEMP }}/${{ env.OUTPUT_PREFIX }}
+          mv *.png ${{ env.RUNNER_TEMP }}/${{ env.OUTPUT_PREFIX }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ${{ env.OUTPUT_DIRECTORY }}
+          path: ${{ env.RUNNER_TEMP }}
 
   # deploy:
   #   needs: build
