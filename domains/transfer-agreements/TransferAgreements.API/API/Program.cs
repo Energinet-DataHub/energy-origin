@@ -1,8 +1,11 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using API.Data;
 using API.Options;
+using Audit.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +35,30 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
+
+
+Audit.Core.Configuration.Setup()
+    .UseEntityFramework(ef => ef
+        .AuditTypeExplicitMapper(config => config
+            .Map<TransferAgreement, API.Data.Audit>((evt, eventEntry, auditEntity) =>
+            {
+                auditEntity.Id = Guid.NewGuid();
+                auditEntity.AuditDate = DateTime.UtcNow;
+                auditEntity.AuditAction = eventEntry.Action;
+
+                if (eventEntry.Action == "Insert")
+                {
+                    auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                }
+                else if (eventEntry.Action == "Update")
+                {
+                    var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
+                    auditEntity.TransferAgreementId = primaryKey;
+                }
+
+                return true;
+            })));
+
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>

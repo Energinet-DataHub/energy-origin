@@ -35,6 +35,7 @@ public class TransferAgreementsController : ControllerBase
         var subject = User.FindSubjectGuidClaim();
         var subjectName = User.FindSubjectNameClaim();
         var subjectTin = User.FindSubjectTinClaim();
+        var actorName = User.FindActorNameClaim();
 
         var validator = new CreateTransferAgreementValidator(subjectTin);
 
@@ -50,6 +51,7 @@ public class TransferAgreementsController : ControllerBase
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
             EndDate = request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null,
             ActorId = actor,
+            ActorName = actorName,
             SenderId = Guid.Parse(subject),
             SenderName = subjectName,
             SenderTin = subjectTin,
@@ -115,6 +117,7 @@ public class TransferAgreementsController : ControllerBase
 
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
+        var actorName = User.FindActorNameClaim();
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -152,6 +155,7 @@ public class TransferAgreementsController : ControllerBase
         }
 
         transferAgreement.EndDate = endDate;
+        transferAgreement.ActorName = actorName;
 
         await transferAgreementRepository.Save();
 

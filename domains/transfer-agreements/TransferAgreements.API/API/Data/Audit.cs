@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 
 namespace API.Data;
 
-public class TransferAgreement
+public class Audit
 {
     public Guid Id { get; set; }
-
+    public Guid TransferAgreementId { get; set; }
     public DateTimeOffset StartDate { get; set; }
 
     public DateTimeOffset? EndDate { get; set; }
@@ -21,5 +20,6 @@ public class TransferAgreement
     public string SenderTin { get; set; }
 
     public string ReceiverTin { get; set; }
-
+    public DateTime AuditDate { get; set; }
+    public string AuditAction { get; set; }
 }
