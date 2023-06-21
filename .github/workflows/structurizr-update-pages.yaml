@@ -9,8 +9,12 @@ jobs:
     if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     outputs:
-      run: ${{ steps.changes.outputs.matched }}
+      run: ${{ env.matched }}
     steps:
+      - name: Set default value
+        shell: bash
+        run: echo "matched=false" >> $GITHUB_ENV
+
       - name: Check for file changes
         uses: CodeReaper/find-diff-action@v3
         if: github.event_name == 'push'
@@ -21,11 +25,15 @@ jobs:
             .github/workflows/structurizr-update-pages.yaml
             doc/diagrams/**.dsl
 
+      - name: Update value
+        if: github.event_name == 'push'
+        shell: bash
+        run: echo "matched=${{ steps.changes.outputs.matched }}" >> $GITHUB_ENV
+
       - name: Trigger build by workflow dispatch
         if: github.event_name == 'workflow_dispatch'
-        id: changes
         shell: bash
-        run: echo "matched=true" >> $GITHUB_OUTPUT
+        run: echo "matched=true" >> $GITHUB_ENV
 
   build:
     needs: setup
