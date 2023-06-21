@@ -216,58 +216,6 @@
           }
         }
       }
-    },
-    "/api/certificates/transfer": {
-      "post": {
-        "tags": [
-          "TransferCertificate"
-        ],
-        "summary": "Transfers the entire certificate",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransferCertificate"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransferCertificate"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransferCertificate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -396,25 +344,6 @@
             "description": "End Date for generation of certificates in Unix time",
             "format": "int64",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TransferCertificate": {
-        "type": "object",
-        "properties": {
-          "certificateId": {
-            "type": "string",
-            "description": "Id of the certificate",
-            "format": "uuid"
-          },
-          "source": {
-            "type": "string",
-            "description": "Key for the current owner of the certificate"
-          },
-          "target": {
-            "type": "string",
-            "description": "Key to transfer the certificate to"
           }
         },
         "additionalProperties": false
