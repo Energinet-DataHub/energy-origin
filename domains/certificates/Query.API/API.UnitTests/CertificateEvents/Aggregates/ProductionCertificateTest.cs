@@ -57,53 +57,6 @@ public class ProductionCertificateTest
     }
 
     [Fact]
-    public void cannot_transfer_if_not_issued()
-        => productionCertificate.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
-
-    [Fact]
-    public void cannot_transfer_if_rejected()
-    {
-        productionCertificate.Reject("foo");
-
-        productionCertificate.Invoking(s => s.Transfer("owner1", "owner2")).Should().Throw<CertificateDomainException>();
-    }
-
-    [Fact]
-    public void can_transfer_if_issued()
-    {
-        productionCertificate.Issue();
-        productionCertificate.Transfer("owner1", "owner2");
-
-        productionCertificate.CertificateOwner.Should().Be("owner2");
-    }
-
-    [Fact]
-    public void can_transfer_back_to_original_owner()
-    {
-        productionCertificate.Issue();
-        productionCertificate.Transfer("owner1", "owner2");
-        productionCertificate.Transfer("owner2", "owner1");
-
-        productionCertificate.CertificateOwner.Should().Be("owner1");
-    }
-
-    [Fact]
-    public void cannot_transfer_to_same_owner()
-    {
-        productionCertificate.Issue();
-
-        productionCertificate.Invoking(s => s.Transfer("owner1", "owner1")).Should().Throw<CertificateDomainException>();
-    }
-
-    [Fact]
-    public void cannot_transfer_from_wrong_owner()
-    {
-        productionCertificate.Issue();
-
-        productionCertificate.Invoking(s => s.Transfer("wrong-owner", "owner2")).Should().Throw<CertificateDomainException>();
-    }
-
-    [Fact]
     public void has_a_parameterless_constructor()
     {
         var sut = Activator.CreateInstance(typeof(ProductionCertificate), true);

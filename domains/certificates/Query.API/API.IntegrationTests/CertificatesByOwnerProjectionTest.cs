@@ -6,7 +6,6 @@ using API.Query.API.Projections;
 using API.Query.API.Projections.Views;
 using CertificateEvents.Aggregates;
 using CertificateValueObjects;
-using FluentAssertions;
 using Marten;
 using VerifyXunit;
 using Xunit;
@@ -29,27 +28,6 @@ public sealed class CertificatesByOwnerProjectionTest : TestBase, IClassFixture<
 
         repository = new ProductionCertificateRepository(store);
         session = store.LightweightSession();
-    }
-
-    [Fact]
-    public async Task Apply_Transferred_CertificateRemovedFromSourceToTarget()
-    {
-        var source = Guid.NewGuid().ToString();
-        var target = Guid.NewGuid().ToString();
-
-        var productionCertificate = CreateProductionCertificate(source);
-        productionCertificate.Issue();
-        await repository.Save(productionCertificate);
-
-        var certificate = await repository.Get(productionCertificate.Id);
-        certificate!.Transfer(source, target);
-        await repository.Save(certificate);
-
-        var targetView = session.Load<CertificatesByOwnerView>(target);
-        var sourceView = session.Load<CertificatesByOwnerView>(source);
-
-        sourceView!.Certificates.Should().BeEmpty();
-        await Verifier.Verify(targetView);
     }
 
     [Fact]
