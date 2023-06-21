@@ -6,7 +6,7 @@ on:
 
 jobs:
   setup:
-    if: github.ref_name == '1564-c4-models'
+    if: ${{ github.ref_name == '1564-c4-models' }}
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
