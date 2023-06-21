@@ -8,7 +8,7 @@ public class TransferAgreement
 
     public DateTimeOffset StartDate { get; set; }
 
-    public DateTimeOffset EndDate { get; set; }
+    public DateTimeOffset? EndDate { get; set; }
 
     public string ActorId { get; set; }
 
