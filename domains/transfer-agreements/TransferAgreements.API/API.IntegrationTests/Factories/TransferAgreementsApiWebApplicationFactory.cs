@@ -82,7 +82,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
         string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
         string tin = "12345678",
-        string cpn = "Producent A/S")
+        string cpn = "Producent A/S",
+        string name = "Peter Producent")
     {
         var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
 
@@ -93,7 +94,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new Claim("actor", actor),
             new Claim("atr", actor),
             new Claim("tin", tin),
-            new Claim("cpn", cpn)
+            new Claim("cpn", cpn),
+            new Claim("name", name)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
