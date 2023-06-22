@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.Data;
 using API.Options;
+using Audit.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -48,6 +50,32 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         var serviceScope = host.Services.CreateScope();
         var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+        // Add Audit.Net Configuration Here
+        Audit.Core.Configuration.Setup()
+            .UseEntityFramework(ef => ef
+                .AuditTypeExplicitMapper(config => config
+                    .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
+                    {
+                        auditEntity.Id = Guid.NewGuid();
+                        auditEntity.AuditDate = DateTime.UtcNow;
+                        auditEntity.AuditAction = eventEntry.Action;
+
+                        switch (eventEntry.Action)
+                        {
+                            case "Insert":
+                                auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                                break;
+                            case "Update":
+                            {
+                                var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
+                                auditEntity.TransferAgreementId = primaryKey;
+                                break;
+                            }
+                        }
+                        return true;
+                    })));
         dbContext.Database.Migrate();
 
         return host;
