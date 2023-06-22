@@ -55,8 +55,6 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         );
     }
 
-    private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement,
-        DateTimeOffset startDate,
-        DateTimeOffset? endDate) =>
+    private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate) =>
         !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
 }

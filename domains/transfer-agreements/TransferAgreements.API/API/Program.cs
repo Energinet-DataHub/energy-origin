@@ -115,6 +115,7 @@ builder.Services.AddSwaggerGen(o =>
 });
 
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
+builder.Services.AddScoped<ITransferAgreementAuditRepository, TransferAgreementAuditRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
