@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAudit : Migration
+    public partial class AddTransferAgreementAudit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Audits",
+                name: "TransferAgreementAudits",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -30,15 +30,26 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Audits", x => x.Id);
+                    table.PrimaryKey("PK_TransferAgreementAudits", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransferAgreementAudits_TransferAgreements_TransferAgreemen~",
+                        column: x => x.TransferAgreementId,
+                        principalTable: "TransferAgreements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransferAgreementAudits_TransferAgreementId",
+                table: "TransferAgreementAudits",
+                column: "TransferAgreementId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Audits");
+                name: "TransferAgreementAudits");
         }
     }
 }

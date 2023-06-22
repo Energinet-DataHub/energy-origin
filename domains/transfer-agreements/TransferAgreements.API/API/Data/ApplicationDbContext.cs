@@ -10,7 +10,7 @@ public class ApplicationDbContext : AuditDbContext
     }
 
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
-    public DbSet<Audit> Audits { get; set; }
+    public DbSet<TransferAgreementAudit> TransferAgreementAudits { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

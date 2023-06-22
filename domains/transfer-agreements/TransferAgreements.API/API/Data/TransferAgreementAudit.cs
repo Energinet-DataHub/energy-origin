@@ -2,7 +2,7 @@ using System;
 
 namespace API.Data;
 
-public class Audit
+public class TransferAgreementAudit
 {
     public Guid Id { get; set; }
     public Guid TransferAgreementId { get; set; }
@@ -22,4 +22,6 @@ public class Audit
     public string ReceiverTin { get; set; }
     public DateTime AuditDate { get; set; }
     public string AuditAction { get; set; }
+
+    public TransferAgreement TransferAgreement { get; set; }
 }

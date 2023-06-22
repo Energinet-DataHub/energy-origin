@@ -40,20 +40,23 @@ builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.Use
 Audit.Core.Configuration.Setup()
     .UseEntityFramework(ef => ef
         .AuditTypeExplicitMapper(config => config
-            .Map<TransferAgreement, API.Data.Audit>((evt, eventEntry, auditEntity) =>
+            .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
             {
                 auditEntity.Id = Guid.NewGuid();
                 auditEntity.AuditDate = DateTime.UtcNow;
                 auditEntity.AuditAction = eventEntry.Action;
 
-                if (eventEntry.Action == "Insert")
+                switch (eventEntry.Action)
                 {
-                    auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
-                }
-                else if (eventEntry.Action == "Update")
-                {
-                    var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
-                    auditEntity.TransferAgreementId = primaryKey;
+                    case "Insert":
+                        auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                        break;
+                    case "Update":
+                    {
+                        var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
+                        auditEntity.TransferAgreementId = primaryKey;
+                        break;
+                    }
                 }
 
                 return true;
