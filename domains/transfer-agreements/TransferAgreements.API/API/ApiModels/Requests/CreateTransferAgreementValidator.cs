@@ -8,11 +8,12 @@ namespace API.ApiModels.Requests
         public CreateTransferAgreementValidator(string senderTin)
         {
             var now = DateTimeOffset.UtcNow;
+            var utcMidnight = now.Subtract(now.TimeOfDay).ToUnixTimeSeconds();
 
             RuleFor(createTransferAgreement => createTransferAgreement.StartDate)
                 .NotEmpty()
                 .WithMessage("Start Date cannot be empty.")
-                .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
+                .GreaterThanOrEqualTo(_ => utcMidnight)
                 .WithMessage("Start Date cannot be in the past.")
                 .MustBeBeforeYear10000();
 
