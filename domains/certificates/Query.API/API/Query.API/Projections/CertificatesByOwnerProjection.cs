@@ -52,9 +52,6 @@ public class CertificatesByOwnerProjection : IProjection
                     ApplyProductionCertificateRejected(
                         operations, productionCertificateRejected, views);
                     break;
-                case ProductionCertificateTransferred productionCertificateTransferred:
-                    ApplyProductionCertificateTransferred(operations, productionCertificateTransferred, views);
-                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -121,58 +118,6 @@ public class CertificatesByOwnerProjection : IProjection
         }
 
         views.Add(view);
-    }
-
-    private static void ApplyProductionCertificateTransferred(IDocumentOperations operations,
-        ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
-    {
-        var source = views
-                         .FirstOrDefault(it =>
-                             it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
-                     ?? operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Source)
-                     ?? throw new ProjectionException(
-                         productionCertificateTransferred.CertificateId,
-                         $"Cannot transfer from {productionCertificateTransferred.Source}. View for {productionCertificateTransferred.Source} cannot be found"
-                     );
-        var cert = source.Certificates[productionCertificateTransferred.CertificateId];
-
-        RemoveCertificateFromSource(source, productionCertificateTransferred, views);
-        AddCertificateToTarget(operations, productionCertificateTransferred, cert, views);
-    }
-
-    private static void AddCertificateToTarget(IDocumentOperations operations,
-        ProductionCertificateTransferred productionCertificateTransferred, CertificateView certificateView,
-        ISet<CertificatesByOwnerView> views)
-    {
-        var view = views
-                       .FirstOrDefault(it =>
-                           it.Certificates.ContainsKey(productionCertificateTransferred.CertificateId))
-                   ?? operations.Load<CertificatesByOwnerView>(productionCertificateTransferred.Target);
-
-        if (view == null)
-        {
-            view = new CertificatesByOwnerView
-            {
-                Owner = productionCertificateTransferred.Target,
-                Certificates =
-                {
-                    [certificateView.CertificateId] = certificateView
-                }
-            };
-        }
-        else
-        {
-            view.Certificates.Add(certificateView.CertificateId, certificateView);
-        }
-
-        views.Add(view);
-    }
-
-    private static void RemoveCertificateFromSource(CertificatesByOwnerView source,
-        ProductionCertificateTransferred productionCertificateTransferred, ISet<CertificatesByOwnerView> views)
-    {
-        source.Certificates.Remove(productionCertificateTransferred.CertificateId);
-        views.Add(source);
     }
 
     private static CertificatesByOwnerView GetCertificatesByOwnerView(IDocumentOperations operations,
