@@ -1,4 +1,3 @@
-
 namespace API.Options;
 
 public class DatabaseOptions

@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -11,7 +7,6 @@ using API.Data;
 using API.Extensions;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

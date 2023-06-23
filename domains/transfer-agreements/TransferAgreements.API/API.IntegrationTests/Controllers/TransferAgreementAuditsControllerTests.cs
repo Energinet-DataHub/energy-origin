@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -11,7 +11,6 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Xunit;
-using Newtonsoft.Json;
 
 namespace API.IntegrationTests.Controllers;
 
@@ -54,7 +53,6 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         audits.Should().NotBeNull();
         audits.Result.Should().HaveCount(1);
     }
-
 
     [Fact]
     public async Task Edit_ShouldGenerateAudit_WhenTransferAgreementEndDateIsChanged()
@@ -183,12 +181,6 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
             auditDto.ActorName.Should().BeNull();
         }
     }
-
-
-
-
-
-
 
     private async Task SeedData(List<TransferAgreement> transferAgreements)
     {

@@ -143,11 +143,10 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230622090836_AddTransferAgreementAudit') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
     CREATE TABLE "TransferAgreementAudits" (
         "Id" uuid NOT NULL,
         "TransferAgreementId" uuid NOT NULL,
-        "StartDate" timestamp with time zone NOT NULL,
         "EndDate" timestamp with time zone NULL,
         "ActorId" text NOT NULL,
         "ActorName" text NOT NULL,
@@ -165,16 +164,16 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230622090836_AddTransferAgreementAudit') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
     CREATE INDEX "IX_TransferAgreementAudits_TransferAgreementId" ON "TransferAgreementAudits" ("TransferAgreementId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230622090836_AddTransferAgreementAudit') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230622090836_AddTransferAgreementAudit', '7.0.5');
+    VALUES ('20230623123859_AddTransferAgreementAudit', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;

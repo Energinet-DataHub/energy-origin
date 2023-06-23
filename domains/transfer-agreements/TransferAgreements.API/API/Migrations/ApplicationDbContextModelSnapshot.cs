@@ -101,9 +101,6 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("TransferAgreementId")
                         .HasColumnType("uuid");
 

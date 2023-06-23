@@ -17,7 +17,6 @@ namespace API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TransferAgreementId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ActorId = table.Column<string>(type: "text", nullable: false),
                     ActorName = table.Column<string>(type: "text", nullable: false),

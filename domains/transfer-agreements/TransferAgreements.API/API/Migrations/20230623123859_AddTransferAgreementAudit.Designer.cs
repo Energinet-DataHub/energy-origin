@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230622090836_AddTransferAgreementAudit")]
+    [Migration("20230623123859_AddTransferAgreementAudit")]
     partial class AddTransferAgreementAudit
     {
         /// <inheritdoc />
@@ -103,9 +103,6 @@ namespace API.Migrations
                     b.Property<string>("SenderTin")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("StartDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("TransferAgreementId")
                         .HasColumnType("uuid");

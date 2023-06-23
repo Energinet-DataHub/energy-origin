@@ -9,43 +9,41 @@ using API.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers
+namespace API.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/audits/transfer-agreements")]
+public class TransferAgreementAuditsController : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/audits/transfer-agreements")]
-    public class TransferAgreementAuditsController : ControllerBase
+    private readonly ITransferAgreementAuditRepository auditRepository;
+
+    public TransferAgreementAuditsController(ITransferAgreementAuditRepository auditRepository) => this.auditRepository = auditRepository;
+
+
+    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
+    [ProducesResponseType(204)]
+    [HttpGet("{transferAgreementId}")]
+    public async Task<ActionResult> GetAuditsForTransferAgreement(Guid transferAgreementId)
     {
-        private readonly ITransferAgreementAuditRepository auditRepository;
+        var subject = User.FindSubjectGuidClaim();
+        var tin = User.FindSubjectTinClaim();
+        var audits = await auditRepository.GetAuditsForTransferAgreement(transferAgreementId, subject, tin);
 
-        public TransferAgreementAuditsController(ITransferAgreementAuditRepository auditRepository) => this.auditRepository = auditRepository;
-
-
-        [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-        [ProducesResponseType(204)]
-        [HttpGet("{transferAgreementId}")]
-        public async Task<ActionResult> GetAuditsForTransferAgreement(Guid transferAgreementId)
+        if (!audits.Any())
         {
-            var subject = User.FindSubjectGuidClaim();
-            var tin = User.FindSubjectTinClaim();
-            var audits = await auditRepository.GetAuditsForTransferAgreement(transferAgreementId, subject, tin);
-
-            if (!audits.Any())
-            {
-                return NoContent();
-            }
-
-            var listResponse = new TransferAgreementAuditsResponse(
-                    audits.Select(audit => new TransferAgreementAuditDto(
-                        audit.StartDate.ToUnixTimeSeconds(),
-                        audit.EndDate?.ToUnixTimeSeconds(),
-                        audit.SenderName,
-                        Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,
-                        audit.SenderTin,
-                        audit.ReceiverTin))
-                        .ToList());
-
-            return Ok(listResponse);
+            return NoContent();
         }
+
+        var listResponse = new TransferAgreementAuditsResponse(
+            audits.Select(audit => new TransferAgreementAuditDto(
+                    audit.EndDate?.ToUnixTimeSeconds(),
+                    audit.SenderName,
+                    Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,
+                    audit.SenderTin,
+                    audit.ReceiverTin))
+                .ToList());
+
+        return Ok(listResponse);
     }
 }
