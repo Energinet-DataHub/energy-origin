@@ -1,4 +1,4 @@
-version: 1.1.25
+version: 1.1.26
 versionPath: api.image.tag
 name: ghcr.io/energinet-datahub/eo-certificates-api
 namePath: api.image.name
