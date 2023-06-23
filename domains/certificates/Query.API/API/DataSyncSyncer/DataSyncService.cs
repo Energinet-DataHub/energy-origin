@@ -57,6 +57,8 @@ public class DataSyncService
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
 
+                syncState.SetSyncPosition(new SyncPosition(Guid.NewGuid(), contract.GSRN, nearestHour));
+
                 return result;
             }
             catch (Exception e)

@@ -6,4 +6,5 @@ namespace API.DataSyncSyncer.Persistence;
 public interface ISyncState
 {
     Task<long?> GetPeriodStartTime(CertificateIssuingContract contract);
+    void SetSyncPosition(SyncPosition syncPosition);
 }
