@@ -86,28 +86,6 @@ public class ProductionCertificate : AggregateBase
         Version++;
     }
 
-    public void Transfer(string source, string target)
-    {
-        if (issuedState != IssuedState.Issued)
-            throw new CertificateDomainException(Id, "Transfer only allowed on issued certificates");
-        if (string.Equals(target, CertificateOwner))
-            throw new CertificateDomainException(Id, $"Cannot transfer certificate to the current owner {target}");
-        if (!string.Equals(source, CertificateOwner))
-            throw new CertificateDomainException(Id, $"Cannot transfer from {source}. {source} is not current owner");
-
-        var @event = new ProductionCertificateTransferred(Id, source, target);
-
-        Apply(@event);
-        AddUncommittedEvent(@event);
-    }
-
-    private void Apply(ProductionCertificateTransferred @event)
-    {
-        CertificateOwner = @event.Target;
-
-        Version++;
-    }
-
     private enum IssuedState
     {
         Issued,
