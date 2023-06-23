@@ -5,6 +5,49 @@
     "version": "v1"
   },
   "paths": {
+    "/api/audits/transfer-agreements/{transferAgreementId}": {
+      "get": {
+        "tags": [
+          "TransferAgreementAudits"
+        ],
+        "parameters": [
+          {
+            "name": "transferAgreementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/transfer-agreements": {
       "post": {
         "tags": [

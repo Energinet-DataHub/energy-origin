@@ -86,12 +86,19 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
-        await dbContext.SaveChangesAsync();
+        // Clear TransferAgreementAudits table
+        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreementAudits\"");
 
+        // Clear TransferAgreements table while ignoring foreign key violations
+        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreements\" CASCADE");
+
+        // Invoke the seeder action
         seeder(dbContext);
+
+        // Save changes
         await dbContext.SaveChangesAsync();
     }
+
 
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
