@@ -103,11 +103,11 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin));
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name));
 
         return client;
     }

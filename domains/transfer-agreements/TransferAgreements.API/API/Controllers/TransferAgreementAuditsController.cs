@@ -40,7 +40,7 @@ namespace API.Controllers
                         audit.StartDate.ToUnixTimeSeconds(),
                         audit.EndDate?.ToUnixTimeSeconds(),
                         audit.SenderName,
-                        subject.Equals(audit.SenderId) ? audit.ActorName : null,
+                        Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,
                         audit.SenderTin,
                         audit.ReceiverTin))
                         .ToList());
