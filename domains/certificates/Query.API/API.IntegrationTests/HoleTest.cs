@@ -49,10 +49,10 @@ public class WalletContainer : IAsyncLifetime
             .WithPassword("postgres")
             .WithPortBinding(5432, true)
             .WithNetwork(network)
-            .WithNetworkAliases("postgres")
+            .WithNetworkAliases("pg-service")
             .Build();
 
-        const string connectionString = "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres";
+        const string connectionString = "Host=pg-service;Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
         walletContainer = new ContainerBuilder()
             .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
@@ -79,5 +79,6 @@ public class WalletContainer : IAsyncLifetime
     {
         await postgreSqlContainer.DisposeAsync();
         await walletContainer.DisposeAsync();
+        await network.DeleteAsync();
     }
 }

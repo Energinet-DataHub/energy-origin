@@ -32,7 +32,7 @@
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>
-	  <Protobuf Include="Protos\primitives.proto" ProtoRoot="Protos">
+	  <Protobuf Include="Protos\primitives.proto" ProtoRoot="Protos" GrpcServices="None">
       <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/wallet-v0.1.0-rc.4/src/Protos/primitives.proto</SourceUrl>
     </Protobuf>
     <Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
