@@ -19,7 +19,7 @@ public class NewClientWorker : BackgroundService
     {
         try
         {
-            using var channel = GrpcChannel.ForAddress("http://localhost:1234");
+            using var channel = GrpcChannel.ForAddress("http://localhost:7890");
             //var walletServiceClient = new WalletService.WalletServiceClient(channel);
             //walletServiceClient.CreateWalletAsync(new CreateWalletRequest { });
 

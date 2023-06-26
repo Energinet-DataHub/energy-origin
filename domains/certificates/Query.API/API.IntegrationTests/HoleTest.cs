@@ -1,11 +1,87 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using API.IntegrationTests.Factories;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
+using DotNet.Testcontainers.Networks;
+using FluentAssertions;
+using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace API.IntegrationTests;
 
-internal class HoleTest
+public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, IClassFixture<WalletContainer>
 {
+    private readonly RegistryConnectorApplicationFactory factory;
+    private readonly WalletContainer walletContainer;
+
+    public HoleTest(RegistryConnectorApplicationFactory factory, WalletContainer walletContainer)
+    {
+        this.factory = factory;
+        this.walletContainer = walletContainer;
+    }
+
+    [Fact]
+    public async Task Test1()
+    {
+        factory.Start();
+
+        await Task.Delay(TimeSpan.FromSeconds(10));
+
+        walletContainer.Url.Should().Be("http://127.0.0.1:7890/");
+    }
+}
+
+public class WalletContainer : IAsyncLifetime
+{
+    private IContainer walletContainer;
+    private readonly PostgreSqlContainer postgreSqlContainer;
+    private readonly INetwork network;
+
+    public WalletContainer()
+    {
+        network = new NetworkBuilder().WithName(Guid.NewGuid().ToString("D")).Build();
+
+        postgreSqlContainer = new PostgreSqlBuilder()
+            .WithImage("postgres:15.2")
+            .WithDatabase("postgres")
+            .WithUsername("postgres")
+            .WithPassword("postgres")
+            .WithNetwork(network)
+            .WithNetworkAliases("postgres")
+            .Build();
+
+        var connectionString = "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres";
+
+        walletContainer = new ContainerBuilder()
+            .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
+            //.WithPortBinding(80, true)
+            .WithPortBinding(7890, 80)
+            //.WithEnvironment("CONNECTIONSTRINGS__DATABASE", "Bla bla")
+            .WithEnvironment("CONNECTIONSTRINGS__DATABASE", connectionString)
+            //.WithEnvironment("Issuers__DK1", Convert.ToBase64String(privateKey.PublicKey.Export(KeyBlobFormat.RawPublicKey)))
+            //.WithEnvironment("REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__BATCHSIZEEXPONENT", "0")
+            //.WithEnvironment("REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__EVENTSTORE__TYPE", "inMemory")
+            //.WithEnvironment("IMMUTABLELOG__TYPE", "log")
+            .WithNetwork(network)
+            .Build();
+    }
+
+    public string Url => new UriBuilder("http", walletContainer.Hostname, walletContainer.GetMappedPublicPort(80)).Uri.ToString();
+
+    public async Task InitializeAsync()
+    {
+        await network.CreateAsync();
+
+        await postgreSqlContainer.StartAsync();
+        
+        await walletContainer.StartAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await postgreSqlContainer.DisposeAsync();
+        await walletContainer.DisposeAsync();
+    }
 }
