@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using DotNet.Testcontainers.Builders;
@@ -35,7 +34,7 @@ public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, ICla
 
 public class WalletContainer : IAsyncLifetime
 {
-    private IContainer walletContainer;
+    private readonly IContainer walletContainer;
     private readonly PostgreSqlContainer postgreSqlContainer;
     private readonly INetwork network;
 
@@ -48,22 +47,17 @@ public class WalletContainer : IAsyncLifetime
             .WithDatabase("postgres")
             .WithUsername("postgres")
             .WithPassword("postgres")
+            .WithPortBinding(5432, true)
             .WithNetwork(network)
             .WithNetworkAliases("postgres")
             .Build();
 
-        var connectionString = "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres";
+        const string connectionString = "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
         walletContainer = new ContainerBuilder()
             .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
-            //.WithPortBinding(80, true)
             .WithPortBinding(7890, 80)
-            //.WithEnvironment("CONNECTIONSTRINGS__DATABASE", "Bla bla")
             .WithEnvironment("CONNECTIONSTRINGS__DATABASE", connectionString)
-            //.WithEnvironment("Issuers__DK1", Convert.ToBase64String(privateKey.PublicKey.Export(KeyBlobFormat.RawPublicKey)))
-            //.WithEnvironment("REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__BATCHSIZEEXPONENT", "0")
-            //.WithEnvironment("REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__EVENTSTORE__TYPE", "inMemory")
-            //.WithEnvironment("IMMUTABLELOG__TYPE", "log")
             .WithNetwork(network)
             .Build();
     }
