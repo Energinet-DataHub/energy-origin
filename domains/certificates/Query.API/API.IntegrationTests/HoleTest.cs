@@ -57,7 +57,9 @@ public class WalletContainer : IAsyncLifetime
         walletContainer = new ContainerBuilder()
             .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
             .WithPortBinding(7890, 80)
-            .WithEnvironment("CONNECTIONSTRINGS__DATABASE", connectionString)
+            .WithCommand("--serve", "--migrate")
+            .WithEnvironment("ConnectionStrings__Database", connectionString)
+            .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
             .WithNetwork(network)
             .Build();
     }

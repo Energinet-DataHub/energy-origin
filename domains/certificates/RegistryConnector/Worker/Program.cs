@@ -1,6 +1,5 @@
 using System;
 using Contracts;
-using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using ProjectOrigin.WalletSystem.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Cache;
 using RegistryConnector.Worker.EventHandlers;

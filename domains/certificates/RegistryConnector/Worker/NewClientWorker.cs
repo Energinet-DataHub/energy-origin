@@ -20,14 +20,12 @@ public class NewClientWorker : BackgroundService
         try
         {
             using var channel = GrpcChannel.ForAddress("http://localhost:7890");
-            //var walletServiceClient = new WalletService.WalletServiceClient(channel);
-            //walletServiceClient.CreateWalletAsync(new CreateWalletRequest { });
 
-            var externalWalletServiceClient = new ExternalWalletService.ExternalWalletServiceClient(channel);
+            var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
 
-            var respsone = await externalWalletServiceClient.ReceiveSliceAsync(new ReceiveRequest(), cancellationToken: stoppingToken);
+            var response = await receiveSliceServiceClient.ReceiveSliceAsync(new ReceiveRequest());
 
-            logger.LogInformation("Received {response}", respsone);
+            logger.LogInformation("Received {response}", response);
         }
         catch (Exception ex)
         {

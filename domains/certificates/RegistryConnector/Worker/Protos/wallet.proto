@@ -6,7 +6,7 @@ import "primitives.proto";
 package ProjectOrigin.WalletSystem.V1;
 
 // Anonymously functions, Externally accessible
-service ExternalWalletService {
+service ReceiveSliceService {
     rpc ReceiveSlice(ReceiveRequest) returns (ReceiveResponse);
 }
 
@@ -82,10 +82,12 @@ message ClaimResponse {} // not yet sure what to return
 
 message GranularCertificate {
     ProjectOrigin.Register.V1.FederatedStreamId FederatedId = 1;
-    uint32 Quantity = 2;
-    google.protobuf.Timestamp Start = 3;
-    google.protobuf.Timestamp End = 4;
-    repeated Attribute Attributes = 5;
+    GranularCertificateType Type = 2;
+    uint32 Quantity = 3;
+    string GridArea = 4;
+    google.protobuf.Timestamp Start = 5;
+    google.protobuf.Timestamp End = 6;
+    repeated Attribute Attributes = 7;
 }
 
 message Attribute {
@@ -95,4 +97,10 @@ message Attribute {
 
 message Uuid {
     string value = 1;
+}
+
+enum GranularCertificateType {
+    INVALID = 0;
+    CONSUMPTION = 1;
+    PRODUCTION = 2;
 }
