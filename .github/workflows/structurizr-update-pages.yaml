@@ -28,7 +28,7 @@ jobs:
       - name: Update value
         if: github.event_name == 'push'
         shell: bash
-        run: echo "matched=${{ steps.changes.outputs.matched }}" >> $GITHUB_ENV
+        run: echo "matched=${{ steps.changes.outputs.matches }}" >> $GITHUB_ENV
 
       - name: Trigger build by workflow dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -87,6 +87,11 @@ jobs:
           rm *-key.png || true
           mkdir -p $output/${{ env.OUTPUT_STRUCTURE }}
           mv *.png $output/${{ env.OUTPUT_STRUCTURE }}/
+
+          chmod -c -R +rX "$output" |
+          while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
