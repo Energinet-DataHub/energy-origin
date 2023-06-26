@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -10,8 +9,11 @@
     <RootNamespace>RegistryConnector.Worker</RootNamespace>
     <AssemblyName>RegistryConnector.Worker</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.22.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.54.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.54.0" PrivateAssets="All" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.5.0-alpha.1" />
@@ -25,10 +27,16 @@
     <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Protobuf Include="Protos\primitives.proto" ProtoRoot="Protos" GrpcServices="None">
+      <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/wallet-v0.1.0-rc.3/src/Protos/primitives.proto</SourceUrl>
+    </Protobuf>
+    <Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
+      <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/wallet-v0.1.0-rc.3/src/Protos/wallet.proto</SourceUrl>
+    </Protobuf>
+  </ItemGroup>
 </Project>
