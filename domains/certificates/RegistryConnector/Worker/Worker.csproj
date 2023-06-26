@@ -10,10 +10,10 @@
     <AssemblyName>RegistryConnector.Worker</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.22.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.23.3" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.54.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.54.0" PrivateAssets="All" />
+    <PackageReference Include="Grpc.Tools" Version="2.56.0" PrivateAssets="All" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.5.0-alpha.1" />
