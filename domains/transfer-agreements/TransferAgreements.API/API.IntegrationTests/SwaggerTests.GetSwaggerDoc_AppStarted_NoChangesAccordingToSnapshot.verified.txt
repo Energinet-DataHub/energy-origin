@@ -27,17 +27,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                  "$ref": "#/components/schemas/TransferAgreementAuditsResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                  "$ref": "#/components/schemas/TransferAgreementAuditsResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementsResponse"
+                  "$ref": "#/components/schemas/TransferAgreementAuditsResponse"
                 }
               }
             }
@@ -278,6 +278,14 @@
   },
   "components": {
     "schemas": {
+      "ChangeAction": {
+        "enum": [
+          "Created",
+          "Updated",
+          "Deleted"
+        ],
+        "type": "string"
+      },
       "CreateTransferAgreement": {
         "type": "object",
         "properties": {
@@ -333,6 +341,50 @@
           }
         },
         "additionalProperties": { }
+      },
+      "TransferAgreementAuditDto": {
+        "type": "object",
+        "properties": {
+          "endDate": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "senderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "senderTin": {
+            "type": "string"
+          },
+          "receiverTin": {
+            "type": "string"
+          },
+          "auditDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ChangeAction"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementAuditsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferAgreementAuditDto"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "TransferAgreementDto": {
         "type": "object",

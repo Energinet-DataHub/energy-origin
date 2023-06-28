@@ -21,7 +21,7 @@ public class TransferAgreementAuditsController : ControllerBase
     public TransferAgreementAuditsController(ITransferAgreementAuditRepository auditRepository) => this.auditRepository = auditRepository;
 
 
-    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
+    [ProducesResponseType(typeof(TransferAgreementAuditsResponse), 200)]
     [ProducesResponseType(204)]
     [HttpGet("{transferAgreementId}")]
     public async Task<ActionResult> GetAuditsForTransferAgreement(Guid transferAgreementId)
@@ -36,12 +36,7 @@ public class TransferAgreementAuditsController : ControllerBase
         }
 
         var listResponse = new TransferAgreementAuditsResponse(
-            audits.Select(audit => new TransferAgreementAuditDto(
-                    audit.EndDate?.ToUnixTimeSeconds(),
-                    audit.SenderName,
-                    Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,
-                    audit.SenderTin,
-                    audit.ReceiverTin))
+            audits.Select(audit => audit.ToDto(subject))
                 .ToList());
 
         return Ok(listResponse);

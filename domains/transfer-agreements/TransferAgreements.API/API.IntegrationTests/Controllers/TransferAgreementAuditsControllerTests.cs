@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -49,7 +51,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
 
         auditsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>();
+        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
         audits.Should().NotBeNull();
         audits.Result.Should().HaveCount(1);
     }
@@ -94,7 +96,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
 
         auditsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>();
+        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
         audits.Should().NotBeNull();
         audits.Result.Should().HaveCount(2);
         audits.Result.Last().EndDate.Should().Be(newEndDate);
@@ -162,7 +164,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
 
         var response = await (isSender ? senderClient : receiverClient).GetAsync($"api/audits/transfer-agreements/{transferAgreementId}");
 
-        var auditsResponse = await response.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>();
+        var auditsResponse = await response.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
         auditsResponse.Should().NotBeNull();
         auditsResponse.Result.Should().HaveCount(1);
 
