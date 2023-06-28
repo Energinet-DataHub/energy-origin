@@ -60,22 +60,21 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
-        await SeedData(
-            new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
+        {
+            new()
             {
-                new()
-                {
-                    Id = agreementId,
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow.AddDays(1),
-                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = "1122334"
-                }
-            });
+                Id = agreementId,
+                SenderId = senderId,
+                StartDate = DateTimeOffset.UtcNow.AddDays(1),
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                ActorId = "actor1",
+                ActorName = "Thomas Tesla",
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = "1122334"
+            }
+        });
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
@@ -108,7 +107,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         var senderId = Guid.NewGuid();
         var receiverTin = "12345678";
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -142,7 +141,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         var receiverId = Guid.NewGuid().ToString();
         var receiverTin = "44332211";
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -180,10 +179,5 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         {
             auditDto.ActorName.Should().BeNull();
         }
-    }
-
-    private async Task SeedData(List<TransferAgreement> transferAgreements)
-    {
-        await factory.SeedData(context => { context.TransferAgreements.AddRange(transferAgreements); });
     }
 }

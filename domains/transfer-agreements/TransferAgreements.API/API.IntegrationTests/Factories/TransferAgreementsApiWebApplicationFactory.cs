@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -56,21 +57,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(Action<ApplicationDbContext> seeder)
+    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Clear TransferAgreementAudits table
         await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreementAudits\"");
 
-        // Clear TransferAgreements table while ignoring foreign key violations
         await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreements\" CASCADE");
 
-        // Invoke the seeder action
-        seeder(dbContext);
+        dbContext.TransferAgreements.AddRange(transferAgreements);
 
-        // Save changes
         await dbContext.SaveChangesAsync();
     }
 

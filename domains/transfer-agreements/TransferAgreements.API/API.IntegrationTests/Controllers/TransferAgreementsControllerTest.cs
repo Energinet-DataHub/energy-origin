@@ -50,7 +50,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
         var id = Guid.NewGuid();
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -169,7 +169,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             ReceiverTin = "87654321"
         };
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
@@ -208,7 +208,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             ReceiverTin = receiverTin
         };
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
@@ -234,7 +234,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task Get_ShouldReturnNotFound_WhenYourNotTheOwnerOrReceiver()
     {
         var id = Guid.NewGuid();
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -284,7 +284,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderTin = "11223344";
         var receiverTin = "11223344";
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -332,7 +332,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -378,7 +378,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -430,7 +430,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -487,7 +487,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -518,8 +518,4 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
     }
 
-    private async Task SeedData(List<TransferAgreement> transferAgreements)
-    {
-        await factory.SeedData(context => { context.TransferAgreements.AddRange(transferAgreements); });
-    }
 }
