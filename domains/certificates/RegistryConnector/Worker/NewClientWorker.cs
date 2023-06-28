@@ -5,8 +5,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
-using Grpc.Core;
-using Grpc.Net.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -18,42 +16,40 @@ namespace RegistryConnector.Worker;
 
 public class NewClientWorker : BackgroundService
 {
+    private readonly WalletService.WalletServiceClient walletServiceClient;
+    private readonly ReceiveSliceService.ReceiveSliceServiceClient receiveSliceServiceClient;
     private readonly ILogger<NewClientWorker> logger;
-    private readonly ECDsa ecdsa;
 
-    public NewClientWorker(ILogger<NewClientWorker> logger)
+    public NewClientWorker(
+        WalletService.WalletServiceClient walletServiceClient,
+        ReceiveSliceService.ReceiveSliceServiceClient receiveSliceServiceClient,
+        ILogger<NewClientWorker> logger)
     {
+        this.walletServiceClient = walletServiceClient;
+        this.receiveSliceServiceClient = receiveSliceServiceClient;
         this.logger = logger;
-        ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            using var channel = GrpcChannel.ForAddress("http://localhost:7890");
-
-            var headers = new Metadata();
-            headers.Add("Authorization", $"Bearer {GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo")}");
-
-            var walletServiceClient = new WalletService.WalletServiceClient(channel);
-
-            var walletSectionReference = await walletServiceClient.CreateWalletSectionAsync(new CreateWalletSectionRequest(), headers);
+            var createWalletSectionRequest = new CreateWalletSectionRequest();
+            var walletSectionReference = await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest);
 
             logger.LogInformation("Received {response}", walletSectionReference);
 
-            var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
-
-            var response = await receiveSliceServiceClient.ReceiveSliceAsync(new ReceiveRequest
+            var receiveRequest = new ReceiveRequest
             {
                 CertificateId = ToCertId("registryA", Guid.NewGuid()),
                 Quantity = 42,
                 RandomR = ByteString.CopyFrom(0x01, 0x02, 0x03, 0x04),
                 WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
                 WalletSectionPosition = 1
-            });
+            };
+            var receiveResponse = await receiveSliceServiceClient.ReceiveSliceAsync(receiveRequest);
 
-            logger.LogInformation("Received {response}", response);
+            logger.LogInformation("Received {response}", receiveResponse);
         }
         catch (Exception ex)
         {
@@ -62,8 +58,10 @@ public class NewClientWorker : BackgroundService
         }
     }
 
-    private string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
+    public static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
     {
+        var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
         var claims = new[]
         {
             new Claim("sub", subject),
