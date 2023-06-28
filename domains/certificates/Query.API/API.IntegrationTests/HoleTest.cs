@@ -28,21 +28,23 @@ public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, ICla
 
         await Task.Delay(TimeSpan.FromSeconds(10));
 
-        walletContainer.Url.Should().Be("http://127.0.0.1:7890/");
+        walletContainer.WalletUrl.Should().Be("http://127.0.0.1:7890/");
     }
 }
 
 public class WalletContainer : IAsyncLifetime
 {
     private readonly IContainer walletContainer;
-    private readonly PostgreSqlContainer postgreSqlContainer;
+    private readonly PostgreSqlContainer postgresContainer;
     private readonly INetwork network;
 
     public WalletContainer()
     {
-        network = new NetworkBuilder().WithName(Guid.NewGuid().ToString("D")).Build();
+        network = new NetworkBuilder()
+            .WithName(Guid.NewGuid().ToString("D"))
+            .Build();
 
-        postgreSqlContainer = new PostgreSqlBuilder()
+        postgresContainer = new PostgreSqlBuilder()
             .WithImage("postgres:15.2")
             .WithDatabase("postgres")
             .WithUsername("postgres")
@@ -64,20 +66,20 @@ public class WalletContainer : IAsyncLifetime
             .Build();
     }
 
-    public string Url => new UriBuilder("http", walletContainer.Hostname, walletContainer.GetMappedPublicPort(80)).Uri.ToString();
+    public string WalletUrl => new UriBuilder("http", walletContainer.Hostname, walletContainer.GetMappedPublicPort(80)).Uri.ToString();
 
     public async Task InitializeAsync()
     {
         await network.CreateAsync();
 
-        await postgreSqlContainer.StartAsync();
+        await postgresContainer.StartAsync();
         
         await walletContainer.StartAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await postgreSqlContainer.DisposeAsync();
+        await postgresContainer.DisposeAsync();
         await walletContainer.DisposeAsync();
         await network.DeleteAsync();
     }
