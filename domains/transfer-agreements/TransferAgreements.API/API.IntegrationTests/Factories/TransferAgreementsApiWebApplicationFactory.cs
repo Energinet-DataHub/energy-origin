@@ -51,31 +51,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var serviceScope = host.Services.CreateScope();
         var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-
-        // Add Audit.Net Configuration Here
-        Audit.Core.Configuration.Setup()
-            .UseEntityFramework(ef => ef
-                .AuditTypeExplicitMapper(config => config
-                    .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
-                    {
-                        auditEntity.Id = Guid.NewGuid();
-                        auditEntity.AuditDate = DateTime.UtcNow;
-                        auditEntity.AuditAction = eventEntry.Action;
-
-                        switch (eventEntry.Action)
-                        {
-                            case "Insert":
-                                auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
-                                break;
-                            case "Update":
-                            {
-                                var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
-                                auditEntity.TransferAgreementId = primaryKey;
-                                break;
-                            }
-                        }
-                        return true;
-                    })));
         dbContext.Database.Migrate();
 
         return host;
