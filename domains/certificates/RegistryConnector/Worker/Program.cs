@@ -53,8 +53,7 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address
     )
     .ConfigureChannel(o => o.UnsafeUseInsecureChannelCallCredentials = true);
 
-builder.Services.AddGrpcClient<ReceiveSliceService.ReceiveSliceServiceClient>(o => o.Address = new Uri("http://localhost:7890"))
-    .ConfigureChannel(o => o.UnsafeUseInsecureChannelCallCredentials = true);
+builder.Services.AddGrpcClient<ReceiveSliceService.ReceiveSliceServiceClient>(o => o.Address = new Uri("http://localhost:7890"));
 
 builder.Services.AddHealthChecks();
 

@@ -73,7 +73,7 @@ public class WalletContainer : IAsyncLifetime
         await network.CreateAsync();
 
         await postgresContainer.StartAsync();
-        
+
         await walletContainer.StartAsync();
     }
 
