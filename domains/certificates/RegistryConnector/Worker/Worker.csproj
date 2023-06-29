@@ -23,6 +23,8 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.2" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.1.0-rc.2" />
     <PackageReference Include="ProjectOrigin.Electricity.Client" Version="0.1.0-alpha.19" />
+    <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.2.0-rc.17" />
+    <PackageReference Include="ProjectOrigin.PedersenCommitment" Version="0.2.0-rc.17" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
