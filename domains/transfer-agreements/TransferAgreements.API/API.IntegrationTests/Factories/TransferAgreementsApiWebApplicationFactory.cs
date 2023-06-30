@@ -64,11 +64,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreementAudits\"");
-
         await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreements\" CASCADE");
 
-        dbContext.TransferAgreements.AddRange(transferAgreements);
-
+        foreach (var agreement in transferAgreements)
+        {
+            dbContext.TransferAgreements.Add(agreement);
+        }
         await dbContext.SaveChangesAsync();
     }
 
