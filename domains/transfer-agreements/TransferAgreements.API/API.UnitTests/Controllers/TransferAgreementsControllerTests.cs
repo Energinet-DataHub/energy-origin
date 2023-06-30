@@ -62,7 +62,6 @@ public class TransferAgreementsControllerTests
 
         mockTransferAgreementRepository.Verify(repository => repository.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == Guid.Parse(subject) &&
-            agreement.ActorId == atr &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
             agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate!.Value) &&
             agreement.SenderName == cpn &&

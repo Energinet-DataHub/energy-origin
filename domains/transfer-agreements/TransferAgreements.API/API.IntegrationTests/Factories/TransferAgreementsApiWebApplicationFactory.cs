@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.Options;
 using Audit.Core;
+using Docker.DotNet.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -71,15 +72,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-
-
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name));
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
 
         return client;
     }

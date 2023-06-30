@@ -45,8 +45,6 @@ public class TransferAgreementsController : ControllerBase
         {
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
             EndDate = request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null,
-            ActorId = actor,
-            ActorName = actorName,
             SenderId = Guid.Parse(subject),
             SenderName = subjectName,
             SenderTin = subjectTin,
@@ -150,7 +148,6 @@ public class TransferAgreementsController : ControllerBase
         }
 
         transferAgreement.EndDate = endDate;
-        transferAgreement.ActorName = actorName;
 
         await transferAgreementRepository.Save();
 

@@ -11,9 +11,6 @@ public class TransferAgreement
 
     public DateTimeOffset? EndDate { get; set; }
 
-    public string ActorId { get; set; }
-
-    public string ActorName { get; set; }
     public Guid SenderId { get; set; }
 
     public string SenderName { get; set; }

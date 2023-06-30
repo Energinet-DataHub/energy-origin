@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Data;
+using API.Filters;
 using API.Options;
 using Audit.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -43,9 +44,14 @@ Audit.Core.Configuration.Setup()
         .AuditTypeExplicitMapper(config => config
             .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
             {
+                var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
+                var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
+
                 auditEntity.Id = Guid.NewGuid();
                 auditEntity.AuditDate = DateTime.UtcNow;
                 auditEntity.AuditAction = eventEntry.Action;
+                auditEntity.ActorId = actorId;
+                auditEntity.ActorName = actorName;
 
                 switch (eventEntry.Action)
                 {
@@ -59,10 +65,8 @@ Audit.Core.Configuration.Setup()
                         break;
                     }
                 }
-
                 return true;
             })));
-
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
@@ -76,8 +80,9 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));;
+builder.Services.AddControllers(options => options.Filters.Add<AuditFilter>())
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {

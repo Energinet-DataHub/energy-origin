@@ -57,8 +57,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -143,12 +141,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
         validationProblemContent.Should().Contain(expectedContent);
         validationProblemContent.Should().Contain("ReceiverTin");
-
     }
 
     [Fact]
@@ -161,8 +157,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
-            ActorName = "Fake Peter Producent",
             SenderId = subject,
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
@@ -195,25 +189,25 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var id = Guid.NewGuid();
         var receiverTin = "12345678";
+        var subject = Guid.NewGuid();
         var fakeTransferAgreement = new TransferAgreement
         {
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
-            ActorName = "Fake Peter Producent",
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
             ReceiverTin = receiverTin
         };
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
+
 
         await factory.SeedData(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
         var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
@@ -241,8 +235,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
                 SenderId = Guid.NewGuid(),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -292,8 +284,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow,
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
@@ -304,8 +294,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(2),
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
-                    ActorId = "actor2",
-                    ActorName = "Peter Producent",
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
                     SenderTin = senderTin,
@@ -340,8 +328,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = senderId,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorName = "Thomas Tesla",
-                ActorId = "actor1",
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin
@@ -352,8 +338,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = senderId,
                 StartDate = DateTimeOffset.UtcNow.AddDays(11),
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
-                ActorId = "actor1",
-                ActorName = "Thomas Tesla",
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin
@@ -387,8 +371,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -439,8 +421,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -496,8 +476,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "1122334"
