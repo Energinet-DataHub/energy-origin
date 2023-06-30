@@ -27,10 +27,22 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         builder.UseSetting("Registry:Url", RegistryOptions?.Url ?? "http://localhost");
         builder.UseSetting("Registry:IssuerPrivateKeyPem", RegistryOptions?.IssuerPrivateKeyPem != null ? Convert.ToBase64String(RegistryOptions.IssuerPrivateKeyPem) : "");
 
-        builder.UseSetting("ProjectOrigin:WalletUrl", ProjectOriginOptions?.WalletUrl);
-
         builder.ConfigureTestServices(services =>
         {
+            if (ProjectOriginOptions != null)
+            {
+                services.Configure<ProjectOriginOptions>(options =>
+                {
+                    //TODO: Can this be prettier?
+                    options.RegistryName = ProjectOriginOptions.RegistryName;
+                    options.RegistryUrl = ProjectOriginOptions.RegistryUrl;
+                    options.Dk1IssuerPrivateKeyPem = ProjectOriginOptions.Dk1IssuerPrivateKeyPem;
+                    options.Dk2IssuerPrivateKeyPem = ProjectOriginOptions.Dk2IssuerPrivateKeyPem;
+                    options.WalletUrl = ProjectOriginOptions.WalletUrl;
+                });
+            }
+
+            //services.AddOptions<ProjectOriginOptions>().Bind()
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);

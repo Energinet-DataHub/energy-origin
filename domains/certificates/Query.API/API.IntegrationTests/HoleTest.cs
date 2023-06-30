@@ -16,19 +16,25 @@ using IContainer = DotNet.Testcontainers.Containers.IContainer;
 
 namespace API.IntegrationTests;
 
-public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, IClassFixture<WalletContainer>
+public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, IClassFixture<WalletContainer>, IClassFixture<RegistryFixture>
 {
     private readonly RegistryConnectorApplicationFactory factory;
     private readonly WalletContainer walletContainer;
+    private readonly RegistryFixture registryFixture;
 
-    public HoleTest(RegistryConnectorApplicationFactory factory, WalletContainer walletContainer)
+    public HoleTest(RegistryConnectorApplicationFactory factory, WalletContainer walletContainer, RegistryFixture registryFixture)
     {
         this.factory = factory;
         this.walletContainer = walletContainer;
+        this.registryFixture = registryFixture;
 
         factory.ProjectOriginOptions = new ProjectOriginOptions
         {
-            WalletUrl = walletContainer.WalletUrl,
+            RegistryName = registryFixture.Name,
+            Dk1IssuerPrivateKeyPem = registryFixture.IssuerKey.Export().ToArray(),
+            Dk2IssuerPrivateKeyPem = registryFixture.IssuerKey.Export().ToArray(),
+            RegistryUrl = registryFixture.RegistryUrl,
+            WalletUrl = walletContainer.WalletUrl
         };
     }
 

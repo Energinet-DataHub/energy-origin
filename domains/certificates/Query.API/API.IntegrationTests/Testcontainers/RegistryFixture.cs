@@ -22,7 +22,7 @@ public class RegistryFixture : IAsyncLifetime
     private const string registryImage = "ghcr.io/project-origin/registry-server:0.2.0-rc.17";
     private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.0-rc.17";
     private const int grpcPort = 80;
-    private const string area = "Narnia";
+    private const string area = "DK1"; //TODO: What about DK2?
     private const string registryName = "TestRegistry";
 
     private readonly Lazy<IContainer> registryContainer;
