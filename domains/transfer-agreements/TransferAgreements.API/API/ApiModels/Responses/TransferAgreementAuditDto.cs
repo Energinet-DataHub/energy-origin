@@ -5,6 +5,7 @@ using API.Data;
 namespace API.ApiModels.Responses;
 
 public record TransferAgreementAuditDto(
+    long StartDate,
     long? EndDate,
     string? SenderName,
     string? ActorName,
@@ -27,6 +28,7 @@ public static class TransferAgreementAuditMapper
         }
 
         return new TransferAgreementAuditDto(
+            audit.StartDate.ToUnixTimeSeconds(),
             audit.EndDate?.ToUnixTimeSeconds(),
             audit.SenderName,
             Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,

@@ -61,11 +61,9 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ActorId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ActorName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("AuditAction")

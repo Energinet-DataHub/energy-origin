@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230630101841_AddTransferAgreementAudit")]
+    [Migration("20230630140618_AddTransferAgreementAudit")]
     partial class AddTransferAgreementAudit
     {
         /// <inheritdoc />
@@ -64,11 +64,9 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ActorId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ActorName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("AuditAction")

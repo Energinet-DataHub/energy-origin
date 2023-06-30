@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Extensions;
 using Audit.Core;
@@ -12,8 +13,8 @@ public class AuditFilter : IAsyncActionFilter
         var httpContext = context.HttpContext;
         var claimsPrincipal = httpContext.User;
 
-        var actorId = claimsPrincipal.FindActorGuidClaim();
-        var actorName = claimsPrincipal.FindActorNameClaim();
+        var actorId = claimsPrincipal.FindFirstValue("actor") ?? claimsPrincipal.FindFirstValue("atr");
+        var actorName = claimsPrincipal.FindFirstValue("name");
 
         Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
         {
@@ -24,5 +25,6 @@ public class AuditFilter : IAsyncActionFilter
         await next();
     }
 }
+
 
 

@@ -44,6 +44,12 @@ Audit.Core.Configuration.Setup()
         .AuditTypeExplicitMapper(config => config
             .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
             {
+                // If the current entity is a TransferAgreementAudit, don't audit
+                if (eventEntry.Entity != null && eventEntry.Entity.GetType() == typeof(TransferAgreementAudit))
+                {
+                    return false;
+                }
+
                 var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
                 var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
 
@@ -67,6 +73,13 @@ Audit.Core.Configuration.Setup()
                 }
                 return true;
             })));
+
+
+
+
+
+
+
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>

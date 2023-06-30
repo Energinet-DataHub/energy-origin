@@ -345,6 +345,10 @@
       "TransferAgreementAuditDto": {
         "type": "object",
         "properties": {
+          "startDate": {
+            "type": "integer",
+            "format": "int64"
+          },
           "endDate": {
             "type": "integer",
             "format": "int64",
