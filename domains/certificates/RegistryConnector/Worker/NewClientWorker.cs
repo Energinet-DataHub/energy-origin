@@ -5,8 +5,11 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
+using Grpc.Core;
+using Grpc.Net.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Register.V1;
 using ProjectOrigin.WalletSystem.V1;
@@ -16,17 +19,16 @@ namespace RegistryConnector.Worker;
 
 public class NewClientWorker : BackgroundService
 {
-    private readonly WalletService.WalletServiceClient walletServiceClient;
-    private readonly ReceiveSliceService.ReceiveSliceServiceClient receiveSliceServiceClient;
+    private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
     private readonly ILogger<NewClientWorker> logger;
 
     public NewClientWorker(
         WalletService.WalletServiceClient walletServiceClient,
         ReceiveSliceService.ReceiveSliceServiceClient receiveSliceServiceClient,
+        IOptions<ProjectOriginOptions> projectOriginOptions,
         ILogger<NewClientWorker> logger)
     {
-        this.walletServiceClient = walletServiceClient;
-        this.receiveSliceServiceClient = receiveSliceServiceClient;
+        this.projectOriginOptions = projectOriginOptions;
         this.logger = logger;
     }
 
@@ -34,11 +36,16 @@ public class NewClientWorker : BackgroundService
     {
         try
         {
+            using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+
+            var walletServiceClient = new WalletService.WalletServiceClient(channel);
             var createWalletSectionRequest = new CreateWalletSectionRequest();
-            var walletSectionReference = await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest);
+            var headers = new Metadata { { "Authorization", $"Bearer {GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo")}" } };
+            var walletSectionReference = await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest, headers);
 
             logger.LogInformation("Received {response}", walletSectionReference);
 
+            var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
             var receiveRequest = new ReceiveRequest
             {
                 CertificateId = ToCertId("registryA", Guid.NewGuid()),

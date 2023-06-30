@@ -15,6 +15,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 {
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     public RegistryOptions? RegistryOptions { get; set; }
+    public ProjectOriginOptions? ProjectOriginOptions { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -25,6 +26,8 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 
         builder.UseSetting("Registry:Url", RegistryOptions?.Url ?? "http://localhost");
         builder.UseSetting("Registry:IssuerPrivateKeyPem", RegistryOptions?.IssuerPrivateKeyPem != null ? Convert.ToBase64String(RegistryOptions.IssuerPrivateKeyPem) : "");
+
+        builder.UseSetting("ProjectOrigin:WalletUrl", ProjectOriginOptions?.WalletUrl);
 
         builder.ConfigureTestServices(services =>
         {

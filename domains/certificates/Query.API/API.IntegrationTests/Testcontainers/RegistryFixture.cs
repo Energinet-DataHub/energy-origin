@@ -10,15 +10,10 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
 using ProjectOrigin.HierarchicalDeterministicKeys;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
+using registryConnector::ProjectOrigin.Common.V1;
 using registryConnector::ProjectOrigin.Electricity.V1;
 using registryConnector::ProjectOrigin.Registry.V1;
 using Xunit;
-using Commitment = registryConnector::ProjectOrigin.Electricity.V1.Commitment;
-using DateInterval = registryConnector::ProjectOrigin.Electricity.V1.DateInterval;
-using FederatedStreamId = registryConnector::ProjectOrigin.Common.V1.FederatedStreamId;
-using GranularCertificateType = registryConnector::ProjectOrigin.Electricity.V1.GranularCertificateType;
-using IssuedEvent = registryConnector::ProjectOrigin.Electricity.V1.IssuedEvent;
-using Uuid = registryConnector::ProjectOrigin.Common.V1.Uuid;
 
 namespace API.IntegrationTests.Testcontainers;
 
@@ -90,7 +85,7 @@ public class RegistryFixture : IAsyncLifetime
 
     public async Task<IssuedEvent> IssueCertificate(GranularCertificateType type, ProjectOrigin.PedersenCommitment.SecretCommitmentInfo commitment, IPublicKey ownerKey)
     {
-        var id = new FederatedStreamId
+        var id = new FederatedStreamId()
         {
             Registry = RegistryName,
             StreamId = new Uuid { Value = Guid.NewGuid().ToString() }

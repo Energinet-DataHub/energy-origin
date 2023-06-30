@@ -9,6 +9,7 @@ using FluentAssertions;
 using ProjectOrigin.HierarchicalDeterministicKeys;
 using ProjectOrigin.PedersenCommitment;
 using registryConnector::ProjectOrigin.Electricity.V1;
+using registryConnector::RegistryConnector.Worker;
 using Testcontainers.PostgreSql;
 using Xunit;
 using IContainer = DotNet.Testcontainers.Containers.IContainer;
@@ -24,6 +25,11 @@ public class HoleTest : IClassFixture<RegistryConnectorApplicationFactory>, ICla
     {
         this.factory = factory;
         this.walletContainer = walletContainer;
+
+        factory.ProjectOriginOptions = new ProjectOriginOptions
+        {
+            WalletUrl = walletContainer.WalletUrl,
+        };
     }
 
     [Fact]
