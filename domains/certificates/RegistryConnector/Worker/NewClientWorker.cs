@@ -23,8 +23,6 @@ public class NewClientWorker : BackgroundService
     private readonly ILogger<NewClientWorker> logger;
 
     public NewClientWorker(
-        WalletService.WalletServiceClient walletServiceClient,
-        ReceiveSliceService.ReceiveSliceServiceClient receiveSliceServiceClient,
         IOptions<ProjectOriginOptions> projectOriginOptions,
         ILogger<NewClientWorker> logger)
     {
