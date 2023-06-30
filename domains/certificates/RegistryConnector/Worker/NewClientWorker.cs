@@ -18,6 +18,7 @@ using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
+using ProjectOrigin.Register.V1;
 using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using Commitment = ProjectOrigin.Electricity.V1.Commitment;
@@ -46,18 +47,14 @@ public class NewClientWorker : BackgroundService
     {
         try
         {
-            using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
-
-            var walletSectionReference = await CreateWalletSectionReference(channel);
+            var walletSectionReference = await CreateWalletSectionReference();
 
             var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletSectionReference.SectionPublicKey.Span);
 
             var commitment = new SecretCommitmentInfo(42);
             var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.GetPublicKey());
 
-            //TODO: Use issuedEvent
-
-            await SendSliceToWallet(channel, walletSectionReference);
+            await SendSliceToWallet(walletSectionReference, issuedEvent, commitment);
         }
         catch (Exception ex)
         {
@@ -66,8 +63,10 @@ public class NewClientWorker : BackgroundService
         }
     }
 
-    private async Task<WalletSectionReference> CreateWalletSectionReference(GrpcChannel channel)
+    private async Task<WalletSectionReference> CreateWalletSectionReference()
     {
+        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
         var createWalletSectionRequest = new CreateWalletSectionRequest();
         var headers = new Metadata
@@ -81,7 +80,6 @@ public class NewClientWorker : BackgroundService
 
     private async Task<IssuedEvent> IssueCertificateInRegistry(SecretCommitmentInfo commitment, IPublicKey ownerKey)
     {
-
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
             Registry = projectOriginOptions.Value.RegistryName,
@@ -153,14 +151,22 @@ public class NewClientWorker : BackgroundService
         return issuedEvent;
     }
 
-    private async Task SendSliceToWallet(GrpcChannel channel, WalletSectionReference walletSectionReference)
+    private async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo)
     {
+        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+
         var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
+        
+        var certificateId = new FederatedStreamId
+        {
+            Registry = issuedEvent.CertificateId.Registry, StreamId = new ProjectOrigin.Register.V1.Uuid { Value = issuedEvent.CertificateId.StreamId.Value }
+        };
+        
         var receiveRequest = new ReceiveRequest
         {
-            CertificateId = ToCertId("registryA", Guid.NewGuid()),
-            Quantity = 42,
-            RandomR = ByteString.CopyFrom(0x01, 0x02, 0x03, 0x04),
+            CertificateId =  certificateId,
+            Quantity = secretCommitmentInfo.Message,
+            RandomR = ByteString.CopyFrom(secretCommitmentInfo.BlindingValue),
             WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
             WalletSectionPosition = 1
         };
@@ -169,7 +175,7 @@ public class NewClientWorker : BackgroundService
         logger.LogInformation("Received {response}", receiveResponse);
     }
 
-    public static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
+    private static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
     {
         var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 
@@ -193,7 +199,4 @@ public class NewClientWorker : BackgroundService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-    private static ProjectOrigin.Register.V1.FederatedStreamId ToCertId(string registry, Guid certId) =>
-        new() { Registry = registry, StreamId = new ProjectOrigin.Register.V1.Uuid { Value = certId.ToString() } };
 }
