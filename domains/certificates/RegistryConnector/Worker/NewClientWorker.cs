@@ -1,5 +1,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
@@ -35,7 +36,10 @@ public class NewClientWorker : BackgroundService
     {
         this.projectOriginOptions = projectOriginOptions;
         this.logger = logger;
-        dk1IssuerKey = Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKey); //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
+
+        dk1IssuerKey = projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Any()
+            ? Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKey) //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
+            : Key.Create(SignatureAlgorithm.Ed25519);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
