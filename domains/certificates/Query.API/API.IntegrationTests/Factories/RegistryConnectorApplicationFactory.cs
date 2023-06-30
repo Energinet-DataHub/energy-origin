@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using registryConnector::RegistryConnector.Worker;
 
 namespace API.IntegrationTests.Factories;
@@ -30,19 +31,8 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         builder.ConfigureTestServices(services =>
         {
             if (ProjectOriginOptions != null)
-            {
-                services.Configure<ProjectOriginOptions>(options =>
-                {
-                    //TODO: Can this be prettier?
-                    options.RegistryName = ProjectOriginOptions.RegistryName;
-                    options.RegistryUrl = ProjectOriginOptions.RegistryUrl;
-                    options.Dk1IssuerPrivateKeyPem = ProjectOriginOptions.Dk1IssuerPrivateKeyPem;
-                    options.Dk2IssuerPrivateKeyPem = ProjectOriginOptions.Dk2IssuerPrivateKeyPem;
-                    options.WalletUrl = ProjectOriginOptions.WalletUrl;
-                });
-            }
-
-            //services.AddOptions<ProjectOriginOptions>().Bind()
+                services.AddSingleton(Options.Create(ProjectOriginOptions)); //TODO: Can we do this with all the options?
+            
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);
