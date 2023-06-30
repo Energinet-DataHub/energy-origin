@@ -32,7 +32,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         {
             if (ProjectOriginOptions != null)
                 services.AddSingleton(Options.Create(ProjectOriginOptions)); //TODO: Can we do this with all the options?
-            
+
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);

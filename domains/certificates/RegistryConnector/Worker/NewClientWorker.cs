@@ -35,7 +35,7 @@ public class NewClientWorker : BackgroundService
     {
         this.projectOriginOptions = projectOriginOptions;
         this.logger = logger;
-        dk1IssuerKey = Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKey);
+        dk1IssuerKey = Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKey); //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -77,13 +77,13 @@ public class NewClientWorker : BackgroundService
 
     private async Task<IssuedEvent> IssueCertificateInRegistry(SecretCommitmentInfo commitment, IPublicKey ownerKey)
     {
-        
+
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
             Registry = projectOriginOptions.Value.RegistryName,
-            StreamId = new ProjectOrigin.Common.V1.Uuid  { Value = Guid.NewGuid().ToString() }
+            StreamId = new ProjectOrigin.Common.V1.Uuid { Value = Guid.NewGuid().ToString() }
         };
-        
+
         var issuedEvent = new IssuedEvent
         {
             CertificateId = id,
