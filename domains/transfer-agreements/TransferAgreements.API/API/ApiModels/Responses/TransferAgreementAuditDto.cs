@@ -5,20 +5,17 @@ using API.Data;
 namespace API.ApiModels.Responses;
 
 public record TransferAgreementAuditDto(
-    long? EndDate,
-    string? SenderName,
+    string ActorId,
     string? ActorName,
-    string SenderTin,
-    string ReceiverTin,
     long AuditDate,
-    ChangeAction Action);
-
+    ChangeAction Action,
+    TransferAgreementDto TransferAgreement);
 
    public enum ChangeAction {Created = 1, Updated = 2, Deleted = 3}
 
 public static class TransferAgreementAuditMapper
 {
-    public static TransferAgreementAuditDto ToDto(this TransferAgreementAudit audit, string subject)
+    public static TransferAgreementAuditDto ToDto(this TransferAgreementAudit audit, TransferAgreementDto transferAgreement, string subject)
     {
         var changeAction = ChangeAction.Updated;
         if (audit.AuditAction.Equals("Inserted", StringComparison.InvariantCultureIgnoreCase))
@@ -27,13 +24,11 @@ public static class TransferAgreementAuditMapper
         }
 
         return new TransferAgreementAuditDto(
-            audit.EndDate?.ToUnixTimeSeconds(),
-            audit.SenderName,
-            Guid.Parse(subject).Equals(audit.SenderId) ? audit.ActorName : null,
-            audit.SenderTin,
-            audit.ReceiverTin,
+            audit.ActorId,
+            Guid.Parse(subject).Equals(audit.TransferAgreement.SenderId) ? audit.ActorName : null,
             new DateTimeOffset(audit.AuditDate).ToUnixTimeSeconds(),
-         changeAction);
-
+            changeAction,
+            transferAgreement);
     }
+
 }

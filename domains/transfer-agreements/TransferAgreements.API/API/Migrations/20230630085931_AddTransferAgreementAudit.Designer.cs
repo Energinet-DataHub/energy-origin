@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230623123859_AddTransferAgreementAudit")]
+    [Migration("20230630085931_AddTransferAgreementAudit")]
     partial class AddTransferAgreementAudit
     {
         /// <inheritdoc />
@@ -30,14 +30,6 @@ namespace API.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ActorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ActorName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("timestamp with time zone");
@@ -85,24 +77,6 @@ namespace API.Migrations
 
                     b.Property<DateTime>("AuditDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ReceiverTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SenderName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenderTin")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<Guid>("TransferAgreementId")
                         .HasColumnType("uuid");

@@ -70,8 +70,6 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
                 SenderId = senderId,
                 StartDate = DateTimeOffset.UtcNow.AddDays(1),
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorId = "actor1",
-                ActorName = "Thomas Tesla",
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = "1122334"
@@ -99,7 +97,6 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
         audits.Should().NotBeNull();
         audits.Result.Should().HaveCount(2);
-        audits.Result.Last().EndDate.Should().Be(newEndDate);
     }
 
     [Fact]
@@ -116,8 +113,6 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
                 Id = transferAgreementId,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -132,35 +127,33 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task GetAuditsForTransferAgreement_ReturnsTransferAgreementAuditsResponse_WithCorrectDtoFormat(bool isSender)
     {
-        var transferAgreementId = Guid.NewGuid();
-        var senderId = Guid.NewGuid();
+        var senderSub = Guid.NewGuid().ToString();
+        var senderName = "Alice";
+        var senderCpn = "Alice Corp.";
+        var senderActor = "Alice Actor";
         var senderTin = "11223344";
-        var receiverId = Guid.NewGuid().ToString();
+
+        var receiverSub = Guid.NewGuid().ToString();
+        var receiverName = "Bob";
+        var receiverCpn = "Bob Corp.";
+        var receiverActor = "Bob Actor";
         var receiverTin = "44332211";
 
-        await factory.SeedData(new List<TransferAgreement>()
-        {
-            new()
-            {
-                Id = transferAgreementId,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
-                SenderId = senderId,
-                SenderName = "Producent A/S",
-                SenderTin = "11223344",
-                ReceiverTin = receiverTin
-            }
-        });
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderSub, name: senderName, cpn: senderCpn, actor: senderActor, tin: senderTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: receiverSub, name: receiverName, cpn: receiverCpn, actor: receiverActor, tin: receiverTin);
 
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
-        var receiverClient = factory.CreateAuthenticatedClient(sub: receiverId, tin: receiverTin);
+        var transferAgreementId = await factory.SeedDataThroughApi(new List<(HttpClient Client, CreateTransferAgreement Agreement)>
+        {
+            (
+                senderClient,
+                new CreateTransferAgreement(StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), EndDate: DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds(), ReceiverTin: receiverTin))
+        });
 
         var response = await (isSender ? senderClient : receiverClient).GetAsync($"api/audits/transfer-agreements/{transferAgreementId}");
 
@@ -169,13 +162,10 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         auditsResponse.Result.Should().HaveCount(1);
 
         var auditDto = auditsResponse.Result.First();
-        auditDto.SenderName.Should().Be("Producent A/S");
-        auditDto.SenderTin.Should().Be(senderTin);
-        auditDto.ReceiverTin.Should().Be(receiverTin);
 
         if (isSender)
         {
-            auditDto.ActorName.Should().Be("Peter Producent");
+            auditDto.ActorName.Should().Be(senderName);
         }
         else
         {

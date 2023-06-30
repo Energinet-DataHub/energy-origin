@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,21 +11,20 @@ namespace API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "ActorId",
+                table: "TransferAgreements");
+
             migrationBuilder.CreateTable(
                 name: "TransferAgreementAudits",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TransferAgreementId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ActorId = table.Column<string>(type: "text", nullable: false),
                     ActorName = table.Column<string>(type: "text", nullable: false),
-                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SenderName = table.Column<string>(type: "text", nullable: false),
-                    SenderTin = table.Column<string>(type: "text", nullable: false),
-                    ReceiverTin = table.Column<string>(type: "text", nullable: false),
                     AuditDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AuditAction = table.Column<string>(type: "text", nullable: false)
+                    AuditAction = table.Column<string>(type: "text", nullable: false),
+                    TransferAgreementId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,6 +48,13 @@ namespace API.Migrations
         {
             migrationBuilder.DropTable(
                 name: "TransferAgreementAudits");
+
+            migrationBuilder.AddColumn<string>(
+                name: "ActorId",
+                table: "TransferAgreements",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
         }
     }
 }

@@ -19,7 +19,9 @@ namespace API.Data
         public async Task<List<TransferAgreementAudit>> GetAuditsForTransferAgreement(Guid transferAgreementId, string subject, string tin)
         {
             return await context.TransferAgreementAudits
-                .Where(agreement => agreement.TransferAgreementId == transferAgreementId && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
+                .Where(audit =>
+                    audit.TransferAgreement.Id == transferAgreementId &&
+                    (audit.TransferAgreement.SenderId == Guid.Parse(subject) || audit.TransferAgreement.ReceiverTin.Equals(tin)))
                 .ToListAsync();
         }
 

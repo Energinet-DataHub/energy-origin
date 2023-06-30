@@ -46,36 +46,34 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
-        var senderId = Guid.NewGuid();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-        var id = Guid.NewGuid();
+        var senderSub = Guid.NewGuid().ToString();
+        var senderName = "Alice";
+        var senderCpn = "Alice Corp.";
+        var senderActor = "Alice Actor";
+        var senderTin = "44332211";
 
-        await factory.SeedData(new List<TransferAgreement>()
+        var receiverTin = "12345678";
+
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderSub, name: senderName, cpn: senderCpn, actor: senderActor, tin: senderTin);
+
+        await factory.SeedDataThroughApi(new List<(HttpClient Client, CreateTransferAgreement Agreement)>
         {
-            new()
-            {
-                Id = id,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
-                SenderId = senderId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678"
-            }
+            (
+                authenticatedClient,
+                new CreateTransferAgreement(StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), EndDate: DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds(), ReceiverTin: receiverTin))
         });
 
         var overlappingRequest = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
+            ReceiverTin: receiverTin
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
+
 
     [Theory]
     [InlineData(-1, null, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
@@ -161,8 +159,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
-            ActorName = "Fake Peter Producent",
             SenderId = subject,
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
@@ -200,8 +196,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
-            ActorName = "Fake Peter Producent",
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
@@ -241,8 +235,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
-                ActorName = "Peter Producent",
                 SenderId = Guid.NewGuid(),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -292,8 +284,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow,
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
@@ -304,8 +294,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(2),
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
-                    ActorId = "actor2",
-                    ActorName = "Peter Producent",
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
                     SenderTin = senderTin,
@@ -328,49 +316,42 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
     {
-        var receiverTin = "11223344";
-        var senderId = Guid.NewGuid();
-        var transferAgreementId = Guid.NewGuid();
+        var senderSub = Guid.NewGuid().ToString();
+        var senderName = "Alice";
+        var senderCpn = "Alice Corp.";
+        var senderActor = "Alice Actor";
+        var senderTin = "44332211";
 
-        await factory.SeedData(new List<TransferAgreement>()
+        var receiverTin = "11223344";
+
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderSub, name: senderName, cpn: senderCpn, actor: senderActor, tin: senderTin);
+
+        var seededAgreements = await factory.SeedDataThroughApi(new List<(HttpClient Client, CreateTransferAgreement Agreement)>
         {
-            new()
-            {
-                Id = transferAgreementId,
-                SenderId = senderId,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorName = "Thomas Tesla",
-                ActorId = "actor1",
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = receiverTin
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                SenderId = senderId,
-                StartDate = DateTimeOffset.UtcNow.AddDays(11),
-                EndDate = DateTimeOffset.UtcNow.AddDays(15),
-                ActorId = "actor1",
-                ActorName = "Thomas Tesla",
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = receiverTin
-            }
+            (
+                authenticatedClient,
+                new CreateTransferAgreement(StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), EndDate: DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds(), ReceiverTin: receiverTin)
+            ),
+            (
+                authenticatedClient,
+                new CreateTransferAgreement(StartDate: DateTimeOffset.UtcNow.AddDays(11).ToUnixTimeSeconds(), EndDate: DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds(), ReceiverTin: receiverTin)
+            )
         });
 
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+        var transferAgreement1Id = seededAgreements[0];
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreement1Id}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         var conflictErrorMessage = await response.Content.ReadAsStringAsync();
         conflictErrorMessage.Should().Be("Transfer agreement date overlap");
     }
+
+
+
 
     [Fact]
     public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
@@ -387,8 +368,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -439,8 +418,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -496,8 +473,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
-                    ActorName = "Thomas Tesla",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "1122334"

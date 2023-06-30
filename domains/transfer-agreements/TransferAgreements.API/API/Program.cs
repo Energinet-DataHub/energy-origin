@@ -47,19 +47,6 @@ Audit.Core.Configuration.Setup()
                 auditEntity.AuditDate = DateTime.UtcNow;
                 auditEntity.AuditAction = eventEntry.Action;
 
-                switch (eventEntry.Action)
-                {
-                    case "Insert":
-                        auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
-                        break;
-                    case "Update":
-                    {
-                        var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
-                        auditEntity.TransferAgreementId = primaryKey;
-                        break;
-                    }
-                }
-
                 return true;
             })));
 

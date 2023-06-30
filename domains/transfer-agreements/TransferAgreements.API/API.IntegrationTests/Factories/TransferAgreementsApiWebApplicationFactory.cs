@@ -5,9 +5,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using API.ApiModels.Requests;
 using API.Data;
 using API.Options;
 using Audit.Core;
@@ -57,40 +60,43 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
+    public async Task<List<Guid>> SeedDataThroughApi(List<(HttpClient Client, CreateTransferAgreement Agreement)> data)
     {
+        var createdIds = new List<Guid>();
+
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreementAudits\"");
+        foreach(var datum in data)
+        {
+            var (client, agreement) = datum;
 
-        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreements\" CASCADE");
+            var response = await client.PostAsJsonAsync("api/transferagreements", agreement);
 
-        dbContext.TransferAgreements.AddRange(transferAgreements);
+            // Assuming your endpoint returns the created transfer agreement with an Id
+            var createdAgreement = await response.Content.ReadFromJsonAsync<TransferAgreement>();
 
-        await dbContext.SaveChangesAsync();
+            createdIds.Add(createdAgreement.Id); // Add the created Id to the list
+        }
+
+        return createdIds; // return the list of created Ids
     }
+
+
 
 
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent", string cpn = "Producent A/S", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateToken(sub, tin, name, cpn, actor));
 
         return client;
     }
 
-    private static string GenerateToken(
-        string scope = "",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string tin = "12345678",
-        string cpn = "Producent A/S",
-        string name = "Peter Producent")
+    private string GenerateToken(string sub, string tin = "12345678", string cpn = "Producent A/S", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string scope = "")
     {
         var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
 
@@ -109,8 +115,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddMinutes(1),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
