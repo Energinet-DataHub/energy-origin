@@ -19,49 +19,49 @@ namespace API.IntegrationTests.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {
-    private const string RegistryImage = "ghcr.io/project-origin/registry-server:0.2.0-rc.17";
-    private const string ElectricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.0-rc.17";
-    private const int GrpcPort = 80;
-    private const string Area = "Narnia";
-    private const string RegistryName = "TestRegistry";
+    private const string registryImage = "ghcr.io/project-origin/registry-server:0.2.0-rc.17";
+    private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.0-rc.17";
+    private const int grpcPort = 80;
+    private const string area = "Narnia";
+    private const string registryName = "TestRegistry";
 
-    private Lazy<IContainer> _registryContainer;
-    private IContainer _verifierContainer;
+    private readonly Lazy<IContainer> registryContainer;
+    private readonly IContainer verifierContainer;
 
-    public string IssuerArea => Area;
-    public string Name => RegistryName;
+    public string IssuerArea => area;
+    public string Name => registryName;
     public IPrivateKey IssuerKey { get; init; }
 
 
-    public string RegistryUrl => $"http://{_registryContainer.Value.Hostname}:{_registryContainer.Value.GetMappedPublicPort(GrpcPort)}";
+    public string RegistryUrl => $"http://{registryContainer.Value.Hostname}:{registryContainer.Value.GetMappedPublicPort(grpcPort)}";
 
     public RegistryFixture()
     {
         IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
 
-        _verifierContainer = new ContainerBuilder()
-                .WithImage(ElectricityVerifierImage)
-                .WithPortBinding(GrpcPort, true)
+        verifierContainer = new ContainerBuilder()
+                .WithImage(electricityVerifierImage)
+                .WithPortBinding(grpcPort, true)
                 .WithEnvironment($"Issuers__{IssuerArea}", Convert.ToBase64String(Encoding.UTF8.GetBytes(IssuerKey.PublicKey.ExportPkixText())))
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()
-                        .UntilPortIsAvailable(GrpcPort)
+                        .UntilPortIsAvailable(grpcPort)
                     )
                 .Build();
 
-        _registryContainer = new Lazy<IContainer>(() =>
+        registryContainer = new Lazy<IContainer>(() =>
         {
-            var verifierUrl = $"http://{_verifierContainer.IpAddress}:{GrpcPort}";
+            var verifierUrl = $"http://{verifierContainer.IpAddress}:{grpcPort}";
             return new ContainerBuilder()
-                .WithImage(RegistryImage)
-                .WithPortBinding(GrpcPort, true)
+                .WithImage(registryImage)
+                .WithPortBinding(grpcPort, true)
                 .WithEnvironment($"Verifiers__project_origin.electricity.v1", verifierUrl)
-                .WithEnvironment($"RegistryName", RegistryName)
+                .WithEnvironment($"RegistryName", registryName)
                 .WithEnvironment($"IMMUTABLELOG__TYPE", "log")
                 .WithEnvironment($"VERIFIABLEEVENTSTORE__BATCHSIZEEXPONENT", "0")
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()
-                        .UntilPortIsAvailable(GrpcPort)
+                        .UntilPortIsAvailable(grpcPort)
                     )
                 .Build();
         });
@@ -69,25 +69,25 @@ public class RegistryFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _verifierContainer.StartAsync()
+        await verifierContainer.StartAsync()
             .ConfigureAwait(false);
 
-        await _registryContainer.Value.StartAsync()
+        await registryContainer.Value.StartAsync()
             .ConfigureAwait(false);
     }
 
     public async Task DisposeAsync()
     {
-        if (_registryContainer.IsValueCreated)
-            await _registryContainer.Value.StopAsync();
-        await _verifierContainer.StopAsync();
+        if (registryContainer.IsValueCreated)
+            await registryContainer.Value.StopAsync();
+        await verifierContainer.StopAsync();
     }
 
     public async Task<IssuedEvent> IssueCertificate(GranularCertificateType type, ProjectOrigin.PedersenCommitment.SecretCommitmentInfo commitment, IPublicKey ownerKey)
     {
         var id = new FederatedStreamId()
         {
-            Registry = RegistryName,
+            Registry = registryName,
             StreamId = new Uuid { Value = Guid.NewGuid().ToString() }
         };
 
@@ -96,7 +96,7 @@ public class RegistryFixture : IAsyncLifetime
             CertificateId = id,
             Type = type,
             Period = new DateInterval { Start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now), End = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1)) },
-            GridArea = Area,
+            GridArea = area,
             QuantityCommitment = new Commitment
             {
                 Content = ByteString.CopyFrom(commitment.Commitment.C),

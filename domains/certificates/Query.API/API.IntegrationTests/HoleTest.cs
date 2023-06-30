@@ -57,7 +57,7 @@ public class HoleTest2 : IClassFixture<RegistryFixture>
     {
         var ownerKey = Algorithms.Secp256k1.GenerateNewPrivateKey();
         var secretCommitmentInfo = new SecretCommitmentInfo(250);
-        var issuedCert = await registryFixture.IssueCertificate(GranularCertificateType.Production, secretCommitmentInfo,ownerKey.PublicKey);
+        var issuedCert = await registryFixture.IssueCertificate(GranularCertificateType.Production, secretCommitmentInfo, ownerKey.PublicKey);
 
         issuedCert.Should().NotBeNull();
     }
@@ -86,7 +86,7 @@ public class WalletContainer : IAsyncLifetime
             .Build();
 
         const string connectionString = "Host=pg-service;Port=5432;Database=postgres;Username=postgres;Password=postgres";
-        
+
         walletContainer = new ContainerBuilder()
             .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
             .WithPortBinding(7890, 80)
