@@ -22,7 +22,7 @@ public static class TransferAgreementAuditMapper
     public static TransferAgreementAuditDto ToDto(this TransferAgreementAudit audit, string subject)
     {
         var changeAction = ChangeAction.Updated;
-        if (audit.AuditAction.Equals("Inserted", StringComparison.InvariantCultureIgnoreCase))
+        if (audit.AuditAction.Equals("Insert", StringComparison.InvariantCultureIgnoreCase))
         {
             changeAction = ChangeAction.Created;
         }

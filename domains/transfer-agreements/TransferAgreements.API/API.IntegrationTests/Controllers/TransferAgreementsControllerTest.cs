@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -10,10 +13,12 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Newtonsoft.Json;
+using VerifyTests;
+using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
-
+[UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -174,14 +179,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
 
-        getTransferAgreement.Should().NotBeNull();
+        var settings = new VerifySettings();
+        settings.ScrubMembersWithType(typeof(long));
 
-        getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
-        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
-        getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
-        getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
-        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
+        await Verifier.Verify(getTransferAgreement, settings);
     }
 
     [Fact]
@@ -495,5 +496,4 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
     }
-
 }

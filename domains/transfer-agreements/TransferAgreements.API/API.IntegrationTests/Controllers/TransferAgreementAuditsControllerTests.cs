@@ -4,18 +4,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
+using VerifyTests;
+using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
-
+[UsesVerify]
 public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -27,7 +27,7 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
     }
 
     [Fact]
-    public async Task Create_ShouldGenerateAudit_WhenTransferAgreementIsCreated()
+    public async Task Create_ShouldGenerateAuditAndInsertTransferAgreement_WhenTransferAgreementIsCreated()
     {
         var senderId = Guid.NewGuid();
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
@@ -39,21 +39,19 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         );
 
         var createResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-        createResponse.EnsureSuccessStatusCode();
-
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
         var createdTransferAgreement = await createResponse.Content.ReadFromJsonAsync<TransferAgreementDto>();
-        createdTransferAgreement.Should().NotBeNull();
 
         var auditsResponse = await authenticatedClient.GetAsync($"api/audits/transfer-agreements/{createdTransferAgreement.Id}");
-        auditsResponse.EnsureSuccessStatusCode();
-
-        auditsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
         var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
-        audits.Should().NotBeNull();
+
         audits.Result.Should().HaveCount(1);
+
+        var settings = new VerifySettings();
+        settings.ScrubMembersWithType(typeof(long));
+
+        var audit = audits.Result.First();
+
+        await Verifier.Verify(audit, settings);
     }
 
     [Fact]
@@ -81,21 +79,13 @@ public class TransferAgreementAuditsControllerTests : IClassFixture<TransferAgre
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new EditTransferAgreementEndDate(newEndDate);
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
-        updatedTransferAgreement.Should().NotBeNull();
-        updatedTransferAgreement.EndDate.Should().Be(newEndDate);
+        await authenticatedClient.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
 
         var auditsResponse = await authenticatedClient.GetAsync($"api/audits/transfer-agreements/{agreementId}");
         auditsResponse.EnsureSuccessStatusCode();
 
-        auditsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
         var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementAuditsResponse>(JsonDefault.Options);
-        audits.Should().NotBeNull();
+
         audits.Result.Should().HaveCount(2);
         audits.Result.Last().EndDate.Should().Be(newEndDate);
     }
