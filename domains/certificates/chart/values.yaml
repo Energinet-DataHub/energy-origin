@@ -16,3 +16,7 @@ metrics:
   prometheus:
     enabled: true
     additionalLabels: {}
+projectOrigin:
+  registryUrl:
+  registryName:
+  walletUrl:

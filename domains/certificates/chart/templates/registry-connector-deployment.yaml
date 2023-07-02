@@ -51,3 +51,9 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rabbitmq-cluster-default-user
                   key: password
+            - name: PROJECTORIGIN__REGISTRYURL
+              value: {{ .Values.projectOrigin.registryUrl }}
+            - name: PROJECTORIGIN__REGISTRYNAME
+              value: {{ .Values.projectOrigin.registryName }}
+            - name: PROJECTORIGIN__WALLETURL
+              value: {{ .Values.projectOrigin.walletUrl }}
