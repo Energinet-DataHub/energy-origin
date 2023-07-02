@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using ProjectOrigin.WalletSystem.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Cache;
 using RegistryConnector.Worker.EventHandlers;

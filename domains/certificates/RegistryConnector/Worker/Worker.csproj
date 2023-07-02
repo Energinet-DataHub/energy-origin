@@ -10,10 +10,6 @@
     <AssemblyName>RegistryConnector.Worker</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.23.3" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
-    <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.54.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.56.0" PrivateAssets="All" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.5.0-alpha.1" />
@@ -23,8 +19,6 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.2" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.1.0-rc.2" />
     <PackageReference Include="ProjectOrigin.Electricity.Client" Version="0.1.0-alpha.19" />
-    <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.2.0-rc.17" />
-    <PackageReference Include="ProjectOrigin.PedersenCommitment" Version="0.2.0-rc.17" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
@@ -33,22 +27,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Protobuf Include="Protos\common.proto" ProtoRoot="Protos" GrpcServices="None">
-      <SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
-    </Protobuf>
-    <Protobuf Include="Protos\electricity.proto" ProtoRoot="Protos" GrpcServices="None">
-      <SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/electricity.proto</SourceUrl>
-    </Protobuf>
-    <Protobuf Include="Protos\primitives.proto" ProtoRoot="Protos" GrpcServices="None">
-      <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/wallet-v0.1.0-rc.4/src/Protos/primitives.proto</SourceUrl>
-    </Protobuf>
-    <Protobuf Include="Protos\registry.proto" ProtoRoot="Protos" GrpcServices="Client">
-      <SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/registry.proto</SourceUrl>
-    </Protobuf>
-    <Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
-      <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/wallet-v0.1.0-rc.4/src/Protos/wallet.proto</SourceUrl>
-    </Protobuf>
+    <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
 </Project>
