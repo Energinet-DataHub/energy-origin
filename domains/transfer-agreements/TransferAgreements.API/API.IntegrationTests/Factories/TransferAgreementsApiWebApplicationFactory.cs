@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -10,8 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using API.Data;
 using API.Options;
-using Audit.Core;
-using Docker.DotNet.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -72,7 +69,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
         await dbContext.SaveChangesAsync();
     }
-
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 

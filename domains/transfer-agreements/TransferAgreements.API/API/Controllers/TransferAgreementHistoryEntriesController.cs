@@ -20,7 +20,6 @@ public class TransferAgreementHistoryEntriesController : ControllerBase
 
     public TransferAgreementHistoryEntriesController(ITransferAgreementHistoryEntryRepository historyEntryRepository) => this.historyEntryRepository = historyEntryRepository;
 
-
     [ProducesResponseType(typeof(TransferAgreementHistoryEntriesResponse), 200)]
     [ProducesResponseType(204)]
     [HttpGet("{transferAgreementId}")]

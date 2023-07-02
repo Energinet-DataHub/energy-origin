@@ -22,10 +22,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
 
-    public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+    public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated()

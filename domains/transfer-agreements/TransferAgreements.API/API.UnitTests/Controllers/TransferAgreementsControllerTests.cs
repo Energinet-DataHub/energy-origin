@@ -49,7 +49,6 @@ public class TransferAgreementsControllerTests
                 HttpContext = new DefaultHttpContext { User = user }
             }
         };
-
     }
 
     [Fact]
@@ -264,5 +263,4 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()), Times.Once);
         mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
     }
-
 }
