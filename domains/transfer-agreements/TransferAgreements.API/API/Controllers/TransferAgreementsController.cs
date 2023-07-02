@@ -162,9 +162,8 @@ public class TransferAgreementsController : ControllerBase
         return Ok(response);
     }
 
-    private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement)
-    {
-        return new TransferAgreementDto(
+    private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
+        new(
             Id: transferAgreement.Id,
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
             EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
@@ -172,5 +171,4 @@ public class TransferAgreementsController : ControllerBase
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin
         );
-    }
 }

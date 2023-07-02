@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -18,6 +15,7 @@ using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
+
 [UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
@@ -202,7 +200,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             ReceiverTin = receiverTin
         };
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
-
 
         await factory.SeedData(new List<TransferAgreement>()
         {

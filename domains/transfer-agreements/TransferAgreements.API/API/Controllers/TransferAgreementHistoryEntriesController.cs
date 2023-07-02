@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ApiModels.Responses;
-using API.Data;
 using API.Data;
 using API.Extensions;
 using Microsoft.AspNetCore.Authorization;

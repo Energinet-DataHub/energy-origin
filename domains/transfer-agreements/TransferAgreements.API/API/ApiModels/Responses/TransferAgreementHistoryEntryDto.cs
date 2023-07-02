@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json.Serialization;
 using API.Data;
 
 namespace API.ApiModels.Responses;
@@ -13,7 +12,6 @@ public record TransferAgreementHistoryEntryDto(
     string ReceiverTin,
     long AuditDate,
     ChangeAction Action);
-
 
 public enum ChangeAction { Created = 1, Updated = 2, Deleted = 3 }
 
@@ -36,6 +34,5 @@ public static class TransferAgreementHistoryEntryMapper
             historyEntry.ReceiverTin,
             new DateTimeOffset(historyEntry.AuditDate).ToUnixTimeSeconds(),
          changeAction);
-
     }
 }

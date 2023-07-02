@@ -9,7 +9,6 @@ namespace API.Data;
 public class TransferAgreementRepository : ITransferAgreementRepository
 {
     private readonly ApplicationDbContext context;
-
     public TransferAgreementRepository(ApplicationDbContext context) => this.context = context;
 
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
@@ -19,27 +18,19 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         return transferAgreement;
     }
 
-    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin)
-    {
-        return await context.TransferAgreements
+    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin) =>
+        await context.TransferAgreements
             .Where(ta => ta.SenderId == subjectId
                          || ta.ReceiverTin == receiverTin)
             .ToListAsync();
-    }
 
-
-    public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin)
-    {
-        return await context
+    public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin) =>
+        await context
             .TransferAgreements
             .Where(agreement => agreement.Id == id && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .FirstOrDefaultAsync();
-    }
 
-    public async Task Save()
-    {
-        await context.SaveChangesAsync();
-    }
+    public async Task Save() => await context.SaveChangesAsync();
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {

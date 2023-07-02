@@ -14,6 +14,5 @@ public class ApplicationDbContext : AuditDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-
     }
 }
