@@ -67,6 +67,7 @@ public class NewClientWorker : BackgroundService
 
     private async Task<WalletSectionReference> CreateWalletSectionReference()
     {
+        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
 
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
@@ -106,6 +107,7 @@ public class NewClientWorker : BackgroundService
             }
         };
 
+        logger.LogInformation("Creating channel for {registryUrl}", projectOriginOptions.Value.RegistryUrl);
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.RegistryUrl);
         var client = new RegistryService.RegistryServiceClient(channel);
 
@@ -155,6 +157,7 @@ public class NewClientWorker : BackgroundService
 
     private async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo)
     {
+        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
 
         var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
