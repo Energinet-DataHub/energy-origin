@@ -53,7 +53,7 @@ public class NewClientWorker : BackgroundService
 
             var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletSectionReference.SectionPublicKey.Span);
             const int position = 42;
-            
+
             var commitment = new SecretCommitmentInfo(42);
             var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.Derive(position).GetPublicKey());
 
