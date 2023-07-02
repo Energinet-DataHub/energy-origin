@@ -124,56 +124,45 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621130352_AddTransferAgreementsActorName') THEN
-    ALTER TABLE "TransferAgreements" ADD "ActorName" text NOT NULL DEFAULT '';
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    ALTER TABLE "TransferAgreements" DROP COLUMN "ActorId";
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230621130352_AddTransferAgreementsActorName') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230621130352_AddTransferAgreementsActorName', '7.0.5');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
-    CREATE TABLE "TransferAgreementAudits" (
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    CREATE TABLE "TransferAgreementHistoryEntries" (
         "Id" uuid NOT NULL,
         "TransferAgreementId" uuid NOT NULL,
+        "StartDate" timestamp with time zone NOT NULL,
         "EndDate" timestamp with time zone NULL,
-        "ActorId" text NOT NULL,
-        "ActorName" text NOT NULL,
+        "ActorId" text NULL,
+        "ActorName" text NULL,
         "SenderId" uuid NOT NULL,
         "SenderName" text NOT NULL,
         "SenderTin" text NOT NULL,
         "ReceiverTin" text NOT NULL,
         "AuditDate" timestamp with time zone NOT NULL,
         "AuditAction" text NOT NULL,
-        CONSTRAINT "PK_TransferAgreementAudits" PRIMARY KEY ("Id"),
-        CONSTRAINT "FK_TransferAgreementAudits_TransferAgreements_TransferAgreemen~" FOREIGN KEY ("TransferAgreementId") REFERENCES "TransferAgreements" ("Id") ON DELETE CASCADE
+        CONSTRAINT "PK_TransferAgreementHistoryEntries" PRIMARY KEY ("Id"),
+        CONSTRAINT "FK_TransferAgreementHistoryEntries_TransferAgreements_Transfer~" FOREIGN KEY ("TransferAgreementId") REFERENCES "TransferAgreements" ("Id") ON DELETE CASCADE
     );
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
-    CREATE INDEX "IX_TransferAgreementAudits_TransferAgreementId" ON "TransferAgreementAudits" ("TransferAgreementId");
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    CREATE INDEX "IX_TransferAgreementHistoryEntries_TransferAgreementId" ON "TransferAgreementHistoryEntries" ("TransferAgreementId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230623123859_AddTransferAgreementAudit') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230623123859_AddTransferAgreementAudit', '7.0.5');
+    VALUES ('20230702123505_AddTransferAgreementHistoryEntry', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;
