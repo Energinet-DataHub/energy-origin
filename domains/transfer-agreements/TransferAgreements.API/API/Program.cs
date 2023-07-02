@@ -2,7 +2,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Data;
 using API.Filters;
@@ -38,7 +37,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
-
 Audit.Core.Configuration.Setup()
     .UseEntityFramework(ef => ef
         .AuditTypeExplicitMapper(config => config
@@ -73,13 +71,6 @@ Audit.Core.Configuration.Setup()
                 return true;
             })));
 
-
-
-
-
-
-
-
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
@@ -95,6 +86,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
@@ -105,6 +97,7 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Title = "Transfer Agreements API"
     });
+
     if (builder.Environment.IsDevelopment())
     {
         o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -150,7 +143,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
-
 
 var app = builder.Build();
 
