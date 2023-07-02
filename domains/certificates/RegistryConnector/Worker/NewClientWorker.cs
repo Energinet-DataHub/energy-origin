@@ -156,15 +156,15 @@ public class NewClientWorker : BackgroundService
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
 
         var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
-        
+
         var certificateId = new FederatedStreamId
         {
             Registry = issuedEvent.CertificateId.Registry, StreamId = new ProjectOrigin.Register.V1.Uuid { Value = issuedEvent.CertificateId.StreamId.Value }
         };
-        
+
         var receiveRequest = new ReceiveRequest
         {
-            CertificateId =  certificateId,
+            CertificateId = certificateId,
             Quantity = secretCommitmentInfo.Message,
             RandomR = ByteString.CopyFrom(secretCommitmentInfo.BlindingValue),
             WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
