@@ -63,8 +63,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreementHistoryEntries\"");
-        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TransferAgreements\" CASCADE");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName()}\"");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName()}\" CASCADE");
 
         foreach (var agreement in transferAgreements)
         {
@@ -72,6 +72,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
         await dbContext.SaveChangesAsync();
     }
+
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
