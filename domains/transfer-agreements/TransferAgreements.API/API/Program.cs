@@ -42,10 +42,9 @@ builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.Use
 Audit.Core.Configuration.Setup()
     .UseEntityFramework(ef => ef
         .AuditTypeExplicitMapper(config => config
-            .Map<TransferAgreement, TransferAgreementAudit>((evt, eventEntry, auditEntity) =>
+            .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
             {
-                // If the current entity is a TransferAgreementAudit, don't audit
-                if (eventEntry.Entity != null && eventEntry.Entity.GetType() == typeof(TransferAgreementAudit))
+                if (eventEntry.Entity != null && eventEntry.Entity.GetType() == typeof(TransferAgreementHistoryEntry))
                 {
                     return false;
                 }
@@ -53,21 +52,21 @@ Audit.Core.Configuration.Setup()
                 var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
                 var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
 
-                auditEntity.Id = Guid.NewGuid();
-                auditEntity.AuditDate = DateTime.UtcNow;
-                auditEntity.AuditAction = eventEntry.Action;
-                auditEntity.ActorId = actorId;
-                auditEntity.ActorName = actorName;
+                historyEntity.Id = Guid.NewGuid();
+                historyEntity.AuditDate = DateTime.UtcNow;
+                historyEntity.AuditAction = eventEntry.Action;
+                historyEntity.ActorId = actorId;
+                historyEntity.ActorName = actorName;
 
                 switch (eventEntry.Action)
                 {
                     case "Insert":
-                        auditEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
                         break;
                     case "Update":
                     {
                         var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
-                        auditEntity.TransferAgreementId = primaryKey;
+                        historyEntity.TransferAgreementId = primaryKey;
                         break;
                     }
                 }
@@ -93,7 +92,7 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
-builder.Services.AddControllers(options => options.Filters.Add<AuditFilter>())
+builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
@@ -135,7 +134,7 @@ builder.Services.AddSwaggerGen(o =>
 });
 
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
-builder.Services.AddScoped<ITransferAgreementAuditRepository, TransferAgreementAuditRepository>();
+builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

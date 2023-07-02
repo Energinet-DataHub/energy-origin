@@ -19,6 +19,6 @@ public class TransferAgreement
 
     public string ReceiverTin { get; set; }
 
-    public ICollection<TransferAgreementAudit>? Audits { get; set; }
+    public ICollection<TransferAgreementHistoryEntry>? HistoryEntries { get; set; }
 
 }

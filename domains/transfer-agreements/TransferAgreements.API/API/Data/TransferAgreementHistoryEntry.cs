@@ -2,7 +2,7 @@ using System;
 
 namespace API.Data;
 
-public class TransferAgreementAudit
+public class TransferAgreementHistoryEntry
 {
     public Guid Id { get; set; }
     public Guid TransferAgreementId { get; set; }

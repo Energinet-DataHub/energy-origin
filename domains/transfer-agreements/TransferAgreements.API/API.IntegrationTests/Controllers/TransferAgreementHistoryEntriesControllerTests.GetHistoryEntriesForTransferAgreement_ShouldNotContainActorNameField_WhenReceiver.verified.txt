@@ -1,0 +1,13 @@
+﻿{
+  Result: [
+    {
+      StartDate: {Scrubbed},
+      EndDate: {Scrubbed},
+      SenderName: Producent A/S,
+      SenderTin: 12345456,
+      ReceiverTin: 12345678,
+      AuditDate: {Scrubbed},
+      Action: Created
+    }
+  ]
+}

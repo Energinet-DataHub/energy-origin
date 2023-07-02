@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTransferAgreementAudit : Migration
+    public partial class AddTransferAgreementHistoryEntry : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,7 +16,7 @@ namespace API.Migrations
                 table: "TransferAgreements");
 
             migrationBuilder.CreateTable(
-                name: "TransferAgreementAudits",
+                name: "TransferAgreementHistoryEntries",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -34,9 +34,9 @@ namespace API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransferAgreementAudits", x => x.Id);
+                    table.PrimaryKey("PK_TransferAgreementHistoryEntries", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransferAgreementAudits_TransferAgreements_TransferAgreemen~",
+                        name: "FK_TransferAgreementHistoryEntries_TransferAgreements_Transfer~",
                         column: x => x.TransferAgreementId,
                         principalTable: "TransferAgreements",
                         principalColumn: "Id",
@@ -44,8 +44,8 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransferAgreementAudits_TransferAgreementId",
-                table: "TransferAgreementAudits",
+                name: "IX_TransferAgreementHistoryEntries_TransferAgreementId",
+                table: "TransferAgreementHistoryEntries",
                 column: "TransferAgreementId");
         }
 
@@ -53,7 +53,7 @@ namespace API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "TransferAgreementAudits");
+                name: "TransferAgreementHistoryEntries");
 
             migrationBuilder.AddColumn<string>(
                 name: "ActorId",

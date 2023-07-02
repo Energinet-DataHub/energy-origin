@@ -54,7 +54,7 @@ namespace API.Migrations
                     b.ToTable("TransferAgreements");
                 });
 
-            modelBuilder.Entity("API.Data.TransferAgreementAudit", b =>
+            modelBuilder.Entity("API.Data.TransferAgreementHistoryEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -101,13 +101,13 @@ namespace API.Migrations
 
                     b.HasIndex("TransferAgreementId");
 
-                    b.ToTable("TransferAgreementAudits");
+                    b.ToTable("TransferAgreementHistoryEntries");
                 });
 
-            modelBuilder.Entity("API.Data.TransferAgreementAudit", b =>
+            modelBuilder.Entity("API.Data.TransferAgreementHistoryEntry", b =>
                 {
                     b.HasOne("API.Data.TransferAgreement", "TransferAgreement")
-                        .WithMany("Audits")
+                        .WithMany("HistoryEntries")
                         .HasForeignKey("TransferAgreementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -117,7 +117,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.TransferAgreement", b =>
                 {
-                    b.Navigation("Audits");
+                    b.Navigation("HistoryEntries");
                 });
 #pragma warning restore 612, 618
         }
