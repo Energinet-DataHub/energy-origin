@@ -52,11 +52,12 @@ public class NewClientWorker : BackgroundService
             var walletSectionReference = await CreateWalletSectionReference();
 
             var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletSectionReference.SectionPublicKey.Span);
-
+            const int position = 42;
+            
             var commitment = new SecretCommitmentInfo(42);
-            var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.GetPublicKey());
+            var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.Derive(position).GetPublicKey());
 
-            await SendSliceToWallet(walletSectionReference, issuedEvent, commitment);
+            await SendSliceToWallet(walletSectionReference, issuedEvent, commitment, position);
         }
         catch (Exception ex)
         {
@@ -155,7 +156,7 @@ public class NewClientWorker : BackgroundService
         return issuedEvent;
     }
 
-    private async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo)
+    private async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo, uint position)
     {
         logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
@@ -173,7 +174,7 @@ public class NewClientWorker : BackgroundService
             Quantity = secretCommitmentInfo.Message,
             RandomR = ByteString.CopyFrom(secretCommitmentInfo.BlindingValue),
             WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
-            WalletSectionPosition = 1
+            WalletSectionPosition = position
         };
         var receiveResponse = await receiveSliceServiceClient.ReceiveSliceAsync(receiveRequest);
 
