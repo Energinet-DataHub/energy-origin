@@ -12,8 +12,8 @@
             "extensions": [
                 "EditorConfig.EditorConfig",
                 "redhat.vscode-yaml",
-                "hediet.vscode-drawio",
-                "me-dutour-mathieu.vscode-github-actions"
+                "me-dutour-mathieu.vscode-github-actions",
+                "systemticks.c4-dsl-extension"
             ],
             "settings": {
                 "editor.formatOnSave": true
