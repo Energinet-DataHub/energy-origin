@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
 using Marten;
@@ -23,16 +24,24 @@ public class SyncState : ISyncState
         {
             await using var querySession = documentStore.QuerySession();
 
-            var projection = await querySession.LoadAsync<SyncStateView>(contract.GSRN);
+            var queryRes = querySession
+                .Query<SyncPosition>()
+                .Where(x => x.GSRN == contract.GSRN)
+                .ToList();
 
-            return projection == null
-                ? contract.StartDate.ToUnixTimeSeconds()
-                : Math.Max(projection.SyncDateTo, contract.StartDate.ToUnixTimeSeconds());
+            return queryRes.Any() ? Math.Max(queryRes.Max(x => x.SyncedTo), contract.StartDate.ToUnixTimeSeconds()) : contract.StartDate.ToUnixTimeSeconds();
         }
         catch (Exception e)
         {
             logger.LogWarning("Failed reading from database. Exception: {exception}", e);
             return null;
         }
+    }
+
+    public async void SetSyncPosition(SyncPosition syncPosition)
+    {
+        await using var session = documentStore.LightweightSession();
+        session.Store(syncPosition);
+        await session.SaveChangesAsync();
     }
 }
