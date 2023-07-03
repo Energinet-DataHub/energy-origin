@@ -51,7 +51,7 @@ Audit.Core.Configuration.Setup()
                 var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
 
                 historyEntity.Id = Guid.NewGuid();
-                historyEntity.AuditDate = DateTime.UtcNow;
+                historyEntity.AuditDate = DateTimeOffset.UtcNow;
                 historyEntity.AuditAction = eventEntry.Action;
                 historyEntity.ActorId = actorId;
                 historyEntity.ActorName = actorName;
@@ -63,8 +63,7 @@ Audit.Core.Configuration.Setup()
                         break;
                     case "Update":
                     {
-                        var primaryKey = (Guid)eventEntry.PrimaryKey.Values.First();
-                        historyEntity.TransferAgreementId = primaryKey;
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
                         break;
                     }
                 }

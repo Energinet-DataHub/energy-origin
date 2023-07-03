@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using API.Data;
 using API.Options;
+using Audit.Core;
+using Audit.EntityFramework;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -55,7 +57,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
+    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements = null)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -63,12 +65,42 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName()}\"");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName()}\" CASCADE");
 
+        // if no transferAgreements are provided, exit the method after clearing the tables
+        if (transferAgreements == null) return;
+
+        // Temporarily disable Audit.NET
+        Audit.Core.Configuration.AuditDisabled = true;
+
         foreach (var agreement in transferAgreements)
         {
             dbContext.TransferAgreements.Add(agreement);
+            await dbContext.SaveChangesAsync();
+
+            // Create an audit entry manually for each operation
+            var historyEntry = new TransferAgreementHistoryEntry()
+            {
+                Id = Guid.NewGuid(),
+                AuditDate = DateTime.UtcNow,
+                AuditAction = "Insert",
+                ActorId = "Test",
+                ActorName = "Test",
+                SenderName = agreement.SenderName,
+                SenderTin = agreement.SenderTin,
+                ReceiverTin = agreement.ReceiverTin,
+                TransferAgreementId = agreement.Id
+            };
+
+            dbContext.TransferAgreementHistoryEntries.Add(historyEntry);
+            await dbContext.SaveChangesAsync();
         }
-        await dbContext.SaveChangesAsync();
+
+        // Enable Audit.NET again after seeding
+        Audit.Core.Configuration.AuditDisabled = false;
     }
+
+
+
+
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 

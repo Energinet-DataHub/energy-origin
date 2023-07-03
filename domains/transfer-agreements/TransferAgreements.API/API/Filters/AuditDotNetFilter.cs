@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Extensions;
 using Audit.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace API.Filters;
@@ -13,8 +14,8 @@ public class AuditDotNetFilter : IAsyncActionFilter
         var httpContext = context.HttpContext;
         var claimsPrincipal = httpContext.User;
 
-        var actorId = claimsPrincipal.FindFirstValue("actor") ?? claimsPrincipal.FindFirstValue("atr");
-        var actorName = claimsPrincipal.FindFirstValue("name");
+        var actorId = claimsPrincipal.FindActorGuidClaim();
+        var actorName = claimsPrincipal.FindActorNameClaim();
 
         Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
         {

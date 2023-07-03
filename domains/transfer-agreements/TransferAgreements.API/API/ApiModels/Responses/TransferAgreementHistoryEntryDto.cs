@@ -32,7 +32,7 @@ public static class TransferAgreementHistoryEntryMapper
             Guid.Parse(subject).Equals(historyEntry.SenderId) ? historyEntry.ActorName : null,
             historyEntry.SenderTin,
             historyEntry.ReceiverTin,
-            new DateTimeOffset(historyEntry.AuditDate).ToUnixTimeSeconds(),
+            historyEntry.AuditDate.ToUnixTimeSeconds(),
          changeAction);
     }
 }

@@ -61,16 +61,18 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ActorId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ActorName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("AuditAction")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("AuditDate")
+                    b.Property<DateTimeOffset>("AuditDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("EndDate")
@@ -107,17 +109,12 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.TransferAgreementHistoryEntry", b =>
                 {
                     b.HasOne("API.Data.TransferAgreement", "TransferAgreement")
-                        .WithMany("HistoryEntries")
+                        .WithMany()
                         .HasForeignKey("TransferAgreementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TransferAgreement");
-                });
-
-            modelBuilder.Entity("API.Data.TransferAgreement", b =>
-                {
-                    b.Navigation("HistoryEntries");
                 });
 #pragma warning restore 612, 618
         }

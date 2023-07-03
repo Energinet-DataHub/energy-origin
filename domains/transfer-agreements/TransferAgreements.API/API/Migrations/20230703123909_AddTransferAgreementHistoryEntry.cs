@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -23,13 +23,13 @@ namespace API.Migrations
                     TransferAgreementId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ActorId = table.Column<string>(type: "text", nullable: true),
-                    ActorName = table.Column<string>(type: "text", nullable: true),
+                    ActorId = table.Column<string>(type: "text", nullable: false),
+                    ActorName = table.Column<string>(type: "text", nullable: false),
                     SenderId = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderName = table.Column<string>(type: "text", nullable: false),
                     SenderTin = table.Column<string>(type: "text", nullable: false),
                     ReceiverTin = table.Column<string>(type: "text", nullable: false),
-                    AuditDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AuditDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     AuditAction = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>

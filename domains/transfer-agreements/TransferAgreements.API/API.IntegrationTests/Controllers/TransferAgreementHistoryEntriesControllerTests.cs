@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -19,7 +20,6 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly HttpClient authenticatedClient;
 
     public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
 
@@ -38,13 +38,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
-        var auditsResponse = await authenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
-        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementHistoryEntriesResponse>(JsonDefault.Options);
+        var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(long));
 
-        await Verifier.Verify(audits, settings);
+        await Verifier.Verify(auditsResponse, settings);
     }
 
     [Fact]
@@ -66,14 +66,14 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var editRequest = new EditTransferAgreementEndDate(newEndDate);
         await authenticatedClient.PatchAsync($"api/transfer-agreements/{createdTransferAgreement.Id}", JsonContent.Create(editRequest));
 
-        var auditsResponse = await authenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
-        var audits = await auditsResponse.Content.ReadFromJsonAsync<TransferAgreementHistoryEntriesResponse>(JsonDefault.Options);
+        var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(string));
         settings.ScrubMember("AuditDate");
 
-        await Verifier.Verify(audits, settings);
+        await Verifier.Verify(auditsResponse, settings);
     }
 
     [Fact]
@@ -123,13 +123,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var otherActor = Guid.NewGuid();
         var otherActorClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), actor: otherActor.ToString());
 
-        var response = await otherActorClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
-        var senderAuditContent = await response.Content.ReadFromJsonAsync<TransferAgreementHistoryEntriesResponse>(JsonDefault.Options);
+        var senderResponse = await otherActorClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(long));
 
-        await Verifier.Verify(senderAuditContent, settings);
+        await Verifier.Verify(senderResponse, settings);
     }
 
     [Fact]
@@ -150,12 +150,12 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var receiver = Guid.NewGuid();
         var receiverClient = factory.CreateAuthenticatedClient(sub: receiver.ToString(), tin: "12345678");
 
-        var response = await receiverClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
-        var receiverAuditContent = await response.Content.ReadFromJsonAsync<TransferAgreementHistoryEntriesResponse>(JsonDefault.Options);
+        var receiverResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(long));
 
-        await Verifier.Verify(receiverAuditContent, settings);
+        await Verifier.Verify(receiverResponse, settings);
     }
 }

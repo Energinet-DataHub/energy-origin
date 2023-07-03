@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -408,28 +409,22 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementSenderIdDoesNotMatch()
     {
         var senderId = Guid.NewGuid();
-        var transferAgreementId = Guid.NewGuid();
+        var otherUser = Guid.NewGuid();
 
-        await factory.SeedData(
-            new List<TransferAgreement>()
+        var transferAgreements = await InsertTransferAgreementsAsCreateRequest(senderId.ToString(), new List<CreateTransferAgreement>()
             {
-                new()
-                {
-                    Id = transferAgreementId,
-                    SenderId = Guid.NewGuid(),
-                    StartDate = DateTimeOffset.UtcNow.AddDays(-5),
-                    EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = "11223344"
-                }
-            });
+                new(
+                    DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+                    DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds(),
+                    "13371337")
+            }
+        );
 
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+        var otherUserClient = factory.CreateAuthenticatedClient(sub: otherUser.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await otherUserClient.PatchAsync($"api/transfer-agreements/{transferAgreements.First().Id}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -463,34 +458,47 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValid()
     {
         var senderId = Guid.NewGuid();
-        var agreementId = Guid.NewGuid();
 
-        await factory.SeedData(
-            new List<TransferAgreement>()
+        var transferAgreements = await InsertTransferAgreementsAsCreateRequest(senderId.ToString(), new List<CreateTransferAgreement>()
             {
-                new()
-                {
-                    Id = agreementId,
-                    SenderId = senderId,
-                    StartDate = DateTimeOffset.UtcNow.AddDays(1),
-                    EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
-                    ReceiverTin = "1122334"
-                }
-            });
+                new(
+                    DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+                    DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds(),
+                    "13371337")
+            }
+        );
 
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new EditTransferAgreementEndDate(newEndDate);
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreements.First().Id}", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
+    }
+
+    private async Task<List<TransferAgreementDto>> InsertTransferAgreementsAsCreateRequest(
+        string subject,
+        IEnumerable<CreateTransferAgreement> createTransferAgreements,
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
+        string name = "Peter Producent",
+        string tin = "12345456")
+    {
+        var creatorClient = factory.CreateAuthenticatedClient(sub: subject, tin, name, actor);
+
+        var transferAgreementDtos = new List<TransferAgreementDto>();
+
+        foreach (var createTransferAgreement in createTransferAgreements)
+        {
+            var createRequest = await creatorClient.PostAsJsonAsync("api/transfer-agreements", createTransferAgreement);
+            var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
+            transferAgreementDtos.Add(createdTransferAgreement);
+        }
+        return transferAgreementDtos;
     }
 }

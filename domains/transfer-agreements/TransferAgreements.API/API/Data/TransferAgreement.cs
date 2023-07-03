@@ -12,5 +12,4 @@ public class TransferAgreement
     public string SenderName { get; set; }
     public string SenderTin { get; set; }
     public string ReceiverTin { get; set; }
-    public ICollection<TransferAgreementHistoryEntry>? HistoryEntries { get; set; }
 }
