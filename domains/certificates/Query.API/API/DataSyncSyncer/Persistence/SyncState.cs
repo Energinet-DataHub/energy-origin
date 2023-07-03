@@ -26,18 +26,10 @@ public class SyncState : ISyncState
 
             var queryRes = querySession
                 .Query<SyncPosition>()
-                .Where(x => x.Gsrn == contract.GSRN)
+                .Where(x => x.GSRN == contract.GSRN)
                 .ToList();
 
-            long? newestDateTo = null;
-            if (queryRes.Any())
-            {
-                newestDateTo = queryRes.Max(x => x.SyncedTo);
-            }
-
-            return newestDateTo == null
-                ? contract.StartDate.ToUnixTimeSeconds()
-                : Math.Max(newestDateTo.Value, contract.StartDate.ToUnixTimeSeconds());
+            return queryRes.Any() ? Math.Max(queryRes.Max(x => x.SyncedTo), contract.StartDate.ToUnixTimeSeconds()) : contract.StartDate.ToUnixTimeSeconds();
         }
         catch (Exception e)
         {
