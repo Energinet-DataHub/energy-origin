@@ -80,7 +80,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             var historyEntry = new TransferAgreementHistoryEntry()
             {
                 Id = Guid.NewGuid(),
-                AuditDate = DateTimeOffset.UtcNow,
+                AuditDate = DateTime.UtcNow,
                 AuditAction = "Insert",
                 ActorId = "Test",
                 ActorName = "Test",
