@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
-using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using VerifyTests;

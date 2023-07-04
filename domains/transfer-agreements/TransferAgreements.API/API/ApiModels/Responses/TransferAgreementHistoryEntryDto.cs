@@ -4,14 +4,12 @@ using API.Data;
 namespace API.ApiModels.Responses;
 
 public record TransferAgreementHistoryEntryDto(
-    long StartDate,
-    long? EndDate,
-    string? SenderName,
-    string? ActorName,
-    string SenderTin,
-    string ReceiverTin,
+    TransferAgreementDto TransferAgreement,
     long CreatedAt,
-    ChangeAction Action);
+    ChangeAction Action,
+    string? ActorName
+);
+
 
 public enum ChangeAction { Created = 1, Updated = 2, Deleted = 3 }
 
@@ -25,14 +23,21 @@ public static class TransferAgreementHistoryEntryMapper
             changeAction = ChangeAction.Created;
         }
 
-        return new TransferAgreementHistoryEntryDto(
+        var transferAgreementDto = new TransferAgreementDto(
+            historyEntry.Id,
             historyEntry.StartDate.ToUnixTimeSeconds(),
             historyEntry.EndDate?.ToUnixTimeSeconds(),
             historyEntry.SenderName,
-            Guid.Parse(subject).Equals(historyEntry.SenderId) ? historyEntry.ActorName : null,
             historyEntry.SenderTin,
-            historyEntry.ReceiverTin,
+            historyEntry.ReceiverTin
+        );
+
+        return new TransferAgreementHistoryEntryDto(
+            transferAgreementDto,
             historyEntry.CreatedAt.ToUnixTimeSeconds(),
-         changeAction);
+            changeAction,
+            Guid.Parse(subject).Equals(historyEntry.SenderId) ? historyEntry.ActorName : null
+        );
     }
 }
+

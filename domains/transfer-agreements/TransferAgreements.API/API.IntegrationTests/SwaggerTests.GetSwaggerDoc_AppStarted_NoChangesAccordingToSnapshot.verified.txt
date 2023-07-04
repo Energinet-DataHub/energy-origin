@@ -385,28 +385,8 @@
       "TransferAgreementHistoryEntryDto": {
         "type": "object",
         "properties": {
-          "startDate": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "endDate": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "senderName": {
-            "type": "string",
-            "nullable": true
-          },
-          "actorName": {
-            "type": "string",
-            "nullable": true
-          },
-          "senderTin": {
-            "type": "string"
-          },
-          "receiverTin": {
-            "type": "string"
+          "transferAgreement": {
+            "$ref": "#/components/schemas/TransferAgreementDto"
           },
           "createdAt": {
             "type": "integer",
@@ -414,6 +394,10 @@
           },
           "action": {
             "$ref": "#/components/schemas/ChangeAction"
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
