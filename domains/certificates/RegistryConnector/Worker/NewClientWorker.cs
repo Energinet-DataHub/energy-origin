@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -48,7 +50,8 @@ public class NewClientWorker : BackgroundService
     {
         try
         {
-            var walletSectionReference = await CreateWalletSectionReference();
+            var bearerToken = GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo");
+            var walletSectionReference = await CreateWalletSectionReference(bearerToken);
 
             var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletSectionReference.SectionPublicKey.Span);
             const int position = 42;
@@ -57,6 +60,13 @@ public class NewClientWorker : BackgroundService
             var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.Derive(position).GetPublicKey());
 
             await SendSliceToWallet(walletSectionReference, issuedEvent, commitment, position);
+
+            // Wait to process certs and avoid query-bug
+            await Task.Delay(2000);
+
+            var certificates = await GetCertificatesFromWallet(bearerToken);
+
+            logger.LogInformation("Has {certificates}", certificates);
         }
         catch (Exception ex)
         {
@@ -65,7 +75,7 @@ public class NewClientWorker : BackgroundService
         }
     }
 
-    private async Task<WalletSectionReference> CreateWalletSectionReference()
+    private async Task<WalletSectionReference> CreateWalletSectionReference(string bearerToken)
     {
         logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
@@ -73,7 +83,7 @@ public class NewClientWorker : BackgroundService
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
         var createWalletSectionRequest = new CreateWalletSectionRequest();
         var headers = new Metadata
-            { { "Authorization", $"Bearer {GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo")}" } };
+            { { "Authorization", $"Bearer {bearerToken}" } };
         var walletSectionReference =
             await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest, headers);
 
@@ -178,6 +188,27 @@ public class NewClientWorker : BackgroundService
         var receiveResponse = await receiveSliceServiceClient.ReceiveSliceAsync(receiveRequest);
 
         logger.LogInformation("Received {response}", receiveResponse);
+    }
+
+    private async Task<IEnumerable<GranularCertificate>> GetCertificatesFromWallet(string bearerToken)
+    {
+        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
+        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+
+        var walletServiceClient = new WalletService.WalletServiceClient(channel);
+        var headers = new Metadata { { "Authorization", $"Bearer {bearerToken}" } };
+
+        var sw = new Stopwatch();
+        sw.Start();
+        QueryResponse certificates;
+        do
+        {
+            certificates = await walletServiceClient.QueryGranularCertificatesAsync(new QueryRequest(), headers);
+            if (certificates.GranularCertificates.Count == 0)
+                await Task.Delay(1000);
+        } while (certificates.GranularCertificates.Count == 0 && sw.Elapsed < TimeSpan.FromSeconds(10));
+
+        return certificates.GranularCertificates;
     }
 
     private static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)

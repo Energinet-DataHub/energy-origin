@@ -35,6 +35,9 @@ public class ProjectOriginStack : RegistryFixture
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
+                .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
+                .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
     }
@@ -51,11 +54,8 @@ public class ProjectOriginStack : RegistryFixture
     public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(GrpcPort)).Uri.ToString();
 
     public override async Task InitializeAsync()
-        => await Task.WhenAll(base.InitializeAsync(), StartWallet());
-
-    private async Task StartWallet()
     {
-        await postgresContainer.StartAsync();
+        await Task.WhenAll(base.InitializeAsync(), postgresContainer.StartAsync());
         await walletContainer.Value.StartAsync();
     }
 
