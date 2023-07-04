@@ -154,7 +154,7 @@ public class NewClientWorker : BackgroundService
             if (status.Status == TransactionState.Committed)
                 break;
             else if (status.Status == TransactionState.Failed)
-                throw new Exception("Failed to issue certificate");
+                throw new Exception($"Failed to issue certificate. Message: {status.Message}");
             else
                 await Task.Delay(1000);
 
