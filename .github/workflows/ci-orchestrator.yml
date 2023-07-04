@@ -38,6 +38,10 @@ jobs:
     uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
+  structurizr-update-pages:
+    uses: ./.github/workflows/structurizr-update-pages.yaml
+    secrets: inherit
+
   sonar-analysis:
     needs: run-sonar
     if: needs.run-sonar.outputs.boolean == 'true'
@@ -58,6 +62,7 @@ jobs:
         build-libraries,
         check-licenses,
         check-versions,
+        structurizr-update-pages,
         sonar-analysis,
         sonar-analysis-ignore,
       ]
