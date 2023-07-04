@@ -30,7 +30,7 @@ public class ProjectOriginStack : RegistryFixture
             // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
             // There is a chance for port collision with the host ports assigned by Testcontainers
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.4")
+                .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.6")
                 .WithPortBinding(7890, GrpcPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)

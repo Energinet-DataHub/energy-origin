@@ -18,7 +18,6 @@ using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
-using ProjectOrigin.Register.V1;
 using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using Commitment = ProjectOrigin.Electricity.V1.Commitment;
@@ -163,9 +162,9 @@ public class NewClientWorker : BackgroundService
 
         var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
 
-        var certificateId = new FederatedStreamId
+        var certificateId = new ProjectOrigin.Common.V1.FederatedStreamId
         {
-            Registry = issuedEvent.CertificateId.Registry, StreamId = new ProjectOrigin.Register.V1.Uuid { Value = issuedEvent.CertificateId.StreamId.Value }
+            Registry = issuedEvent.CertificateId.Registry, StreamId = new ProjectOrigin.Common.V1.Uuid { Value = issuedEvent.CertificateId.StreamId.Value }
         };
 
         var receiveRequest = new ReceiveRequest
