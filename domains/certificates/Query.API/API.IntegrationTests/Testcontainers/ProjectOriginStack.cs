@@ -45,8 +45,8 @@ public class ProjectOriginStack : RegistryFixture
     public ProjectOriginOptions Options => new()
     {
         RegistryName = RegistryName,
-        Dk1IssuerPrivateKeyPem = IssuerKey.Export().ToArray(),
-        Dk2IssuerPrivateKeyPem = IssuerKey.Export().ToArray(),
+        Dk1IssuerPrivateKeyPem = IssuerKey.ExportPkixText(),
+        Dk2IssuerPrivateKeyPem = IssuerKey.ExportPkixText(),
         RegistryUrl = RegistryUrl,
         WalletUrl = WalletUrl
     };

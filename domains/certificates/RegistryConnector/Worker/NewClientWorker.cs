@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -42,7 +43,7 @@ public class NewClientWorker : BackgroundService
         logger.LogInformation("key length: {keyLength}", projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Length);
 
         dk1IssuerKey = projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Any()
-            ? Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKey) //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
+            ? Key.Import(SignatureAlgorithm.Ed25519, Encoding.UTF8.GetBytes(projectOriginOptions.Value.Dk1IssuerPrivateKeyPem), KeyBlobFormat.PkixPrivateKeyText) //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
             : Key.Create(SignatureAlgorithm.Ed25519);
     }
 
