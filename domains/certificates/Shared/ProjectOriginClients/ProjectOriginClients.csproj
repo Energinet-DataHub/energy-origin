@@ -13,6 +13,11 @@
 		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.2.0-rc.17" />
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="0.2.0-rc.17" />
 	</ItemGroup>
+
+	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
+		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)"/>
+	</Target>
+
 	<ItemGroup>
 		<Protobuf Include="Protos\common.proto" ProtoRoot="Protos" GrpcServices="None">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
