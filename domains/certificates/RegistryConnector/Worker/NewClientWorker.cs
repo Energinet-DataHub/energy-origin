@@ -61,9 +61,6 @@ public class NewClientWorker : BackgroundService
 
             await SendSliceToWallet(walletSectionReference, issuedEvent, commitment, position);
 
-            // Wait to process certs and avoid query-bug
-            await Task.Delay(2000);
-
             var certificates = await GetCertificatesFromWallet(bearerToken);
 
             logger.LogInformation("Has {certificates}", certificates);
