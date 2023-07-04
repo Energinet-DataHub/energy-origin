@@ -1,4 +1,6 @@
 using System;
+using System.Text;
+using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;
 
@@ -21,4 +23,6 @@ public class ProjectOriginOptions
     public byte[] Dk2IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
 
     public string WalletUrl { get; set; } = "";
+
+    public IPrivateKey Dk1IssuerKey => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(Dk1IssuerPrivateKeyPem));
 }

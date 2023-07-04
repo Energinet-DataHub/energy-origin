@@ -31,7 +31,7 @@ public class NewClientWorker : BackgroundService
 {
     private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
     private readonly ILogger<NewClientWorker> logger;
-    private readonly Key dk1IssuerKey;
+    //private readonly Key dk1IssuerKey;
 
     public NewClientWorker(
         IOptions<ProjectOriginOptions> projectOriginOptions,
@@ -41,10 +41,11 @@ public class NewClientWorker : BackgroundService
         this.logger = logger;
 
         logger.LogInformation("key length: {keyLength}", projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Length);
-
-        dk1IssuerKey = projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Any()
-            ? Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKeyText) //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
-            : Key.Create(SignatureAlgorithm.Ed25519);
+        //IPrivateKey issuerKey = new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(projectOriginOptions.Value.Dk1IssuerPrivateKeyPem));
+        //issuerKey.Sign()
+        //dk1IssuerKey = projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Any()
+        //    ? Key.Import(SignatureAlgorithm.Ed25519, projectOriginOptions.Value.Dk1IssuerPrivateKeyPem, KeyBlobFormat.PkixPrivateKeyText) //TODO: Can this be done differently using ProjectOrigin.HierarchicalDeterministicKeys?
+        //    : Key.Create(SignatureAlgorithm.Ed25519);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -126,7 +127,7 @@ public class NewClientWorker : BackgroundService
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
             Nonce = Guid.NewGuid().ToString(),
         };
-        var headerSignature = SignatureAlgorithm.Ed25519.Sign(dk1IssuerKey, header.ToByteArray());
+        var headerSignature = projectOriginOptions.Value.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray();
         var transactions = new Transaction
         {
             Header = header,
