@@ -28,8 +28,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var transferAgreement = new CreateTransferAgreement(
-            DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
+            new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
             "12345678"
         );
 
@@ -40,7 +40,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMembersWithType(typeof(long));
+        settings.ScrubMember("AuditDate");
 
         await Verifier.Verify(auditsResponse, settings);
     }
@@ -68,7 +68,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMembersWithType(typeof(string));
         settings.ScrubMember("AuditDate");
 
         await Verifier.Verify(auditsResponse, settings);
@@ -120,7 +119,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMembersWithType(typeof(long));
+        settings.ScrubMember("AuditDate");
 
         await Verifier.Verify(senderResponse, settings);
     }
@@ -147,7 +146,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMembersWithType(typeof(long));
+        settings.ScrubMember("AuditDate");
 
         await Verifier.Verify(receiverResponse, settings);
     }
