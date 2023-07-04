@@ -42,11 +42,6 @@ Audit.Core.Configuration.Setup()
         .AuditTypeExplicitMapper(config => config
             .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
             {
-                if (eventEntry.Entity != null && eventEntry.Entity.GetType() == typeof(TransferAgreementHistoryEntry))
-                {
-                    return false;
-                }
-
                 var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
                 var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
 
