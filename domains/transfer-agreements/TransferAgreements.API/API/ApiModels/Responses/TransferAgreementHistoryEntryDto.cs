@@ -10,7 +10,7 @@ public record TransferAgreementHistoryEntryDto(
     string? ActorName,
     string SenderTin,
     string ReceiverTin,
-    long AuditDate,
+    long CreatedAt,
     ChangeAction Action);
 
 public enum ChangeAction { Created = 1, Updated = 2, Deleted = 3 }
@@ -32,7 +32,7 @@ public static class TransferAgreementHistoryEntryMapper
             Guid.Parse(subject).Equals(historyEntry.SenderId) ? historyEntry.ActorName : null,
             historyEntry.SenderTin,
             historyEntry.ReceiverTin,
-            historyEntry.AuditDate.ToUnixTimeSeconds(),
+            historyEntry.CreatedAt.ToUnixTimeSeconds(),
          changeAction);
     }
 }

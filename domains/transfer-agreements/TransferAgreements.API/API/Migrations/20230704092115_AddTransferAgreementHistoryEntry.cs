@@ -29,7 +29,7 @@ namespace API.Migrations
                     SenderName = table.Column<string>(type: "text", nullable: false),
                     SenderTin = table.Column<string>(type: "text", nullable: false),
                     ReceiverTin = table.Column<string>(type: "text", nullable: false),
-                    AuditDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     AuditAction = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>

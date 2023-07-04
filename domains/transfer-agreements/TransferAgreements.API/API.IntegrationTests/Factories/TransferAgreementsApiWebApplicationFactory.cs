@@ -86,12 +86,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
             await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
 
-            var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"AuditDate\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
-                             "VALUES (@Id, @AuditDate, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+            var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
+                             "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
             var historyFields = new[]
             {
             new NpgsqlParameter("Id", Guid.NewGuid()),
-            new NpgsqlParameter("AuditDate", DateTime.UtcNow),
+            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
             new NpgsqlParameter("AuditAction", "Insert"),
             new NpgsqlParameter("ActorId", "Test"),
             new NpgsqlParameter("ActorName", "Test"),

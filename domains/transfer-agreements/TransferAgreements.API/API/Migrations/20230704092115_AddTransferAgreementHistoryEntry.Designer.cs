@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230703123909_AddTransferAgreementHistoryEntry")]
+    [Migration("20230704092115_AddTransferAgreementHistoryEntry")]
     partial class AddTransferAgreementHistoryEntry
     {
         /// <inheritdoc />
@@ -75,7 +75,7 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("AuditDate")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("EndDate")

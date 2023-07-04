@@ -7,7 +7,7 @@
       ActorName: Peter Producent,
       SenderTin: 12345456,
       ReceiverTin: 12345678,
-      AuditDate: {Scrubbed},
+      CreatedAt: {Scrubbed},
       Action: Created
     },
     {
@@ -17,7 +17,7 @@
       ActorName: Peter Producent,
       SenderTin: 12345456,
       ReceiverTin: 12345678,
-      AuditDate: {Scrubbed},
+      CreatedAt: {Scrubbed},
       Action: Updated
     }
   ]

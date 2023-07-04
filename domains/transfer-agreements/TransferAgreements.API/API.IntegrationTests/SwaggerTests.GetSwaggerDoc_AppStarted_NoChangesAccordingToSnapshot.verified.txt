@@ -408,7 +408,7 @@
           "receiverTin": {
             "type": "string"
           },
-          "auditDate": {
+          "createdAt": {
             "type": "integer",
             "format": "int64"
           },

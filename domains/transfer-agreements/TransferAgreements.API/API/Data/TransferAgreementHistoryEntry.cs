@@ -14,7 +14,7 @@ public class TransferAgreementHistoryEntry
     public string SenderName { get; set; }
     public string SenderTin { get; set; }
     public string ReceiverTin { get; set; }
-    public DateTimeOffset AuditDate { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
     public string AuditAction { get; set; }
     public TransferAgreement TransferAgreement { get; set; }
 }

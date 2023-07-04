@@ -46,7 +46,7 @@ Audit.Core.Configuration.Setup()
                 var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
 
                 historyEntity.Id = Guid.NewGuid();
-                historyEntity.AuditDate = DateTimeOffset.UtcNow;
+                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
                 historyEntity.AuditAction = eventEntry.Action;
                 historyEntity.ActorId = actorId;
                 historyEntity.ActorName = actorName;

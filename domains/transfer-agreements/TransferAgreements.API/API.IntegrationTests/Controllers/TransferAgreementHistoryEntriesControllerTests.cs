@@ -40,7 +40,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMember("AuditDate");
+        settings.ScrubMember("CreatedAt");
 
         await Verifier.Verify(auditsResponse, settings);
     }
@@ -68,7 +68,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMember("AuditDate");
+        settings.ScrubMember("CreatedAt");
 
         await Verifier.Verify(auditsResponse, settings);
     }
@@ -119,7 +119,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMember("AuditDate");
+        settings.ScrubMember("CreatedAt");
 
         await Verifier.Verify(senderResponse, settings);
     }
@@ -146,7 +146,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
-        settings.ScrubMember("AuditDate");
+        settings.ScrubMember("CreatedAt");
 
         await Verifier.Verify(receiverResponse, settings);
     }
