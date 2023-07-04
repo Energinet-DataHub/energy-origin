@@ -1,5 +1,6 @@
 extern alias registryConnector;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -45,8 +46,8 @@ public class ProjectOriginStack : RegistryFixture
     public ProjectOriginOptions Options => new()
     {
         RegistryName = RegistryName,
-        Dk1IssuerPrivateKeyPem = IssuerKey.ExportPkixText(),
-        Dk2IssuerPrivateKeyPem = IssuerKey.ExportPkixText(),
+        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
+        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
         RegistryUrl = RegistryUrl,
         WalletUrl = WalletUrl
     };

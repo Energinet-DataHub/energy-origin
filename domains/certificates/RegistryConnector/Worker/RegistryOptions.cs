@@ -17,8 +17,8 @@ public class ProjectOriginOptions
 
     public string RegistryUrl { get; set; } = "";
     public string RegistryName { get; set; } = "RegistryA";
-    public string Dk1IssuerPrivateKeyPem { get; set; } = ""; //Array.Empty<byte>();
-    public string Dk2IssuerPrivateKeyPem { get; set; } = ""; //Array.Empty<byte>();
+    public byte[] Dk1IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
+    public byte[] Dk2IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
 
     public string WalletUrl { get; set; } = "";
 }
