@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -10,8 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using API.Data;
 using API.Options;
-using Audit.Core;
-using Audit.EntityFramework;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -50,10 +47,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-
         var serviceScope = host.Services.CreateScope();
         var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
         dbContext.Database.Migrate();
 
         return host;
@@ -63,48 +58,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
-
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
+        await TruncateTables(dbContext);
 
         foreach (var agreement in transferAgreements)
         {
-            var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-            var agreementFields = new[]
-            {
-            new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
-        };
-
-            await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
-
-            var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
-                             "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-            var historyFields = new[]
-            {
-            new NpgsqlParameter("Id", Guid.NewGuid()),
-            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
-            new NpgsqlParameter("AuditAction", "Insert"),
-            new NpgsqlParameter("ActorId", "Test"),
-            new NpgsqlParameter("ActorName", "Test"),
-            new NpgsqlParameter("TransferAgreementId", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
-        };
-
-            await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
+            await InsertTransferAgreement(dbContext, agreement);
+            await InsertHistoryEntry(dbContext, agreement);
         }
     }
 
@@ -151,5 +110,58 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    private static async Task TruncateTables(ApplicationDbContext dbContext)
+    {
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
+    }
+
+    private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
+    {
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+
+        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+        var agreementFields = new[]
+        {
+            new NpgsqlParameter("Id", agreement.Id),
+            new NpgsqlParameter("StartDate", agreement.StartDate),
+            new NpgsqlParameter("EndDate", agreement.EndDate),
+            new NpgsqlParameter("SenderId", agreement.SenderId),
+            new NpgsqlParameter("SenderName", agreement.SenderName),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+        };
+
+        await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
+    }
+
+    private static async Task InsertHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
+    {
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+
+        var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
+                           "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+        var historyFields = new[]
+        {
+            new NpgsqlParameter("Id", Guid.NewGuid()),
+            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
+            new NpgsqlParameter("AuditAction", "Insert"),
+            new NpgsqlParameter("ActorId", "Test"),
+            new NpgsqlParameter("ActorName", "Test"),
+            new NpgsqlParameter("TransferAgreementId", agreement.Id),
+            new NpgsqlParameter("StartDate", agreement.StartDate),
+            new NpgsqlParameter("EndDate", agreement.EndDate),
+            new NpgsqlParameter("SenderId", agreement.SenderId),
+            new NpgsqlParameter("SenderName", agreement.SenderName),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+        };
+
+        await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
     }
 }
