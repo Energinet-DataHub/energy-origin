@@ -10,7 +10,6 @@ public record TransferAgreementHistoryEntryDto(
     string? ActorName
 );
 
-
 public enum ChangeAction { Created = 1, Updated = 2, Deleted = 3 }
 
 public static class TransferAgreementHistoryEntryMapper
