@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -18,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -57,50 +59,54 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements = null)
+    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName()}\"");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName()}\" CASCADE");
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
-        // if no transferAgreements are provided, exit the method after clearing the tables
-        if (transferAgreements == null) return;
-
-        // Temporarily disable Audit.NET
-        Audit.Core.Configuration.AuditDisabled = true;
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
 
         foreach (var agreement in transferAgreements)
         {
-            dbContext.TransferAgreements.Add(agreement);
-            await dbContext.SaveChangesAsync();
-
-            // Create an audit entry manually for each operation
-            var historyEntry = new TransferAgreementHistoryEntry()
+            var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+            var agreementFields = new[]
             {
-                Id = Guid.NewGuid(),
-                AuditDate = DateTime.UtcNow,
-                AuditAction = "Insert",
-                ActorId = "Test",
-                ActorName = "Test",
-                SenderName = agreement.SenderName,
-                SenderTin = agreement.SenderTin,
-                ReceiverTin = agreement.ReceiverTin,
-                TransferAgreementId = agreement.Id
-            };
+            new NpgsqlParameter("Id", agreement.Id),
+            new NpgsqlParameter("StartDate", agreement.StartDate),
+            new NpgsqlParameter("EndDate", agreement.EndDate),
+            new NpgsqlParameter("SenderId", agreement.SenderId),
+            new NpgsqlParameter("SenderName", agreement.SenderName),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+        };
 
-            dbContext.TransferAgreementHistoryEntries.Add(historyEntry);
-            await dbContext.SaveChangesAsync();
+            await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
+
+            var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"AuditDate\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
+                             "VALUES (@Id, @AuditDate, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+            var historyFields = new[]
+            {
+            new NpgsqlParameter("Id", Guid.NewGuid()),
+            new NpgsqlParameter("AuditDate", DateTime.UtcNow),
+            new NpgsqlParameter("AuditAction", "Insert"),
+            new NpgsqlParameter("ActorId", "Test"),
+            new NpgsqlParameter("ActorName", "Test"),
+            new NpgsqlParameter("TransferAgreementId", agreement.Id),
+            new NpgsqlParameter("StartDate", agreement.StartDate),
+            new NpgsqlParameter("EndDate", agreement.EndDate),
+            new NpgsqlParameter("SenderId", agreement.SenderId),
+            new NpgsqlParameter("SenderName", agreement.SenderName),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+        };
+
+            await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
         }
-
-        // Enable Audit.NET again after seeding
-        Audit.Core.Configuration.AuditDisabled = false;
     }
-
-
-
-
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 

@@ -124,21 +124,21 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230703123909_AddTransferAgreementHistoryEntry') THEN
     ALTER TABLE "TransferAgreements" DROP COLUMN "ActorId";
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230703123909_AddTransferAgreementHistoryEntry') THEN
     CREATE TABLE "TransferAgreementHistoryEntries" (
         "Id" uuid NOT NULL,
         "TransferAgreementId" uuid NOT NULL,
         "StartDate" timestamp with time zone NOT NULL,
         "EndDate" timestamp with time zone NULL,
-        "ActorId" text NULL,
-        "ActorName" text NULL,
+        "ActorId" text NOT NULL,
+        "ActorName" text NOT NULL,
         "SenderId" uuid NOT NULL,
         "SenderName" text NOT NULL,
         "SenderTin" text NOT NULL,
@@ -153,16 +153,16 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230703123909_AddTransferAgreementHistoryEntry') THEN
     CREATE INDEX "IX_TransferAgreementHistoryEntries_TransferAgreementId" ON "TransferAgreementHistoryEntries" ("TransferAgreementId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230702123505_AddTransferAgreementHistoryEntry') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230703123909_AddTransferAgreementHistoryEntry') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230702123505_AddTransferAgreementHistoryEntry', '7.0.5');
+    VALUES ('20230703123909_AddTransferAgreementHistoryEntry', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;

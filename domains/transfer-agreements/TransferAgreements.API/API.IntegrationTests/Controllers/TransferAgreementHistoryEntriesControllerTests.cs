@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -79,26 +77,21 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task GetHistoryEntriesForTransferAgreement_ShouldReturnNoContent_WhenNotOwnerOrReceiver()
     {
-        var transferAgreementId = Guid.NewGuid();
-        var senderId = Guid.NewGuid();
-        var receiverTin = "12345678";
+        var creatingSender = Guid.NewGuid();
 
-        await factory.SeedData(new List<TransferAgreement>()
-        {
-            new()
-            {
-                Id = transferAgreementId,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                SenderId = senderId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = receiverTin
-            }
-        });
+        var creatorClient = factory.CreateAuthenticatedClient(sub: creatingSender.ToString());
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "87654321");
-        var response = await newAuthenticatedClient.GetAsync($"api/history/transfer-agreements/{transferAgreementId}");
+        var transferAgreement = new CreateTransferAgreement(
+            new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
+            new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
+            "12345678"
+        );
+
+        var createRequest = await creatorClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
+
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "66332211");
+        var response = await newAuthenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
