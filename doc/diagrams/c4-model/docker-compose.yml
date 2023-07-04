@@ -1,0 +1,9 @@
+services:
+  structurizr:
+    image: structurizr/lite:latest
+    ports:
+      - 8080:8080
+    environment:
+      - STRUCTURIZR_WORKSPACE_FILENAME=views
+    volumes:
+      - ../c4-model:/usr/local/structurizr
