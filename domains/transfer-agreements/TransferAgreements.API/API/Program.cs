@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.ApiModels.Requests;
 using API.Data;
 using API.Filters;
 using API.Options;
@@ -83,7 +82,7 @@ builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddTransient<IValidator<CreateTransferAgreement>, CreateTransferAgreementValidator>();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
