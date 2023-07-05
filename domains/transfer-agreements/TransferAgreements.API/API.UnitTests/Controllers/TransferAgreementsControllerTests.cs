@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Controllers;
 using API.Data;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -18,6 +20,7 @@ public class TransferAgreementsControllerTests
 {
     private TransferAgreementsController controller;
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
+    private Mock<IValidator<CreateTransferAgreement>> mockValidator;
 
     private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
     private const string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
@@ -27,14 +30,14 @@ public class TransferAgreementsControllerTests
     public TransferAgreementsControllerTests()
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
+
         mockTransferAgreementRepository
             .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
             .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
     }
 
-    private TransferAgreementsController CreateControllerWithMockedUser()
-    {
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+    private static ClaimsPrincipal CreateUser() =>
+        new(new ClaimsIdentity(new Claim[]
         {
             new("sub", subject),
             new("atr", atr),
@@ -42,27 +45,45 @@ public class TransferAgreementsControllerTests
             new("tin", tin)
         }, "mock"));
 
-        return new TransferAgreementsController(mockTransferAgreementRepository.Object)
-        {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = user }
-            }
-        };
+    private static HttpContext CreateHttpContext(ClaimsPrincipal user) =>
+        new DefaultHttpContext { User = user };
 
+    private Mock<IValidator<CreateTransferAgreement>> CreateValidator()
+    {
+        var validator = new Mock<IValidator<CreateTransferAgreement>>();
+
+        validator
+            .Setup(o => o.ValidateAsync(It.IsAny<CreateTransferAgreement>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        return validator;
+    }
+
+    private static ControllerContext CreateControllerContext(HttpContext context) => new() { HttpContext = context };
+
+    private TransferAgreementsController CreateControllerWithMockedUser()
+    {
+        var user = CreateUser();
+        var context = CreateHttpContext(user);
+        mockValidator = CreateValidator();
+        var controllerContext = CreateControllerContext(context);
+
+        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object)
+        {
+            ControllerContext = controllerContext
+        };
     }
 
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
     {
-        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
+        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337");
 
         controller = CreateControllerWithMockedUser();
         await controller.Create(request);
 
         mockTransferAgreementRepository.Verify(repository => repository.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == Guid.Parse(subject) &&
-            agreement.ActorId == atr &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
             agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate!.Value) &&
             agreement.SenderName == cpn &&
@@ -265,5 +286,4 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()), Times.Once);
         mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
     }
-
 }

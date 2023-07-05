@@ -1,8 +1,13 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
+using System.Text.Json.Serialization;
 using API.Data;
+using API.Filters;
 using API.Options;
+using Audit.Core;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +38,34 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
+Audit.Core.Configuration.Setup()
+    .UseEntityFramework(ef => ef
+        .AuditTypeExplicitMapper(config => config
+            .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
+            {
+                var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
+                var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
+
+                historyEntity.Id = Guid.NewGuid();
+                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
+                historyEntity.AuditAction = eventEntry.Action;
+                historyEntity.ActorId = actorId;
+                historyEntity.ActorName = actorName;
+
+                switch (eventEntry.Action)
+                {
+                    case "Insert":
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                        break;
+                    case "Update":
+                    {
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
+                        break;
+                    }
+                }
+                return true;
+            })));
+
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
@@ -45,8 +78,14 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SupportNonNullableReferenceTypes();
@@ -56,6 +95,7 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Title = "Transfer Agreements API"
     });
+
     if (builder.Environment.IsDevelopment())
     {
         o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -85,6 +125,7 @@ builder.Services.AddSwaggerGen(o =>
 });
 
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
+builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -100,7 +141,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
-
 
 var app = builder.Build();
 

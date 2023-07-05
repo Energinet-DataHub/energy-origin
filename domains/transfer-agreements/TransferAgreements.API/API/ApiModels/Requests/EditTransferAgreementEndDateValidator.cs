@@ -5,7 +5,6 @@ namespace API.ApiModels.Requests;
 
 public class EditTransferAgreementEndDateValidator : AbstractValidator<EditTransferAgreementEndDate>
 {
-
     public EditTransferAgreementEndDateValidator()
     {
         var now = DateTimeOffset.UtcNow;
