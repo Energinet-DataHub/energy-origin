@@ -64,5 +64,17 @@
         <member name="M:API.Migrations.UpdateEndDateToNullable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddTransferAgreementHistoryEntry">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
