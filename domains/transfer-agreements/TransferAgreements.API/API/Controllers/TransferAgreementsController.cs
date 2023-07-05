@@ -5,6 +5,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +18,11 @@ namespace API.Controllers;
 public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
+    private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
 
-    public TransferAgreementsController(ITransferAgreementRepository transferAgreementRepository) => this.transferAgreementRepository = transferAgreementRepository;
+    public TransferAgreementsController(
+        ITransferAgreementRepository transferAgreementRepository, IValidator<CreateTransferAgreement> createTransferAgreementValidator) =>
+        (this.transferAgreementRepository, this.createTransferAgreementValidator) = (transferAgreementRepository, createTransferAgreementValidator);
 
     [ProducesResponseType(201)]
     [ProducesResponseType(409)]
@@ -26,15 +30,11 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
     {
-        var actor = User.FindActorGuidClaim();
         var subject = User.FindSubjectGuidClaim();
         var subjectName = User.FindSubjectNameClaim();
         var subjectTin = User.FindSubjectTinClaim();
-        var actorName = User.FindActorNameClaim();
 
-        var validator = new CreateTransferAgreementValidator(subjectTin);
-
-        var validateResult = await validator.ValidateAsync(request);
+        var validateResult = await createTransferAgreementValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
             validateResult.AddToModelState(ModelState);

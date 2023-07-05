@@ -110,17 +110,29 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Theory]
     [InlineData(253402300800L, null, "StartDate")]
     [InlineData(221860025546L, 253402300800L, "EndDate")]
-    public void CreateTransferAgreement_ShouldValidateDatesInSeconds(long start, long? end, string? property)
+    public async Task CreateTransferAgreement_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var validator = new CreateTransferAgreementValidator("11223344");
-        var request = new CreateTransferAgreement(start, end, "12345678");
+        var senderId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var receiverTin = "12345678";
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
-        var result = validator.Validate(request);
+        var request = new CreateTransferAgreement(
+            StartDate: start,
+            EndDate: end,
+            ReceiverTin: receiverTin
+        );
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
-        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+        validationProblemContent.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+        validationProblemContent.Should().Contain(property);
     }
+
 
     [Theory]
     [InlineData("", "ReceiverTin cannot be empty")]

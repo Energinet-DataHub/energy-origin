@@ -1,11 +1,13 @@
 using System;
+using API.Extensions;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 
 namespace API.ApiModels.Requests;
 
 public class CreateTransferAgreementValidator : AbstractValidator<CreateTransferAgreement>
 {
-    public CreateTransferAgreementValidator(string senderTin)
+    public CreateTransferAgreementValidator(IHttpContextAccessor context)
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -29,7 +31,7 @@ public class CreateTransferAgreementValidator : AbstractValidator<CreateTransfer
             .Length(8)
             .Matches("^[0-9]{8}$")
             .WithMessage("ReceiverTin must be 8 digits without any spaces.")
-            .NotEqual(senderTin)
+            .NotEqual(context.HttpContext.User.FindSubjectTinClaim())
             .WithMessage("ReceiverTin cannot be the same as SenderTin.");
     }
 }

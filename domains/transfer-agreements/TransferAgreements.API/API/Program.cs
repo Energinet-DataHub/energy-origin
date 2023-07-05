@@ -3,10 +3,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.ApiModels.Requests;
 using API.Data;
 using API.Filters;
 using API.Options;
 using Audit.Core;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -81,7 +83,10 @@ builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+builder.Services.AddTransient<IValidator<CreateTransferAgreement>, CreateTransferAgreementValidator>();
+
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SupportNonNullableReferenceTypes();
