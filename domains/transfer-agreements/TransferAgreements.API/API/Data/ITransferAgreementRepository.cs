@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.ApiModels.Responses;
 
 namespace API.Data;
 
@@ -12,6 +11,4 @@ public interface ITransferAgreementRepository
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin);
     Task<bool> HasDateOverlap(TransferAgreement transferAgreement);
     Task Save();
-
-
 }

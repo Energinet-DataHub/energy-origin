@@ -5,6 +5,49 @@
     "version": "v1"
   },
   "paths": {
+    "/api/history/transfer-agreements/{transferAgreementId}": {
+      "get": {
+        "tags": [
+          "TransferAgreementHistoryEntries"
+        ],
+        "parameters": [
+          {
+            "name": "transferAgreementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/transfer-agreements": {
       "post": {
         "tags": [
@@ -235,6 +278,14 @@
   },
   "components": {
     "schemas": {
+      "ChangeAction": {
+        "enum": [
+          "Created",
+          "Updated",
+          "Deleted"
+        ],
+        "type": "string"
+      },
       "CreateTransferAgreement": {
         "type": "object",
         "properties": {
@@ -315,6 +366,38 @@
           },
           "receiverTin": {
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementHistoryEntriesResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferAgreementHistoryEntryDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "transferAgreement": {
+            "$ref": "#/components/schemas/TransferAgreementDto"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ChangeAction"
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

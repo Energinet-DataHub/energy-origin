@@ -1,0 +1,30 @@
+﻿{
+  Result: [
+    {
+      TransferAgreement: {
+        Id: Guid_1,
+        StartDate: 4833486183,
+        EndDate: 4867877044,
+        SenderName: Producent A/S,
+        SenderTin: 12345456,
+        ReceiverTin: 12345678
+      },
+      CreatedAt: {Scrubbed},
+      Action: Created,
+      ActorName: Peter Producent
+    },
+    {
+      TransferAgreement: {
+        Id: Guid_2,
+        StartDate: 4833486183,
+        EndDate: 4902095105,
+        SenderName: Producent A/S,
+        SenderTin: 12345456,
+        ReceiverTin: 12345678
+      },
+      CreatedAt: {Scrubbed},
+      Action: Updated,
+      ActorName: Peter Producent
+    }
+  ]
+}

@@ -82,16 +82,37 @@ jobs:
           echo '::endgroup::'
 
           output=$(mktemp -d)
+          chmod +rx "$output"
           echo "output=$output" >> $GITHUB_ENV
 
           rm *-key.png || true
           mkdir -p $output/${{ env.OUTPUT_STRUCTURE }}
           mv *.png $output/${{ env.OUTPUT_STRUCTURE }}/
 
-          chmod -c -R +rX "$output" |
-          while read line; do
-            echo "::warning title=Invalid file permissions automatically fixed::$line"
+      - name: Add directory listings
+        env:
+          ROOT: ${{ env.output }}
+        run: |
+          index() {
+            cd $1
+            {
+              echo "<h1>Index of $2</h1><hr /><ul>"
+              if [ "$3" = "with-dotdot" ]; then
+                echo "<li><a href='..'>Parent directory</a></li>"
+              fi
+              for path in $(find . -maxdepth 1 -mindepth 1 ! -name index.html | sort); do
+                echo "<li><a href='$path'>$(basename $path)</a></li>"
+              done
+              echo "</ul><hr />"
+            } > index.html
+            cd -
+          }
+
+          for folder in $(find "$ROOT" -type d); do
+            index "$folder" ${folder#"$ROOT"} with-dotdot
           done
+
+          index "$ROOT" /
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

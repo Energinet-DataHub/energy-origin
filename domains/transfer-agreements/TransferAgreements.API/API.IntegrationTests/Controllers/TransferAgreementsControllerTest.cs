@@ -10,10 +10,13 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Newtonsoft.Json;
+using VerifyTests;
+using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
+[UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -50,14 +53,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
         var id = Guid.NewGuid();
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorId = "actor1",
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -108,17 +110,29 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Theory]
     [InlineData(253402300800L, null, "StartDate")]
     [InlineData(221860025546L, 253402300800L, "EndDate")]
-    public void CreateTransferAgreement_ShouldValidateDatesInSeconds(long start, long? end, string? property)
+    public async Task CreateTransferAgreement_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var validator = new CreateTransferAgreementValidator("11223344");
-        var request = new CreateTransferAgreement(start, end, "12345678");
+        var senderId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var receiverTin = "12345678";
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
-        var result = validator.Validate(request);
+        var request = new CreateTransferAgreement(
+            StartDate: start,
+            EndDate: end,
+            ReceiverTin: receiverTin
+        );
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.PropertyName.Should().Be(property);
-        result.Errors.Should().ContainSingle().Which.ErrorMessage.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+        validationProblemContent.Should().Contain("too high! Please make sure the format is UTC in seconds.");
+        validationProblemContent.Should().Contain(property);
     }
+
 
     [Theory]
     [InlineData("", "ReceiverTin cannot be empty")]
@@ -142,12 +156,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
         validationProblemContent.Should().Contain(expectedContent);
         validationProblemContent.Should().Contain("ReceiverTin");
-
     }
 
     [Fact]
@@ -160,14 +172,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
             SenderId = subject,
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
             ReceiverTin = "87654321"
         };
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
@@ -178,14 +189,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
 
-        getTransferAgreement.Should().NotBeNull();
+        var settings = new VerifySettings();
+        settings.ScrubMembersWithType(typeof(long));
 
-        getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
-        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
-        getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
-        getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
-        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
+        await Verifier.Verify(getTransferAgreement, settings);
     }
 
     [Fact]
@@ -193,24 +200,24 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var id = Guid.NewGuid();
         var receiverTin = "12345678";
+        var subject = Guid.NewGuid();
         var fakeTransferAgreement = new TransferAgreement
         {
             Id = id,
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            ActorId = "actor1",
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
             ReceiverTin = receiverTin
         };
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
         var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
@@ -231,14 +238,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task Get_ShouldReturnNotFound_WhenYourNotTheOwnerOrReceiver()
     {
         var id = Guid.NewGuid();
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                ActorId = "actor1",
                 SenderId = Guid.NewGuid(),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
@@ -280,7 +286,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderTin = "11223344";
         var receiverTin = "11223344";
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -288,7 +294,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow,
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
-                    ActorId = "actor1",
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
@@ -299,7 +304,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     Id = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(2),
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
-                    ActorId = "actor2",
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
                     SenderTin = senderTin,
@@ -326,7 +330,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(new List<TransferAgreement>()
+        await factory.SeedData(new List<TransferAgreement>()
         {
             new()
             {
@@ -334,7 +338,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = senderId,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                ActorId = "actor1",
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin
@@ -345,7 +348,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = senderId,
                 StartDate = DateTimeOffset.UtcNow.AddDays(11),
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
-                ActorId = "actor1",
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin
@@ -370,7 +372,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -379,7 +381,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -421,7 +422,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -430,7 +431,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
-                    ActorId = "actor1",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344"
@@ -477,7 +477,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
-        await SeedData(
+        await factory.SeedData(
             new List<TransferAgreement>()
             {
                 new()
@@ -486,7 +486,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = senderId,
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                    ActorId = "actor1",
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "1122334"
@@ -505,10 +504,5 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
-    }
-
-    private async Task SeedData(List<TransferAgreement> transferAgreements)
-    {
-        await factory.SeedData(context => { context.TransferAgreements.AddRange(transferAgreements); });
     }
 }

@@ -24,3 +24,7 @@ While in the `doc/diagrams/c4-model` directory, run the following command:
 ```
 docker compose down
 ```
+
+# Viewing diagrams
+
+The diagrams are published with GitHub Pages and are available at [https://energinet-datahub.github.io/energy-origin/](https://energinet-datahub.github.io/energy-origin/).
