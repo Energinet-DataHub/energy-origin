@@ -38,8 +38,13 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
+builder.Services.Configure<FeatureFlags>(builder.Configuration.GetSection(nameof(FeatureFlags)));
+
 builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
 builder.Services.RegisterEventHandlers(builder.Configuration);
+
+builder.Services.AddHostedService<NewClientWorker>();
+
 builder.Services.AddHealthChecks();
 
 builder.Services.AddMassTransit(o =>

@@ -12,6 +12,8 @@ public static class Startup
     {
         services.Configure<RegistryOptions>(configuration.GetSection(RegistryOptions.Registry));
 
+        services.Configure<ProjectOriginOptions>(configuration.GetSection(ProjectOriginOptions.ProjectOrigin));
+
         services.AddSingleton<IssuerKey>();
         services.AddSingleton<ProjectOriginRegistryEventHandler>();
 
