@@ -21,8 +21,8 @@ public class RegistryFixture : IAsyncLifetime
     private readonly Lazy<IContainer> registryContainer;
     private readonly IContainer verifierContainer;
 
-    public string IssuerArea => area;
-    public string RegistryName => registryName;
+    public const string IssuerArea = area;
+    public const string RegistryName = registryName;
     public IPrivateKey IssuerKey { get; init; }
     public string RegistryUrl => $"http://{registryContainer.Value.Hostname}:{registryContainer.Value.GetMappedPublicPort(GrpcPort)}";
     protected string RegistryContainerUrl => $"http://{registryContainer.Value.IpAddress}:{GrpcPort}";
