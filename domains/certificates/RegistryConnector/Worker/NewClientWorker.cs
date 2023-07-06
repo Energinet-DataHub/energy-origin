@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,10 +8,8 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
@@ -24,29 +20,19 @@ using Commitment = ProjectOrigin.Electricity.V1.Commitment;
 
 namespace RegistryConnector.Worker;
 
-public class NewClientWorker : BackgroundService
+public class NewClientWorker : NewPoClientWorker
 {
-    private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
-    private readonly ILogger<NewClientWorker> logger;
-    private readonly IOptions<FeatureFlags> featureFlags;
-
     public NewClientWorker(
         IOptions<ProjectOriginOptions> projectOriginOptions,
         IOptions<FeatureFlags> featureFlags,
-        ILogger<NewClientWorker> logger)
-    {
-        this.projectOriginOptions = projectOriginOptions;
-        this.logger = logger;
-        this.featureFlags = featureFlags;
-
+        ILogger<NewClientWorker> logger) : base(projectOriginOptions, featureFlags, logger) =>
         logger.LogInformation("key length: {keyLength}", projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Length);
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var isEnabled = featureFlags.Value.RunsProjectOriginIntegrationSample ? "enabled" : "disabled";
-        logger.LogInformation("NewClientWorker is {isEnabled}", isEnabled);
-        if (!featureFlags.Value.RunsProjectOriginIntegrationSample)
+        var isEnabled = FeatureFlags.Value.RunsProjectOriginIntegrationSample ? "enabled" : "disabled";
+        Logger.LogInformation("NewClientWorker is {isEnabled}", isEnabled);
+        if (!FeatureFlags.Value.RunsProjectOriginIntegrationSample)
             return;
 
         try
@@ -62,38 +48,22 @@ public class NewClientWorker : BackgroundService
 
             await SendSliceToWallet(walletSectionReference, issuedEvent, commitment, position);
 
-            var certificates = await GetCertificatesFromWallet(bearerToken);
+            var certificates = await GetCertificatesFromWallet(bearerToken, 10);
 
-            logger.LogInformation("Has {certificates}", certificates);
+            Logger.LogInformation("Has {certificates}", certificates);
         }
         catch (Exception ex)
         {
-            logger.LogWarning("Bad");
-            logger.LogWarning(ex.Message);
+            Logger.LogWarning("Bad");
+            Logger.LogWarning(ex.Message);
         }
-    }
-
-    private async Task<WalletSectionReference> CreateWalletSectionReference(string bearerToken)
-    {
-        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
-
-        var walletServiceClient = new WalletService.WalletServiceClient(channel);
-        var createWalletSectionRequest = new CreateWalletSectionRequest();
-        var headers = new Metadata
-            { { "Authorization", $"Bearer {bearerToken}" } };
-        var walletSectionReference =
-            await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest, headers);
-
-        logger.LogInformation("Received {response}", walletSectionReference);
-        return walletSectionReference;
     }
 
     private async Task<IssuedEvent> IssueCertificateInRegistry(SecretCommitmentInfo commitment, IPublicKey ownerKey)
     {
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
-            Registry = projectOriginOptions.Value.RegistryName,
+            Registry = ProjectOriginOptions.Value.RegistryName,
             StreamId = new ProjectOrigin.Common.V1.Uuid { Value = Guid.NewGuid().ToString() }
         };
 
@@ -115,8 +85,8 @@ public class NewClientWorker : BackgroundService
             }
         };
 
-        logger.LogInformation("Creating channel for {registryUrl}", projectOriginOptions.Value.RegistryUrl);
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.RegistryUrl);
+        Logger.LogInformation("Creating channel for {registryUrl}", ProjectOriginOptions.Value.RegistryUrl);
+        using var channel = GrpcChannel.ForAddress(ProjectOriginOptions.Value.RegistryUrl);
         var client = new RegistryService.RegistryServiceClient(channel);
 
         var header = new TransactionHeader
@@ -126,7 +96,7 @@ public class NewClientWorker : BackgroundService
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
             Nonce = Guid.NewGuid().ToString(),
         };
-        var headerSignature = projectOriginOptions.Value.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray();
+        var headerSignature = ProjectOriginOptions.Value.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray();
         var transactions = new Transaction
         {
             Header = header,
@@ -161,76 +131,5 @@ public class NewClientWorker : BackgroundService
         }
 
         return issuedEvent;
-    }
-
-    private async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo, uint position)
-    {
-        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
-
-        var receiveSliceServiceClient = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
-
-        var certificateId = new ProjectOrigin.Common.V1.FederatedStreamId
-        {
-            Registry = issuedEvent.CertificateId.Registry, StreamId = new ProjectOrigin.Common.V1.Uuid { Value = issuedEvent.CertificateId.StreamId.Value }
-        };
-
-        var receiveRequest = new ReceiveRequest
-        {
-            CertificateId = certificateId,
-            Quantity = secretCommitmentInfo.Message,
-            RandomR = ByteString.CopyFrom(secretCommitmentInfo.BlindingValue),
-            WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
-            WalletSectionPosition = position
-        };
-        var receiveResponse = await receiveSliceServiceClient.ReceiveSliceAsync(receiveRequest);
-
-        logger.LogInformation("Received {response}", receiveResponse);
-    }
-
-    private async Task<IEnumerable<GranularCertificate>> GetCertificatesFromWallet(string bearerToken)
-    {
-        logger.LogInformation("Creating channel for {walletUrl}", projectOriginOptions.Value.WalletUrl);
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
-
-        var walletServiceClient = new WalletService.WalletServiceClient(channel);
-        var headers = new Metadata { { "Authorization", $"Bearer {bearerToken}" } };
-
-        var sw = new Stopwatch();
-        sw.Start();
-        QueryResponse certificates;
-        do
-        {
-            certificates = await walletServiceClient.QueryGranularCertificatesAsync(new QueryRequest(), headers);
-            if (certificates.GranularCertificates.Count == 0)
-                await Task.Delay(1000);
-        } while (certificates.GranularCertificates.Count == 0 && sw.Elapsed < TimeSpan.FromSeconds(10));
-
-        return certificates.GranularCertificates;
-    }
-
-    private static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
-    {
-        var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-
-        var claims = new[]
-        {
-            new Claim("sub", subject),
-            new Claim("name", name),
-            new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-        };
-
-        var key = new ECDsaSecurityKey(ecdsa);
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
