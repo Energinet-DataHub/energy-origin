@@ -1,20 +1,20 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using ProjectOrigin.WalletSystem.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Google.Protobuf;
+using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.PedersenCommitment;
-using System.Collections.Generic;
-using System.Diagnostics;
+using ProjectOrigin.WalletSystem.V1;
 
 namespace RegistryConnector.Worker;
 
