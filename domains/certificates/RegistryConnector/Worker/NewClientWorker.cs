@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,7 +12,6 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
-using ProjectOrigin.WalletSystem.V1;
 using Commitment = ProjectOrigin.Electricity.V1.Commitment;
 
 namespace RegistryConnector.Worker;
@@ -25,8 +21,9 @@ public class NewClientWorker : NewPoClientWorker
     public NewClientWorker(
         IOptions<ProjectOriginOptions> projectOriginOptions,
         IOptions<FeatureFlags> featureFlags,
-        ILogger<NewClientWorker> logger) : base(projectOriginOptions, featureFlags, logger) =>
-        logger.LogInformation("key length: {keyLength}", projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Length);
+        ILogger<NewClientWorker> logger) : base(projectOriginOptions, featureFlags, logger)
+    {
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
