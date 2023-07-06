@@ -20,3 +20,5 @@ projectOrigin:
   registryUrl:
   registryName:
   walletUrl:
+featureFlags:
+  runsProjectOriginIntegrationSample: false

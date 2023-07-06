@@ -28,19 +28,27 @@ public class NewClientWorker : BackgroundService
 {
     private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
     private readonly ILogger<NewClientWorker> logger;
+    private readonly IOptions<FeatureFlags> featureFlags;
 
     public NewClientWorker(
         IOptions<ProjectOriginOptions> projectOriginOptions,
+        IOptions<FeatureFlags> featureFlags,
         ILogger<NewClientWorker> logger)
     {
         this.projectOriginOptions = projectOriginOptions;
         this.logger = logger;
+        this.featureFlags = featureFlags;
 
         logger.LogInformation("key length: {keyLength}", projectOriginOptions.Value.Dk1IssuerPrivateKeyPem.Length);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var isEnabled = featureFlags.Value.RunsProjectOriginIntegrationSample ? "enabled" : "disabled";
+        logger.LogInformation("NewClientWorker is {isEnabled}", isEnabled);
+        if (!featureFlags.Value.RunsProjectOriginIntegrationSample)
+            return;
+
         try
         {
             var bearerToken = GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo");

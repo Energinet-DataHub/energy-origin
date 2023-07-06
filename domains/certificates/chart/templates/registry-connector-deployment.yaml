@@ -57,3 +57,5 @@ spec:
               value: {{ .Values.projectOrigin.registryName }}
             - name: PROJECTORIGIN__WALLETURL
               value: {{ .Values.projectOrigin.walletUrl }}
+            - name: FEATUREFLAGS__RUNSPROJECTORIGININTEGRATIONSAMPLE
+              value: {{ .Values.featureFlags.runsProjectOriginIntegrationSample }}
