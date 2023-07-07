@@ -9,6 +9,6 @@ public record ProductionCertificateCreatedEvent(
     Period Period,
     Technology Technology,
     string MeteringPointOwner,
-    ShieldedValue<Gsrn> ShieldedGsrn,
+    ShieldedValue<Gsrn> ShieldedGsrn, //TODO: Should this still be shielded?
     ShieldedValue<long> ShieldedQuantity
 );

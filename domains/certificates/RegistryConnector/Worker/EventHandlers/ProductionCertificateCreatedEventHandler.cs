@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Contracts.Certificates;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Collections;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -12,6 +12,7 @@ using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
+using Attribute = ProjectOrigin.Electricity.V1.Attribute;
 using PublicKey = ProjectOrigin.Electricity.V1.PublicKey;
 
 namespace RegistryConnector.Worker.EventHandlers;
@@ -41,19 +42,17 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             Registry = projectOriginOptions.RegistryName,
             StreamId = new ProjectOrigin.Common.V1.Uuid { Value = context.Message.CertificateId.ToString() }
         };
-        
-        var start = DateTimeOffset.FromUnixTimeSeconds(context.Message.Period.DateFrom);
-        var end = DateTimeOffset.FromUnixTimeSeconds(context.Message.Period.DateTo);
 
+        //var x = new ProjectOrigin.Electricity.V1.Attribute
+        //{
+        //    Key = "AssetId",
+        //    Value = context.Message.ShieldedGsrn.Value.Value
+        //};
         var issuedEvent = new IssuedEvent
         {
             CertificateId = id,
             Type = GranularCertificateType.Production,
-            Period = new DateInterval
-            {
-                Start = Timestamp.FromDateTimeOffset(start),
-                End = Timestamp.FromDateTimeOffset(end)
-            },
+            Period = context.Message.Period.ToDateInterval(),
             GridArea = context.Message.GridArea,
             QuantityCommitment = new ProjectOrigin.Electricity.V1.Commitment
             {
@@ -64,7 +63,10 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             {
                 Content = ByteString.CopyFrom(ownerPublicKey.Export()),
                 Type = KeyType.Secp256K1
-            }
+            },
+            //Attributes = new RepeatedField<Attribute> {x}
+
+            //TODO: Set Attributes
         };
 
         logger.LogInformation("Creating channel for {registryUrl}", projectOriginOptions.RegistryUrl);

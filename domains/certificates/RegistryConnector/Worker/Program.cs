@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
-using RegistryConnector.Worker.Cache;
 using RegistryConnector.Worker.EventHandlers;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -40,7 +39,6 @@ builder.Services.AddOpenTelemetry()
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.Configure<FeatureFlags>(builder.Configuration.GetSection(nameof(FeatureFlags)));
 
-builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
 builder.Services.RegisterEventHandlers(builder.Configuration);
 
 builder.Services.AddHostedService<NewClientWorker>();
@@ -70,7 +68,6 @@ builder.Services.AddMassTransit(o =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-app.SetupRegistryEvents();
 
 app.MapPrometheusScrapingEndpoint();
 

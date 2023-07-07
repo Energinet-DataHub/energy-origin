@@ -4,6 +4,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;
 
+// TODO: Delete
 public class RegistryOptions
 {
     public const string Registry = nameof(Registry);
