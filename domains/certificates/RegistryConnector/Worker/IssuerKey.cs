@@ -3,6 +3,7 @@ using NSec.Cryptography;
 
 namespace RegistryConnector.Worker;
 
+//TODO: Delete
 public class IssuerKey
 {
     public Key Value { get; private set; }
