@@ -46,6 +46,59 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         );
     }
 
+    public async Task<List<DateRange>> GetAvailableDateRanges(Guid senderId, string receiverTin)
+    {
+        var agreements = await context.TransferAgreements
+            .Where(a => a.SenderId == senderId && a.ReceiverTin == receiverTin)
+            .OrderBy(a => a.StartDate)
+            .ToListAsync();
+
+        if (!agreements.Any())
+        {
+            return new List<DateRange>
+            {
+                new()
+                {
+                    StartDate = DateTimeOffset.UtcNow,
+                    EndDate = null
+                }
+            };
+        }
+
+        var firstGap = agreements.First().StartDate > DateTimeOffset.UtcNow
+            ? new DateRange
+            {
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = agreements.First().StartDate.AddDays(-1)
+            }
+            : null;
+
+        var lastGap = agreements.Last().EndDate.HasValue
+            ? new DateRange
+            {
+                StartDate = agreements.Last().EndDate.GetValueOrDefault().AddDays(1),
+                EndDate = null
+            }
+            : null;
+
+        var middleGaps = agreements
+            .SkipLast(1)
+            .Select((a, i) => new DateRange
+            {
+                StartDate = a.EndDate.GetValueOrDefault().AddDays(1),
+                EndDate = agreements[i + 1].StartDate.AddDays(-1)
+            })
+            .Where(dr => dr.StartDate < dr.EndDate);
+
+        var dateRanges = new[] { firstGap }
+            .Concat(middleGaps)
+            .Concat(new[] { lastGap })
+            .Where(dr => dr != null)
+            .ToList();
+
+        return dateRanges;
+    }
+
     private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate) =>
         !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
 }

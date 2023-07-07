@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using NpgsqlTypes;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -125,17 +126,27 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-        var agreementFields = new[]
+        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
+                             "VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+
+        var agreementFields = new List<NpgsqlParameter>
         {
-            new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+            new("Id", agreement.Id),
+            new("StartDate", agreement.StartDate),
+            new("SenderId", agreement.SenderId),
+            new("SenderName", agreement.SenderName),
+            new("SenderTin", agreement.SenderTin),
+            new("ReceiverTin", agreement.ReceiverTin)
         };
+
+        if (agreement.EndDate.HasValue)
+        {
+            agreementFields.Add(new NpgsqlParameter("EndDate", agreement.EndDate));
+        }
+        else
+        {
+            agreementFields.Add(new NpgsqlParameter("EndDate", NpgsqlDbType.Timestamp) { Value = DBNull.Value });
+        }
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
@@ -146,22 +157,27 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
                            "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-        var historyFields = new[]
+
+        var historyFields = new List<NpgsqlParameter>
         {
-            new NpgsqlParameter("Id", Guid.NewGuid()),
-            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
-            new NpgsqlParameter("AuditAction", "Insert"),
-            new NpgsqlParameter("ActorId", "Test"),
-            new NpgsqlParameter("ActorName", "Test"),
-            new NpgsqlParameter("TransferAgreementId", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+            new("Id", Guid.NewGuid()),
+            new("CreatedAt", DateTime.UtcNow),
+            new("AuditAction", "Insert"),
+            new("ActorId", "Test"),
+            new("ActorName", "Test"),
+            new("TransferAgreementId", agreement.Id),
+            new("StartDate", agreement.StartDate),
+            new("SenderId", agreement.SenderId),
+            new("SenderName", agreement.SenderName),
+            new("SenderTin", agreement.SenderTin),
+            new("ReceiverTin", agreement.ReceiverTin)
         };
+
+        historyFields.Add(agreement.EndDate.HasValue ?
+            new NpgsqlParameter("EndDate", agreement.EndDate) :
+            new NpgsqlParameter("EndDate", NpgsqlDbType.Timestamp) { Value = DBNull.Value });
 
         await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
     }
+
 }

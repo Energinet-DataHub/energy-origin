@@ -505,4 +505,114 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
     }
+
+    [Fact]
+    public async Task GetAvailableDates_ShouldReturnNoContent_WhenNoValidDateRangesExist()
+    {
+        var senderId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var receiverTin = "12345678";
+        var startDate = new DateTimeOffset(2022, 2, 2, 0, 0, 0, TimeSpan.Zero);
+
+
+        await factory.SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = agreementId,
+                    SenderId = senderId,
+                    StartDate = startDate,
+                    EndDate = null,
+                    SenderName = "Producent A/S",
+                    SenderTin = "11223344",
+                    ReceiverTin = receiverTin
+                }
+            });
+
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: "11223344");
+
+        var response = await authenticatedClient.GetAsync($"api/transfer-agreements/available-dates/{receiverTin}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GetAvailableDates_ShouldReturnOneValidDateRange_WhenOneTransferAgreementExists()
+    {
+        var senderId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var senderTin = "11223344";
+        var receiverTin = "12345678";
+        var startDate = new DateTimeOffset(2022, 2, 2, 0, 0, 0, TimeSpan.Zero);
+        var endDate = new DateTimeOffset(2055, 5, 5, 0, 0, 0, TimeSpan.Zero);
+
+        await factory.SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = agreementId,
+                    SenderId = senderId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    SenderName = "Producent A/S",
+                    SenderTin = "11223344",
+                    ReceiverTin = receiverTin
+                }
+            });
+
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: "11223344");
+
+        var dateRanges = await authenticatedClient.GetFromJsonAsync<List<DateRangeDto>>
+            ($"api/transfer-agreements/available-dates/{receiverTin}", JsonDefault.Options);
+
+        await Verifier.Verify(dateRanges);
+    }
+
+
+    [Fact]
+    public async Task GetAvailableDates_ShouldReturnTwoValidDateRanges_WhenTwoTransferAgreementsExist()
+    {
+        var senderId = Guid.NewGuid();
+        var receiverTin = "12345678";
+        var startDate1 = new DateTimeOffset(2022, 2, 2, 0, 0, 0, TimeSpan.Zero);
+        var endDate1 = new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero);
+        var startDate2 = endDate1.AddYears(1);
+        var endDate2 = startDate2.AddYears(1);
+
+        await factory.SeedData(
+            new List<TransferAgreement>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    SenderId = senderId,
+                    StartDate = startDate1,
+                    EndDate = endDate1,
+                    SenderName = "Producent A/S",
+                    SenderTin = "11223344",
+                    ReceiverTin = receiverTin
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    SenderId = senderId,
+                    StartDate = startDate2,
+                    EndDate = endDate2,
+                    SenderName = "Producent A/S",
+                    SenderTin = "11223344",
+                    ReceiverTin = receiverTin
+                }
+            });
+
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: "11223344");
+
+        var dateRanges = await authenticatedClient.GetFromJsonAsync<List<DateRangeDto>>
+            ($"api/transfer-agreements/available-dates/{receiverTin}", JsonDefault.Options);
+
+        await Verifier.Verify(dateRanges);
+    }
+
 }

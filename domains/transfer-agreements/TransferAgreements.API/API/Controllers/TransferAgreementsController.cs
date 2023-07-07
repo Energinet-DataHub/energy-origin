@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -110,7 +111,6 @@ public class TransferAgreementsController : ControllerBase
 
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
-        var actorName = User.FindActorNameClaim();
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -160,6 +160,25 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin: transferAgreement.ReceiverTin);
 
         return Ok(response);
+    }
+
+    [ProducesResponseType(typeof(List<DateRangeDto>), 200)]
+    [ProducesResponseType(204)]
+    [HttpGet("available-dates/{receiverTin}")]
+    public async Task<ActionResult<List<DateRangeDto>>> GetAvailableDates(string receiverTin)
+    {
+        var senderId = Guid.Parse(User.FindSubjectGuidClaim());
+
+        var dateRanges = await transferAgreementRepository.GetAvailableDateRanges(senderId, receiverTin);
+
+        var listResponse = dateRanges.Select(d => new DateRangeDto(d.StartDate.ToUnixTimeSeconds(), d.EndDate?.ToUnixTimeSeconds())).ToList();
+
+        if (!listResponse.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(listResponse);
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
