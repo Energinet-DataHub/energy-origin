@@ -49,7 +49,10 @@ builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
 
-    o.AddConsumer<ProductionCertificateCreatedEventHandler>();
+    o.AddConsumer<ProductionCertificateCreatedEventHandler>(c =>
+    {
+        c.ConcurrentMessageLimit = 1; //TODO: This is a hack to avoid issues with multiple transactions sent to registry
+    });
 
     o.UsingRabbitMq((context, cfg) =>
     {

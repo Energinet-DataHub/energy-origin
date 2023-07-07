@@ -23,7 +23,7 @@ public sealed class CertificateIssuingTests :
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<ProjectOriginRegistryContainer>
+    IClassFixture<ProjectOriginStack>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -34,7 +34,7 @@ public sealed class CertificateIssuingTests :
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
-        ProjectOriginRegistryContainer poRegistryContainer)
+        ProjectOriginStack projectOriginStack)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
@@ -42,7 +42,7 @@ public sealed class CertificateIssuingTests :
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.RegistryOptions = poRegistryContainer.Options;
+        registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
         registryConnectorFactory.Start();
     }
 
@@ -137,7 +137,9 @@ public sealed class CertificateIssuingTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var certificateList =
-            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates",
+                res => res.Result.Count() == 5,
+                timeLimit: TimeSpan.FromMinutes(1));
 
         var expected = new CertificateList
         {
