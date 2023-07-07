@@ -4,16 +4,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;
 
-// TODO: Delete
-public class RegistryOptions
-{
-    public const string Registry = nameof(Registry);
-
-    public string Url { get; set; } = "";
-    public byte[] IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
-    public string RegistryName { get; set; } = "RegistryA";
-}
-
+//TODO: Add validation
 public class ProjectOriginOptions
 {
     public const string ProjectOrigin = nameof(ProjectOrigin);

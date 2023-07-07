@@ -15,7 +15,6 @@ namespace API.IntegrationTests.Factories;
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
 {
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    public RegistryOptions? RegistryOptions { get; set; }
     public ProjectOriginOptions? ProjectOriginOptions { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
@@ -26,9 +25,6 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 
             if (RabbitMqOptions != null)
                 services.AddSingleton(Options.Create(RabbitMqOptions));
-
-            if (RegistryOptions != null)
-                services.AddSingleton(Options.Create(RegistryOptions));
 
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
