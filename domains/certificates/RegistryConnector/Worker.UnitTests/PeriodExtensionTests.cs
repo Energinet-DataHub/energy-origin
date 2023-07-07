@@ -17,7 +17,7 @@ public class PeriodExtensionTests
         var dateInterval = period.ToDateInterval();
 
         var duration = dateInterval.End - dateInterval.Start;
-            
-        duration. Should().Be(Duration.FromTimeSpan(threeMinAnd20Seconds));
+
+        duration.Should().Be(Duration.FromTimeSpan(threeMinAnd20Seconds));
     }
 }
