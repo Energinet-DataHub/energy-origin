@@ -130,7 +130,6 @@ builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgr
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
-        // TODO: Is the following needed in this form after the new Auth service release?
         o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
