@@ -95,6 +95,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray()))
         };
 
+        logger.LogInformation("Sending status request {statusRequest}", statusRequest);
+
         try
         {
             var stopWatch = new Stopwatch();
@@ -119,7 +121,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
                 await Task.Delay(1000);
 
-                if (stopWatch.Elapsed > TimeSpan.FromMinutes(1))
+                if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
                     throw new Exception("Timed out waiting for transaction to commit"); //TODO: What to do here...?
             }
         }

@@ -43,6 +43,7 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        //TODO: This is wrong
         var endDate = createContract.EndDate == null ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate);
 
         var result = await service.Create(createContract.GSRN, meteringPointOwner!,

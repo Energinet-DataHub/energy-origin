@@ -86,6 +86,7 @@ internal class ContractServiceImpl : IContractService
             return new MeteringPointOwnerNoMatch();
         }
 
+        // TODO: This is also wrong!
         if (endDate == null)
         {
             endDate = DateTimeOffset.Now;

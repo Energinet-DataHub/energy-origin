@@ -123,7 +123,9 @@ public sealed class CertificateIssuingTests :
 
         await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
 
-        var measurements = Enumerable.Range(0, 5)
+        const int cnt = 24;
+
+        var measurements = Enumerable.Range(0, cnt)
             .Select(i => new EnergyMeasuredIntegrationEvent(
                 GSRN: gsrn,
                 DateFrom: utcMidnight.AddHours(i).ToUnixTimeSeconds(),
@@ -136,10 +138,12 @@ public sealed class CertificateIssuingTests :
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
+        //await Task.Delay(TimeSpan.FromMinutes(5));
+
         var certificateList =
             await client.RepeatedlyGetUntil<CertificateList>("api/certificates",
-                res => res.Result.Count() == 5,
-                timeLimit: TimeSpan.FromMinutes(1));
+                res => res.Result.Count() == cnt,
+                timeLimit: TimeSpan.FromMinutes(5));
 
         var expected = new CertificateList
         {
