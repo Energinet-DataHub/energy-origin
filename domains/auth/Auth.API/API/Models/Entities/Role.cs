@@ -1,5 +1,6 @@
-﻿namespace API.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace API.Models.Entities;
 
 [Index(nameof(Key), IsUnique = true)]
 public record Role
