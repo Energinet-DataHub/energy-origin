@@ -1,4 +1,4 @@
-﻿namespace API.Models.Entities;
+namespace API.Models.Entities;
 
 public record RoleMatches
 {
