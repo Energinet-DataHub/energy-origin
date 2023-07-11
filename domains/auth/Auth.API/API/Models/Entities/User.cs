@@ -8,7 +8,10 @@ public record User
     public bool AllowCprLookup { get; set; }
 
     public Guid? CompanyId { get; set; }
-    public virtual Company? Company { get; set; }
+    public Company? Company { get; set; }
 
-    public virtual List<UserProvider> UserProviders { get; set; } = new List<UserProvider>();
+    public List<UserProvider> UserProviders { get; set; } = new List<UserProvider>();
+    public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public List<Role> Roles { get; set; } = new List<Role>();
+    public List<UserTerms> UserTerms { get; set; } = new List<UserTerms>();
 }
