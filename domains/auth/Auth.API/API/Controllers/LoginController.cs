@@ -1,7 +1,9 @@
 using API.Options;
+using API.Repositories.Data;
 using API.Utilities;
 using API.Values;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
@@ -11,6 +13,11 @@ namespace API.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
+    [HttpGet()]
+    [AllowAnonymous]
+    [Route("auth/test")]
+    public IActionResult TestMethod(DataContext context) => Ok(context.Roles.ToList());
+
     [HttpGet()]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, IOptions<IdentityProviderOptions> providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
