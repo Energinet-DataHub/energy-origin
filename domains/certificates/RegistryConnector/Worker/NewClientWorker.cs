@@ -35,15 +35,15 @@ public class NewClientWorker : NewPoClientWorker
         try
         {
             var bearerToken = GenerateToken("issuer", "aud", Guid.NewGuid().ToString(), "foo");
-            var walletSectionReference = await CreateWalletSectionReference(bearerToken);
+            var walletDepositEndpoint = await CreateWalletDepositEndpoint(bearerToken);
 
-            var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletSectionReference.SectionPublicKey.Span);
+            var ownerPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletDepositEndpoint.PublicKey.Span);
             const int position = 42;
 
             var commitment = new SecretCommitmentInfo(42);
             var issuedEvent = await IssueCertificateInRegistry(commitment, ownerPublicKey.Derive(position).GetPublicKey());
 
-            await SendSliceToWallet(walletSectionReference, issuedEvent, commitment, position);
+            await SendSliceToWallet(walletDepositEndpoint, issuedEvent, commitment, position);
 
             var certificates = await GetCertificatesFromWallet(bearerToken, 10);
 
