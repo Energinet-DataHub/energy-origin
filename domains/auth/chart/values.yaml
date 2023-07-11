@@ -21,6 +21,7 @@ api:
     database:
       PGUSER:
       PGPASSWORD:
+    seedFile:
 cnpg:
   cluster:
     replicaCount:

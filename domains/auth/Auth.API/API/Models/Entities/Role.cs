@@ -8,7 +8,7 @@ public record Role
     public Guid? Id { get; init; }
     public string Key { get; set; } = null!;
     public string Name { get; set; } = null!;
-    public bool Default { get; set; }
+    public bool IsDefault { get; set; }
     public bool RoleAdmin { get; set; }
 
     public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
