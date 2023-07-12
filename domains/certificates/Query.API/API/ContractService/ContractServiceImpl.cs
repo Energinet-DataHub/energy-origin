@@ -39,20 +39,24 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var documents = await repository.GetByGsrn(gsrn, cancellationToken);
+        var contracts = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        var overlappingContract = documents.FirstOrDefault(d => CannotCreateContract(d, startDate, endDate));
+        var overlappingContract = contracts.FirstOrDefault(d => IsOverlapping(d, startDate, endDate));
         if (overlappingContract != null)
         {
             return new ContractAlreadyExists(overlappingContract);
         }
+
+        var contractNumber = contracts.Any()
+            ? contracts.Max(c => c.ContractNumber) + 1
+            : 0;
 
         try
         {
             var contract = new CertificateIssuingContract
             {
                 Id = Guid.Empty,
-                ContractNumber = 0,
+                ContractNumber = contractNumber,
                 GSRN = gsrn,
                 GridArea = matchingMeteringPoint.GridArea,
                 MeteringPointType = MeteringPointType.Production,
@@ -116,8 +120,24 @@ internal class ContractServiceImpl : IContractService
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
 
-    private static bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
+    private static bool IsOverlapping(CertificateIssuingContract contract, DateTimeOffset startDate, DateTimeOffset? endDate)
     {
-        return !(startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
+        return !(startDate >= contract.EndDate || endDate <= contract.StartDate);
+
+        //if (startDate >= contract.EndDate)
+        //    return false;
+
+        //if (endDate <= contract.StartDate)
+        //    return false;
+
+        //return true;
+
+
+        //var check1 = startDate <= document.StartDate;
+        //var check2 = !(startDate < document.EndDate);
+        //var check3 = !(endDate > document.StartDate);
+        //var check4 = !(endDate < document.EndDate);
+
+        //return !(check1 || check2) && (check3 || check4);
     }
 }

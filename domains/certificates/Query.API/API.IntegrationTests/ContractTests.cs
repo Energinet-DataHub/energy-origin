@@ -149,6 +149,90 @@ public sealed class ContractTests :
     }
 
     [Fact]
+    public async Task CreateContract_CanCreateMultipleNonOverlappingContracts_Created()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(2).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
+
+        //TODO: also check if they are continuing
+
+        var contract1Body = new
+        {
+            gsrn = gsrn,
+            startDate = startDateContract1,
+            endDate = endDateContract1
+        };
+        var contract2Body = new
+        {
+            gsrn = gsrn,
+            startDate = startDateContract2,
+            endDate = endDateContract2
+        };
+
+        using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
+
+        using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+
+        contracts.Result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CreateContract_CannotCreateOverlappingContracts_Conflict()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(3).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
+
+        var contract1Body = new
+        {
+            gsrn = gsrn,
+            startDate = startDateContract1,
+            endDate = endDateContract1
+        };
+        var contract2Body = new
+        {
+            gsrn = gsrn,
+            startDate = startDateContract2,
+            endDate = endDateContract2
+        };
+
+        using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
+
+        using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
+
+        responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+
+        contracts.Result.Should().HaveCount(1);
+    }
+
+    [Fact]
     public async Task CreateContract_MeteringPointIsConsumption_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
