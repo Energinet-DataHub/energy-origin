@@ -43,9 +43,11 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var endDate = createContract.EndDate == null ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate);
+        var endDate = createContract.EndDate.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value)
+            : (DateTimeOffset?)null;
 
-        var result = await service.Create(createContract.GSRN, meteringPointOwner!,
+        var result = await service.Create(createContract.GSRN, meteringPointOwner,
             DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
             endDate,
             cancellationToken);
@@ -75,7 +77,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
 
@@ -95,7 +97,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
@@ -119,7 +121,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var validationResult = await validator.ValidateAsync(endContract, cancellationToken);
         if (!validationResult.IsValid)
@@ -128,7 +130,7 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.EndContract(meteringPointOwner!, id,
+        var result = await service.EndContract(meteringPointOwner, id,
             endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
             cancellationToken);
 
