@@ -7,7 +7,6 @@ using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Models;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
@@ -306,17 +305,14 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
-
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdContractUri = response.Headers.Location;
 
         var endContractBody = new EndContract
         {
-            ContractId = responseBody!.Id,
             EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -338,18 +334,18 @@ public sealed class ContractTests :
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
-
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdContractUri = response.Headers.Location;
 
         var endContractBody = new EndContract
         {
-            ContractId = responseBody!.Id
+            EndDate = null
         };
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //TODO: Actually assert that there is a change
     }
 
     [Fact]
@@ -363,11 +359,12 @@ public sealed class ContractTests :
 
         var endContractBody = new EndContract
         {
-            ContractId = Guid.NewGuid(),
             EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        using var response = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        var nonExistingContractId = Guid.NewGuid();
+
+        using var response = await client.PatchAsJsonAsync($"api/certificates/contracts/{nonExistingContractId}", endContractBody);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -389,7 +386,7 @@ public sealed class ContractTests :
 
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdContractUri = response.Headers.Location;
 
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
         var endContractBody = new
@@ -398,7 +395,7 @@ public sealed class ContractTests :
             endDate = DateTimeOffset.Now.AddDays(-3).ToUnixTimeSeconds()
         };
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

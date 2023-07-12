@@ -19,14 +19,9 @@
             OPTIONAL: End date for generation of certificates in Unix time
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.EndContract.ContractId">
-            <summary>
-            Global Service Relation Number (GSRN) for the metering point
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.EndContract.EndDate">
             <summary>
-            End Date for generation of certificates in Unix time
+            End Date for generation of certificates in Unix time. Set to null for no end date
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Certificate.Id">
@@ -99,7 +94,7 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.EndContract(API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.EndContract(System.Guid,API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Ends the contract on a specific date
             </summary>

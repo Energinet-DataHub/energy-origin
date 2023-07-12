@@ -111,8 +111,9 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [Route("api/certificates/contracts")] //TODO: Change route to include id
+    [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult> EndContract(
+        [FromRoute] Guid id,
         [FromBody] EndContract endContract,
         [FromServices] IValidator<EndContract> validator,
         [FromServices] IContractService service,
@@ -127,13 +128,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.EndContract(meteringPointOwner!, endContract.ContractId,
+        var result = await service.EndContract(meteringPointOwner!, id,
             endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
             cancellationToken);
 
         return result switch
         {
-            NonExistingContract => NotFound($"No contract with id {endContract.ContractId} found"),
+            NonExistingContract => NotFound($"No contract with id {id} found"),
             MeteringPointOwnerNoMatch => Forbid(),
             Ended => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")

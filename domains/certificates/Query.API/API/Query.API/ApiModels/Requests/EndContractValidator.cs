@@ -9,9 +9,6 @@ public class EndContractValidator : AbstractValidator<EndContract>
     {
         var now = DateTimeOffset.UtcNow;
 
-        RuleFor(cs => cs.ContractId)
-            .NotEmpty();
-
         RuleFor(cs => cs.EndDate)
             .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
             .MustBeBeforeYear10000()
