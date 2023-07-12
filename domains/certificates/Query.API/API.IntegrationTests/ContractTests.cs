@@ -85,7 +85,7 @@ public sealed class ContractTests :
         {
             gsrn,
             startDate = startDate,
-            endDate = (long?) null
+            endDate = (long?)null
         };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
