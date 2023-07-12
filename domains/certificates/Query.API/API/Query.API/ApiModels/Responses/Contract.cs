@@ -19,6 +19,9 @@ public class Contract
     /// </summary>
     public long StartDate { get; set; }
 
+    //TODO: Comment
+    public long? EndDate { get; set; }
+
     /// <summary>
     /// Creation date for the contract
     /// </summary>
@@ -30,6 +33,7 @@ public class Contract
             Id = contract.Id,
             GSRN = contract.GSRN,
             StartDate = contract.StartDate.ToUnixTimeSeconds(),
+            EndDate = contract.EndDate?.ToUnixTimeSeconds(),
             Created = contract.Created.ToUnixTimeSeconds()
         };
 }

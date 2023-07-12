@@ -111,7 +111,7 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [Route("api/certificates/contracts")]
+    [Route("api/certificates/contracts")] //TODO: Change route to include id
     public async Task<ActionResult> EndContract(
         [FromBody] EndContract endContract,
         [FromServices] IValidator<EndContract> validator,

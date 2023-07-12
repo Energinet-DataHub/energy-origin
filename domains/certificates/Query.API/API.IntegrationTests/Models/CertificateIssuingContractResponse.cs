@@ -3,6 +3,7 @@ using CertificateValueObjects;
 
 namespace API.IntegrationTests.Models;
 
+//TODO: Delete this
 public class CertificateIssuingContractResponse
 {
     public Guid Id { get; set; }

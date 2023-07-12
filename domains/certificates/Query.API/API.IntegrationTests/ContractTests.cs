@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.ContractService;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
@@ -42,7 +41,7 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task CreateContract_Activate_Created()
+    public async Task CreateContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -50,11 +49,13 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new
         {
             gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            startDate = startDate,
+            endDate = endDate
         };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
@@ -63,9 +64,43 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        using var createdContractResponse = await client.GetAsync(createdContractUri);
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createdContract.Should().NotBeNull();
+        createdContract.GSRN.Should().Be(gsrn);
+        createdContract.StartDate.Should().Be(startDate);
+        createdContract.EndDate.Should().Be(endDate);
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithoutEndDate_Created()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new
+        {
+            gsrn,
+            startDate = startDate,
+            endDate = (long?) null
+        };
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContractUri = response.Headers.Location;
+
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        createdContract.Should().NotBeNull();
+        createdContract.GSRN.Should().Be(gsrn);
+        createdContract.StartDate.Should().Be(startDate);
+        createdContract.EndDate.Should().BeNull();
     }
 
     [Fact]
