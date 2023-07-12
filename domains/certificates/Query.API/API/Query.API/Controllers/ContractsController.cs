@@ -43,12 +43,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var endDate = createContract.EndDate.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value)
-            : (DateTimeOffset?)null;
+        var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
+        DateTimeOffset? endDate = createContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value) : null;
 
-        var result = await service.Create(createContract.GSRN, meteringPointOwner,
-            DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
+        var result = await service.Create(
+            createContract.GSRN,
+            meteringPointOwner,
+            startDate,
             endDate,
             cancellationToken);
 
@@ -130,8 +131,12 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.EndContract(meteringPointOwner, id,
-            endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
+        DateTimeOffset? endDate = endContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate.Value) : null;
+
+        var result = await service.EndContract(
+            id,
+            meteringPointOwner,
+            endDate,
             cancellationToken);
 
         return result switch

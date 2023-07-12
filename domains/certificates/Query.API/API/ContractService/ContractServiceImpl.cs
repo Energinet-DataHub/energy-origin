@@ -72,23 +72,18 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
-    public async Task<EndContractResult> EndContract(string meteringPointOwner, Guid contractId, DateTimeOffset? endDate, CancellationToken cancellationToken)
+    public async Task<EndContractResult> EndContract(Guid id, string meteringPointOwner, DateTimeOffset? endDate, CancellationToken cancellationToken)
     {
-        var contract = await repository.GetById(contractId, cancellationToken);
+        var contract = await repository.GetById(id, cancellationToken);
 
         if (contract == null)
         {
             return new NonExistingContract();
         }
 
-        if (contract!.MeteringPointOwner != meteringPointOwner)
+        if (contract.MeteringPointOwner != meteringPointOwner)
         {
             return new MeteringPointOwnerNoMatch();
-        }
-
-        if (endDate == null)
-        {
-            endDate = DateTimeOffset.Now;
         }
 
         contract.EndDate = endDate;
@@ -105,7 +100,9 @@ internal class ContractServiceImpl : IContractService
         var contract = await repository.GetById(id, cancellationToken);
 
         if (contract == null)
+        {
             return null;
+        }
 
         return contract.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
             ? null
