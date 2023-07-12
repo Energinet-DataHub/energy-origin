@@ -64,7 +64,7 @@ internal class ContractServiceImpl : IContractService
 
             await repository.Save(contract);
 
-            return new Success(contract);
+            return new CreateContractResult.Success(contract);
         }
         catch (DocumentAlreadyExistsException)
         {
@@ -72,7 +72,7 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
-    public async Task<EndContractResult> EndContract(Guid id, string meteringPointOwner, DateTimeOffset? endDate, CancellationToken cancellationToken)
+    public async Task<EndContractResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
     {
         var contract = await repository.GetById(id, cancellationToken);
 
@@ -86,10 +86,15 @@ internal class ContractServiceImpl : IContractService
             return new MeteringPointOwnerNoMatch();
         }
 
-        contract.EndDate = endDate;
+        if (newEndDate.HasValue && contract.StartDate > newEndDate)
+        {
+            return new EndDateBeforeStartDate(contract.StartDate, newEndDate.Value);
+        }
+
+        contract.EndDate = newEndDate;
         await repository.Update(contract);
 
-        return new Ended();
+        return new EndContractResult.Success();
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)

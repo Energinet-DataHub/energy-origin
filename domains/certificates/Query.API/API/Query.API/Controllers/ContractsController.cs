@@ -58,7 +58,7 @@ public class ContractsController : ControllerBase
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
             NotProductionMeteringPoint => ValidationProblem($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
-            Success(var createdContract) => CreatedAtRoute(
+            CreateContractResult.Success(var createdContract) => CreatedAtRoute(
                 "GetContract",
                 new { id = createdContract.Id },
                 Contract.CreateFrom(createdContract)),
@@ -115,7 +115,7 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
     [Route("api/certificates/contracts/{id}")]
-    public async Task<ActionResult> EndContract(
+    public async Task<ActionResult> PatchEndDate(
         [FromRoute] Guid id,
         [FromBody] EndContract endContract,
         [FromServices] IValidator<EndContract> validator,
@@ -131,19 +131,20 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        DateTimeOffset? endDate = endContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate.Value) : null;
+        DateTimeOffset? newEndDate = endContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate.Value) : null;
 
-        var result = await service.EndContract(
+        var result = await service.SetEndDate(
             id,
             meteringPointOwner,
-            endDate,
+            newEndDate,
             cancellationToken);
 
         return result switch
         {
             NonExistingContract => NotFound($"No contract with id {id} found"),
             MeteringPointOwnerNoMatch => Forbid(),
-            Ended => Ok(),
+            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            EndContractResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }

@@ -94,7 +94,7 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.EndContract(System.Guid,API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.PatchEndDate(System.Guid,API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Ends the contract on a specific date
             </summary>
