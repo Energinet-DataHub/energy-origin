@@ -121,42 +121,6 @@
             "description": "Success"
           }
         }
-      },
-      "patch": {
-        "tags": [
-          "Contracts"
-        ],
-        "summary": "Ends the contract on a specific date",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EndContract"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EndContract"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/EndContract"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
       }
     },
     "/api/certificates/contracts/{id}": {
@@ -200,6 +164,53 @@
           },
           "404": {
             "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Contracts"
+        ],
+        "summary": "Ends the contract on a specific date",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContract"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
@@ -277,6 +288,11 @@
             "description": "Starting date for generation of certificates in Unix time",
             "format": "int64"
           },
+          "endDate": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "created": {
             "type": "integer",
             "description": "Creation date for the contract",
@@ -321,14 +337,9 @@
       "EndContract": {
         "type": "object",
         "properties": {
-          "contractId": {
-            "type": "string",
-            "description": "Global Service Relation Number (GSRN) for the metering point",
-            "format": "uuid"
-          },
           "endDate": {
             "type": "integer",
-            "description": "End Date for generation of certificates in Unix time",
+            "description": "End Date for generation of certificates in Unix time. Set to null for no end date",
             "format": "int64",
             "nullable": true
           }
