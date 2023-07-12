@@ -18,7 +18,7 @@ namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandlerTests
 {
-    private static readonly DateTimeOffset now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.Now.ToUnixTimeSeconds()); //TODO: Can this be easier to read?
+    private static readonly DateTimeOffset now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.Now.ToUnixTimeSeconds()); //TODO: Can this be easier to read? Or should that be fixed down in the Contains-method?
 
     private readonly CertificateIssuingContract mockContract = new()
     {
