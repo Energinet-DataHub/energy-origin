@@ -345,7 +345,7 @@ public sealed class ContractTests :
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         var createdContractUri = response.Headers.Location;
-        
+
         var endContractBody = new EndContract
         {
             EndDate = null
@@ -413,7 +413,7 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task EndContract_TimeBefore_BadRequest()
+    public async Task EndContract_NewEndDateBeforeStartDate_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -421,11 +421,13 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
+        var start = DateTimeOffset.Now.AddDays(3);
+
         var body = new
         {
             gsrn,
-            startDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddYears(6).ToUnixTimeSeconds()
+            startDate = start.ToUnixTimeSeconds(),
+            endDate = start.AddYears(1).ToUnixTimeSeconds()
         };
 
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
@@ -435,7 +437,7 @@ public sealed class ContractTests :
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
         var endContractBody = new
         {
-            endDate = DateTimeOffset.Now.AddDays(2).ToUnixTimeSeconds()
+            endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
         using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
