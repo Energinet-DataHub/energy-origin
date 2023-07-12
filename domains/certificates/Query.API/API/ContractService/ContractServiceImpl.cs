@@ -41,7 +41,7 @@ internal class ContractServiceImpl : IContractService
 
         var contracts = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        var overlappingContract = contracts.FirstOrDefault(d => IsOverlapping(d, startDate, endDate));
+        var overlappingContract = contracts.FirstOrDefault(c => c.Overlaps(startDate, endDate));
         if (overlappingContract != null)
         {
             return new ContractAlreadyExists(overlappingContract);
@@ -119,25 +119,4 @@ internal class ContractServiceImpl : IContractService
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
-
-    private static bool IsOverlapping(CertificateIssuingContract contract, DateTimeOffset startDate, DateTimeOffset? endDate)
-    {
-        return !(startDate >= contract.EndDate || endDate <= contract.StartDate);
-
-        //if (startDate >= contract.EndDate)
-        //    return false;
-
-        //if (endDate <= contract.StartDate)
-        //    return false;
-
-        //return true;
-
-
-        //var check1 = startDate <= document.StartDate;
-        //var check2 = !(startDate < document.EndDate);
-        //var check3 = !(endDate > document.StartDate);
-        //var check4 = !(endDate < document.EndDate);
-
-        //return !(check1 || check2) && (check3 || check4);
-    }
 }

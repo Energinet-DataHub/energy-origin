@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AggregateRepositories;
@@ -14,13 +13,12 @@ using MeasurementEvents;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
-using Range = Moq.Range;
 
 namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandlerTests
 {
-    private static readonly DateTimeOffset now = DateTimeOffset.Now;
+    private static readonly DateTimeOffset now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.Now.ToUnixTimeSeconds()); //TODO: Can this be easier to read?
 
     private readonly CertificateIssuingContract mockContract = new()
     {
@@ -30,6 +28,7 @@ public class EnergyMeasuredEventHandlerTests
         MeteringPointType = MeteringPointType.Production,
         MeteringPointOwner = "owner",
         StartDate = now.UtcDateTime,
+        EndDate = null,
         Created = now.UtcDateTime.AddDays(-1)
     };
 
@@ -96,7 +95,6 @@ public class EnergyMeasuredEventHandlerTests
             Quality: measurementQuality);
 
         await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
-
 
         repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }

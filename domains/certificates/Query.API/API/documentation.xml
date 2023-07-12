@@ -4,6 +4,38 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="M:API.ContractService.CertificateIssuingContract.Overlaps(System.DateTimeOffset,System.Nullable{System.DateTimeOffset})">
+            <summary>
+            Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if there is overlap</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Overlaps(System.Int64,System.Nullable{System.Int64})">
+            <summary>
+            Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if there is overlap</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Contains(System.DateTimeOffset,System.DateTimeOffset)">
+            <summary>
+            Tests if the period from <paramref name="startDate"/> to <paramref name="endDate"/> is completely within the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if completely within</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Contains(System.Int64,System.Int64)">
+            <summary>
+            Tests if the period from <paramref name="startDate"/> to <paramref name="endDate"/> is completely within the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if completely within</returns>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point

@@ -1,4 +1,3 @@
-using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using AggregateRepositories;
@@ -41,7 +40,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             }
 
             var productionCertificate = new ProductionCertificate(
-                contract!.GridArea,
+                contract.GridArea,
                 new Period(message.DateFrom, message.DateTo),
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
                 contract.MeteringPointOwner,
@@ -80,7 +79,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         if (contract.MeteringPointType != MeteringPointType.Production)
             return false;
 
-        if (energyMeasuredIntegrationEvent.DateFrom < contract.StartDate.ToUnixTimeSeconds())
+        if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo)) //TODO: Must be complete overlap here
             return false;
 
         if (energyMeasuredIntegrationEvent.Quantity <= 0)
@@ -89,16 +88,6 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
-        if (CheckEndDateNotNullOrAfterEvent(contract.EndDate, energyMeasuredIntegrationEvent.DateTo))
-        {
-            return false;
-        }
-
         return true;
-    }
-
-    private static bool CheckEndDateNotNullOrAfterEvent(DateTimeOffset? contractEndDate, long eventEndDate)
-    {
-        return contractEndDate != null && eventEndDate > contractEndDate?.ToUnixTimeSeconds();
     }
 }
