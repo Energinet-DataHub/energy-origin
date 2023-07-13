@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
@@ -24,14 +23,14 @@ public class DataSyncService
         this.syncState = syncState;
     }
 
-    public async Task<List<DataSyncDto>> FetchMeasurements(CertificateIssuingContract contract,
+    public async Task<List<DataSyncDto>> FetchMeasurements(MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
     {
-        var dateFrom = await syncState.GetPeriodStartTime(contract);
+        var dateFrom = await syncState.GetPeriodStartTime(syncInfo);
 
         if (dateFrom == null)
         {
-            logger.LogInformation("Not possible to get start date from sync state for {@contract}", contract);
+            logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
             return new();
         }
 
@@ -44,20 +43,20 @@ public class DataSyncService
             {
                 var client = factory.CreateClient();
                 var result = await client.RequestAsync(
-                    contract.GSRN,
+                    syncInfo.GSRN,
                     new Period(dateFrom.Value, nearestHour),
-                    contract.MeteringPointOwner,
+                    syncInfo.MeteringPointOwner,
                     cancellationToken
                 );
 
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                     result.Count,
-                    contract.GSRN,
+                    syncInfo.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
 
-                syncState.SetSyncPosition(new SyncPosition(Guid.NewGuid(), contract.GSRN, nearestHour));
+                syncState.SetSyncPosition(new SyncPosition(Guid.NewGuid(), syncInfo.GSRN, nearestHour));
 
                 return result;
             }

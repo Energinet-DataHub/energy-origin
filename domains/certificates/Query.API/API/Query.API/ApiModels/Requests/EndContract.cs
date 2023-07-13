@@ -1,5 +1,6 @@
 namespace API.Query.API.ApiModels.Requests;
 
+// TODO: Do we want to use this name?
 public class EndContract
 {
     /// <summary>

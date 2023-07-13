@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.ContractService;
 using Marten;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +17,7 @@ public class SyncState : ISyncState
         this.logger = logger;
     }
 
-    public async Task<long?> GetPeriodStartTime(CertificateIssuingContract contract)
+    public async Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo)
     {
         try
         {
@@ -26,10 +25,10 @@ public class SyncState : ISyncState
 
             var queryRes = querySession
                 .Query<SyncPosition>()
-                .Where(x => x.GSRN == contract.GSRN)
+                .Where(x => x.GSRN == syncInfo.GSRN)
                 .ToList();
 
-            return queryRes.Any() ? Math.Max(queryRes.Max(x => x.SyncedTo), contract.StartDate.ToUnixTimeSeconds()) : contract.StartDate.ToUnixTimeSeconds();
+            return queryRes.Any() ? Math.Max(queryRes.Max(x => x.SyncedTo), syncInfo.StartSyncDate.ToUnixTimeSeconds()) : syncInfo.StartSyncDate.ToUnixTimeSeconds();
         }
         catch (Exception e)
         {
