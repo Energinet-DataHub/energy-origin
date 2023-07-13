@@ -90,7 +90,7 @@ internal class ContractServiceImpl : IContractService
             return new MeteringPointOwnerNoMatch();
         }
 
-        if (newEndDate.HasValue && contract.StartDate > newEndDate)
+        if (newEndDate.HasValue && newEndDate <= contract.StartDate)
         {
             return new EndDateBeforeStartDate(contract.StartDate, newEndDate.Value);
         }

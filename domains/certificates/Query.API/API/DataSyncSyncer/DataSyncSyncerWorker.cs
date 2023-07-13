@@ -61,6 +61,7 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         try
         {
+            //TODO: SHould we handle here that we can have multiple contracts per GSRN?
             await using var querySession = documentStore.QuerySession();
 
             return await querySession
