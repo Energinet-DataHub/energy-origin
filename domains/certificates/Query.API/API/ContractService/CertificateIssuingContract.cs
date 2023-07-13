@@ -15,8 +15,6 @@ public class CertificateIssuingContract
     public DateTimeOffset? EndDate { get; set; }
     public DateTimeOffset Created { get; set; }
 
-    //TODO: Unit test these methods
-
     /// <summary>
     /// Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
     /// </summary>
