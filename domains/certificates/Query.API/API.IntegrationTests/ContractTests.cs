@@ -59,7 +59,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate});
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
