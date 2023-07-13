@@ -79,7 +79,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         if (contract.MeteringPointType != MeteringPointType.Production)
             return false;
 
-        if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo)) //TODO: Must be complete overlap here
+        if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
             return false;
 
         if (energyMeasuredIntegrationEvent.Quantity <= 0)

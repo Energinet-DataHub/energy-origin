@@ -18,7 +18,8 @@ namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandlerTests
 {
-    private static readonly DateTimeOffset now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.Now.ToUnixTimeSeconds()); //TODO: Can this be easier to read? Or should that be fixed down in the Contains-method?
+    private static readonly DateTimeOffset n = DateTimeOffset.UtcNow;
+    private static readonly DateTimeOffset now = new(n.Year, n.Month, n.Day, n.Hour, n.Minute, 0, n.Offset); // Rounded to nearest minute
 
     private readonly CertificateIssuingContract mockContract = new()
     {
@@ -27,9 +28,9 @@ public class EnergyMeasuredEventHandlerTests
         GridArea = "gridArea",
         MeteringPointType = MeteringPointType.Production,
         MeteringPointOwner = "owner",
-        StartDate = now.UtcDateTime,
+        StartDate = now,
         EndDate = null,
-        Created = now.UtcDateTime.AddDays(-1)
+        Created = now.AddDays(-1)
     };
 
     [Fact]
