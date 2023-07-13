@@ -12,7 +12,7 @@ using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
-using static API.ContractService.EndContractResult;
+using static API.ContractService.SetEndDateResult;
 
 namespace API.Query.API.Controllers;
 
@@ -108,7 +108,7 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
-    /// Ends the contract on a specific date
+    /// Edit the end date for contract
     /// </summary>
     [HttpPatch]
     [ProducesResponseType(typeof(void), 200)]
@@ -117,21 +117,21 @@ public class ContractsController : ControllerBase
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult> PatchEndDate(
         [FromRoute] Guid id,
-        [FromBody] EndContract endContract,
-        [FromServices] IValidator<EndContract> validator,
+        [FromBody] EditContractEndDate editContractEndDate,
+        [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = User.FindFirstValue("subject")!;
 
-        var validationResult = await validator.ValidateAsync(endContract, cancellationToken);
+        var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
         if (!validationResult.IsValid)
         {
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
         }
 
-        DateTimeOffset? newEndDate = endContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(endContract.EndDate.Value) : null;
+        DateTimeOffset? newEndDate = editContractEndDate.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(editContractEndDate.EndDate.Value) : null;
 
         var result = await service.SetEndDate(
             id,
@@ -144,7 +144,7 @@ public class ContractsController : ControllerBase
             NonExistingContract => NotFound($"No contract with id {id} found"),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
-            EndContractResult.Success => Ok(),
+            SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }

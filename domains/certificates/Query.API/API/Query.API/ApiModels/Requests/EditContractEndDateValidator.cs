@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace API.Query.API.ApiModels.Requests;
 
-public class EndContractValidator : AbstractValidator<EndContract>
+public class EditContractEndDateValidator : AbstractValidator<EditContractEndDate>
 {
-    public EndContractValidator()
+    public EditContractEndDateValidator()
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -14,5 +14,4 @@ public class EndContractValidator : AbstractValidator<EndContract>
             .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
     }
-
 }

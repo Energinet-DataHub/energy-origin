@@ -8,7 +8,7 @@ using API.ContractService.Repositories;
 using CertificateValueObjects;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
-using static API.ContractService.EndContractResult;
+using static API.ContractService.SetEndDateResult;
 
 namespace API.ContractService;
 
@@ -76,7 +76,7 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
-    public async Task<EndContractResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
+    public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
     {
         var contract = await repository.GetById(id, cancellationToken);
 
@@ -98,7 +98,7 @@ internal class ContractServiceImpl : IContractService
         contract.EndDate = newEndDate;
         await repository.Update(contract);
 
-        return new EndContractResult.Success();
+        return new SetEndDateResult.Success();
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)

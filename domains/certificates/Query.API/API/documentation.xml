@@ -43,17 +43,17 @@
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.StartDate">
             <summary>
-            Starting date for generation of certificates in Unix time
+            Starting date for generation of certificates in Unix time seconds
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.EndDate">
             <summary>
-            OPTIONAL: End date for generation of certificates in Unix time
+            End date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.EndContract.EndDate">
+        <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
             <summary>
-            End Date for generation of certificates in Unix time. Set to null for no end date
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Certificate.Id">
@@ -131,9 +131,9 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.PatchEndDate(System.Guid,API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.PatchEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
-            Ends the contract on a specific date
+            Edit the end date for contract
             </summary>
         </member>
     </members>
