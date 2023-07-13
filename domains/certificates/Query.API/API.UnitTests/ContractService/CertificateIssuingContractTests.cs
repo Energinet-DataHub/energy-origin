@@ -8,6 +8,9 @@ namespace API.UnitTests.ContractService;
 
 public class CertificateIssuingContractTests
 {
+    /// <summary>
+    /// Contract that runs from 12:00 to 13:00 on Jan 1st 2023
+    /// </summary>
     private readonly CertificateIssuingContract contract = new()
     {
         Id = Guid.NewGuid(),
