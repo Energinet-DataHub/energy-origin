@@ -32,7 +32,10 @@ sequenceDiagram
     ta -->>- sender: TransferAgreement
 ```
 
-When the wallet deposit endpoint has been exchanged the transfer agreement automation flow can begin. The TA background service gets all certificates owned and transfer them all one by one to the receiver.
+When the wallet deposit endpoint has been exchanged the transfer agreement automation flow can begin. The TA background service gets all certificates owned and transfer them all one by one to the receiver. 
+
+Transfer requests should be spread over time, since certificates come in bulk, so we don't call the wallet many times at the same time.
+
 
 ```mermaid
 sequenceDiagram
