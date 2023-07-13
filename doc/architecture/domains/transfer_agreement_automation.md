@@ -21,7 +21,7 @@ sequenceDiagram
 
     receiver ->> sender: base64 WalletDepositEndpoint (over coffee)
 
-    sender ->>+ ta: POST api/transfer-agreement/create
+    sender ->>+ ta: POST api/transfer-agreement (base64 WalletDepositEndpoint)
 
     ta ->>+ senderWallet: gRPC CreateReceiverDepositEndpoint(base64 WalletDepositEndpoint, reference: string)
 
