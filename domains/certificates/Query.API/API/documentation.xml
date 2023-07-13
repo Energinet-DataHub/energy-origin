@@ -103,7 +103,12 @@
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.StartDate">
             <summary>
-            Starting date for generation of certificates in Unix time
+            Starting date for generation of certificates in Unix time seconds
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.EndDate">
+            <summary>
+            End date for generation of certificates in Unix time seconds. The value null indicates no end date
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.Created">

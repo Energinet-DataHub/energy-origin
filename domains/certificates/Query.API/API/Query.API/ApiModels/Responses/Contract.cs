@@ -15,11 +15,13 @@ public class Contract
     public string GSRN { get; set; } = "";
 
     /// <summary>
-    /// Starting date for generation of certificates in Unix time
+    /// Starting date for generation of certificates in Unix time seconds
     /// </summary>
     public long StartDate { get; set; }
 
-    //TODO: Comment
+    /// <summary>
+    /// End date for generation of certificates in Unix time seconds. The value null indicates no end date
+    /// </summary>
     public long? EndDate { get; set; }
 
     /// <summary>

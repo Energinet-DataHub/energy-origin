@@ -8,7 +8,6 @@ using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
-using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
@@ -50,12 +49,7 @@ public sealed class ContractTests :
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new
-        {
-            gsrn,
-            startDate = startDate,
-            endDate = endDate
-        };
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -65,10 +59,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().NotBeNull();
-        createdContract.GSRN.Should().Be(gsrn);
-        createdContract.StartDate.Should().Be(startDate);
-        createdContract.EndDate.Should().Be(endDate);
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate});
     }
 
     [Fact]
@@ -81,12 +72,7 @@ public sealed class ContractTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new
-        {
-            gsrn,
-            startDate = startDate,
-            endDate = (long?)null
-        };
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -96,10 +82,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().NotBeNull();
-        createdContract.GSRN.Should().Be(gsrn);
-        createdContract.StartDate.Should().Be(startDate);
-        createdContract.EndDate.Should().BeNull();
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
@@ -166,28 +149,15 @@ public sealed class ContractTests :
         var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
 
-        //TODO: also check if they are continuing
-
-        var contract1Body = new
-        {
-            gsrn = gsrn,
-            startDate = startDateContract1,
-            endDate = endDateContract1
-        };
-        var contract2Body = new
-        {
-            gsrn = gsrn,
-            startDate = startDateContract2,
-            endDate = endDateContract2
-        };
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
 
         using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
-
         using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
 
         var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
 
-        contracts.Result.Should().HaveCount(2);
+        contracts!.Result.Should().HaveCount(2);
     }
 
     [Fact]
@@ -208,28 +178,17 @@ public sealed class ContractTests :
         var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
 
-        var contract1Body = new
-        {
-            gsrn = gsrn,
-            startDate = startDateContract1,
-            endDate = endDateContract1
-        };
-        var contract2Body = new
-        {
-            gsrn = gsrn,
-            startDate = startDateContract2,
-            endDate = endDateContract2
-        };
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
 
         using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
-
         using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
 
         responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
 
-        contracts.Result.Should().HaveCount(1);
+        contracts!.Result.Should().HaveCount(1);
     }
 
     [Fact]
@@ -382,30 +341,20 @@ public sealed class ContractTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new
-        {
-            gsrn,
-            startDate = startDate,
-            endDate = (long?)null
-        };
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var endContractBody = new EndContract
-        {
-            EndDate = endDate
-        };
+        var endContractBody = new { endDate };
 
         using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        contract.GSRN.Should().Be(gsrn);
-        contract.StartDate.Should().Be(startDate);
-        contract.EndDate.Should().Be(endDate);
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -419,29 +368,19 @@ public sealed class ContractTests :
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new
-        {
-            gsrn,
-            startDate = startDate,
-            endDate = endDate
-        };
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         var createdContractUri = response.Headers.Location;
 
-        var endContractBody = new EndContract
-        {
-            EndDate = null
-        };
+        var endContractBody = new { endDate = (long?)null };
 
         using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        contract.GSRN.Should().Be(gsrn);
-        contract.StartDate.Should().Be(startDate);
-        contract.EndDate.Should().BeNull();
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
@@ -453,26 +392,21 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new
-        {
-            gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
-        };
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         var createdContractUri = response.Headers.Location;
 
-        var endContractBody = new EndContract
-        {
-            EndDate = null
-        };
+        var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
+        var endContractBody = new { endDate };
 
         using var endContractResponse = await client.PatchAsJsonAsync(createdContractUri, endContractBody);
 
-        endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        //TODO: Actually assert that there is a change
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -484,9 +418,9 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var endContractBody = new EndContract
+        var endContractBody = new
         {
-            EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         var nonExistingContractId = Guid.NewGuid();
@@ -528,6 +462,4 @@ public sealed class ContractTests :
 
         endContractResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
-
-    //TODO: Test for overlapping contracts + check that you can have "continuing contracts"
 }
