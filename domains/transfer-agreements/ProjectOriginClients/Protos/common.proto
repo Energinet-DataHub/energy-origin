@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package project_origin.common.v1;
+
+message FederatedStreamId {
+    string registry = 1;
+    Uuid stream_id = 2;
+}
+
+message Uuid {
+    string value = 1;
+}
