@@ -2,6 +2,8 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -12,17 +14,24 @@ using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Data;
 
-public class WalletEndPointService : IWalletEndPointService
+public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
     protected readonly IOptions<GrpcOptions> ProjectOriginOptions;
     protected readonly ILogger Logger;
-    public WalletEndPointService(IOptions<GrpcOptions> grOptions, ILogger logger)
+    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger logger)
     {
         ProjectOriginOptions = grOptions;
         Logger = logger;
     }
 
-    protected static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
+    public async Task<string> CreateWalletDepositWithToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
+    {
+        var token = GenerateToken(issuer, audience, subject, name, expirationMinutes);
+        var walletDepositEndpoint = await CreateWalletDepositEndpoint(token);
+        return ConvertObjectToBase64(walletDepositEndpoint);
+    }
+
+    private static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
     {
         var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 
@@ -46,7 +55,17 @@ public class WalletEndPointService : IWalletEndPointService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-    protected async Task<WalletDepositEndpoint> CreateWalletDepositEndpoint(string bearerToken)
+
+    private static string ConvertObjectToBase64(object obj)
+    {
+        var jsonString = JsonSerializer.Serialize(obj);
+        var bytes = Encoding.UTF8.GetBytes(jsonString);
+        var base64String = Convert.ToBase64String(bytes);
+
+        return base64String;
+    }
+
+    private async Task<WalletDepositEndpoint> CreateWalletDepositEndpoint(string bearerToken)
     {
         using var channel = GrpcChannel.ForAddress(ProjectOriginOptions.Value.WalletUrl);
 
