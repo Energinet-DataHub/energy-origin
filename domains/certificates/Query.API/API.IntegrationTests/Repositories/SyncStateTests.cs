@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.DataSyncSyncer.Persistence;
+using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using Marten;
@@ -11,25 +12,23 @@ using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class SyncStateTests :
-    IClassFixture<MartenDbContainer>
+public class SyncStateTests : IClassFixture<MartenDbContainer>
 {
     private readonly MartenDbContainer martenDbContainer;
 
-    private readonly MeteringPointSyncInfo syncInfo = new(
-        GSRN: "1234",
-        StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-        MeteringPointOwner: "SomeMeteringPointOwner");
-
-    public SyncStateTests(MartenDbContainer martenDbContainer)
-    {
+    public SyncStateTests(MartenDbContainer martenDbContainer) =>
         this.martenDbContainer = martenDbContainer;
-    }
+
+    private static MeteringPointSyncInfo CreateSyncInfo() =>
+        new(
+            GSRN: GsrnHelper.GenerateRandom(),
+            StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+            MeteringPointOwner: "SomeMeteringPointOwner");
 
     [Fact]
     public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()
     {
-        var info = syncInfo with { GSRN = "1234" };
+        var info = CreateSyncInfo();
 
         using var store = DocumentStore.For(opts =>
         {
@@ -46,7 +45,7 @@ public class SyncStateTests :
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
     {
-        var info = syncInfo with { GSRN = "1235" };
+        var info = CreateSyncInfo();
 
         var position = new SyncPosition(Guid.NewGuid(), info.GSRN, DateTimeOffset.Now.ToUnixTimeSeconds());
 
@@ -68,7 +67,7 @@ public class SyncStateTests :
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
-        var info = syncInfo with { GSRN = "1236" };
+        var info = CreateSyncInfo();
 
         var position = new SyncPosition(Guid.NewGuid(), info.GSRN, info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds());
 
@@ -90,7 +89,7 @@ public class SyncStateTests :
     [Fact]
     public async Task GetPeriodStartTime_DatabaseCommunicationFailure_ReturnsNull()
     {
-        var info = syncInfo with { GSRN = "1237" };
+        var info = CreateSyncInfo();
 
         var storeMock = new Mock<IDocumentStore>();
         storeMock.Setup(m => m.QuerySession())
