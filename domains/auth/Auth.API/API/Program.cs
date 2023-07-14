@@ -60,6 +60,7 @@ builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefi
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<AzureOptions>().BindConfiguration(AzureOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 if (builder.Environment.IsDevelopment() == false)
 {
