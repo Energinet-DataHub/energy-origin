@@ -124,6 +124,7 @@ builder.Services.AddSwaggerGen(o =>
     }
 });
 
+builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
 builder.Services.AddScoped<IWalletDepositEndpointService, WalletDepositEndpointService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();

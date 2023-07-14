@@ -17,8 +17,9 @@ namespace API.Data;
 public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
     protected readonly IOptions<GrpcOptions> ProjectOriginOptions;
-    protected readonly ILogger Logger;
-    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger logger)
+    protected readonly ILogger<WalletDepositEndpointService> Logger;  // Specify the type here
+
+    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger<WalletDepositEndpointService> logger) // And also here
     {
         ProjectOriginOptions = grOptions;
         Logger = logger;
@@ -73,9 +74,17 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
             { { "Authorization", $"Bearer {bearerToken}" } };
-        var response =
-            await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
+        try
+        {
+            var response =
+                await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
 
-        return response.WalletDepositEndpoint;
+            return response.WalletDepositEndpoint;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating WalletDepositEndpoint");  // Use the Logger to log any exceptions
+            throw;
+        }
     }
 }
