@@ -48,4 +48,8 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\ProjectOriginClients\ProjectOriginClients.csproj" />
+    </ItemGroup>
+
 </Project>
