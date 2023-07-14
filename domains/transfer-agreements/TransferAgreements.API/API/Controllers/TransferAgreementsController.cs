@@ -169,6 +169,21 @@ public class TransferAgreementsController : ControllerBase
         return Ok(response);
     }
 
+    [ProducesResponseType(typeof(string), 200)]
+    [HttpPost("wallet-deposit-endpoint")]
+    public async Task<ActionResult> CreateWalletDepositEndpoint()
+    {
+        // Replace these with your actual values
+        var issuer = User.FindIssuerClaim();
+        var audience = User.FindAudienceClaim();
+        var subject = User.FindSubjectGuidClaim();
+        var name = User.FindSubjectNameClaim();
+
+        var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(issuer, audience, subject, name);
+
+        return Ok(new { result = base64String });
+    }
+
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
         new(
             Id: transferAgreement.Id,

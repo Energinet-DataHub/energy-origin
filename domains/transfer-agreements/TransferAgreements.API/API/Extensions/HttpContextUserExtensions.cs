@@ -10,7 +10,7 @@ public static class HttpContextUserExtensions
     public static string FindActorGuidClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("atr");
     public static string FindActorNameClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("name");
     public static string FindIssuerClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("iss");
-    public static string FindIssueAtClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("iat");
+    public static string FindIssuedAtClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("iat");
     public static string FindAudienceClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("aud");
     public static string FindExpirationTimeClaim(this ClaimsPrincipal principal) => principal.FindFirstValue("exp");
 }
