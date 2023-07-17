@@ -9,20 +9,19 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
 WORKDIR /src
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
 COPY ["TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj", "TransferAgreements.API/Shared/ProjectOriginClients/"]
-RUN dotnet restore "TransferAgreements.API/API/API.csproj"
-RUN dotnet restore "TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj"
 COPY . .
+RUN dotnet restore
 WORKDIR "/src/TransferAgreements.API/API"
-RUN dotnet build "API.csproj" -c Release -o /app/build
+RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata curl
 
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK CMD wget -qO- http://localhost:80/healthz > /dev/null || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:80/healthz || exit 1
 ENTRYPOINT ["dotnet", "API.dll"]
