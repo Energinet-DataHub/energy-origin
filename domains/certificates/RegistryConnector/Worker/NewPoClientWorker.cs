@@ -60,23 +60,23 @@ public abstract class NewPoClientWorker : BackgroundService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    protected async Task<WalletSectionReference> CreateWalletSectionReference(string bearerToken)
+    protected async Task<WalletDepositEndpoint> CreateWalletDepositEndpoint(string bearerToken)
     {
         Logger.LogInformation("Creating channel for {walletUrl}", ProjectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(ProjectOriginOptions.Value.WalletUrl);
 
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
-        var createWalletSectionRequest = new CreateWalletSectionRequest();
+        var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
             { { "Authorization", $"Bearer {bearerToken}" } };
-        var walletSectionReference =
-            await walletServiceClient.CreateWalletSectionAsync(createWalletSectionRequest, headers);
+        var response =
+            await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
 
-        Logger.LogInformation("Received {response}", walletSectionReference);
-        return walletSectionReference;
+        Logger.LogInformation("Received {response}", response);
+        return response.WalletDepositEndpoint;
     }
 
-    protected async Task SendSliceToWallet(WalletSectionReference walletSectionReference, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo, uint position)
+    protected async Task SendSliceToWallet(WalletDepositEndpoint walletDepositEndpoint, IssuedEvent issuedEvent, SecretCommitmentInfo secretCommitmentInfo, uint position)
     {
         Logger.LogInformation("Creating channel for {walletUrl}", ProjectOriginOptions.Value.WalletUrl);
         using var channel = GrpcChannel.ForAddress(ProjectOriginOptions.Value.WalletUrl);
@@ -93,8 +93,8 @@ public abstract class NewPoClientWorker : BackgroundService
             CertificateId = certificateId,
             Quantity = secretCommitmentInfo.Message,
             RandomR = ByteString.CopyFrom(secretCommitmentInfo.BlindingValue),
-            WalletSectionPublicKey = walletSectionReference.SectionPublicKey,
-            WalletSectionPosition = position
+            WalletDepositEndpointPublicKey = walletDepositEndpoint.PublicKey,
+            WalletDepositEndpointPosition = position
         };
         var receiveResponse = await receiveSliceServiceClient.ReceiveSliceAsync(receiveRequest);
 

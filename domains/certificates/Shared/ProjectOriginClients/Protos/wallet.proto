@@ -14,7 +14,8 @@ service ReceiveSliceService {
 // Could be internal only, up to the host to decide
 service WalletService {
     rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse); // Only allowed one per user for now, later multiple wallets per user will be allowed.
-    rpc CreateWalletSection(CreateWalletSectionRequest) returns (WalletSectionReference);
+    rpc CreateWalletDepositEndpoint(CreateWalletDepositEndpointRequest) returns (CreateWalletDepositEndpointResponse);
+    rpc CreateReceiverDepositEndpoint(CreateReceiverDepositEndpointRequest) returns (CreateReceiverDepositEndpointResponse);
 
     // Certificate functions, slices abstracted away and solved by wallet
     rpc QueryGranularCertificates(QueryRequest) returns (QueryResponse);
@@ -30,6 +31,21 @@ service WalletService {
     // Events should also be able to be emitted.. RPC or event bus?
 }
 
+message CreateWalletDepositEndpointRequest {}
+
+message CreateWalletDepositEndpointResponse {
+    WalletDepositEndpoint WalletDepositEndpoint = 1;
+}
+
+message CreateReceiverDepositEndpointRequest {
+    WalletDepositEndpoint WalletDepositEndpoint = 1;
+    string Reference = 2;
+}
+
+message CreateReceiverDepositEndpointResponse {
+    project_origin.common.v1.Uuid ReceiverId = 1;
+}
+
 message CreateWalletRequest {
     bytes PrivateKey = 1;
 }
@@ -37,8 +53,8 @@ message CreateWalletRequest {
 message CreateWalletResponse { }
 
 message ReceiveRequest {
-    bytes WalletSectionPublicKey = 1;
-    uint32 WalletSectionPosition = 2;
+    bytes WalletDepositEndpointPublicKey = 1;
+    uint32 WalletDepositEndpointPosition = 2;
     project_origin.common.v1.FederatedStreamId CertificateId = 3;
     uint32 Quantity = 4;
     bytes RandomR = 5;
@@ -46,12 +62,11 @@ message ReceiveRequest {
 
 message ReceiveResponse {} // not yet sure what to return
 
-message CreateWalletSectionRequest {} // not yet sure
 
-message WalletSectionReference {
+message WalletDepositEndpoint {
     int32 Version = 1; // The version of the Wallet protobuf API.
     string Endpoint = 2; // The url endpoint of the gRPC endpoint at which the wallet is hosted.
-    bytes SectionPublicKey = 3; // The public key used to generate sub-public-keys for each slice.
+    bytes PublicKey = 3; // The public key used to generate sub-public-keys for each slice.
 }
 
 message QueryRequest {
@@ -65,8 +80,7 @@ message QueryResponse {
 message TransferRequest {
     project_origin.common.v1.FederatedStreamId CertificateId = 1; // The certificate to transfer from
     uint32 Quantity = 2; // The quantity, either the total or a part of it, will be sliced implicitly by the wallet
-    WalletSectionReference ReceiverWalletReference = 3; // The wallet to transfer to
-    uint32 Position = 4; // The position on the receiver wallet key
+    project_origin.common.v1.Uuid ReceiverId = 3;
 }
 
 message TransferResponse {} // not yet sure what to return
@@ -93,10 +107,6 @@ message GranularCertificate {
 message Attribute {
     string Key = 1;
     string Value = 2;
-}
-
-message Uuid {
-    string value = 1;
 }
 
 enum GranularCertificateType {
