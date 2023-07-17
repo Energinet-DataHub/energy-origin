@@ -52,8 +52,4 @@
       <ProjectReference Include="..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include=".config\dotnet-tools.json" />
-    </ItemGroup>
-
 </Project>

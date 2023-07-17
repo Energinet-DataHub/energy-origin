@@ -12,11 +12,11 @@ COPY ["TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.c
 RUN dotnet restore "TransferAgreements.API/API/API.csproj"
 RUN dotnet restore "TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj"
 COPY . .
-WORKDIR "/src/TransferAgreements.API/API"
-RUN dotnet build "API.csproj" -c Release -o /app/build
+WORKDIR "/src/TransferAgreements.API/"
+RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 
