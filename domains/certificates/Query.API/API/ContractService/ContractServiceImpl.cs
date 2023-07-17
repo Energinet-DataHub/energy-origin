@@ -8,7 +8,7 @@ using API.ContractService.Repositories;
 using CertificateValueObjects;
 using Marten.Exceptions;
 using static API.ContractService.CreateContractResult;
-using static API.ContractService.EndContractResult;
+using static API.ContractService.SetEndDateResult;
 
 namespace API.ContractService;
 
@@ -39,20 +39,24 @@ internal class ContractServiceImpl : IContractService
             return new NotProductionMeteringPoint();
         }
 
-        var documents = await repository.GetByGsrn(gsrn, cancellationToken);
+        var contracts = await repository.GetByGsrn(gsrn, cancellationToken);
 
-        var overlappingContract = documents.FirstOrDefault(d => CannotCreateContract(d, startDate, endDate));
+        var overlappingContract = contracts.FirstOrDefault(c => c.Overlaps(startDate, endDate));
         if (overlappingContract != null)
         {
             return new ContractAlreadyExists(overlappingContract);
         }
+
+        var contractNumber = contracts.Any()
+            ? contracts.Max(c => c.ContractNumber) + 1
+            : 0;
 
         try
         {
             var contract = new CertificateIssuingContract
             {
                 Id = Guid.Empty,
-                ContractNumber = 0,
+                ContractNumber = contractNumber,
                 GSRN = gsrn,
                 GridArea = matchingMeteringPoint.GridArea,
                 MeteringPointType = MeteringPointType.Production,
@@ -64,7 +68,7 @@ internal class ContractServiceImpl : IContractService
 
             await repository.Save(contract);
 
-            return new Success(contract);
+            return new CreateContractResult.Success(contract);
         }
         catch (DocumentAlreadyExistsException)
         {
@@ -72,29 +76,29 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
-    public async Task<EndContractResult> EndContract(string meteringPointOwner, Guid contractId, DateTimeOffset? endDate, CancellationToken cancellationToken)
+    public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
     {
-        var contract = await repository.GetById(contractId, cancellationToken);
+        var contract = await repository.GetById(id, cancellationToken);
 
         if (contract == null)
         {
             return new NonExistingContract();
         }
 
-        if (contract!.MeteringPointOwner != meteringPointOwner)
+        if (contract.MeteringPointOwner != meteringPointOwner)
         {
             return new MeteringPointOwnerNoMatch();
         }
 
-        if (endDate == null)
+        if (newEndDate.HasValue && newEndDate <= contract.StartDate)
         {
-            endDate = DateTimeOffset.Now;
+            return new EndDateBeforeStartDate(contract.StartDate, newEndDate.Value);
         }
 
-        contract.EndDate = endDate;
+        contract.EndDate = newEndDate;
         await repository.Update(contract);
 
-        return new Ended();
+        return new SetEndDateResult.Success();
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
@@ -105,7 +109,9 @@ internal class ContractServiceImpl : IContractService
         var contract = await repository.GetById(id, cancellationToken);
 
         if (contract == null)
+        {
             return null;
+        }
 
         return contract.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
             ? null
@@ -113,9 +119,4 @@ internal class ContractServiceImpl : IContractService
     }
 
     public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => repository.GetByGsrn(gsrn, cancellationToken);
-
-    private static bool CannotCreateContract(CertificateIssuingContract document, DateTimeOffset startDate, DateTimeOffset? endDate)
-    {
-        return !(startDate <= document.StartDate || !(startDate < document.EndDate)) && (!(endDate > document.StartDate) || !(endDate < document.EndDate));
-    }
 }
