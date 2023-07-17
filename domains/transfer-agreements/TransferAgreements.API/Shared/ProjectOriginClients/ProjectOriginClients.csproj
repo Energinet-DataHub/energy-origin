@@ -16,7 +16,7 @@
 
 	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
 		<Exec Command="dotnet tool restore" />
-		<Exec Command="dotnet dotnet-grpc refresh -p ProjectOriginClients.csproj" />
+		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)" />
 	</Target>
 
 	<ItemGroup>
