@@ -16,7 +16,17 @@ public class LoginController : ControllerBase
     [HttpGet()]
     [AllowAnonymous]
     [Route("auth/test")]
-    public IActionResult TestMethod(DataContext context) => Ok(context.Roles.ToList());
+    public IActionResult TestMethod(DataContext context, IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
+    {
+        logger.LogInformation("PrivacyVersion: {privacyVersion}", termsOptions.Value.PrivacyVersion);
+        logger.LogInformation("TosVersion: {tosVersion}", termsOptions.Value.TosVersion);
+
+        return Ok(new List<string>()
+        {
+            termsOptions.Value.PrivacyVersion,
+            termsOptions.Value.TosVersion
+        });
+    }
 
     [HttpGet()]
     [Route("auth/login")]

@@ -6,6 +6,10 @@ public class TermsOptions
 {
     public const string Prefix = "Terms";
 
-    [Range(1, int.MaxValue)]
+    //[Range(1, int.MaxValue)]
     public required int CurrentVersion { get; init; }
+    //[Required]
+    public string PrivacyVersion { get; init; } = null!;
+    //[Required]
+    public string TosVersion { get; init; } = null!;
 }
