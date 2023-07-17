@@ -4,6 +4,7 @@ namespace API.Data;
 
 public class TransferAgreementHistoryEntry
 {
+    //lol
     public Guid Id { get; set; }
     public Guid TransferAgreementId { get; set; }
     public DateTimeOffset StartDate { get; set; }
