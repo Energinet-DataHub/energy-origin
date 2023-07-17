@@ -1,5 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
+
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.17 AS base
 WORKDIR /app
 EXPOSE 80
@@ -7,21 +8,18 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
 WORKDIR /src
-COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
-COPY ["TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj", "TransferAgreements.API/Shared/ProjectOriginClients/"]
 COPY . .
+WORKDIR /src/TransferAgreements.API/API
 RUN dotnet restore
-WORKDIR "/src/TransferAgreements.API/API"
+RUN dotnet tool install --global dotnet-grpc --version 2.54.0
 RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-
-RUN apk add --no-cache tzdata curl
-
+RUN apk add --no-cache tzdata
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK CMD curl --fail http://localhost:80/healthz || exit 1
+HEALTHCHECK CMD wget -qO- http://localhost:80/healthz > /dev/null || exit 1
 ENTRYPOINT ["dotnet", "API.dll"]
