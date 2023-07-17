@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Integration.Tests", "Auth.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unit.Tests", "Auth.API\Unit.Tests\Unit.Tests.csproj", "{2461861D-142F-45B5-8F50-4B8CF04F393B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.TokenValidation", "..\..\libraries\dotnet\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj", "{E1474125-B613-44DA-9CFC-A495D6D1D506}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{2461861D-142F-45B5-8F50-4B8CF04F393B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2461861D-142F-45B5-8F50-4B8CF04F393B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2461861D-142F-45B5-8F50-4B8CF04F393B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1474125-B613-44DA-9CFC-A495D6D1D506}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1474125-B613-44DA-9CFC-A495D6D1D506}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1474125-B613-44DA-9CFC-A495D6D1D506}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1474125-B613-44DA-9CFC-A495D6D1D506}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
