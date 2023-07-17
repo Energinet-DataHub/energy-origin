@@ -10,7 +10,7 @@ WORKDIR /src
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
 COPY ["ProjectOriginClients.API/ProjectOriginClients.csproj", "ProjectOriginClients/"]
 RUN dotnet restore "TransferAgreements.API/API/API.csproj"
-RUN dotnet restore "ProjectOriginClients/ProjectOriginClients.csproj"
+RUN dotnet restore "Shared/ProjectOriginClients/ProjectOriginClients.csproj"
 COPY . .
 WORKDIR "/src/TransferAgreements.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
