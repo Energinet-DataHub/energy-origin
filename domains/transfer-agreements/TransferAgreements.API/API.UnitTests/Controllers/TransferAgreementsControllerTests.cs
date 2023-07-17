@@ -21,6 +21,7 @@ public class TransferAgreementsControllerTests
     private TransferAgreementsController controller;
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
     private Mock<IValidator<CreateTransferAgreement>> mockValidator;
+    private readonly Mock<IWalletDepositEndpointService> mockWalletDepositEndpointService;
 
     private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
     private const string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
@@ -30,6 +31,7 @@ public class TransferAgreementsControllerTests
     public TransferAgreementsControllerTests()
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
+        mockWalletDepositEndpointService = new Mock<IWalletDepositEndpointService>();
 
         mockTransferAgreementRepository
             .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
@@ -68,7 +70,7 @@ public class TransferAgreementsControllerTests
         mockValidator = CreateValidator();
         var controllerContext = CreateControllerContext(context);
 
-        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object)
+        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object, mockWalletDepositEndpointService.Object)
         {
             ControllerContext = controllerContext
         };
