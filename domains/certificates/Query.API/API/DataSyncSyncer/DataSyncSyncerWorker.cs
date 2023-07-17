@@ -36,15 +36,10 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var allContracts = await GetAllContracts(stoppingToken);
-            foreach (var contract in allContracts)
+            var syncInfos = await GetSyncInfos(stoppingToken);
+            foreach (var syncInfo in syncInfos)
             {
-                if (contract.EndDate != null && contract.EndDate < DateTime.Now)
-                {
-                    continue;
-                }
-
-                var measurements = await dataSyncService.FetchMeasurements(contract,
+                var measurements = await dataSyncService.FetchMeasurements(syncInfo,
                     stoppingToken);
 
                 if (measurements.Any())
@@ -57,20 +52,41 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
     }
 
-    private async Task<IReadOnlyList<CertificateIssuingContract>> GetAllContracts(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
     {
         try
         {
             await using var querySession = documentStore.QuerySession();
 
-            return await querySession
+            var allContracts = await querySession
                 .Query<CertificateIssuingContract>()
                 .ToListAsync(cancellationToken);
+
+            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details 
+            var syncInfos = allContracts.GroupBy(c => c.GSRN)
+                .Where(g => GetNumberOfOwners(g) == 1)
+                .Select(g =>
+                {
+                    var oldestContract = g.OrderBy(c => c.StartDate).First();
+                    var gsrn = g.Key;
+                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner);
+                })
+                .ToList();
+
+            var contractsWithChangingOwnerForSameMeteringPoint = allContracts.GroupBy(c => c.GSRN)
+                .Where(g => GetNumberOfOwners(g) > 1);
+
+            if (contractsWithChangingOwnerForSameMeteringPoint.Any())
+            {
+                logger.LogWarning("Skipping sync of GSRN with multiple owners: {contractsWithChangingOwnerForSameMeteringPoint}", contractsWithChangingOwnerForSameMeteringPoint);
+            }
+
+            return syncInfos;
         }
         catch (Exception e)
         {
             logger.LogWarning("Failed fetching contracts. Exception: {e}", e);
-            return new List<CertificateIssuingContract>();
+            return new List<MeteringPointSyncInfo>();
         }
     }
 
@@ -79,8 +95,8 @@ internal class DataSyncSyncerWorker : BackgroundService
         var integrationsEvents = MapToIntegrationEvents(measurements);
         logger.LogInformation(
             "Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
-            integrationsEvents.Count
-        );
+            integrationsEvents.Count);
+
         foreach (var @event in integrationsEvents)
         {
             await bus.Publish(@event, cancellationToken);
@@ -94,9 +110,11 @@ internal class DataSyncSyncerWorker : BackgroundService
         await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
     }
 
-    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements)
-    {
-        return measurements
+    private static int GetNumberOfOwners(IGrouping<string, CertificateIssuingContract> g) =>
+        g.Select(c => c.MeteringPointOwner).Distinct().Count();
+
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements) =>
+        measurements
             .Select(it => new EnergyMeasuredIntegrationEvent(
                     GSRN: it.GSRN,
                     DateFrom: it.DateFrom,
@@ -106,5 +124,4 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
-    }
 }

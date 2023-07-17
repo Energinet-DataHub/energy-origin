@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using API.ContractService;
+using API.DataSyncSyncer;
 using API.DataSyncSyncer.Persistence;
+using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Testcontainers;
-using CertificateValueObjects;
 using FluentAssertions;
 using Marten;
 using Microsoft.Extensions.Logging;
@@ -12,27 +12,23 @@ using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class SyncStateTests :
-    IClassFixture<MartenDbContainer>
+public class SyncStateTests : IClassFixture<MartenDbContainer>
 {
     private readonly MartenDbContainer martenDbContainer;
 
-    public SyncStateTests(MartenDbContainer martenDbContainer)
-    {
+    public SyncStateTests(MartenDbContainer martenDbContainer) =>
         this.martenDbContainer = martenDbContainer;
-    }
+
+    private static MeteringPointSyncInfo CreateSyncInfo() =>
+        new(
+            GSRN: GsrnHelper.GenerateRandom(),
+            StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+            MeteringPointOwner: "SomeMeteringPointOwner");
 
     [Fact]
     public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()
     {
-        CertificateIssuingContract contract = new()
-        {
-            GSRN = "1234",
-            GridArea = "SomeGridArea",
-            MeteringPointType = MeteringPointType.Production,
-            MeteringPointOwner = "SomeMeteringPointOwner",
-            StartDate = DateTimeOffset.Now.AddDays(-1)
-        };
+        var info = CreateSyncInfo();
 
         using var store = DocumentStore.For(opts =>
         {
@@ -41,23 +37,17 @@ public class SyncStateTests :
 
         var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
-        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
     {
-        CertificateIssuingContract contract = new()
-        {
-            GSRN = "1235",
-            GridArea = "SomeGridArea",
-            MeteringPointType = MeteringPointType.Production,
-            MeteringPointOwner = "SomeMeteringPointOwner",
-            StartDate = DateTimeOffset.Now.AddDays(-1)
-        };
-        var position = new SyncPosition(Guid.NewGuid(), contract.GSRN, DateTimeOffset.Now.ToUnixTimeSeconds());
+        var info = CreateSyncInfo();
+
+        var position = new SyncPosition(Guid.NewGuid(), info.GSRN, DateTimeOffset.Now.ToUnixTimeSeconds());
 
         using var store = DocumentStore.For(opts =>
         {
@@ -69,7 +59,7 @@ public class SyncStateTests :
 
         var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
         actualPeriodStartTime.Should().Be(position.SyncedTo);
     }
@@ -77,15 +67,9 @@ public class SyncStateTests :
     [Fact]
     public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
-        CertificateIssuingContract contract = new()
-        {
-            GSRN = "1236",
-            GridArea = "SomeGridArea",
-            MeteringPointType = MeteringPointType.Production,
-            MeteringPointOwner = "SomeMeteringPointOwner",
-            StartDate = DateTimeOffset.Now.AddDays(-1)
-        };
-        var position = new SyncPosition(Guid.NewGuid(), contract.GSRN, contract.StartDate.AddHours(-1).ToUnixTimeSeconds());
+        var info = CreateSyncInfo();
+
+        var position = new SyncPosition(Guid.NewGuid(), info.GSRN, info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds());
 
         using var store = DocumentStore.For(opts =>
         {
@@ -97,22 +81,16 @@ public class SyncStateTests :
 
         var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
-        actualPeriodStartTime.Should().Be(contract.StartDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetPeriodStartTime_DatabaseCommunicationFailure_ReturnsNull()
     {
-        CertificateIssuingContract contract = new()
-        {
-            GSRN = "1237",
-            GridArea = "SomeGridArea",
-            MeteringPointType = MeteringPointType.Production,
-            MeteringPointOwner = "SomeMeteringPointOwner",
-            StartDate = DateTimeOffset.Now.AddDays(-1)
-        };
+        var info = CreateSyncInfo();
+
         var storeMock = new Mock<IDocumentStore>();
         storeMock.Setup(m => m.QuerySession())
             .Throws<Exception>()
@@ -120,7 +98,7 @@ public class SyncStateTests :
 
         var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(contract);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
         actualPeriodStartTime.Should().Be(null);
         storeMock.Verify();

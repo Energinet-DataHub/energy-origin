@@ -3,14 +3,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.ContractService;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Models;
 using API.IntegrationTests.Testcontainers;
-using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using FluentAssertions;
 using Xunit;
@@ -42,7 +39,7 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task CreateContract_Activate_Created()
+    public async Task CreateContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -50,12 +47,9 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new
-        {
-            gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-        };
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -63,9 +57,32 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        using var createdContractResponse = await client.GetAsync(createdContractUri);
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithoutEndDate_Created()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContractUri = response.Headers.Location;
+
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
@@ -112,6 +129,66 @@ public sealed class ContractTests :
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateContract_CanCreateMultipleNonOverlappingContracts_Created()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(2).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
+
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
+
+        using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
+        using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+
+        contracts!.Result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CreateContract_CannotCreateOverlappingContracts_Conflict()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(3).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
+
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
+
+        using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
+        using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
+
+        responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+
+        contracts!.Result.Should().HaveCount(1);
     }
 
     [Fact]
@@ -255,7 +332,7 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task EndContract_End_Ended()
+    public async Task EditEndDate_StartsWithNoEndDate_HasEndDate()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -263,31 +340,25 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new
-        {
-            gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
-        };
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
+        var createdContractUri = response.Headers.Location;
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var patchBody = new { endDate };
 
-        var endContractBody = new EndContract
-        {
-            ContractId = responseBody!.Id,
-            EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-        };
+        using var editResponse = await client.PatchAsJsonAsync(createdContractUri, patchBody);
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
-    public async Task EndContract_WithoutEndDate_Ended()
+    public async Task EditEndDate_SetsToNoEndDate_HasNoEndDate()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -295,30 +366,25 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var body = new
-        {
-            gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
-        };
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<CertificateIssuingContractResponse>();
+        var createdContractUri = response.Headers.Location;
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var patchBody = new { endDate = (long?)null };
 
-        var endContractBody = new EndContract
-        {
-            ContractId = responseBody!.Id
-        };
+        using var editResponse = await client.PatchAsJsonAsync(createdContractUri, patchBody);
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        endContractResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
-    public async Task EndContract_NoContractCreated_NoContract()
+    public async Task EditEndDate_WithoutEndDate_Ended()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -326,19 +392,46 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var endContractBody = new EndContract
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        var createdContractUri = response.Headers.Location;
+
+        var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
+        var patchBody = new { endDate };
+
+        using var editResponse = await client.PatchAsJsonAsync(createdContractUri, patchBody);
+
+        var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+    }
+
+    [Fact]
+    public async Task EditEndDate_NoContractCreated_NoContract()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var patchBody = new
         {
-            ContractId = Guid.NewGuid(),
-            EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
-        using var response = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        var nonExistingContractId = Guid.NewGuid();
+
+        using var response = await client.PatchAsJsonAsync($"api/certificates/contracts/{nonExistingContractId}", patchBody);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task EndContract_TimeBefore_BadRequest()
+    public async Task EditEndDate_NewEndDateBeforeStartDate_BadRequest()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
@@ -346,25 +439,27 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
+        var start = DateTimeOffset.Now.AddDays(3);
+
         var body = new
         {
             gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds()
+            startDate = start.ToUnixTimeSeconds(),
+            endDate = start.AddYears(1).ToUnixTimeSeconds()
         };
 
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdContractUri = response.Headers.Location;
 
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
-        var endContractBody = new
+        var patchBody = new
         {
-            gsrn,
-            endDate = DateTimeOffset.Now.AddDays(-3).ToUnixTimeSeconds()
+            endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
-        using var endContractResponse = await client.PatchAsJsonAsync("api/certificates/contracts", endContractBody);
+        using var editResponse = await client.PatchAsJsonAsync(createdContractUri, patchBody);
 
-        endContractResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
