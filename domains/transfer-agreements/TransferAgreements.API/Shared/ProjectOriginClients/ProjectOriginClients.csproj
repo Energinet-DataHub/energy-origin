@@ -15,8 +15,8 @@
 	</ItemGroup>
 
 	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
-		<Exec Command="dotnet tool restore"/>
-		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)"/>
+		<Exec Command="dotnet tool restore" />
+		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)" />
 	</Target>
 
 	<ItemGroup>
@@ -26,5 +26,9 @@
 		<Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include=".config\dotnet-tools.json" />
 	</ItemGroup>
 </Project>
