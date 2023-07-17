@@ -11,7 +11,7 @@ WORKDIR /src
 COPY . .
 WORKDIR /src/TransferAgreements.API/API
 RUN dotnet restore
-RUN dotnet tool install --global dotnet-grpc --version 2.54.0
+RUN dotnet tool install --global dotnet-grpc --version 2.55.0
 ENV PATH="${PATH}:/root/.dotnet/tools"
 RUN dotnet build -c Release -o /app/build
 
