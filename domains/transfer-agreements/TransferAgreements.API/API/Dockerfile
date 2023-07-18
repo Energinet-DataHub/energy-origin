@@ -1,11 +1,11 @@
-ARG SDK_VERSION
-ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-buster-slim AS base
+ARG SDK_VERSION=7.0.9-bookworm-slim
+ARG RUNTIME_VERSION=7.0.9-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
 WORKDIR /src
 COPY ["TransferAgreements.sln", "."]
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
@@ -21,9 +21,7 @@ FROM build AS publish
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-
-RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update && apt-get install -y tzdata
 WORKDIR /app
 COPY --from=publish /app/publish .
 HEALTHCHECK CMD wget -qO- http://localhost:80/healthz > /dev/null || exit 1
