@@ -1,11 +1,11 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.17 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-buster-slim AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-buster-slim AS build
 WORKDIR /src
 COPY ["TransferAgreements.sln", "."]
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
@@ -22,7 +22,7 @@ RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 
-RUN apk add --no-cache tzdata
+RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=publish /app/publish .
