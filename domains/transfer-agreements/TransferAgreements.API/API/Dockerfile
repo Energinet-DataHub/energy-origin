@@ -10,6 +10,8 @@ WORKDIR /src
 COPY ["TransferAgreements.sln", "."]
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
 COPY ["TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj", "TransferAgreements.API/Shared/ProjectOriginClients/"]
+COPY ["TransferAgreements.API/API.UnitTests/API.UnitTests.csproj", "TransferAgreements.API/API.UnitTests/"]
+COPY ["TransferAgreements.API/API.IntegrationTests/API.IntegrationTests.csproj", "TransferAgreements.API/API.IntegrationTests/"]
 RUN dotnet restore
 COPY . .
 RUN dotnet tool restore
