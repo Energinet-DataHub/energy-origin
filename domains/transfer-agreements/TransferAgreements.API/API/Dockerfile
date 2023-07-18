@@ -1,11 +1,11 @@
-ARG SDK_VERSION
-ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.18 AS base
+ARG SDK_VERSION=7.0.9-alpine3.18
+ARG RUNTIME_VERSION=7.0.9-alpine3.18
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.18 AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
 WORKDIR /src
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
 RUN dotnet restore "TransferAgreements.API/API/API.csproj"
