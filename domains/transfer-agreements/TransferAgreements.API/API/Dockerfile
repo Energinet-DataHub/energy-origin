@@ -1,5 +1,5 @@
-ARG SDK_VERSION=7.0.9-alpine3.18
-ARG RUNTIME_VERSION=7.0.9-alpine3.18
+ARG SDK_VERSION
+ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
@@ -18,7 +18,7 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 
-RUN apt-get update && apt-get install -y tzdata
+RUN apk add --no-cache tzdata
 
 WORKDIR /app
 COPY --from=publish /app/publish .
