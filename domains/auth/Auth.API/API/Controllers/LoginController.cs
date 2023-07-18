@@ -18,13 +18,13 @@ public class LoginController : ControllerBase
     [Route("auth/test")]
     public IActionResult TestMethod(DataContext context, IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
     {
-        logger.LogInformation("PrivacyVersion: {privacyVersion}", termsOptions.Value.PrivacyVersion);
-        logger.LogInformation("TosVersion: {tosVersion}", termsOptions.Value.TosVersion);
+        logger.LogInformation("PrivacyVersion: {privacyVersion}", termsOptions.Value.PrivacyPolicyVersion);
+        logger.LogInformation("TosVersion: {tosVersion}", termsOptions.Value.TermsOfServiceVersion);
 
         return Ok(new List<string>()
         {
-            termsOptions.Value.PrivacyVersion,
-            termsOptions.Value.TosVersion
+            termsOptions.Value.PrivacyPolicyVersion,
+            termsOptions.Value.TermsOfServiceVersion
         });
     }
 

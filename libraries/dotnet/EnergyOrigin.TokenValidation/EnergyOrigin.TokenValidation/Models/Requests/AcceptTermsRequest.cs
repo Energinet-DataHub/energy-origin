@@ -1,3 +1,3 @@
 namespace EnergyOrigin.TokenValidation.Models.Requests;
 
-public record AcceptTermsRequest(int Version);
+public record AcceptTermsRequest(UserTermsType TermsType,string Version);

@@ -116,7 +116,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
-            AcceptedTermsVersion = 1,
+            AcceptedPrivacyPolicyVersion = "1",
             AllowCprLookup = true,
             UserProviders = new List<UserProvider>
             {

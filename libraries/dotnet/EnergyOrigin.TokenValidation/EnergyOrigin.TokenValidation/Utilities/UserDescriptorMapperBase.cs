@@ -38,13 +38,13 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
-        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentTermsVersion), out var currentVersion))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentPrivacyPolicyVersion), out var currentVersion))
         {
-            MissingProperty(nameof(UserClaimName.CurrentTermsVersion));
+            MissingProperty(nameof(UserClaimName.CurrentPrivacyPolicyVersion));
             return null;
         }
 
-        if (!int.TryParse(user.FindFirstValue(UserClaimName.AcceptedTermsVersion), out var acceptedVersion))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.ac), out var acceptedVersion))
         {
             MissingProperty(nameof(UserClaimName.AcceptedTermsVersion));
             return null;

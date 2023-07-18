@@ -11,8 +11,10 @@ public struct UserClaimName
     public const string IdentityToken = "eit";
     public const string ProviderKeys = "pke";
     public const string ProviderType = "pty";
-    public const string CurrentTermsVersion = "trm";
-    public const string AcceptedTermsVersion = "atv";
+    public const string CurrentPrivacyPolicyVersion = "privtrm";
+    public const string CurrentTermsOfServiceVersion = "tostrm";
+    public const string AcceptedPrivacyPolicyVersion = "privatv";
+    public const string AcceptedTermsOfServiceVersion = "tosatv";
     public const string AllowCPRLookup = "acl";
     public const string Tin = "tin";
     public const string CompanyName = "cpn";

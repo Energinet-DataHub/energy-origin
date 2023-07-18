@@ -10,9 +10,12 @@ public class UserDescriptor
     public string Name { get; init; } = null!;
     public Guid? CompanyId { get; init; }
     public string? CompanyName { get; init; }
+    public List<Role> Roles { get; set; }
     public string? Tin { get; init; }
-    public int AcceptedTermsVersion { get; init; }
-    public int CurrentTermsVersion { get; init; }
+    public string AcceptedTermsOfServiceVersion { get; init; }
+    public string AcceptedPrivacyPolicyVersion { get; init; }
+    public string CurrentTermsOfServiceVersion { get; init; }
+    public string CurrentPrivacyPolicyVersion { get; init; }
     public bool AllowCPRLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;

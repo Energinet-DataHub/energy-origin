@@ -29,9 +29,9 @@ public class TermsController : ControllerBase
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
-        if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
+        if (descriptor.AcceptedPrivacyPolicyVersion != acceptedTermsVersion.Version)
         {
-            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
+            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedPrivacyPolicyVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -63,7 +63,7 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        user.AcceptedTermsVersion = acceptedTermsVersion.Version;
+        user.AcceptedPrivacyPolicyVersion = acceptedTermsVersion.Version;
         await userService.UpsertUserAsync(user);
 
         var relationUri = options.Value.Uri?.AbsoluteUri.TrimEnd('/');
@@ -89,7 +89,7 @@ public class TermsController : ControllerBase
         logger.AuditLog(
             "{User} updated accepted terms {@Versions} at {TimeStamp}.",
             user.Id,
-            new { Old = descriptor.AcceptedTermsVersion, New = acceptedTermsVersion.Version },
+            new { Old = descriptor.AcceptedPrivacyPolicyVersion, New = acceptedTermsVersion.Version },
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 

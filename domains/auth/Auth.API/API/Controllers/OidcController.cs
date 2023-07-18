@@ -214,7 +214,7 @@ public class OidcController : ControllerBase
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
-            AcceptedTermsVersion = 0,
+            AcceptedPrivacyPolicyVersion = "0",
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null

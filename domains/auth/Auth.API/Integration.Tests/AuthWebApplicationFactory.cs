@@ -70,7 +70,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         user ??= new User
         {
             Name = Guid.NewGuid().ToString(),
-            AcceptedTermsVersion = 1,
+            AcceptedPrivacyPolicyVersion = "1",
             AllowCprLookup = true
         };
 
