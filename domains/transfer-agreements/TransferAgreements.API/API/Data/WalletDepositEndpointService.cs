@@ -17,9 +17,9 @@ namespace API.Data;
 public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
     protected readonly IOptions<GrpcOptions> ProjectOriginOptions;
-    protected readonly ILogger<WalletDepositEndpointService> Logger;  // Specify the type here
+    protected readonly ILogger<WalletDepositEndpointService> Logger;
 
-    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger<WalletDepositEndpointService> logger) // And also here
+    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
     {
         ProjectOriginOptions = grOptions;
         Logger = logger;
@@ -83,7 +83,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error creating WalletDepositEndpoint");  // Use the Logger to log any exceptions
+            Logger.LogError(ex, "Error creating WalletDepositEndpoint");
             throw;
         }
     }

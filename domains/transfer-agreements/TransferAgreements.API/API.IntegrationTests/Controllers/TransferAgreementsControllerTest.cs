@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -504,5 +505,25 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
+    }
+
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldReturnBase64_WhenAuthorized()
+    {
+        var subject = Guid.NewGuid();
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: "");
+
+        var response = await newAuthenticatedClient.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+        response.EnsureSuccessStatusCode();
+
+        Assert.NotNull(response.Content);
+        var base64String = await response.Content.ReadAsStringAsync();
+        Assert.True(IsBase64String(base64String));
+    }
+
+    private bool IsBase64String(string input)
+    {
+        input = input.Replace(" ", "");
+        return (input.Length % 4 == 0) && Regex.IsMatch(input, @"^[a-zA-Z0-9+/]*={0,3}$");
     }
 }

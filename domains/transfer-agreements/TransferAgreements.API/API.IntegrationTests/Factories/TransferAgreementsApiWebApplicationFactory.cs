@@ -96,7 +96,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new Claim("atr", actor),
             new Claim("tin", tin),
             new Claim("cpn", cpn),
-            new Claim("name", name)
+            new Claim("name", name),
+            new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
