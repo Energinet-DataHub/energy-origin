@@ -36,6 +36,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<GrpcOptions>().BindConfiguration(GrpcOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 Audit.Core.Configuration.Setup()
@@ -96,8 +97,7 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Transfer Agreements API"
     });
 
-    if (builder.Environment.IsDevelopment())
-    {
+
         o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             Name = "Authorization",
@@ -121,7 +121,6 @@ builder.Services.AddSwaggerGen(o =>
                 new string[] { }
             }
         });
-    }
 });
 
 builder.Services.AddLogging();

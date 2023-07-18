@@ -173,7 +173,6 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
-        // Replace these with your actual values
         var issuer = User.FindIssuerClaim();
         var audience = User.FindAudienceClaim();
         var subject = User.FindSubjectGuidClaim();
