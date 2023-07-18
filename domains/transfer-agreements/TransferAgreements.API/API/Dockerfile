@@ -7,13 +7,13 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
 WORKDIR /src
+COPY . .
+RUN dotnet tool restore
 COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
-COPY ["TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj", "TransferAgreements.API/Shared/ProjectOriginClients/"]
+COPY ["ProjectOriginClients/ProjectOriginClients.csproj", "TransferAgreements.API/Shared/ProjectOriginClients/"]
 RUN dotnet restore "TransferAgreements.API/API/API.csproj"
 RUN dotnet restore "TransferAgreements.API/Shared/ProjectOriginClients/ProjectOriginClients.csproj"
-RUN dotnet tool restore
-COPY . .
-RUN dotnet build -c Release -o /app/build
+RUN dotnet build "TransferAgreements.sln" -c Release
 
 FROM build AS publish
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
