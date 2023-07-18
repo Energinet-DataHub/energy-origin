@@ -65,8 +65,6 @@ spec:
               value: "5432"
             - name: Database__Password
               value: $(password)
-            - name: PROJECTORIGIN__WALLETURL
-              value: {{ .Values.projectOrigin.walletUrl }}
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-cnpg-cluster-app
