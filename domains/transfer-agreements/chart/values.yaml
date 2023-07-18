@@ -12,5 +12,3 @@ cnpg:
     storageSize:
   bouncer:
     replicaCount:
-projectOrigin:
-  walletUrl: "https://demo.energioprindelse.dk"
