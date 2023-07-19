@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -508,22 +508,27 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public async Task CreateWalletDepositEndpoint_ShouldReturnBase64_WhenAuthorized()
+    public async Task CreateWalletDepositEndpoint_ShouldReturnBase64StringOkResponse_WhenAuthorized()
     {
-        var subject = Guid.NewGuid();
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: "");
+        var result = await factory
+            .CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "")
+            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
-        var response = await newAuthenticatedClient.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
-        response.EnsureSuccessStatusCode();
+        var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
+        var base64String = resultData?["result"];
+        Action base64Decoding = () => Encoding.UTF8.GetString(Convert.FromBase64String(base64String));
 
-        Assert.NotNull(response.Content);
-        var base64String = await response.Content.ReadAsStringAsync();
-        Assert.True(IsBase64String(base64String));
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        resultData.Should().ContainKey("result");
+        base64Decoding.Should().NotThrow<FormatException>("because result should be a valid base64 string");
     }
 
-    private bool IsBase64String(string input)
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldReturnUnauthorized_WhenUnauthenticated()
     {
-        input = input.Replace(" ", "");
-        return (input.Length % 4 == 0) && Regex.IsMatch(input, @"^[a-zA-Z0-9+/]*={0,3}$");
+        var client = factory.CreateUnauthenticatedClient();
+        var result = await client.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }
