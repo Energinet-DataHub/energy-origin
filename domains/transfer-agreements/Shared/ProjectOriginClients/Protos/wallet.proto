@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+package ProjectOrigin.WalletSystem.V1;
+
+// Anonymously functions, Externally accessible
+service ReceiveSliceService {
+    rpc ReceiveSlice(ReceiveRequest) returns (ReceiveResponse);
+}
+
+// Requires authorization with a Bearer token JWT, sub field identifies the owner
+// Could be internal only, up to the host to decide
+service WalletService {
+    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse); // Only allowed one per user for now, later multiple wallets per user will be allowed.
+    rpc CreateWalletDepositEndpoint(CreateWalletDepositEndpointRequest) returns (CreateWalletDepositEndpointResponse);
+    rpc CreateReceiverDepositEndpoint(CreateReceiverDepositEndpointRequest) returns (CreateReceiverDepositEndpointResponse);
+
+    // Certificate functions, slices abstracted away and solved by wallet
+    rpc QueryGranularCertificates(QueryRequest) returns (QueryResponse);
+    rpc TransferCertificate(TransferRequest) returns (TransferResponse);
+    rpc ClaimCertificates(ClaimRequest) returns (ClaimResponse);
+
+    // Slice functions - more fine grained control to come
+    // rpc QuerySlices(QuerySliceRequest) returns (QuerySliceResponse);
+    // rpc SliceSlice(CreateSliceRequest) returns (CreateSliceResponse);
+    // rpc ClaimSlice(ClaimSliceRequest) returns (ClaimSliceResponse);
+    // rpc TransferSlice(TransferSliceRequest) returns (TransferSliceResponse);
+
+    // Events should also be able to be emitted.. RPC or event bus?
+}
+
+message CreateWalletDepositEndpointRequest {}
+
+message CreateWalletDepositEndpointResponse {
+    WalletDepositEndpoint WalletDepositEndpoint = 1;
+}
+
+message CreateReceiverDepositEndpointRequest {
+    WalletDepositEndpoint WalletDepositEndpoint = 1;
+    string Reference = 2;
+}
+
+message CreateReceiverDepositEndpointResponse {
+    project_origin.common.v1.Uuid ReceiverId = 1;
+}
+
+message CreateWalletRequest {
+    bytes PrivateKey = 1;
+}
+
+message CreateWalletResponse { }
+
+message ReceiveRequest {
+    bytes WalletDepositEndpointPublicKey = 1;
+    uint32 WalletDepositEndpointPosition = 2;
+    project_origin.common.v1.FederatedStreamId CertificateId = 3;
+    uint32 Quantity = 4;
+    bytes RandomR = 5;
+}
+
+message ReceiveResponse {} // not yet sure what to return
+
+
+message WalletDepositEndpoint {
+    int32 Version = 1; // The version of the Wallet protobuf API.
+    string Endpoint = 2; // The url endpoint of the gRPC endpoint at which the wallet is hosted.
+    bytes PublicKey = 3; // The public key used to generate sub-public-keys for each slice.
+}
+
+message QueryRequest {
+    // Later filters will be added.
+}
+
+message QueryResponse {
+    repeated GranularCertificate GranularCertificates = 1;
+}
+
+message TransferRequest {
+    project_origin.common.v1.FederatedStreamId CertificateId = 1; // The certificate to transfer from
+    uint32 Quantity = 2; // The quantity, either the total or a part of it, will be sliced implicitly by the wallet
+    project_origin.common.v1.Uuid ReceiverId = 3;
+}
+
+message TransferResponse {} // not yet sure what to return
+
+message ClaimRequest {
+    project_origin.common.v1.FederatedStreamId ConsumptionCertificateId = 1;
+    project_origin.common.v1.FederatedStreamId ProductionCertificateId = 2;
+    uint32 Quantity = 3;
+}
+
+message ClaimResponse {} // not yet sure what to return
+
+
+message GranularCertificate {
+    project_origin.common.v1.FederatedStreamId FederatedId = 1;
+    GranularCertificateType Type = 2;
+    uint32 Quantity = 3;
+    string GridArea = 4;
+    google.protobuf.Timestamp Start = 5;
+    google.protobuf.Timestamp End = 6;
+    repeated Attribute Attributes = 7;
+}
+
+message Attribute {
+    string Key = 1;
+    string Value = 2;
+}
+
+enum GranularCertificateType {
+    INVALID = 0;
+    CONSUMPTION = 1;
+    PRODUCTION = 2;
+}
