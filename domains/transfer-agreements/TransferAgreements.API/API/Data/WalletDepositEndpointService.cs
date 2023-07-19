@@ -25,36 +25,11 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         Logger = logger;
     }
 
-    public async Task<string> CreateWalletDepositWithToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
+    public async Task<string> CreateWalletDepositWithToken(JwtToken token)
     {
-        var token = GenerateToken(issuer, audience, subject, name, expirationMinutes);
-        var walletDepositEndpoint = await CreateWalletDepositEndpoint(token);
+        var bearerToken = token.GenerateToken();
+        var walletDepositEndpoint = await CreateWalletDepositEndpoint(bearerToken);
         return ConvertObjectToBase64(walletDepositEndpoint);
-    }
-
-    private static string GenerateToken(string issuer, string audience, string subject, string name, int expirationMinutes = 5)
-    {
-        var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-
-        var claims = new[]
-        {
-            new Claim("sub", subject),
-            new Claim("name", name),
-            new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-        };
-
-        var key = new ECDsaSecurityKey(ecdsa);
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     private static string ConvertObjectToBase64(object obj)
