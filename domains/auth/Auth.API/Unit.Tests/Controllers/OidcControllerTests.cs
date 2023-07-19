@@ -712,7 +712,7 @@ public class OidcControllerTests
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
-                AllowCPRLookup = true,
+                AllowCprLookup = true,
                 AcceptedTermsVersion = 0,
                 UserStored = true
             });

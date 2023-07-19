@@ -33,7 +33,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsRequest(2);
+        var dto = new AcceptCompanyTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
         var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == user.Id)!;
@@ -71,7 +71,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsRequest(1);
+        var dto = new AcceptCompanyTermsRequest(1);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
         var result = await client.PutAsync("terms/accept", httpContent);
         var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Name == user.Name)!;
@@ -98,7 +98,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var dto = new AcceptTermsRequest(2);
+        var dto = new AcceptCompanyTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
@@ -118,7 +118,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
         });
 
-        var dto = new AcceptTermsRequest(2);
+        var dto = new AcceptCompanyTermsRequest(2);
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));

@@ -1,14 +1,13 @@
+using EnergyOrigin.TokenValidation.Values;
+
 namespace API.Models.Entities;
 
-public enum CompanyTermsType
-{
-    TermsOfService
-}
+
 public record CompanyTerms
 {
     public Guid? Id { get; init; }
     public Guid CompanyId { get; set; }
     public CompanyTermsType Type { get; set; }
-    public int AcceptedVersion { get; set; }
+    public string AcceptedVersion { get; set; } = null!;
     public Company Company { get; set; } = null!;
 }

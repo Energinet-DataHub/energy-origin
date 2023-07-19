@@ -20,12 +20,13 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         CompanyId = user.CompanyId,
         Tin = user.Company?.Tin,
         CompanyName = user.Company?.Name,
-        AcceptedPrivacyPolicyVersion = user.AcceptedPrivacyPolicyVersion,
-        AcceptedTermsOfServiceVersion = user.AcceptedTermsOfServiceVersion,
-        AllowCPRLookup = user.AllowCprLookup,
+        AllowCprLookup = user.AllowCprLookup,
         EncryptedAccessToken = cryptography.Encrypt(accessToken),
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
         EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
-        UserStored = user.Id != null
+        UserStored = user.Id != null,
+        Roles = string.Join(" ", user.Roles.Select(x => x.Key)),
+        AcceptedPrivacyPolicyVersion = user.UserTerms.FirstOrDefault(x=>x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion,
+        AcceptedTermsOfServiceVersion = user.Company?.CompanyTerms.FirstOrDefault(x=>x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion
     };
 }

@@ -30,7 +30,7 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, descriptor, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(termsOptions, tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -45,14 +45,23 @@ public class TokenIssuer : ITokenIssuer
 
     private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor, bool versionBypass)
     {
-        var version = descriptor.AcceptedTermsVersion;
+        string? scope = null;
+        if (options.PrivacyPolicyVersion != descriptor.AcceptedPrivacyPolicyVersion)
+        {
+            scope = string.Join(" ", scope, UserClaimName.AcceptedPrivacyPolicyVersion);
+        }
 
-        var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        if (options.TermsOfServiceVersion != descriptor.AcceptedTermsOfServiceVersion)
+        {
+            scope = string.Join(" ", scope, UserClaimName.AcceptedTermsOfServiceVersion);
+        }
 
-        return new(version, scope);
+        scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
+
+        return new(descriptor.AcceptedPrivacyPolicyVersion,descriptor.AcceptedTermsOfServiceVersion, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
@@ -61,14 +70,27 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
-            { UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedVersion },
-            { UserClaimName.cu, termsOptions.CurrentVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
+            { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
             { UserClaimName.UserStored, descriptor.UserStored },
             { UserClaimName.Subject, descriptor.Subject },
             { UserClaimName.Actor, descriptor.Id },
-            { UserClaimName.ActorLegacy, descriptor.Id }
+            { UserClaimName.ActorLegacy, descriptor.Id },
         };
+
+        if (state.AcceptedPrivacyPolicyTerms is not null )
+        {
+            claims.Add(UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedPrivacyPolicyTerms);
+        }
+
+        if (state.AcceptedTermsOfServiceTerms is not null)
+        {
+            claims.Add(UserClaimName.AcceptedTermsOfServiceVersion, state.AcceptedTermsOfServiceTerms);
+        }
+
+        if (descriptor.Roles is not null)
+        {
+            claims.Add(UserClaimName.Roles, descriptor.Roles);
+        }
 
         if (descriptor.CompanyId is not null)
         {
@@ -85,8 +107,8 @@ public class TokenIssuer : ITokenIssuer
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name),
-            new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
+            new(JwtRegisteredClaimNames.Name, descriptor.Name),
+            new(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
         };
 
         return new()
@@ -108,5 +130,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(int AcceptedVersion, string Scope);
+    private record UserState(string? AcceptedPrivacyPolicyTerms, string? AcceptedTermsOfServiceTerms, string Scope);
 }

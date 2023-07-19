@@ -10,13 +10,11 @@ public class UserDescriptor
     public string Name { get; init; } = null!;
     public Guid? CompanyId { get; init; }
     public string? CompanyName { get; init; }
-    public List<Role> Roles { get; set; }
+    public string? Roles { get; set; }
     public string? Tin { get; init; }
-    public string AcceptedTermsOfServiceVersion { get; init; }
-    public string AcceptedPrivacyPolicyVersion { get; init; }
-    public string CurrentTermsOfServiceVersion { get; init; }
-    public string CurrentPrivacyPolicyVersion { get; init; }
-    public bool AllowCPRLookup { get; init; }
+    public string? AcceptedTermsOfServiceVersion { get; init; }
+    public string? AcceptedPrivacyPolicyVersion { get; init; }
+    public bool AllowCprLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
     public bool UserStored { get; init; }
@@ -26,8 +24,8 @@ public class UserDescriptor
     /// </summary>
     public string EncryptedProviderKeys { get; init; } = null!;
 
-    public string? AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
-    public string? IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
+    public string AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
+    public string IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
     public Dictionary<ProviderKeyType, string> ProviderKeys => cryptography.Decrypt<string>(EncryptedProviderKeys)
         .Split(" ")
         .Select(x =>

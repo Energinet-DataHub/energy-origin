@@ -4,7 +4,6 @@ public record User
 {
     public Guid? Id { get; init; }
     public string Name { get; set; } = null!;
-    public string AcceptedPrivacyPolicyVersion { get; init; }
     public bool AllowCprLookup { get; set; }
     public Guid? CompanyId { get; set; }
     public Company? Company { get; set; }

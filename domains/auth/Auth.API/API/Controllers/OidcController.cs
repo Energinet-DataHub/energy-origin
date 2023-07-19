@@ -32,6 +32,7 @@ public class OidcController : ControllerBase
         IOptions<OidcOptions> oidcOptions,
         IOptions<IdentityProviderOptions> providerOptions,
         ILogger<OidcController> logger,
+        IRoleService roleService,
         [FromQuery] string? code,
         [FromQuery] string? error,
         [FromQuery(Name = "error_description")] string? errorDescription,
@@ -77,7 +78,7 @@ public class OidcController : ControllerBase
         UserDescriptor descriptor;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response, roleService);
         }
         catch (Exception exception)
         {
@@ -109,7 +110,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, IRoleService roleService)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -155,6 +156,7 @@ public class OidcController : ControllerBase
         string? name = null;
         string? tin = null;
         string? companyName = null;
+        var organizationOwner = false;
         var keys = new Dictionary<ProviderKeyType, string>();
 
         switch (providerType)
@@ -163,7 +165,7 @@ public class OidcController : ControllerBase
                 name = userInfo.FindFirstValue("nemlogin.name");
                 tin = userInfo.FindFirstValue("nemlogin.cvr");
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
-
+                organizationOwner = userInfo.FindFirstValue("") is not null; // TODO Find Scope from Signaturgruppen
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
                 if (tin is not null && rid is not null)
                 {
@@ -214,7 +216,6 @@ public class OidcController : ControllerBase
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
-            AcceptedPrivacyPolicyVersion = "0",
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
@@ -226,8 +227,16 @@ public class OidcController : ControllerBase
                 }
         };
 
-        var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
+        if (organizationOwner)
+        {
+            var newOrganizationRoles = roleService.GetAllRoles().Where(x=>x.OrganizationOwner).ExceptBy(user.Roles.Select(x=>x.Key),x=>x.Key);
+            user.Roles.AddRange(newOrganizationRoles);
+        }
 
+        var newDefaultRoles = roleService.GetAllRoles().Where(x=>x.IsDefault).ExceptBy(user.Roles.Select(x=>x.Key),x=>x.Key);
+        user.Roles.AddRange(newDefaultRoles);
+
+        var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
 
         if (knownUser)

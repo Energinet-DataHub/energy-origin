@@ -6,8 +6,8 @@ public class TermsOptions
 {
     public const string Prefix = "Terms";
 
-    //[Required]
+    [Required]
     public string PrivacyPolicyVersion { get; init; } = null!;
-    //[Required]
+    [Required]
     public string TermsOfServiceVersion { get; init; } = null!;
 }

@@ -49,7 +49,7 @@ public class UserDescriptorMapperTests
         Assert.Equal(user.Id, descriptor.Id);
         Assert.Equal(user.Name, descriptor.Name);
         Assert.Equal(user.AcceptedTermsVersion, descriptor.AcceptedTermsVersion);
-        Assert.Equal(user.AllowCprLookup, descriptor.AllowCPRLookup);
+        Assert.Equal(user.AllowCprLookup, descriptor.AllowCprLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);
         Assert.Equal(identityToken, descriptor.IdentityToken);
