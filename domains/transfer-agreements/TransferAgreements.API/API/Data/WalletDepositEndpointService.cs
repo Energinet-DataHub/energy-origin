@@ -16,10 +16,10 @@ namespace API.Data;
 
 public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
-    protected readonly IOptions<GrpcOptions> ProjectOriginOptions;
+    protected readonly IOptions<ProjectOriginOptions> ProjectOriginOptions;
     protected readonly ILogger<WalletDepositEndpointService> Logger;
 
-    public WalletDepositEndpointService(IOptions<GrpcOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
+    public WalletDepositEndpointService(IOptions<ProjectOriginOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
     {
         ProjectOriginOptions = grOptions;
         Logger = logger;
