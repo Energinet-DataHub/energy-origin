@@ -13,7 +13,7 @@ namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
-    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+    public const string AllAcceptedScopes = $"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
@@ -48,15 +48,17 @@ public class TokenIssuer : ITokenIssuer
         string? scope = null;
         if (options.PrivacyPolicyVersion != descriptor.AcceptedPrivacyPolicyVersion)
         {
-            scope = string.Join(" ", scope, UserClaimName.AcceptedPrivacyPolicyVersion);
+            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicyTerms);
         }
 
         if (options.TermsOfServiceVersion != descriptor.AcceptedTermsOfServiceVersion)
         {
-            scope = string.Join(" ", scope, UserClaimName.AcceptedTermsOfServiceVersion);
+            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedTermsOfServiceTerms);
         }
 
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
+
+        scope = scope.Trim();
 
         return new(descriptor.AcceptedPrivacyPolicyVersion,descriptor.AcceptedTermsOfServiceVersion, scope);
     }
