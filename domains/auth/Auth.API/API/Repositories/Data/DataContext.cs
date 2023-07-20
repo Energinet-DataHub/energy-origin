@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace API.Repositories.Data;
 
-public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext
+public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext, IRoleDataContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;
