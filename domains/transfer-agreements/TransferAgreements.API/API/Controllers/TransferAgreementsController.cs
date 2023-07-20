@@ -3,12 +3,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
+using API.Converters;
 using API.Data;
 using API.Extensions;
+using API.Options;
+using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Grpc.Core;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Controllers;
 
@@ -20,16 +27,19 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
+    private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
 
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
-        IWalletDepositEndpointService walletDepositEndpointService)
+        IWalletDepositEndpointService walletDepositEndpointService,
+        IOptions<ProjectOriginOptions> projectOriginOptions)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.walletDepositEndpointService = walletDepositEndpointService;
+        this.projectOriginOptions = projectOriginOptions;
     }
 
     [ProducesResponseType(201)]
@@ -56,12 +66,37 @@ public class TransferAgreementsController : ControllerBase
             SenderId = Guid.Parse(subject),
             SenderName = subjectName,
             SenderTin = subjectTin,
-            ReceiverTin = request.ReceiverTin
+            ReceiverTin = request.ReceiverTin,
         };
 
         if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
         {
             return Conflict();
+        }
+
+        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+        var walletServiceClient = new WalletService.WalletServiceClient(channel);
+        var jwtToken = new JwtToken(User.FindIssuerClaim(), User.FindAudienceClaim(), subject, subjectName);
+        var bearerToken = jwtToken.GenerateToken();
+        var headers = new Metadata
+            { { "Authorization", $"Bearer {bearerToken}" } };
+
+        var wde = Base64Converter.ConvertToWalletDepositEndpoint(request.Base64EncodedWalletDepositEndpoint);
+        var walletRequest = new CreateReceiverDepositEndpointRequest
+        {
+            Reference = request.ReceiverTin,
+            WalletDepositEndpoint = wde
+        };
+
+        try
+        {
+            var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
+
+            transferAgreement.ReceiverReference = new Guid(response.ReceiverId.Value);
+        }
+        catch (Exception ex)
+        {
+            throw;
         }
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);

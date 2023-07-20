@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
+using API.Data;
 
-namespace API.Data;
+namespace API.Services;
 
 public interface IWalletDepositEndpointService
 {

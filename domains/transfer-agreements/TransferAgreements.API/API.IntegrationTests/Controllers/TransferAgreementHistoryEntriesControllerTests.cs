@@ -28,7 +28,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678"
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
@@ -52,7 +53,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678"
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var createResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
@@ -81,7 +83,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678"
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var createRequest = await creatorClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
@@ -104,7 +107,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678"
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
@@ -131,7 +135,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678"
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);

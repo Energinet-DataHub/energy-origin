@@ -9,6 +9,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using Newtonsoft.Json;
 using VerifyTests;
@@ -18,16 +19,19 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
+        WalletContainer wallet)
     {
         this.factory = factory;
 
         var sub = Guid.NewGuid().ToString();
+        factory.WalletUrl = wallet.WalletUrl;
+        wallet.InitializeAsync();
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
 
@@ -71,7 +75,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var overlappingRequest = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
+            ReceiverTin: "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
@@ -97,7 +102,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreement(
             StartDate: startDate,
             EndDate: endDate,
-            ReceiverTin: "12345678"
+            ReceiverTin: "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -121,7 +127,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreement(
             StartDate: start,
             EndDate: end,
-            ReceiverTin: receiverTin
+            ReceiverTin: receiverTin,
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -150,7 +157,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: tin,
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -277,7 +285,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     private static CreateTransferAgreement CreateTransferAgreement()
     {
         return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
+            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
     }
 
     [Fact]

@@ -1,18 +1,15 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
+using API.Converters;
+using API.Data;
+using API.Options;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.WalletSystem.V1;
 
-namespace API.Data;
+namespace API.Services;
 
 public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
@@ -29,16 +26,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
     {
         var bearerToken = token.GenerateToken();
         var walletDepositEndpoint = await CreateWalletDepositEndpoint(bearerToken);
-        return ConvertObjectToBase64(walletDepositEndpoint);
-    }
-
-    private static string ConvertObjectToBase64(object obj)
-    {
-        var jsonString = JsonSerializer.Serialize(obj);
-        var bytes = Encoding.UTF8.GetBytes(jsonString);
-        var base64String = Convert.ToBase64String(bytes);
-
-        return base64String;
+        return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
 
     private async Task<WalletDepositEndpoint> CreateWalletDepositEndpoint(string bearerToken)

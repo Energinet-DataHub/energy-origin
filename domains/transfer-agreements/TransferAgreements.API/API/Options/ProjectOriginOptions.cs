@@ -1,4 +1,4 @@
-namespace API.Data;
+namespace API.Options;
 
 public class ProjectOriginOptions
 {

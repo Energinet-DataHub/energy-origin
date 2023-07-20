@@ -30,19 +30,29 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
+    public string? WalletUrl { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.ConfigureTestServices(s => s.Configure<DatabaseOptions>(o =>
+        builder.ConfigureTestServices(s  =>
         {
-            var connectionStringBuilder = new DbConnectionStringBuilder
+            s.Configure<DatabaseOptions>(o =>
             {
-                ConnectionString = testContainer.GetConnectionString()
-            };
-            o.Host = (string)connectionStringBuilder["Host"];
-            o.Port = (string)connectionStringBuilder["Port"];
-            o.Name = (string)connectionStringBuilder["Database"];
-            o.User = (string)connectionStringBuilder["Username"];
-            o.Password = (string)connectionStringBuilder["Password"];
-        }));
+                var connectionStringBuilder = new DbConnectionStringBuilder
+                {
+                    ConnectionString = testContainer.GetConnectionString()
+                };
+                o.Host = (string)connectionStringBuilder["Host"];
+                o.Port = (string)connectionStringBuilder["Port"];
+                o.Name = (string)connectionStringBuilder["Database"];
+                o.User = (string)connectionStringBuilder["Username"];
+                o.Password = (string)connectionStringBuilder["Password"];
+            });
+
+            s.Configure<ProjectOriginOptions>(o =>
+            {
+                o.WalletUrl = WalletUrl;
+            });
+        });
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
