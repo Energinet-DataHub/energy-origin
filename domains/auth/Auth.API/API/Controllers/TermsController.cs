@@ -3,6 +3,7 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.Authorization;

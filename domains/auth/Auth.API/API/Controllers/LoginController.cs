@@ -13,7 +13,7 @@ namespace API.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [AllowAnonymous]
     [Route("auth/test")]
     public IActionResult TestMethod(DataContext context, IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
@@ -28,7 +28,7 @@ public class LoginController : ControllerBase
         });
     }
 
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, IOptions<OidcOptions> oidcOptions, IOptions<IdentityProviderOptions> providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
     {

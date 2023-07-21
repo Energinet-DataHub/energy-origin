@@ -3,7 +3,7 @@ using API.Services.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 
-namespace API.Utilities;
+namespace API.Utilities.AuthorizePolicies;
 
 public class OrganizationOwnerPolicy: IAuthorizationHandler, IAuthorizationRequirement
 {

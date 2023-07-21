@@ -7,6 +7,7 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -55,6 +56,8 @@ builder.Services.AddAuthorization(options =>
 {
     var organizationOwnerPolicy = builder.Services.BuildServiceProvider().GetRequiredService<OrganizationOwnerPolicy>();
     options.AddPolicy(nameof(OrganizationOwnerPolicy), policy => policy.Requirements.Add(organizationOwnerPolicy));
+    var roleAdminPolicy = builder.Services.BuildServiceProvider().GetRequiredService<RoleAdminPolicy>();
+    options.AddPolicy(nameof(RoleAdminPolicy), policy => policy.Requirements.Add(roleAdminPolicy));
 });
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
@@ -116,6 +119,7 @@ builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
 builder.Services.AddScoped<OrganizationOwnerPolicy>();
+builder.Services.AddScoped<RoleAdminPolicy>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
