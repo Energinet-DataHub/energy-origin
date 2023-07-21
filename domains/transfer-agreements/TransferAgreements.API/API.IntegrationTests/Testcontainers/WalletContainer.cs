@@ -28,7 +28,7 @@ public class WalletContainer : IAsyncLifetime
             var postgresConnectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
             return new ContainerBuilder()
-            .WithImage("ghcr.io/project-origin/wallet-server:0.1.1")
+            .WithImage("ghcr.io/project-origin/wallet-server:0.1.2")
             .WithPortBinding(7890, 80)
             .WithCommand("--serve", "--migrate")
             .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)

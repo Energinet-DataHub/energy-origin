@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
+using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
@@ -13,29 +17,41 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
+    public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory,
+        WalletContainer wallet)
+    {
+        this.factory = factory;
+        factory.WalletUrl = wallet.WalletUrl;
+        wallet.InitializeAsync();
+    }
 
     [Fact]
     public async Task Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated()
     {
         var senderId = Guid.NewGuid();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+
+        var result = await factory
+            .CreateAuthenticatedClient(sub: senderId.ToString())
+            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+
+        var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
+        var base64String = resultData?["result"];
 
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345678",
-            Some.Base64EncodedWalletDepositEndpoint
+            "12345456",
+            base64String
         );
 
-        var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createRequest = await factory.CreateAuthenticatedClient(sub: senderId.ToString()).PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
-        var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+        var auditsResponse = await factory.CreateAuthenticatedClient(sub: senderId.ToString()).GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();

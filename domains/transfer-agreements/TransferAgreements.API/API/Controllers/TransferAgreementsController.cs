@@ -98,7 +98,6 @@ public class TransferAgreementsController : ControllerBase
         {
             throw;
         }
-
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
