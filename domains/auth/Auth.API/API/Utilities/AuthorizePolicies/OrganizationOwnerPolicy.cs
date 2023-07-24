@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using API.Services.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 
@@ -10,12 +11,16 @@ public class OrganizationOwnerPolicy: IAuthorizationHandler, IAuthorizationRequi
     private readonly IUserService userService;
     public OrganizationOwnerPolicy(IUserService userService) => this.userService = userService;
 
-    public async Task HandleAsync(AuthorizationHandlerContext context)
+    public Task HandleAsync(AuthorizationHandlerContext context)
     {
-        var user = await userService.GetUserByIdAsync(Guid.Parse(context.User.FindFirstValue(UserClaimName.Actor)!));
-        if (user?.Roles.Any(x => x.OrganizationOwner) ?? false)
+        var rolesArray = context.User.FindFirstValue(UserClaimName.Roles)?.Split(' ');
+        if (rolesArray?.Contains(RoleKeys.AuthAdminKey) == true)
         {
             context.Succeed(this);
+            return Task.FromResult(0);
         }
+
+        context.Fail();
+        return Task.FromResult(0);
     }
 }

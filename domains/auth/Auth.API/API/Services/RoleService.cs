@@ -11,5 +11,4 @@ public class RoleService: IRoleService
     public RoleService(IRoleRepository repository) => this.repository = repository;
     public List<Role> GetAllRoles() => repository.GetAllRoles();
     public async Task<Role?> GetRollByKeyAsync(string key) => await repository.GetRollByKeyAsync(key);
-    public async Task<List<Role>> GetRolesWithRoleAdmin() => await repository.GetRolesWithRoleAdmin();
 }

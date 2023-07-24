@@ -13,5 +13,4 @@ public class RoleRepository: IRoleRepository
 
     public List<Role> GetAllRoles() => dataContext.Roles.ToList();
     public async Task<Role?> GetRollByKeyAsync(string key) => await dataContext.Roles.FirstOrDefaultAsync(x=>x.Key == key);
-    public async Task<List<Role>> GetRolesWithRoleAdmin() => await dataContext.Roles.Where(x=>x.RoleAdmin == true).ToListAsync();
 }
