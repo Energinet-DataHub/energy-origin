@@ -28,7 +28,7 @@ public class TokenController : ControllerBase
 
         if (user != null)
         {
-            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken!, descriptor.IdentityToken!);
+            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken, descriptor.IdentityToken);
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 

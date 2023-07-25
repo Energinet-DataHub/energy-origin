@@ -229,8 +229,8 @@ public class OidcController : ControllerBase
 
         if (organizationOwner)
         {
-            var newOrganizationRoles = roleService.GetAllRoles().Where(x=>x.OrganizationOwner).ExceptBy(user.Roles.Select(x=>x.Key),x=>x.Key);
-            user.Roles.AddRange(newOrganizationRoles);
+            var newOrganizationRoles = (await roleService.GetRollByKeyAsync(RoleKeys.AuthAdminKey))!;
+            user.Roles.Add(newOrganizationRoles);
         }
 
         var newDefaultRoles = roleService.GetAllRoles().Where(x=>x.IsDefault).ExceptBy(user.Roles.Select(x=>x.Key),x=>x.Key);
