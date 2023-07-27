@@ -27,7 +27,7 @@ public static class TestOptions
 
     public static IOptions<TermsOptions> Terms(TermsOptions options, int? version = null) => Moptions.Create(new TermsOptions
     {
-        CurrentVersion = version ?? options.CurrentVersion,
+        //CurrentVersion = version ?? options.CurrentVersion,
     });
 
     public static IOptions<TokenOptions> Token(

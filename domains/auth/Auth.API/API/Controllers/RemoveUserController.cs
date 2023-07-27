@@ -27,7 +27,7 @@ public class RemoveUserController: ControllerBase
         if (!deleted) return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the user.");
 
         logger.AuditLog(
-            "User: {userId} was removed by to {User} by at {TimeStamp}.",
+            "User: {userId} was removed by {User} at {TimeStamp}.",
             userToBeDeletedId,
             user.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()
