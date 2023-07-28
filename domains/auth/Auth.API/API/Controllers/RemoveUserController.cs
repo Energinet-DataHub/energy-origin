@@ -12,8 +12,8 @@ public class RemoveUserController: ControllerBase
 {
     [Authorize(Policy = nameof(RoleAdminPolicy))]
     [HttpDelete]
-    [Route("user/remove")]
-    public async Task<IActionResult> RemoveUser([FromBody] Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService,  ILogger<RemoveUserController> logger)
+    [Route("user/remove/{userToBeDeletedId:guid}")]
+    public async Task<IActionResult> RemoveUser(Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService,  ILogger<RemoveUserController> logger)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         if (userToBeDeletedId == descriptor.Id)
