@@ -55,7 +55,7 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == acceptUserTermsRequest.TermsType);
+        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == acceptUserTermsRequest.TermsType && x.AcceptedVersion == acceptUserTermsRequest.AcceptedTermsFileName);
         if (userTerms == null)
         {
             userTerms = new UserTerms()
@@ -111,7 +111,7 @@ public class TermsController : ControllerBase
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
-        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == acceptedCompanyTermsVersion.TermsType);
+        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == acceptedCompanyTermsVersion.TermsType && x.AcceptedVersion == acceptedCompanyTermsVersion.AcceptedTermsFileName);
         if (companyTerms == null)
         {
             companyTerms = new CompanyTerms()
