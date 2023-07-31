@@ -26,7 +26,6 @@ public class TermsController : ControllerBase
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
         IOptions<DataSyncOptions> dataSyncOptions,
-        IOptions<TermsOptions> termsOptions,
         [FromBody] AcceptUserTermsRequest acceptUserTermsRequest)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -55,7 +54,7 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == acceptUserTermsRequest.TermsType && x.AcceptedVersion == acceptUserTermsRequest.AcceptedTermsFileName);
+        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == acceptUserTermsRequest.TermsType );
         if (userTerms == null)
         {
             userTerms = new UserTerms()
@@ -64,7 +63,7 @@ public class TermsController : ControllerBase
             };
             user.UserTerms.Add(userTerms);
         }
-        userTerms.AcceptedVersion = termsOptions.Value.PrivacyPolicyVersion;
+        userTerms.AcceptedVersion = acceptUserTermsRequest.AcceptedTermsFileName;
 
         await userService.UpsertUserAsync(user);
 
@@ -91,7 +90,7 @@ public class TermsController : ControllerBase
         logger.AuditLog(
             "{User} updated accepted Privacy policy {Versions} at {TimeStamp}.",
             user.Id,
-            termsOptions.Value.PrivacyPolicyVersion,
+            acceptUserTermsRequest.AcceptedTermsFileName,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
@@ -105,13 +104,12 @@ public class TermsController : ControllerBase
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
-        IOptions<TermsOptions> termsOptions,
         [FromBody] AcceptCompanyTermsRequest acceptedCompanyTermsVersion)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
-        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == acceptedCompanyTermsVersion.TermsType && x.AcceptedVersion == acceptedCompanyTermsVersion.AcceptedTermsFileName);
+        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == acceptedCompanyTermsVersion.TermsType);
         if (companyTerms == null)
         {
             companyTerms = new CompanyTerms()
@@ -120,14 +118,14 @@ public class TermsController : ControllerBase
             };
             user.Company.CompanyTerms.Add(companyTerms);
         }
-        companyTerms.AcceptedVersion = termsOptions.Value.TermsOfServiceVersion;
+        companyTerms.AcceptedVersion = acceptedCompanyTermsVersion.AcceptedTermsFileName;
 
         await userService.UpsertUserAsync(user);
 
         logger.AuditLog(
             "{User} updated accepted Terms of service {Versions} at {TimeStamp}.",
             user.Id,
-            termsOptions.Value.TermsOfServiceVersion,
+            acceptedCompanyTermsVersion.AcceptedTermsFileName,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
