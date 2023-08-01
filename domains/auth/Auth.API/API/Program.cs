@@ -13,6 +13,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -52,13 +53,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
-builder.Services.AddAuthorization(options =>
-{
-    var organizationOwnerPolicy = builder.Services.BuildServiceProvider().GetRequiredService<OrganizationOwnerPolicy>();
-    options.AddPolicy(nameof(OrganizationOwnerPolicy), policy => policy.Requirements.Add(organizationOwnerPolicy));
-    var roleAdminPolicy = builder.Services.BuildServiceProvider().GetRequiredService<RoleAdminPolicy>();
-    options.AddPolicy(nameof(RoleAdminPolicy), policy => policy.Requirements.Add(roleAdminPolicy));
-});
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
@@ -159,6 +153,20 @@ builder.Services.AddOpenTelemetry()
             }));
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var authorizationOptions = services.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
+
+    var organizationOwnerPolicy = services.GetRequiredService<OrganizationOwnerPolicy>();
+    authorizationOptions.AddPolicy(nameof(OrganizationOwnerPolicy), policy =>
+        policy.Requirements.Add(organizationOwnerPolicy));
+
+    var roleAdminPolicy = services.GetRequiredService<RoleAdminPolicy>();
+    authorizationOptions.AddPolicy(nameof(RoleAdminPolicy), policy =>
+        policy.Requirements.Add(roleAdminPolicy));
+}
 
 if (app.Environment.IsDevelopment())
 {

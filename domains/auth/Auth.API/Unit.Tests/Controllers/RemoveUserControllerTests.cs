@@ -6,7 +6,6 @@ using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using API.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace Unit.Tests.Controllers;

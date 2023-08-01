@@ -23,7 +23,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
-        user.AcceptedTermsVersion = version;
+       // user.AcceptedTermsVersion = version;
 
         var context = factory.DataContext;
         context.Users.Update(user);
@@ -48,7 +48,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        user.AcceptedTermsVersion = 0;
+       // user.AcceptedTermsVersion = 0;
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 

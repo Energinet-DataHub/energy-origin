@@ -23,7 +23,6 @@ public class UserServiceTests
             {
                 Id = id,
                 Name = "Amigo",
-                AcceptedPrivacyPolicyVersion = 2,
                 AllowCprLookup = true
             });
 

@@ -116,13 +116,12 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
-            AcceptedPrivacyPolicyVersion = "1",
             AllowCprLookup = true,
             UserProviders = new List<UserProvider>
             {
                 new()
                 {
-                    ProviderKeyType = ProviderKeyType.PID,
+                    ProviderKeyType = ProviderKeyType.Pid,
                     UserProviderKey = pid
                 }
             }
@@ -146,7 +145,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Contains("token=", query);
 
         Assert.Equal(2, user!.UserProviders.Count);
-        Assert.Contains(user.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
+        Assert.Contains(user.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitIdUuid && x.UserProviderKey == mitidUuid);
     }
 
     [Fact]

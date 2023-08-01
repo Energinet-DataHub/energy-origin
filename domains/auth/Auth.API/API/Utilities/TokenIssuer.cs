@@ -73,7 +73,6 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
-            { UserClaimName.UserStored, descriptor.UserStored },
             { UserClaimName.Subject, descriptor.Subject },
             { UserClaimName.Actor, descriptor.Id },
             { UserClaimName.ActorLegacy, descriptor.Id },

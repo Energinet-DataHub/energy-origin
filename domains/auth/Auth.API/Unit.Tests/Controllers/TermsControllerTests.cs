@@ -56,7 +56,7 @@ public class TermsControllerTests
         var oldAcceptedTermsVersion = 1;
         var newAcceptedTermsVersion = 2;
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
@@ -69,7 +69,7 @@ public class TermsControllerTests
                 AllowCprLookup = true,
                 AcceptedTermsVersion = oldAcceptedTermsVersion,
                 EncryptedProviderKeys = providerEncrypted,
-                UserStored = true
+                //UserStored = true
             });
 
         Mock.Get(userService)
@@ -109,7 +109,7 @@ public class TermsControllerTests
         var allowCprLookup = false;
         var newAcceptedTermsVersion = 1;
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
         Mock.Get(mapper)
@@ -122,8 +122,7 @@ public class TermsControllerTests
                 Tin = tin,
                 AllowCprLookup = allowCprLookup,
                 AcceptedTermsVersion = 0,
-                EncryptedProviderKeys = providerEncrypted,
-                UserStored = false
+                EncryptedProviderKeys = providerEncrypted
             });
 
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);

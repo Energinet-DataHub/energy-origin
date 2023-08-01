@@ -50,7 +50,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
     {
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerKeyType = ProviderKeyType.MitIdUuid;
         var user = new User
         {
             Id = null,

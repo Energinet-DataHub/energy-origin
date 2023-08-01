@@ -42,10 +42,5 @@ public class UserRepository : IUserRepository
             }
             throw;
         }
-        catch (Exception)
-        {
-            // What should we do here?
-            throw;
-        }
     }
 }

@@ -161,42 +161,42 @@ public class OidcController : ControllerBase
 
         switch (providerType)
         {
-            case ProviderType.MitID_Professional:
+            case ProviderType.MitIdProfessional:
                 name = userInfo.FindFirstValue("nemlogin.name");
                 tin = userInfo.FindFirstValue("nemlogin.cvr");
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
-                organizationOwner = userInfo.FindFirstValue("") is not null; // TODO Find Scope from Signaturgruppen
+                organizationOwner = userInfo.FindFirstValue("") is not null; // TODO Find Claim from Signaturgruppen
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
                 if (tin is not null && rid is not null)
                 {
-                    keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                    keys.Add(ProviderKeyType.Rid, $"CVR:{tin}-RID:{rid}");
                 }
 
-                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
+                keys.Add(ProviderKeyType.Eia, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
-            case ProviderType.MitID_Private:
+            case ProviderType.MitIdPrivate:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
                 var pid = userInfo.FindFirstValue("nemid.pid");
                 if (pid is not null)
                 {
-                    keys.Add(ProviderKeyType.PID, pid);
+                    keys.Add(ProviderKeyType.Pid, pid);
                 }
 
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
+                keys.Add(ProviderKeyType.MitIdUuid, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
-            case ProviderType.NemID_Professional:
+            case ProviderType.NemIdProfessional:
                 name = userInfo.FindFirstValue("nemid.common_name");
                 tin = userInfo.FindFirstValue("nemid.cvr");
                 companyName = userInfo.FindFirstValue("nemid.company_name");
 
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
+                keys.Add(ProviderKeyType.Rid, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
                 break;
-            case ProviderType.NemID_Private:
+            case ProviderType.NemIdPrivate:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
+                keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
 
@@ -249,10 +249,10 @@ public class OidcController : ControllerBase
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
-        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitID_Private,
-        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
-        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemID_Private,
-        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemID_Professional,
+        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
+        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
+        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemIdPrivate,
+        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 }

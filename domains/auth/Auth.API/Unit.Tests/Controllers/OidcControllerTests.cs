@@ -698,7 +698,7 @@ public class OidcControllerTests
             { "nemid.common_name", name }
         });
 
-        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>() { new UserProvider() { ProviderKeyType = ProviderKeyType.RID, UserProviderKey = ssn } });
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>() { new UserProvider() { ProviderKeyType = ProviderKeyType.Rid, UserProviderKey = ssn } });
 
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
@@ -714,7 +714,6 @@ public class OidcControllerTests
                 Tin = Guid.NewGuid().ToString(),
                 AllowCprLookup = true,
                 AcceptedTermsVersion = 0,
-                UserStored = true
             });
 
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, mockMapper, userProviderService, service, issuer, oidcOptions, providerOptions, logger, Guid.NewGuid().ToString(), null, null);
@@ -740,7 +739,7 @@ public class OidcControllerTests
                     && y.Company.Tin == tin
                     && y.Company.Name == companyName
                     && y.UserProviders.Count() == 1
-                    && y.UserProviders.First().ProviderKeyType == ProviderKeyType.RID
+                    && y.UserProviders.First().ProviderKeyType == ProviderKeyType.Rid
                     && y.UserProviders.First().UserProviderKey == ssn),
                 It.IsAny<ProviderType>(),
                 It.IsAny<string>(),

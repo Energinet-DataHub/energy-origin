@@ -56,7 +56,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemID_Professional, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemIdProfessional, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
         var client = CreateAnonymousClient(config);
         var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();

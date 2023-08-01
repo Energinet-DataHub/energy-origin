@@ -17,7 +17,6 @@ public class UserDescriptor
     public bool AllowCprLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
-    public bool UserStored { get; init; }
 
     /// <summary>
     /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2=ProviderKey2"

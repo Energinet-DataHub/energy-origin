@@ -44,12 +44,6 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
-        if (!bool.TryParse(user.FindFirstValue(UserClaimName.UserStored), out var userStored))
-        {
-            MissingProperty(nameof(UserClaimName.UserStored));
-            return null;
-        }
-
         var encryptedAccessToken = user.FindFirstValue(UserClaimName.AccessToken);
         if (encryptedAccessToken == null)
         {
@@ -90,7 +84,6 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             AcceptedTermsOfServiceVersion = user.FindFirstValue(UserClaimName.AcceptedTermsOfServiceVersion),
             Roles =  user.FindFirstValue(UserClaimName.Roles),
             AllowCprLookup = allowCprLookup,
-            UserStored = userStored,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,
             EncryptedProviderKeys = encryptedProviderKeys

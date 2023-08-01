@@ -6,15 +6,15 @@ namespace Unit.Tests.Options;
 public class IdentityProviderOptionsTests
 {
     [Theory]
-    [InlineData("openid ssn userinfo_token nemid", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemID_Private)]
-    [InlineData("openid ssn userinfo_token nemid", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemID_Professional)]
-    [InlineData("openid ssn userinfo_token nemid private_to_business", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemID_Private, ProviderType.NemID_Professional)]
-    [InlineData("openid ssn userinfo_token mitid", "mitid", null, ProviderType.MitID_Private)]
-    [InlineData("openid ssn userinfo_token nemlogin", "mitid_erhverv", null, ProviderType.MitID_Professional)]
-    [InlineData("openid ssn userinfo_token mitid nemlogin", "mitid mitid_erhverv", null, ProviderType.MitID_Private, ProviderType.MitID_Professional)]
-    [InlineData("openid ssn userinfo_token nemid mitid", "nemid mitid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitID_Private, ProviderType.NemID_Private)]
-    [InlineData("openid ssn userinfo_token nemid nemlogin", "nemid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitID_Professional, ProviderType.NemID_Professional)]
-    [InlineData("openid ssn userinfo_token nemid private_to_business mitid nemlogin", "nemid mitid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitID_Private, ProviderType.MitID_Professional, ProviderType.NemID_Private, ProviderType.NemID_Professional)]
+    [InlineData("openid ssn userinfo_token nemid", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemIdPrivate)]
+    [InlineData("openid ssn userinfo_token nemid", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemIdProfessional)]
+    [InlineData("openid ssn userinfo_token nemid private_to_business", "nemid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.NemIdPrivate, ProviderType.NemIdProfessional)]
+    [InlineData("openid ssn userinfo_token mitid", "mitid", null, ProviderType.MitIdPrivate)]
+    [InlineData("openid ssn userinfo_token nemlogin", "mitid_erhverv", null, ProviderType.MitIdProfessional)]
+    [InlineData("openid ssn userinfo_token mitid nemlogin", "mitid mitid_erhverv", null, ProviderType.MitIdPrivate, ProviderType.MitIdProfessional)]
+    [InlineData("openid ssn userinfo_token nemid mitid", "nemid mitid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdPrivate, ProviderType.NemIdPrivate)]
+    [InlineData("openid ssn userinfo_token nemid nemlogin", "nemid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdProfessional, ProviderType.NemIdProfessional)]
+    [InlineData("openid ssn userinfo_token nemid private_to_business mitid nemlogin", "nemid mitid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdPrivate, ProviderType.NemIdProfessional)]
     public void GetIdentityProviderArguments_ShouldReturnCorrectValues_WhenInvokedWithNemIdProviderOptions(string expectedScope, string expectedValues, string expectedParams, params ProviderType[] providerTypes)
     {
         var providerOptions = new IdentityProviderOptions

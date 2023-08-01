@@ -27,7 +27,7 @@ public class LoginControllerTests
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
         var identityProviderOption = new IdentityProviderOptions()
         {
-            Providers = new List<ProviderType>() { ProviderType.NemID_Professional }
+            Providers = new List<ProviderType>() { ProviderType.NemIdProfessional }
         };
         identityProviderOptions = Moptions.Create(identityProviderOption);
     }

@@ -56,14 +56,14 @@ public class UserProviderServiceTests
     [Fact]
     public void GetNonMatchingUserProviders_ShouldReturnUserProviderListWithNonMatches_WhenInvokedWithNonMatchingLists()
     {
-        var expectedProviderKeyType = ProviderKeyType.PID;
+        var expectedProviderKeyType = ProviderKeyType.Pid;
         var expectedUserProviderKey = Guid.NewGuid().ToString();
 
         var newUserProviders = new List<UserProvider>()
         {
             new UserProvider()
             {
-                ProviderKeyType = ProviderKeyType.MitID_UUID,
+                ProviderKeyType = ProviderKeyType.MitIdUuid,
                 UserProviderKey = Guid.NewGuid().ToString()
             },
             new UserProvider()
@@ -76,7 +76,7 @@ public class UserProviderServiceTests
         {
             new UserProvider()
             {
-                ProviderKeyType = ProviderKeyType.RID,
+                ProviderKeyType = ProviderKeyType.Rid,
                 UserProviderKey = Guid.NewGuid().ToString()
             },
             newUserProviders.First()
