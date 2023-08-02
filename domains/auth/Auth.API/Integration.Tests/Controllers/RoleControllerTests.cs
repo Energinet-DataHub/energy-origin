@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Security.Claims;
 using System.Text;
-using API.Options;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,8 +8,6 @@ using API.Models.Entities;
 using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using WireMock.Server;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Integration.Tests.Controllers;
@@ -28,11 +25,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AssignRole_ReturnsOk_WhenRoleIsAssigned()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
         var dbContext = factory.DataContext;
         var userGuid = Guid.NewGuid();
         await dbContext.Roles.AddAsync(new Role
@@ -45,9 +37,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = userGuid, Name = "TestUser", AllowCprLookup = false
         });
         await dbContext.SaveChangesAsync();
-        var client = factory.CreateAuthenticatedClient(policyUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
-
-        server.MockRelationsEndpoint();
+        var client = factory.CreateAuthenticatedClient(policyUser);
 
         var roleRequest = new RoleRequest
         {
@@ -66,12 +56,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AssignRole_ShouldThrowNullException_WhenUserDoesNotExist()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
-
         var dbContext = factory.DataContext;
         var nonExistentUserId = Guid.NewGuid();
         await dbContext.Roles.AddAsync(new Role
@@ -84,7 +68,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleKey = "roleKey",
             UserId = nonExistentUserId
         };
-        var client = factory.CreateAuthenticatedClient(policyUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(policyUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assignRole", httpContent));
@@ -93,11 +77,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AssignRole_ShouldThrowNullException_WhenRoleDoesNotExist()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
         var nonExistentRoleKey = "notExistentRoleKey";
         var userGuid = Guid.NewGuid();
         await factory.AddUserToDatabaseAsync(new User
@@ -109,7 +88,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleKey = nonExistentRoleKey,
             UserId = userGuid
         };
-        var client = factory.CreateAuthenticatedClient(policyUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(policyUser);
 
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
@@ -119,12 +98,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RemoveRoleFromUser_ShouldRemoveRole_WhenRoleExists()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
-
         var existingRoleKey = "existingRoleKey";
         var existingUserId = Guid.NewGuid();
         var dataContext = factory.DataContext;
@@ -150,7 +123,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
         var response = await client.PutAsync("role/removeRoleFromUser", httpContent);
@@ -164,11 +137,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RemoveRoleFromUser_ShouldThrowException_WhenRoleDoesNotExist()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
         var nonExistentRoleKey = "notExistentRoleKey";
         var existingUserId = Guid.NewGuid();
         var dataContext = factory.DataContext;
@@ -187,7 +155,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/removeRoleFromUser", httpContent));
@@ -196,11 +164,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserDoesNotExist()
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
 
         var dbContext = factory.DataContext;
         var nonExistentUserId = Guid.NewGuid();
@@ -216,7 +179,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/removeRoleFromUser", httpContent));
@@ -227,11 +190,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [InlineData("role/removeRoleFromUser")]
     public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string routePath)
     {
-        var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        });
         var roleRequest = new RoleRequest
         {
             RoleKey = "testRoleKey",
@@ -239,7 +197,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        var client = factory.CreateAuthenticatedClient(user);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
         var response = await client.PutAsync(routePath, httpContent);

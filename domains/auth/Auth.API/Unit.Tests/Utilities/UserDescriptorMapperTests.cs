@@ -32,23 +32,18 @@ public class UserDescriptorMapperTests
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()
     {
-        var user = new User()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Amigo",
-            AcceptedTermsVersion = 0,
-            AllowCprLookup = true
-        };
+        var user = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
-        var providerType = ProviderType.NemID_Professional;
+        var providerType = ProviderType.NemIdProfessional;
 
         var descriptor = mapper.Map(user, providerType, accesToken, identityToken);
 
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);
         Assert.Equal(user.Name, descriptor.Name);
-        Assert.Equal(user.AcceptedTermsVersion, descriptor.AcceptedTermsVersion);
+        Assert.Contains(user.UserTerms, x=>x.AcceptedVersion ==  descriptor.AcceptedPrivacyPolicyVersion);
         Assert.Equal(user.AllowCprLookup, descriptor.AllowCprLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);

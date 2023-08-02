@@ -9,6 +9,7 @@ using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WireMock.Server;
@@ -21,7 +22,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
+    public async Task AcceptUserTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();
         var options = Options.Create(new DataSyncOptions
@@ -33,21 +34,22 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptCompanyTermsRequest(2);
+        var dto = new AcceptUserTermsRequest(0, "privacyPolicy");
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
-        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == user.Id)!;
+        var result = await client.PutAsync("terms/acceptUser", httpContent);
+        var dbUser = factory.DataContext.Users.Include(x=>x.UserTerms).FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
+        Assert.Contains(dbUser.UserTerms, x => x.Type == dto.TermsType);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == dto.AcceptedTermsFileName);
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
+    public async Task AcceptUserTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
@@ -56,10 +58,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            AcceptedTermsVersion = 0,
+            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "privatePolicy" } },
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider>{ new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
@@ -71,16 +73,17 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptCompanyTermsRequest(1);
+        var dto = new AcceptUserTermsRequest(0,"privatePolicy");
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
-        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Name == user.Name)!;
+        var result = await client.PutAsync("terms/acceptUser", httpContent);
+        var dbUser = factory.DataContext.Users.Include(x=>x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
+        Assert.Contains(dbUser.UserTerms, x => x.Type == dto.TermsType);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == dto.AcceptedTermsFileName);
     }
 
     [Fact]
@@ -98,10 +101,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var dto = new AcceptCompanyTermsRequest(2);
+        var dto = new AcceptUserTermsRequest(0, "privacyPolicy");
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/acceptUser", httpContent));
     }
 
     [Fact]
@@ -118,9 +121,9 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
         });
 
-        var dto = new AcceptCompanyTermsRequest(2);
+        var dto = new AcceptCompanyTermsRequest(0, "privacyPolicy");
         var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/acceptUser", httpContent));
     }
 }

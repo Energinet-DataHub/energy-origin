@@ -32,13 +32,13 @@ public class TokenIssuerTests
     }
 
     [Theory]
-    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicyTerms, 0, false)]
-    [InlineData($"{UserClaimName.AcceptedPrivacyPolicyVersion} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 1, false)]
-    [InlineData($"{UserClaimName.AcceptedPrivacyPolicyVersion} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 0, true)]
-    [InlineData($"{UserClaimName.AcceptedPrivacyPolicyVersion} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 1, true)]
-    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int version, bool bypass)
+    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, "0", "0", false)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "3", "1", false)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "0", "0", true)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "3", "1", true)]
+    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, string privacyVersion, string tosVersion, bool bypass)
     {
-        var descriptor = PrepareUser(version: version);
+        var descriptor = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion);
 
         var token = GetTokenIssuer().Issue(descriptor, versionBypass: bypass);
 
@@ -123,7 +123,7 @@ public class TokenIssuerTests
         var accessToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name, version, accessToken, identityToken);
+        var descriptor = PrepareUser(name:name, privacyVersion: version.ToString(), accessToken: accessToken, identityToken: identityToken);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
@@ -131,8 +131,7 @@ public class TokenIssuerTests
         Assert.NotNull(jwt);
         Assert.Equal(descriptor.Id.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
         Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
-        Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AcceptedTermsVersion)?.Value);
-        Assert.Equal("1", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.CurrentTermsVersion)?.Value);
+        Assert.Equal($"{version}", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AcceptedPrivacyPolicyVersion)?.Value);
         Assert.Equal(descriptor.AllowCprLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "true");
         Assert.Equal(!descriptor.AllowCprLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "false");
         Assert.Equal(accessToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
@@ -142,33 +141,43 @@ public class TokenIssuerTests
     [Fact]
     public void Issue_ShouldReturnAToken_WhenIssuingForAnUnsavedUser()
     {
-        var descriptor = PrepareUser(addToMock: false, isStored: false);
+        var descriptor = PrepareUser(addToMock: false);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
         Assert.NotNull(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
-        Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
+        // Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Moptions.Create(terms ?? termsOptions.Value), Moptions.Create(token ?? tokenOptions.Value));
 
-    private UserDescriptor PrepareUser(string? name = default, int version = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true, bool isStored = true)
+    private UserDescriptor PrepareUser(string? name = default, string privacyVersion = "3", string tosVersion = "1", string? accessToken = default, string? identityToken = default, bool addToMock = true)
     {
         var user = new User
         {
-            Id = Guid.NewGuid(),
-            Name = name ?? "Amigo",
-            AcceptedTermsVersion = version,
-            AllowCprLookup = true
-
+            Id = Guid.NewGuid(), Name = name ?? "Amigo", AllowCprLookup = false, UserTerms = new List<UserTerms>
+            {
+                new()
+                {
+                    Type = UserTermsType.PrivacyPolicy, AcceptedVersion = privacyVersion
+                }
+            },
+            Company = new Company
+            {
+                Name = "testCompany", CompanyTerms = new List<CompanyTerms>
+                {
+                    new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = tosVersion }
+                }
+            }
         };
         var descriptor = new UserDescriptor(null!)
         {
             Id = user.Id.Value,
             Name = user.Name,
-            AcceptedTermsVersion = user.AcceptedTermsVersion,
+            AcceptedPrivacyPolicyVersion = user.UserTerms.First().AcceptedVersion,
+            AcceptedTermsOfServiceVersion = user.Company.CompanyTerms.First().AcceptedVersion,
             AllowCprLookup = user.AllowCprLookup,
             ProviderType = ProviderType.NemIdProfessional,
             EncryptedAccessToken = accessToken ?? "",

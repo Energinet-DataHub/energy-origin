@@ -85,23 +85,6 @@ public class RemoveUserControllerTests: IClassFixture<AuthWebApplicationFactory>
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-
-    // [Fact]
-    // public async Task RemoveUser_ShouldReturnNullException_WhenUserDescriptorMapperReturnsNull()
-    // {
-    //     var userToBeDeletedId = Guid.NewGuid();
-    //     var client = factory.CreateAuthenticatedClient(policyUser, config: builder =>
-    //     {
-    //         var mapper = Mock.Of<IUserDescriptorMapper>();
-    //         Mock.Get(mapper)
-    //             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-    //             .Returns(value: null!);
-    //
-    //         builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
-    //     });
-    //     await Assert.ThrowsAsync<NullReferenceException>( () => client.DeleteAsync($"user/remove/{userToBeDeletedId}"));
-    // }
-
     private User SetupAuthPolicyUser() =>
         new()
         {

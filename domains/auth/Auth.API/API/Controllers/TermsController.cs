@@ -18,7 +18,7 @@ public class TermsController : ControllerBase
 {
     [HttpPut]
     [Route("terms/acceptUser")]
-    public async Task<IActionResult> AcceptUserAsync(
+    public async Task<IActionResult> AcceptUserTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
         IUserDescriptorMapper mapper,

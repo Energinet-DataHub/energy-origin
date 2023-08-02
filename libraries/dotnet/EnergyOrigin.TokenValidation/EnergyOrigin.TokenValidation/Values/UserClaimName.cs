@@ -17,6 +17,5 @@ public struct UserClaimName
     public const string Tin = "tin";
     public const string CompanyName = "cpn";
     public const string CompanyId = "coi";
-    public const string UserStored = "ust";
     public const string Roles = "rol";
 }

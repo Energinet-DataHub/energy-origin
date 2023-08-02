@@ -15,15 +15,14 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TokenControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(int version)
+    [InlineData("privacy0")]
+    [InlineData("privacy1")]
+    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(string termsVersion)
     {
-        var user = await factory.AddUserToDatabaseAsync();
+        var newUser = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = termsVersion} } };
+        var user = await factory.AddUserToDatabaseAsync(newUser);
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
-
-       // user.AcceptedTermsVersion = version;
 
         var context = factory.DataContext;
         context.Users.Update(user);
@@ -47,8 +46,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-       // user.AcceptedTermsVersion = 0;
+        var newUser = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+        var user = await factory.AddUserToDatabaseAsync(newUser);
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "4" } };
+
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
@@ -76,7 +77,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Name = Guid.NewGuid().ToString()
         };
         var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
-        user.AcceptedTermsVersion = 1;
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } };
         await factory.AddUserToDatabaseAsync(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
         var result = await client.GetAsync("auth/token");
@@ -92,8 +93,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
-        Assert.Contains(UserScopeClaim.AcceptedTerms, newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, oldScope);
+        Assert.DoesNotContain(UserScopeClaim.NotAcceptedPrivacyPolicyTerms, newScope);
     }
 
     [Fact]
@@ -136,7 +137,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, newScope);
     }
 }
