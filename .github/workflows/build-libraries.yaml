@@ -150,7 +150,7 @@ jobs:
       - name: Switch branch if not main
         shell: bash
         if: ${{ github.ref_name != 'main' }}
-        run: git fetch && git checkout ${{ github.ref_name }} 2>/dev/null || git checkout -b ${{ github.ref_name }}
+        run: git fetch && git checkout ${{ github.event.pull_request.head.ref }} 2>/dev/null || git checkout -b ${{ github.event.pull_request.head.ref }}
 
       - name: Update references
         shell: bash
@@ -161,8 +161,8 @@ jobs:
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
             file=$(jq -r -c '.file' <<< "$reference")
             path=$(jq -r -c '.path' <<< "$reference")
-            yq -i "'($path) = $image'" "$file"
-          done
+            echo yq -i "'($path) = $image'" "$file"
+          done | bash -x
 
       - name: Commit changes
         id: commit
