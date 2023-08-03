@@ -157,11 +157,11 @@ jobs:
         env:
           REFERENCES: ${{ toJson(matrix.item.references) }}
         run: |
-          image="${{ matrix.item.name }}:${{ matrix.item.tag }}"
+          image="${{ matrix.item.repo }}/${{ matrix.item.name }}:${{ matrix.item.tag }}"
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
             file=$(jq -r -c '.file' <<< "$reference")
             path=$(jq -r -c '.path' <<< "$reference")
-            echo yq -i "'($path) = $image'" "$file"
+            yq -i "'($path) = $image'" "$file"
           done
 
       - name: Commit changes
