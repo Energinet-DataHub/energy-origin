@@ -50,6 +50,7 @@ jobs:
           PATTERN: ${{ steps.docker.outputs.pattern }}
           PR: ${{ github.event.pull_request.number }}
         run: |
+          env
           dockerfiles=$(find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do
             context="$directory"
             docker="$directory/Dockerfile"
@@ -64,7 +65,6 @@ jobs:
 
           echo '::group::dockerfiles'
           echo "$dockerfiles" | jq -r '.'
-          env
           echo '::endgroup::'
 
   build-dotnet-library:
