@@ -54,8 +54,7 @@ jobs:
             context="$directory"
             docker="$directory/Dockerfile"
             configuration="$directory/configuration.yaml"
-            tag=$(yq '.version' "$configuration")
-            tag=$(sh -x ./.github/tooling/semver.sh "$tag" "$PR")
+            tag=0.0.0
 
             yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
           done | jq -sc '.')
@@ -157,6 +156,7 @@ jobs:
         env:
           REFERENCES: ${{ matrix.item.references }}
         run: |
+          exit 1
           image="${{ matrix.item.name }}:${{ matrix.item.tag }}"
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
             file=$(jq -r -c '.file' <<< "$reference")
