@@ -161,8 +161,8 @@ jobs:
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
             file=$(jq -r -c '.file' <<< "$reference")
             path=$(jq -r -c '.path' <<< "$reference")
-            echo yq -i "'($path) = $image'" "$file"
-          done | bash -x
+            echo yq -i "'($path) = \"$image\"'" "$file"
+          done | sh -x
 
       - name: Commit changes
         id: commit
