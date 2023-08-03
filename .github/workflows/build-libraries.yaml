@@ -145,12 +145,6 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/eo-base-environment
           ssh-key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          ref: main
-
-      - name: Switch branch if not main
-        shell: bash
-        if: ${{ github.ref_name != 'main' }}
-        run: git fetch && git checkout ${{ github.event.pull_request.head.ref }} 2>/dev/null || git checkout -b ${{ github.event.pull_request.head.ref }}
 
       - name: Update references
         shell: bash
@@ -169,8 +163,8 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           message: Use ${{ matrix.item.name }}:${{ matrix.item.tag }}
-          new_branch: ${{ github.ref_name }}
-          push: --force --set-upstream origin ${{ github.ref_name }}
+          new_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
+          push: --force --set-upstream origin ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
           default_author: github_actions
 
       - name: Verify changes were pushed
