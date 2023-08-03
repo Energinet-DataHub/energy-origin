@@ -50,13 +50,12 @@ jobs:
           PATTERN: ${{ steps.docker.outputs.pattern }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          env
           dockerfiles=$(find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do
             context="$directory"
             docker="$directory/Dockerfile"
             configuration="$directory/configuration.yaml"
             tag=$(yq '.version' "$configuration")
-            tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
+            tag=$(sh -x ./.github/tooling/semver.sh "$tag" "$PR")
 
             yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
           done | jq -sc '.')
