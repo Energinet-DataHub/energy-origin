@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -7,14 +10,21 @@ using Xunit;
 
 namespace API.IntegrationTests.Testcontainers;
 
-//TNE 20/07/2023: Not configured with project origin registry, since it's not needed yet
 public class WalletContainer : IAsyncLifetime
 {
     private readonly Lazy<IContainer> walletContainer;
     private readonly PostgreSqlContainer postgresContainer;
+    private static ConcurrentBag<int> ports = new ConcurrentBag<int>(Enumerable.Range(7000, 7999));
+    private int hostPort;
+
 
     public WalletContainer()
     {
+        if (!ports.TryTake(out hostPort))
+        {
+            throw new InvalidOperationException("No available ports.");
+        }
+
         postgresContainer = new PostgreSqlBuilder()
             .WithImage("postgres:15.2")
             .WithDatabase("postgres")
@@ -28,15 +38,16 @@ public class WalletContainer : IAsyncLifetime
             var postgresConnectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
             return new ContainerBuilder()
-            .WithImage("ghcr.io/project-origin/wallet-server:0.1.2")
-            .WithPortBinding(7890, 80)
-            .WithCommand("--serve", "--migrate")
-            .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-            .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
-            .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
-            .Build();
+                .WithImage("ghcr.io/project-origin/wallet-server:0.1.3")
+                .WithPortBinding(hostPort, 80)
+                .WithCommand("--serve", "--migrate")
+                .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
+                .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .Build();
         });
     }
+
     public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(80)).Uri.ToString();
 
     public async Task InitializeAsync()
@@ -45,7 +56,11 @@ public class WalletContainer : IAsyncLifetime
         await walletContainer.Value.StartAsync();
     }
 
-    public Task DisposeAsync() =>
-        Task.WhenAll(walletContainer.Value.DisposeAsync().AsTask(),
+    public async Task DisposeAsync()
+    {
+        ports.Add(hostPort);
+
+        await Task.WhenAll(walletContainer.Value.DisposeAsync().AsTask(),
             postgresContainer.DisposeAsync().AsTask());
+    }
 }
