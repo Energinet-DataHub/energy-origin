@@ -4,7 +4,7 @@ VALUES ('b8019791-3a98-4f01-a405-e9e316f52b91', 'AuthAdmin', 'AuthAdmin', false)
 ON CONFLICT ("Id")
 DO UPDATE SET "Key" = 'AuthAdmin', "Name" = 'AuthAdmin', "IsDefault" = false;
 
-INSERT INTO public."Roles" ("Id", "Key", "Name", "IsDefault"
+INSERT INTO public."Roles" ("Id", "Key", "Name", "IsDefault")
 VALUES ('a25fbd87-5300-4fa0-93fa-b6ba0be0ef20', 'Viewer', 'Viewer', true)
 ON CONFLICT ("Id")
 DO UPDATE SET "Key" = 'Viewer', "Name" = 'Viewer', "IsDefault" = true;
