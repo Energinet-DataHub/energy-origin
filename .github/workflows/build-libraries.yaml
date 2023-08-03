@@ -47,22 +47,18 @@ jobs:
         if: ${{ steps.docker.outputs.pattern != '' }}
         shell: bash
         env:
-          PATTERN: ${{ steps.docker.outputs.pattern }}
+          LIST: ${{ steps.docker.outputs.list }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          find libraries/docker -name "Dockerfile" -exec dirname {} \;
-          echo '---'
-          find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN"
-          echo '---'
-          dockerfiles=$(find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do
+          dockerfiles=$(while read directory; do
             context="$directory"
             docker="$directory/Dockerfile"
             configuration="$directory/configuration.yaml"
             tag=$(yq '.version' "$configuration")
-            tag=$(sh -x ./.github/tooling/semver.sh "$tag" "$PR")
+            tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
 
             yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
-          done | jq -sc '.')
+          done <<< $LIST | jq -sc '.')
 
           echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"
 
