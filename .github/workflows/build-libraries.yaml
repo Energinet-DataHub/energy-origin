@@ -50,11 +50,16 @@ jobs:
           PATTERN: ${{ steps.docker.outputs.pattern }}
           PR: ${{ github.event.pull_request.number }}
         run: |
+          find libraries/docker -name "Dockerfile" -exec dirname {} \;
+          echo '---'
+          find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN"
+          echo '---'
           dockerfiles=$(find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do
             context="$directory"
             docker="$directory/Dockerfile"
             configuration="$directory/configuration.yaml"
-            tag=0.0.0
+            tag=$(yq '.version' "$configuration")
+            tag=$(sh -x ./.github/tooling/semver.sh "$tag" "$PR")
 
             yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
           done | jq -sc '.')
@@ -156,7 +161,6 @@ jobs:
         env:
           REFERENCES: ${{ matrix.item.references }}
         run: |
-          exit 1
           image="${{ matrix.item.name }}:${{ matrix.item.tag }}"
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
             file=$(jq -r -c '.file' <<< "$reference")
