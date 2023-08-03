@@ -33,7 +33,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public string? WalletUrl { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.ConfigureTestServices(s  =>
+        builder.ConfigureTestServices(s =>
         {
             s.Configure<DatabaseOptions>(o =>
             {

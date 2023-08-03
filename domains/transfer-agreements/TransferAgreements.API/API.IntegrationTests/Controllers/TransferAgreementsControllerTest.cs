@@ -11,6 +11,7 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
@@ -23,26 +24,45 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
+    private readonly ApplicationDbContext context;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
-        WalletContainer wallet)
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory, WalletContainer wallet)
     {
         this.factory = factory;
 
         var sub = Guid.NewGuid().ToString();
-        factory.WalletUrl = wallet.WalletUrl;
+        this.factory.WalletUrl = wallet.WalletUrl;
         wallet.InitializeAsync();
-        authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        authenticatedClient = this.factory.CreateAuthenticatedClient(sub);
+
+        // Here's how you should get ApplicationDbContext
+        using var scope = this.factory.Services.CreateScope();
+        context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
 
     [Fact]
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
-        var transferAgreement = CreateTransferAgreement();
-
+        var transferAgreement = new CreateTransferAgreement(
+            new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
+            new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
+            "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
+        );
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-        response.EnsureSuccessStatusCode();
+
+        var createdTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
+
+        await Task.Delay(2000);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var createdAgreementInDb = await dbContext.TransferAgreements.FindAsync(createdTransferAgreement.Id);
+
+        Assert.NotNull(createdAgreementInDb);
+        Assert.NotEqual(Guid.Empty, createdAgreementInDb.ReceiverReference);
     }
+
 
     [Fact]
     public async Task Create_ShouldFail_WhenModelInvalid()

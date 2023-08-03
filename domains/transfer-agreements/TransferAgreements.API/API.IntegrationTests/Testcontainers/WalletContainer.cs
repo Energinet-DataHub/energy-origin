@@ -14,22 +14,14 @@ public class WalletContainer : IAsyncLifetime
 {
     private readonly Lazy<IContainer> walletContainer;
     private readonly PostgreSqlContainer postgresContainer;
-    private static ConcurrentBag<int> ports = new ConcurrentBag<int>(Enumerable.Range(7000, 7999));
-    private int hostPort;
-
 
     public WalletContainer()
     {
-        if (!ports.TryTake(out hostPort))
-        {
-            throw new InvalidOperationException("No available ports.");
-        }
-
         postgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:15.2")
             .WithDatabase("postgres")
             .WithUsername("postgres")
             .WithPassword("postgres")
+            .WithExposedPort(5432)
             .WithPortBinding(5432, true)
             .Build();
 
@@ -39,10 +31,10 @@ public class WalletContainer : IAsyncLifetime
 
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.1.3")
-                .WithPortBinding(hostPort, 80)
+                .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{postgresContainer.Hostname}/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .Build();
         });
@@ -58,8 +50,6 @@ public class WalletContainer : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        ports.Add(hostPort);
-
         await Task.WhenAll(walletContainer.Value.DisposeAsync().AsTask(),
             postgresContainer.DisposeAsync().AsTask());
     }
