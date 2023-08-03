@@ -155,7 +155,7 @@ jobs:
       - name: Update references
         shell: bash
         env:
-          REFERENCES: ${{ matrix.item.references }}
+          REFERENCES: ${{ toJson(matrix.item.references) }}
         run: |
           image="${{ matrix.item.name }}:${{ matrix.item.tag }}"
           jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
