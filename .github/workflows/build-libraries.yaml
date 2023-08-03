@@ -7,43 +7,72 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ env.matrix }}
+      csprojects: ${{ env.csprojects }}
+      dockerfiles: ${{ env.dockerfiles }}
 
     steps:
       - uses: CodeReaper/find-diff-action@v3
-        id: diff
+        id: dotnet
         with:
           paths: libraries/dotnet/*/
 
-      - name: Set default matrix
+      - uses: CodeReaper/find-diff-action@v3
+        id: docker
+        with:
+          paths: libraries/docker/*/
+
+      - name: Set default matrices
         shell: bash
         run: |
-          echo "matrix=[]" >> "$GITHUB_ENV"
+          echo "csprojects=[]" >> "$GITHUB_ENV"
+          echo "dockerfiles=[]" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v3
-        if: ${{ steps.diff.outputs.pattern != '' }}
 
-      - name: Build relevant project matrix
-        if: ${{ steps.diff.outputs.pattern != '' }}
+      - name: Build relevant dotnet project matrix
+        if: ${{ steps.dotnet.outputs.pattern != '' }}
         shell: bash
         env:
-          PATTERN: ${{ steps.diff.outputs.pattern }}
+          PATTERN: ${{ steps.dotnet.outputs.pattern }}
         run: |
-          matrix=$(find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
+          csprojects=$(find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
 
-          echo "matrix=$matrix" >> "$GITHUB_ENV"
+          echo "csprojects=$csprojects" >> "$GITHUB_ENV"
 
-          echo '::group::Matrix'
-          echo "$matrix" | jq -r '.'
+          echo '::group::csprojects'
+          echo "$csprojects" | jq -r '.'
           echo '::endgroup::'
 
-  build-library:
+      - name: Build relevant docker matrix
+        if: ${{ steps.docker.outputs.pattern != '' }}
+        shell: bash
+        env:
+          PATTERN: ${{ steps.docker.outputs.pattern }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          dockerfiles=$(find libraries/docker -name "Dockerfile" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do
+            context="$directory"
+            docker="$directory/Dockerfile"
+            configuration="$directory/configuration.yaml"
+            tag=$(yq '.version' "$configuration")
+            tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
+
+            yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
+          done | jq -sc '.')
+
+          echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"
+
+          echo '::group::dockerfiles'
+          echo "$dockerfiles" | jq -r '.'
+          echo '::endgroup::'
+
+  build-dotnet-library:
     runs-on: ubuntu-latest
     needs: define-matrix
-    if: ${{ needs.define-matrix.outputs.matrix != '[]' }}
+    if: ${{ needs.define-matrix.outputs.csprojects != '[]' }}
     strategy:
       matrix:
-        projects: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
+        projects: ${{ fromJson(needs.define-matrix.outputs.csprojects) }}
     steps:
       - uses: actions/checkout@v3
 
@@ -80,3 +109,73 @@ jobs:
           package-version: ${{ steps.resolve-version.outputs.result }}
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}
           dotnet-version: ${{ env.SDK_VERSION }}
+
+  build-docker-library:
+    runs-on: ubuntu-latest
+    needs: define-matrix
+    if: ${{ needs.define-matrix.outputs.dockerfiles != '[]' }}
+    strategy:
+      matrix:
+        item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Push image
+        uses: ./.github/actions/build-and-push-container
+        with:
+          dockerfile: ${{ matrix.item.docker }}
+          image-name: ${{ matrix.item.name }}
+          image-tag: ${{ matrix.item.tag }}
+          docker-context: ${{ matrix.item.context }}
+
+  update-environment-docker:
+    name: Update environment
+    runs-on: ubuntu-latest
+    needs:
+      - define-matrix
+      - build-docker-library
+    if: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
+    concurrency: commits-base-environment
+    strategy:
+      max-parallel: 1
+      matrix:
+        item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/eo-base-environment
+          ssh-key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          ref: main
+
+      - name: Switch branch if not main
+        shell: bash
+        if: ${{ github.ref_name != 'main' }}
+        run: git fetch && git checkout ${{ github.ref_name }} 2>/dev/null || git checkout -b ${{ github.ref_name }}
+
+      - name: Update references
+        shell: bash
+        env:
+          REFERENCES: ${{ matrix.item.references }}
+        run: |
+          image="${{ matrix.item.name }}:${{ matrix.item.tag }}"
+          jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
+            file=$(jq -r -c '.file' <<< "$reference")
+            path=$(jq -r -c '.path' <<< "$reference")
+            echo yq -i "'($path) = $image'" "$file"
+          done
+
+      - name: Commit changes
+        id: commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: Use ${{ matrix.item.name }}:${{ matrix.item.tag }}
+          new_branch: ${{ github.ref_name }}
+          push: --force --set-upstream origin ${{ github.ref_name }}
+          default_author: github_actions
+
+      - name: Verify changes were pushed
+        shell: bash
+        if: ${{ steps.commit.outputs.pushed == 'false' }}
+        run: |
+          echo "::error::Nothing was committed or pushed"
+          exit 1

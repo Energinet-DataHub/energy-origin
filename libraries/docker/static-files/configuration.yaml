@@ -1,0 +1,7 @@
+name: static-files
+version: 0.0.1
+references:
+  - file: k8s/energy-origin-apps/auth/base/auth-env-injection.yaml
+    path: spec.template.spec.initContainer | select(.name = "auth-api-init-terms") | .image
+  - file: k8s/energy-origin-apps/frontend/base/frontend-terms-injection.yaml
+    path: spec.template.spec.initContainer | select(.name = "frontend-app-init-terms") | .image
