@@ -64,6 +64,7 @@ jobs:
 
           echo '::group::dockerfiles'
           echo "$dockerfiles" | jq -r '.'
+          env
           echo '::endgroup::'
 
   build-dotnet-library:
