@@ -145,6 +145,12 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/eo-base-environment
           ssh-key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          ref: main
+
+      - name: Switch branch if not main
+        shell: bash
+        if: ${{ github.ref_name != 'main' }}
+        run: git fetch && git checkout ${{ github.event.pull_request.head.ref }} 2>/dev/null || git checkout -b ${{ github.event.pull_request.head.ref }}
 
       - name: Update references
         shell: bash
