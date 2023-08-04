@@ -35,7 +35,7 @@ public class WalletContainer : IAsyncLifetime
                 .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{postgresContainer.Hostname}/")
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://postgres:5432/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .Build();
         });
@@ -47,37 +47,6 @@ public class WalletContainer : IAsyncLifetime
     {
         await postgresContainer.StartAsync();
         await walletContainer.Value.StartAsync();
-
-        await WaitForWalletServiceAsync();
-    }
-
-    private async Task WaitForWalletServiceAsync()
-    {
-        var httpClient = new HttpClient();
-        var retryCount = 0;
-        var maxRetries = 10;
-
-        while (retryCount < maxRetries)
-        {
-            try
-            {
-                var response = await httpClient.GetAsync(WalletUrl + "/health");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return;
-                }
-            }
-            catch (HttpRequestException)
-            {
-
-            }
-
-            retryCount++;
-            await Task.Delay(2000);
-        }
-
-        throw new Exception("The wallet service did not become ready within the expected time.");
     }
 
     public async Task DisposeAsync()
