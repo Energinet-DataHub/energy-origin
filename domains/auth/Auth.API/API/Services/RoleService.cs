@@ -1,10 +1,10 @@
-﻿using API.Models.Entities;
+using API.Models.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 
 namespace API.Services;
 
-public class RoleService: IRoleService
+public class RoleService : IRoleService
 {
     private readonly IRoleRepository repository;
 

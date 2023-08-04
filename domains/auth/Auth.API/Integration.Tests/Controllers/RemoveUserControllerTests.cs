@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using API.Models.Entities;
 using API.Services.Interfaces;
 using API.Values;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Integration.Tests.Controllers;
 
-public class RemoveUserControllerTests: IClassFixture<AuthWebApplicationFactory>
+public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
     private readonly User policyUser;
@@ -31,7 +31,7 @@ public class RemoveUserControllerTests: IClassFixture<AuthWebApplicationFactory>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x=>x.Id ==userToBeDeletedId);
+        var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x => x.Id == userToBeDeletedId);
         Assert.Null(deletedUser);
     }
 

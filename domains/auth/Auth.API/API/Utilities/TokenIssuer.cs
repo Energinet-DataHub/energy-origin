@@ -60,7 +60,7 @@ public class TokenIssuer : ITokenIssuer
 
         scope = scope.Trim();
 
-        return new(descriptor.AcceptedPrivacyPolicyVersion,descriptor.AcceptedTermsOfServiceVersion, scope);
+        return new(descriptor.AcceptedPrivacyPolicyVersion, descriptor.AcceptedTermsOfServiceVersion, scope);
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
@@ -78,7 +78,7 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ActorLegacy, descriptor.Id },
         };
 
-        if (state.AcceptedPrivacyPolicyTerms is not null )
+        if (state.AcceptedPrivacyPolicyTerms is not null)
         {
             claims.Add(UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedPrivacyPolicyTerms);
         }

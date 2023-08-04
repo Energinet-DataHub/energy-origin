@@ -1,4 +1,4 @@
-﻿namespace EnergyOrigin.TokenValidation.Values;
+namespace API.Values;
 
 public enum CompanyTermsType
 {

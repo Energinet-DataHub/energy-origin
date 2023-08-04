@@ -1,5 +1,6 @@
 using API.Models.Entities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
@@ -25,7 +26,7 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
         EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
         Roles = string.Join(" ", user.Roles.Select(x => x.Key)),
-        AcceptedPrivacyPolicyVersion = user.UserTerms.FirstOrDefault(x=>x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion,
-        AcceptedTermsOfServiceVersion = user.Company?.CompanyTerms.FirstOrDefault(x=>x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion
+        AcceptedPrivacyPolicyVersion = user.UserTerms.FirstOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion,
+        AcceptedTermsOfServiceVersion = user.Company?.CompanyTerms.FirstOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion
     };
 }

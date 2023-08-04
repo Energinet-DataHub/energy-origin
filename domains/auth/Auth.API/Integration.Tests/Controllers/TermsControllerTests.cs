@@ -1,20 +1,16 @@
 using System.Net;
 using System.Security.Claims;
-using System.Text;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
 using API.Values;
-using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using WireMock.Server;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Integration.Tests.Controllers;
 
@@ -36,18 +32,16 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptUserTermsRequest(0, "privacyPolicy");
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/acceptUser", httpContent);
-        var dbUser = factory.DataContext.Users.Include(x=>x.UserTerms).FirstOrDefault(x => x.Id == user.Id)!;
+        var result = await client.PutAsync("terms/user/accept/10", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Contains(dbUser.UserTerms, x => x.Type == dto.TermsType);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == dto.AcceptedTermsFileName);
+        Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == "10");
     }
 
     [Fact]
@@ -60,10 +54,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "privatePolicy" } },
+            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "10" } },
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>{ new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
@@ -75,17 +69,15 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptUserTermsRequest(0,"privatePolicy");
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/acceptUser", httpContent);
-        var dbUser = factory.DataContext.Users.Include(x=>x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
+        var result = await client.PutAsync("terms/user/acccept/10", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Contains(dbUser.UserTerms, x => x.Type == dto.TermsType);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == dto.AcceptedTermsFileName);
+        Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == "10");
     }
 
     [Fact]
@@ -103,10 +95,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var dto = new AcceptUserTermsRequest(0, "privacyPolicy");
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/acceptUser", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null));
     }
 
     [Fact]
@@ -123,10 +112,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
         });
 
-        var dto = new AcceptCompanyTermsRequest(0, "privacyPolicy");
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/acceptUser", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null));
     }
 
     [Fact]
@@ -142,7 +128,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             {
                 Name = "TestCompany",
                 Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "tos" } }
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "10" } }
             },
             Roles = new List<Role>
             {
@@ -151,19 +137,18 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                     Key = RoleKeys.AuthAdminKey, Name = "AuthAdmin", IsDefault = false
                 }
             },
-            UserProviders = new List<UserProvider>{ new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
         var user = await factory.AddUserToDatabaseAsync(newUser);
         var client = factory.CreateAuthenticatedClient(user);
-        var dto = new AcceptCompanyTermsRequest(0,"tos");
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/acceptCompany", httpContent);
-        var dbUser = factory.DataContext.Users.Include(x=>x.Company).ThenInclude(x=>x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!;
+
+        var result = await client.PutAsync("terms/company/accept/10", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
-        Assert.Contains(dbUser.Company!.CompanyTerms, x => x.Type == dto.TermsType);
-        Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == dto.AcceptedTermsFileName);
+        Assert.Contains(dbUser.Company!.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
+        Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == "10");
     }
 
     [Fact]
@@ -179,7 +164,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             {
                 Name = "TestCompany",
                 Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "tos" } }
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "10" } }
             },
             Roles = new List<Role>
             {
@@ -188,13 +173,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                     Key = "test", Name = "test", IsDefault = false
                 }
             },
-            UserProviders = new List<UserProvider>{ new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
         var client = factory.CreateAuthenticatedClient(newUser);
-        var dto = new AcceptCompanyTermsRequest(0,"tos");
-        var content = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
 
-        var response = await client.PutAsync("/terms/acceptCompany", content);
+        var response = await client.PutAsync("terms/company/accept/10", null);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }

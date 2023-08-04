@@ -3,6 +3,7 @@ using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [InlineData("privacy1")]
     public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(string termsVersion)
     {
-        var newUser = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = termsVersion} } };
+        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = termsVersion } } };
         var user = await factory.AddUserToDatabaseAsync(newUser);
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
@@ -46,7 +47,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
-        var newUser = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
         var user = await factory.AddUserToDatabaseAsync(newUser);
         user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "4" } };
 

@@ -5,7 +5,7 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
+using API.Values;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
@@ -84,7 +84,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy,newAcceptedTermsVersion));
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -127,7 +127,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy,newAcceptedTermsVersion));
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, newAcceptedTermsVersion));
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -157,7 +157,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, "3" )));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, "3")));
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class TermsControllerTests
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
            .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy,"2")));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, "2")));
     }
 
     // [Fact]

@@ -1,5 +1,4 @@
-using EnergyOrigin.TokenValidation.Values;
-
+using API.Values;
 namespace API.Models.Entities;
 
 public record UserTerms

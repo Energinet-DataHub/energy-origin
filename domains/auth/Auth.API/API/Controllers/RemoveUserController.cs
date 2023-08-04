@@ -1,4 +1,4 @@
-﻿using API.Services.Interfaces;
+using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-public class RemoveUserController: ControllerBase
+public class RemoveUserController : ControllerBase
 {
     [Authorize(Policy = nameof(RoleAdminPolicy))]
     [HttpDelete]
     [Route("user/remove/{userToBeDeletedId:guid}")]
-    public async Task<IActionResult> RemoveUser(Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService,  ILogger<RemoveUserController> logger)
+    public async Task<IActionResult> RemoveUser(Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService, ILogger<RemoveUserController> logger)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         if (userToBeDeletedId == descriptor.Id)

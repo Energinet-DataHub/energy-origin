@@ -1,4 +1,4 @@
-﻿using API.Models.Entities;
+using API.Models.Entities;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.AuthorizePolicies;
@@ -22,7 +22,7 @@ public class RoleController : ControllerBase
         var user = await userService.GetUserByIdAsync(roleRequest.UserId);
         if (role?.Id is not null && user is not null)
         {
-            user.UserRoles.Add(new UserRole { RoleId = (Guid)role.Id, UserId = roleRequest.UserId});
+            user.UserRoles.Add(new UserRole { RoleId = (Guid)role.Id, UserId = roleRequest.UserId });
             await userService.UpsertUserAsync(user);
             logger.AuditLog(
                 "{Role} was assign to {User} by {AdminId} at {TimeStamp}.",

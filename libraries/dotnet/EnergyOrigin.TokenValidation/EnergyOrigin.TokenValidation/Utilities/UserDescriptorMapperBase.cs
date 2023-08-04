@@ -82,7 +82,7 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
             AcceptedPrivacyPolicyVersion = user.FindFirstValue(UserClaimName.AcceptedPrivacyPolicyVersion),
             AcceptedTermsOfServiceVersion = user.FindFirstValue(UserClaimName.AcceptedTermsOfServiceVersion),
-            Roles =  user.FindFirstValue(UserClaimName.Roles),
+            Roles = user.FindFirstValue(UserClaimName.Roles),
             AllowCprLookup = allowCprLookup,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,

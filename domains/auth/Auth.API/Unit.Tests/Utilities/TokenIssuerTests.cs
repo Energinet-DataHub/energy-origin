@@ -5,6 +5,7 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Configuration;
@@ -123,7 +124,7 @@ public class TokenIssuerTests
         var accessToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name:name, privacyVersion: version.ToString(), accessToken: accessToken, identityToken: identityToken);
+        var descriptor = PrepareUser(name: name, privacyVersion: version.ToString(), accessToken: accessToken, identityToken: identityToken);
 
         var token = GetTokenIssuer().Issue(descriptor);
 

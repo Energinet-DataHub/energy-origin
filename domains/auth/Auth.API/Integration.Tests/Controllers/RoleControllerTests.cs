@@ -1,13 +1,13 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
-using EnergyOrigin.TokenValidation.Models.Requests;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using API.Models.Entities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Models.Requests;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Integration.Tests.Controllers;
@@ -46,7 +46,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
         var response = await client.PutAsync("role/assignRole", httpContent);
-        var dbUser = factory.DataContext.Users.Include(x=>x.Roles).FirstOrDefault(x => x.Id == roleRequest.UserId)!;
+        var dbUser = factory.DataContext.Users.Include(x => x.Roles).FirstOrDefault(x => x.Id == roleRequest.UserId)!;
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -130,7 +130,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var updatedUser = factory.DataContext.Users.FirstOrDefault(x=>x.Id ==userWithRole.Id);
+        var updatedUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == userWithRole.Id);
         Assert.DoesNotContain(updatedUser!.Roles, role => role.Key == existingRoleKey);
     }
 
@@ -226,27 +226,27 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Theory]
     [InlineData("role/assignRole")]
     [InlineData("role/removeRoleFromUser")]
-     public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string routePath)
-     {
-         var client = factory.CreateAuthenticatedClient(policyUser, config: builder =>
-         {
-             var mapper = Mock.Of<IUserDescriptorMapper>();
-             Mock.Get(mapper)
-                 .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                 .Returns(value: null!);
+    public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string routePath)
+    {
+        var client = factory.CreateAuthenticatedClient(policyUser, config: builder =>
+        {
+            var mapper = Mock.Of<IUserDescriptorMapper>();
+            Mock.Get(mapper)
+                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+                .Returns(value: null!);
 
-             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
-         });
+            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
+        });
 
-         var roleRequest = new RoleRequest
-         {
-             RoleKey = "userRoleKey",
-             UserId = Guid.NewGuid()
-         };
-         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var roleRequest = new RoleRequest
+        {
+            RoleKey = "userRoleKey",
+            UserId = Guid.NewGuid()
+        };
+        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-         await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync(routePath, httpContent));
-     }
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync(routePath, httpContent));
+    }
 
     private User SetupAuthPolicyUser() =>
         new()

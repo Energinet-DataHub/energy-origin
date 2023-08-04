@@ -233,7 +233,7 @@ public class OidcController : ControllerBase
             user.Roles.Add(newOrganizationRoles);
         }
 
-        var newDefaultRoles = roleService.GetAllRoles().Where(x=>x.IsDefault).ExceptBy(user.Roles.Select(x=>x.Key),x=>x.Key);
+        var newDefaultRoles = roleService.GetAllRoles().Where(x => x.IsDefault).ExceptBy(user.Roles.Select(x => x.Key), x => x.Key);
         user.Roles.AddRange(newDefaultRoles);
 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);

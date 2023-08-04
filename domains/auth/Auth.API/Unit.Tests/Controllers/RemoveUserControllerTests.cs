@@ -1,12 +1,12 @@
-﻿using API.Controllers;
+using System.Security.Claims;
+using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 
 namespace Unit.Tests.Controllers;
 
@@ -46,7 +46,7 @@ public class RemoveUserControllerTests
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
-        Mock.Get(userService).Setup(s =>  s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(true);
+        Mock.Get(userService).Setup(s => s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(true);
 
         var result = await controller.RemoveUser(userId, mapper, userService, logger);
 
@@ -68,7 +68,7 @@ public class RemoveUserControllerTests
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
-        Mock.Get(userService).Setup(s =>  s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(false);
+        Mock.Get(userService).Setup(s => s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(false);
 
         var result = await controller.RemoveUser(userId, mapper, userService, logger);
 

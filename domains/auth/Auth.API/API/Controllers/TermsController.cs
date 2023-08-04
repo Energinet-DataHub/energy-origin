@@ -5,7 +5,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
+using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -17,7 +17,7 @@ namespace API.Controllers;
 public class TermsController : ControllerBase
 {
     [HttpPut]
-    [Route("terms/acceptUser")]
+    [Route("terms/user/accept/{version}")]
     public async Task<IActionResult> AcceptUserTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
@@ -26,7 +26,7 @@ public class TermsController : ControllerBase
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
         IOptions<DataSyncOptions> dataSyncOptions,
-        [FromBody] AcceptUserTermsRequest acceptUserTermsRequest)
+        [FromRoute] string version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
@@ -54,16 +54,17 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == acceptUserTermsRequest.TermsType );
+        var type = UserTermsType.PrivacyPolicy;
+        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == type);
         if (userTerms == null)
         {
             userTerms = new UserTerms()
             {
-                Type = acceptUserTermsRequest.TermsType,
+                Type = type,
             };
             user.UserTerms.Add(userTerms);
         }
-        userTerms.AcceptedVersion = acceptUserTermsRequest.AcceptedTermsFileName;
+        userTerms.AcceptedVersion = version;
 
         await userService.UpsertUserAsync(user);
 
@@ -90,7 +91,7 @@ public class TermsController : ControllerBase
         logger.AuditLog(
             "{User} updated accepted Privacy policy {Versions} at {TimeStamp}.",
             user.Id,
-            acceptUserTermsRequest.AcceptedTermsFileName,
+            userTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
@@ -99,33 +100,34 @@ public class TermsController : ControllerBase
 
     [Authorize(Policy = nameof(OrganizationOwnerPolicy))]
     [HttpPut]
-    [Route("terms/acceptCompany")]
+    [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
-        [FromBody] AcceptCompanyTermsRequest acceptedCompanyTermsVersion)
+        [FromRoute] string version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
-        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == acceptedCompanyTermsVersion.TermsType);
+        var type = CompanyTermsType.TermsOfService;
+        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == type);
         if (companyTerms == null)
         {
             companyTerms = new CompanyTerms()
             {
-                Type = acceptedCompanyTermsVersion.TermsType,
+                Type = type,
             };
             user.Company.CompanyTerms.Add(companyTerms);
         }
-        companyTerms.AcceptedVersion = acceptedCompanyTermsVersion.AcceptedTermsFileName;
+        companyTerms.AcceptedVersion = version;
 
         await userService.UpsertUserAsync(user);
 
         logger.AuditLog(
             "{User} updated accepted Terms of service {Versions} at {TimeStamp}.",
             user.Id,
-            acceptedCompanyTermsVersion.AcceptedTermsFileName,
+            companyTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 

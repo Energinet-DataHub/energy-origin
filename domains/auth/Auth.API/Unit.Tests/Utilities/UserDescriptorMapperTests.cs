@@ -1,6 +1,7 @@
 using API.Models.Entities;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
@@ -32,7 +33,7 @@ public class UserDescriptorMapperTests
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()
     {
-        var user = new User {Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+        var user = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
 
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
@@ -43,7 +44,7 @@ public class UserDescriptorMapperTests
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);
         Assert.Equal(user.Name, descriptor.Name);
-        Assert.Contains(user.UserTerms, x=>x.AcceptedVersion ==  descriptor.AcceptedPrivacyPolicyVersion);
+        Assert.Contains(user.UserTerms, x => x.AcceptedVersion == descriptor.AcceptedPrivacyPolicyVersion);
         Assert.Equal(user.AllowCprLookup, descriptor.AllowCprLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);

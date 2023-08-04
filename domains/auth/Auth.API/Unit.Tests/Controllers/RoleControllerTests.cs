@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;

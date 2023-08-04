@@ -1,4 +1,4 @@
-﻿namespace EnergyOrigin.TokenValidation.Models.Requests;
+namespace EnergyOrigin.TokenValidation.Models.Requests;
 
 public class RoleRequest
 {

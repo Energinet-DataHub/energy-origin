@@ -1,11 +1,11 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 
 namespace API.Utilities.AuthorizePolicies;
 
-public class OrganizationOwnerPolicy: IAuthorizationHandler, IAuthorizationRequirement
+public class OrganizationOwnerPolicy : IAuthorizationHandler, IAuthorizationRequirement
 {
     public Task HandleAsync(AuthorizationHandlerContext context)
     {

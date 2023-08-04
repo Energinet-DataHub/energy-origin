@@ -3,6 +3,7 @@ using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
@@ -64,7 +65,7 @@ public class TokenControllerTests
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AllowCprLookup = false,
-                UserTerms = new List<UserTerms>{new() { AcceptedVersion = "1", Type = UserTermsType.PrivacyPolicy}}
+                UserTerms = new List<UserTerms> { new() { AcceptedVersion = "1", Type = UserTermsType.PrivacyPolicy } }
             });
 
         Mock.Get(issuer)
