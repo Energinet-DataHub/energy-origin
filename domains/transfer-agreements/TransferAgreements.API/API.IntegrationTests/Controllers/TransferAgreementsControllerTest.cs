@@ -32,7 +32,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var sub = Guid.NewGuid().ToString();
         factory.WalletUrl = wallet.WalletUrl;
-        wallet.InitializeAsync();
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
 

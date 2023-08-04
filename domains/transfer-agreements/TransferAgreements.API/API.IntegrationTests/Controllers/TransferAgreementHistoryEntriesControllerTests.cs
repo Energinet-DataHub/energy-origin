@@ -29,7 +29,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         this.factory = factory;
         this.testOutputHelper = testOutputHelper;
         factory.WalletUrl = wallet.WalletUrl;
-        wallet.InitializeAsync();
     }
 
     [Fact]
