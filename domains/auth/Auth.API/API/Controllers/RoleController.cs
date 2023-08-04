@@ -47,6 +47,10 @@ public class RoleController : ControllerBase
         var userRole = user?.UserRoles.FirstOrDefault(x => x.Role.Key == roleRequest.RoleKey);
         if (userRole is not null)
         {
+            if (user!.Id == descriptor.Id)
+            {
+                return BadRequest("An admin cannot remove his admin role");
+            }
             user!.UserRoles.Remove(userRole);
             await userService.UpsertUserAsync(user);
             logger.AuditLog(

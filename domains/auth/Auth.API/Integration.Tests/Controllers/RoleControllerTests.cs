@@ -164,7 +164,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserDoesNotExist()
     {
-
         var dbContext = factory.DataContext;
         var nonExistentUserId = Guid.NewGuid();
         await dbContext.Roles.AddAsync(new Role
@@ -184,6 +183,25 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/removeRoleFromUser", httpContent));
     }
+
+    [Fact]
+    public async Task RemoveRoleFromUser_ShouldReturnBadRequest_WhenUserTriesToRemoveAdminFromThemselves()
+    {
+        await factory.AddUserToDatabaseAsync(policyUser);
+
+        var roleRequest = new RoleRequest
+        {
+            RoleKey = RoleKeys.AuthAdminKey,
+            UserId = policyUser.Id ?? new Guid()
+        };
+
+        var client = factory.CreateAuthenticatedClient(policyUser);
+        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync("role/removeRoleFromUser", httpContent);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
 
     [Theory]
     [InlineData("role/assignRole")]
