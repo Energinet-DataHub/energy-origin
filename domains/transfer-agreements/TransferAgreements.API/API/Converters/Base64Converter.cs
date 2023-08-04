@@ -13,7 +13,6 @@ public class TempWalletDepositEndpoint
     public int Version { get; set; }
 }
 
-
 public static class Base64Converter
 {
     public static string ConvertObjectToBase64(object obj)

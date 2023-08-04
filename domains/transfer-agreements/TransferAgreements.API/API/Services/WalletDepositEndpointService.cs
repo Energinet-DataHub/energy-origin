@@ -10,44 +10,62 @@ using Microsoft.Extensions.Options;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Services;
-
 public class WalletDepositEndpointService : IWalletDepositEndpointService
-{
-    protected readonly IOptions<ProjectOriginOptions> ProjectOriginOptions;
-    protected readonly ILogger<WalletDepositEndpointService> Logger;
-
-    public WalletDepositEndpointService(IOptions<ProjectOriginOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
     {
-        ProjectOriginOptions = grOptions;
-        Logger = logger;
-    }
+        private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
+        private readonly ILogger<WalletDepositEndpointService> logger;
 
-    public async Task<string> CreateWalletDepositWithToken(JwtToken token)
-    {
-        var bearerToken = token.GenerateToken();
-        var walletDepositEndpoint = await CreateWalletDepositEndpoint(bearerToken);
-        return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
-    }
-
-    private async Task<WalletDepositEndpoint> CreateWalletDepositEndpoint(string bearerToken)
-    {
-        using var channel = GrpcChannel.ForAddress(ProjectOriginOptions.Value.WalletUrl);
-
-        var walletServiceClient = new WalletService.WalletServiceClient(channel);
-        var request = new CreateWalletDepositEndpointRequest();
-        var headers = new Metadata
-            { { "Authorization", $"Bearer {bearerToken}" } };
-        try
+        public WalletDepositEndpointService(IOptions<ProjectOriginOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
         {
-            var response =
-                await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
+            projectOriginOptions = grOptions;
+            this.logger = logger;
+        }
 
-            return response.WalletDepositEndpoint;
-        }
-        catch (Exception ex)
+        public async Task<string> CreateWalletDepositWithToken(JwtToken token)
         {
-            Logger.LogError(ex, "Error creating WalletDepositEndpoint");
-            throw;
+            var bearerToken = token.GenerateToken();
+            var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
+            return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
         }
+
+        public async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken)
+        {
+            using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+            var walletServiceClient = new WalletService.WalletServiceClient(channel);
+            var request = new CreateWalletDepositEndpointRequest();
+            var headers = new Metadata
+            {
+                { "Authorization", $"Bearer {bearerToken}" }
+            };
+            try
+            {
+                var response = await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
+
+                return response.WalletDepositEndpoint;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating WalletDepositEndpoint");
+                throw;
+            }
+        }
+
+        public async Task<ProjectOrigin.Common.V1.Uuid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
+        {
+            using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
+            var walletServiceClient = new WalletService.WalletServiceClient(channel);
+
+            var headers = new Metadata
+                { { "Authorization", $"Bearer {bearerToken}" } };
+            var wde = Base64Converter.ConvertToWalletDepositEndpoint(base64EncodedWalletDepositEndpoint);
+            var walletRequest = new CreateReceiverDepositEndpointRequest
+            {
+                Reference = receiverTin,
+                WalletDepositEndpoint = wde
+            };
+
+            var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
+            return response.ReceiverId;
+        }
+        public Guid ConvertUuidToGuid(ProjectOrigin.Common.V1.Uuid receiverId) => new(receiverId.Value);
     }
-}

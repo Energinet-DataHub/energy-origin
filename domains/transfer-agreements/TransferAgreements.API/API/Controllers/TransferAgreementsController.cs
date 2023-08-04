@@ -29,7 +29,6 @@ public class TransferAgreementsController : ControllerBase
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
     private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
 
-
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
@@ -74,30 +73,15 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
-        var walletServiceClient = new WalletService.WalletServiceClient(channel);
         var jwtToken = new JwtToken(User.FindIssuerClaim(), User.FindAudienceClaim(), subject, subjectName);
         var bearerToken = jwtToken.GenerateToken();
-        var headers = new Metadata
-            { { "Authorization", $"Bearer {bearerToken}" } };
 
-        var wde = Base64Converter.ConvertToWalletDepositEndpoint(request.Base64EncodedWalletDepositEndpoint);
-        var walletRequest = new CreateReceiverDepositEndpointRequest
-        {
-            Reference = request.ReceiverTin,
-            WalletDepositEndpoint = wde
-        };
+        var receiverId = await walletDepositEndpointService.CreateReceiverDepositEndpoint(bearerToken,
+            request.Base64EncodedWalletDepositEndpoint,
+            request.ReceiverTin);
 
-        try
-        {
-            var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
+        transferAgreement.ReceiverReference = walletDepositEndpointService.ConvertUuidToGuid(receiverId);
 
-            transferAgreement.ReceiverReference = new Guid(response.ReceiverId.Value);
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
