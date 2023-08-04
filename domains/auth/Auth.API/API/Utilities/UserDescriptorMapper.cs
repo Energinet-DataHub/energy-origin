@@ -26,7 +26,7 @@ public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMap
         EncryptedIdentityToken = cryptography.Encrypt(identityToken),
         EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
         Roles = string.Join(" ", user.Roles.Select(x => x.Key)),
-        AcceptedPrivacyPolicyVersion = user.UserTerms.FirstOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion,
-        AcceptedTermsOfServiceVersion = user.Company?.CompanyTerms.FirstOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion
+        AcceptedPrivacyPolicyVersion = user.UserTerms.FirstOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion ?? 0,
+        AcceptedTermsOfServiceVersion = user.Company?.CompanyTerms.FirstOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0
     };
 }

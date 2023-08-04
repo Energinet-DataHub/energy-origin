@@ -16,10 +16,11 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TokenControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Theory]
-    [InlineData("privacy0")]
-    [InlineData("privacy1")]
-    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(string termsVersion)
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(int termsVersion)
     {
+        // TODO: verify this test
         var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = termsVersion } } };
         var user = await factory.AddUserToDatabaseAsync(newUser);
         var client = factory.CreateAuthenticatedClient(user);
@@ -47,9 +48,9 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
-        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
         var user = await factory.AddUserToDatabaseAsync(newUser);
-        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "4" } };
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 4 } };
 
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
@@ -78,7 +79,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Name = Guid.NewGuid().ToString()
         };
         var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
-        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } };
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } };
         await factory.AddUserToDatabaseAsync(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
         var result = await client.GetAsync("auth/token");

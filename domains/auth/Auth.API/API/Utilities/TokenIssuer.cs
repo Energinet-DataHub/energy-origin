@@ -70,6 +70,8 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
+            { UserClaimName.AcceptedPrivacyPolicyVersion, descriptor.AcceptedPrivacyPolicyVersion },
+            { UserClaimName.AcceptedTermsOfServiceVersion, descriptor.AcceptedTermsOfServiceVersion },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
@@ -77,16 +79,6 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.Actor, descriptor.Id },
             { UserClaimName.ActorLegacy, descriptor.Id },
         };
-
-        if (state.AcceptedPrivacyPolicyTerms is not null)
-        {
-            claims.Add(UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedPrivacyPolicyTerms);
-        }
-
-        if (state.AcceptedTermsOfServiceTerms is not null)
-        {
-            claims.Add(UserClaimName.AcceptedTermsOfServiceVersion, state.AcceptedTermsOfServiceTerms);
-        }
 
         if (descriptor.Roles is not null)
         {
@@ -131,5 +123,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(string? AcceptedPrivacyPolicyTerms, string? AcceptedTermsOfServiceTerms, string Scope);
+    private record UserState(int AcceptedPrivacyPolicyTerms, int AcceptedTermsOfServiceTerms, string Scope);
 }

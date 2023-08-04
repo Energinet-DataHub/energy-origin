@@ -7,6 +7,6 @@ public record CompanyTerms
     public Guid? Id { get; init; }
     public Guid CompanyId { get; set; }
     public CompanyTermsType Type { get; set; }
-    public string AcceptedVersion { get; set; } = null!;
+    public int AcceptedVersion { get; set; }
     public Company Company { get; set; } = null!;
 }

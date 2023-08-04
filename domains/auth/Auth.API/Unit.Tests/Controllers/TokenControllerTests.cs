@@ -65,7 +65,7 @@ public class TokenControllerTests
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AllowCprLookup = false,
-                UserTerms = new List<UserTerms> { new() { AcceptedVersion = "1", Type = UserTermsType.PrivacyPolicy } }
+                UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1, Type = UserTermsType.PrivacyPolicy } }
             });
 
         Mock.Get(issuer)

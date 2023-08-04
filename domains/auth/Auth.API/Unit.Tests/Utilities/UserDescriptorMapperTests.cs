@@ -33,7 +33,7 @@ public class UserDescriptorMapperTests
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()
     {
-        var user = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "3" } } };
+        var user = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
 
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();

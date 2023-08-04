@@ -53,8 +53,8 @@ public class TermsControllerTests
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
         var allowCprLookup = false;
-        var oldAcceptedTermsVersion = "1";
-        var newAcceptedTermsVersion = "2";
+        var oldAcceptedTermsVersion = 1;
+        var newAcceptedTermsVersion = 2;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
@@ -106,7 +106,7 @@ public class TermsControllerTests
         var companyName = Guid.NewGuid().ToString();
         var tin = Guid.NewGuid().ToString();
         var allowCprLookup = false;
-        var newAcceptedTermsVersion = "1";
+        var newAcceptedTermsVersion = 1;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
@@ -120,7 +120,7 @@ public class TermsControllerTests
                 CompanyName = companyName,
                 Tin = tin,
                 AllowCprLookup = allowCprLookup,
-                AcceptedPrivacyPolicyVersion = "0",
+                AcceptedPrivacyPolicyVersion = 0,
                 EncryptedProviderKeys = providerEncrypted
             });
 
@@ -157,7 +157,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "3"));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 3));
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class TermsControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCprLookup = false,
-                AcceptedPrivacyPolicyVersion = "1"
+                AcceptedPrivacyPolicyVersion = 1
             });
 
         Mock.Get(userService)
@@ -182,7 +182,7 @@ public class TermsControllerTests
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
            .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "2"));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 2));
     }
 
     [Fact]
@@ -192,9 +192,9 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(new UserDescriptor(null!)
             {
-                AcceptedPrivacyPolicyVersion = "2"
+                AcceptedPrivacyPolicyVersion = 2
             });
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "1"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 1));
     }
 }

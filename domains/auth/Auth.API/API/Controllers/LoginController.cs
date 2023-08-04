@@ -16,12 +16,12 @@ public class LoginController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [Route("auth/test")]
-    public IActionResult TestMethod(DataContext context, IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
+    public IActionResult TestMethod(IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
     {
         logger.LogInformation("PrivacyVersion: {privacyVersion}", termsOptions.Value.PrivacyPolicyVersion);
         logger.LogInformation("TosVersion: {tosVersion}", termsOptions.Value.TermsOfServiceVersion);
 
-        return Ok(new List<string>()
+        return Ok(new List<int>()
         {
             termsOptions.Value.PrivacyPolicyVersion,
             termsOptions.Value.TermsOfServiceVersion

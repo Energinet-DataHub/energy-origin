@@ -41,7 +41,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == "10");
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 10);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = null,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "10" } },
+            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 10 } },
             Company = null,
             CompanyId = null,
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
@@ -69,7 +69,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var result = await client.PutAsync("terms/user/acccept/10", null);
+        var result = await client.PutAsync("terms/user/accept/10", null);
         var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
@@ -77,7 +77,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == "10");
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 10);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             {
                 Name = "TestCompany",
                 Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "10" } }
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
             },
             Roles = new List<Role>
             {
@@ -148,7 +148,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
         Assert.Contains(dbUser.Company!.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
-        Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == "10");
+        Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == 10);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             {
                 Name = "TestCompany",
                 Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = "10" } }
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
             },
             Roles = new List<Role>
             {

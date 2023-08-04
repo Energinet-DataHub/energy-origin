@@ -89,7 +89,7 @@ public class RoleControllerTests
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
 
-        var result = await roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = roleKey }, roleService, userService, logger, mapper);
+        var result = await roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = roleKey }, userService, logger, mapper);
         Assert.IsType<OkResult>(result);
     }
 
@@ -99,7 +99,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
         await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId }, roleService, userService, logger, mapper));
+            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId }, userService, logger, mapper));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class RoleControllerTests
         var testUser = new User { Id = testUserId };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
         await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = "testRole" }, roleService, userService, logger, mapper));
+            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = "testRole" }, userService, logger, mapper));
     }
 
     [Fact]
@@ -118,6 +118,6 @@ public class RoleControllerTests
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
         await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, roleService, userService, logger, mapper));
+            roleController.RemoveRoleFromUser(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, userService, logger, mapper));
     }
 }

@@ -742,7 +742,7 @@ public class OidcControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCprLookup = true,
-                AcceptedPrivacyPolicyVersion = "3",
+                AcceptedPrivacyPolicyVersion = 3,
             });
         var listOfRoles = new List<Role>
         {
@@ -822,7 +822,7 @@ public class OidcControllerTests
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
-                UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = "1" } },
+                UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } },
                 AllowCprLookup = true
             });
         var listOfRoles = new List<Role>

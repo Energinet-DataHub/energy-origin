@@ -33,11 +33,11 @@ public class TokenIssuerTests
     }
 
     [Theory]
-    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, "0", "0", false)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "3", "1", false)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "0", "0", true)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "3", "1", true)]
-    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, string privacyVersion, string tosVersion, bool bypass)
+    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, 0, 0, false)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, false)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 0, 0, true)]
+    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, true)]
+    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int privacyVersion, int tosVersion, bool bypass)
     {
         var descriptor = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion);
 
@@ -124,7 +124,7 @@ public class TokenIssuerTests
         var accessToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
         var version = Random.Shared.Next();
-        var descriptor = PrepareUser(name: name, privacyVersion: version.ToString(), accessToken: accessToken, identityToken: identityToken);
+        var descriptor = PrepareUser(name: name, privacyVersion: version, accessToken: accessToken, identityToken: identityToken);
 
         var token = GetTokenIssuer().Issue(descriptor);
 
@@ -154,7 +154,7 @@ public class TokenIssuerTests
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Moptions.Create(terms ?? termsOptions.Value), Moptions.Create(token ?? tokenOptions.Value));
 
-    private UserDescriptor PrepareUser(string? name = default, string privacyVersion = "3", string tosVersion = "1", string? accessToken = default, string? identityToken = default, bool addToMock = true)
+    private UserDescriptor PrepareUser(string? name = default, int privacyVersion = 3, int tosVersion = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true)
     {
         var user = new User
         {

@@ -7,7 +7,7 @@ public class TermsOptions
     public const string Prefix = "Terms";
 
     [Required]
-    public string PrivacyPolicyVersion { get; init; } = null!;
+    public int PrivacyPolicyVersion { get; init; }
     [Required]
-    public string TermsOfServiceVersion { get; init; } = null!;
+    public int TermsOfServiceVersion { get; init; }
 }

@@ -12,8 +12,8 @@ public class UserDescriptor
     public string? CompanyName { get; init; }
     public string? Roles { get; set; }
     public string? Tin { get; init; }
-    public string? AcceptedTermsOfServiceVersion { get; init; }
-    public string? AcceptedPrivacyPolicyVersion { get; init; }
+    public int AcceptedTermsOfServiceVersion { get; init; }
+    public int AcceptedPrivacyPolicyVersion { get; init; }
     public bool AllowCprLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
