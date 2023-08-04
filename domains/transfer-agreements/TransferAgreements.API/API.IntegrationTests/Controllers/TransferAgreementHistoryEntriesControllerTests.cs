@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Controllers;
 
@@ -20,11 +21,13 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly ITestOutputHelper testOutputHelper;
 
     public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory,
-        WalletContainer wallet)
+        WalletContainer wallet, ITestOutputHelper testOutputHelper)
     {
         this.factory = factory;
+        this.testOutputHelper = testOutputHelper;
         factory.WalletUrl = wallet.WalletUrl;
         wallet.InitializeAsync();
     }
@@ -156,6 +159,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         );
 
         var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+
+        if (!createRequest.IsSuccessStatusCode)
+        {
+            var errorResponse = await createRequest.Content.ReadAsStringAsync();
+            testOutputHelper.WriteLine(errorResponse);
+        }
+
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var receiver = Guid.NewGuid();
