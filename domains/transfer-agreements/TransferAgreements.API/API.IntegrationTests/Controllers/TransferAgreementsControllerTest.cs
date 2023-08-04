@@ -35,7 +35,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         wallet.InitializeAsync();
         authenticatedClient = this.factory.CreateAuthenticatedClient(sub);
 
-        // Here's how you should get ApplicationDbContext
         using var scope = this.factory.Services.CreateScope();
         context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
