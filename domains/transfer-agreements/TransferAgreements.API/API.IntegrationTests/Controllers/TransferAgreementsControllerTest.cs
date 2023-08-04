@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -504,5 +505,30 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement.EndDate.Should().Be(newEndDate);
+    }
+
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldReturnBase64StringOkResponse_WhenAuthorized()
+    {
+        var result = await factory
+            .CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "")
+            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+
+        var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
+        var base64String = resultData?["result"];
+        Action base64Decoding = () => Encoding.UTF8.GetString(Convert.FromBase64String(base64String));
+
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        resultData.Should().ContainKey("result");
+        base64Decoding.Should().NotThrow<FormatException>("because result should be a valid base64 string");
+    }
+
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldReturnUnauthorized_WhenUnauthenticated()
+    {
+        var client = factory.CreateUnauthenticatedClient();
+        var result = await client.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }
