@@ -84,7 +84,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, newAcceptedTermsVersion));
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -127,7 +127,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, newAcceptedTermsVersion));
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<NoContentResult>(result);
 
@@ -157,7 +157,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, "3")));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "3"));
     }
 
     [Fact]
@@ -182,19 +182,19 @@ public class TermsControllerTests
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
            .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy, "2")));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "2"));
     }
 
-    // [Fact]
-    // public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
-    // {
-    //     Mock.Get(mapper)
-    //         .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-    //         .Returns(new UserDescriptor(null!)
-    //         {
-    //             AcceptedPrivacyPolicyVersion ="2"
-    //         });
-    //
-    //     await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, new AcceptUserTermsRequest(UserTermsType.PrivacyPolicy,"1")));
-    // }
+    [Fact]
+    public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                AcceptedPrivacyPolicyVersion = "2"
+            });
+
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, "1"));
+    }
 }
