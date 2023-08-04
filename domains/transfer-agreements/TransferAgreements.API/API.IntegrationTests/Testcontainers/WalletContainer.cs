@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
@@ -46,6 +47,37 @@ public class WalletContainer : IAsyncLifetime
     {
         await postgresContainer.StartAsync();
         await walletContainer.Value.StartAsync();
+
+        await WaitForWalletServiceAsync();
+    }
+
+    private async Task WaitForWalletServiceAsync()
+    {
+        var httpClient = new HttpClient();
+        var retryCount = 0;
+        var maxRetries = 10;
+
+        while (retryCount < maxRetries)
+        {
+            try
+            {
+                var response = await httpClient.GetAsync(WalletUrl + "/health");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch (HttpRequestException)
+            {
+
+            }
+
+            retryCount++;
+            await Task.Delay(2000);
+        }
+
+        throw new Exception("The wallet service did not become ready within the expected time.");
     }
 
     public async Task DisposeAsync()
