@@ -34,6 +34,10 @@ public class WalletContainer : IAsyncLifetime
                 // - This should be implemented correctly, right now it apparantly doesn't use it
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://whatever.com/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilPortIsAvailable(80)
+                )
                 .Build();
         });
     }
