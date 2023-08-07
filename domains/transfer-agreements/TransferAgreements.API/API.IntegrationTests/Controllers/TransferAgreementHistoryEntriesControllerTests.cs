@@ -8,11 +8,9 @@ using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
-using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Controllers;
 
@@ -20,27 +18,26 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly ITestOutputHelper testOutputHelper;
 
     public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory,
-        WalletContainer wallet, ITestOutputHelper testOutputHelper)
+        WalletContainer wallet)
     {
         this.factory = factory;
-        this.testOutputHelper = testOutputHelper;
         factory.WalletUrl = wallet.WalletUrl;
     }
 
     [Fact]
     public async Task Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated()
     {
+        var receiverId = Guid.NewGuid();
         var senderId = Guid.NewGuid();
 
         var result = await factory
-            .CreateAuthenticatedClient(sub: senderId.ToString())
+            .CreateAuthenticatedClient(sub: receiverId.ToString())
             .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
-        var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
-        var base64String = resultData?["result"];
+        var resultData = await result.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var base64String = resultData!["result"];
 
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -49,11 +46,14 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             base64String
         );
 
-        var createRequest = await factory.CreateAuthenticatedClient(sub: senderId.ToString()).PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
+
+        var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
-        var auditsResponse = await factory.CreateAuthenticatedClient(sub: senderId.ToString()).GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+        var auditsResponse = await senderClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
+
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -157,12 +157,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         );
 
         var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-
-        if (!createRequest.IsSuccessStatusCode)
-        {
-            var errorResponse = await createRequest.Content.ReadAsStringAsync();
-            testOutputHelper.WriteLine(errorResponse);
-        }
 
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 

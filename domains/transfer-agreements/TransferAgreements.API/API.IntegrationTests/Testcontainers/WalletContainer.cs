@@ -15,10 +15,6 @@ public class WalletContainer : IAsyncLifetime
     public WalletContainer()
     {
         postgresContainer = new PostgreSqlBuilder()
-            .WithDatabase("postgres")
-            .WithUsername("postgres")
-            .WithPassword("postgres")
-            .WithExposedPort(5432)
             .WithPortBinding(5432, true)
             .Build();
 
@@ -31,7 +27,7 @@ public class WalletContainer : IAsyncLifetime
                 .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-                // - This should be implemented correctly, right now it apparantly doesn't use it
+                // - This should be implemented correctly, right now it apparently doesn't use it
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://whatever.com/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .WithWaitStrategy(

@@ -30,7 +30,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
-    public string? WalletUrl { get; set; }
+    public string WalletUrl { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureTestServices(s =>

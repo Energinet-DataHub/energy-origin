@@ -15,9 +15,9 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
     private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
     private readonly ILogger<WalletDepositEndpointService> logger;
 
-    public WalletDepositEndpointService(IOptions<ProjectOriginOptions> grOptions, ILogger<WalletDepositEndpointService> logger)
+    public WalletDepositEndpointService(IOptions<ProjectOriginOptions> options, ILogger<WalletDepositEndpointService> logger)
     {
-        projectOriginOptions = grOptions;
+        projectOriginOptions = options;
         this.logger = logger;
     }
 

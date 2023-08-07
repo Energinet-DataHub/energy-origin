@@ -11,6 +11,7 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
@@ -19,10 +20,13 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
+public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>, IDisposable
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
+    private IServiceScope scope;
+    private ApplicationDbContext context;
+
 
     public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
         WalletContainer wallet)
@@ -32,6 +36,21 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         factory.WalletUrl = wallet.WalletUrl;
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
+
+        InitializeContext();
+    }
+
+    private void InitializeContext()
+    {
+        scope = factory.Services.CreateScope();
+        context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    }
+
+    public void Dispose()
+    {
+        context.Dispose();
+        scope.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -68,7 +87,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
-                ReceiverReference = Guid.Parse("5b24891b-1ab7-48c0-b747-9341a7dc6eec")
+                ReceiverReference = Guid.NewGuid()
             }
         });
 
@@ -185,7 +204,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
             ReceiverTin = "87654321",
-            ReceiverReference = Guid.Parse("b996af8f-aef9-4bf9-9229-1699dc269d78")
+            ReceiverReference = Guid.NewGuid()
         };
 
         await factory.SeedData(new List<TransferAgreement>()
@@ -220,7 +239,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
             ReceiverTin = receiverTin,
-            ReceiverReference = Guid.Parse("5f8b721a-0e6b-421b-b9d2-4d1fa0049d6c")
+            ReceiverReference = Guid.NewGuid()
         };
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
 
@@ -260,7 +279,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
-                ReceiverReference = Guid.Parse("5b24891b-1ab7-48c0-b747-9341a7dc6eec")
+                ReceiverReference = Guid.NewGuid()
             }
         });
 
@@ -310,7 +329,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = receiverTin,
-                    ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                    ReceiverReference = Guid.NewGuid()
                 },
                 new()
                 {
@@ -321,7 +340,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderName = "Producent A/S",
                     SenderTin = senderTin,
                     ReceiverTin = "87654321",
-                    ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
 
@@ -355,7 +374,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                ReceiverReference = Guid.NewGuid()
             },
             new()
             {
@@ -366,7 +385,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                ReceiverReference = Guid.NewGuid()
             }
         });
 
@@ -400,7 +419,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344",
-                    ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
 
@@ -451,7 +470,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "11223344",
-                    ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
 
@@ -507,7 +526,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
                     ReceiverTin = "1122334",
-                    ReceiverReference = Guid.Parse("f14b3e72-8337-4e3b-ad19-970d17259ca7")
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
 
@@ -548,5 +567,37 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var result = await client.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Create_ShouldHaveReceiverReferenceNotNull()
+    {
+        var receiverId = Guid.NewGuid();
+
+        var result = await factory
+            .CreateAuthenticatedClient(sub: receiverId.ToString())
+            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+
+        var resultData = await result.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var base64String = resultData!["result"];
+
+        var transferAgreement = new CreateTransferAgreement(
+            new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
+            new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
+            "12345456",
+            base64String
+        );
+
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        response.EnsureSuccessStatusCode();
+
+        var createdTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
+
+        await Task.Delay(2000);
+
+        var createdAgreementInDb = await context.TransferAgreements.FindAsync(createdTransferAgreement.Id);
+
+        createdAgreementInDb.Should().NotBeNull();
+        createdAgreementInDb.ReceiverReference.Should().NotBe(Guid.Empty);
     }
 }
