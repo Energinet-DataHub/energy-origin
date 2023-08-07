@@ -11,7 +11,6 @@ using API.Data;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;

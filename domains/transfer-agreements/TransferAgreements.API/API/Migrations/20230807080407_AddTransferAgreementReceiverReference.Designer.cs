@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230719131121_AddReceiverReference")]
-    partial class AddReceiverReference
+    [Migration("20230807080407_AddTransferAgreementReceiverReference")]
+    partial class AddTransferAgreementReceiverReference
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -67,5 +67,15 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
         return response.ReceiverId;
     }
-    public Guid ConvertUuidToGuid(ProjectOrigin.Common.V1.Uuid receiverId) => new(receiverId.Value);
+    public Guid ConvertUuidToGuid(ProjectOrigin.Common.V1.Uuid receiverId)
+    {
+        Guid receiverReference = new(receiverId.Value);
+
+        if (receiverReference == Guid.Empty)
+        {
+            throw new ArgumentException("The receiver Id cannot be an empty Guid.", nameof(receiverId));
+        }
+
+        return receiverReference;
+    }
 }

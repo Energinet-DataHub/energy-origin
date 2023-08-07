@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;

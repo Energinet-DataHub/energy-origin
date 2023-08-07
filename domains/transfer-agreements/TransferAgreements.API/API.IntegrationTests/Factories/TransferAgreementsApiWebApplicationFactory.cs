@@ -140,7 +140,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference)";
         var agreementFields = new[]
         {
             new NpgsqlParameter("Id", agreement.Id),
@@ -149,7 +149,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new NpgsqlParameter("SenderId", agreement.SenderId),
             new NpgsqlParameter("SenderName", agreement.SenderName),
             new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
+            new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
