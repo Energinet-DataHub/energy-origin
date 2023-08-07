@@ -28,6 +28,8 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
+            //TODO: The fixed port will fail if multiple tests use ProjectOriginStack!
+
             // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
             // There is a chance for port collision with the host ports assigned by Testcontainers
             return new ContainerBuilder()
@@ -38,6 +40,7 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(GrpcPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });

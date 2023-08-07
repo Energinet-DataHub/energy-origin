@@ -72,7 +72,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             FederatedStreamId = id,
             PayloadType = IssuedEvent.Descriptor.FullName,
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
-            Nonce = Guid.NewGuid().ToString(),
+            Nonce = Guid.NewGuid().ToString(), // TODO: Can this be used in case we send the same message twice?
         };
         var headerSignature = projectOriginOptions.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray(); //TODO: Use issuer for right gridarea
         var transaction = new Transaction
