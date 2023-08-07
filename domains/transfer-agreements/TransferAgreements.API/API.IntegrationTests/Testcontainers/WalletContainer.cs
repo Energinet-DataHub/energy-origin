@@ -31,7 +31,8 @@ public class WalletContainer : IAsyncLifetime
                 .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://postgres:5432/")
+                // - This should be implemented correctly, right now it apparantly doesn't use it
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://whatever.com/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .Build();
         });
