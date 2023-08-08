@@ -112,7 +112,7 @@ public sealed class CertificateIssuingTests :
         certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
     }
 
-    [Fact]
+    [Fact(Skip = "Takes too long time due to registry")]
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();

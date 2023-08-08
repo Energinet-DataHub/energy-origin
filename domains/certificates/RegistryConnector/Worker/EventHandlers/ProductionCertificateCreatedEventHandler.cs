@@ -1,20 +1,17 @@
 using System;
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.Linq;
 using System.Threading.Tasks;
 using Contracts.Certificates;
-using Google.Protobuf;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
-using Attribute = ProjectOrigin.Electricity.V1.Attribute;
-using PublicKey = ProjectOrigin.Electricity.V1.PublicKey;
+using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
@@ -33,111 +30,68 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
     public async Task Consume(ConsumeContext<ProductionCertificateCreatedEvent> context)
     {
-        var commitment = new SecretCommitmentInfo((uint)context.Message.ShieldedQuantity.Value); //TODO: commitment should be part of message
+        var message = context.Message;
+
+        var commitment = new SecretCommitmentInfo((uint)message.ShieldedQuantity.Value); //TODO: commitment should be part of message
 
         var ownerKey = new Secp256k1Algorithm().GenerateNewPrivateKey(); //TODO: Derive new public key from Deposit Endpoint Reference owner key with calculated position
         var ownerPublicKey = ownerKey.PublicKey;
 
-        var id = new ProjectOrigin.Common.V1.FederatedStreamId
-        {
-            Registry = projectOriginOptions.RegistryName,
-            StreamId = new ProjectOrigin.Common.V1.Uuid { Value = context.Message.CertificateId.ToString() }
-        };
-
-        var issuedEvent = new IssuedEvent
-        {
-            CertificateId = id,
-            Type = GranularCertificateType.Production,
-            Period = context.Message.Period.ToDateInterval(),
-            GridArea = context.Message.GridArea,
-            QuantityCommitment = new ProjectOrigin.Electricity.V1.Commitment
-            {
-                Content = ByteString.CopyFrom(commitment.Commitment.C),
-                RangeProof = ByteString.CopyFrom(commitment.CreateRangeProof(id.StreamId.Value))
-            },
-            OwnerPublicKey = new PublicKey
-            {
-                Content = ByteString.CopyFrom(ownerPublicKey.Export()),
-                Type = KeyType.Secp256K1
-            }
-        };
-
-        issuedEvent.Attributes.Add(new Attribute
-        {
-            Key = "AssetId",
-            Value = context.Message.ShieldedGsrn.Value.Value
-        });
-
-        var header = new TransactionHeader
-        {
-            FederatedStreamId = id,
-            PayloadType = IssuedEvent.Descriptor.FullName,
-            PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
-            Nonce = Guid.NewGuid().ToString(), // TODO: Can this be used in case we send the same message twice?
-        };
-
         IPrivateKey issuerKey;
-        if (context.Message.GridArea.Equals("DK1", StringComparison.OrdinalIgnoreCase))
+        if (message.GridArea.Equals("DK1", StringComparison.OrdinalIgnoreCase))
             issuerKey = projectOriginOptions.Dk1IssuerKey;
-        else if (context.Message.GridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
+        else if (message.GridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
             issuerKey = projectOriginOptions.Dk2IssuerKey;
         else
-            throw new Exception($"Not supported GridArea {context.Message.GridArea}"); //TODO: How to handle this
+            throw new Exception($"Not supported GridArea {message.GridArea}"); //TODO: How to handle this
 
-        var headerSignature = issuerKey.Sign(header.ToByteArray()).ToArray();
-        var transaction = new Transaction
-        {
-            Header = header,
-            HeaderSignature = ByteString.CopyFrom(headerSignature),
-            Payload = issuedEvent.ToByteString()
-        };
+        var issuedEvent = Registry.CreateIssuedEventForProduction(
+            projectOriginOptions.RegistryName,
+            message.CertificateId,
+            message.Period.ToDateInterval(),
+            message.GridArea,
+            message.ShieldedGsrn.Value.Value,
+            commitment,
+            ownerPublicKey);
 
-        var request = new SendTransactionsRequest();
-        request.Transactions.Add(transaction);
-
+        var request = issuedEvent.CreateSendTransactionRequest(issuerKey);
+        
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
         var client = new RegistryService.RegistryServiceClient(channel);
 
         await client.SendTransactionsAsync(request);
 
-        var statusRequest = new GetTransactionStatusRequest
-        {
-            Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray()))
-        };
+        var statusRequest = request
+            .Transactions
+            .Single()
+            .CreateStatusRequest();
 
         logger.LogInformation("Sending status request {statusRequest}", statusRequest);
 
-        try
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        while (true)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (true)
+            var status = await client.GetTransactionStatusAsync(statusRequest);
+
+            if (status.Status == TransactionState.Committed)
             {
-                var status = await client.GetTransactionStatusAsync(statusRequest);
-
-                if (status.Status == TransactionState.Committed)
-                {
-                    logger.LogInformation("Certificate {id} issued in registry", context.Message.CertificateId);
-                    await context.Publish(new CertificateIssuedInRegistryEvent(context.Message.CertificateId));
-                    break;
-                }
-
-                if (status.Status == TransactionState.Failed)
-                {
-                    logger.LogInformation("Certificate {id} rejected by registry", context.Message.CertificateId);
-                    await context.Publish(new CertificateRejectedInRegistryEvent(context.Message.CertificateId, status.Message));
-                    break;
-                }
-
-                await Task.Delay(1000);
-
-                if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
-                    throw new Exception("Timed out waiting for transaction to commit"); //TODO: What to do here...?
+                logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
+                await context.Publish(new CertificateIssuedInRegistryEvent(message.CertificateId));
+                break;
             }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("BAD!!!");
+
+            if (status.Status == TransactionState.Failed)
+            {
+                logger.LogInformation("Certificate {id} rejected by registry", message.CertificateId);
+                await context.Publish(new CertificateRejectedInRegistryEvent(message.CertificateId, status.Message));
+                break;
+            }
+
+            await Task.Delay(1000);
+
+            if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
+                throw new Exception("Timed out waiting for transaction to commit"); //TODO: What to do here...?
         }
     }
 }
