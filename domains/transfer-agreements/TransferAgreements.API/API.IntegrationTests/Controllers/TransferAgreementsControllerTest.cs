@@ -572,20 +572,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldHaveReceiverReferenceNotNull()
     {
-        var receiverId = Guid.NewGuid();
-
-        var result = await factory
-            .CreateAuthenticatedClient(sub: receiverId.ToString())
-            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
-
-        var resultData = await result.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        var base64String = resultData!["result"];
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
             "12345456",
-            base64String
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);

@@ -7,13 +7,11 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Controllers;
 using API.Data;
-using API.Options;
 using API.Services;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -25,7 +23,6 @@ public class TransferAgreementsControllerTests
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
     private Mock<IValidator<CreateTransferAgreement>> mockValidator;
     private readonly Mock<IWalletDepositEndpointService> mockWalletDepositEndpointService;
-    private readonly Mock<IOptions<ProjectOriginOptions>> mockProjectOriginOptions;
 
     private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
     private const string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
@@ -36,7 +33,6 @@ public class TransferAgreementsControllerTests
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
         mockWalletDepositEndpointService = new Mock<IWalletDepositEndpointService>();
-        mockProjectOriginOptions = new Mock<IOptions<ProjectOriginOptions>>();
 
         mockTransferAgreementRepository
             .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
@@ -75,7 +71,7 @@ public class TransferAgreementsControllerTests
         mockValidator = CreateValidator();
         var controllerContext = CreateControllerContext(context);
 
-        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object, mockWalletDepositEndpointService.Object, mockProjectOriginOptions.Object)
+        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object, mockWalletDepositEndpointService.Object)
         {
             ControllerContext = controllerContext
         };

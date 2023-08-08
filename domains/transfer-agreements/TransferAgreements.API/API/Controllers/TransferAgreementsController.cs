@@ -27,18 +27,15 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
-    private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
-        IWalletDepositEndpointService walletDepositEndpointService,
-        IOptions<ProjectOriginOptions> projectOriginOptions)
+        IWalletDepositEndpointService walletDepositEndpointService)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.walletDepositEndpointService = walletDepositEndpointService;
-        this.projectOriginOptions = projectOriginOptions;
     }
 
     [ProducesResponseType(201)]

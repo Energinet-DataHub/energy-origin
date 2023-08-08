@@ -29,21 +29,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated()
     {
-        var receiverId = Guid.NewGuid();
         var senderId = Guid.NewGuid();
-
-        var result = await factory
-            .CreateAuthenticatedClient(sub: receiverId.ToString())
-            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
-
-        var resultData = await result.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        var base64String = resultData!["result"];
 
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
             "12345456",
-            base64String
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
