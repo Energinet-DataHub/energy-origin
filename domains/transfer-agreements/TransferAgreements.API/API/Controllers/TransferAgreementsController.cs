@@ -3,19 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
-using API.Converters;
 using API.Data;
 using API.Extensions;
-using API.Options;
 using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Grpc.Core;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Controllers;
 
