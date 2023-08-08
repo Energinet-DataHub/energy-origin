@@ -27,7 +27,7 @@ public class WalletContainer : IAsyncLifetime
                 .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
-                // - This should be implemented correctly, right now it apparently doesn't use it
+                //TODO - This should be implemented correctly, right now it apparently doesn't use it https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1688
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://whatever.com/")
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .WithWaitStrategy(
