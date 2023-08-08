@@ -19,7 +19,7 @@ public class WalletDepositEndpointServiceTests
     {
         mockProjectOriginOptions = new Mock<IOptions<ProjectOriginOptions>>();
         mockLogger = new Mock<ILogger<WalletDepositEndpointService>>();
-        service =  new WalletDepositEndpointService(mockProjectOriginOptions.Object, mockLogger.Object);
+        service = new WalletDepositEndpointService(mockProjectOriginOptions.Object, mockLogger.Object);
     }
 
     [Fact]
