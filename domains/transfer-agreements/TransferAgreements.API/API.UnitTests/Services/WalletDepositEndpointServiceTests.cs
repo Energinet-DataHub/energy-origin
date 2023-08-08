@@ -19,11 +19,7 @@ public class WalletDepositEndpointServiceTests
     {
         mockProjectOriginOptions = new Mock<IOptions<ProjectOriginOptions>>();
         mockLogger = new Mock<ILogger<WalletDepositEndpointService>>();
-    }
-
-    private WalletDepositEndpointService CreateService()
-    {
-        return new WalletDepositEndpointService(mockProjectOriginOptions.Object, mockLogger.Object);
+        service =  new WalletDepositEndpointService(mockProjectOriginOptions.Object, mockLogger.Object);
     }
 
     [Fact]
@@ -32,7 +28,6 @@ public class WalletDepositEndpointServiceTests
         var emptyUuidValue = new byte[16];
         var guidFromBytes = new Guid(emptyUuidValue);
         var receiverId = new ProjectOrigin.Common.V1.Uuid { Value = guidFromBytes.ToString() };
-        service = CreateService();
 
         Action action = () => service.ConvertUuidToGuid(receiverId);
 
@@ -46,7 +41,6 @@ public class WalletDepositEndpointServiceTests
         var validUuidValue = Guid.NewGuid().ToByteArray();
         var guidFromBytes = new Guid(validUuidValue);
         var receiverId = new ProjectOrigin.Common.V1.Uuid { Value = guidFromBytes.ToString() };
-        service = CreateService();
 
         var result = service.ConvertUuidToGuid(receiverId);
 
