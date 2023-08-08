@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Electricity.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using Attribute = ProjectOrigin.Electricity.V1.Attribute;
@@ -74,7 +75,16 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
             Nonce = Guid.NewGuid().ToString(), // TODO: Can this be used in case we send the same message twice?
         };
-        var headerSignature = projectOriginOptions.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray(); //TODO: Use issuer for right gridarea
+
+        IPrivateKey issuerKey;
+        if (context.Message.GridArea.Equals("DK1", StringComparison.OrdinalIgnoreCase))
+            issuerKey = projectOriginOptions.Dk1IssuerKey;
+        else if (context.Message.GridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
+            issuerKey = projectOriginOptions.Dk2IssuerKey;
+        else
+            throw new Exception($"Not supported GridArea {context.Message.GridArea}"); //TODO: How to handle this
+
+        var headerSignature = issuerKey.Sign(header.ToByteArray()).ToArray();
         var transaction = new Transaction
         {
             Header = header,

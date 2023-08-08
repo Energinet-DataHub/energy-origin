@@ -17,4 +17,5 @@ public class ProjectOriginOptions
     public string WalletUrl { get; set; } = "";
 
     public IPrivateKey Dk1IssuerKey => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(Dk1IssuerPrivateKeyPem));
+    public IPrivateKey Dk2IssuerKey => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(Dk2IssuerPrivateKeyPem));
 }
