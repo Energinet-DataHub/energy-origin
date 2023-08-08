@@ -54,7 +54,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var auditsResponse = await senderClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
-
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
 
