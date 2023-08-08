@@ -28,7 +28,7 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-            //TODO: The fixed port will fail if multiple tests use ProjectOriginStack!
+            //TODO: The fixed port will fail if multiple tests use ProjectOriginStack! The easy option is to use a CollectionDefinition
 
             // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
             // There is a chance for port collision with the host ports assigned by Testcontainers
@@ -49,8 +49,8 @@ public class ProjectOriginStack : RegistryFixture
     public ProjectOriginOptions Options => new()
     {
         RegistryName = RegistryName,
-        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
-        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
+        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText()),
+        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk2IssuerKey.ExportPkixText()),
         RegistryUrl = RegistryUrl,
         WalletUrl = WalletUrl
     };
