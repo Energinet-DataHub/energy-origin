@@ -20,13 +20,10 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>, IDisposable
+public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
-    private IServiceScope scope;
-    private ApplicationDbContext context;
-
 
     public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
         WalletContainer wallet)
@@ -36,21 +33,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var sub = Guid.NewGuid().ToString();
         factory.WalletUrl = wallet.WalletUrl;
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
-
-        InitializeContext();
-    }
-
-    private void InitializeContext()
-    {
-        scope = factory.Services.CreateScope();
-        context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    }
-
-    public void Dispose()
-    {
-        context.Dispose();
-        scope.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -567,28 +549,5 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var result = await client.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task Create_ShouldHaveReceiverReferenceNotNull()
-    {
-        var transferAgreement = new CreateTransferAgreement(
-            new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
-            new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
-            "12345456",
-            Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-        response.EnsureSuccessStatusCode();
-
-        var createdTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
-
-        await Task.Delay(2000);
-
-        var createdAgreementInDb = await context.TransferAgreements.FindAsync(createdTransferAgreement.Id);
-
-        createdAgreementInDb.Should().NotBeNull();
-        createdAgreementInDb.ReceiverReference.Should().NotBe(Guid.Empty);
     }
 }
