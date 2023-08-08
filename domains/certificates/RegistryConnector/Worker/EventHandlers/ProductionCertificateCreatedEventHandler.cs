@@ -55,7 +55,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             ownerPublicKey);
 
         var request = issuedEvent.CreateSendTransactionRequest(issuerKey);
-        
+
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
         var client = new RegistryService.RegistryServiceClient(channel);
 
