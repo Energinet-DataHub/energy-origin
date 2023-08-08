@@ -16,6 +16,17 @@ public class ProjectOriginOptions
 
     public string WalletUrl { get; set; } = "";
 
-    public IPrivateKey Dk1IssuerKey => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(Dk1IssuerPrivateKeyPem));
-    public IPrivateKey Dk2IssuerKey => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(Dk2IssuerPrivateKeyPem));
+    public IPrivateKey GetIssuerKey(string gridArea)
+    {
+        if (gridArea.Equals("DK1", StringComparison.OrdinalIgnoreCase))
+            return ToPrivateKey(Dk1IssuerPrivateKeyPem);
+
+        if (gridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
+            return ToPrivateKey(Dk2IssuerPrivateKeyPem);
+
+        throw new Exception($"Not supported GridArea {gridArea}"); //TODO: How to handle this
+    }
+
+    private static IPrivateKey ToPrivateKey(byte[] key)
+        => new Ed25519Algorithm().ImportPrivateKeyText(Encoding.UTF8.GetString(key));
 }

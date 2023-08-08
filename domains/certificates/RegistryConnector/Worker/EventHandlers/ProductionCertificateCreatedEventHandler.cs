@@ -8,7 +8,6 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using ProjectOriginClients;
@@ -37,13 +36,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
         var ownerKey = new Secp256k1Algorithm().GenerateNewPrivateKey(); //TODO: Derive new public key from Deposit Endpoint Reference owner key with calculated position
         var ownerPublicKey = ownerKey.PublicKey;
 
-        IPrivateKey issuerKey;
-        if (message.GridArea.Equals("DK1", StringComparison.OrdinalIgnoreCase))
-            issuerKey = projectOriginOptions.Dk1IssuerKey;
-        else if (message.GridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
-            issuerKey = projectOriginOptions.Dk2IssuerKey;
-        else
-            throw new Exception($"Not supported GridArea {message.GridArea}"); //TODO: How to handle this
+        var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
 
         var issuedEvent = Registry.CreateIssuedEventForProduction(
             projectOriginOptions.RegistryName,

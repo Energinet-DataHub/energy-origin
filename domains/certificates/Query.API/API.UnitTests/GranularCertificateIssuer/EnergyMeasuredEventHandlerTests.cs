@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AggregateRepositories;
@@ -14,7 +13,6 @@ using MeasurementEvents;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
-using Range = Moq.Range;
 
 namespace API.UnitTests.GranularCertificateIssuer;
 

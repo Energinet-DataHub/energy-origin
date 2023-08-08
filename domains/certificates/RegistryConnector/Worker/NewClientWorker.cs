@@ -93,7 +93,7 @@ public class NewClientWorker : NewPoClientWorker
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
             Nonce = Guid.NewGuid().ToString(),
         };
-        var headerSignature = ProjectOriginOptions.Value.Dk1IssuerKey.Sign(header.ToByteArray()).ToArray();
+        var headerSignature = ProjectOriginOptions.Value.GetIssuerKey("DK1").Sign(header.ToByteArray()).ToArray();
         var transactions = new Transaction
         {
             Header = header,
