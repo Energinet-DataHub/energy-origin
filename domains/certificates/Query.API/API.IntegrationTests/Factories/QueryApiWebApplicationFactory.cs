@@ -96,7 +96,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn);
 
         using var client = CreateAuthenticatedClient(subject);
-        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds(), endDate = startDate.AddYears(1).ToUnixTimeSeconds() }; //TODO: It should be valid to not have an end date
+        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
