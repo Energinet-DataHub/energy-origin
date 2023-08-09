@@ -6,8 +6,15 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using registryConnector::RegistryConnector.Worker;
 using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace API.IntegrationTests.Testcontainers;
+
+[CollectionDefinition(nameof(ProjectOriginStackCollection))]
+public class ProjectOriginStackCollection : ICollectionFixture<ProjectOriginStack>
+{
+
+}
 
 public class ProjectOriginStack : RegistryFixture
 {
@@ -28,10 +35,8 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-            //TODO: The fixed port will fail if multiple tests use ProjectOriginStack! The easy option is to use a CollectionDefinition
-
             // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
-            // There is a chance for port collision with the host ports assigned by Testcontainers
+            // There is a chance for port collision with the host ports assigned by Testcontainers or already taken on the host
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.7")
                 .WithPortBinding(7890, GrpcPort)

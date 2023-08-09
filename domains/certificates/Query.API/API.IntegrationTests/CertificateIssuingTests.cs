@@ -16,14 +16,14 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
+[Collection(nameof(ProjectOriginStackCollection))]
 public sealed class CertificateIssuingTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
-    IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<ProjectOriginStack>
+    IClassFixture<RegistryConnectorApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;

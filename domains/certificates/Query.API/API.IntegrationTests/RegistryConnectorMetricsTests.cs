@@ -1,31 +1,22 @@
 extern alias registryConnector;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
-using ProjectOrigin.HierarchicalDeterministicKeys;
-using registryConnector::RegistryConnector.Worker;
 using Xunit;
 
 namespace API.IntegrationTests;
 
+[Collection(nameof(ProjectOriginStackCollection))]
 public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>
 {
     private readonly RegistryConnectorApplicationFactory factory;
 
-    public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory)
+    public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory, ProjectOriginStack projectOriginStack)
     {
         this.factory = factory;
-        //TODO: This is a hack to get the test to run. Better option is to use the testcontainers for projectorigin stack
-        factory.ProjectOriginOptions = new ProjectOriginOptions
-        {
-            RegistryName = "foo",
-            RegistryUrl = "bar",
-            WalletUrl = "baz",
-            Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText()),
-            Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
-        };
+        factory.ProjectOriginOptions = projectOriginStack.Options;
     }
 
     [Fact]

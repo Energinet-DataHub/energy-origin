@@ -14,7 +14,7 @@ using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent> //TODO: Should this be a JobConsumer?
+public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
 {
     private readonly ILogger<ProductionCertificateCreatedEventHandler> logger;
     private readonly ProjectOriginOptions projectOriginOptions;
