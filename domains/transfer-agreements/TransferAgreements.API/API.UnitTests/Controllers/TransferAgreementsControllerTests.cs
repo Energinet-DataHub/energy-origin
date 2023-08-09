@@ -80,7 +80,7 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
     {
-        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337", "eyJFbmRwb2ludCI6IlNvbWVFbmRwb2ludCIsIlB1YmxpY0tleSI6IkFBQUFBQUFBQUFBQUFBPT0iLCJWZXJzaW9uIjoxfQ==");
+        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337", Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint);
 
         controller = CreateControllerWithMockedUser();
         await controller.Create(request);

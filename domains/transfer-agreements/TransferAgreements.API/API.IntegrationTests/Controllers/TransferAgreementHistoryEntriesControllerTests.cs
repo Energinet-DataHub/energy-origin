@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
@@ -17,19 +18,21 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly HttpClient authenticatedClient;
+    private readonly string sub;
 
     public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory,
         WalletContainer wallet)
     {
         this.factory = factory;
         factory.WalletUrl = wallet.WalletUrl;
+        sub = Guid.NewGuid().ToString();
+        authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
 
     [Fact]
     public async Task Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated()
     {
-        var senderId = Guid.NewGuid();
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -37,12 +40,10 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
-        var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
-        var auditsResponse = await senderClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
+        var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
@@ -54,9 +55,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task Edit_ShouldGenerateHistoryEntry_WhenEndDateIsUpdated()
     {
-        var senderId = Guid.NewGuid();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -83,10 +81,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task GetHistoryEntriesForTransferAgreement_ShouldReturnNoContent_WhenNotOwnerOrReceiver()
     {
-        var creatingSender = Guid.NewGuid();
-
-        var creatorClient = factory.CreateAuthenticatedClient(sub: creatingSender.ToString());
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -94,7 +88,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var createRequest = await creatorClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "66332211");
@@ -106,11 +100,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task GetHistoryEntriesForTransferAgreement_ShouldContainActorNameField_WhenSender()
     {
-        var senderId = Guid.NewGuid();
-
-        var creatingActor = Guid.NewGuid();
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), actor: creatingActor.ToString());
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -118,11 +107,11 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var otherActor = Guid.NewGuid();
-        var otherActorClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), actor: otherActor.ToString());
+        var otherActorClient = factory.CreateAuthenticatedClient(sub: sub, actor: otherActor.ToString());
 
         var senderResponse = await otherActorClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
@@ -136,9 +125,6 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     [Fact]
     public async Task GetHistoryEntriesForTransferAgreement_ShouldNotContainActorNameField_WhenReceiver()
     {
-        var sender = Guid.NewGuid();
-        var senderClient = factory.CreateAuthenticatedClient(sub: sender.ToString());
-
         var transferAgreement = new CreateTransferAgreement(
             new DateTimeOffset(2123, 3, 3, 3, 3, 3, TimeSpan.Zero).ToUnixTimeSeconds(),
             new DateTimeOffset(2124, 4, 4, 4, 4, 4, TimeSpan.Zero).ToUnixTimeSeconds(),
@@ -146,7 +132,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var createRequest = await senderClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var createRequest = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
 
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 

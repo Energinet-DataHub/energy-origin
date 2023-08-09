@@ -1,4 +1,4 @@
-namespace API.IntegrationTests;
+namespace API.UnitTests;
 
 public static class Some
 {

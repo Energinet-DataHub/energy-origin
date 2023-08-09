@@ -23,13 +23,14 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
+    private readonly string sub;
 
     public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
         WalletContainer wallet)
     {
         this.factory = factory;
 
-        var sub = Guid.NewGuid().ToString();
+        sub = Guid.NewGuid().ToString();
         factory.WalletUrl = wallet.WalletUrl;
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
@@ -53,10 +54,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
-        var senderId = Guid.NewGuid();
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
         var id = Guid.NewGuid();
-
         await factory.SeedData(new List<TransferAgreement>()
         {
             new()
@@ -64,7 +62,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
@@ -79,7 +77,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var response = await senderClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -91,9 +89,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
     public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
     {
-        var senderId = Guid.NewGuid();
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var now = DateTimeOffset.UtcNow;
 
         var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
@@ -106,7 +101,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var response = await senderClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
@@ -119,10 +114,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData(221860025546L, 253402300800L, "EndDate")]
     public async Task CreateTransferAgreement_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var senderId = Guid.NewGuid();
-        var senderTin = "11223344";
         var receiverTin = "12345678";
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
         var request = new CreateTransferAgreement(
             StartDate: start,
@@ -131,7 +123,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var response = await senderClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -150,10 +142,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
     public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
     {
-        var senderId = Guid.NewGuid();
-        var senderTin = "11223344";
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
-
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
@@ -161,7 +149,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             Some.Base64EncodedWalletDepositEndpoint
         );
 
-        var response = await senderClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -294,10 +282,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
     {
-        var sub = Guid.NewGuid().ToString();
-        var senderTin = "11223344";
-        var receiverTin = "11223344";
-
         await factory.SeedData(
             new List<TransferAgreement>()
             {
@@ -309,7 +293,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
-                    ReceiverTin = receiverTin,
+                    ReceiverTin = "11223344",
                     ReceiverReference = Guid.NewGuid()
                 },
                 new()
@@ -319,15 +303,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
-                    SenderTin = senderTin,
+                    SenderTin = "11223344",
                     ReceiverTin = "87654321",
                     ReceiverReference = Guid.NewGuid()
                 }
             });
 
-        var client = factory.CreateAuthenticatedClient(sub, tin: receiverTin);
-
-        var response = await client.GetAsync("api/transfer-agreements");
+        var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 
         response.EnsureSuccessStatusCode();
         var transferAgreements = await response.Content.ReadAsStringAsync();
@@ -341,7 +323,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
     {
         var receiverTin = "11223344";
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(new List<TransferAgreement>()
@@ -349,7 +330,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             new()
             {
                 Id = transferAgreementId,
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderName = "nrgi A/S",
@@ -360,7 +341,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             new()
             {
                 Id = Guid.NewGuid(),
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 StartDate = DateTimeOffset.UtcNow.AddDays(11),
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
                 SenderName = "nrgi A/S",
@@ -370,11 +351,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             }
         });
 
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
-        var response = await senderClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
@@ -385,7 +364,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -394,7 +372,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 new()
                 {
                     Id = transferAgreementId,
-                    SenderId = senderId,
+                    SenderId = Guid.Parse(sub),
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
@@ -404,11 +382,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 }
             });
 
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await senderClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -421,14 +397,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnNotFound_WhenIsNotFoundInDatabase()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
-
-        var senderClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await senderClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -436,7 +409,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementSenderIdDoesNotMatch()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -455,11 +427,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 }
             });
 
-        var otherClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await otherClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -492,7 +462,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValid()
     {
-        var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -501,7 +470,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 new()
                 {
                     Id = agreementId,
-                    SenderId = senderId,
+                    SenderId = Guid.Parse(sub),
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
                     SenderName = "nrgi A/S",
@@ -511,12 +480,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 }
             });
 
-        var client = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new EditTransferAgreementEndDate(newEndDate);
 
-        var response = await client.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
+        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -528,8 +495,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task CreateWalletDepositEndpoint_ShouldReturnBase64StringOkResponse_WhenAuthorized()
     {
-        var result = await factory
-            .CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "")
+        var result = await authenticatedClient
             .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
         var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
