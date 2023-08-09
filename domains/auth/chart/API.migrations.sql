@@ -189,11 +189,26 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
+    ALTER TABLE "Users" DROP COLUMN "AcceptedTermsVersion";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
+    CREATE TYPE company_terms_type AS ENUM ('terms_of_service');
+    CREATE TYPE user_terms_type AS ENUM ('privacy_policy');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE TABLE "CompanyTerms" (
         "Id" uuid NOT NULL,
         "CompanyId" uuid NOT NULL,
-        "TermsKey" text NOT NULL,
+        "Type" company_terms_type NOT NULL,
         "AcceptedVersion" integer NOT NULL,
         CONSTRAINT "PK_CompanyTerms" PRIMARY KEY ("Id"),
         CONSTRAINT "FK_CompanyTerms_Companies_CompanyId" FOREIGN KEY ("CompanyId") REFERENCES "Companies" ("Id") ON DELETE CASCADE
@@ -203,13 +218,12 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE TABLE "Roles" (
         "Id" uuid NOT NULL,
         "Key" text NOT NULL,
         "Name" text NOT NULL,
         "IsDefault" boolean NOT NULL,
-        "RoleAdmin" boolean NOT NULL,
         CONSTRAINT "PK_Roles" PRIMARY KEY ("Id")
     );
     END IF;
@@ -217,11 +231,11 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE TABLE "UserTerms" (
         "Id" uuid NOT NULL,
         "UserId" uuid NOT NULL,
-        "TermsKey" text NOT NULL,
+        "Type" user_terms_type NOT NULL,
         "AcceptedVersion" integer NOT NULL,
         CONSTRAINT "PK_UserTerms" PRIMARY KEY ("Id"),
         CONSTRAINT "FK_UserTerms_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("Id") ON DELETE CASCADE
@@ -231,20 +245,7 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
-    CREATE TABLE "RoleUser" (
-        "RolesId" uuid NOT NULL,
-        "UsersId" uuid NOT NULL,
-        CONSTRAINT "PK_RoleUser" PRIMARY KEY ("RolesId", "UsersId"),
-        CONSTRAINT "FK_RoleUser_Roles_RolesId" FOREIGN KEY ("RolesId") REFERENCES "Roles" ("Id") ON DELETE CASCADE,
-        CONSTRAINT "FK_RoleUser_Users_UsersId" FOREIGN KEY ("UsersId") REFERENCES "Users" ("Id") ON DELETE CASCADE
-    );
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE TABLE "UserRoles" (
         "Id" uuid NOT NULL,
         "UserId" uuid NOT NULL,
@@ -258,51 +259,44 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE INDEX "IX_CompanyTerms_CompanyId" ON "CompanyTerms" ("CompanyId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE UNIQUE INDEX "IX_Roles_Key" ON "Roles" ("Key");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
-    CREATE INDEX "IX_RoleUser_UsersId" ON "RoleUser" ("UsersId");
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE INDEX "IX_UserRoles_RoleId" ON "UserRoles" ("RoleId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE INDEX "IX_UserRoles_UserId" ON "UserRoles" ("UserId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     CREATE INDEX "IX_UserTerms_UserId" ON "UserTerms" ("UserId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230711130908_TestMigration') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230804131307_AddRoles') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230711130908_TestMigration', '7.0.3');
+    VALUES ('20230804131307_AddRoles', '7.0.3');
     END IF;
 END $EF$;
 COMMIT;
