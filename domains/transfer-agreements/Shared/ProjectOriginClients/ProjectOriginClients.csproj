@@ -23,12 +23,6 @@
 		<Protobuf Include="Protos\common.proto" ProtoRoot="Protos" GrpcServices="None">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
 		</Protobuf>
-		<Protobuf Include="Protos\electricity.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/electricity.proto</SourceUrl>
-		</Protobuf>
-		<Protobuf Include="Protos\registry.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/registry.proto</SourceUrl>
-		</Protobuf>
 		<Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>

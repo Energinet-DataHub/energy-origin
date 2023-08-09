@@ -36,6 +36,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 Audit.Core.Configuration.Setup()
@@ -124,13 +125,14 @@ builder.Services.AddSwaggerGen(o =>
     }
 });
 
+builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
+builder.Services.AddScoped<IWalletDepositEndpointService, WalletDepositEndpointService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
-        // TODO: Is the following needed in this form after the new Auth service release?
         o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,

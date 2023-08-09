@@ -19,10 +19,18 @@ public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
+    private readonly IWalletDepositEndpointService walletDepositEndpointService;
+
 
     public TransferAgreementsController(
-        ITransferAgreementRepository transferAgreementRepository, IValidator<CreateTransferAgreement> createTransferAgreementValidator) =>
-        (this.transferAgreementRepository, this.createTransferAgreementValidator) = (transferAgreementRepository, createTransferAgreementValidator);
+        ITransferAgreementRepository transferAgreementRepository,
+        IValidator<CreateTransferAgreement> createTransferAgreementValidator,
+        IWalletDepositEndpointService walletDepositEndpointService)
+    {
+        this.transferAgreementRepository = transferAgreementRepository;
+        this.createTransferAgreementValidator = createTransferAgreementValidator;
+        this.walletDepositEndpointService = walletDepositEndpointService;
+    }
 
     [ProducesResponseType(201)]
     [ProducesResponseType(409)]
@@ -110,7 +118,6 @@ public class TransferAgreementsController : ControllerBase
 
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
-        var actorName = User.FindActorNameClaim();
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -160,6 +167,20 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin: transferAgreement.ReceiverTin);
 
         return Ok(response);
+    }
+
+    [ProducesResponseType(typeof(string), 200)]
+    [HttpPost("wallet-deposit-endpoint")]
+    public async Task<ActionResult> CreateWalletDepositEndpoint()
+    {
+        var issuer = User.FindIssuerClaim();
+        var audience = User.FindAudienceClaim();
+        var subject = User.FindSubjectGuidClaim();
+        var name = User.FindSubjectNameClaim();
+
+        var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(new JwtToken(issuer, audience, subject, name));
+
+        return Ok(new { result = base64String });
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>

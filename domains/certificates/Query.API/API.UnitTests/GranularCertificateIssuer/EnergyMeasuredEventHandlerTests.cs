@@ -18,7 +18,8 @@ namespace API.UnitTests.GranularCertificateIssuer;
 
 public class EnergyMeasuredEventHandlerTests
 {
-    private static readonly DateTimeOffset now = DateTimeOffset.Now;
+    private static readonly DateTimeOffset n = DateTimeOffset.UtcNow;
+    private static readonly DateTimeOffset now = new(n.Year, n.Month, n.Day, n.Hour, n.Minute, 0, n.Offset); // Rounded to nearest minute
 
     private readonly CertificateIssuingContract mockContract = new()
     {
@@ -27,8 +28,9 @@ public class EnergyMeasuredEventHandlerTests
         GridArea = "gridArea",
         MeteringPointType = MeteringPointType.Production,
         MeteringPointOwner = "owner",
-        StartDate = now.UtcDateTime,
-        Created = now.UtcDateTime.AddDays(-1)
+        StartDate = now,
+        EndDate = null,
+        Created = now.AddDays(-1)
     };
 
     [Fact]
@@ -94,7 +96,6 @@ public class EnergyMeasuredEventHandlerTests
             Quality: measurementQuality);
 
         await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
-
 
         repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
