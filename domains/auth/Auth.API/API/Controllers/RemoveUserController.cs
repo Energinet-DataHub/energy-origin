@@ -32,6 +32,6 @@ public class RemoveUserController : ControllerBase
             user.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
-        return new NoContentResult();
+        return Ok();
     }
 }

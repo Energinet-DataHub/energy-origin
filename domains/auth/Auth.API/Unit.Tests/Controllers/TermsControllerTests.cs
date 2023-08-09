@@ -86,7 +86,7 @@ public class TermsControllerTests
 
         var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
         Assert.NotNull(result);
-        Assert.IsType<NoContentResult>(result);
+        Assert.IsType<OkResult>(result);
 
         Mock.Get(userService).Verify(x => x.UpsertUserAsync(
             It.Is<User>(y =>
@@ -129,7 +129,7 @@ public class TermsControllerTests
 
         var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
         Assert.NotNull(result);
-        Assert.IsType<NoContentResult>(result);
+        Assert.IsType<OkResult>(result);
 
         Mock.Get(userService).Verify(x => x.UpsertUserAsync(
             It.Is<User>(y =>

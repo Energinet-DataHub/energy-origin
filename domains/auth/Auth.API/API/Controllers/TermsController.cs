@@ -100,7 +100,7 @@ public class TermsController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        return NoContent();
+        return Ok();
     }
 
     [Authorize(Policy = nameof(OrganizationOwnerPolicy))]
@@ -141,6 +141,6 @@ public class TermsController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        return NoContent();
+        return Ok();
     }
 }

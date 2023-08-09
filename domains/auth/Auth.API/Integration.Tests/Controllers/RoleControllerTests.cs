@@ -45,7 +45,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             UserId = userGuid
         };
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync("role/assignRole", httpContent);
+        var response = await client.PutAsync("role/assign", httpContent);
         var dbUser = factory.DataContext.Users.Include(x => x.Roles).FirstOrDefault(x => x.Id == roleRequest.UserId)!;
 
         Assert.NotNull(response);
@@ -71,7 +71,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(policyUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assignRole", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assign", httpContent));
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assignRole", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assign", httpContent));
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-        var response = await client.PutAsync("role/removeRoleFromUser", httpContent);
+        var response = await client.PutAsync("role/remove", httpContent);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -158,7 +158,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/removeRoleFromUser", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/remove", httpContent));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(policyAuthUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/removeRoleFromUser", httpContent));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/remove", httpContent));
     }
 
     [Fact]
@@ -197,15 +197,15 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAuthenticatedClient(policyUser);
         var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync("role/removeRoleFromUser", httpContent);
+        var response = await client.PutAsync("role/remove", httpContent);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
 
     [Theory]
-    [InlineData("role/assignRole")]
-    [InlineData("role/removeRoleFromUser")]
+    [InlineData("role/assign")]
+    [InlineData("role/remove")]
     public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string routePath)
     {
         var roleRequest = new RoleRequest
@@ -224,8 +224,8 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Theory]
-    [InlineData("role/assignRole")]
-    [InlineData("role/removeRoleFromUser")]
+    [InlineData("role/assign")]
+    [InlineData("role/remove")]
     public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string routePath)
     {
         var client = factory.CreateAuthenticatedClient(policyUser, config: builder =>

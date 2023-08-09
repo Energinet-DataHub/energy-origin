@@ -20,7 +20,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists()
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();
         var options = Options.Create(new DataSyncOptions
@@ -36,7 +36,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
@@ -45,7 +45,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUser_WhenUserDoesNotExist()
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
@@ -73,7 +73,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
@@ -116,7 +116,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnNoContentAndCreateCompanyTerms_WhenCompanyTermsDoesNotExist()
+    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsDoesNotExist()
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
@@ -146,7 +146,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var dbUser = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Contains(dbUser.Company!.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
         Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == 10);
     }

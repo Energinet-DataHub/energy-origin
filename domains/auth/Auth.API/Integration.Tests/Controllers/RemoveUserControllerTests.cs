@@ -20,7 +20,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldReturnNoContent_WhenUserIsRemoved()
+    public async Task RemoveUser_ShouldReturnOk_WhenUserIsRemoved()
     {
         var userToBeDeletedId = Guid.NewGuid();
         var user = new User { Id = userToBeDeletedId, Name = "Test User" };
@@ -29,7 +29,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
 
         var response = await client.DeleteAsync($"user/remove/{userToBeDeletedId}");
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x => x.Id == userToBeDeletedId);
         Assert.Null(deletedUser);

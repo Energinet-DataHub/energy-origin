@@ -14,7 +14,7 @@ public class RoleController : ControllerBase
 {
     [Authorize(Policy = nameof(RoleAdminPolicy))]
     [HttpPut]
-    [Route("role/assignRole")]
+    [Route("role/assign")]
     public async Task<IActionResult> AssignRole([FromBody] RoleRequest roleRequest, IRoleService roleService, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -35,7 +35,7 @@ public class RoleController : ControllerBase
 
     [Authorize(Policy = nameof(RoleAdminPolicy))]
     [HttpPut]
-    [Route("role/removeRoleFromUser")]
+    [Route("role/remove")]
     public async Task<IActionResult> RemoveRoleFromUser([FromBody] RoleRequest roleRequest, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");

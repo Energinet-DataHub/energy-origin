@@ -41,7 +41,7 @@ public class RemoveUserControllerTests
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldReturnsNoContent_WhenSuccessfulDeletion()
+    public async Task RemoveUser_ShouldReturnsOk_WhenSuccessfulDeletion()
     {
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
@@ -50,7 +50,7 @@ public class RemoveUserControllerTests
 
         var result = await controller.RemoveUser(userId, mapper, userService, logger);
 
-        Assert.IsType<NoContentResult>(result);
+        Assert.IsType<OkResult>(result);
     }
 
     [Fact]
