@@ -4,5 +4,5 @@ namespace API.Data;
 
 public interface IWalletDepositEndpointService
 {
-    Task<string> CreateWalletDepositWithToken(JwtToken token);
+    Task<string> CreateWalletDepositWithToken(string jwtToken);
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -8,6 +9,8 @@ using API.Extensions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -20,16 +23,19 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
+    private readonly IHttpContextAccessor httpContextAccessor;
 
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
-        IWalletDepositEndpointService walletDepositEndpointService)
+        IWalletDepositEndpointService walletDepositEndpointService,
+        IHttpContextAccessor httpContextAccessor)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.walletDepositEndpointService = walletDepositEndpointService;
+        this.httpContextAccessor = httpContextAccessor;
     }
 
     [ProducesResponseType(201)]
@@ -173,14 +179,12 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
-        var issuer = User.FindIssuerClaim();
-        var audience = User.FindAudienceClaim();
-        var subject = User.FindSubjectGuidClaim();
-        var name = User.FindSubjectNameClaim();
-
-        var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(new JwtToken(issuer, audience, subject, name));
-
-        return Ok(new { result = base64String });
+        if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
+        {
+            var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(authentication.Parameter);
+            return Ok(new { result = base64String });
+        }
+        return Unauthorized(); // If the JWT token cannot be parsed.
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
