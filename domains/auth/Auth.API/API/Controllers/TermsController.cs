@@ -30,6 +30,11 @@ public class TermsController : ControllerBase
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
+        if (descriptor.AcceptedPrivacyPolicyVersion > version)
+        {
+            throw new ArgumentException($"The user cannot accept privacy policy version '{version}', when they had previously accepted version '{descriptor.AcceptedPrivacyPolicyVersion}'.");
+        }
+
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
         if (company == null && descriptor.Tin != null)
         {
@@ -109,6 +114,11 @@ public class TermsController : ControllerBase
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
+
+        if (descriptor.AcceptedTermsOfServiceVersion > version)
+        {
+            throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{descriptor.AcceptedTermsOfServiceVersion}'.");
+        }
 
         var type = CompanyTermsType.TermsOfService;
         var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == type);
