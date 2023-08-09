@@ -48,6 +48,12 @@ var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
+var roleOptions = builder.Configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
+if (roleOptions.RoleConfigurations.Count != roleOptions.RoleConfigurations.Select(x => x.Key).Distinct().Count())
+{
+    throw new InvalidDataException("Role options contains duplicate keys");
+}
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
@@ -61,6 +67,7 @@ builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefi
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 if (builder.Environment.IsDevelopment() == false)
 {
@@ -124,9 +131,6 @@ builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleDataContext, DataContext>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
@@ -137,20 +141,14 @@ builder.Services.AddOpenTelemetry()
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }))
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithTracing(provider =>
         provider
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }));
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
 
@@ -175,10 +173,10 @@ if (app.Environment.IsDevelopment())
 }
 else if (!app.Environment.IsTest())
 {
+    app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

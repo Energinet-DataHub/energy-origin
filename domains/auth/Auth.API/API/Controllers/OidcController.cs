@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using API.Models;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
@@ -31,8 +32,8 @@ public class OidcController : ControllerBase
         ITokenIssuer issuer,
         IOptions<OidcOptions> oidcOptions,
         IOptions<IdentityProviderOptions> providerOptions,
+        IOptions<RoleOptions> roleOptions,
         ILogger<OidcController> logger,
-        IRoleService roleService,
         [FromQuery] string? code,
         [FromQuery] string? error,
         [FromQuery(Name = "error_description")] string? errorDescription,
@@ -78,7 +79,7 @@ public class OidcController : ControllerBase
         UserDescriptor descriptor;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response, roleService);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, roleOptions.Value, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -110,7 +111,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, IRoleService roleService)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -212,6 +213,11 @@ public class OidcController : ControllerBase
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
         var knownUser = user != null;
+
+        // FIXME: move to creation of users
+        // var newDefaultRoles = roleService.GetAllRoles().Where(x => x.IsDefault).ExceptBy(user.Roles.Select(x => x.Key), x => x.Key);
+        // user.Roles.AddRange(newDefaultRoles);
+
         user ??= new User
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
@@ -227,15 +233,6 @@ public class OidcController : ControllerBase
                 }
         };
 
-        if (organizationOwner)
-        {
-            var newOrganizationRoles = (await roleService.GetRollByKeyAsync(RoleKeys.AuthAdminKey))!;
-            user.Roles.Add(newOrganizationRoles);
-        }
-
-        var newDefaultRoles = roleService.GetAllRoles().Where(x => x.IsDefault).ExceptBy(user.Roles.Select(x => x.Key), x => x.Key);
-        user.Roles.AddRange(newDefaultRoles);
-
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
 
@@ -244,8 +241,20 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
+        return mapper.Map(user, providerType, matchedRoles, response.AccessToken, response.IdentityToken);
     }
+
+    private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+        {
+            var property = info.FindFirstValue(match.Property);
+            return match.Operator switch
+            {
+                "exists" => property != null,
+                "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+                "equals" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+                _ => false
+            };
+        }) ? role.Key : null).OfType<string>();
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {

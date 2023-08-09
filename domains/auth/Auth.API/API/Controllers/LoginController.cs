@@ -15,6 +15,11 @@ public class LoginController : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
+    [Route("auth/roles")]
+    public IActionResult TestMethod2(IOptions<RoleOptions> options) => Ok(options.Value);
+
+    [HttpGet]
+    [AllowAnonymous]
     [Route("auth/test")]
     public IActionResult TestMethod(IOptions<TermsOptions> termsOptions, ILogger<LoginController> logger)
     {
