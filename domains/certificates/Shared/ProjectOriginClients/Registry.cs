@@ -10,7 +10,7 @@ namespace ProjectOriginClients;
 
 public static class Registry
 {
-    public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string gsrn, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
+    public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
     {
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
@@ -39,7 +39,7 @@ public static class Registry
         issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute
         {
             Key = "AssetId",
-            Value = gsrn
+            Value = assetId
         });
 
         return issuedEvent;
@@ -52,7 +52,7 @@ public static class Registry
             FederatedStreamId = issuedEvent.CertificateId,
             PayloadType = IssuedEvent.Descriptor.FullName,
             PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
-            Nonce = Guid.NewGuid().ToString(), // TODO: Can this be used in case we send the same message twice?
+            Nonce = Guid.NewGuid().ToString(),
         };
 
         var headerSignature = issuerKey.Sign(header.ToByteArray()).ToArray();

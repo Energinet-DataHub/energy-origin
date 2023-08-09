@@ -42,7 +42,7 @@ public class ProjectOriginOptions
         if (gridArea.Equals("DK2", StringComparison.OrdinalIgnoreCase))
             return ToPrivateKey(Dk2IssuerPrivateKeyPem);
 
-        throw new Exception($"Not supported GridArea {gridArea}"); //TODO: How to handle this
+        throw new ConfigurationException($"Not supported GridArea {gridArea}");
     }
 
     private static IPrivateKey ToPrivateKey(byte[] key)
