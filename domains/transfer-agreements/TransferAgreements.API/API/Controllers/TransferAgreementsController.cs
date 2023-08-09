@@ -10,7 +10,6 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -176,6 +175,7 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(string), 200)]
+    [ProducesResponseType(typeof(string), 500)]
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
@@ -184,7 +184,7 @@ public class TransferAgreementsController : ControllerBase
             var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(authentication.Parameter);
             return Ok(new { result = base64String });
         }
-        return Unauthorized();
+        return StatusCode(500);
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>

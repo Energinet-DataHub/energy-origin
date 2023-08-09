@@ -294,4 +294,30 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()), Times.Once);
         mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
     }
+
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldPassTokenWithoutBearerPrefix()
+    {
+        var expectedJwtToken = "sample.jwt.token";
+
+        var user = CreateUser();
+        var httpContext = CreateHttpContext(user);
+        httpContext.Request.Headers["Authorization"] = $"Bearer {expectedJwtToken}";
+
+        mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
+
+        string passedToken = null;
+        mockWalletDepositEndpointService
+            .Setup(s => s.CreateWalletDepositWithToken(It.IsAny<string>()))
+            .Callback<string>(token => passedToken = token)
+            .ReturnsAsync("sampleBase64String");
+
+        var controller = CreateControllerWithMockedUser();
+
+        await controller.CreateWalletDepositEndpoint();
+
+        passedToken.Should().NotBeNull();
+        passedToken.Should().NotContain("Bearer");
+        passedToken.Should().Be(expectedJwtToken);
+    }
 }
