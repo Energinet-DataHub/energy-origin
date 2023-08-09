@@ -37,7 +37,7 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.Configure<ProjectOriginOptions>((builder.Configuration).GetSection(ProjectOriginOptions.ProjectOrigin));
+builder.Services.AddProjectOriginOptions();
 builder.Services.Configure<FeatureFlags>(builder.Configuration.GetSection(nameof(FeatureFlags)));
 
 builder.Services.AddHostedService<NewClientWorker>();
