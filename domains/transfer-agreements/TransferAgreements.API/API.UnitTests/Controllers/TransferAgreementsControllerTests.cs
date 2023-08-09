@@ -77,9 +77,9 @@ public class TransferAgreementsControllerTests
                 mockValidator.Object,
                 mockWalletDepositEndpointService.Object,
                 mockHttpContextAccessor.Object)
-            {
-                ControllerContext = controllerContext
-            };
+        {
+            ControllerContext = controllerContext
+        };
     }
 
     [Fact]

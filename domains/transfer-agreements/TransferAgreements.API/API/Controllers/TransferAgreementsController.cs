@@ -184,7 +184,7 @@ public class TransferAgreementsController : ControllerBase
             var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(authentication.Parameter);
             return Ok(new { result = base64String });
         }
-        return Unauthorized(); // If the JWT token cannot be parsed.
+        return Unauthorized();
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
