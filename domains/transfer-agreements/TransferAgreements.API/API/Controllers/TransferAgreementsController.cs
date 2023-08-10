@@ -56,7 +56,7 @@ public class TransferAgreementsController : ControllerBase
             SenderId = Guid.Parse(subject),
             SenderName = subjectName,
             SenderTin = subjectTin,
-            ReceiverTin = request.ReceiverTin,
+            ReceiverTin = request.ReceiverTin
         };
 
         if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
