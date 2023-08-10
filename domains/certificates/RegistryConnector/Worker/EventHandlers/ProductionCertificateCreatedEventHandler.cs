@@ -84,9 +84,9 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             }
 
             await Task.Delay(1000);
-
+            
             if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
-                throw new Exception("Timed out waiting for transaction to commit");
+                throw new TimeoutException($"Timed out waiting for transaction to commit for certificate {message.CertificateId}");
         }
     }
 }
