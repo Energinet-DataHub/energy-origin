@@ -190,7 +190,7 @@ public class TransferAgreementsController : ControllerBase
         var subject = User.FindSubjectGuidClaim();
         var name = User.FindSubjectNameClaim();
 
-        var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(new JwtToken(issuer, audience, subject, name));
+        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(new JwtToken(issuer, audience, subject, name));
 
         return Ok(new { result = base64String });
     }

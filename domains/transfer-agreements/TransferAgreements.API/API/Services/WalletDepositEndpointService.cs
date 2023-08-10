@@ -21,7 +21,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         this.logger = logger;
     }
 
-    public async Task<string> CreateWalletDepositWithToken(JwtToken token)
+    public async Task<string> CreateWalletDepositEndpoint(JwtToken token)
     {
         var bearerToken = token.GenerateToken();
         var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
