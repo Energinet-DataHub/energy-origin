@@ -2,7 +2,6 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 public class RoleController : ControllerBase
 {
-    [Authorize(Policy = nameof(RoleAdminPolicy))]
+    [Authorize(Roles = "Administrator")]
     [HttpPut]
     [Route("role/{role}/assign/{userId}")]
     public async Task<IActionResult> AssignRole([FromRoute] string role, [FromRoute] Guid userId, IOptions<RoleOptions> roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
@@ -36,7 +35,7 @@ public class RoleController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Policy = nameof(RoleAdminPolicy))]
+    [Authorize(Roles = "Administrator")]
     [HttpPut]
     [Route("role/{role}/remove/{userId}")]
     public async Task<IActionResult> RemoveRoleFromUser([FromRoute] string role, [FromRoute] Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)

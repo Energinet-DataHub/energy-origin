@@ -26,6 +26,7 @@ public class TermsController : ControllerBase
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
         IOptions<DataSyncOptions> dataSyncOptions,
+        IOptions<RoleOptions> roleOptions,
         [FromRoute] int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -54,6 +55,11 @@ public class TermsController : ControllerBase
                 Name = descriptor.Name,
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
+
+            user.UserRoles.AddRange(roleOptions.Value.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
+                new UserRole { Role = x.Key, UserId = descriptor.Id }
+            ));
+
             await userService.InsertUserAsync(user);
             user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
@@ -103,7 +109,7 @@ public class TermsController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Policy = nameof(OrganizationOwnerPolicy))]
+    [Authorize(Roles = "OrganizationAdministrator")]
     [HttpPut]
     [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(

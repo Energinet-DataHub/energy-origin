@@ -12,5 +12,6 @@ public class ValidationParameters : TokenValidationParameters
         rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
         IssuerSigningKey = new RsaSecurityKey(rsa);
         ValidateIssuerSigningKey = true;
+        RoleClaimType = "role";
     }
 }

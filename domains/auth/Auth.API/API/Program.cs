@@ -7,13 +7,11 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -119,8 +117,6 @@ builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
-builder.Services.AddScoped<OrganizationOwnerPolicy>();
-builder.Services.AddScoped<RoleAdminPolicy>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -151,20 +147,6 @@ builder.Services.AddOpenTelemetry()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var authorizationOptions = services.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
-
-    var organizationOwnerPolicy = services.GetRequiredService<OrganizationOwnerPolicy>();
-    authorizationOptions.AddPolicy(nameof(OrganizationOwnerPolicy), policy =>
-        policy.Requirements.Add(organizationOwnerPolicy));
-
-    var roleAdminPolicy = services.GetRequiredService<RoleAdminPolicy>();
-    authorizationOptions.AddPolicy(nameof(RoleAdminPolicy), policy =>
-        policy.Requirements.Add(roleAdminPolicy));
-}
 
 if (app.Environment.IsDevelopment())
 {

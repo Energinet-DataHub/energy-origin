@@ -7,5 +7,5 @@ namespace API.Utilities.Interfaces;
 
 public interface IUserDescriptorMapper : IUserDescriptorMapperBase
 {
-    public UserDescriptor Map(User user, ProviderType providerType, IEnumerable<string> roles, string accessToken, string identityToken);
+    public UserDescriptor Map(User user, ProviderType providerType, IEnumerable<string> matchedRoles, string accessToken, string identityToken);
 }

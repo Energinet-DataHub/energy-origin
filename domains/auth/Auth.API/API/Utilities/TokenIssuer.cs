@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -70,6 +71,8 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
+            { UserClaimName.AssignedRoles, descriptor.AssignedRoles },
+            { UserClaimName.MatchedRoles, descriptor.MatchedRoles },
             { UserClaimName.AcceptedPrivacyPolicyVersion, descriptor.AcceptedPrivacyPolicyVersion },
             { UserClaimName.AcceptedTermsOfServiceVersion, descriptor.AcceptedTermsOfServiceVersion },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
@@ -80,10 +83,15 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ActorLegacy, descriptor.Id },
         };
 
-        if (descriptor.Roles is not null)
-        {
-            claims.Add(UserClaimName.Roles, descriptor.Roles);
-        }
+        var assignedRoles = descriptor.AssignedRoles.Split(" ") ?? Array.Empty<string>();
+        var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
+
+        // FIXME: evaulate
+        // foreach (var item in assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()))
+        // {
+        //     claims.Add($"role-{item}", new { ClaimTypes.Role, item });
+        // }
+        claims.Add("role", assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()));
 
         if (descriptor.CompanyId is not null)
         {

@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using API.Models;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
@@ -213,11 +212,6 @@ public class OidcController : ControllerBase
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
         var knownUser = user != null;
-
-        // FIXME: move to creation of users
-        // var newDefaultRoles = roleService.GetAllRoles().Where(x => x.IsDefault).ExceptBy(user.Roles.Select(x => x.Key), x => x.Key);
-        // user.Roles.AddRange(newDefaultRoles);
-
         user ??= new User
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
@@ -241,7 +235,7 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return mapper.Map(user, providerType, matchedRoles, response.AccessToken, response.IdentityToken);
+        return mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
     }
 
     private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>

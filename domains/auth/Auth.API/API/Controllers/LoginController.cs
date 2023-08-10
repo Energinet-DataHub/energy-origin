@@ -1,8 +1,12 @@
 using API.Options;
-using API.Repositories.Data;
 using API.Utilities;
+using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -13,6 +17,34 @@ namespace API.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
+    [HttpGet()]
+    [Route("auth/give-token")]
+    public IActionResult RefreshAsync(
+        ICryptography cryptography,
+        ITokenIssuer tokenIssuer)
+    {
+        var descriptor = new UserDescriptor(cryptography)
+        {
+            Id = Guid.NewGuid(),
+            Name = "Me",
+            AcceptedPrivacyPolicyVersion = 1,
+            AcceptedTermsOfServiceVersion = 1,
+            AllowCprLookup = true,
+            ProviderType = ProviderType.NemIdProfessional,
+            EncryptedAccessToken = "",
+            EncryptedIdentityToken = "",
+            MatchedRoles = "",
+            AssignedRoles = "Admin"
+        };
+        var token = tokenIssuer.Issue(descriptor, true);
+        return Ok(token);
+    }
+
+    [HttpGet]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [Route("auth/check-roles")]
+    public IActionResult TestMethod3(IOptions<RoleOptions> options) => Ok(options.Value);
+
     [HttpGet]
     [AllowAnonymous]
     [Route("auth/roles")]
