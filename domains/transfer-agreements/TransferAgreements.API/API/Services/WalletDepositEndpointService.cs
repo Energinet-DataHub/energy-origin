@@ -28,7 +28,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
 
-    public async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken)
+    private async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken)
     {
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
