@@ -2,21 +2,17 @@ extern alias registryConnector;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>, IClassFixture<ProjectOriginStack>
+public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>
 {
     private readonly RegistryConnectorApplicationFactory factory;
 
-    public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory, ProjectOriginStack projectOriginStack)
-    {
-        this.factory = factory;
-        factory.ProjectOriginOptions = projectOriginStack.Options;
-    }
+    public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory)
+        => this.factory = factory;
 
     [Fact]
     public async Task has_metrics_endpoint()

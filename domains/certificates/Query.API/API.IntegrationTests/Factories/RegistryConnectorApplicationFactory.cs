@@ -1,5 +1,6 @@
 extern alias registryConnector;
 using System;
+using System.Text;
 using Contracts;
 using FluentAssertions;
 using MassTransit;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ProjectOrigin.HierarchicalDeterministicKeys;
 using registryConnector::RegistryConnector.Worker;
 
 namespace API.IntegrationTests.Factories;
@@ -15,7 +17,14 @@ namespace API.IntegrationTests.Factories;
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
 {
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    public ProjectOriginOptions? ProjectOriginOptions { get; set; }
+    public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
+    {
+        RegistryName = "foo",
+        RegistryUrl = "bar",
+        WalletUrl = "baz",
+        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText()),
+        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
+    };
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
