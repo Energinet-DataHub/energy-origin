@@ -50,13 +50,13 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         }
     }
 
-    public async Task<ProjectOrigin.Common.V1.Uuid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
+    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
     {
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.Value.WalletUrl);
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
 
         var headers = new Metadata
-                { { "Authorization", $"Bearer {bearerToken}" } };
+            { { "Authorization", $"Bearer {bearerToken}" } };
         var wde = Base64Converter.ConvertToWalletDepositEndpoint(base64EncodedWalletDepositEndpoint);
         var walletRequest = new CreateReceiverDepositEndpointRequest
         {
@@ -65,15 +65,12 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         };
 
         var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
-        return response.ReceiverId;
-    }
-    public Guid ConvertUuidToGuid(ProjectOrigin.Common.V1.Uuid receiverId)
-    {
-        Guid receiverReference = new(receiverId.Value);
+
+        Guid receiverReference = new(response.ReceiverId.Value);
 
         if (receiverReference == Guid.Empty)
         {
-            throw new ArgumentException("The receiver Id cannot be an empty Guid.", nameof(receiverId));
+            throw new ArgumentException("The receiver Id cannot be an empty Guid.", nameof(response.ReceiverId));
         }
 
         return receiverReference;

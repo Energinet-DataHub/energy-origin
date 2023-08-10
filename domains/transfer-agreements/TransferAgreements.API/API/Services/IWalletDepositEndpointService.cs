@@ -8,6 +8,5 @@ public interface IWalletDepositEndpointService
 {
     Task<string> CreateWalletDepositWithToken(JwtToken token);
     Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken);
-    Task<ProjectOrigin.Common.V1.Uuid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin);
-    Guid ConvertUuidToGuid(ProjectOrigin.Common.V1.Uuid receiverId);
+    Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin);
 }

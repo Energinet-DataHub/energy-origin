@@ -64,14 +64,17 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
-        var jwtToken = new JwtToken(User.FindIssuerClaim(), User.FindAudienceClaim(), subject, subjectName);
+        var jwtToken = new JwtToken(User.FindIssuerClaim(),
+            User.FindAudienceClaim(),
+            subject,
+            subjectName);
+
         var bearerToken = jwtToken.GenerateToken();
 
-        var receiverId = await walletDepositEndpointService.CreateReceiverDepositEndpoint(bearerToken,
+        transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
+            bearerToken,
             request.Base64EncodedWalletDepositEndpoint,
             request.ReceiverTin);
-
-        transferAgreement.ReceiverReference = walletDepositEndpointService.ConvertUuidToGuid(receiverId);
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
