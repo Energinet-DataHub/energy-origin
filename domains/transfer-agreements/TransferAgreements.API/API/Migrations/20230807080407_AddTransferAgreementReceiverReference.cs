@@ -23,7 +23,7 @@ namespace API.Migrations
                 table: "TransferAgreements",
                 type: "uuid",
                 nullable: false,
-                oldDefaultValue: new Guid( "00000000-0000-0000-0000-000000000000"));
+                oldDefaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
         }
 
         /// <inheritdoc />
