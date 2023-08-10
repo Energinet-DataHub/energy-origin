@@ -5,6 +5,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,6 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
-
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
@@ -63,6 +63,18 @@ public class TransferAgreementsController : ControllerBase
         {
             return Conflict();
         }
+
+        var jwtToken = new JwtToken(User.FindIssuerClaim(),
+            User.FindAudienceClaim(),
+            subject,
+            subjectName);
+
+        var bearerToken = jwtToken.GenerateToken();
+
+        transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
+            bearerToken,
+            request.Base64EncodedWalletDepositEndpoint,
+            request.ReceiverTin);
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
@@ -178,7 +190,7 @@ public class TransferAgreementsController : ControllerBase
         var subject = User.FindSubjectGuidClaim();
         var name = User.FindSubjectNameClaim();
 
-        var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(new JwtToken(issuer, audience, subject, name));
+        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(new JwtToken(issuer, audience, subject, name));
 
         return Ok(new { result = base64String });
     }

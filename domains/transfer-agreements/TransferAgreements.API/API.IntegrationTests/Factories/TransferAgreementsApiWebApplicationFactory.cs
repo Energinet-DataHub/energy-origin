@@ -30,19 +30,29 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
+    public string WalletUrl { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.ConfigureTestServices(s => s.Configure<DatabaseOptions>(o =>
+        builder.ConfigureTestServices(s =>
         {
-            var connectionStringBuilder = new DbConnectionStringBuilder
+            s.Configure<DatabaseOptions>(o =>
             {
-                ConnectionString = testContainer.GetConnectionString()
-            };
-            o.Host = (string)connectionStringBuilder["Host"];
-            o.Port = (string)connectionStringBuilder["Port"];
-            o.Name = (string)connectionStringBuilder["Database"];
-            o.User = (string)connectionStringBuilder["Username"];
-            o.Password = (string)connectionStringBuilder["Password"];
-        }));
+                var connectionStringBuilder = new DbConnectionStringBuilder
+                {
+                    ConnectionString = testContainer.GetConnectionString()
+                };
+                o.Host = (string)connectionStringBuilder["Host"];
+                o.Port = (string)connectionStringBuilder["Port"];
+                o.Name = (string)connectionStringBuilder["Database"];
+                o.User = (string)connectionStringBuilder["Username"];
+                o.Password = (string)connectionStringBuilder["Password"];
+            });
+
+            s.Configure<ProjectOriginOptions>(o =>
+            {
+                o.WalletUrl = WalletUrl;
+            });
+        });
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -69,7 +79,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "12345456", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -82,7 +92,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
         string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string tin = "12345678",
+        string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
         string issuer = "DkTest1",
@@ -130,7 +140,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference)";
         var agreementFields = new[]
         {
             new NpgsqlParameter("Id", agreement.Id),
@@ -139,7 +149,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new NpgsqlParameter("SenderId", agreement.SenderId),
             new NpgsqlParameter("SenderName", agreement.SenderName),
             new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
+            new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);

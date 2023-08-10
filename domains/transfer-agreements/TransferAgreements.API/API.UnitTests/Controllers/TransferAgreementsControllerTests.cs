@@ -7,6 +7,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Controllers;
 using API.Data;
+using API.Services;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +80,7 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
     {
-        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337");
+        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337", Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint);
 
         controller = CreateControllerWithMockedUser();
         await controller.Create(request);

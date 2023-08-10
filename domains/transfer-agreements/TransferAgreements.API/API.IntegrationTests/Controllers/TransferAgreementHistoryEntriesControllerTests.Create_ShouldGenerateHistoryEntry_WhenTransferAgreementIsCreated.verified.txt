@@ -6,8 +6,8 @@
         StartDate: 4833486183,
         EndDate: 4867877044,
         SenderName: Producent A/S,
-        SenderTin: 12345456,
-        ReceiverTin: 12345678
+        SenderTin: 11223344,
+        ReceiverTin: 12345456
       },
       CreatedAt: {Scrubbed},
       Action: Created,
