@@ -30,13 +30,12 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
+            // Get an available port from system and use that as the host port
             var udp = new UdpClient(0, AddressFamily.InterNetwork);
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
-            // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
-            // There is a chance for port collision with the host ports assigned by Testcontainers or already taken on the host
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.7")
+                .WithImage("ghcr.io/project-origin/wallet-server:0.1.1")
                 .WithPortBinding(hostPort, GrpcPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
