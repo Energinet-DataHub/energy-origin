@@ -15,7 +15,7 @@ public class TempWalletDepositEndpoint
 
 public static class Base64Converter
 {
-    public static string ConvertObjectToBase64(object obj)
+    private static string ConvertObjectToBase64(object obj)
     {
         var jsonString = JsonSerializer.Serialize(obj);
         var bytes = Encoding.UTF8.GetBytes(jsonString);
@@ -24,7 +24,7 @@ public static class Base64Converter
         return base64String;
     }
 
-    public static T? ConvertToObject<T>(string base64String)
+    private static T? ConvertToObject<T>(string base64String)
     {
         var bytes = Convert.FromBase64String(base64String);
         var json = Encoding.UTF8.GetString(bytes);
