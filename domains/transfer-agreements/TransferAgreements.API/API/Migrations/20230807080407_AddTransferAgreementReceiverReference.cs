@@ -15,7 +15,15 @@ namespace API.Migrations
                 name: "ReceiverReference",
                 table: "TransferAgreements",
                 type: "uuid",
-                nullable: false);
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ReceiverReference",
+                table: "TransferAgreements",
+                type: "uuid",
+                nullable: false,
+                oldDefaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
         }
 
         /// <inheritdoc />
