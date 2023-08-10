@@ -30,7 +30,7 @@
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/registry.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.3/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>
 	</ItemGroup>
 </Project>
