@@ -5,13 +5,13 @@ namespace ProjectOriginClients;
 
 internal static class WalletVersion
 {
-    public static string Get()
-    {
-        var assembly = typeof(WalletVersion).Assembly;
-        var walletVersionAttribute = assembly.GetCustomAttribute<WalletVersionAttribute>();
-        var walletVersion = walletVersionAttribute!.WalletVersion;
-        return walletVersion.Replace("\"", "");
-    }
+    /// <summary>
+    /// Returns the version used by the protobuf file for the Wallet as defined in the .csproj file
+    /// </summary>
+    public static string Get() =>
+        typeof(WalletVersion).Assembly
+            .GetCustomAttribute<WalletVersionAttribute>()!
+            .WalletVersion.Replace("\"", "");
 }
 
 [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
