@@ -8,8 +8,7 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-[Collection(nameof(ProjectOriginStackCollection))]
-public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>
+public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorApplicationFactory>, IClassFixture<ProjectOriginStack>
 {
     private readonly RegistryConnectorApplicationFactory factory;
 

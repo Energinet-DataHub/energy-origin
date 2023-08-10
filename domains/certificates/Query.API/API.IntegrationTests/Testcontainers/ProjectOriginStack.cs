@@ -1,20 +1,15 @@
 extern alias registryConnector;
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using registryConnector::RegistryConnector.Worker;
 using Testcontainers.PostgreSql;
-using Xunit;
 
 namespace API.IntegrationTests.Testcontainers;
-
-[CollectionDefinition(nameof(ProjectOriginStackCollection))]
-public class ProjectOriginStackCollection : ICollectionFixture<ProjectOriginStack>
-{
-
-}
 
 public class ProjectOriginStack : RegistryFixture
 {
@@ -35,14 +30,17 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
+            var udp = new UdpClient(0, AddressFamily.InterNetwork);
+            var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
+
             // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
             // There is a chance for port collision with the host ports assigned by Testcontainers or already taken on the host
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.7")
-                .WithPortBinding(7890, GrpcPort)
+                .WithPortBinding(hostPort, GrpcPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
-                .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(GrpcPort))
