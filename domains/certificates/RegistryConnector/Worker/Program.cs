@@ -50,7 +50,7 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<ProductionCertificateCreatedEventHandler>(c =>
     {
-        c.ConcurrentMessageLimit = 1; //TODO: This is a hack to avoid issues with multiple transactions sent to registry
+        c.ConcurrentMessageLimit = 1; //TODO: This is a hack to avoid long processing time of multiple transactions sent to registry. See https://github.com/project-origin/registry/issues/122
     });
 
     o.UsingRabbitMq((context, cfg) =>
