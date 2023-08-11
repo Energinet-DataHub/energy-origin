@@ -716,6 +716,8 @@ public class OidcControllerTests
                 Tin = Guid.NewGuid().ToString(),
                 AllowCprLookup = true,
                 AcceptedPrivacyPolicyVersion = 3,
+                AssignedRoles = "",
+                MatchedRoles = "",
             });
 
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, mockMapper, userProviderService, service, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);

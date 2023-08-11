@@ -182,7 +182,9 @@ public class TokenIssuerTests
             AllowCprLookup = user.AllowCprLookup,
             ProviderType = ProviderType.NemIdProfessional,
             EncryptedAccessToken = accessToken ?? "",
-            EncryptedIdentityToken = identityToken ?? ""
+            EncryptedIdentityToken = identityToken ?? "",
+            AssignedRoles = "",
+            MatchedRoles = ""
         };
         if (addToMock)
         {
