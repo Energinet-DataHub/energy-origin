@@ -51,5 +51,22 @@ measurementsDomain = group "Measurements Domain" {
 }
 
 transferAgreementsDomain = group "Transfer Agreements Domain" {
+    taApi = container "Transfer Agreement API" {
+        description ""
+        technology ".NET Web Api"
+        this -> po "Creates a Wallet Deposit Endpoint
+    }
 
+    taDatabase = container "Transfer Agreement Database" {
+        description "Stores Transfer agreements"
+        technology "PostgreSQL"
+        taApi -> this "Saves and reads transfer agreements using"
+    }
+    
+    taAutomation = container "Transfer Agreement Automation" {
+        description "Transfer Certificates based on a Transfer Agreement"
+        technology ".NET Background service"
+        this -> taDatabase "Fetches all Transfer Agreements"
+        this -> po "Transfer Certificates to the receivers Project Origin Wallet"
+    }
 }
