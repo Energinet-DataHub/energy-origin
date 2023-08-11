@@ -15,6 +15,8 @@ public class UserDescriptor
     public string AssignedRoles { get; init; } = null!;
     public int AcceptedTermsOfServiceVersion { get; init; }
     public int AcceptedPrivacyPolicyVersion { get; init; }
+    public int CurrentTermsOfServiceVersion { get; init; }
+    public int CurrentPrivacyPolicyVersion { get; init; }
     public bool AllowCprLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;

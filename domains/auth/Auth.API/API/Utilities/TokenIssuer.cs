@@ -31,7 +31,7 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, descriptor, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, termsOptions, descriptor, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -49,12 +49,12 @@ public class TokenIssuer : ITokenIssuer
         string? scope = null;
         if (options.PrivacyPolicyVersion != descriptor.AcceptedPrivacyPolicyVersion)
         {
-            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicyTerms);
+            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicy);
         }
 
         if (options.TermsOfServiceVersion != descriptor.AcceptedTermsOfServiceVersion)
         {
-            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedTermsOfServiceTerms);
+            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedTermsOfService);
         }
 
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
@@ -64,7 +64,7 @@ public class TokenIssuer : ITokenIssuer
         return new(descriptor.AcceptedPrivacyPolicyVersion, descriptor.AcceptedTermsOfServiceVersion, scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, TermsOptions termsOptions, UserDescriptor descriptor, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
@@ -73,8 +73,10 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
             { UserClaimName.AssignedRoles, descriptor.AssignedRoles },
             { UserClaimName.MatchedRoles, descriptor.MatchedRoles },
-            { UserClaimName.AcceptedPrivacyPolicyVersion, descriptor.AcceptedPrivacyPolicyVersion },
-            { UserClaimName.AcceptedTermsOfServiceVersion, descriptor.AcceptedTermsOfServiceVersion },
+            { UserClaimName.CurrentPrivacyPolicyVersion, termsOptions.PrivacyPolicyVersion },
+            { UserClaimName.CurrentTermsOfServiceVersion, termsOptions.TermsOfServiceVersion },
+            { UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedPrivacyPolicyVersion },
+            { UserClaimName.AcceptedTermsOfServiceVersion, state.AcceptedTermsOfServiceVersion },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
@@ -126,5 +128,5 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(int AcceptedPrivacyPolicyTerms, int AcceptedTermsOfServiceTerms, string Scope);
+    private record UserState(int AcceptedPrivacyPolicyVersion, int AcceptedTermsOfServiceVersion, string Scope);
 }

@@ -38,7 +38,7 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
-        if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var allowCprLookup))
+        if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var AllowCprLookup))
         {
             MissingProperty(nameof(UserClaimName.AllowCprLookup));
             return null;
@@ -82,9 +82,11 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
             AcceptedPrivacyPolicyVersion = Convert.ToInt32(user.FindFirstValue(UserClaimName.AcceptedPrivacyPolicyVersion)),
             AcceptedTermsOfServiceVersion = Convert.ToInt32(user.FindFirstValue(UserClaimName.AcceptedTermsOfServiceVersion)),
+            CurrentPrivacyPolicyVersion = Convert.ToInt32(user.FindFirstValue(UserClaimName.CurrentPrivacyPolicyVersion)),
+            CurrentTermsOfServiceVersion = Convert.ToInt32(user.FindFirstValue(UserClaimName.CurrentTermsOfServiceVersion)),
             AssignedRoles = user.FindFirstValue(UserClaimName.AssignedRoles) ?? string.Empty,
             MatchedRoles = user.FindFirstValue(UserClaimName.MatchedRoles) ?? string.Empty,
-            AllowCprLookup = allowCprLookup,
+            AllowCprLookup = AllowCprLookup,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,
             EncryptedProviderKeys = encryptedProviderKeys
