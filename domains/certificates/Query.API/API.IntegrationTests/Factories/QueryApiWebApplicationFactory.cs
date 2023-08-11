@@ -23,13 +23,15 @@ namespace API.IntegrationTests.Factories;
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string MartenConnectionString { get; set; } = "";
-    public string DataSyncUrl { get; set; } = "";
+    public string DataSyncUrl { get; set; } = "foo";
+    public string WalletUrl { get; set; } = "bar";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
+        builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
@@ -73,6 +75,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         var claims = new[]
         {
             new Claim("subject", subject),
+            new Claim("sub", subject),
             new Claim("scope", scope),
             new Claim("actor", actor)
         };
@@ -100,4 +103,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
+
+    // Accessing the Server property ensures that the server is running
+    public void Start() => Server.Should().NotBeNull();
 }
