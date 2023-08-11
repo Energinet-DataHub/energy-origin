@@ -3,4 +3,4 @@ name: eo-transfer-agreements
 description: A chart containing the transfer agreements domain.
 
 type: application
-version: 0.7.7
+version: 0.7.8
