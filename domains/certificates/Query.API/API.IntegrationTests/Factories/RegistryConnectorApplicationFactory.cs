@@ -1,5 +1,6 @@
 extern alias registryConnector;
 using System;
+using System.Text;
 using Contracts;
 using FluentAssertions;
 using MassTransit;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ProjectOrigin.HierarchicalDeterministicKeys;
 using registryConnector::RegistryConnector.Worker;
 
 namespace API.IntegrationTests.Factories;
@@ -15,20 +17,30 @@ namespace API.IntegrationTests.Factories;
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
 {
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    public RegistryOptions? RegistryOptions { get; set; }
-    public ProjectOriginOptions? ProjectOriginOptions { get; set; }
+    public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
+    {
+        RegistryName = "foo",
+        RegistryUrl = "bar",
+        WalletUrl = "baz",
+        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText()),
+        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
+    };
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        if (ProjectOriginOptions != null)
+        {
+            builder.UseSetting("ProjectOrigin:WalletUrl", ProjectOriginOptions.WalletUrl);
+            builder.UseSetting("ProjectOrigin:RegistryName", ProjectOriginOptions.RegistryName);
+            builder.UseSetting("ProjectOrigin:RegistryUrl", ProjectOriginOptions.RegistryUrl);
+            builder.UseSetting("ProjectOrigin:Dk1IssuerPrivateKeyPem", Convert.ToBase64String(ProjectOriginOptions.Dk1IssuerPrivateKeyPem));
+            builder.UseSetting("ProjectOrigin:Dk2IssuerPrivateKeyPem", Convert.ToBase64String(ProjectOriginOptions.Dk2IssuerPrivateKeyPem));
+        }
+
         builder.ConfigureTestServices(services =>
         {
-            if (ProjectOriginOptions != null)
-                services.AddSingleton(Options.Create(ProjectOriginOptions));
-
             if (RabbitMqOptions != null)
                 services.AddSingleton(Options.Create(RabbitMqOptions));
-
-            if (RegistryOptions != null)
-                services.AddSingleton(Options.Create(RegistryOptions));
 
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
@@ -38,6 +50,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
                 options.WaitUntilStarted = RabbitMqOptions != null;
             });
         });
+    }
 
     // Accessing the Server property ensures that the server is running
     public void Start() => Server.Should().NotBeNull();

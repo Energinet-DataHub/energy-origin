@@ -16,17 +16,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
-  registry:
-    image: ghcr.io/project-origin/electricity-server:0.1.0-alpha.18
-    ports:
-      - 8765:80
-    environment:
-      IMMUTABLELOG__TYPE: "log"
-      REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__EVENTSTORE__TYPE: "inMemory"
-      REGISTRIES__RegistryA__VERIFIABLEEVENTSTORE__BATCHSIZEEXPONENT: 0
-      Issuers__DK1: "flWuKyiv3ihFK4yTbe2qrsOLDZs6OidEZelZnPOJ47w="
-      Issuers__DK2: "flWuKyiv3ihFK4yTbe2qrsOLDZs6OidEZelZnPOJ47w="
-
   rabbitmq:
     image: rabbitmq:3.11.7-management
     ports:

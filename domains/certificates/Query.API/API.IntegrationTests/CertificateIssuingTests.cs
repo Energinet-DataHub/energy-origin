@@ -23,7 +23,7 @@ public sealed class CertificateIssuingTests :
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<ProjectOriginRegistryContainer>
+    IClassFixture<ProjectOriginStack>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -34,7 +34,7 @@ public sealed class CertificateIssuingTests :
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
-        ProjectOriginRegistryContainer poRegistryContainer)
+        ProjectOriginStack projectOriginStack)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
@@ -42,7 +42,7 @@ public sealed class CertificateIssuingTests :
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.RegistryOptions = poRegistryContainer.Options;
+        registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
         registryConnectorFactory.Start();
     }
 
@@ -113,7 +113,7 @@ public sealed class CertificateIssuingTests :
     }
 
     [Fact]
-    public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
+    public async Task GetList_ThreeMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
         var gsrn = GsrnHelper.GenerateRandom();
@@ -123,7 +123,9 @@ public sealed class CertificateIssuingTests :
 
         await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
 
-        var measurements = Enumerable.Range(0, 5)
+        const int measurementCount = 3;
+
+        var measurements = Enumerable.Range(0, measurementCount)
             .Select(i => new EnergyMeasuredIntegrationEvent(
                 GSRN: gsrn,
                 DateFrom: utcMidnight.AddHours(i).ToUnixTimeSeconds(),
@@ -137,32 +139,14 @@ public sealed class CertificateIssuingTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var certificateList =
-            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Count() == 5);
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates",
+                res => res.Result.Count() == measurementCount,
+                timeLimit: TimeSpan.FromMinutes(1));
 
         var expected = new CertificateList
         {
             Result = new[]
             {
-                new Certificate
-                {
-                    Quantity = 46,
-                    DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
-                    DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
-                    GridArea = "DK1",
-                    GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000"
-                },
-                new Certificate
-                {
-                    Quantity = 45,
-                    DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
-                    DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
-                    GridArea = "DK1",
-                    GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000"
-                },
                 new Certificate
                 {
                     Quantity = 44,

@@ -1,9 +1,12 @@
 extern alias registryConnector;
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using ProjectOriginClients;
 using registryConnector::RegistryConnector.Worker;
 using Testcontainers.PostgreSql;
 
@@ -28,16 +31,19 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-            // The host port is fixed due to the fact that it used in the value for "ServiceOptions__EndpointAddress"
-            // There is a chance for port collision with the host ports assigned by Testcontainers
+            // Get an available port from system and use that as the host port
+            var udp = new UdpClient(0, AddressFamily.InterNetwork);
+            var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
+
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:0.1.0-rc.7")
-                .WithPortBinding(7890, GrpcPort)
+                .WithImage($"ghcr.io/project-origin/wallet-server:{WalletVersion.Get()}")
+                .WithPortBinding(hostPort, GrpcPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
-                .WithEnvironment("ServiceOptions__EndpointAddress", "http://localhost:7890/")
+                .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
                 .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(GrpcPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
@@ -46,8 +52,8 @@ public class ProjectOriginStack : RegistryFixture
     public ProjectOriginOptions Options => new()
     {
         RegistryName = RegistryName,
-        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
-        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(IssuerKey.ExportPkixText()),
+        Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText()),
+        Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk2IssuerKey.ExportPkixText()),
         RegistryUrl = RegistryUrl,
         WalletUrl = WalletUrl
     };
