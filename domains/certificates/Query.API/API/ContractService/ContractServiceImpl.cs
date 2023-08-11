@@ -72,6 +72,8 @@ internal class ContractServiceImpl : IContractService
                 StartDate = startDate,
                 EndDate = endDate,
                 Created = DateTimeOffset.UtcNow
+                //TODO: Save         var walletDepositEndpoint = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest());
+
             };
 
             await repository.Save(contract);
