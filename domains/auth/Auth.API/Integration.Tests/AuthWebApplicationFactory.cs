@@ -55,11 +55,12 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         });
     }
 
-    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemIdProfessional, string? accessToken = null, string? identityToken = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
+    public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemIdProfessional, string? accessToken = null, string? identityToken = null, string? role = null, IEnumerable<string>? roles = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
+        var matchedRoles = new[] { role }.OfType<string>().Concat(roles ?? Array.Empty<string>());
         var client = CreateAnonymousClient(config);
         var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
-        var descriptor = mapper.Map(user, providerType, Array.Empty<string>(), accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        var descriptor = mapper.Map(user, providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
         return client;
     }

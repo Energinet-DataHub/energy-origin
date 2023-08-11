@@ -3,6 +3,7 @@ using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,13 +13,13 @@ namespace API.Controllers;
 [ApiController]
 public class RoleController : ControllerBase
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = RoleKey.Admin)]
     [HttpPut]
     [Route("role/{role}/assign/{userId}")]
     public async Task<IActionResult> AssignRole([FromRoute] string role, [FromRoute] Guid userId, IOptions<RoleOptions> roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var validRoles = roles.Value.RoleConfigurations.Select(x => x.Key);
-        _ = validRoles.First(x => x == role) ?? throw new NullReferenceException($"Role not found: {role}");
+        _ = validRoles.FirstOrDefault(x => x == role) ?? throw new NullReferenceException($"Role not found: {role}");
 
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(userId) ?? throw new NullReferenceException($"User not found: {userId}");
@@ -35,7 +36,7 @@ public class RoleController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = RoleKey.Admin)]
     [HttpPut]
     [Route("role/{role}/remove/{userId}")]
     public async Task<IActionResult> RemoveRoleFromUser([FromRoute] string role, [FromRoute] Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)

@@ -130,17 +130,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                 Tin = "123123",
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
             },
-            UserRoles = new List<UserRole>
-            {
-                new()
-                {
-                    Role = RoleKey.Admin
-                }
-            },
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
         var user = await factory.AddUserToDatabaseAsync(newUser);
-        var client = factory.CreateAuthenticatedClient(user);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
 
         var result = await client.PutAsync("terms/company/accept/10", null);
         var dbUser = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!;
