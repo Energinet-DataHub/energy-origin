@@ -27,4 +27,20 @@ docker compose down
 
 # Viewing diagrams
 
-The diagrams are published with GitHub Pages and are available at [https://energinet-datahub.github.io/energy-origin/](https://energinet-datahub.github.io/energy-origin/).
+The diagrams are published with GitHub Pages and are available [here](https://energinet-datahub.github.io/energy-origin/), but also rendered below:
+
+<details closed>
+  <summary>Energy Origin System Context</summary>
+  
+  ![SystemContextEO](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/SystemContextEO.png)
+</details>
+<details closed>
+  <summary>Auth Container Context</summary>
+  
+  ![Auth](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/Auth.png)
+</details>
+<details closed>
+  <summary>Certificate Container Context</summary>
+  
+  ![Certificate](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/Certificate.png)
+</details>
