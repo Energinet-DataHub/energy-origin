@@ -46,13 +46,12 @@ public static class Startup
             })
             .AddCallCredentials((context, metadata, sp) =>
             {
-                
                 var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
                 if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
                 {
                     metadata.Add("Authorization", $"{authentication.Scheme} {authentication.Parameter}");
                 }
-                
+
                 return Task.CompletedTask;
             });
     }
