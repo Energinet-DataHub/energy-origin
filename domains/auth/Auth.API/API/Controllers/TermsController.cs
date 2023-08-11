@@ -3,9 +3,9 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using API.Values;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -109,7 +109,7 @@ public class TermsController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = "OrganizationAdministrator")]
+    [Authorize(Roles = RoleKey.OrganizationAdmin)]
     [HttpPut]
     [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(

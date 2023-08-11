@@ -26,7 +26,7 @@ public class UserDescriptor
 
     public string AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
     public string IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
-    public string Roles => $"{MatchedRoles} {AssignedRoles}".Trim();
+
     public Dictionary<ProviderKeyType, string> ProviderKeys => cryptography.Decrypt<string>(EncryptedProviderKeys)
         .Split(" ")
         .Select(x =>

@@ -86,12 +86,7 @@ public class TokenIssuer : ITokenIssuer
         var assignedRoles = descriptor.AssignedRoles.Split(" ") ?? Array.Empty<string>();
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
 
-        // FIXME: evaulate
-        // foreach (var item in assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()))
-        // {
-        //     claims.Add($"role-{item}", new { ClaimTypes.Role, item });
-        // }
-        claims.Add("role", assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()));
+        claims.Add(UserClaimName.Roles, assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()));
 
         if (descriptor.CompanyId is not null)
         {

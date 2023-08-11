@@ -34,21 +34,16 @@ public class LoginController : ControllerBase
             EncryptedAccessToken = "",
             EncryptedIdentityToken = "",
             MatchedRoles = "",
-            AssignedRoles = "Admin"
+            AssignedRoles = RoleKey.Admin
         };
         var token = tokenIssuer.Issue(descriptor, true);
         return Ok(token);
     }
 
     [HttpGet]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [Authorize(Roles = RoleKey.Admin)]
     [Route("auth/check-roles")]
     public IActionResult TestMethod3(IOptions<RoleOptions> options) => Ok(options.Value);
-
-    [HttpGet]
-    [AllowAnonymous]
-    [Route("auth/roles")]
-    public IActionResult TestMethod2(IOptions<RoleOptions> options) => Ok(options.Value);
 
     [HttpGet]
     [AllowAnonymous]
