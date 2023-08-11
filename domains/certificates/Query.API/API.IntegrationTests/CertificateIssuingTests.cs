@@ -40,6 +40,7 @@ public sealed class CertificateIssuingTests :
         this.factory = factory;
         this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.WalletUrl = projectOriginStack.WalletUrl;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
