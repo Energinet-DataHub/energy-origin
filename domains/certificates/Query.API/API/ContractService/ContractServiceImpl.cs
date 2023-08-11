@@ -57,25 +57,22 @@ internal class ContractServiceImpl : IContractService
             ? contracts.Max(c => c.ContractNumber) + 1
             : 0;
 
-        var walletDepositEndpoint = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
+        var response = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
+        var walletDepositEndpoint = response.WalletDepositEndpoint;
+
+        var contract = CertificateIssuingContract.Create(
+            contractNumber,
+            gsrn,
+            matchingMeteringPoint.GridArea,
+            MeteringPointType.Production,
+            meteringPointOwner,
+            startDate,
+            endDate,
+            walletDepositEndpoint.Endpoint,
+            walletDepositEndpoint.PublicKey.ToByteArray());
 
         try
         {
-            var contract = new CertificateIssuingContract
-            {
-                Id = Guid.Empty,
-                ContractNumber = contractNumber,
-                GSRN = gsrn,
-                GridArea = matchingMeteringPoint.GridArea,
-                MeteringPointType = MeteringPointType.Production,
-                MeteringPointOwner = meteringPointOwner,
-                StartDate = startDate,
-                EndDate = endDate,
-                Created = DateTimeOffset.UtcNow
-                //TODO: Save         var walletDepositEndpoint = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest());
-
-            };
-
             await repository.Save(contract);
 
             return new CreateContractResult.Success(contract);
