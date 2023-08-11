@@ -1,13 +1,15 @@
 using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
+using API.Options;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Unit.Tests.Controllers;
 
@@ -17,24 +19,31 @@ public class RoleControllerTests
     private readonly RoleController roleController = new();
     private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();
     private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly IRoleService roleService = Mock.Of<IRoleService>();
+    private readonly IOptions<RoleOptions> roleOptions;
+    public RoleControllerTests()
+    {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.Test.json", false)
+            .Build();
+
+        roleOptions = Moptions.Create(configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!);
+    }
 
     [Fact]
     public async Task AssignRole_ShouldThrowException_WhenUserDescriptorMappingFails()
     {
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.AssignRole(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, roleService, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole("testRole", Guid.NewGuid(), roleOptions, userService, logger, mapper));
     }
 
     [Fact]
     public async Task AssignRole_ShouldThrowException_WhenRoleIsNull()
     {
-        Mock.Get(roleService).Setup(service => service.GetRollByKeyAsync(It.IsAny<string>())).ReturnsAsync((Role)null!);
+        // Mock.Get(roleService).Setup(service => service.GetRollByKeyAsync(It.IsAny<string>())).ReturnsAsync((Role)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.AssignRole(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, roleService, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole("testRole", Guid.NewGuid(), roleOptions, userService, logger, mapper));
     }
 
     [Fact]
@@ -42,8 +51,7 @@ public class RoleControllerTests
     {
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(It.IsAny<Guid>())).ReturnsAsync((User)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.AssignRole(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, roleService, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole("testRole", Guid.NewGuid(), roleOptions, userService, logger, mapper));
     }
 
     [Fact]
@@ -58,12 +66,10 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId };
-        var testRole = new Role { Id = Guid.NewGuid(), Key = "testRole" };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
-        Mock.Get(roleService).Setup(service => service.GetRollByKeyAsync("testRole")).ReturnsAsync(testRole);
         var dummyUser = new User();
         Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
-        var result = await roleController.AssignRole(new RoleRequest { UserId = testUserId, RoleKey = "testRole" }, roleService, userService, logger, mapper);
+        var result = await roleController.AssignRole("testRole", Guid.NewGuid(), roleOptions, userService, logger, mapper);
 
         Assert.IsType<OkResult>(result);
     }
@@ -78,8 +84,7 @@ public class RoleControllerTests
                 Id = Guid.NewGuid()
             });
         var testUserId = Guid.NewGuid();
-        var roleKey = "roleKey";
-        var role = new Role { Key = roleKey, Id = Guid.NewGuid() };
+        var role = "roleKey";
         var userRole = new UserRole { UserId = testUserId, Role = role, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole } };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
@@ -89,7 +94,7 @@ public class RoleControllerTests
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
 
-        var result = await roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = roleKey }, userService, logger, mapper);
+        var result = await roleController.RemoveRoleFromUser(role, testUserId, userService, logger, mapper);
         Assert.IsType<OkResult>(result);
     }
 
@@ -99,7 +104,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
         await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId }, userService, logger, mapper));
+            roleController.RemoveRoleFromUser("role", testUserId, userService, logger, mapper));
     }
 
     [Fact]
@@ -108,8 +113,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = testUserId, RoleKey = "testRole" }, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser("testRole", testUserId, userService, logger, mapper));
     }
 
     [Fact]
@@ -117,7 +121,6 @@ public class RoleControllerTests
     {
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(new RoleRequest { UserId = Guid.NewGuid(), RoleKey = "testRole" }, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser("testRole", Guid.NewGuid(), userService, logger, mapper));
     }
 }

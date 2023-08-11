@@ -30,9 +30,9 @@ public class TokenControllerTests
     };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedPrivacyPolicyTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]
+    [InlineData(false, UserScopeClaim.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]
     [InlineData(true, $"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitIdPrivate)]
-    [InlineData(false, UserScopeClaim.NotAcceptedPrivacyPolicyTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdProfessional)]
+    [InlineData(false, UserScopeClaim.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdProfessional)]
     public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType)
     {
         var token = Guid.NewGuid().ToString();
@@ -52,7 +52,7 @@ public class TokenControllerTests
             });
 
         Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()

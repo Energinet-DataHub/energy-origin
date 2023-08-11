@@ -59,7 +59,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     {
         var client = CreateAnonymousClient(config);
         var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
-        var descriptor = mapper.Map(user, providerType, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        var descriptor = mapper.Map(user, providerType, Array.Empty<string>(), accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
         return client;
     }

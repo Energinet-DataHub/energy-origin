@@ -130,11 +130,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                 Tin = "123123",
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
             },
-            Roles = new List<Role>
+            UserRoles = new List<UserRole>
             {
                 new()
                 {
-                    Key = RoleKeys.AuthAdminKey, Name = "AuthAdmin", IsDefault = false
+                    Role = RoleKey.Admin
                 }
             },
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
@@ -166,11 +166,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
                 Tin = "123123",
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
             },
-            Roles = new List<Role>
+            UserRoles = new List<UserRole>
             {
                 new()
                 {
-                    Key = "test", Name = "test", IsDefault = false
+                    Role = "test"
                 }
             },
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }

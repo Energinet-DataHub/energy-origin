@@ -33,7 +33,7 @@ public class TokenIssuerTests
     }
 
     [Theory]
-    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, 0, 0, false)]
+    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, 0, 0, false)]
     [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, false)]
     [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 0, 0, true)]
     [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, true)]
