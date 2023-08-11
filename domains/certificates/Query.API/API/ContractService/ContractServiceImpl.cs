@@ -57,7 +57,7 @@ internal class ContractServiceImpl : IContractService
             ? contracts.Max(c => c.ContractNumber) + 1
             : 0;
 
-        var walletDepositEndpoint = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest());
+        var walletDepositEndpoint = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
 
         try
         {
