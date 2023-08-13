@@ -71,10 +71,10 @@ public class TransferAgreementsController : ControllerBase
 
         var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
-            transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
-                bearerToken,
-                request.Base64EncodedWalletDepositEndpoint,
-                request.ReceiverTin);
+        transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
+            bearerToken,
+            request.Base64EncodedWalletDepositEndpoint,
+            request.ReceiverTin);
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
