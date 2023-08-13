@@ -21,10 +21,9 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         this.logger = logger;
     }
 
-    public async Task<string> CreateWalletDepositEndpoint(JwtToken token)
+    public async Task<string> CreateWalletDepositEndpoint(string jwtToken)
     {
-        var bearerToken = token.GenerateToken();
-        var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
+        var walletDepositEndpoint = await GetWalletDepositEndpoint(jwtToken);
         return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
 

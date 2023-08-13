@@ -19,9 +19,8 @@ namespace API.UnitTests.Controllers;
 
 public class TransferAgreementsControllerTests
 {
-    private TransferAgreementsController controller;
+    private readonly TransferAgreementsController controller;
     private readonly Mock<ITransferAgreementRepository> mockTransferAgreementRepository;
-    private Mock<IValidator<CreateTransferAgreement>> mockValidator;
     private readonly Mock<IWalletDepositEndpointService> mockWalletDepositEndpointService;
 
     private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
@@ -33,59 +32,56 @@ public class TransferAgreementsControllerTests
     {
         mockTransferAgreementRepository = new Mock<ITransferAgreementRepository>();
         mockWalletDepositEndpointService = new Mock<IWalletDepositEndpointService>();
+        Mock<IValidator<CreateTransferAgreement>> mockValidator = new();
+        Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
 
         mockTransferAgreementRepository
             .Setup(o => o.AddTransferAgreementToDb(It.IsAny<TransferAgreement>()))
             .ReturnsAsync((TransferAgreement transferAgreement) => transferAgreement);
-    }
 
-    private static ClaimsPrincipal CreateUser() =>
-        new(new ClaimsIdentity(new Claim[]
-        {
-            new("sub", subject),
-            new("atr", atr),
-            new("cpn", cpn),
-            new("tin", tin)
-        }, "mock"));
-
-    private static HttpContext CreateHttpContext(ClaimsPrincipal user) =>
-        new DefaultHttpContext { User = user };
-
-    private Mock<IValidator<CreateTransferAgreement>> CreateValidator()
-    {
-        var validator = new Mock<IValidator<CreateTransferAgreement>>();
-
-        validator
+        mockValidator
             .Setup(o => o.ValidateAsync(It.IsAny<CreateTransferAgreement>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
-        return validator;
-    }
-
-    private static ControllerContext CreateControllerContext(HttpContext context) => new() { HttpContext = context };
-
-    private TransferAgreementsController CreateControllerWithMockedUser()
-    {
-        var user = CreateUser();
-        var context = CreateHttpContext(user);
-        mockValidator = CreateValidator();
-        var controllerContext = CreateControllerContext(context);
-
-        return new TransferAgreementsController(mockTransferAgreementRepository.Object, mockValidator.Object, mockWalletDepositEndpointService.Object)
+        var mockContext = new DefaultHttpContext
         {
-            ControllerContext = controllerContext
+            User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new("sub", subject),
+                new("atr", atr),
+                new("cpn", cpn),
+                new("tin", tin)
+            }, "mock"))
+        };
+
+        mockContext.Request.Headers["Authorization"] = $"Bearer sample.jwt.token";
+
+        mockHttpContextAccessor.Setup(x =>
+            x.HttpContext).Returns(mockContext);
+
+        controller = new TransferAgreementsController(
+            mockTransferAgreementRepository.Object,
+            mockValidator.Object,
+            mockWalletDepositEndpointService.Object,
+            mockHttpContextAccessor.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.Object.HttpContext! }
         };
     }
 
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
     {
-        var request = new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "13371337", Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint);
+        var request = new CreateTransferAgreement(
+            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            "13371337",
+            Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint);
 
-        controller = CreateControllerWithMockedUser();
         await controller.Create(request);
 
-        mockTransferAgreementRepository.Verify(repository => repository.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
+        mockTransferAgreementRepository.Verify(repository =>
+            repository.AddTransferAgreementToDb(It.Is<TransferAgreement>(agreement =>
             agreement.SenderId == Guid.Parse(subject) &&
             agreement.StartDate == DateTimeOffset.FromUnixTimeSeconds(request.StartDate) &&
             agreement.EndDate == DateTimeOffset.FromUnixTimeSeconds(request.EndDate!.Value) &&
@@ -98,7 +94,6 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Get_ShouldCallRepositoryOnce()
     {
-        controller = CreateControllerWithMockedUser();
         var id = Guid.NewGuid();
         await controller.Get(id);
 
@@ -111,8 +106,6 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository
             .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
             .ReturnsAsync(new List<TransferAgreement>());
-
-        controller = CreateControllerWithMockedUser();
 
         await controller.GetTransferAgreements();
 
@@ -140,14 +133,12 @@ public class TransferAgreementsControllerTests
             .Setup(o => o.GetTransferAgreementsList(Guid.Parse(subject), tin))
             .ReturnsAsync(transferAgreements);
 
-        controller = CreateControllerWithMockedUser();
-
         var result = await controller.GetTransferAgreements();
 
         var okResult = result.Result as OkObjectResult;
-        var agreements = (TransferAgreementsResponse)okResult.Value;
+        var agreements = okResult?.Value as TransferAgreementsResponse;
 
-        agreements.Result.Count.Should().Be(transferAgreements.Count);
+        agreements!.Result.Count.Should().Be(transferAgreements.Count);
         mockTransferAgreementRepository.Verify(repository => repository.GetTransferAgreementsList(Guid.Parse(subject), tin), Times.Once);
     }
 
@@ -165,8 +156,6 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository
             .Setup(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin))
             .ReturnsAsync(transferAgreement);
-
-        controller = CreateControllerWithMockedUser();
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
@@ -189,15 +178,12 @@ public class TransferAgreementsControllerTests
             .Setup(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin))
             .ReturnsAsync(transferAgreement);
 
-        controller = CreateControllerWithMockedUser();
-
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
         result.Result.Should().BeOfType<BadRequestObjectResult>();
         mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin), Times.Once);
         mockTransferAgreementRepository.VerifyNoOtherCalls();
     }
-
 
     [Fact]
     public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
@@ -216,8 +202,6 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository
             .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
             .ReturnsAsync(true);
-
-        controller = CreateControllerWithMockedUser();
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));
 
@@ -245,8 +229,6 @@ public class TransferAgreementsControllerTests
             .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
             .ReturnsAsync(false);
 
-        controller = CreateControllerWithMockedUser();
-
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(newEndDate));
@@ -270,14 +252,16 @@ public class TransferAgreementsControllerTests
         };
 
         mockTransferAgreementRepository
-            .Setup(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin))
+            .Setup(o =>
+                o.GetTransferAgreement(transferAgreement.Id,
+                    subject,
+                    tin))
             .ReturnsAsync(transferAgreement);
 
         mockTransferAgreementRepository
-            .Setup(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()))
+            .Setup(o =>
+                o.HasDateOverlap(It.IsAny<TransferAgreement>()))
             .ReturnsAsync(false);
-
-        controller = CreateControllerWithMockedUser();
 
         var newEndDate = new EditTransferAgreementEndDate(null);
 
@@ -288,5 +272,24 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.Verify(o => o.GetTransferAgreement(transferAgreement.Id, subject, tin), Times.Once);
         mockTransferAgreementRepository.Verify(o => o.HasDateOverlap(It.IsAny<TransferAgreement>()), Times.Once);
         mockTransferAgreementRepository.Verify(o => o.Save(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateWalletDepositEndpoint_ShouldPassTokenWithoutBearerPrefix()
+    {
+        const string expectedJwtToken = "sample.jwt.token";
+
+        string passedToken = null!;
+        mockWalletDepositEndpointService
+            .Setup(s =>
+                s.CreateWalletDepositEndpoint(It.IsAny<string>()))
+            .Callback<string>(token => passedToken = token)
+            .ReturnsAsync("sampleBase64String");
+
+        await controller.CreateWalletDepositEndpoint();
+
+        passedToken.Should().NotBeNull();
+        passedToken.Should().NotContain("Bearer");
+        passedToken.Should().Be(expectedJwtToken);
     }
 }
