@@ -69,19 +69,12 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
-        if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
-        {
-            var bearerToken = authentication.Parameter;
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
             transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
                 bearerToken,
                 request.Base64EncodedWalletDepositEndpoint,
                 request.ReceiverTin);
-        }
-        else
-        {
-            return Unauthorized("No JWT token found in the Authorization header.");
-        }
 
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
@@ -94,7 +87,7 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var tin = User.FindSubjectTinClaim()!;
+        var tin = User.FindSubjectTinClaim();
         var subject = User.FindSubjectGuidClaim();
 
         var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
