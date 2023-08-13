@@ -88,7 +88,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
     {
         if (ex is RpcException rpcEx)
         {
-            logger.LogError("Error from WalletService while {ActionContext}: {StatusDetail}", actionContext, rpcEx.Status.Detail);
+            logger.LogError(rpcEx, "Error from WalletService while {ActionContext}", actionContext);
         }
         else
         {
