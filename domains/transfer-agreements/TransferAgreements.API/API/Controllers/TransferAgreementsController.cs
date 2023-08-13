@@ -190,7 +190,6 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(string), 200)]
-    [ProducesResponseType(typeof(string), 500)]
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
