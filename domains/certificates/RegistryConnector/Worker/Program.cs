@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
-using RegistryConnector.Worker.Cache;
 using RegistryConnector.Worker.EventHandlers;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -38,10 +37,8 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
+builder.Services.AddProjectOriginOptions();
 builder.Services.Configure<FeatureFlags>(builder.Configuration.GetSection(nameof(FeatureFlags)));
-
-builder.Services.AddSingleton<ICertificateEventsInMemoryCache, CertificateEventsInMemoryCache>();
-builder.Services.RegisterEventHandlers(builder.Configuration);
 
 builder.Services.AddHostedService<NewClientWorker>();
 
@@ -51,7 +48,10 @@ builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
 
-    o.AddConsumer<ProductionCertificateCreatedEventHandler>();
+    o.AddConsumer<ProductionCertificateCreatedEventHandler>(c =>
+    {
+        c.ConcurrentMessageLimit = 1; //TODO: This is a hack to avoid long processing time of multiple transactions sent to registry. See https://github.com/project-origin/registry/issues/122
+    });
 
     o.UsingRabbitMq((context, cfg) =>
     {
@@ -70,7 +70,6 @@ builder.Services.AddMassTransit(o =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-app.SetupRegistryEvents();
 
 app.MapPrometheusScrapingEndpoint();
 

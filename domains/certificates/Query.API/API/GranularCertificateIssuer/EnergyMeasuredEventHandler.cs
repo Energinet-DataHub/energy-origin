@@ -56,7 +56,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 new Period(message.DateFrom, message.DateTo),
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
                 contract.MeteringPointOwner,
-                new ShieldedValue<Gsrn>(new Gsrn(message.GSRN), BigInteger.Zero),
+                new Gsrn(message.GSRN),
                 new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
 
             logger.LogInformation("Created production certificate for {Message}", message);

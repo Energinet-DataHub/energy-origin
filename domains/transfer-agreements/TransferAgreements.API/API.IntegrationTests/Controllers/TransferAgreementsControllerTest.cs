@@ -9,6 +9,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using Newtonsoft.Json;
 using VerifyTests;
@@ -18,16 +19,19 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly HttpClient authenticatedClient;
+    private readonly string sub;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
+        WalletContainer wallet)
     {
         this.factory = factory;
 
-        var sub = Guid.NewGuid().ToString();
+        sub = Guid.NewGuid().ToString();
+        factory.WalletUrl = wallet.WalletUrl;
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
 
@@ -50,10 +54,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
-        var senderId = Guid.NewGuid();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
         var id = Guid.NewGuid();
-
         await factory.SeedData(new List<TransferAgreement>()
         {
             new()
@@ -61,17 +62,19 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 Id = id,
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
-                ReceiverTin = "12345678"
+                ReceiverTin = "12345678",
+                ReceiverReference = Guid.NewGuid()
             }
         });
 
         var overlappingRequest = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
+            ReceiverTin: "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
@@ -86,9 +89,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
     public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
     {
-        var senderId = Guid.NewGuid();
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
-
         var now = DateTimeOffset.UtcNow;
 
         var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
@@ -97,7 +97,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreement(
             StartDate: startDate,
             EndDate: endDate,
-            ReceiverTin: "12345678"
+            ReceiverTin: "12345678",
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -113,15 +114,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData(221860025546L, 253402300800L, "EndDate")]
     public async Task CreateTransferAgreement_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var senderId = Guid.NewGuid();
-        var senderTin = "11223344";
         var receiverTin = "12345678";
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
 
         var request = new CreateTransferAgreement(
             StartDate: start,
             EndDate: end,
-            ReceiverTin: receiverTin
+            ReceiverTin: receiverTin,
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -143,14 +142,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
     public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
     {
-        var senderId = Guid.NewGuid();
-        var senderTin = "11223344";
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString(), tin: senderTin);
-
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: tin,
+            Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -176,7 +172,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderId = subject,
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
-            ReceiverTin = "87654321"
+            ReceiverTin = "87654321",
+            ReceiverReference = Guid.NewGuid()
         };
 
         await factory.SeedData(new List<TransferAgreement>()
@@ -210,7 +207,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
-            ReceiverTin = receiverTin
+            ReceiverTin = receiverTin,
+            ReceiverReference = Guid.NewGuid()
         };
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
 
@@ -249,7 +247,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = Guid.NewGuid(),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
-                ReceiverTin = "12345678"
+                ReceiverTin = "12345678",
+                ReceiverReference = Guid.NewGuid()
             }
         });
 
@@ -277,16 +276,12 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     private static CreateTransferAgreement CreateTransferAgreement()
     {
         return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678");
+            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
     }
 
     [Fact]
     public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
     {
-        var sub = Guid.NewGuid().ToString();
-        var senderTin = "11223344";
-        var receiverTin = "11223344";
-
         await factory.SeedData(
             new List<TransferAgreement>()
             {
@@ -298,7 +293,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
-                    ReceiverTin = receiverTin
+                    ReceiverTin = "11223344",
+                    ReceiverReference = Guid.NewGuid()
                 },
                 new()
                 {
@@ -307,12 +303,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
-                    SenderTin = senderTin,
-                    ReceiverTin = "87654321"
+                    SenderTin = "11223344",
+                    ReceiverTin = "87654321",
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, tin: receiverTin);
 
         var response = await authenticatedClient.GetAsync("api/transfer-agreements");
 
@@ -328,7 +323,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
     {
         var receiverTin = "11223344";
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(new List<TransferAgreement>()
@@ -336,26 +330,26 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             new()
             {
                 Id = transferAgreementId,
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
-                ReceiverTin = receiverTin
+                ReceiverTin = receiverTin,
+                ReceiverReference = Guid.NewGuid()
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                SenderId = senderId,
+                SenderId = Guid.Parse(sub),
                 StartDate = DateTimeOffset.UtcNow.AddDays(11),
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
-                ReceiverTin = receiverTin
+                ReceiverTin = receiverTin,
+                ReceiverReference = Guid.NewGuid()
             }
         });
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
@@ -370,7 +364,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnValidationProblem_WhenTransferAgreementExpired()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -379,16 +372,15 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 new()
                 {
                     Id = transferAgreementId,
-                    SenderId = senderId,
+                    SenderId = Guid.Parse(sub),
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
-                    ReceiverTin = "11223344"
+                    ReceiverTin = "11223344",
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
@@ -405,10 +397,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnNotFound_WhenIsNotFoundInDatabase()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
@@ -420,7 +409,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldReturnNotFound_WhenTransferAgreementSenderIdDoesNotMatch()
     {
-        var senderId = Guid.NewGuid();
         var transferAgreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -434,11 +422,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
-                    ReceiverTin = "11223344"
+                    ReceiverTin = "11223344",
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
@@ -475,7 +462,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task EditEndDate_ShouldUpdateTransferAgreement_WhenInputIsValid()
     {
-        var senderId = Guid.NewGuid();
         var agreementId = Guid.NewGuid();
 
         await factory.SeedData(
@@ -484,16 +470,15 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 new()
                 {
                     Id = agreementId,
-                    SenderId = senderId,
+                    SenderId = Guid.Parse(sub),
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
-                    ReceiverTin = "1122334"
+                    ReceiverTin = "1122334",
+                    ReceiverReference = Guid.NewGuid()
                 }
             });
-
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub: senderId.ToString());
 
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new EditTransferAgreementEndDate(newEndDate);
@@ -510,8 +495,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task CreateWalletDepositEndpoint_ShouldReturnBase64StringOkResponse_WhenAuthorized()
     {
-        var result = await factory
-            .CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "")
+        var result = await authenticatedClient
             .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
 
         var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());

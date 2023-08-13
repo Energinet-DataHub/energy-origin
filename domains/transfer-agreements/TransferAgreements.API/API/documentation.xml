@@ -76,5 +76,17 @@
         <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddTransferAgreementReceiverReference">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

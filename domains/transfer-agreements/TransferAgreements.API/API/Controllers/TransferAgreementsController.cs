@@ -6,6 +6,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,6 @@ public class TransferAgreementsController : ControllerBase
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
     private readonly IHttpContextAccessor httpContextAccessor;
-
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
@@ -69,10 +69,25 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
+        if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
+        {
+            var bearerToken = authentication.Parameter;
+
+            transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
+                bearerToken,
+                request.Base64EncodedWalletDepositEndpoint,
+                request.ReceiverTin);
+        }
+        else
+        {
+            return Unauthorized("No JWT token found in the Authorization header.");
+        }
+
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
+
 
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
@@ -181,7 +196,7 @@ public class TransferAgreementsController : ControllerBase
     {
         if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
         {
-            var base64String = await walletDepositEndpointService.CreateWalletDepositWithToken(authentication.Parameter);
+            var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(authentication.Parameter);
             return Ok(new { result = base64String });
         }
         return StatusCode(500);

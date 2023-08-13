@@ -15,26 +15,27 @@ public class RegistryFixture : IAsyncLifetime
     private const string registryImage = "ghcr.io/project-origin/registry-server:0.2.0-rc.17";
     private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.0-rc.17";
     protected const int GrpcPort = 80;
-    private const string area = "DK1"; //TODO: What about DK2?
     private const string registryName = "TestRegistry";
 
     private readonly Lazy<IContainer> registryContainer;
     private readonly IContainer verifierContainer;
 
-    public const string IssuerArea = area;
     public const string RegistryName = registryName;
-    public IPrivateKey IssuerKey { get; init; }
+    public IPrivateKey Dk1IssuerKey { get; init; }
+    public IPrivateKey Dk2IssuerKey { get; init; }
     public string RegistryUrl => $"http://{registryContainer.Value.Hostname}:{registryContainer.Value.GetMappedPublicPort(GrpcPort)}";
     protected string RegistryContainerUrl => $"http://{registryContainer.Value.IpAddress}:{GrpcPort}";
 
     public RegistryFixture()
     {
-        IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
+        Dk1IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
+        Dk2IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
 
         verifierContainer = new ContainerBuilder()
                 .WithImage(electricityVerifierImage)
                 .WithPortBinding(GrpcPort, true)
-                .WithEnvironment($"Issuers__{IssuerArea}", Convert.ToBase64String(Encoding.UTF8.GetBytes(IssuerKey.PublicKey.ExportPkixText())))
+                .WithEnvironment("Issuers__DK1", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.PublicKey.ExportPkixText())))
+                .WithEnvironment("Issuers__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.PublicKey.ExportPkixText())))
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()
                         .UntilPortIsAvailable(GrpcPort)
