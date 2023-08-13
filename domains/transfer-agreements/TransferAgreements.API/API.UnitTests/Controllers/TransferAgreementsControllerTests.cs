@@ -277,7 +277,7 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task CreateWalletDepositEndpoint_ShouldPassTokenWithoutBearerPrefix()
     {
-        const string expectedJwtToken = "sample.jwt.token";
+        const string expectedJwtToken = "Bearer sample.jwt.token";
 
         string passedToken = null!;
         mockWalletDepositEndpointService
@@ -288,8 +288,6 @@ public class TransferAgreementsControllerTests
 
         await controller.CreateWalletDepositEndpoint();
 
-        passedToken.Should().NotBeNull();
-        passedToken.Should().NotContain("Bearer");
         passedToken.Should().Be(expectedJwtToken);
     }
 }

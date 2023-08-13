@@ -1,8 +1,6 @@
 using System;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Converters;
-using API.Data;
 using API.Options;
 using Grpc.Core;
 using Grpc.Net.Client;
