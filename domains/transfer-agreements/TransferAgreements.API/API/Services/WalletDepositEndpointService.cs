@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Converters;
 using API.Data;
@@ -21,9 +22,9 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         this.logger = logger;
     }
 
-    public async Task<string> CreateWalletDepositEndpoint(string jwtToken)
+    public async Task<string> CreateWalletDepositEndpoint(string bearerToken)
     {
-        var walletDepositEndpoint = await GetWalletDepositEndpoint(jwtToken);
+        var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
         return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
 
@@ -34,7 +35,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
             {
-                { "Authorization", $"Bearer {bearerToken}" }
+                { "Authorization", bearerToken }
             };
         try
         {

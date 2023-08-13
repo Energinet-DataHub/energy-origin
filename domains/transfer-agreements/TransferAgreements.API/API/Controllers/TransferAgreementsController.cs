@@ -193,12 +193,13 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
-        if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
-        {
-            var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(authentication.Parameter);
-            return Ok(new { result = base64String });
-        }
-        return StatusCode(500);
+        if (!AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"],
+                out var authentication))
+            return StatusCode(500);
+
+        var bearerToken = authentication.ToString();
+        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(bearerToken);
+        return Ok(new { result = base64String });
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
