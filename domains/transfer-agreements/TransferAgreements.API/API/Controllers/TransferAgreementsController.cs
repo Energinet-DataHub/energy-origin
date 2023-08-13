@@ -81,7 +81,6 @@ public class TransferAgreementsController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
 
-
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
@@ -191,7 +190,6 @@ public class TransferAgreementsController : ControllerBase
         var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(bearerToken);
         return Ok(new { result = base64String });
     }
-
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
         new(
