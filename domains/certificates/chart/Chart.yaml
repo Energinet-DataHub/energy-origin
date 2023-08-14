@@ -3,4 +3,4 @@ name: eo-certificates
 description: A chart containing the certificates domain.
 
 type: application
-version: 1.2.18
+version: 1.2.19
