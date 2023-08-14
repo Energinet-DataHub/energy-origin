@@ -19,9 +19,6 @@ public class RoleConfiguration
     public string Name { get; init; } = null!;
 
     [Range(typeof(bool), "false", "true")]
-    public bool ManagesRoles { get; set; } = false;
-
-    [Range(typeof(bool), "false", "true")]
     public bool IsDefault { get; set; } = false;
 
     [Range(typeof(bool), "false", "true")]

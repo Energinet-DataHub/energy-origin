@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
 namespace Unit.Tests.Controllers;
@@ -29,9 +28,9 @@ public class TermsControllerTests
     private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
     private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
     private readonly MockHttpMessageHandler http = new();
-    private readonly IOptions<DataSyncOptions> dataSyncOptions;
+    private readonly DataSyncOptions dataSyncOptions;
     private readonly ICryptography cryptography;
-    private readonly IOptions<RoleOptions> roleOptions;
+    private readonly RoleOptions roleOptions;
 
     public TermsControllerTests()
     {
@@ -44,9 +43,9 @@ public class TermsControllerTests
             Key = "secretsecretsecretsecret"
         };
 
-        dataSyncOptions = Moptions.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        roleOptions = Moptions.Create(configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!);
-        cryptography = new Cryptography(Moptions.Create(cryptographyOptions));
+        dataSyncOptions = configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!;
+        roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
+        cryptography = new Cryptography(cryptographyOptions);
     }
 
     [Fact]
@@ -83,7 +82,7 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
             });
 
-        http.When(HttpMethod.Post, dataSyncOptions.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
@@ -126,7 +125,7 @@ public class TermsControllerTests
                 EncryptedProviderKeys = providerEncrypted
             });
 
-        http.When(HttpMethod.Post, dataSyncOptions.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
@@ -156,7 +155,7 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        http.When(HttpMethod.Post, dataSyncOptions.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 3));

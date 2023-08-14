@@ -67,9 +67,20 @@ builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(Identit
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
+// FIXME: make an extension instead
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<CryptographyOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TermsOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TokenOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OidcOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OtlpOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<RoleOptions>>().Value);
+
 if (builder.Environment.IsDevelopment() == false)
 {
     builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+    builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DataSyncOptions>>().Value);
 }
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
@@ -107,10 +118,10 @@ builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
-    var options = providers.GetRequiredService<IOptions<OidcOptions>>();
-    return new DiscoveryCache(options.Value.AuthorityUri.AbsoluteUri)
+    var options = providers.GetRequiredService<OidcOptions>();
+    return new DiscoveryCache(options.AuthorityUri.AbsoluteUri)
     {
-        CacheDuration = options.Value.CacheDuration
+        CacheDuration = options.CacheDuration
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();

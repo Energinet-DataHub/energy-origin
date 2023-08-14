@@ -11,7 +11,6 @@ using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
@@ -29,9 +28,9 @@ public class OidcController : ControllerBase
         IUserProviderService userProviderService,
         IUserService userService,
         ITokenIssuer issuer,
-        IOptions<OidcOptions> oidcOptions,
-        IOptions<IdentityProviderOptions> providerOptions,
-        IOptions<RoleOptions> roleOptions,
+        OidcOptions oidcOptions,
+        IdentityProviderOptions providerOptions,
+        RoleOptions roleOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
@@ -39,8 +38,8 @@ public class OidcController : ControllerBase
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
-        var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
-        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
+        var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
             redirectionUri = oidcState.RedirectionUri;
         }
@@ -63,9 +62,9 @@ public class OidcController : ControllerBase
         {
             Address = discoveryDocument.TokenEndpoint,
             Code = code,
-            ClientId = oidcOptions.Value.ClientId,
-            ClientSecret = oidcOptions.Value.ClientSecret,
-            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri
+            ClientId = oidcOptions.ClientId,
+            ClientSecret = oidcOptions.ClientSecret,
+            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
         };
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
         if (response.IsError)
@@ -78,7 +77,7 @@ public class OidcController : ControllerBase
         UserDescriptor descriptor;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, roleOptions.Value, discoveryDocument, response);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {

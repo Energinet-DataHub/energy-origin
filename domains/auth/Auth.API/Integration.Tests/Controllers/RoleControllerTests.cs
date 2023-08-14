@@ -1,6 +1,5 @@
 using System.Net;
 using System.Security.Claims;
-using System.Text;
 using API.Models.Entities;
 using API.Utilities.Interfaces;
 using API.Values;

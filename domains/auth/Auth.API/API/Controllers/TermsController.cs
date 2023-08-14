@@ -5,10 +5,8 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -25,8 +23,8 @@ public class TermsController : ControllerBase
         IUserService userService,
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
-        IOptions<DataSyncOptions> dataSyncOptions,
-        IOptions<RoleOptions> roleOptions,
+        DataSyncOptions dataSyncOptions,
+        RoleOptions roleOptions,
         [FromRoute] int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -56,7 +54,7 @@ public class TermsController : ControllerBase
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
 
-            user.UserRoles.AddRange(roleOptions.Value.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
+            user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
                 new UserRole { Role = x.Key, UserId = descriptor.Id }
             ));
 
@@ -79,7 +77,7 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        var relationUri = dataSyncOptions.Value.Uri?.AbsoluteUri.TrimEnd('/');
+        var relationUri = dataSyncOptions.Uri?.AbsoluteUri.TrimEnd('/');
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();

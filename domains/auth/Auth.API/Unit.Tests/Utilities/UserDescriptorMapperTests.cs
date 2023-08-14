@@ -25,7 +25,7 @@ public class UserDescriptorMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        ICryptography cryptography = new Cryptography(Moptions.Create(options));
+        ICryptography cryptography = new Cryptography(options);
 
         mapper = new UserDescriptorMapper(cryptography, logger);
     }

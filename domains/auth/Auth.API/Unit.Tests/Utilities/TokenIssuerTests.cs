@@ -9,7 +9,6 @@ using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Unit.Tests.Utilities;
@@ -18,8 +17,8 @@ public class TokenIssuerTests
 {
     private readonly IUserService service = Mock.Of<IUserService>();
 
-    private readonly IOptions<TermsOptions> termsOptions;
-    private readonly IOptions<TokenOptions> tokenOptions;
+    private readonly TermsOptions termsOptions;
+    private readonly TokenOptions tokenOptions;
 
     public TokenIssuerTests()
     {
@@ -28,8 +27,8 @@ public class TokenIssuerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        termsOptions = Moptions.Create(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!);
-        tokenOptions = Moptions.Create(configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!);
+        termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
+        tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
     }
 
     [Theory]
@@ -64,10 +63,10 @@ public class TokenIssuerTests
     {
         var descriptor = PrepareUser();
         var duration = new TimeSpan(10, 11, 12);
-        var options = TestOptions.Token(tokenOptions.Value, duration: duration);
+        var options = TestOptions.Token(tokenOptions, duration: duration);
         var issueAt = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor, issueAt: issueAt);
+        var token = GetTokenIssuer(token: options).Issue(descriptor, issueAt: issueAt);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -81,9 +80,9 @@ public class TokenIssuerTests
         var descriptor = PrepareUser();
         var audience = Guid.NewGuid().ToString();
         var issuer = Guid.NewGuid().ToString();
-        var options = TestOptions.Token(tokenOptions.Value, audience, issuer);
+        var options = TestOptions.Token(tokenOptions, audience, issuer);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
+        var token = GetTokenIssuer(token: options).Issue(descriptor);
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
@@ -95,12 +94,12 @@ public class TokenIssuerTests
     public void Issue_ShouldReturnASignedToken_WhenIssuing()
     {
         var descriptor = PrepareUser();
-        var options = TestOptions.Token(tokenOptions.Value);
+        var options = TestOptions.Token(tokenOptions);
 
-        var token = GetTokenIssuer(token: options.Value).Issue(descriptor);
+        var token = GetTokenIssuer(token: options).Issue(descriptor);
 
         var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(options.Value.PublicKeyPem));
+        rsa.ImportFromPem(Encoding.UTF8.GetString(options.PublicKeyPem));
         var key = new RsaSecurityKey(rsa);
 
         var parameters = new TokenValidationParameters()
@@ -149,10 +148,11 @@ public class TokenIssuerTests
         var jwt = Convert(token);
         Assert.NotNull(jwt);
         Assert.NotNull(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
+        // FIXME: this
         // Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(Moptions.Create(terms ?? termsOptions.Value), Moptions.Create(token ?? tokenOptions.Value));
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions);
 
     private UserDescriptor PrepareUser(string? name = default, int privacyVersion = 3, int tosVersion = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true)
     {

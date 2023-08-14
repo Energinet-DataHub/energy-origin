@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Unit.Tests.Controllers;
 
@@ -20,7 +19,7 @@ public class RoleControllerTests
     private readonly RoleController roleController = new();
     private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();
     private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly IOptions<RoleOptions> roleOptions;
+    private readonly RoleOptions roleOptions;
     public RoleControllerTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -28,7 +27,7 @@ public class RoleControllerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        roleOptions = Moptions.Create(configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!);
+        roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
@@ -9,7 +10,6 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using WireMock.Server;
 
 namespace Integration.Tests.Controllers;
@@ -23,10 +23,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptUserTermsAsync_ShouldReturnOkAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
+        var options = new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
-        });
+        };
         var user = await factory.AddUserToDatabaseAsync();
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
@@ -61,10 +61,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
+        var options = new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
-        });
+        };
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
@@ -95,7 +95,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null));
+        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null)); // FIXME: incorrectly valid test?
     }
 
     [Fact]

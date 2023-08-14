@@ -6,7 +6,6 @@ using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -14,11 +13,20 @@ namespace API.Controllers;
 public class RoleController : ControllerBase
 {
     [Authorize(Roles = RoleKey.Admin)]
+    [HttpGet]
+    [Route("role/all")]
+    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
+    {
+        x.Key,
+        x.Name
+    }));
+
+    [Authorize(Roles = RoleKey.Admin)]
     [HttpPut]
     [Route("role/{role}/assign/{userId}")]
-    public async Task<IActionResult> AssignRole([FromRoute] string role, [FromRoute] Guid userId, IOptions<RoleOptions> roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    public async Task<IActionResult> AssignRole([FromRoute] string role, [FromRoute] Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
-        var validRoles = roles.Value.RoleConfigurations.Select(x => x.Key);
+        var validRoles = roles.RoleConfigurations.Select(x => x.Key);
         _ = validRoles.FirstOrDefault(x => x == role) ?? throw new NullReferenceException($"Role not found: {role}");
 
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");

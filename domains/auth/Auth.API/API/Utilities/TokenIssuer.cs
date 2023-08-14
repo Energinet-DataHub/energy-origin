@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,7 +6,6 @@ using API.Options;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
@@ -19,10 +17,10 @@ public class TokenIssuer : ITokenIssuer
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
 
-    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions)
     {
-        this.termsOptions = termsOptions.Value;
-        this.tokenOptions = tokenOptions.Value;
+        this.termsOptions = termsOptions;
+        this.tokenOptions = tokenOptions;
     }
 
     public string Issue(UserDescriptor descriptor, bool versionBypass = false, DateTime? issueAt = default)
