@@ -11,14 +11,13 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Unit.Tests.Controllers;
 
 public class LogoutControllerTests
 {
-    private readonly OidcOptions oidcOptions;
-    private readonly IOptions<OidcOptions> options;
+    private readonly OidcOptions oidcOptions; // FIXME: two of them?
+    private readonly OidcOptions options;
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
@@ -55,7 +54,7 @@ public class LogoutControllerTests
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: descriptor);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -70,17 +69,17 @@ public class LogoutControllerTests
         Assert.False(redirectResult.Permanent);
 
         var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.Value.AuthorityUri.Host, uri.Host);
+        Assert.Equal(options.AuthorityUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"post_logout_redirect_uri={options.Value.FrontendRedirectUri.AbsoluteUri}", query);
+        Assert.Contains($"post_logout_redirect_uri={options.FrontendRedirectUri.AbsoluteUri}", query);
         Assert.Contains($"id_token_hint={identityToken}", query);
     }
 
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
     {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -89,7 +88,7 @@ public class LogoutControllerTests
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
-        Assert.NotEqual(options.Value.AuthorityUri.Host, uri.Host);
+        Assert.NotEqual(options.AuthorityUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.DoesNotContain($"id_token_hint", query);
@@ -102,7 +101,7 @@ public class LogoutControllerTests
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: descriptor);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -126,7 +125,7 @@ public class LogoutControllerTests
 
         var testOptions = TestOptions.Oidc(oidcOptions, allowRedirection: false);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -139,7 +138,7 @@ public class LogoutControllerTests
         var uri = new Uri(redirectResult.Url);
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.DoesNotContain($"post_logout_redirect_uri={redirectionUri}", query);
-        Assert.Contains($"post_logout_redirect_uri={testOptions.Value.FrontendRedirectUri.AbsoluteUri}", query);
+        Assert.Contains($"post_logout_redirect_uri={testOptions.FrontendRedirectUri.AbsoluteUri}", query);
     }
 
     [Fact]
@@ -160,7 +159,7 @@ public class LogoutControllerTests
         Assert.False(redirectResult.Permanent);
 
         var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(options.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.DoesNotContain($"{ErrorCode.QueryString}=", query);
@@ -193,7 +192,7 @@ public class LogoutControllerTests
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: descriptor);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.Value.AuthorityUri.Host}/end_session") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);

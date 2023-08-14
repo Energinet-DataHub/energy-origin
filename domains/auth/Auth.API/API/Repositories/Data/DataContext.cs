@@ -7,12 +7,11 @@ using Npgsql;
 
 namespace API.Repositories.Data;
 
-public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext, IRoleDataContext
+public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;
     public DbSet<UserProvider> UserProviders { get; set; } = null!;
-    public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<UserRole> UserRoles { get; set; } = null!;
     public DbSet<UserTerms> UserTerms { get; set; } = null!;
     public DbSet<CompanyTerms> CompanyTerms { get; set; } = null!;
@@ -31,12 +30,5 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
         modelBuilder.HasPostgresEnum<ProviderKeyType>();
         modelBuilder.HasPostgresEnum<CompanyTermsType>();
         modelBuilder.HasPostgresEnum<UserTermsType>();
-
-        modelBuilder.Entity<User>()
-            .HasMany(e => e.Roles)
-            .WithMany(e => e.Users)
-            .UsingEntity<UserRole>(
-                l => l.HasOne<Role>(e => e.Role).WithMany(e => e.UserRoles),
-                r => r.HasOne<User>(e => e.User).WithMany(e => e.UserRoles));
     }
 }

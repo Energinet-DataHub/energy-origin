@@ -11,7 +11,6 @@ using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
@@ -29,18 +28,18 @@ public class OidcController : ControllerBase
         IUserProviderService userProviderService,
         IUserService userService,
         ITokenIssuer issuer,
-        IOptions<OidcOptions> oidcOptions,
-        IOptions<IdentityProviderOptions> providerOptions,
+        OidcOptions oidcOptions,
+        IdentityProviderOptions providerOptions,
+        RoleOptions roleOptions,
         ILogger<OidcController> logger,
-        IRoleService roleService,
         [FromQuery] string? code,
         [FromQuery] string? error,
         [FromQuery(Name = "error_description")] string? errorDescription,
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
-        var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
-        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
+        var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
             redirectionUri = oidcState.RedirectionUri;
         }
@@ -63,9 +62,9 @@ public class OidcController : ControllerBase
         {
             Address = discoveryDocument.TokenEndpoint,
             Code = code,
-            ClientId = oidcOptions.Value.ClientId,
-            ClientSecret = oidcOptions.Value.ClientSecret,
-            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri
+            ClientId = oidcOptions.ClientId,
+            ClientSecret = oidcOptions.ClientSecret,
+            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
         };
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
         if (response.IsError)
@@ -78,7 +77,7 @@ public class OidcController : ControllerBase
         UserDescriptor descriptor;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response, roleService);
+            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -110,7 +109,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, IRoleService roleService)
+    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -227,15 +226,6 @@ public class OidcController : ControllerBase
                 }
         };
 
-        if (organizationOwner)
-        {
-            var newOrganizationRoles = (await roleService.GetRollByKeyAsync(RoleKeys.AuthAdminKey))!;
-            user.Roles.Add(newOrganizationRoles);
-        }
-
-        var newDefaultRoles = roleService.GetAllRoles().Where(x => x.IsDefault).ExceptBy(user.Roles.Select(x => x.Key), x => x.Key);
-        user.Roles.AddRange(newDefaultRoles);
-
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
 
@@ -244,8 +234,20 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
+        return mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
     }
+
+    private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+        {
+            var property = info.FindFirstValue(match.Property);
+            return match.Operator switch
+            {
+                "exists" => property != null,
+                "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+                "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
+                _ => false
+            };
+        }) ? role.Key : null).OfType<string>();
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {

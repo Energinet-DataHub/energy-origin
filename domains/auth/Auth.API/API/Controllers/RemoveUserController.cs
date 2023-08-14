@@ -1,7 +1,7 @@
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
+using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace API.Controllers;
 [ApiController]
 public class RemoveUserController : ControllerBase
 {
-    [Authorize(Policy = nameof(RoleAdminPolicy))]
+    [Authorize(Roles = RoleKey.Admin)]
     [HttpDelete]
     [Route("user/remove/{userToBeDeletedId:guid}")]
     public async Task<IActionResult> RemoveUser(Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService, ILogger<RemoveUserController> logger)

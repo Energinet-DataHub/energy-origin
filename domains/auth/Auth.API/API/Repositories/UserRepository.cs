@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
         await dataContext.SaveChangesAsync();
         return user;
     }
-    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).Include(x => x.UserProviders).Include(x => x.Roles).Include(x => x.UserTerms).FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).Include(x => x.UserProviders).Include(x => x.UserTerms).FirstOrDefaultAsync(x => x.Id == id);
     public async Task<User> InsertUserAsync(User user)
     {
         await dataContext.Users.AddAsync(user);

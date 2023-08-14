@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
 namespace Unit.Tests.Controllers;
@@ -29,8 +28,9 @@ public class TermsControllerTests
     private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
     private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
     private readonly MockHttpMessageHandler http = new();
-    private readonly IOptions<DataSyncOptions> options;
+    private readonly DataSyncOptions dataSyncOptions;
     private readonly ICryptography cryptography;
+    private readonly RoleOptions roleOptions;
 
     public TermsControllerTests()
     {
@@ -43,8 +43,9 @@ public class TermsControllerTests
             Key = "secretsecretsecretsecret"
         };
 
-        options = Moptions.Create(configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!);
-        cryptography = new Cryptography(Moptions.Create(cryptographyOptions));
+        dataSyncOptions = configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!;
+        roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
+        cryptography = new Cryptography(cryptographyOptions);
     }
 
     [Fact]
@@ -81,10 +82,10 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
             });
 
-        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -124,10 +125,10 @@ public class TermsControllerTests
                 EncryptedProviderKeys = providerEncrypted
             });
 
-        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, newAcceptedTermsVersion);
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -154,10 +155,10 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: null);
 
-        http.When(HttpMethod.Post, options.Value.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
+        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 3));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 3));
     }
 
     [Fact]
@@ -182,7 +183,7 @@ public class TermsControllerTests
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
            .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 2));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 2));
     }
 
     [Fact]
@@ -195,6 +196,6 @@ public class TermsControllerTests
                 AcceptedPrivacyPolicyVersion = 2
             });
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, options, 1));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 1));
     }
 }

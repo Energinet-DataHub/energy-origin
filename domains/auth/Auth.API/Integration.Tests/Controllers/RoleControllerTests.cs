@@ -1,114 +1,82 @@
 using System.Net;
 using System.Security.Claims;
-using System.Text;
 using API.Models.Entities;
 using API.Utilities.Interfaces;
 using API.Values;
-using EnergyOrigin.TokenValidation.Models.Requests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Integration.Tests.Controllers;
 
 public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    private readonly User policyUser;
-    public RoleControllerTests(AuthWebApplicationFactory factory)
+    private readonly User user = new()
     {
-        this.factory = factory;
-        policyUser = SetupAuthPolicyUser();
-    }
+        Id = Guid.NewGuid(),
+        Name = Guid.NewGuid().ToString()
+    };
+    private readonly User adminUser = new()
+    {
+        Id = Guid.NewGuid(),
+        Name = Guid.NewGuid().ToString(),
+        UserRoles = new List<UserRole> { new() { Role = RoleKey.Admin } }
+    };
+
+    public RoleControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task AssignRole_ReturnsOk_WhenRoleIsAssigned()
+    public async Task Assign_ReturnsOk_WhenRoleIsAssigned()
     {
-        var dbContext = factory.DataContext;
-        var userGuid = Guid.NewGuid();
-        await dbContext.Roles.AddAsync(new Role
-        {
-            Id = Guid.NewGuid(), Name = "TestRole", Key = "testRoleKey"
-        });
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
-        await dbContext.Users.AddAsync(new User()
-        {
-            Id = userGuid, Name = "TestUser", AllowCprLookup = false
-        });
-        await dbContext.SaveChangesAsync();
-        var client = factory.CreateAuthenticatedClient(policyUser);
-
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = "testRoleKey",
-            UserId = userGuid
-        };
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync("role/assign", httpContent);
-        var dbUser = factory.DataContext.Users.Include(x => x.Roles).FirstOrDefault(x => x.Id == roleRequest.UserId)!;
+        var role = RoleKey.Viewer;
+        var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.UserRoles).FirstOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(roleRequest.RoleKey, dbUser.Roles.FirstOrDefault()?.Key);
+        Assert.Equal(role, dbUser.UserRoles.First()?.Role);
     }
 
     [Fact]
-    public async Task AssignRole_ShouldThrowNullException_WhenUserDoesNotExist()
+    public async Task Assign_ShouldReturnNotFound_WhenUserDoesNotExist()
     {
-        var dbContext = factory.DataContext;
-        var nonExistentUserId = Guid.NewGuid();
-        await dbContext.Roles.AddAsync(new Role
-        {
-            Id = Guid.NewGuid(), Name = "TestRole", Key = "roleKey"
-        });
-        await dbContext.SaveChangesAsync();
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = "roleKey",
-            UserId = nonExistentUserId
-        };
-        var client = factory.CreateAuthenticatedClient(policyUser);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assign", httpContent));
+        var response = await client.PutAsync($"role/{RoleKey.Viewer}/assign/{Guid.NewGuid()}", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task AssignRole_ShouldThrowNullException_WhenRoleDoesNotExist()
+    public async Task Assign_ShouldReturnBadRequest_WhenRoleDoesNotExist()
     {
-        var nonExistentRoleKey = "notExistentRoleKey";
-        var userGuid = Guid.NewGuid();
-        await factory.AddUserToDatabaseAsync(new User
-        {
-            Id = userGuid, Name = "TestUser", AllowCprLookup = false
-        });
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = nonExistentRoleKey,
-            UserId = userGuid
-        };
-        var client = factory.CreateAuthenticatedClient(policyUser);
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"role/notExistentRoleKey/assign/{user.Id}", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/assign", httpContent));
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldRemoveRole_WhenRoleExists()
+    public async Task Remove_ShouldReturnOk_WhenRoleExists()
     {
-        var existingRoleKey = "existingRoleKey";
-        var existingUserId = Guid.NewGuid();
+        var role = RoleKey.Viewer;
         var dataContext = factory.DataContext;
         var userWithRole = new User
         {
-            Id = existingUserId,
-            Roles = new List<Role>
+            Id = Guid.NewGuid(),
+            UserRoles = new List<UserRole>
             {
                 new()
                 {
-                    Key = existingRoleKey, Name = "ExistingRole", Id = Guid.NewGuid()
+                    Role = role
                 }
             },
             AllowCprLookup = false,
@@ -116,119 +84,71 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
         await dataContext.AddAsync(userWithRole);
         await dataContext.SaveChangesAsync();
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = existingRoleKey,
-            UserId = existingUserId
-        };
 
-        var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var response = await client.PutAsync($"role/{role}/remove/{userWithRole.Id}", null);
 
-        var response = await client.PutAsync("role/remove", httpContent);
-
+        Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var updatedUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == userWithRole.Id);
-        Assert.DoesNotContain(updatedUser!.Roles, role => role.Key == existingRoleKey);
+        Assert.False(factory.DataContext.Users.FirstOrDefault(x => x.Id == userWithRole.Id)?.UserRoles.Any(x => x.Role == role) ?? true);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldThrowException_WhenRoleDoesNotExist()
+    public async Task Remove_ShouldReturnOk_WhenRoleDoesNotExist()
     {
-        var nonExistentRoleKey = "notExistentRoleKey";
-        var existingUserId = Guid.NewGuid();
-        var dataContext = factory.DataContext;
-        var userWithRole = new User
-        {
-            Id = existingUserId,
-            AllowCprLookup = false,
-            Name = "TestUser"
-        };
-        await dataContext.AddAsync(userWithRole);
-        await dataContext.SaveChangesAsync();
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = nonExistentRoleKey,
-            UserId = existingUserId
-        };
+        var role = RoleKey.Viewer;
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.Admin);
 
-        var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"role/{role}/remove/{user.Id}", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/remove", httpContent));
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserDoesNotExist()
+    public async Task Remove_ShouldReturnNotFound_WhenUserDoesNotExist()
     {
-        var dbContext = factory.DataContext;
-        var nonExistentUserId = Guid.NewGuid();
-        await dbContext.Roles.AddAsync(new Role
-        {
-            Id = Guid.NewGuid(), Name = "TestRole", Key = "userRoleKey"
-        });
-        await dbContext.SaveChangesAsync();
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = "userRoleKey",
-            UserId = nonExistentUserId
-        };
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
-        var policyAuthUser = SetupAuthPolicyUser();
-        var client = factory.CreateAuthenticatedClient(policyAuthUser);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"role/{RoleKey.Viewer}/remove/{Guid.NewGuid()}", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await client.PutAsync("role/remove", httpContent));
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldReturnBadRequest_WhenUserTriesToRemoveAdminFromThemselves()
+    public async Task Remove_ShouldReturnBadRequest_WhenUserTriesToRemoveAdminFromThemselves()
     {
-        await factory.AddUserToDatabaseAsync(policyUser);
+        var user = await factory.AddUserToDatabaseAsync(adminUser);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var response = await client.PutAsync($"role/{RoleKey.Admin}/remove/{user.Id}", null);
 
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = RoleKeys.AuthAdminKey,
-            UserId = policyUser.Id ?? new Guid()
-        };
-
-        var client = factory.CreateAuthenticatedClient(policyUser);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync("role/remove", httpContent);
-
+        Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-
     [Theory]
-    [InlineData("role/assign")]
-    [InlineData("role/remove")]
-    public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string routePath)
+    [InlineData("assign")]
+    [InlineData("remove")]
+    public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string action)
     {
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = "testRoleKey",
-            UserId = Guid.NewGuid()
-        };
-
+        var role = RoleKey.Viewer;
         var user = await factory.AddUserToDatabaseAsync();
         var client = factory.CreateAuthenticatedClient(user);
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
 
-        var response = await client.PutAsync(routePath, httpContent);
-
+        Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Theory]
-    [InlineData("role/assign")]
-    [InlineData("role/remove")]
-    public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string routePath)
+    [InlineData("assign")]
+    [InlineData("remove")]
+    public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string action)
     {
-        var client = factory.CreateAuthenticatedClient(policyUser, config: builder =>
+        var role = RoleKey.Viewer;
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
             Mock.Get(mapper)
@@ -238,27 +158,9 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var roleRequest = new RoleRequest
-        {
-            RoleKey = "userRoleKey",
-            UserId = Guid.NewGuid()
-        };
-        var httpContent = new StringContent(JsonSerializer.Serialize(roleRequest), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync(routePath, httpContent));
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
-
-    private User SetupAuthPolicyUser() =>
-        new()
-        {
-            Roles = new List<Role>
-            {
-                new()
-                {
-                    Key = RoleKeys.AuthAdminKey, Name = "Auth", Id = Guid.NewGuid()
-                }
-            },
-            AllowCprLookup = true,
-            Name = Guid.NewGuid().ToString()
-        };
 }

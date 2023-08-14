@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using API.Models.Entities;
+using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
+using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,44 +13,81 @@ namespace API.Controllers;
 [ApiController]
 public class RoleController : ControllerBase
 {
-    [Authorize(Policy = nameof(RoleAdminPolicy))]
-    [HttpPut]
-    [Route("role/assign")]
-    public async Task<IActionResult> AssignRole([FromBody] RoleRequest roleRequest, IRoleService roleService, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    [Authorize(Roles = RoleKey.Admin)]
+    [HttpGet]
+    [Route("role/all")]
+    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
-        var role = await roleService.GetRollByKeyAsync(roleRequest.RoleKey) ?? throw new NullReferenceException($"Role not found: {roleRequest.RoleKey}");
-        var user = await userService.GetUserByIdAsync(roleRequest.UserId) ?? throw new NullReferenceException($"User not found: {roleRequest.UserId}");
+        x.Key,
+        x.Name
+    }));
 
-        user.UserRoles.Add(new UserRole { RoleId = (Guid)role.Id!, UserId = roleRequest.UserId });
+    [Authorize(Roles = RoleKey.Admin)]
+    [HttpPut]
+    [Route("role/{role}/assign/{userId}")]
+    public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    {
+        var validRoles = roles.RoleConfigurations.Select(x => x.Key);
+        if (!validRoles.Any(x => x == role))
+        {
+            return BadRequest($"Role not found: {role}");
+        }
+
+        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+
+        var user = await userService.GetUserByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound($"User not found: {userId}");
+        }
+
+        if (user.UserRoles.Any(x => x.Role == role))
+        {
+            return Ok();
+        }
+
+        user.UserRoles.Add(new UserRole { Role = role, UserId = userId });
         await userService.UpsertUserAsync(user);
         logger.AuditLog(
             "{Role} was assign to {User} by {AdminId} at {TimeStamp}.",
-            role.Name,
+            role,
             user.Id,
             descriptor.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
+
         return Ok();
     }
 
-    [Authorize(Policy = nameof(RoleAdminPolicy))]
+    [Authorize(Roles = RoleKey.Admin)]
     [HttpPut]
-    [Route("role/remove")]
-    public async Task<IActionResult> RemoveRoleFromUser([FromBody] RoleRequest roleRequest, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    [Route("role/{role}/remove/{userId}")]
+    public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
-        var user = await userService.GetUserByIdAsync(roleRequest.UserId) ?? throw new NullReferenceException($"User not found: {roleRequest.UserId}");
-        var userRole = user.UserRoles.FirstOrDefault(x => x.Role.Key == roleRequest.RoleKey) ?? throw new NullReferenceException($"Remove role failed: {User}");
+
+        var user = await userService.GetUserByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound($"User not found: {userId}");
+        }
+
         if (user.Id == descriptor.Id)
         {
             return BadRequest("An admin cannot remove his admin role");
         }
+
+        var userRole = user.UserRoles.SingleOrDefault(x => x.Role == role);
+        if (userRole == null)
+        {
+            return Ok();
+        }
+
         user.UserRoles.Remove(userRole);
         await userService.UpsertUserAsync(user);
         logger.AuditLog(
             "{Role} was removed from {User} by {AdminId} at {TimeStamp}. ",
-            roleRequest.RoleKey,
+            role,
             user.Id,
             descriptor.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()

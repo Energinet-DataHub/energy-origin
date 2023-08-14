@@ -7,13 +7,11 @@ using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -48,6 +46,12 @@ var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
+var roleOptions = builder.Configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
+if (roleOptions.RoleConfigurations.Count != roleOptions.RoleConfigurations.Select(x => x.Key).Distinct().Count())
+{
+    throw new InvalidDataException("Role options contains duplicate keys");
+}
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
@@ -61,10 +65,22 @@ builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefi
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+// FIXME: make an extension instead
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<CryptographyOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TermsOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TokenOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OidcOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OtlpOptions>>().Value);
+builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<RoleOptions>>().Value);
 
 if (builder.Environment.IsDevelopment() == false)
 {
     builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+    builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DataSyncOptions>>().Value);
 }
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
@@ -102,18 +118,16 @@ builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
-    var options = providers.GetRequiredService<IOptions<OidcOptions>>();
-    return new DiscoveryCache(options.Value.AuthorityUri.AbsoluteUri)
+    var options = providers.GetRequiredService<OidcOptions>();
+    return new DiscoveryCache(options.AuthorityUri.AbsoluteUri)
     {
-        CacheDuration = options.Value.CacheDuration
+        CacheDuration = options.CacheDuration
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
-builder.Services.AddScoped<OrganizationOwnerPolicy>();
-builder.Services.AddScoped<RoleAdminPolicy>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -124,9 +138,6 @@ builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleDataContext, DataContext>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
@@ -137,48 +148,28 @@ builder.Services.AddOpenTelemetry()
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }))
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithTracing(provider =>
         provider
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }));
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var authorizationOptions = services.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
-
-    var organizationOwnerPolicy = services.GetRequiredService<OrganizationOwnerPolicy>();
-    authorizationOptions.AddPolicy(nameof(OrganizationOwnerPolicy), policy =>
-        policy.Requirements.Add(organizationOwnerPolicy));
-
-    var roleAdminPolicy = services.GetRequiredService<RoleAdminPolicy>();
-    authorizationOptions.AddPolicy(nameof(RoleAdminPolicy), policy =>
-        policy.Requirements.Add(roleAdminPolicy));
-}
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else if (!app.Environment.IsTest())
+else
 {
+    app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

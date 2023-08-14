@@ -95,8 +95,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, oldScope);
-        Assert.DoesNotContain(UserScopeClaim.NotAcceptedPrivacyPolicyTerms, newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
+        Assert.DoesNotContain(UserScopeClaim.NotAcceptedPrivacyPolicy, newScope);
     }
 
     [Fact]
@@ -113,7 +113,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
+        var response = await client.GetAsync("auth/token");
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
@@ -139,7 +142,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicyTerms + " " + UserScopeClaim.NotAcceptedTermsOfServiceTerms, newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, newScope);
     }
 }

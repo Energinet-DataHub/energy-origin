@@ -28,11 +28,11 @@ public class TokenController : ControllerBase
 
         if (user != null)
         {
-            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken, descriptor.IdentityToken);
+            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.MatchedRoles.Split(" "), descriptor.AccessToken, descriptor.IdentityToken);
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
-            if (scope!.Contains(UserScopeClaim.NotAcceptedPrivacyPolicyTerms) == false && scope.Contains(UserScopeClaim.NotAcceptedTermsOfServiceTerms) == false) versionBypass = true;
+            if (scope!.Contains(UserScopeClaim.NotAcceptedPrivacyPolicy) == false && scope.Contains(UserScopeClaim.NotAcceptedTermsOfService) == false) versionBypass = true;
         }
 
         var now = DateTimeOffset.Now;

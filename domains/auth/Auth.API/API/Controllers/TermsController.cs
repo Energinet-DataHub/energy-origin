@@ -3,12 +3,10 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.AuthorizePolicies;
 using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -25,8 +23,9 @@ public class TermsController : ControllerBase
         IUserService userService,
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
-        IOptions<DataSyncOptions> dataSyncOptions,
-        [FromRoute] int version)
+        DataSyncOptions dataSyncOptions,
+        RoleOptions roleOptions,
+        int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
@@ -54,6 +53,11 @@ public class TermsController : ControllerBase
                 Name = descriptor.Name,
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
+
+            user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
+                new UserRole { Role = x.Key, UserId = descriptor.Id }
+            ));
+
             await userService.InsertUserAsync(user);
             user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
@@ -73,7 +77,7 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        var relationUri = dataSyncOptions.Value.Uri?.AbsoluteUri.TrimEnd('/');
+        var relationUri = dataSyncOptions.Uri?.AbsoluteUri.TrimEnd('/');
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();
@@ -103,14 +107,14 @@ public class TermsController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Policy = nameof(OrganizationOwnerPolicy))]
+    [Authorize(Roles = RoleKey.OrganizationAdmin)]
     [HttpPut]
     [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
-        [FromRoute] int version)
+        int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);

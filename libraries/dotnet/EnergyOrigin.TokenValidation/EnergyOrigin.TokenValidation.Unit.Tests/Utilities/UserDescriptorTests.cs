@@ -38,9 +38,9 @@ public class UserDescriptorTests
     {
         var dict = new Dictionary<ProviderKeyType, string>
         {
-            { ProviderKeyType.PID, Guid.NewGuid().ToString() },
-            { ProviderKeyType.RID, Guid.NewGuid().ToString() },
-            { ProviderKeyType.MitID_UUID, Guid.NewGuid().ToString() },
+            { ProviderKeyType.Pid, Guid.NewGuid().ToString() },
+            { ProviderKeyType.Rid, Guid.NewGuid().ToString() },
+            { ProviderKeyType.MitIdUuid, Guid.NewGuid().ToString() },
         };
 
         var providerKeys = string.Join(" ", dict.Select(x => $"{x.Key}={x.Value}"));

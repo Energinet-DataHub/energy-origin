@@ -25,7 +25,7 @@ public class UserDescriptorMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        ICryptography cryptography = new Cryptography(Moptions.Create(options));
+        ICryptography cryptography = new Cryptography(options);
 
         mapper = new UserDescriptorMapper(cryptography, logger);
     }
@@ -39,7 +39,7 @@ public class UserDescriptorMapperTests
         var identityToken = Guid.NewGuid().ToString();
         var providerType = ProviderType.NemIdProfessional;
 
-        var descriptor = mapper.Map(user, providerType, accesToken, identityToken);
+        var descriptor = mapper.Map(user, providerType, Array.Empty<string>(), accesToken, identityToken);
 
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);

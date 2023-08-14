@@ -9,14 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Unit.Tests.Controllers;
 
 public class LoginControllerTests
 {
     private readonly OidcOptions oidcOptions;
-    private readonly IOptions<IdentityProviderOptions> identityProviderOptions;
+    private readonly IdentityProviderOptions identityProviderOptions;
     public LoginControllerTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -25,11 +24,10 @@ public class LoginControllerTests
             .Build();
 
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
-        var identityProviderOption = new IdentityProviderOptions()
+        identityProviderOptions = new IdentityProviderOptions()
         {
             Providers = new List<ProviderType>() { ProviderType.NemIdProfessional }
         };
-        identityProviderOptions = Moptions.Create(identityProviderOption);
     }
 
     [Fact]
@@ -37,7 +35,7 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.AuthorityUri.Host}/connect") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -54,13 +52,13 @@ public class LoginControllerTests
         Assert.False(redirectResult.Permanent);
 
         var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.Value.AuthorityUri.Host, uri.Host);
+        Assert.Equal(options.AuthorityUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"state=", query);
         Assert.Contains($"prompt=login", query);
-        Assert.Contains($"client_id={options.Value.ClientId}", query);
-        Assert.Contains($"redirect_uri={options.Value.AuthorityCallbackUri.AbsoluteUri}", query);
+        Assert.Contains($"client_id={options.ClientId}", query);
+        Assert.Contains($"redirect_uri={options.AuthorityCallbackUri.AbsoluteUri}", query);
     }
 
     [Fact]
@@ -68,7 +66,7 @@ public class LoginControllerTests
     {
         var options = TestOptions.Oidc(oidcOptions);
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.Value.AuthorityUri.Host}/connect") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.AuthorityUri.Host}/connect") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
@@ -119,7 +117,7 @@ public class LoginControllerTests
         Assert.False(redirectResult.Permanent);
 
         var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(options.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
