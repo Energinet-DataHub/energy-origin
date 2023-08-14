@@ -128,6 +128,70 @@ public class DataSyncServiceTest
                 It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task FetchMeasurements_MeasurementsReceived_SyncPositionUpdated()
+    {
+        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
+        var info = syncInfo with { StartSyncDate = contractStartDate };
+
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
+            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+
+        var dateTo = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var fakeResponseList = new List<DataSyncDto>
+        {
+            new(
+                GSRN: info.GSRN,
+                DateFrom: contractStartDate.ToUnixTimeSeconds(),
+                DateTo: dateTo,
+                Quantity: 5,
+                Quality: MeasurementQuality.Measured
+            )
+        };
+
+        fakeClient.Setup(it => it.RequestAsync(
+                info.GSRN,
+                It.IsAny<Period>(),
+                info.MeteringPointOwner,
+                CancellationToken.None)
+            )
+            .ReturnsAsync(() => fakeResponseList);
+
+        var service = SetupService();
+
+        await service.FetchMeasurements(info,
+            CancellationToken.None);
+
+        fakeSyncState.Verify(s => s.SetSyncPosition(It.Is<SyncPosition>(sp => sp.SyncedTo == dateTo)), Times.Once);
+    }
+
+    [Fact]
+    public async Task FetchMeasurements_NoMeasurementsReceived_SyncPositionNotUpdated()
+    {
+        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
+        var info = syncInfo with { StartSyncDate = contractStartDate };
+
+        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
+            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+
+        var fakeResponseList = new List<DataSyncDto>();
+
+        fakeClient.Setup(it => it.RequestAsync(
+                info.GSRN,
+                It.IsAny<Period>(),
+                info.MeteringPointOwner,
+                CancellationToken.None)
+            )
+            .ReturnsAsync(() => fakeResponseList);
+
+        var service = SetupService();
+
+        await service.FetchMeasurements(info,
+            CancellationToken.None);
+
+        fakeSyncState.Verify(s => s.SetSyncPosition(It.IsAny<SyncPosition>()), Times.Never);
+    }
+
     private DataSyncService SetupService()
     {
         var fakeFactory = new Mock<IDataSyncClientFactory>();
