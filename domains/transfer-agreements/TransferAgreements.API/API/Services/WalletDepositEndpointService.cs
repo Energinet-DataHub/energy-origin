@@ -44,7 +44,7 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         }
         catch (Exception ex)
         {
-            HandleException(ex, "getting WalletDepositEndpoint");
+            logger.LogError(ex, "Error creating WalletDepositEndpoint");
             throw;
         }
     }
@@ -79,20 +79,8 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         }
         catch (Exception ex)
         {
-            HandleException(ex, "creating ReceiverDepositEndpoint");
+            logger.LogError(ex, "Error creating ReceiverDepositEndpoint");
             throw;
-        }
-    }
-
-    private void HandleException(Exception ex, string actionContext)
-    {
-        if (ex is RpcException rpcEx)
-        {
-            logger.LogError(rpcEx, "Error from WalletService while {ActionContext}", actionContext);
-        }
-        else
-        {
-            logger.LogError(ex, "Error while {ActionContext}", actionContext);
         }
     }
 }
