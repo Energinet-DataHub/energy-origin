@@ -52,8 +52,4 @@
       <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="Data\JwtToken.cs" />
-    </ItemGroup>
-
 </Project>
