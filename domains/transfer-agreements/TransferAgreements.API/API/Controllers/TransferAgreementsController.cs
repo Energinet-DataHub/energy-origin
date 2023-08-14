@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
@@ -9,6 +10,7 @@ using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -21,15 +23,18 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IWalletDepositEndpointService walletDepositEndpointService;
+    private readonly IHttpContextAccessor httpContextAccessor;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
-        IWalletDepositEndpointService walletDepositEndpointService)
+        IWalletDepositEndpointService walletDepositEndpointService,
+        IHttpContextAccessor httpContextAccessor)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.walletDepositEndpointService = walletDepositEndpointService;
+        this.httpContextAccessor = httpContextAccessor;
     }
 
     [ProducesResponseType(201)]
@@ -64,12 +69,7 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
-        var jwtToken = new JwtToken(User.FindIssuerClaim(),
-            User.FindAudienceClaim(),
-            subject,
-            subjectName);
-
-        var bearerToken = jwtToken.GenerateToken();
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
         transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
             bearerToken,
@@ -86,7 +86,7 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var tin = User.FindSubjectTinClaim()!;
+        var tin = User.FindSubjectTinClaim();
         var subject = User.FindSubjectGuidClaim();
 
         var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
@@ -185,13 +185,9 @@ public class TransferAgreementsController : ControllerBase
     [HttpPost("wallet-deposit-endpoint")]
     public async Task<ActionResult> CreateWalletDepositEndpoint()
     {
-        var issuer = User.FindIssuerClaim();
-        var audience = User.FindAudienceClaim();
-        var subject = User.FindSubjectGuidClaim();
-        var name = User.FindSubjectNameClaim();
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
-        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(new JwtToken(issuer, audience, subject, name));
-
+        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(bearerToken);
         return Ok(new { result = base64String });
     }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using API.Converters;
-using API.Data;
 using API.Options;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Options;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Services;
+
 public class WalletDepositEndpointService : IWalletDepositEndpointService
 {
     private readonly IOptions<ProjectOriginOptions> projectOriginOptions;
@@ -21,9 +21,8 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         this.logger = logger;
     }
 
-    public async Task<string> CreateWalletDepositEndpoint(JwtToken token)
+    public async Task<string> CreateWalletDepositEndpoint(string bearerToken)
     {
-        var bearerToken = token.GenerateToken();
         var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
         return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
@@ -34,9 +33,9 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
-            {
-                { "Authorization", $"Bearer {bearerToken}" }
-            };
+        {
+            { "Authorization", bearerToken }
+        };
         try
         {
             var response = await walletServiceClient.CreateWalletDepositEndpointAsync(request, headers);
@@ -56,23 +55,32 @@ public class WalletDepositEndpointService : IWalletDepositEndpointService
         var walletServiceClient = new WalletService.WalletServiceClient(channel);
 
         var headers = new Metadata
-            { { "Authorization", $"Bearer {bearerToken}" } };
+        {
+            { "Authorization", bearerToken }
+        };
+
         var wde = Base64Converter.ConvertToWalletDepositEndpoint(base64EncodedWalletDepositEndpoint);
         var walletRequest = new CreateReceiverDepositEndpointRequest
         {
             Reference = receiverTin,
             WalletDepositEndpoint = wde
         };
-
-        var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
-
-        Guid receiverReference = new(response.ReceiverId.Value);
-
-        if (receiverReference == Guid.Empty)
+        try
         {
-            throw new ArgumentException("The receiver Id cannot be an empty Guid.", nameof(response.ReceiverId));
-        }
+            var response = await walletServiceClient.CreateReceiverDepositEndpointAsync(walletRequest, headers);
+            Guid receiverReference = new(response.ReceiverId.Value);
 
-        return receiverReference;
+            if (receiverReference == Guid.Empty)
+            {
+                throw new InvalidOperationException("The receiver Id from the WalletService cannot be an empty Guid.");
+            }
+
+            return receiverReference;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating ReceiverDepositEndpoint");
+            throw;
+        }
     }
 }
