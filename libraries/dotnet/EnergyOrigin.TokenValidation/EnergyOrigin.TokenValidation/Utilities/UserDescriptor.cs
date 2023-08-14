@@ -13,6 +13,7 @@ public class UserDescriptor
     public string? Tin { get; init; }
     public string MatchedRoles { get; init; } = null!;
     public string AssignedRoles { get; init; } = null!;
+    // FIXME: discuss Accepted* in depth
     public int AcceptedTermsOfServiceVersion { get; init; }
     public int AcceptedPrivacyPolicyVersion { get; init; }
     public int CurrentTermsOfServiceVersion { get; init; }

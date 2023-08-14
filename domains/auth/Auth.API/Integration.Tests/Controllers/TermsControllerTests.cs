@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
@@ -95,7 +94,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null)); // FIXME: incorrectly valid test?
+        var response = await client.PutAsync("terms/user/accept/10", null); // FIXME: incorrectly valid test?
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
@@ -112,15 +114,16 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
         });
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/user/accept/10", null));
+        var response = await client.PutAsync("terms/user/accept/10", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
     public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsDoesNotExist()
     {
-        var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitIdUuid;
-        var newUser = new User
+        var user = await factory.AddUserToDatabaseAsync(new User
         {
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
@@ -128,47 +131,26 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             {
                 Name = "TestCompany",
                 Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 9 } }
             },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
-        };
-        var user = await factory.AddUserToDatabaseAsync(newUser);
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
 
         var result = await client.PutAsync("terms/company/accept/10", null);
-        var dbUser = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!;
 
+        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!.Company!;
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Contains(dbUser.Company!.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
-        Assert.Contains(dbUser.Company.CompanyTerms, x => x.AcceptedVersion == 10);
+        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
+        Assert.Contains(company.CompanyTerms, x => x.AcceptedVersion == 10);
     }
 
     [Fact]
     public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsNotAuthenticated()
     {
-        var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitIdUuid;
-        var newUser = new User
-        {
-            Name = Guid.NewGuid().ToString(),
-            AllowCprLookup = false,
-            Company = new Company
-            {
-                Name = "TestCompany",
-                Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 10 } }
-            },
-            UserRoles = new List<UserRole>
-            {
-                new()
-                {
-                    Role = "test"
-                }
-            },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
-        };
-        var client = factory.CreateAuthenticatedClient(newUser);
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user);
 
         var response = await client.PutAsync("terms/company/accept/10", null);
 

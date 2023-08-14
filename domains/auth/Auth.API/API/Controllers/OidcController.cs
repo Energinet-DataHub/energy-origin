@@ -244,7 +244,7 @@ public class OidcController : ControllerBase
             {
                 "exists" => property != null,
                 "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
-                "equals" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+                "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
                 _ => false
             };
         }) ? role.Key : null).OfType<string>();

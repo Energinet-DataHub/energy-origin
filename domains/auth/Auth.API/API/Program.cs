@@ -164,7 +164,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else if (!app.Environment.IsTest())
+else
 {
     app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionMiddleware>();

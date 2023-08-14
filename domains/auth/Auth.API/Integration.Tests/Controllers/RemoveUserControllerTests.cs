@@ -85,7 +85,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-    private User SetupAuthPolicyUser() => new()
+    private User SetupAuthPolicyUser() => new() // FIXME: can be removed
     {
         UserRoles = new List<UserRole>
             {

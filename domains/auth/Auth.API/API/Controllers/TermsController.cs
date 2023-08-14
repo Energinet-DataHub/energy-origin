@@ -25,7 +25,7 @@ public class TermsController : ControllerBase
         IHttpClientFactory clientFactory,
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
-        [FromRoute] int version)
+        int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
@@ -114,7 +114,7 @@ public class TermsController : ControllerBase
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
-        [FromRoute] int version)
+        int version)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);

@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace API.Models.Entities;
 
+[Index(nameof(UserId), nameof(Role), IsUnique = true)]
 public record UserRole
 {
     public Guid? Id { get; init; }
