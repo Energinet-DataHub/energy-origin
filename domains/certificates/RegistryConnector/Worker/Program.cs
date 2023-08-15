@@ -38,9 +38,6 @@ builder.Services.AddOpenTelemetry()
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddProjectOriginOptions();
-builder.Services.Configure<FeatureFlags>(builder.Configuration.GetSection(nameof(FeatureFlags)));
-
-builder.Services.AddHostedService<NewClientWorker>();
 
 builder.Services.AddHealthChecks();
 
