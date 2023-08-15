@@ -6,7 +6,6 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Common.V1;
-using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace RegistryConnector.Worker.EventHandlers;
@@ -26,7 +25,7 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
     {
         var message = context.Message;
 
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.WalletUrl);
+        using var channel = GrpcChannel.ForAddress(message.WalletUrl);
         var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
 
         var receiveRequest = new ReceiveRequest
@@ -38,8 +37,8 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
             },
             Quantity = (uint)message.Quantity, //TODO: uint/long
             RandomR = ByteString.CopyFrom(message.BlindingValue),
-            
-            //TODO: public key
+            WalletDepositEndpointPublicKey = ByteString.CopyFrom(message.WalletPublicKey),
+            WalletDepositEndpointPosition = 42 //TODO: Calculate
         };
 
         var _ = await client.ReceiveSliceAsync(receiveRequest);

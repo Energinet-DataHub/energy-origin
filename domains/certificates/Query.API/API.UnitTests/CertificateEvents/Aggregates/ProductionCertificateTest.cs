@@ -17,22 +17,6 @@ public class ProductionCertificateTest
         "gsrn",
         42);
 
-    //[Fact]
-    //public void delete_me()
-    //{
-    //    var commitment1 = new SecretCommitmentInfo((uint)42);
-
-    //    var r = commitment1.BlindingValue.ToArray();
-    //    var msg = commitment1.Message;
-
-    //    //var commitment2 = new SecretCommitmentInfo(msg, r);
-    //    var commitment2 = new SecretCommitmentInfo(msg);
-
-    //    commitment2.Message.Should().Be(42);
-    //    commitment2.BlindingValue.ToArray().Should().BeEquivalentTo(commitment1.BlindingValue.ToArray());
-    //    commitment2.Commitment.C.ToArray().Should().BeEquivalentTo(commitment1.Commitment.C.ToArray());
-    //}
-
     [Fact]
     public void is_initially_not_issued_or_rejected()
     {
