@@ -21,7 +21,7 @@ public class UserDescriptMapperBaseTests
             Key = "secretsecretsecretsecret"
         };
 
-        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
+        cryptography = new Cryptography(options);
         mapper = new UserDescriptorMapperBase(cryptography, logger);
     }
 

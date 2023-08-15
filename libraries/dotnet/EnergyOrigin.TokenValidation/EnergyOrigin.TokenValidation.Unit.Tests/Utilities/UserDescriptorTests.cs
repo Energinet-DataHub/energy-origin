@@ -16,7 +16,7 @@ public class UserDescriptorTests
             Key = "secretsecretsecretsecret"
         };
 
-        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
+        cryptography = new Cryptography(options);
     }
 
     [Theory]
