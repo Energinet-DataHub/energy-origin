@@ -130,12 +130,12 @@ public class TokenIssuerTests
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.Equal(descriptor.Id.ToString(), jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
-        Assert.Equal(name, jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
-        Assert.Equal(descriptor.AllowCprLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "true");
-        Assert.Equal(!descriptor.AllowCprLookup, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "false");
-        Assert.Equal(accessToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
-        Assert.Equal(identityToken, jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
+        Assert.Equal(descriptor.Id.ToString(), jwt.Claims.SingleOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub)?.Value);
+        Assert.Equal(name, jwt.Claims.SingleOrDefault(it => it.Type == JwtRegisteredClaimNames.Name)?.Value);
+        Assert.Equal(descriptor.AllowCprLookup, jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "true");
+        Assert.Equal(!descriptor.AllowCprLookup, jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.AllowCprLookup)?.Value == "false");
+        Assert.Equal(accessToken, jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.AccessToken)?.Value);
+        Assert.Equal(identityToken, jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.IdentityToken)?.Value);
     }
 
     [Fact]
@@ -147,9 +147,9 @@ public class TokenIssuerTests
 
         var jwt = Convert(token);
         Assert.NotNull(jwt);
-        Assert.NotNull(jwt.Claims.FirstOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
+        Assert.NotNull(jwt.Claims.SingleOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
         // FIXME: this
-        // Assert.Equal("false", jwt.Claims.FirstOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
+        // Assert.Equal("false", jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions);

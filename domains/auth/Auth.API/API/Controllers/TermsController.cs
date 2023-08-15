@@ -121,13 +121,13 @@ public class TermsController : ControllerBase
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
         var type = CompanyTermsType.TermsOfService;
-        var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0; // FIXME: review later
+        var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0;
         if (acceptedVersion > version)
         {
             throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
-        var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == type);
+        var companyTerms = user!.Company!.CompanyTerms.SingleOrDefault(x => x.Type == type);
         if (companyTerms == null)
         {
             companyTerms = new CompanyTerms()
