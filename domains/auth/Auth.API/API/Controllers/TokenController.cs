@@ -6,6 +6,7 @@ using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
 
@@ -29,7 +30,7 @@ public class TokenController : ControllerBase
 
         if (user != null)
         {
-            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.MatchedRoles.Split(" "), descriptor.AccessToken, descriptor.IdentityToken);
+            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.MatchedRoles.Split(" "), descriptor.AccessToken, descriptor.IdentityToken); // FIXME: redundent?
 
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
@@ -37,7 +38,7 @@ public class TokenController : ControllerBase
         }
 
         var now = DateTimeOffset.Now;
-        var token = tokenIssuer.Issue(descriptor, versionBypass, issueAt: now.UtcDateTime);
+        var token = tokenIssuer.Issue(descriptor, UserData.From(user), versionBypass, issueAt: now.UtcDateTime);
 
         logger.AuditLog(
             "{User} updated token for {Subject} at {TimeStamp}.",

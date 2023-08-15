@@ -36,6 +36,11 @@ var console = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
+if (builder.Environment.IsTest())
+{
+    builder.Logging.ClearProviders();
+}
+
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 

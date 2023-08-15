@@ -25,16 +25,13 @@ public class LoginController : ControllerBase
         {
             Id = Guid.NewGuid(),
             Name = "Me",
-            AcceptedPrivacyPolicyVersion = 1,
-            AcceptedTermsOfServiceVersion = 1,
             AllowCprLookup = true,
             ProviderType = ProviderType.NemIdProfessional,
             EncryptedAccessToken = "",
             EncryptedIdentityToken = "",
-            MatchedRoles = "",
-            AssignedRoles = RoleKey.Admin
+            MatchedRoles = RoleKey.Admin
         };
-        var token = tokenIssuer.Issue(descriptor, true);
+        var token = tokenIssuer.Issue(descriptor, new TokenIssuer.UserData(0, 0), true);
         return Ok(token);
     }
 

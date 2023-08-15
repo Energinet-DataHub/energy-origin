@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using API.Models.Entities;
 using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
@@ -24,13 +25,13 @@ public class TokenIssuer : ITokenIssuer
         this.tokenOptions = tokenOptions;
     }
 
-    public string Issue(UserDescriptor descriptor, bool versionBypass = false, DateTime? issueAt = default)
+    public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, descriptor, versionBypass);
+        var state = ResolveState(termsOptions, data, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, termsOptions, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -43,15 +44,15 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor, bool versionBypass)
+    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass)
     {
         string? scope = null;
-        if (options.PrivacyPolicyVersion != descriptor.AcceptedPrivacyPolicyVersion)
+        if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
         {
             scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicy);
         }
 
-        if (options.TermsOfServiceVersion != descriptor.AcceptedTermsOfServiceVersion)
+        if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
         {
             scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedTermsOfService);
         }
@@ -60,22 +61,17 @@ public class TokenIssuer : ITokenIssuer
 
         scope = scope.Trim();
 
-        return new(descriptor.AcceptedPrivacyPolicyVersion, descriptor.AcceptedTermsOfServiceVersion, scope);
+        return new(scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, TermsOptions termsOptions, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
-            { UserClaimName.AssignedRoles, descriptor.AssignedRoles },
             { UserClaimName.MatchedRoles, descriptor.MatchedRoles },
-            { UserClaimName.CurrentPrivacyPolicyVersion, termsOptions.PrivacyPolicyVersion },
-            { UserClaimName.CurrentTermsOfServiceVersion, termsOptions.TermsOfServiceVersion },
-            { UserClaimName.AcceptedPrivacyPolicyVersion, state.AcceptedPrivacyPolicyVersion },
-            { UserClaimName.AcceptedTermsOfServiceVersion, state.AcceptedTermsOfServiceVersion },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
@@ -84,7 +80,7 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ActorLegacy, descriptor.Id },
         };
 
-        var assignedRoles = descriptor.AssignedRoles.Split(" ") ?? Array.Empty<string>();
+        var assignedRoles = data.AssignedRoles ?? Array.Empty<string>();
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
 
         claims.Add(UserClaimName.Roles, assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()));
@@ -127,5 +123,14 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(int AcceptedPrivacyPolicyVersion, int AcceptedTermsOfServiceVersion, string Scope);
+    public record UserData(int PrivacyPolicyVersion, int TermsOfServiceVersion, IEnumerable<string>? AssignedRoles = null)
+    {
+        public static UserData From(User? user) => new(
+            user?.UserTerms.SingleOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion ?? 0,
+            user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0,
+            user?.UserRoles.Select(x => x.Role)
+        );
+    }
+
+    private record UserState(string Scope);
 }

@@ -10,6 +10,7 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using static API.Utilities.TokenIssuer;
 
 namespace Unit.Tests.Controllers;
 
@@ -70,7 +71,7 @@ public class TokenControllerTests
             });
 
         Mock.Get(issuer)
-            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
+            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<UserData>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
             .Returns(token);
 
         Mock.Get(claimsPrincipal)
@@ -83,7 +84,7 @@ public class TokenControllerTests
 
         Assert.Equal((result as OkObjectResult)!.Value, token);
 
-        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, It.IsAny<DateTime>()), Times.Once);
+        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<UserData>(), bypass, It.IsAny<DateTime>()), Times.Once);
     }
 
     [Fact]

@@ -714,8 +714,6 @@ public class OidcControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCprLookup = true,
-                AcceptedPrivacyPolicyVersion = 3,
-                AssignedRoles = "",
                 MatchedRoles = "",
             });
 

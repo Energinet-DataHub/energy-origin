@@ -12,6 +12,7 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
+using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
 
@@ -75,9 +76,10 @@ public class OidcController : ControllerBase
         }
 
         UserDescriptor descriptor;
+        UserData data;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
+            (descriptor, data) = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -95,7 +97,7 @@ public class OidcController : ControllerBase
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
 
-        var token = issuer.Issue(descriptor);
+        var token = issuer.Issue(descriptor, data);
 
         logger.AuditLog(
             "{User} created token for {Subject} at {TimeStamp}.",
@@ -109,7 +111,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -234,7 +236,7 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
+        return (mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken), UserData.From(user));
     }
 
     private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>

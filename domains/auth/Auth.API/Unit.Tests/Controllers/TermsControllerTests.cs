@@ -68,7 +68,6 @@ public class TermsControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
                 AllowCprLookup = true,
-                AcceptedPrivacyPolicyVersion = oldAcceptedTermsVersion,
                 EncryptedProviderKeys = providerEncrypted,
             });
 
@@ -121,7 +120,6 @@ public class TermsControllerTests
                 CompanyName = companyName,
                 Tin = tin,
                 AllowCprLookup = allowCprLookup,
-                AcceptedPrivacyPolicyVersion = 0,
                 EncryptedProviderKeys = providerEncrypted
             });
 
@@ -172,7 +170,6 @@ public class TermsControllerTests
                 Name = Guid.NewGuid().ToString(),
                 Tin = null,
                 AllowCprLookup = false,
-                AcceptedPrivacyPolicyVersion = 1
             });
 
         Mock.Get(userService)
@@ -193,7 +190,17 @@ public class TermsControllerTests
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(new UserDescriptor(null!)
             {
-                AcceptedPrivacyPolicyVersion = 2
+                Id = Guid.NewGuid()
+            });
+
+        Mock.Get(userService)
+            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new User
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString(),
+                AllowCprLookup = false,
+                UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 2 } }
             });
 
         await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 1));

@@ -29,9 +29,12 @@ public class TermsController : ControllerBase
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
-        if (descriptor.AcceptedPrivacyPolicyVersion > version)
+        var type = UserTermsType.PrivacyPolicy;
+        var user = await userService.GetUserByIdAsync(descriptor.Id);
+        var acceptedVersion = user?.UserTerms.SingleOrDefault(x => x.Type == type)?.AcceptedVersion ?? 0;
+        if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept privacy policy version '{version}', when they had previously accepted version '{descriptor.AcceptedPrivacyPolicyVersion}'.");
+            throw new ArgumentException($"The user cannot accept privacy policy version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -44,7 +47,6 @@ public class TermsController : ControllerBase
             };
         }
 
-        var user = await userService.GetUserByIdAsync(descriptor.Id);
         if (user == null)
         {
             user = new User
@@ -63,7 +65,6 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        var type = UserTermsType.PrivacyPolicy;
         var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == type);
         if (userTerms == null)
         {
@@ -119,12 +120,13 @@ public class TermsController : ControllerBase
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
-        if (descriptor.AcceptedTermsOfServiceVersion > version)
+        var type = CompanyTermsType.TermsOfService;
+        var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0; // FIXME: review later
+        if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{descriptor.AcceptedTermsOfServiceVersion}'.");
+            throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
-        var type = CompanyTermsType.TermsOfService;
         var companyTerms = user!.Company!.CompanyTerms.FirstOrDefault(x => x.Type == type);
         if (companyTerms == null)
         {

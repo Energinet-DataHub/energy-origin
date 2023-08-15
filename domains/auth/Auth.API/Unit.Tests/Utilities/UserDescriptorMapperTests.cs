@@ -44,7 +44,6 @@ public class UserDescriptorMapperTests
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);
         Assert.Equal(user.Name, descriptor.Name);
-        Assert.Contains(user.UserTerms, x => x.AcceptedVersion == descriptor.AcceptedPrivacyPolicyVersion);
         Assert.Equal(user.AllowCprLookup, descriptor.AllowCprLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);

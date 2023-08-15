@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
+using static API.Utilities.TokenIssuer;
 
 namespace Integration.Tests;
 
@@ -61,7 +62,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         var client = CreateAnonymousClient(config);
         var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
         var descriptor = mapper.Map(user, providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, versionBypass, issueAt));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, UserData.From(user), versionBypass, issueAt));
         return client;
     }
 
