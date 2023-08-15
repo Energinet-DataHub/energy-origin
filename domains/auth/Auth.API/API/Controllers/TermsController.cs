@@ -91,7 +91,7 @@ public class TermsController : ControllerBase
                 { "tin", descriptor.Tin }
             });
 
-            if (!result.IsSuccessStatusCode)
+            if (result.IsSuccessStatusCode == false)
             {
                 logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}", descriptor.Subject);
             }

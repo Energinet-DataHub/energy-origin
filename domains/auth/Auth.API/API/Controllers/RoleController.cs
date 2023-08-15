@@ -28,7 +28,7 @@ public class RoleController : ControllerBase
     public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var validRoles = roles.RoleConfigurations.Select(x => x.Key);
-        if (!validRoles.Any(x => x == role))
+        if (validRoles.Any(x => x == role) == false)
         {
             return BadRequest($"Role not found: {role}");
         }

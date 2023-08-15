@@ -36,7 +36,7 @@ public class UserRepository : IUserRepository
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!dataContext.Users.Any(x => x.Id == user.Id))
+            if (dataContext.Users.Any(x => x.Id == user.Id) == false)
             {
                 throw new ArgumentException("User not found.");
             }

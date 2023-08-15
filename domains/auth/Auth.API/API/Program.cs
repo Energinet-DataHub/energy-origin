@@ -13,7 +13,6 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
@@ -58,29 +57,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-
-// FIXME: make an extension instead
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<CryptographyOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TermsOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<TokenOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OidcOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<IdentityProviderOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<OtlpOptions>>().Value);
-builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<RoleOptions>>().Value);
+builder.Services.AttachOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 if (builder.Environment.IsDevelopment() == false)
 {
-    builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-    builder.Services.AddScoped(serviceProvider => serviceProvider.GetRequiredService<IOptions<DataSyncOptions>>().Value);
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 }
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
