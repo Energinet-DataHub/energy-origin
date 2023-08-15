@@ -1,7 +1,9 @@
 using API.Values;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Models.Entities;
 
+[Index(nameof(CompanyId), nameof(Type), IsUnique = true)]
 public record CompanyTerms
 {
     public Guid? Id { get; init; }
