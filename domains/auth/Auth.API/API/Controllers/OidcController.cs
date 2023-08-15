@@ -157,7 +157,6 @@ public class OidcController : ControllerBase
         string? name = null;
         string? tin = null;
         string? companyName = null;
-        var organizationOwner = false;
         var keys = new Dictionary<ProviderKeyType, string>();
 
         switch (providerType)
@@ -166,7 +165,6 @@ public class OidcController : ControllerBase
                 name = userInfo.FindFirstValue("nemlogin.name");
                 tin = userInfo.FindFirstValue("nemlogin.cvr");
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
-                organizationOwner = userInfo.FindFirstValue("") is not null; // TODO Find Claim from Signaturgruppen
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
                 if (tin is not null && rid is not null)
                 {
@@ -240,16 +238,16 @@ public class OidcController : ControllerBase
     }
 
     private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+    {
+        var property = info.FindFirstValue(match.Property);
+        return match.Operator switch
         {
-            var property = info.FindFirstValue(match.Property);
-            return match.Operator switch
-            {
-                "exists" => property != null,
-                "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
-                "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
-                _ => false
-            };
-        }) ? role.Key : null).OfType<string>();
+            "exists" => property != null,
+            "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+            "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
+            _ => false
+        };
+    }) ? role.Key : null).OfType<string>();
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {

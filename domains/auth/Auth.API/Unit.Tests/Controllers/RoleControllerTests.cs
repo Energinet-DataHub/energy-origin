@@ -15,6 +15,8 @@ namespace Unit.Tests.Controllers;
 
 public class RoleControllerTests
 {
+    // FIXME: add tests for listing roles, tests for only manipulating the companys own users, just add all missing
+
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly RoleController roleController = new();
     private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();

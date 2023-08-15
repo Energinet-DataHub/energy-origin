@@ -1,8 +1,14 @@
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using API.Models.Entities;
+using API.Repositories;
+using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Unit.Tests.Services;
 

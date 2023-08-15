@@ -27,6 +27,7 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> RemoveUserAsync(User user)
     {
+        // FIXME: what the fuck
         try
         {
             dataContext.Users.Remove(user);

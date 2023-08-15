@@ -55,6 +55,7 @@ if (roleOptions.RoleConfigurations.Count != roleOptions.RoleConfigurations.Selec
 {
     throw new InvalidDataException("Role options contains duplicate keys");
 }
+// FIXME: Update and apply all places where there could be a 'Authorize(Roles ...'
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();

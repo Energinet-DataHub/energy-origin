@@ -13,6 +13,8 @@ public class UserProviderRepository : IUserProviderRepository
 
     public async Task<UserProvider?> FindUserProviderMatchAsync(List<UserProvider> userProviders)
     {
+        if (userProviders.Count() == 0) return null;
+
         IQueryable<UserProvider>? query = null;
         foreach (var userProvider in userProviders)
         {
@@ -21,6 +23,6 @@ public class UserProviderRepository : IUserProviderRepository
             query = query == null ? temp : query.Union(temp);
         }
 
-        return await query?.SingleOrDefaultAsync()!;
+        return await query!.FirstOrDefaultAsync();
     }
 }

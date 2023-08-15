@@ -15,46 +15,6 @@ namespace API.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
-    [HttpGet()]
-    [Route("auth/give-token")]
-    public IActionResult RefreshAsync(
-        ICryptography cryptography,
-        ITokenIssuer tokenIssuer)
-    {
-        var descriptor = new UserDescriptor(cryptography)
-        {
-            Id = Guid.NewGuid(),
-            Name = "Me",
-            AllowCprLookup = true,
-            ProviderType = ProviderType.NemIdProfessional,
-            EncryptedAccessToken = "",
-            EncryptedIdentityToken = "",
-            MatchedRoles = RoleKey.Admin
-        };
-        var token = tokenIssuer.Issue(descriptor, new TokenIssuer.UserData(0, 0), true);
-        return Ok(token);
-    }
-
-    [HttpGet]
-    [Authorize(Roles = RoleKey.Admin)]
-    [Route("auth/check-roles")]
-    public IActionResult TestMethod3(RoleOptions options) => Ok(options);
-
-    [HttpGet]
-    [AllowAnonymous]
-    [Route("auth/test")]
-    public IActionResult TestMethod(TermsOptions termsOptions, ILogger<LoginController> logger)
-    {
-        logger.LogInformation("PrivacyVersion: {privacyVersion}", termsOptions.PrivacyPolicyVersion);
-        logger.LogInformation("TosVersion: {tosVersion}", termsOptions.TermsOfServiceVersion);
-
-        return Ok(new List<int>()
-        {
-            termsOptions.PrivacyPolicyVersion,
-            termsOptions.TermsOfServiceVersion
-        });
-    }
-
     [HttpGet]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, OidcOptions oidcOptions, IdentityProviderOptions providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)

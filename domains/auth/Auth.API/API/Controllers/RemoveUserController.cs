@@ -24,7 +24,7 @@ public class RemoveUserController : ControllerBase
         if (user is null) return NotFound("The user to be deleted was not found.");
 
         var deleted = await userService.RemoveUserAsync(user);
-        if (deleted == false) return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the user.");
+        if (deleted == false) return Ok();
 
         logger.AuditLog(
             "User: {userId} was removed by {User} at {TimeStamp}.",

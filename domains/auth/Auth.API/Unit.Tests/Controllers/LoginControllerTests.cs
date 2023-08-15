@@ -14,6 +14,8 @@ namespace Unit.Tests.Controllers;
 
 public class LoginControllerTests
 {
+    // FIXME: find a good place to make calls without tokens that should return forbidden.
+
     private readonly OidcOptions oidcOptions;
     private readonly IdentityProviderOptions identityProviderOptions;
     public LoginControllerTests()
