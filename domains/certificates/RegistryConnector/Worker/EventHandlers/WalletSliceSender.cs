@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
 using Contracts.Certificates;
+using Google.Protobuf;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Common.V1;
+using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace RegistryConnector.Worker.EventHandlers;
@@ -22,6 +24,8 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
 
     public async Task Consume(ConsumeContext<CertificateIssuedInRegistryEvent> context)
     {
+        var message = context.Message;
+
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.WalletUrl);
         var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
 
@@ -30,12 +34,16 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
             CertificateId = new FederatedStreamId
             {
                 Registry = projectOriginOptions.RegistryName, //TODO: Should this be from the message?
-                StreamId = new Uuid {Value = context.Message.CertificateId.ToString() }
-            }
+                StreamId = new Uuid {Value = message.CertificateId.ToString() }
+            },
+            Quantity = (uint)message.Quantity, //TODO: uint/long
+            RandomR = ByteString.CopyFrom(message.BlindingValue),
+            
+            //TODO: public key
         };
 
         var _ = await client.ReceiveSliceAsync(receiveRequest);
 
-        logger.LogInformation("Certificate {id} sent to wallet", context.Message.CertificateId);
+        logger.LogInformation("Certificate {id} sent to wallet", message.CertificateId);
     }
 }
