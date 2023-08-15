@@ -62,7 +62,7 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
         technology "PostgreSQL"
         taApi -> this "Saves and reads transfer agreements using"
     }
-    
+
     taAutomation = container "Transfer Agreement Automation" {
         description "Transfer Certificates based on a Transfer Agreement"
         technology ".NET Background service"
