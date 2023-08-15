@@ -33,7 +33,7 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
             CertificateId = new FederatedStreamId
             {
                 Registry = projectOriginOptions.RegistryName, //TODO: Should this be from the message?
-                StreamId = new Uuid {Value = message.CertificateId.ToString() }
+                StreamId = new Uuid { Value = message.CertificateId.ToString() }
             },
             Quantity = (uint)message.Quantity, //TODO: uint/long
             RandomR = ByteString.CopyFrom(message.BlindingValue),
