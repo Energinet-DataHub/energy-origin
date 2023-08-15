@@ -11,37 +11,33 @@ namespace Integration.Tests.Controllers;
 public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    private readonly User policyUser;
+    private readonly User user;
 
     public RemoveUserControllerTests(AuthWebApplicationFactory factory)
     {
         this.factory = factory;
-        policyUser = SetupAuthPolicyUser();
+        user = new() { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
     }
 
     [Fact]
     public async Task RemoveUser_ShouldReturnOk_WhenUserIsRemoved()
     {
-        var userToBeDeletedId = Guid.NewGuid();
-        var user = new User { Id = userToBeDeletedId, Name = "Test User" };
-        await factory.AddUserToDatabaseAsync(user);
-        var client = factory.CreateAuthenticatedClient(policyUser);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var userId = (await factory.AddUserToDatabaseAsync()).Id;
 
-        var response = await client.DeleteAsync($"user/remove/{userToBeDeletedId}");
+        var response = await client.DeleteAsync($"user/remove/{userId}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x => x.Id == userToBeDeletedId);
+        var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
         Assert.Null(deletedUser);
     }
 
     [Fact]
     public async Task RemoveUser_ShouldReturnNotFound_WhenUserDoesNotExist()
     {
-        var nonExistentUserId = Guid.NewGuid();
-        var client = factory.CreateAuthenticatedClient(policyUser);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
-        var response = await client.DeleteAsync($"user/remove/{nonExistentUserId}");
+        var response = await client.DeleteAsync($"user/remove/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -49,10 +45,10 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnBadRequest_WhenUserTriesToDeleteThemselves()
     {
-        await factory.AddUserToDatabaseAsync(policyUser);
-        var client = factory.CreateAuthenticatedClient(policyUser);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        _ = await factory.AddUserToDatabaseAsync(user);
 
-        var response = await client.DeleteAsync($"user/remove/{policyUser.Id}");
+        var response = await client.DeleteAsync($"user/remove/{user.Id}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -60,16 +56,15 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnInternalServerError_WhenUserDeletionFails()
     {
-        var userToBeDeletedId = Guid.NewGuid();
-        var user = new User { Id = Guid.NewGuid(), Name = "Test User" };
-        await factory.AddUserToDatabaseAsync(user);
+        var user = await factory.AddUserToDatabaseAsync();
 
         var mockUserService = new Mock<IUserService>();
-        mockUserService.Setup(service => service.GetUserByIdAsync(userToBeDeletedId)).ReturnsAsync(user);
+        mockUserService.Setup(service => service.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
         mockUserService.Setup(service => service.RemoveUserAsync(user)).ReturnsAsync(false);
-        var client = factory.CreateAuthenticatedClient(policyUser, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
 
-        var response = await client.DeleteAsync($"user/remove/{userToBeDeletedId}");
+        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.Admin, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
+
+        var response = await client.DeleteAsync($"user/remove/{user.Id}");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
@@ -77,24 +72,11 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnForbidden_WhenNonAdminUser()
     {
-        var userToBeDeletedId = Guid.NewGuid();
-        var user = new User { Id = userToBeDeletedId, Name = "Test User" };
         var client = factory.CreateAuthenticatedClient(user);
+        var userId = (await factory.AddUserToDatabaseAsync()).Id;
 
-        var response = await client.DeleteAsync($"user/remove/{user.Id}");
+        var response = await client.DeleteAsync($"user/remove/{userId}");
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
-    private User SetupAuthPolicyUser() => new() // FIXME: can be removed
-    {
-        UserRoles = new List<UserRole>
-            {
-                new()
-                {
-                    Role = RoleKey.Admin
-                }
-            },
-        AllowCprLookup = true,
-        Name = Guid.NewGuid().ToString()
-    };
 }

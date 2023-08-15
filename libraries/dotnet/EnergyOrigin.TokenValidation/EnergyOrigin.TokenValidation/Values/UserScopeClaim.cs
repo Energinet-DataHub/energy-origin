@@ -1,5 +1,6 @@
 namespace EnergyOrigin.TokenValidation.Values;
 
+// FIXME: move this
 public struct UserScopeClaim
 {
     public const string NotAcceptedTermsOfService = "not-accepted-termsofservice-terms";

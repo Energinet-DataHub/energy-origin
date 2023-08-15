@@ -94,7 +94,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var response = await client.PutAsync("terms/user/accept/10", null); // FIXME: incorrectly valid test?
+        var response = await client.PutAsync("terms/user/accept/10", null);
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
