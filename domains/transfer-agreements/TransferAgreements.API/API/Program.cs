@@ -7,6 +7,7 @@ using API.Data;
 using API.Filters;
 using API.Options;
 using API.Services;
+using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -130,6 +131,7 @@ builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
 builder.Services.AddScoped<IWalletDepositEndpointService, WalletDepositEndpointService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+builder.Services.AddTransferAgreementsAutomation();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
