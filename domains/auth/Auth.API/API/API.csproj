@@ -30,7 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\..\libraries\dotnet\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
+	  <ProjectReference Include="../../../../libraries/dotnet/EnergyOrigin.TokenValidation/EnergyOrigin.TokenValidation/EnergyOrigin.TokenValidation.csproj" />
 	</ItemGroup>
 
 </Project>
