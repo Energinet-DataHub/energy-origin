@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
+using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
@@ -15,21 +16,22 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     private readonly AuthWebApplicationFactory factory;
     public TokenControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(int termsVersion)
+    [Fact]
+    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedSDuringCurrentLogin()
     {
-        // TODO: verify this test
-        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = termsVersion } } };
-        var user = await factory.AddUserToDatabaseAsync(newUser);
-        var client = factory.CreateAuthenticatedClient(user);
-        var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
+        var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
+        var oldClient = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        {
+            PrivacyPolicyVersion = 1,
+            TermsOfServiceVersion = 1
+        })));
+        var oldToken = oldClient.DefaultRequestHeaders.Authorization?.Parameter;
 
-        var context = factory.DataContext;
-        context.Users.Update(user);
-        await context.SaveChangesAsync();
-
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        {
+            PrivacyPolicyVersion = 2,
+            TermsOfServiceVersion = 2
+        })));
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);

@@ -30,8 +30,6 @@ public class TokenController : ControllerBase
 
         if (user != null)
         {
-            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.MatchedRoles.Split(" "), descriptor.AccessToken, descriptor.IdentityToken); // FIXME: redundent?
-
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
             if (scope!.Contains(UserScopeClaim.NotAcceptedPrivacyPolicy) == false && scope.Contains(UserScopeClaim.NotAcceptedTermsOfService) == false) versionBypass = true;
