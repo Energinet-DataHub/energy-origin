@@ -65,7 +65,7 @@ public class TermsController : ControllerBase
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        var userTerms = user.UserTerms.FirstOrDefault(x => x.Type == type);
+        var userTerms = user.UserTerms.SingleOrDefault(x => x.Type == type);
         if (userTerms == null)
         {
             userTerms = new UserTerms()

@@ -38,13 +38,19 @@ public class RoleControllerTests
         await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger, mapper));
     }
 
-    [Fact]
-    public async Task AssignRole_ShouldThrowException_WhenRoleIsNull()
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("-")]
+    [InlineData("___")]
+    [InlineData("whatever")]
+    [InlineData("role")]
+    [InlineData("IDK")]
+    public async Task AssignRole_ShouldThrowException_WhenRoleIsInvalid(string role)
     {
-        // FIXME: here
-        // Mock.Get(roleService).Setup(service => service.GetRollByKeyAsync(It.IsAny<string>())).ReturnsAsync((Role)null!);
+        var response = await roleController.AssignRole(role, Guid.NewGuid(), roleOptions, userService, logger, mapper);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger, mapper));
+        Assert.IsType<BadRequestObjectResult>(response);
     }
 
     [Fact]

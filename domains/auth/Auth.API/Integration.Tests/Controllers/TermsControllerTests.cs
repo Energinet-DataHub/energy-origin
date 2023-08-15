@@ -32,7 +32,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         server.MockRelationsEndpoint();
 
         var result = await client.PutAsync("terms/user/accept/10", null);
-        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Id == user.Id)!;
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).SingleOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -69,7 +69,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         server.MockRelationsEndpoint();
 
         var result = await client.PutAsync("terms/user/accept/10", null);
-        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).FirstOrDefault(x => x.Name == user.Name)!;
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).SingleOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -139,7 +139,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var result = await client.PutAsync("terms/company/accept/10", null);
 
-        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).FirstOrDefault(x => x.Name == user.Name)!.Company!;
+        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);

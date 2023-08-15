@@ -21,6 +21,6 @@ public class UserProviderRepository : IUserProviderRepository
             query = query == null ? temp : query.Union(temp);
         }
 
-        return await query?.FirstOrDefaultAsync()!;
+        return await query?.SingleOrDefaultAsync()!;
     }
 }

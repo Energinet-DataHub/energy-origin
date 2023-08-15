@@ -17,5 +17,5 @@ public class CompanyRepository : ICompanyRepository
         await dataContext.SaveChangesAsync();
         return company;
     }
-    public async Task<Company?> GetCompanyByTinAsync(string tin) => await dataContext.Companies.FirstOrDefaultAsync(x => x.Tin == tin);
+    public async Task<Company?> GetCompanyByTinAsync(string tin) => await dataContext.Companies.SingleOrDefaultAsync(x => x.Tin == tin);
 }

@@ -27,7 +27,7 @@ public class IdentityProviderOptionsTests
         Assert.Equal(expectedScope, actualScope);
         Assert.Contains(new KeyValuePair<string, string>("idp_values", expectedValues), actualArguments);
 
-        var ipdParams = actualArguments.Where(x => x.Key == "idp_params").Select(x => x.Value).FirstOrDefault();
+        var ipdParams = actualArguments.Where(x => x.Key == "idp_params").Select(x => x.Value).SingleOrDefault();
         if (ipdParams != null)
         {
             Assert.True(!string.IsNullOrEmpty(expectedParams));

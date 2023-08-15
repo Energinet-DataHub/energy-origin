@@ -34,7 +34,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var role = RoleKey.Viewer;
         var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
-        var dbUser = factory.DataContext.Users.Include(x => x.UserRoles).FirstOrDefault(x => x.Id == user.Id)!;
+        var dbUser = factory.DataContext.Users.Include(x => x.UserRoles).SingleOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -90,7 +90,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(factory.DataContext.Users.FirstOrDefault(x => x.Id == userWithRole.Id)?.UserRoles.Any(x => x.Role == role) ?? true);
+        Assert.False(factory.DataContext.Users.SingleOrDefault(x => x.Id == userWithRole.Id)?.UserRoles.Any(x => x.Role == role) ?? true);
     }
 
     [Fact]

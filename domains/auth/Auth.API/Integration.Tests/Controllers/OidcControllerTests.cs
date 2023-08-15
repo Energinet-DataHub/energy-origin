@@ -131,7 +131,7 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
         var result = await client.GetAsync(queryString);
 
-        user = factory.DataContext.Users.Include(x => x.UserProviders).FirstOrDefault(x => x.Id == user.Id);
+        user = factory.DataContext.Users.Include(x => x.UserProviders).SingleOrDefault(x => x.Id == user.Id);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);

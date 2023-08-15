@@ -24,12 +24,6 @@ public static class TestOptions
         ReuseSubject = reuseSubject ?? options.ReuseSubject
     };
 
-    // FIXME: this
-    public static TermsOptions Terms(TermsOptions options, int? version = null) => new()
-    {
-        //CurrentVersion = version ?? options.CurrentVersion,
-    };
-
     public static TokenOptions Token(
         TokenOptions options,
         string? audience = default,

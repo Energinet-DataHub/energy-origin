@@ -148,8 +148,6 @@ public class TokenIssuerTests
         var jwt = Convert(token);
         Assert.NotNull(jwt);
         Assert.NotNull(jwt.Claims.SingleOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
-        // FIXME: this
-        // Assert.Equal("false", jwt.Claims.SingleOrDefault(it => it.Type == UserClaimName.UserStored)?.Value);
     }
 
     private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions);

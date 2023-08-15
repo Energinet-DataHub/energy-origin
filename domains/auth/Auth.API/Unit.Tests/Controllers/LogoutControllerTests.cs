@@ -16,7 +16,6 @@ namespace Unit.Tests.Controllers;
 
 public class LogoutControllerTests
 {
-    private readonly OidcOptions oidcOptions; // FIXME: two of them?
     private readonly OidcOptions options;
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
@@ -31,9 +30,7 @@ public class LogoutControllerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
-
-        options = TestOptions.Oidc(oidcOptions);
+        options = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
         var encryptedIdentityToken = Guid.NewGuid().ToString();
         identityToken = Guid.NewGuid().ToString();
@@ -123,7 +120,7 @@ public class LogoutControllerTests
             .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
             .Returns(value: descriptor);
 
-        var testOptions = TestOptions.Oidc(oidcOptions, allowRedirection: false);
+        var testOptions = TestOptions.Oidc(options, allowRedirection: false);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 

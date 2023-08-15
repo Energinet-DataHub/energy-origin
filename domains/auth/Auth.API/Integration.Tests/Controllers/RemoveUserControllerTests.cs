@@ -28,7 +28,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
         var response = await client.DeleteAsync($"user/remove/{userId}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var deletedUser = await factory.DataContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        var deletedUser = await factory.DataContext.Users.SingleOrDefaultAsync(x => x.Id == userId);
         Assert.Null(deletedUser);
     }
 
