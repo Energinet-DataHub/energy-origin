@@ -44,6 +44,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             message.Period.ToDateInterval(),
             message.GridArea,
             message.Gsrn.Value,
+            message.Technology.TechCode,
+            message.Technology.FuelCode,
             commitment,
             ownerPublicKey);
 

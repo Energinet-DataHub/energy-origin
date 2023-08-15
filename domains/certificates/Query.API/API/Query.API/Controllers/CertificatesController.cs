@@ -1,10 +1,10 @@
-using System.Security.Claims;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Responses;
-using API.Query.API.Projections.Views;
-using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Query.API.Controllers;
 
@@ -16,15 +16,38 @@ public class CertificatesController : ControllerBase
     [ProducesResponseType(typeof(CertificateList), 200)]
     [ProducesResponseType(204)]
     [Route("api/certificates")]
-    public async Task<ActionResult<CertificateList>> Get([FromServices] IQuerySession querySession)
+    public async Task<ActionResult<CertificateList>> Get([FromServices] WalletService.WalletServiceClient client)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
-        var projection = await querySession.LoadAsync<CertificatesByOwnerView>(meteringPointOwner);
+        var certificates = await client.QueryGranularCertificatesAsync(new QueryRequest());
 
-        if (projection == null) return NoContent();
+        return certificates.GranularCertificates.Any()
+            ? Ok(new CertificateList
+            {
+                Result = certificates.GranularCertificates
+                    .Select(Map)
+                    .OrderByDescending(c => c.DateFrom)
+                    .ThenBy(c => c.GSRN)
+                    .ToArray()
+            })
+            : NoContent();
+    }
 
-        return projection.Certificates.IsEmpty()
-            ? NoContent()
-            : projection.ToApiModel();
+    private static Certificate Map(GranularCertificate c)
+    {
+        var gsrn = c.Attributes.FirstOrDefault(a => a.Key == "AssetId")?.Value ?? "";
+        var fuelCode = c.Attributes.FirstOrDefault(a => a.Key == "FuelCode")?.Value ?? "";
+        var techCode = c.Attributes.FirstOrDefault(a => a.Key == "TechCode")?.Value ?? "";
+
+        return new Certificate
+        {
+            Id = Guid.Parse(c.FederatedId.StreamId.Value),
+            DateFrom = c.Start.ToDateTimeOffset().ToUnixTimeSeconds(),
+            DateTo = c.End.ToDateTimeOffset().ToUnixTimeSeconds(),
+            FuelCode = fuelCode,
+            TechCode = techCode,
+            GridArea = c.GridArea,
+            Quantity = c.Quantity,
+            GSRN = gsrn
+        };
     }
 }

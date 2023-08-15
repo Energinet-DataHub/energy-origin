@@ -6,6 +6,7 @@ using Marten.Schema;
 
 namespace API.Query.API.Projections.Views;
 
+// TODO: To be deleted
 public class CertificatesByOwnerView
 {
     [Identity] public string Owner { get; set; } = "";
