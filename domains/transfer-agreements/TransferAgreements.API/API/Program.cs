@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using API.Data;
 using API.Filters;
 using API.Options;
+using API.Services;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

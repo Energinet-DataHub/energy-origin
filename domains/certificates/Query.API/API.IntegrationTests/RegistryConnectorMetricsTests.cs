@@ -1,3 +1,4 @@
+extern alias registryConnector;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -11,9 +12,7 @@ public class RegistryConnectorMetricsTests : IClassFixture<RegistryConnectorAppl
     private readonly RegistryConnectorApplicationFactory factory;
 
     public RegistryConnectorMetricsTests(RegistryConnectorApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
+        => this.factory = factory;
 
     [Fact]
     public async Task has_metrics_endpoint()

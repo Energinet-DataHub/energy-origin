@@ -1,6 +1,8 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using FluentAssertions;
 using Xunit;
 
 namespace API.IntegrationTests;
@@ -20,6 +22,6 @@ public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFacto
     {
         using var client = factory.CreateClient();
         using var healthResponse = await client.GetAsync("health");
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, healthResponse.StatusCode);
+        healthResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 }

@@ -1,21 +1,23 @@
 using System;
 using CertificateValueObjects;
 using FluentAssertions;
+using Google.Protobuf.WellKnownTypes;
 using Xunit;
 
-namespace RegistryConnector.Worker.UnitTests
+namespace RegistryConnector.Worker.UnitTests;
+
+public class PeriodExtensionTests
 {
-    public class PeriodExtensionTests
+    [Fact]
+    public void ToDateInterval()
     {
-        [Fact]
-        public void ToDateInterval()
-        {
-            var threeMinAnd20Seconds = new TimeSpan(0, 3, 20);
-            var period = new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddSeconds(200).ToUnixTimeSeconds());
+        var threeMinAnd20Seconds = new TimeSpan(0, 3, 20);
+        var period = new Period(DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.AddSeconds(200).ToUnixTimeSeconds());
 
-            var dateInterval = period.ToDateInterval();
+        var dateInterval = period.ToDateInterval();
 
-            dateInterval.Duration.Should().Be(threeMinAnd20Seconds);
-        }
+        var duration = dateInterval.End - dateInterval.Start;
+
+        duration.Should().Be(Duration.FromTimeSpan(threeMinAnd20Seconds));
     }
 }
