@@ -31,7 +31,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
     {
         var message = context.Message;
 
-        var commitment = new SecretCommitmentInfo((uint)message.ShieldedQuantity.Value); //TODO: commitment should be part of message. See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1572
+        var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
 
         var ownerKey = new Secp256k1Algorithm().GenerateNewPrivateKey(); //TODO: Derive new public key from Deposit Endpoint Reference. See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1693
         var ownerPublicKey = ownerKey.PublicKey;
@@ -44,6 +44,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             message.Period.ToDateInterval(),
             message.GridArea,
             message.Gsrn.Value,
+            message.Technology.TechCode,
+            message.Technology.FuelCode,
             commitment,
             ownerPublicKey);
 
@@ -72,7 +74,13 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             if (status.Status == TransactionState.Committed)
             {
                 logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
-                await context.Publish(new CertificateIssuedInRegistryEvent(message.CertificateId));
+                await context.Publish(new CertificateIssuedInRegistryEvent(
+                    message.CertificateId,
+                    commitment.BlindingValue.ToArray(),
+                    commitment.Message,
+                    message.WalletPublicKey,
+                    message.WalletUrl,
+                    message.WalletPosition));
                 break;
             }
 

@@ -1,4 +1,3 @@
-using System.Numerics;
 using System.Threading.Tasks;
 using AggregateRepositories;
 using API.ContractService;
@@ -8,6 +7,7 @@ using Contracts.Certificates;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
+using ProjectOrigin.PedersenCommitment;
 
 namespace API.GranularCertificateIssuer;
 
@@ -39,25 +39,36 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 continue;
             }
 
+            var commitment = new SecretCommitmentInfo((uint)message.Quantity);
+
+            var period = new Period(message.DateFrom, message.DateTo);
+            var walletPosition = period.CalculateWalletPosition();
+            if (!walletPosition.HasValue)
+                throw new WalletException($"Cannot determine wallet position for period {period}");
+
             var productionCertificate = new ProductionCertificate(
                 contract.GridArea,
-                new Period(message.DateFrom, message.DateTo),
+                period,
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
                 contract.MeteringPointOwner,
                 message.GSRN,
-                message.Quantity);
+                message.Quantity);  //TODO: Save commitment
 
             await repository.Save(productionCertificate, context.CancellationToken);
 
-            //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517
+            //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517. Check if this can be closed...
             //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
             await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
                 contract.GridArea,
-                new Period(message.DateFrom, message.DateTo),
+                period,
                 new Technology(FuelCode: "F00000000", TechCode: "T070000"),
                 contract.MeteringPointOwner,
                 new Gsrn(message.GSRN),
-                new ShieldedValue<long>(message.Quantity, BigInteger.Zero)));
+                commitment.BlindingValue.ToArray(),
+                message.Quantity,
+                contract.WalletPublicKey,
+                contract.WalletUrl,
+                walletPosition.Value));
 
             logger.LogInformation("Created production certificate for {Message}", message);
 

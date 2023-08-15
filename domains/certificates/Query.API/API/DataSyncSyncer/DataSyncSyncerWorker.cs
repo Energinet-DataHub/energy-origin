@@ -34,6 +34,8 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        //TODO: Cleanup data (contracts + event store)
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var syncInfos = await GetSyncInfos(stoppingToken);
