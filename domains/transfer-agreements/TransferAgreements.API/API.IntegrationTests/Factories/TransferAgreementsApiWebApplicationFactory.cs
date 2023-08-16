@@ -32,7 +32,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public string WalletUrl { get; set; }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+    public string OtlpReceiverEndpoint { get; set; } = "http://foo";
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
+
         builder.ConfigureTestServices(s =>
         {
             s.Configure<DatabaseOptions>(o =>
@@ -48,11 +53,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.Password = (string)connectionStringBuilder["Password"];
             });
 
-            s.Configure<ProjectOriginOptions>(o =>
-            {
-                o.WalletUrl = WalletUrl;
-            });
+            s.Configure<ProjectOriginOptions>(o => o.WalletUrl = WalletUrl);
         });
+    }
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
