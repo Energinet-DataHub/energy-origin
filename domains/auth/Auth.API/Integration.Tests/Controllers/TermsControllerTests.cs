@@ -82,16 +82,27 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         };
 
         var server = WireMockServer.Start();
-        var options = new DataSyncOptions
+        var datasyncOptions = new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
         };
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+
+        var role = "default";
+        var roleOptions = new RoleOptions()
+        {
+            RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
+        };
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => datasyncOptions);
+            services.AddScoped(_ => roleOptions);
+        }));
 
         server.MockRelationsEndpoint();
 
         var result = await client.PutAsync("terms/user/accept/10", null);
-        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).SingleOrDefault(x => x.Name == user.Name)!;
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -99,6 +110,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
         Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 10);
+        Assert.Contains(dbUser.UserRoles, x => x.Role == role);
     }
 
     [Fact]

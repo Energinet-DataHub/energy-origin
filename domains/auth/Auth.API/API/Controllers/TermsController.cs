@@ -14,8 +14,6 @@ namespace API.Controllers;
 [ApiController]
 public class TermsController : ControllerBase
 {
-    // FIXME: add tests for assign default roles
-
     [HttpPut]
     [Route("terms/user/accept/{version}")]
     public async Task<IActionResult> AcceptUserTermsAsync(
