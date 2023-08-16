@@ -55,13 +55,13 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldReturnNotFound_WhenUserDoesNotExist()
+    public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
 
         var response = await client.DeleteAsync($"user/remove/{Guid.NewGuid()}");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
 
         var mockUserService = new Mock<IUserService>();
         mockUserService.Setup(service => service.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
-        mockUserService.Setup(service => service.RemoveUserAsync(user)).ReturnsAsync(false);
+        mockUserService.Setup(service => service.RemoveUserAsync(user)).Throws(new Exception());
 
         var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.Admin, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
 

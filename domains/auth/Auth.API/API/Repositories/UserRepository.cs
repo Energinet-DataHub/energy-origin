@@ -25,23 +25,9 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<bool> RemoveUserAsync(User user)
+    public async Task RemoveUserAsync(User user)
     {
-        // FIXME: what the fuck
-        try
-        {
-            dataContext.Users.Remove(user);
-            await dataContext.SaveChangesAsync();
-
-            return true;
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (dataContext.Users.Any(x => x.Id == user.Id) == false)
-            {
-                throw new ArgumentException("User not found.");
-            }
-            throw;
-        }
+        dataContext.Users.Remove(user);
+        await dataContext.SaveChangesAsync();
     }
 }

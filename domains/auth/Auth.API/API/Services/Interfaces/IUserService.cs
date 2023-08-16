@@ -7,5 +7,5 @@ public interface IUserService
     Task<User> UpsertUserAsync(User user);
     Task<User> InsertUserAsync(User user);
     Task<User?> GetUserByIdAsync(Guid? id);
-    Task<bool> RemoveUserAsync(User user);
+    Task RemoveUserAsync(User user);
 }

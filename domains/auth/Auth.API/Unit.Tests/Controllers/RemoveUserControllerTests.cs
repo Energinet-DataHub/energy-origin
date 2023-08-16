@@ -31,7 +31,7 @@ public class RemoveUserControllerTests
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldReturnNotFound_WhenUserDoesNotExist()
+    public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
@@ -39,7 +39,7 @@ public class RemoveUserControllerTests
 
         var result = await controller.RemoveUser(userId, mapper, userService, logger);
 
-        Assert.IsType<NotFoundObjectResult>(result);
+        Assert.IsType<OkResult>(result);
     }
 
     [Fact]
@@ -48,7 +48,6 @@ public class RemoveUserControllerTests
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
-        Mock.Get(userService).Setup(s => s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(true);
 
         var result = await controller.RemoveUser(userId, mapper, userService, logger);
 
@@ -56,25 +55,11 @@ public class RemoveUserControllerTests
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldThrowsException_WhenMapperFails()
+    public async Task RemoveUser_ShouldThrowException_WhenMapperFails()
     {
         var userId = Guid.NewGuid();
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Throws(new NullReferenceException());
 
         await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveUser(userId, mapper, userService, logger));
-    }
-
-    [Fact]
-    public async Task RemoveUser_ShouldReturnsInternalServerError_WhenRemoveUserFails()
-    {
-        var userId = Guid.NewGuid();
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
-        Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
-        Mock.Get(userService).Setup(s => s.RemoveUserAsync(It.IsAny<User>())).ReturnsAsync(false);
-
-        var result = await controller.RemoveUser(userId, mapper, userService, logger);
-
-        Assert.IsType<ObjectResult>(result);
-        Assert.Equal(StatusCodes.Status500InternalServerError, ((ObjectResult)result).StatusCode);
     }
 }

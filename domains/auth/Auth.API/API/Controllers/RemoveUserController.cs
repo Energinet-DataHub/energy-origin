@@ -21,10 +21,9 @@ public class RemoveUserController : ControllerBase
             return BadRequest("A user cannot delete themselves.");
         }
         var user = await userService.GetUserByIdAsync(userToBeDeletedId);
-        if (user is null) return NotFound("The user to be deleted was not found.");
+        if (user is null) return Ok();
 
-        var deleted = await userService.RemoveUserAsync(user);
-        if (deleted == false) return Ok();
+        await userService.RemoveUserAsync(user);
 
         logger.AuditLog(
             "User: {userId} was removed by {User} at {TimeStamp}.",
