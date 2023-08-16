@@ -21,7 +21,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         Id = Guid.NewGuid(),
         Name = Guid.NewGuid().ToString(),
-        UserRoles = new List<UserRole> { new() { Role = RoleKey.Admin } }
+        UserRoles = new List<UserRole> { new() { Role = RoleKey.RoleAdmin } }
     };
 
     public RoleControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
@@ -63,7 +63,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task List_ReturnsOk_WhenInvoked()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var response = await client.GetAsync($"role/all");
 
@@ -75,7 +75,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task Assign_ReturnsOk_WhenRoleIsAssigned()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var role = RoleKey.Viewer;
         var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
@@ -89,7 +89,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Assign_ShouldReturnNotFound_WhenUserDoesNotExist()
     {
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var response = await client.PutAsync($"role/{RoleKey.Viewer}/assign/{Guid.NewGuid()}", null);
 
@@ -101,7 +101,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task Assign_ShouldReturnBadRequest_WhenRoleDoesNotExist()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var response = await client.PutAsync($"role/notExistentRoleKey/assign/{user.Id}", null);
 
@@ -130,7 +130,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         await dataContext.AddAsync(userWithRole);
         await dataContext.SaveChangesAsync();
 
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
         var response = await client.PutAsync($"role/{role}/remove/{userWithRole.Id}", null);
 
         Assert.NotNull(response);
@@ -143,7 +143,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var role = RoleKey.Viewer;
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.RoleAdmin);
 
         var response = await client.PutAsync($"role/{role}/remove/{user.Id}", null);
 
@@ -154,7 +154,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Remove_ShouldReturnNotFound_WhenUserDoesNotExist()
     {
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var response = await client.PutAsync($"role/{RoleKey.Viewer}/remove/{Guid.NewGuid()}", null);
 
@@ -166,8 +166,8 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task Remove_ShouldReturnBadRequest_WhenUserTriesToRemoveAdminFromThemselves()
     {
         var user = await factory.AddUserToDatabaseAsync(adminUser);
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
-        var response = await client.PutAsync($"role/{RoleKey.Admin}/remove/{user.Id}", null);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
+        var response = await client.PutAsync($"role/{RoleKey.RoleAdmin}/remove/{user.Id}", null);
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -193,7 +193,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string action)
     {
         var role = RoleKey.Viewer;
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
             Mock.Get(mapper)

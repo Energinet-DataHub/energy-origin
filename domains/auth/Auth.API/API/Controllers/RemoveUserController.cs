@@ -10,7 +10,7 @@ namespace API.Controllers;
 [ApiController]
 public class RemoveUserController : ControllerBase
 {
-    [Authorize(Roles = RoleKey.Admin)]
+    [Authorize(Roles = RoleKey.UserAdmin)]
     [HttpDelete]
     [Route("user/remove/{userToBeDeletedId:guid}")]
     public async Task<IActionResult> RemoveUser(Guid userToBeDeletedId, IUserDescriptorMapper mapper, IUserService userService, ILogger<RemoveUserController> logger)

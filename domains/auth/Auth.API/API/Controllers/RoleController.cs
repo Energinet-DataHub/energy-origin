@@ -12,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 public class RoleController : ControllerBase
 {
-    [Authorize(Roles = RoleKey.Admin)]
+    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpGet]
     [Route("role/all")]
     public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
@@ -21,11 +21,13 @@ public class RoleController : ControllerBase
         x.Name
     }));
 
-    [Authorize(Roles = RoleKey.Admin)]
+    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpPut]
     [Route("role/{role}/assign/{userId}")]
     public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
+        // FIXME: add tests to avoid assigning transient roles
+
         var validRoles = roles.RoleConfigurations.Select(x => x.Key);
         if (validRoles.Any(x => x == role) == false)
         {
@@ -58,7 +60,7 @@ public class RoleController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = RoleKey.Admin)]
+    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpPut]
     [Route("role/{role}/remove/{userId}")]
     public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)

@@ -50,13 +50,6 @@ var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-var roleOptions = builder.Configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
-if (roleOptions.RoleConfigurations.Count != roleOptions.RoleConfigurations.Select(x => x.Key).Distinct().Count())
-{
-    throw new InvalidDataException("Role options contains duplicate keys");
-}
-// FIXME: Update and apply all places where there could be a 'Authorize(Roles ...'
-
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();

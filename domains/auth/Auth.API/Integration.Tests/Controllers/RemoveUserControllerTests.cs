@@ -44,7 +44,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnOk_WhenUserIsRemoved()
     {
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.UserAdmin);
         var userId = (await factory.AddUserToDatabaseAsync()).Id;
 
         var response = await client.DeleteAsync($"user/remove/{userId}");
@@ -57,7 +57,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.UserAdmin);
 
         var response = await client.DeleteAsync($"user/remove/{Guid.NewGuid()}");
 
@@ -67,7 +67,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     [Fact]
     public async Task RemoveUser_ShouldReturnBadRequest_WhenUserTriesToDeleteThemselves()
     {
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.UserAdmin);
         _ = await factory.AddUserToDatabaseAsync(user);
 
         var response = await client.DeleteAsync($"user/remove/{user.Id}");
@@ -84,7 +84,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
         mockUserService.Setup(service => service.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
         mockUserService.Setup(service => service.RemoveUserAsync(user)).Throws(new Exception());
 
-        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.Admin, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
+        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.UserAdmin, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
 
         var response = await client.DeleteAsync($"user/remove/{user.Id}");
 

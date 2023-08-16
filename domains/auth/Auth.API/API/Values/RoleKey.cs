@@ -2,8 +2,8 @@ namespace API.Values;
 
 public static class RoleKey
 {
-    public const string OrganizationAdmin = "organization";
-    public const string Admin = "admin";
-    public const string Editor = "editor";
+    public const string OrganizationAdmin = "organization-admin";
+    public const string RoleAdmin = "role-admin";
+    public const string UserAdmin = "user-admin";
     public const string Viewer = "viewer";
 }
