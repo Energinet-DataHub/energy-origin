@@ -27,6 +27,17 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public RoleControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
+    public async Task List_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.GetAsync($"role/all");
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
     public async Task Assign_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
     {
         var client = factory.CreateAnonymousClient();
@@ -46,6 +57,18 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task List_ReturnsOk_WhenInvoked()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
+
+        var response = await client.GetAsync($"role/all");
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

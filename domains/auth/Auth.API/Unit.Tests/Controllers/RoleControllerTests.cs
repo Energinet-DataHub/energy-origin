@@ -15,7 +15,7 @@ namespace Unit.Tests.Controllers;
 
 public class RoleControllerTests
 {
-    // FIXME: add tests for listing roles, tests for only manipulating the companys own users, just add all missing
+    // FIXME: add tests for only manipulating the companys own users, just add all missing
 
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly RoleController roleController = new();
@@ -33,7 +33,16 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task AssignRole_ShouldThrowException_WhenUserDescriptorMappingFails()
+    public void List_ShouldReturnExpected_WhenInvoked()
+    {
+        var response = roleController.List(roleOptions);
+
+        Assert.NotNull(response);
+        Assert.IsType<OkObjectResult>(response);
+    }
+
+    [Fact]
+    public async Task Assign_ShouldThrowException_WhenUserDescriptorMappingFails()
     {
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
@@ -48,7 +57,7 @@ public class RoleControllerTests
     [InlineData("whatever")]
     [InlineData("role")]
     [InlineData("IDK")]
-    public async Task AssignRole_ShouldThrowException_WhenRoleIsInvalid(string role)
+    public async Task Assign_ShouldThrowException_WhenRoleIsInvalid(string role)
     {
         var response = await roleController.AssignRole(role, Guid.NewGuid(), roleOptions, userService, logger, mapper);
 
@@ -56,7 +65,7 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task AssignRole_ShouldThrowException_WhenUserIsNull()
+    public async Task Assign_ShouldThrowException_WhenUserIsNull()
     {
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(It.IsAny<Guid>())).ReturnsAsync((User)null!);
 
@@ -64,7 +73,7 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task AssignRole_ShouldReturnOk_WhenSuccess()
+    public async Task Assign_ShouldReturnOk_WhenSuccess()
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
@@ -78,13 +87,14 @@ public class RoleControllerTests
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
         var dummyUser = new User();
         Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+
         var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
 
         Assert.IsType<OkResult>(result);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldRemoveRoleFromUser_WhenInvoked()
+    public async Task Remove_ShouldRemove_WhenInvoked()
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
@@ -103,29 +113,33 @@ public class RoleControllerTests
         };
 
         var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+
         Assert.IsType<OkResult>(result);
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserIsNull()
+    public async Task Remove_ShouldThrowException_WhenUserIsNull()
     {
         var testUserId = Guid.NewGuid();
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
-        await Assert.ThrowsAsync<NullReferenceException>(() =>
-            roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper));
-    }
 
-    [Fact]
-    public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserRoleIsNull()
-    {
-        var testUserId = Guid.NewGuid();
-        var testUser = new User { Id = testUserId };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
+
         await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper));
     }
 
     [Fact]
-    public async Task RemoveRoleFromUser_ShouldThrowException_WhenUserDescriptorMappingFails()
+    public async Task Remove_ShouldThrowException_WhenUserRoleIsNull()
+    {
+        var testUserId = Guid.NewGuid();
+        var testUser = new User { Id = testUserId };
+
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+
+        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper));
+    }
+
+    [Fact]
+    public async Task Remove_ShouldThrowException_WhenUserDescriptorMappingFails()
     {
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
