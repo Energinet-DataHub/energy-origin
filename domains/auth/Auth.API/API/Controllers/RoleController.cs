@@ -26,9 +26,7 @@ public class RoleController : ControllerBase
     [Route("role/{role}/assign/{userId}")]
     public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
-        // FIXME: add tests to avoid assigning transient roles
-
-        var validRoles = roles.RoleConfigurations.Select(x => x.Key);
+        var validRoles = roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => x.Key);
         if (validRoles.Any(x => x == role) == false)
         {
             return BadRequest($"Role not found: {role}");

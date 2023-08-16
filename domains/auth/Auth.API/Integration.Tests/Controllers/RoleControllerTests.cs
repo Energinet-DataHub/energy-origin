@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
+using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.TestHost;
@@ -100,8 +101,13 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Assign_ShouldReturnBadRequest_WhenRoleDoesNotExist()
     {
+        var role = "any";
+        var options = new RoleOptions()
+        {
+            RoleConfigurations = new() { new() { Key = role, Name = role } }
+        };
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         var response = await client.PutAsync($"role/notExistentRoleKey/assign/{user.Id}", null);
 
@@ -110,7 +116,24 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Remove_ShouldReturnOk_WhenRoleExists()
+    public async Task Assign_ShouldReturnBadRequest_WhenRoleIsTransient()
+    {
+        var role = "transient";
+        var options = new RoleOptions()
+        {
+            RoleConfigurations = new() { new() { Key = role, Name = role, IsTransient = true } }
+        };
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+
+        var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Remove_ShouldReturnOk_WhenRoleIsAssigned()
     {
         var role = RoleKey.Viewer;
         var dataContext = factory.DataContext;
@@ -139,7 +162,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Remove_ShouldReturnOk_WhenRoleDoesNotExist()
+    public async Task Remove_ShouldReturnOk_WhenRoleIsNotAssigned()
     {
         var role = RoleKey.Viewer;
         var user = await factory.AddUserToDatabaseAsync();
