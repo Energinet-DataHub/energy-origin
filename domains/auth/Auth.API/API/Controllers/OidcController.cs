@@ -9,6 +9,7 @@ using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +20,7 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(

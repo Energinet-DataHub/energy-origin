@@ -27,6 +27,28 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public RoleControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
+    public async Task Assign_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync($"role/{RoleKey.Viewer}/assign/{Guid.NewGuid()}", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task Remove_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync($"role/{RoleKey.Viewer}/remove/{Guid.NewGuid()}", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
     public async Task Assign_ReturnsOk_WhenRoleIsAssigned()
     {
         var user = await factory.AddUserToDatabaseAsync();

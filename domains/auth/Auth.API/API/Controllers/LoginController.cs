@@ -15,6 +15,7 @@ namespace API.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, OidcOptions oidcOptions, IdentityProviderOptions providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)

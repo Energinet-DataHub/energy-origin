@@ -19,6 +19,28 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
+    public async Task AcceptUserTermsAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync("terms/user/accept/1", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync("terms/company/accept/1", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
     public async Task AcceptUserTermsAsync_ShouldReturnOkAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists()
     {
         var server = WireMockServer.Start();

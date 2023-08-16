@@ -17,6 +17,17 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TokenControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
+    public async Task RefreshAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.GetAsync("auth/token");
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedSDuringCurrentLogin()
     {
         var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });

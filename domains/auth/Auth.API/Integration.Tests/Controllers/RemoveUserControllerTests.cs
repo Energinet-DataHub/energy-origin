@@ -20,6 +20,28 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     }
 
     [Fact]
+    public async Task RemoveUser_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.DeleteAsync($"user/remove/{Guid.NewGuid()}");
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveUser_ShouldReturnForbidden_WhenNonAdminUser()
+    {
+        var client = factory.CreateAuthenticatedClient(user);
+        var userId = (await factory.AddUserToDatabaseAsync()).Id;
+
+        var response = await client.DeleteAsync($"user/remove/{userId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task RemoveUser_ShouldReturnOk_WhenUserIsRemoved()
     {
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.Admin);
@@ -67,16 +89,5 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
         var response = await client.DeleteAsync($"user/remove/{user.Id}");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task RemoveUser_ShouldReturnForbidden_WhenNonAdminUser()
-    {
-        var client = factory.CreateAuthenticatedClient(user);
-        var userId = (await factory.AddUserToDatabaseAsync()).Id;
-
-        var response = await client.DeleteAsync($"user/remove/{userId}");
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }
