@@ -149,6 +149,27 @@ public class EnergyMeasuredEventHandlerTests
     }
 
     [Fact]
+    public async Task Consume_MeasurementPeriodOutsideScope_NoEventsSaved()
+    {
+        var contractServiceMock = new Mock<IContractService>();
+        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { mockContract });
+
+        var repositoryMock = new Mock<IProductionCertificateRepository>();
+
+        var message = new EnergyMeasuredIntegrationEvent(
+            GSRN: mockContract.GSRN,
+            DateFrom: DateTimeOffset.Parse("6200-01-01T00:00:00Z").ToUnixTimeSeconds(),
+            DateTo: DateTimeOffset.Parse("6200-01-01T01:00:00Z").ToUnixTimeSeconds(),
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+
+        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Consume_ValidMeasurement_EventsSaved()
     {
         var contractServiceMock = new Mock<IContractService>();

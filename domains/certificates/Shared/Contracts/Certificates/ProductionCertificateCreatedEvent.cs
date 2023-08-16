@@ -12,5 +12,6 @@ public record ProductionCertificateCreatedEvent(Guid CertificateId,
     byte[] BlindingValue,
     long Quantity, //TODO: long?
     byte[] WalletPublicKey,
-    string WalletUrl
+    string WalletUrl,
+    int WalletPosition
 );

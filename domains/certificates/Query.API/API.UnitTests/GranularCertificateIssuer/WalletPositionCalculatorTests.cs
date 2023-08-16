@@ -36,6 +36,6 @@ public class WalletPositionCalculatorTests
         var e = s.AddHours(1);
         var period = new Period(s.ToUnixTimeSeconds(), e.ToUnixTimeSeconds());
 
-        return WalletPositionCalculator.Calculate(period);
+        return period.CalculateWalletPosition();
     }
 }

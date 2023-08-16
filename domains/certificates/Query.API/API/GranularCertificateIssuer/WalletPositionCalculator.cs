@@ -5,19 +5,19 @@ namespace API.GranularCertificateIssuer;
 
 public static class WalletPositionCalculator
 {
-    private static readonly long baseline = DateTimeOffset.Parse("2022-01-01T00:00:00Z").ToUnixTimeSeconds();
+    private static readonly long startDate = DateTimeOffset.Parse("2022-01-01T00:00:00Z").ToUnixTimeSeconds();
 
-    public static int? Calculate(Period period)
+    public static int? CalculateWalletPosition(this Period period)
     {
-        var diff = period.DateFrom - baseline;
+        var secondsElapsed = period.DateFrom - startDate;
 
-        if (diff < 0)
+        if (secondsElapsed < 0)
             return null;
 
-        if (diff % 60 != 0)
+        if (secondsElapsed % 60 != 0)
             return null;
 
-        var minutesElapsed = diff / 60;
+        var minutesElapsed = secondsElapsed / 60;
         if (minutesElapsed > int.MaxValue)
             return null;
 

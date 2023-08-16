@@ -74,7 +74,13 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             if (status.Status == TransactionState.Committed)
             {
                 logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
-                await context.Publish(new CertificateIssuedInRegistryEvent(message.CertificateId, commitment.BlindingValue.ToArray(), commitment.Message, message.WalletPublicKey, message.WalletUrl));
+                await context.Publish(new CertificateIssuedInRegistryEvent(
+                    message.CertificateId,
+                    commitment.BlindingValue.ToArray(),
+                    commitment.Message,
+                    message.WalletPublicKey,
+                    message.WalletUrl,
+                    message.WalletPosition));
                 break;
             }
 
