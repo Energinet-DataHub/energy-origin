@@ -20,6 +20,7 @@ public class TokenIssuerTests
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
+    private readonly RoleOptions roleOptions;
 
     public TokenIssuerTests()
     {
@@ -30,6 +31,7 @@ public class TokenIssuerTests
 
         termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
         tokenOptions = configuration.GetSection(TokenOptions.Prefix).Get<TokenOptions>()!;
+        roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
     }
 
     [Theory]
@@ -45,6 +47,37 @@ public class TokenIssuerTests
 
         var scope = Convert(token)!.Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.Equal(expectedScope, scope);
+    }
+
+    [Fact]
+    public void Issue_ShouldReturnATokenWithRoles_WhenRolesArePresent()
+    {
+        var matched = "matched";
+        var assigned = "assigned";
+        var options = new RoleOptions() { RoleConfigurations = new() { new() { Key = matched, Name = matched }, new() { Key = assigned, Name = assigned } } };
+        var (descriptor, data) = PrepareUser(matchedRoles: matched, assignedRoles: new List<string>() { assigned });
+
+        var token = GetTokenIssuer(roles: options).Issue(descriptor, data);
+
+        Assert.NotNull(token);
+        var jwt = Convert(token);
+        Assert.NotNull(jwt);
+        var roles = jwt.Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value);
+        Assert.Contains(matched, roles);
+        Assert.Contains(assigned, roles);
+    }
+
+    [Fact]
+    public void Issue_ShouldReturnATokenWithoutRoles_WhenRolesAreNotPresent()
+    {
+        var (descriptor, data) = PrepareUser();
+
+        var token = GetTokenIssuer().Issue(descriptor, data);
+
+        var jwt = Convert(token);
+
+        Assert.NotNull(jwt);
+        Assert.Empty(jwt.Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value));
     }
 
     [Fact]
@@ -150,9 +183,9 @@ public class TokenIssuerTests
         Assert.NotNull(jwt.Claims.SingleOrDefault(it => it.Type == JwtRegisteredClaimNames.Sub));
     }
 
-    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default) => new(terms ?? termsOptions, token ?? tokenOptions);
+    private TokenIssuer GetTokenIssuer(TermsOptions? terms = default, TokenOptions? token = default, RoleOptions? roles = default) => new(terms ?? termsOptions, token ?? tokenOptions, roles ?? roleOptions);
 
-    private (UserDescriptor, UserData) PrepareUser(string? name = default, int privacyVersion = 3, int tosVersion = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true)
+    private (UserDescriptor, UserData) PrepareUser(string? name = default, int privacyVersion = 3, int tosVersion = 1, string? accessToken = default, string? identityToken = default, bool addToMock = true, string? matchedRoles = default, IEnumerable<string>? assignedRoles = default)
     {
         var user = new User
         {
@@ -170,7 +203,7 @@ public class TokenIssuerTests
             ProviderType = ProviderType.NemIdProfessional,
             EncryptedAccessToken = accessToken ?? "",
             EncryptedIdentityToken = identityToken ?? "",
-            MatchedRoles = ""
+            MatchedRoles = matchedRoles ?? ""
         };
         if (addToMock)
         {
@@ -178,7 +211,7 @@ public class TokenIssuerTests
                 .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(value: user);
         }
-        return (descriptor, new UserData(privacyVersion, tosVersion));
+        return (descriptor, new UserData(privacyVersion, tosVersion, assignedRoles));
     }
 
     private static JwtSecurityToken? Convert(string? token)

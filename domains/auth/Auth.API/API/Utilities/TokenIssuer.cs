@@ -18,11 +18,13 @@ public class TokenIssuer : ITokenIssuer
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
+    private readonly RoleOptions roleOptions;
 
-    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions)
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions)
     {
         this.termsOptions = termsOptions;
         this.tokenOptions = tokenOptions;
+        this.roleOptions = roleOptions;
     }
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
@@ -31,7 +33,7 @@ public class TokenIssuer : ITokenIssuer
 
         var state = ResolveState(termsOptions, data, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -64,7 +66,7 @@ public class TokenIssuer : ITokenIssuer
         return new(scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
@@ -80,10 +82,14 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ActorLegacy, descriptor.Id },
         };
 
+        var validRoles = roleOptions.RoleConfigurations.Select(x => x.Key);
         var assignedRoles = data.AssignedRoles ?? Array.Empty<string>();
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
+        var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
+        var inheritedRoles = roleOptions.RoleConfigurations.Where(x => allottedRoles.Contains(x.Key)).SelectMany(x => x.Inherits);
+        var roles = allottedRoles.Concat(inheritedRoles).Distinct().Where(x => validRoles.Contains(x));
 
-        claims.Add(UserClaimName.Roles, assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty()));
+        claims.Add(UserClaimName.Roles, roles);
 
         if (descriptor.CompanyId is not null)
         {
@@ -123,7 +129,7 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    public record UserData(int PrivacyPolicyVersion, int TermsOfServiceVersion, IEnumerable<string>? AssignedRoles = null)
+    public record UserData(int PrivacyPolicyVersion, int TermsOfServiceVersion, IEnumerable<string>? AssignedRoles = default)
     {
         public static UserData From(User? user) => new(
             user?.UserTerms.SingleOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion ?? 0,
