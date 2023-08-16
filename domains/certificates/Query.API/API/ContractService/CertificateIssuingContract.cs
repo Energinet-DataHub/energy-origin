@@ -19,6 +19,7 @@ public class CertificateIssuingContract
     public string WalletUrl { get; set; } = "";
     public byte[] WalletPublicKey { get; set; } = Array.Empty<byte>();
 
+    //TODO: This is unused
     public IHDPublicKey GetHDPublicKey() => new Secp256k1Algorithm().ImportHDPublicKey(WalletPublicKey);
 
     private void ValidateHDPublicKey() => GetHDPublicKey();
