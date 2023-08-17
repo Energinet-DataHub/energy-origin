@@ -32,22 +32,16 @@ public class CertificatesController : ControllerBase
             : NoContent();
     }
 
-    private static Certificate Map(GranularCertificate c)
-    {
-        var gsrn = c.Attributes.FirstOrDefault(a => a.Key == "AssetId")?.Value ?? "";
-        var fuelCode = c.Attributes.FirstOrDefault(a => a.Key == "FuelCode")?.Value ?? "";
-        var techCode = c.Attributes.FirstOrDefault(a => a.Key == "TechCode")?.Value ?? "";
-
-        return new Certificate
+    private static Certificate Map(GranularCertificate c) =>
+        new()
         {
             Id = Guid.Parse(c.FederatedId.StreamId.Value),
             DateFrom = c.Start.ToDateTimeOffset().ToUnixTimeSeconds(),
             DateTo = c.End.ToDateTimeOffset().ToUnixTimeSeconds(),
-            FuelCode = fuelCode,
-            TechCode = techCode,
+            GSRN = c.Attributes.FirstOrDefault(a => a.Key == "AssetId")?.Value ?? "",
+            FuelCode = c.Attributes.FirstOrDefault(a => a.Key == "FuelCode")?.Value ?? "",
+            TechCode = c.Attributes.FirstOrDefault(a => a.Key == "TechCode")?.Value ?? "",
             GridArea = c.GridArea,
-            Quantity = c.Quantity,
-            GSRN = gsrn
+            Quantity = c.Quantity
         };
-    }
 }
