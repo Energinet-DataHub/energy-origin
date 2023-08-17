@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
+using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -129,8 +130,9 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
-builder.Services.AddScoped<IWalletDepositEndpointService, WalletDepositEndpointService>();
+builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"]));
 builder.Services.AddTransferAgreementsAutomation();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

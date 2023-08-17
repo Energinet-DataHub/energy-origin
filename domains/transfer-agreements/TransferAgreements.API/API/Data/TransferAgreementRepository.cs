@@ -24,6 +24,8 @@ public class TransferAgreementRepository : ITransferAgreementRepository
                          || ta.ReceiverTin == receiverTin)
             .ToListAsync();
 
+    public Task<List<TransferAgreement>> GetAllTransferAgreements() => throw new NotImplementedException();
+
     public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin) =>
         await context
             .TransferAgreements
