@@ -8,7 +8,7 @@ public static class WalletPositionCalculator
 {
     private static readonly long startDate = DateTimeOffset.Parse("2022-01-01T00:00:00Z", CultureInfo.InvariantCulture).ToUnixTimeSeconds();
 
-    public static int? CalculateWalletPosition(this Period period)
+    public static uint? CalculateWalletPosition(this Period period)
     {
         var secondsElapsed = period.DateFrom - startDate;
 
@@ -22,6 +22,6 @@ public static class WalletPositionCalculator
         if (minutesElapsed > int.MaxValue)
             return null;
 
-        return Convert.ToInt32(minutesElapsed);
+        return Convert.ToUInt32(minutesElapsed);
     }
 }

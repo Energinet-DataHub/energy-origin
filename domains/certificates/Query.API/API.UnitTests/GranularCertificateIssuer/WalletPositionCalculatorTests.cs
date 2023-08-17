@@ -15,7 +15,7 @@ public class WalletPositionCalculatorTests
     [InlineData("2023-01-01T00:00:00Z", 525600)]
     [InlineData("6105-01-24T02:06:00Z", int.MaxValue - 1)]
     [InlineData("6105-01-24T02:07:00Z", int.MaxValue)]
-    public void can_calculate_for_full_minutes(string start, int expectedPosition)
+    public void can_calculate_for_full_minutes(string start, uint expectedPosition)
         => Calculate(start).Should().Be(expectedPosition);
 
     [Fact]
@@ -30,7 +30,7 @@ public class WalletPositionCalculatorTests
     public void no_result_when_not_a_full_minute()
         => Calculate("2022-01-01T00:00:01Z").Should().BeNull();
 
-    private static int? Calculate(string start)
+    private static uint? Calculate(string start)
     {
         var s = DateTimeOffset.Parse(start);
         var e = s.AddHours(1);

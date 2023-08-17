@@ -38,7 +38,7 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
             Quantity = (uint)message.Quantity, //TODO: uint/long
             RandomR = ByteString.CopyFrom(message.BlindingValue),
             WalletDepositEndpointPublicKey = ByteString.CopyFrom(message.WalletPublicKey),
-            WalletDepositEndpointPosition = (uint)message.WalletPosition //TODO: Should it be uint or int?
+            WalletDepositEndpointPosition = message.WalletPosition
         };
 
         await client.ReceiveSliceAsync(receiveRequest);

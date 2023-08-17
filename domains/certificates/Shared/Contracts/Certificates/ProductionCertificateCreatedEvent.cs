@@ -3,7 +3,8 @@ using CertificateValueObjects;
 
 namespace Contracts.Certificates;
 
-public record ProductionCertificateCreatedEvent(Guid CertificateId,
+public record ProductionCertificateCreatedEvent(
+    Guid CertificateId,
     string GridArea,
     Period Period,
     Technology Technology,
@@ -13,5 +14,5 @@ public record ProductionCertificateCreatedEvent(Guid CertificateId,
     long Quantity, //TODO: long?
     byte[] WalletPublicKey,
     string WalletUrl,
-    int WalletPosition
+    uint WalletPosition
 );
