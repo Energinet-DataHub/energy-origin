@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using AggregateRepositories;
 using API.ContractService;
@@ -26,63 +27,51 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
-        var shouldProduceNoCertificateLogStatement = true;
-
         var message = context.Message;
 
         var contracts = await contractService.GetByGSRN(message.GSRN, context.CancellationToken);
-
-        foreach (var contract in contracts)
-        {
-            if (!ShouldEventBeProduced(contract, message))
-            {
-                continue;
-            }
-
-            var commitment = new SecretCommitmentInfo((uint)message.Quantity);
-
-            var period = new Period(message.DateFrom, message.DateTo);
-            var walletPosition = period.CalculateWalletPosition();
-            if (!walletPosition.HasValue)
-                throw new WalletException($"Cannot determine wallet position for period {period}");
-
-            var productionCertificate = new ProductionCertificate(
-                contract.GridArea,
-                period,
-                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-                contract.MeteringPointOwner,
-                message.GSRN,
-                message.Quantity);  //TODO: Save commitment
-
-            await repository.Save(productionCertificate, context.CancellationToken);
-
-            //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517. Check if this can be closed...
-            //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
-            await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
-                contract.GridArea,
-                period,
-                new Technology(FuelCode: "F00000000", TechCode: "T070000"),
-                contract.MeteringPointOwner,
-                new Gsrn(message.GSRN),
-                commitment.BlindingValue.ToArray(),
-                message.Quantity,
-                contract.WalletPublicKey,
-                contract.WalletUrl,
-                walletPosition.Value));
-
-            logger.LogInformation("Created production certificate for {Message}", message);
-
-            shouldProduceNoCertificateLogStatement = false;
-        }
-
-        if (shouldProduceNoCertificateLogStatement)
+        var matchingContract = contracts.FirstOrDefault(c => ShouldEventBeProduced(c, message));
+        if (matchingContract == null)
         {
             logger.LogInformation("No production certificate created for {Message}", message);
+            return;
         }
+
+        var commitment = new SecretCommitmentInfo((uint)message.Quantity);
+
+        var period = new Period(message.DateFrom, message.DateTo);
+        var walletPosition = period.CalculateWalletPosition();
+        if (!walletPosition.HasValue)
+            throw new WalletException($"Cannot determine wallet position for period {period}");
+
+        var productionCertificate = new ProductionCertificate(
+            matchingContract.GridArea,
+            period,
+            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+            matchingContract.MeteringPointOwner,
+            message.GSRN,
+            message.Quantity);  //TODO: Save commitment
+
+        await repository.Save(productionCertificate, context.CancellationToken);
+
+        //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517. Check if this can be closed...
+        //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
+        await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
+            matchingContract.GridArea,
+            period,
+            new Technology(FuelCode: "F00000000", TechCode: "T070000"),
+            matchingContract.MeteringPointOwner,
+            new Gsrn(message.GSRN),
+            commitment.BlindingValue.ToArray(),
+            message.Quantity,
+            matchingContract.WalletPublicKey,
+            matchingContract.WalletUrl,
+            walletPosition.Value));
+
+        logger.LogInformation("Created production certificate for {Message}", message);
     }
 
-    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract,
-        EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
+    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
         if (contract is null)
             return false;
