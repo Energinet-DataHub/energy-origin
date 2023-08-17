@@ -6,7 +6,6 @@ namespace API.Metrics
     {
         void SetNumberOfTransferAgreementsOnLastRun(int numberOfTransferAgreementsOnLastRun);
         void SetCertificatesTransferredOnLastRun(int certificatesTransferredOnLastRun);
-        void SetErrorsOnLastRun(int errorsOnLastRun);
-        void TransferError(Guid certificateId);
+        void TransferRetry(Guid certificateId);
     }
 }

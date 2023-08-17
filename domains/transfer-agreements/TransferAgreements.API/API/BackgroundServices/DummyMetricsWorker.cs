@@ -22,11 +22,10 @@ namespace API.BackgroundServices
             while (!stoppingToken.IsCancellationRequested)
             {
                 var rand = new Random();
-                metrics.SetErrorsOnLastRun(rand.Next(0, 100));
                 metrics.SetCertificatesTransferredOnLastRun(rand.Next(0, 100));
                 metrics.SetNumberOfTransferAgreementsOnLastRun(rand.Next(0, 100));
-                metrics.TransferError(certId1);
-                metrics.TransferError(certId2);
+                metrics.TransferRetry(certId1);
+                metrics.TransferRetry(certId2);
 
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
