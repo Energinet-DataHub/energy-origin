@@ -1,10 +1,6 @@
 using API.Options;
 using API.Utilities;
-using API.Utilities.Interfaces;
 using API.Values;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

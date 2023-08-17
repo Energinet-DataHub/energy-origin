@@ -1,5 +1,5 @@
-using API.Options;
 using System.ComponentModel.DataAnnotations;
+using API.Options;
 
 namespace Unit.Tests.Options;
 
