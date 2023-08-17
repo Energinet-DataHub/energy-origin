@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
 using API.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -11,31 +12,31 @@ namespace API.TransferAgreementsAutomation;
 public class TransferAgreementsAutomationWorker : BackgroundService
 {
     private readonly ILogger<TransferAgreementsAutomationWorker> logger;
-    private readonly TransferAgreementAutomationService service;
+    private readonly IServiceProvider serviceProvider;
 
     public TransferAgreementsAutomationWorker(
         ILogger<TransferAgreementsAutomationWorker> logger,
-        TransferAgreementAutomationService service
+        IServiceProvider serviceProvider
     )
     {
         this.logger = logger;
-        this.service = service;
+        this.serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        using (var scope = serviceProvider.CreateScope())
         {
-            logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            service.Run();
-            await SleepToNearestHour(stoppingToken);
+            var transferAgreementsAutomationService = scope.ServiceProvider.GetRequiredService<ITransferAgreementsAutomationService>();
+            try
+            {
+                await transferAgreementsAutomationService.Run(stoppingToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogInformation("Something went wrong with the TransferAgreementsAutomationService: {exception}", e.Message);
+            }
         }
-    }
 
-    private async Task SleepToNearestHour(CancellationToken stoppingToken)
-    {
-        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
-        logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
-        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), stoppingToken);
     }
 }

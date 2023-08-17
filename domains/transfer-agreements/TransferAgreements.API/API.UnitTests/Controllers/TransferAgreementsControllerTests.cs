@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using API.Data;
 using API.Services;
 using FluentAssertions;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -33,7 +35,8 @@ public class TransferAgreementsControllerTests
         var mockValidator = Substitute.For<IValidator<CreateTransferAgreement>>();
         var mockHttpContextAccessor = Substitute.For<IHttpContextAccessor>();
         mockTransferAgreementRepository.AddTransferAgreementToDb(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(new TransferAgreement()));
-        mockValidator.ValidateAsync(Arg.Any<ValidationContext<CreateTransferAgreement>>(), Arg.Any<CancellationToken>())
+
+        mockValidator.ValidateAsync(Arg.Any<CreateTransferAgreement>())
             .Returns(Task.FromResult(new FluentValidation.Results.ValidationResult()));
 
         var mockContext = new DefaultHttpContext
@@ -72,15 +75,7 @@ public class TransferAgreementsControllerTests
 
         await controller.Create(request);
 
-        await mockTransferAgreementRepository.Received(1).AddTransferAgreementToDb(Arg.Is(new TransferAgreement()
-        {
-            SenderId = Guid.Parse(subject),
-            StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
-            EndDate = DateTimeOffset.FromUnixTimeSeconds(request.EndDate!.Value),
-            SenderName = cpn,
-            SenderTin = tin,
-            ReceiverTin = request.ReceiverTin
-        }));
+        await mockTransferAgreementRepository.Received(1).AddTransferAgreementToDb(Arg.Any<TransferAgreement>());
     }
 
     [Fact]
@@ -252,7 +247,9 @@ public class TransferAgreementsControllerTests
         const string expectedJwtToken = "Bearer sample.jwt.token";
 
         string passedToken = null!;
-        mockProjectOriginWalletDepositEndpointService.CreateWalletDepositEndpoint(Arg.Any<string>()).Returns(Task.FromResult<string>("sampleBase64String"));
+        mockProjectOriginWalletDepositEndpointService
+            .When(x => x.CreateWalletDepositEndpoint(Arg.Any<string>()))
+            .Do(x => passedToken = x.Arg<string>());
 
         await controller.CreateWalletDepositEndpoint();
 

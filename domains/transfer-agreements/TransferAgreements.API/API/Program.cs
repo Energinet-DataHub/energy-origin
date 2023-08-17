@@ -133,7 +133,8 @@ builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementReposi
 builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"]));
-builder.Services.AddTransferAgreementsAutomation();
+builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
+builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

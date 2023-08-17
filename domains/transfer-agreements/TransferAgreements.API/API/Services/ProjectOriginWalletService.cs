@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Converters;
 using API.Data;
-using API.Options;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -23,7 +22,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     public ProjectOriginWalletService(
         ILogger<ProjectOriginWalletService> logger,
         WalletService.WalletServiceClient walletServiceClient
-        )
+    )
     {
         this.logger = logger;
         this.walletServiceClient = walletServiceClient;
@@ -37,7 +36,6 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
     private async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken)
     {
-
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
         {
@@ -89,7 +87,6 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     }
 
 
-
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {
         var header = SetupDummyAuthorizationHeader(transferAgreement.SenderId.ToString());
@@ -103,7 +100,10 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
         foreach (var certificate in certificates)
         {
-            if (IsPeriodNotMatching(transferAgreement, certificate)) continue;
+            if (IsPeriodNotMatching(transferAgreement, certificate))
+            {
+                continue;
+            }
 
             TransferRequest request = new()
             {
@@ -133,13 +133,14 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     {
         if (transferAgreement.EndDate == null)
         {
-            return certificate.Type != GranularCertificateType.Production &&
-                   certificate.Start < Timestamp.FromDateTimeOffset(transferAgreement.StartDate);
+            return certificate.Type != GranularCertificateType.Production ||
+                   (certificate.Start < Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
+                   certificate.End < Timestamp.FromDateTimeOffset(transferAgreement.StartDate));
         }
 
-        return certificate.Type != GranularCertificateType.Production &&
+        return certificate.Type != GranularCertificateType.Production ||
                (
-                   certificate.Start < Timestamp.FromDateTimeOffset(transferAgreement.StartDate) ||
+                   certificate.Start < Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
                    certificate.End > Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
                );
     }
