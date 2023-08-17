@@ -10,7 +10,7 @@ using CertificateValueObjects;
 using FluentAssertions;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace API.UnitTests.DataSyncSyncer;
@@ -22,9 +22,9 @@ public class DataSyncServiceTest
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
         MeteringPointOwner: "meteringPointOwner");
 
-    private readonly Mock<IDataSyncClient> fakeClient = new();
-    private readonly Mock<ILogger<DataSyncService>> fakeLogger = new();
-    private readonly Mock<ISyncState> fakeSyncState = new();
+    private readonly IDataSyncClient fakeClient = Substitute.For<IDataSyncClient>();
+    private readonly ILogger<DataSyncService> fakeLogger = Substitute.For<ILogger<DataSyncService>>();
+    private readonly ISyncState fakeSyncState = Substitute.For<ISyncState>();
 
     [Fact]
     public async Task FetchMeasurements_AfterContractStartDate_DataFetched()
@@ -32,8 +32,8 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(-1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns(contractStartDate.ToUnixTimeSeconds());
 
         var fakeResponseList = new List<DataSyncDto>
         {
@@ -46,13 +46,8 @@ public class DataSyncServiceTest
             )
         };
 
-        fakeClient.Setup(it => it.RequestAsync(
-                info.GSRN,
-                It.IsAny<Period>(),
-                info.MeteringPointOwner,
-                CancellationToken.None)
-            )
-            .ReturnsAsync(() => fakeResponseList);
+        fakeClient.RequestAsync(string.Empty, default!, default!, default)
+            .ReturnsForAnyArgs(fakeResponseList);
 
         var service = SetupService();
 
@@ -68,16 +63,11 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(-1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns(contractStartDate.ToUnixTimeSeconds());
 
-        fakeClient.Setup(it => it.RequestAsync(
-                info.GSRN,
-                It.IsAny<Period>(),
-                info.MeteringPointOwner,
-                CancellationToken.None)
-            )
-            .ReturnsAsync(() => new List<DataSyncDto>());
+        fakeClient.RequestAsync(string.Empty, default!, default!, default)
+            .ReturnsForAnyArgs(new List<DataSyncDto>());
 
         var service = SetupService();
 
@@ -85,9 +75,7 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.Verify(
-            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
-                It.IsAny<CancellationToken>()), Times.Once);
+        await fakeClient.Received(1).RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -96,17 +84,16 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns(contractStartDate.ToUnixTimeSeconds());
+
         var service = SetupService();
 
         var response = await service.FetchMeasurements(info,
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.Verify(
-            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
-                It.IsAny<CancellationToken>()), Times.Never);
+        await fakeClient.DidNotReceive().RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -115,17 +102,16 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync((long?)null);
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns((long?)null);
+
         var service = SetupService();
 
         var response = await service.FetchMeasurements(info,
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.Verify(
-            c => c.RequestAsync(It.IsAny<string>(), It.IsAny<Period>(), It.IsAny<string>(),
-                It.IsAny<CancellationToken>()), Times.Never);
+        await fakeClient.DidNotReceive().RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -134,8 +120,8 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(-1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns(contractStartDate.ToUnixTimeSeconds());
 
         var dateTo = DateTimeOffset.Now.ToUnixTimeSeconds();
         var fakeResponseList = new List<DataSyncDto>
@@ -149,20 +135,15 @@ public class DataSyncServiceTest
             )
         };
 
-        fakeClient.Setup(it => it.RequestAsync(
-                info.GSRN,
-                It.IsAny<Period>(),
-                info.MeteringPointOwner,
-                CancellationToken.None)
-            )
-            .ReturnsAsync(() => fakeResponseList);
-
+        fakeClient.RequestAsync(string.Empty, default!, default!, default)
+            .ReturnsForAnyArgs(fakeResponseList);
+        
         var service = SetupService();
 
         await service.FetchMeasurements(info,
             CancellationToken.None);
 
-        fakeSyncState.Verify(s => s.SetSyncPosition(It.Is<SyncPosition>(sp => sp.SyncedTo == dateTo)), Times.Once);
+        fakeSyncState.Received(1).SetSyncPosition(Arg.Is<SyncPosition>(sp => sp.SyncedTo == dateTo));
     }
 
     [Fact]
@@ -171,36 +152,31 @@ public class DataSyncServiceTest
         var contractStartDate = DateTimeOffset.Now.AddDays(-1);
         var info = syncInfo with { StartSyncDate = contractStartDate };
 
-        fakeSyncState.Setup(it => it.GetPeriodStartTime(info))
-            .ReturnsAsync(contractStartDate.ToUnixTimeSeconds());
+        fakeSyncState.GetPeriodStartTime(info)
+            .Returns(contractStartDate.ToUnixTimeSeconds());
 
         var fakeResponseList = new List<DataSyncDto>();
 
-        fakeClient.Setup(it => it.RequestAsync(
-                info.GSRN,
-                It.IsAny<Period>(),
-                info.MeteringPointOwner,
-                CancellationToken.None)
-            )
-            .ReturnsAsync(() => fakeResponseList);
-
+        fakeClient.RequestAsync(string.Empty, default!, default!, default)
+            .ReturnsForAnyArgs(fakeResponseList);
+        
         var service = SetupService();
 
         await service.FetchMeasurements(info,
             CancellationToken.None);
 
-        fakeSyncState.Verify(s => s.SetSyncPosition(It.IsAny<SyncPosition>()), Times.Never);
+        fakeSyncState.DidNotReceive().SetSyncPosition(Arg.Any<SyncPosition>());
     }
 
     private DataSyncService SetupService()
     {
-        var fakeFactory = new Mock<IDataSyncClientFactory>();
-        fakeFactory.Setup(it => it.CreateClient()).Returns(fakeClient.Object);
+        var fakeFactory = Substitute.For<IDataSyncClientFactory>();
+        fakeFactory.CreateClient().ReturnsForAnyArgs(fakeClient);
 
         return new DataSyncService(
-            factory: fakeFactory.Object,
-            logger: fakeLogger.Object,
-            syncState: fakeSyncState.Object
+            factory: fakeFactory,
+            logger: fakeLogger,
+            syncState: fakeSyncState
         );
     }
 }
