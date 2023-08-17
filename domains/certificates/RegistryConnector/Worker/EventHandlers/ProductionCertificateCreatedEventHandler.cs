@@ -33,8 +33,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
 
         var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
 
-        var ownerKey = new Secp256k1Algorithm().GenerateNewPrivateKey(); //TODO: Derive new public key from Deposit Endpoint Reference. See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1693
-        var ownerPublicKey = ownerKey.PublicKey;
+        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);
+        var ownerPublicKey = hdPublicKey.Derive(message.WalletPosition).GetPublicKey();
 
         var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
 
