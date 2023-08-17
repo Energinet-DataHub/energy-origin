@@ -98,7 +98,8 @@ public sealed class CertificatesByOwnerProjectionTest : TestBase, IClassFixture<
             new Technology("F0123", "T0123"),
             owner,
             "gsrn",
-            2L
+            2L,
+            Array.Empty<byte>()
         );
 
     public void Dispose() => session.Dispose();

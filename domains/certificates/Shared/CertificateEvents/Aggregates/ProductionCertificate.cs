@@ -19,13 +19,13 @@ public class ProductionCertificate : AggregateBase
     {
     }
 
-    public ProductionCertificate(
-        string gridArea,
+    public ProductionCertificate(string gridArea,
         Period period,
         Technology technology,
         string meteringPointOwner,
         string gsrn,
-        long quantity)
+        long quantity,
+        byte[] blindingValue)
     {
         var certificateId = Guid.NewGuid();
 
@@ -36,7 +36,8 @@ public class ProductionCertificate : AggregateBase
             technology,
             meteringPointOwner,
             new ShieldedValue<string>(Value: gsrn, R: BigInteger.Zero),
-            new ShieldedValue<long>(Value: quantity, R: BigInteger.Zero));
+            new ShieldedValue<long>(Value: quantity, R: BigInteger.Zero),
+            blindingValue);
 
         Apply(@event);
         AddUncommittedEvent(@event);

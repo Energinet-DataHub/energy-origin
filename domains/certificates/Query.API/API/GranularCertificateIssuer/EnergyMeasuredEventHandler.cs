@@ -50,11 +50,11 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             new Technology(FuelCode: "F00000000", TechCode: "T070000"),
             matchingContract.MeteringPointOwner,
             message.GSRN,
-            message.Quantity);  //TODO: Save commitment
+            message.Quantity,
+            commitment.BlindingValue.ToArray());
 
         await repository.Save(productionCertificate, context.CancellationToken);
 
-        //TODO handle R values. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1517. Check if this can be closed...
         //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
         await context.Publish(new ProductionCertificateCreatedEvent(productionCertificate.Id,
             matchingContract.GridArea,

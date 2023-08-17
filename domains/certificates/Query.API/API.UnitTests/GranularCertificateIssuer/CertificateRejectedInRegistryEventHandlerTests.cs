@@ -22,7 +22,7 @@ public class CertificateRejectedInRegistryEventHandlerTests
     {
         var repositoryMock = new Mock<IProductionCertificateRepository>();
 
-        var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42);
+        var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
         repositoryMock
             .Setup(x => x.Get(It.IsAny<Guid>(), null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(cert);
