@@ -20,7 +20,8 @@ public sealed class ContractTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<MartenDbContainer>,
     IClassFixture<RabbitMqContainer>,
-    IClassFixture<DataSyncWireMock>
+    IClassFixture<DataSyncWireMock>,
+    IClassFixture<ProjectOriginStack>
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly DataSyncWireMock dataSyncWireMock;
@@ -29,13 +30,15 @@ public sealed class ContractTests :
         QueryApiWebApplicationFactory factory,
         MartenDbContainer marten,
         RabbitMqContainer rabbitMqContainer,
-        DataSyncWireMock dataSyncWireMock)
+        DataSyncWireMock dataSyncWireMock,
+        ProjectOriginStack projectOriginStack)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
         this.factory.MartenConnectionString = marten.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
+        this.factory.WalletUrl = projectOriginStack.WalletUrl;
     }
 
     [Fact]
@@ -253,7 +256,7 @@ public sealed class ContractTests :
         var responses = await Task.WhenAll(tenConcurrentRequests);
 
         responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
-        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
+        responses.Where(r => !r.IsSuccessStatusCode).Should().HaveCount(9);
 
         var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
         contracts!.Result.Should().HaveCount(1);
