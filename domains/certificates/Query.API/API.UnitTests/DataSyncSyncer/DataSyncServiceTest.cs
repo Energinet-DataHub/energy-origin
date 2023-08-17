@@ -137,7 +137,7 @@ public class DataSyncServiceTest
 
         fakeClient.RequestAsync(string.Empty, default!, default!, default)
             .ReturnsForAnyArgs(fakeResponseList);
-        
+
         var service = SetupService();
 
         await service.FetchMeasurements(info,
@@ -159,7 +159,7 @@ public class DataSyncServiceTest
 
         fakeClient.RequestAsync(string.Empty, default!, default!, default)
             .ReturnsForAnyArgs(fakeResponseList);
-        
+
         var service = SetupService();
 
         await service.FetchMeasurements(info,

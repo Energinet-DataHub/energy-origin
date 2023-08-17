@@ -24,10 +24,10 @@ public class CertificateRejectedInRegistryEventHandlerTests
 
         var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42);
         repositoryMock.Get(default).ReturnsForAnyArgs(cert);
-        
+
         var msg = new CertificateRejectedInRegistryEvent(cert.Id, "SomeReason");
         await PublishAndConsumeMessage(msg, repositoryMock);
-        
+
         await repositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
     }
 
