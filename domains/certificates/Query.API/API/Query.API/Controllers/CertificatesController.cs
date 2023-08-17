@@ -5,6 +5,7 @@ using API.Query.API.ApiModels.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 
 namespace API.Query.API.Controllers;
 
@@ -38,9 +39,9 @@ public class CertificatesController : ControllerBase
             Id = Guid.Parse(c.FederatedId.StreamId.Value),
             DateFrom = c.Start.ToDateTimeOffset().ToUnixTimeSeconds(),
             DateTo = c.End.ToDateTimeOffset().ToUnixTimeSeconds(),
-            GSRN = c.Attributes.FirstOrDefault(a => a.Key == "AssetId")?.Value ?? "",
-            FuelCode = c.Attributes.FirstOrDefault(a => a.Key == "FuelCode")?.Value ?? "",
-            TechCode = c.Attributes.FirstOrDefault(a => a.Key == "TechCode")?.Value ?? "",
+            GSRN = c.Attributes.FirstOrDefault(a => a.Key == Registry.Attributes.AssetId)?.Value ?? "",
+            FuelCode = c.Attributes.FirstOrDefault(a => a.Key == Registry.Attributes.FuelCode)?.Value ?? "",
+            TechCode = c.Attributes.FirstOrDefault(a => a.Key == Registry.Attributes.TechCode)?.Value ?? "",
             GridArea = c.GridArea,
             Quantity = c.Quantity
         };

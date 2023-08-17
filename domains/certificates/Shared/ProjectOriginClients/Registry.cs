@@ -10,6 +10,13 @@ namespace ProjectOriginClients;
 
 public static class Registry
 {
+    public static class Attributes
+    {
+        public const string AssetId = "AssetId";
+        public const string TechCode = "TechCode";
+        public const string FuelCode = "FuelCode";
+    }
+
     public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, string techCode, string fuelCode, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
     {
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
@@ -34,13 +41,12 @@ public static class Registry
                 Content = ByteString.CopyFrom(ownerPublicKey.Export()),
                 Type = KeyType.Secp256K1
             },
-            //TODO: AssetIdHash. Ask Martin
+            //TODO: AssetIdHash not set. Added as non-hidden attribute instead. See https://github.com/project-origin/registry/issues/129 for more details
         };
 
-        // TODO: Constants for the keys
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = "AssetId", Value = assetId });
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = "TechCode", Value = techCode });
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = "FuelCode", Value = fuelCode });
+        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.AssetId, Value = assetId });
+        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.TechCode, Value = techCode });
+        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.FuelCode, Value = fuelCode });
 
         return issuedEvent;
     }
@@ -71,8 +77,5 @@ public static class Registry
     }
 
     public static GetTransactionStatusRequest CreateStatusRequest(this Transaction transaction) =>
-        new()
-        {
-            Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray()))
-        };
+        new() { Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray())) };
 }
