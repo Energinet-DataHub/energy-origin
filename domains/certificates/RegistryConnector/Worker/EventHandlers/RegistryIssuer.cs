@@ -14,14 +14,14 @@ using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
+public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
 {
-    private readonly ILogger<ProductionCertificateCreatedEventHandler> logger;
+    private readonly ILogger<RegistryIssuer> logger;
     private readonly ProjectOriginOptions projectOriginOptions;
 
-    public ProductionCertificateCreatedEventHandler(
+    public RegistryIssuer(
         IOptions<ProjectOriginOptions> projectOriginOptions,
-        ILogger<ProductionCertificateCreatedEventHandler> logger)
+        ILogger<RegistryIssuer> logger)
     {
         this.projectOriginOptions = projectOriginOptions.Value;
         this.logger = logger;

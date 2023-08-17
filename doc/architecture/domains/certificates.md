@@ -26,19 +26,19 @@ Note: `ContractService` is currently getting information about a metering point 
 ### Message flow: Issue certificate
 The sequence diagram below shows the flow of messages between the components when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram.
 
-TODO: Update sequence diagram
-
 ```mermaid
 sequenceDiagram
     participant dss as DataSyncSyncer
     participant gci as GranularCertificateIssuer
-    participant reg as RegistryConnector
+    participant reg as RegistryIssuer
+    participant wal as WalletSliceSender
 
     dss->>gci: EnergyMeasured
     gci->>reg: ProductionCertificateCreated
-    alt is issued in Project Origin Registry
+    alt Issued in Project Origin Registry
         reg->>gci: CertificateIssuedInRegistry
-    else
+        reg->>wal: CertificateIssuedInRegistry
+    else Rejected in Project Origin Registry
         reg->>gci: CertificateRejectedInRegistry
     end
 ```

@@ -45,7 +45,7 @@ builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
 
-    o.AddConsumer<ProductionCertificateCreatedEventHandler>(c =>
+    o.AddConsumer<RegistryIssuer>(c =>
     {
         c.ConcurrentMessageLimit = 1; //TODO: This is a hack to avoid long processing time of multiple transactions sent to registry. See https://github.com/project-origin/registry/issues/122
     });
