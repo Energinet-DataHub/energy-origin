@@ -34,7 +34,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //TODO: Cleanup data (contracts + event store)
+        await DeleteContractsWithoutWalletDepositEndpoint(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -52,6 +52,29 @@ internal class DataSyncSyncerWorker : BackgroundService
 
             await SleepToNearestHour(stoppingToken);
         }
+    }
+
+    // TODO: Remove this on a later release
+    private async Task DeleteContractsWithoutWalletDepositEndpoint(CancellationToken cancellationToken)
+    {
+        await using var session = documentStore.OpenSession();
+
+        var contracts = await session.Query<CertificateIssuingContract>()
+            .ToListAsync(cancellationToken);
+
+        var i = 0;
+        foreach (var contract in contracts)
+        {
+            if (contract.WalletPublicKey.Length == 0)
+            {
+                session.Delete<CertificateIssuingContract>(contract.Id);
+                i++;
+            }
+        }
+
+        logger.LogInformation("Removing {contractCount} contracts without wallet deposit endpoint", i);
+
+        await session.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
