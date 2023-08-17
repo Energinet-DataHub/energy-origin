@@ -24,7 +24,7 @@ public static class Startup
                 Title = "Certificates Query API"
             });
         });
-        
+
         services.AddHttpContextAccessor();
 
         services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
