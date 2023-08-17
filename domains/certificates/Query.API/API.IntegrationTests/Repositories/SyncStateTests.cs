@@ -7,7 +7,8 @@ using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using Marten;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
@@ -35,7 +36,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
             opts.Connection(martenDbContainer.ConnectionString);
         });
 
-        var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
+        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -57,7 +58,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
         session.Events.Append(Guid.NewGuid(), position);
         await session.SaveChangesAsync();
 
-        var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
+        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -79,7 +80,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
         session.Events.Append(Guid.NewGuid(), position);
         await session.SaveChangesAsync();
 
-        var syncState = new SyncState(store, Mock.Of<ILogger<SyncState>>());
+        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -91,16 +92,14 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
     {
         var info = CreateSyncInfo();
 
-        var storeMock = new Mock<IDocumentStore>();
-        storeMock.Setup(m => m.QuerySession())
-            .Throws<Exception>()
-            .Verifiable();
+        var storeMock = Substitute.For<IDocumentStore>();
+        storeMock.QuerySession().ThrowsForAnyArgs<Exception>();
 
-        var syncState = new SyncState(storeMock.Object, Mock.Of<ILogger<SyncState>>());
+        var syncState = new SyncState(storeMock, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
         actualPeriodStartTime.Should().Be(null);
-        storeMock.Verify();
+        storeMock.Received(1).QuerySession();
     }
 }
