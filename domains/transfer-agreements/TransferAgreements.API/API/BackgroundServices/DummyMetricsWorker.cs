@@ -28,7 +28,7 @@ namespace API.BackgroundServices
                 metrics.TransferError(certId1);
                 metrics.TransferError(certId2);
 
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
         }
     }
