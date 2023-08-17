@@ -11,7 +11,7 @@ public record ProductionCertificateCreatedEvent(
     string MeteringPointOwner,
     Gsrn Gsrn,
     byte[] BlindingValue,
-    long Quantity, //TODO: long?
+    long Quantity,
     byte[] WalletPublicKey,
     string WalletUrl,
     uint WalletPosition

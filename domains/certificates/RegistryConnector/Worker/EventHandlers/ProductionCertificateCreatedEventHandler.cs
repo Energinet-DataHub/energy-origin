@@ -31,6 +31,9 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
     {
         var message = context.Message;
 
+        if (message.Quantity > uint.MaxValue)
+            throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
+
         var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
 
         var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);

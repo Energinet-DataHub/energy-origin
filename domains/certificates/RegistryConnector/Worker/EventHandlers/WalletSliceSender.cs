@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Contracts.Certificates;
 using Google.Protobuf;
@@ -19,6 +20,9 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
     {
         var message = context.Message;
 
+        if (message.Quantity > uint.MaxValue)
+            throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
+
         using var channel = GrpcChannel.ForAddress(message.WalletUrl);
         var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
 
@@ -29,7 +33,7 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
                 Registry = message.RegistryName,
                 StreamId = new Uuid { Value = message.CertificateId.ToString() }
             },
-            Quantity = (uint)message.Quantity, //TODO: uint/long
+            Quantity = (uint)message.Quantity,
             RandomR = ByteString.CopyFrom(message.BlindingValue),
             WalletDepositEndpointPublicKey = ByteString.CopyFrom(message.WalletPublicKey),
             WalletDepositEndpointPosition = message.WalletPosition

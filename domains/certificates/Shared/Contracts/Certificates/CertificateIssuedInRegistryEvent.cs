@@ -6,7 +6,7 @@ public record CertificateIssuedInRegistryEvent(
     Guid CertificateId,
     string RegistryName,
     byte[] BlindingValue,
-    long Quantity, //TODO: long?
+    long Quantity,
     byte[] WalletPublicKey,
     string WalletUrl,
     uint WalletPosition
