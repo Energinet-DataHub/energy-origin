@@ -4,15 +4,16 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
+[Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
 public class RoleController : ControllerBase
 {
-    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpGet]
     [Route("role/all")]
     public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
@@ -21,9 +22,8 @@ public class RoleController : ControllerBase
         x.Name
     }));
 
-    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpPut]
-    [Route("role/{role}/assign/{userId}")]
+    [Route("role/{role}/assign/{userId:guid}")]
     public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var validRoles = roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => x.Key);
@@ -39,7 +39,10 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
-
+        if (user.Company?.Tin != descriptor.Tin)
+        {
+            return Forbid($"User is not in the same company");
+        }
         if (user.UserRoles.Any(x => x.Role == role))
         {
             return Ok();
@@ -58,9 +61,8 @@ public class RoleController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = RoleKey.RoleAdmin)]
     [HttpPut]
-    [Route("role/{role}/remove/{userId}")]
+    [Route("role/{role}/remove/{userId:guid}")]
     public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -70,10 +72,13 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
-
         if (user.Id == descriptor.Id)
         {
             return BadRequest("An admin cannot remove his admin role");
+        }
+        if (user.Company?.Tin != descriptor.Tin)
+        {
+            return Forbid($"User is not in the same company");
         }
 
         var userRole = user.UserRoles.SingleOrDefault(x => x.Role == role);

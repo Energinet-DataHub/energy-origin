@@ -5,6 +5,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -108,7 +109,7 @@ public class TermsController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = RoleKey.OrganizationAdmin)]
+    [Authorize(Roles = RoleKey.OrganizationAdmin, Policy = PolicyName.RequiresCompany)]
     [HttpPut]
     [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(

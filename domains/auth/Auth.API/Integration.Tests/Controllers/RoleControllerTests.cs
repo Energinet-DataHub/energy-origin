@@ -13,19 +13,27 @@ namespace Integration.Tests.Controllers;
 public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
-    private readonly User user = new()
-    {
-        Id = Guid.NewGuid(),
-        Name = Guid.NewGuid().ToString()
-    };
-    private readonly User adminUser = new()
-    {
-        Id = Guid.NewGuid(),
-        Name = Guid.NewGuid().ToString(),
-        UserRoles = new List<UserRole> { new() { Role = RoleKey.RoleAdmin } }
-    };
+    private readonly User user;
+    private readonly User adminUser;
 
-    public RoleControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
+    public RoleControllerTests(AuthWebApplicationFactory factory)
+    {
+        this.factory = factory;
+        var tin = Guid.NewGuid().ToString();
+        adminUser = new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            UserRoles = new List<UserRole> { new() { Role = RoleKey.RoleAdmin } },
+            Company = new() { Tin = tin, Name = Guid.NewGuid().ToString() }
+        };
+        user = new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Company = new() { Tin = tin, Name = Guid.NewGuid().ToString() }
+        };
+    }
 
     [Fact]
     public async Task List_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
@@ -63,7 +71,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task List_ReturnsOk_WhenInvoked()
     {
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var response = await client.GetAsync($"role/all");
@@ -75,7 +83,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Assign_ReturnsOk_WhenRoleIsAssigned()
     {
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
         var role = RoleKey.Viewer;
@@ -106,7 +114,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             RoleConfigurations = new() { new() { Key = role, Name = role } }
         };
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         var response = await client.PutAsync($"role/notExistentRoleKey/assign/{user.Id}", null);
@@ -123,7 +131,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             RoleConfigurations = new() { new() { Key = role, Name = role, IsTransient = true } }
         };
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
@@ -147,6 +155,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
                     Role = role
                 }
             },
+            Company = new() { Tin = user.Company!.Tin, Name = "" },
             AllowCprLookup = false,
             Name = "TestUser"
         };
@@ -165,8 +174,8 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task Remove_ShouldReturnOk_WhenRoleIsNotAssigned()
     {
         var role = RoleKey.Viewer;
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.RoleAdmin);
+        var user = await factory.AddUserToDatabaseAsync(this.user);
+        var client = factory.CreateAuthenticatedClient(adminUser, role: RoleKey.RoleAdmin);
 
         var response = await client.PutAsync($"role/{role}/remove/{user.Id}", null);
 
@@ -202,8 +211,22 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string action)
     {
         var role = RoleKey.Viewer;
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user);
+        var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("assign")]
+    [InlineData("remove")]
+    public async Task RoleCalls_ShouldReturnForbidden_WhenAdminUserButPrivate(string action)
+    {
+        var role = RoleKey.Viewer;
+        var user = await factory.AddUserToDatabaseAsync(new() { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
         var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
 
         Assert.NotNull(response);

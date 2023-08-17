@@ -20,7 +20,6 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
-    // FIXME: add tests for matching roles + inheriting
     [AllowAnonymous]
     [HttpGet]
     [Route("auth/oidc/callback")]

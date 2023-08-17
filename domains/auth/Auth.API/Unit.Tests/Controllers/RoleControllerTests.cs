@@ -15,8 +15,6 @@ namespace Unit.Tests.Controllers;
 
 public class RoleControllerTests
 {
-    // FIXME: add tests for only manipulating the companys own users, just add all missing
-
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly RoleController roleController = new();
     private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();
@@ -73,7 +71,7 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task Assign_ShouldReturnOk_WhenSuccess()
+    public async Task Assign_ShouldReturnOk_WhenInvoked()
     {
         Mock.Get(mapper)
             .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
@@ -91,6 +89,49 @@ public class RoleControllerTests
         var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
 
         Assert.IsType<OkResult>(result);
+    }
+
+    [Fact]
+    public async Task Assign_ShouldReturnBadRequest_WhenInvokedOnUserFromAnotherCompany()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid(),
+                Tin = Guid.NewGuid().ToString(),
+            });
+
+        var testUserId = Guid.NewGuid();
+        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        var dummyUser = new User();
+        Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+
+        var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task Assign_ShouldReturnBadRequest_WhenInvokedByPrivateUser()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid()
+            });
+
+        var testUserId = Guid.NewGuid();
+        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        var dummyUser = new User();
+        Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+
+        var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
+
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
@@ -115,6 +156,55 @@ public class RoleControllerTests
         var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
 
         Assert.IsType<OkResult>(result);
+    }
+
+    [Fact]
+    public async Task Remove_ShouldRemove_WhenInvokedOnUserFromAnotherCompany()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid(),
+                Tin = Guid.NewGuid().ToString(),
+            });
+        var testUserId = Guid.NewGuid();
+        var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+
+        roleController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
+        };
+
+        var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task Remove_ShouldRemove_WhenInvokedByPrivateUser()
+    {
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid()
+            });
+        var testUserId = Guid.NewGuid();
+        var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+
+        roleController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
+        };
+
+        var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+
+        Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]

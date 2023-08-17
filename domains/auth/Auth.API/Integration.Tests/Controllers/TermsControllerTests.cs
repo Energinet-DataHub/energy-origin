@@ -190,4 +190,15 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsAuthenticatedByPrivateUser()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/10", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
 }

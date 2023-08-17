@@ -16,7 +16,7 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
     public RemoveUserControllerTests(AuthWebApplicationFactory factory)
     {
         this.factory = factory;
-        user = new() { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
+        user = new() { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString(), Company = new() { Tin = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString() } };
     }
 
     [Fact]

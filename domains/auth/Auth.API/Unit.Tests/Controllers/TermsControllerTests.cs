@@ -20,8 +20,6 @@ namespace Unit.Tests.Controllers;
 
 public class TermsControllerTests
 {
-    // FIXME: add more testfullness if you have time
-
     private readonly TermsController termsController = new();
     private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();

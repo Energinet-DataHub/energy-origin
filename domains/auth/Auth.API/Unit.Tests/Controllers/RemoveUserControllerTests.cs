@@ -12,8 +12,6 @@ namespace Unit.Tests.Controllers;
 
 public class RemoveUserControllerTests
 {
-    // FIXME: fix tests and only allow admins of a company to delete its own users
-
     private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly RemoveUserController controller = new();
     private readonly ILogger<RemoveUserController> logger = Mock.Of<ILogger<RemoveUserController>>();
