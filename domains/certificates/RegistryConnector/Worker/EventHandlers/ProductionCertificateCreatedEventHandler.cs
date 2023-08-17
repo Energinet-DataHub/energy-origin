@@ -34,7 +34,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
         var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
 
         var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);
-        var ownerPublicKey = hdPublicKey.Derive(message.WalletPosition).GetPublicKey();
+        var ownerPublicKey = hdPublicKey.Derive((int)message.WalletPosition).GetPublicKey();
 
         var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
 
