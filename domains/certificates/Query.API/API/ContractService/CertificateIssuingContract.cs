@@ -1,7 +1,6 @@
 using System;
 using CertificateValueObjects;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace API.ContractService;
 
@@ -18,11 +17,6 @@ public class CertificateIssuingContract
     public DateTimeOffset Created { get; set; }
     public string WalletUrl { get; set; } = "";
     public byte[] WalletPublicKey { get; set; } = Array.Empty<byte>();
-
-    //TODO: This is unused
-    public IHDPublicKey GetHDPublicKey() => new Secp256k1Algorithm().ImportHDPublicKey(WalletPublicKey);
-
-    private void ValidateHDPublicKey() => GetHDPublicKey();
 
     public static CertificateIssuingContract Create(int contractNumber, string gsrn, string gridArea, MeteringPointType meteringPointType, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate, string walletUrl, byte[] walletPublicKey)
     {
@@ -41,7 +35,8 @@ public class CertificateIssuingContract
             WalletPublicKey = walletPublicKey
         };
 
-        contract.ValidateHDPublicKey();
+        // Validate key
+        new Secp256k1Algorithm().ImportHDPublicKey(walletPublicKey);
 
         return contract;
     }

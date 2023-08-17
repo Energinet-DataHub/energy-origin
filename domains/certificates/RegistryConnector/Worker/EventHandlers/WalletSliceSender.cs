@@ -41,7 +41,7 @@ public class WalletSliceSender : IConsumer<CertificateIssuedInRegistryEvent>
             WalletDepositEndpointPosition = (uint)message.WalletPosition //TODO: Should it be uint or int?
         };
 
-        var _ = await client.ReceiveSliceAsync(receiveRequest);
+        await client.ReceiveSliceAsync(receiveRequest);
 
         logger.LogInformation("Certificate {id} sent to wallet", message.CertificateId);
     }
