@@ -76,6 +76,7 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
                 logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
                 await context.Publish(new CertificateIssuedInRegistryEvent(
                     message.CertificateId,
+                    projectOriginOptions.RegistryName,
                     commitment.BlindingValue.ToArray(),
                     commitment.Message,
                     message.WalletPublicKey,
