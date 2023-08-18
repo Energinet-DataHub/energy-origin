@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using API.Models;
 using API.Services;
+using FluentAssertions.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -50,16 +51,42 @@ public class ProjectOriginWalletServiceTest
     }
 
     [Fact]
-    public async Task TransferCertificates_CertificateStartIsInvalidAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
+    public async Task TransferCertificates_CertificateStartDateBeforeTAStartDateAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
     {
+        var now = DateTimeOffset.UtcNow;
         var transferAgreement = new TransferAgreement()
         {
-            Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, SenderName = "Producent A/S",
+            Id = Guid.NewGuid(), StartDate = now, SenderName = "Producent A/S",
             SenderTin = "32132112", ReceiverTin = "11223344"
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddDays(-1))  } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-2), now.AddHours(-1))  } }
+        );
+
+        var fakeTransferResponse = CreateAsyncUnaryCall(
+            new TransferResponse() {}
+        );
+
+        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
+
+        await service.TransferCertificates(transferAgreement);
+
+        fakeWalletServiceClient.Received(0).TransferCertificateAsync(Arg.Any<TransferRequest>(), Arg.Any<Metadata>());
+    }
+
+    [Fact]
+    public async Task TransferCertificates_CertificateEndDateAfterTAStartDatCertificateStartDateIsBefore_ShouldNotCallWalletTransferCertificate()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var transferAgreement = new TransferAgreement()
+        {
+            Id = Guid.NewGuid(), StartDate = now, EndDate = now.AddHours(3), SenderName = "Producent A/S",
+            SenderTin = "32132112", ReceiverTin = "11223344"
+        };
+
+        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1))  } }
         );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
