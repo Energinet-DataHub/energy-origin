@@ -101,7 +101,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
         foreach (var certificate in certificates)
         {
-            if (IsPeriodNotMatching(transferAgreement, certificate)) continue;
+            if (!IsPeriodMatching(transferAgreement, certificate)) continue;
 
             TransferRequest request = new()
             {
@@ -127,18 +127,18 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         return response.GranularCertificates;
     }
 
-    private static bool IsPeriodNotMatching(TransferAgreement transferAgreement, GranularCertificate certificate)
+    private static bool IsPeriodMatching(TransferAgreement transferAgreement, GranularCertificate certificate)
     {
         if (transferAgreement.EndDate == null)
         {
-            return certificate.Type != GranularCertificateType.Production ||
-                   certificate.End < Timestamp.FromDateTimeOffset(transferAgreement.StartDate);
+            return certificate.Type == GranularCertificateType.Production &&
+                   certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate);
         }
 
-        return certificate.Type != GranularCertificateType.Production ||
+        return certificate.Type == GranularCertificateType.Production &&
                (
-                   certificate.Start < Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
-                   certificate.End > Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
+                   certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
+                   certificate.End <= Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
                );
     }
 

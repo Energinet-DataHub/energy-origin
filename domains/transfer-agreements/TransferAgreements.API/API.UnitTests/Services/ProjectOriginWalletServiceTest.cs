@@ -50,7 +50,7 @@ public class ProjectOriginWalletServiceTest
     }
 
     [Fact]
-    public async Task TransferCertificates_CertificateStartIsInValidAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
+    public async Task TransferCertificates_CertificateStartIsInvalidAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
     {
         var transferAgreement = new TransferAgreement()
         {
