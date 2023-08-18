@@ -25,17 +25,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using (var scope = serviceProvider.CreateScope())
+        using var scope = serviceProvider.CreateScope();
+        var transferAgreementsAutomationService = scope.ServiceProvider.GetRequiredService<ITransferAgreementsAutomationService>();
+        try
         {
-            var transferAgreementsAutomationService = scope.ServiceProvider.GetRequiredService<ITransferAgreementsAutomationService>();
-            try
-            {
-                await transferAgreementsAutomationService.Run(stoppingToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogInformation("Something went wrong with the TransferAgreementsAutomationService: {exception}", e.Message);
-            }
+            await transferAgreementsAutomationService.Run(stoppingToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogInformation("Something went wrong with the TransferAgreementsAutomationService: {exception}", e.Message);
         }
 
     }

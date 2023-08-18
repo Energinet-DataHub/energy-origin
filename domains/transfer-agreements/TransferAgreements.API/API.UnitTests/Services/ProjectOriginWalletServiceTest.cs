@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using API.Models;
 using API.Services;
@@ -35,12 +35,12 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2))  } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2)) } }
         );
 
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() {}
+            new TransferResponse() { }
         );
 
         SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
@@ -61,11 +61,11 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-2), now.AddHours(-1))  } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-2), now.AddHours(-1)) } }
         );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() {}
+            new TransferResponse() { }
         );
 
         SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
@@ -86,11 +86,11 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1))  } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1)) } }
         );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() {}
+            new TransferResponse() { }
         );
 
         SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
@@ -110,11 +110,11 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2))  } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2)) } }
         );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() {}
+            new TransferResponse() { }
         );
         SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
 
