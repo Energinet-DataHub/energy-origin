@@ -35,7 +35,7 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2)) } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) } }
         );
 
 
@@ -110,7 +110,7 @@ public class ProjectOriginWalletServiceTest
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddDays(1), DateTimeOffset.UtcNow.AddDays(2)) } }
+            new QueryResponse { GranularCertificates = { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) } }
         );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
