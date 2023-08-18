@@ -31,9 +31,9 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     public void SetCertificatesTransferredOnLastRun(int certificatesTransferred) =>
         certificatesTransferredOnLastRun = certificatesTransferred;
 
-    public void TransferRetry(Guid certificateId) =>
+    public void AddTransferAttempt(Guid certificateId) =>
         TransferRetriesPerCertificate.Add(1,
-            GetKeyValuePair(certificateIdKey, certificateId));
+            CreateTag(certificateIdKey, certificateId));
 
-    private static KeyValuePair<string, object?> GetKeyValuePair(string key, object? value) => new(key, value);
+    private static KeyValuePair<string, object?> CreateTag(string key, object? value) => new(key, value);
 }

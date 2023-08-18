@@ -24,8 +24,8 @@ namespace API.BackgroundServices
                 var rand = new Random();
                 metrics.SetCertificatesTransferredOnLastRun(rand.Next(0, 100));
                 metrics.SetNumberOfTransferAgreementsOnLastRun(rand.Next(0, 100));
-                metrics.TransferRetry(certId1);
-                metrics.TransferRetry(certId2);
+                metrics.AddTransferAttempt(certId1);
+                metrics.AddTransferAttempt(certId2);
 
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
