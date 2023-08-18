@@ -1,14 +1,11 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.17 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-RUN apk add curl
-HEALTHCHECK CMD curl --fail http://localhost/health || exit 1
-
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.17 AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
 WORKDIR /src
 COPY ["Query.API/API/API.csproj", "Query.API/API/"]
 RUN dotnet restore "Query.API/API/API.csproj"
@@ -17,9 +14,11 @@ WORKDIR "/src/Query.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "API.csproj" -c Release -o /app/publish
+RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+RUN apt-get -y update && apt-get -y install wget && apt-get clean
 WORKDIR /app
 COPY --from=publish /app/publish .
+HEALTHCHECK CMD wget -qO- http://localhost:80/health > /dev/null || exit 1
 ENTRYPOINT ["dotnet", "API.dll"]
