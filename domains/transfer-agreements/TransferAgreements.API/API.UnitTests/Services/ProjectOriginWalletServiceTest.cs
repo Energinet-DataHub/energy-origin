@@ -17,12 +17,12 @@ using Xunit;
 
 namespace API.UnitTests;
 
-public class WalletServiceTest
+public class ProjectOriginWalletServiceTest
 {
     private ProjectOriginWalletService service;
     private WalletService.WalletServiceClient fakeWalletServiceClient;
 
-    public WalletServiceTest()
+    public ProjectOriginWalletServiceTest()
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
         fakeWalletServiceClient = Substitute.For<WalletService.WalletServiceClient>();
