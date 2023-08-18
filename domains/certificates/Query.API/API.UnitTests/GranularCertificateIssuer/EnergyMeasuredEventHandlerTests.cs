@@ -147,11 +147,10 @@ public class EnergyMeasuredEventHandlerTests
     [Fact]
     public async Task Consume_MeasurementPeriodOutsideScope_NoEventsSaved()
     {
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -160,9 +159,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
