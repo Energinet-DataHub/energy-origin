@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using API.Data;
 using API.Filters;
+using API.Models;
 using API.Options;
 using API.Services;
+using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
+using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -128,8 +131,11 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
-builder.Services.AddScoped<IWalletDepositEndpointService, WalletDepositEndpointService>();
+builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"] ?? "http://localhost:8080"));
+builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
+builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

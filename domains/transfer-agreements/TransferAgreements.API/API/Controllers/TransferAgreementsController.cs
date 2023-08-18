@@ -6,6 +6,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using API.Models;
 using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -22,18 +23,18 @@ public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
-    private readonly IWalletDepositEndpointService walletDepositEndpointService;
+    private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IHttpContextAccessor httpContextAccessor;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
-        IWalletDepositEndpointService walletDepositEndpointService,
+        IProjectOriginWalletService projectOriginWalletService,
         IHttpContextAccessor httpContextAccessor)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
-        this.walletDepositEndpointService = walletDepositEndpointService;
+        this.projectOriginWalletService = projectOriginWalletService;
         this.httpContextAccessor = httpContextAccessor;
     }
 
@@ -71,7 +72,7 @@ public class TransferAgreementsController : ControllerBase
 
         var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
-        transferAgreement.ReceiverReference = await walletDepositEndpointService.CreateReceiverDepositEndpoint(
+        transferAgreement.ReceiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
             bearerToken,
             request.Base64EncodedWalletDepositEndpoint,
             request.ReceiverTin);
@@ -187,7 +188,7 @@ public class TransferAgreementsController : ControllerBase
     {
         var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
 
-        var base64String = await walletDepositEndpointService.CreateWalletDepositEndpoint(bearerToken);
+        var base64String = await projectOriginWalletService.CreateWalletDepositEndpoint(bearerToken);
         return Ok(new { result = base64String });
     }
 
