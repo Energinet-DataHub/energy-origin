@@ -11,7 +11,8 @@ using MassTransit;
 using MassTransit.Testing;
 using MeasurementEvents;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;
@@ -36,11 +37,10 @@ public class EnergyMeasuredEventHandlerTests
     [Fact]
     public async Task Consume_NoContract_NoEventsSaved()
     {
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))!
-            .ReturnsAsync(value: null);
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsNullForAnyArgs();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -49,20 +49,19 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Consume_ConsumptionPoint_NoEventsSaved()
     {
         mockContract.MeteringPointType = MeteringPointType.Consumption;
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -71,9 +70,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -82,11 +81,10 @@ public class EnergyMeasuredEventHandlerTests
     [InlineData(MeasurementQuality.Estimated)]
     public async Task Consume_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality)
     {
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -95,9 +93,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: measurementQuality);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -107,11 +105,10 @@ public class EnergyMeasuredEventHandlerTests
     {
         mockContract.StartDate = now.AddDays(days).AddSeconds(seconds);
 
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -120,9 +117,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -130,11 +127,10 @@ public class EnergyMeasuredEventHandlerTests
     [InlineData(-42)]
     public async Task Consume_QuantityIsZeroOrNegative_NoEventsSaved(long quantity)
     {
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -143,9 +139,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: quantity,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Never);
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -172,11 +168,10 @@ public class EnergyMeasuredEventHandlerTests
     [Fact]
     public async Task Consume_ValidMeasurement_EventsSaved()
     {
-        var contractServiceMock = new Mock<IContractService>();
-        contractServiceMock.Setup(c => c.GetByGSRN(It.IsAny<string>(), It.IsAny<CancellationToken>()))!
-            .ReturnsAsync(new[] { mockContract });
+        var contractServiceMock = Substitute.For<IContractService>();
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
-        var repositoryMock = new Mock<IProductionCertificateRepository>();
+        var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
@@ -185,9 +180,9 @@ public class EnergyMeasuredEventHandlerTests
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await PublishAndConsumeMessage(message, repositoryMock.Object, contractServiceMock.Object);
+        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        repositoryMock.Verify(s => s.Save(It.IsAny<ProductionCertificate>(), It.IsAny<CancellationToken>()), Times.Once);
+        await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,
