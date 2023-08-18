@@ -1,15 +1,10 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Data;
-using API.Options;
+using API.Models;
 using API.Services;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;

@@ -6,6 +6,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using API.Models;
 using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;

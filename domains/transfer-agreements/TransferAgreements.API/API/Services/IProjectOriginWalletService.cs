@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using API.Data;
+using API.Models;
 
 namespace API.Services;
 public interface IProjectOriginWalletService

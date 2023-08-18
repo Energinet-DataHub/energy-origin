@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Converters;
 using API.Data;
+using API.Models;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -100,10 +101,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
         foreach (var certificate in certificates)
         {
-            if (IsPeriodNotMatching(transferAgreement, certificate))
-            {
-                continue;
-            }
+            if (IsPeriodNotMatching(transferAgreement, certificate)) continue;
 
             TransferRequest request = new()
             {

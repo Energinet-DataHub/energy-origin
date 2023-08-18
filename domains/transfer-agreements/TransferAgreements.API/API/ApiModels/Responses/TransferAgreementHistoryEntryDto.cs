@@ -1,5 +1,6 @@
 using System;
 using API.Data;
+using API.Models;
 
 namespace API.ApiModels.Responses;
 

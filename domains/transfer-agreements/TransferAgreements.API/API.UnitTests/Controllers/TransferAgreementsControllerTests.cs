@@ -8,6 +8,7 @@ using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Controllers;
 using API.Data;
+using API.Models;
 using API.Services;
 using FluentAssertions;
 using FluentValidation;
