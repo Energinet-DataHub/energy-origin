@@ -24,7 +24,7 @@ Note: `ContractService` is currently getting information about a metering point 
 ![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
 
 ### Message flow: Issue certificate
-The sequence diagram below shows the flow of messages between the components when issuing a certificate. All messages are published to the message broker; the message broker is not shown in the diagram.
+The sequence diagram below shows the flow of messages between the components when issuing a single certificate. All messages are published to the message broker; the message broker is not shown in the diagram. Before that flow is possible, a wallet deposit endpoint must be created in the user's wallet; that happens as part of creating the Contract.
 
 ```mermaid
 sequenceDiagram
@@ -43,7 +43,9 @@ sequenceDiagram
     end
 ```
 
-### Key position when sending slices to the wallet
+The Registry only allows issuing of certificates from the issuing body and in this case that is Energinet. Hence, a Wallet System is not able to issue certificates. So the Certificates domain is responsible for issuing first to the registry and then sending to the wallet. For this to happen, the owner public key on the certificate must be created or calculated by the Certificates domain; the next section describes how the Certificates domain calculates the key.
+
+### Key position when sending certificates/slices to the wallet
 
 A wallet deposit endpoint is needed in order to send slices to the wallet. A position for deriving the child key is needed for each slice sent to the wallet. The position is a integer in the Wallet API. It is a requirement that a new position is used for each new slice.
 
