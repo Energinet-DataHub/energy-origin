@@ -81,6 +81,35 @@ public class TokenIssuerTests
     }
 
     [Fact]
+    public void Issue_ShouldReturnATokenWithAllIneritedRoles_WhenInheritedRolesHasInheritedRoles()
+    {
+        var matched = "matched";
+        var intermediate = "intermediate";
+        var halfway = "halfway";
+        var transitional = "transitional";
+        var required = "required";
+        var options = new RoleOptions()
+        {
+            RoleConfigurations = new() {
+                new() { Key = matched, Name = matched, Inherits = new() { intermediate } },
+                new() { Key = intermediate, Name = intermediate, Inherits = new() { halfway } },
+                new() { Key = halfway, Name = halfway, Inherits = new() { transitional } },
+                new() { Key = transitional, Name = transitional, Inherits = new() { required } },
+                new() { Key = required, Name = required }
+            }
+        };
+        var (descriptor, data) = PrepareUser(matchedRoles: matched);
+
+        var token = GetTokenIssuer(roles: options).Issue(descriptor, data);
+
+        Assert.NotNull(token);
+        var jwt = Convert(token);
+        Assert.NotNull(jwt);
+        var roles = jwt.Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value);
+        Assert.Contains(required, roles);
+    }
+
+    [Fact]
     public void Issue_ShouldReturnATokenForThatUser_WhenIssuingForAUser()
     {
         var (descriptor, data) = PrepareUser();

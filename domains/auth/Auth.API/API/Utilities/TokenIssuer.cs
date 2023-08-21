@@ -1,3 +1,4 @@
+using System.Collections;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -81,8 +82,7 @@ public class TokenIssuer : ITokenIssuer
         var assignedRoles = data.AssignedRoles ?? Array.Empty<string>();
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
         var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
-        var inheritedRoles = roleOptions.RoleConfigurations.Where(x => allottedRoles.Contains(x.Key)).SelectMany(x => x.Inherits);
-        var roles = allottedRoles.Concat(inheritedRoles).Distinct().Where(x => validRoles.Contains(x));
+        var roles = AddInheritedRoles(roleOptions.RoleConfigurations.ToDictionary(x => x.Key), allottedRoles).Distinct().Where(x => validRoles.Contains(x));
 
         claims.Add(UserClaimName.Roles, roles);
 
@@ -115,6 +115,16 @@ public class TokenIssuer : ITokenIssuer
             SigningCredentials = credentials,
             Claims = claims
         };
+    }
+
+    private static IEnumerable<string> AddInheritedRoles(Dictionary<string, RoleConfiguration> configurations, IEnumerable<string> roles)
+    {
+        if (roles.IsNullOrEmpty())
+        {
+            return Enumerable.Empty<string>();
+        }
+        var inherited = roles.Where(x => configurations[x].Inherits.IsNullOrEmpty() == false).SelectMany(x => configurations[x].Inherits);
+        return roles.Concat(inherited).Concat(AddInheritedRoles(configurations, inherited));
     }
 
     private static string CreateToken(SecurityTokenDescriptor descriptor)
