@@ -11,11 +11,11 @@ public struct UserClaimName
     public const string IdentityToken = "eit";
     public const string ProviderKeys = "pke";
     public const string ProviderType = "pty";
-    public const string AllowCprLookup = "acl";
+    public const string CurrentTermsVersion = "trm";
+    public const string AcceptedTermsVersion = "atv";
+    public const string AllowCPRLookup = "acl";
     public const string Tin = "tin";
     public const string CompanyName = "cpn";
     public const string CompanyId = "coi";
-    public const string Roles = "roles";
-    public const string AssignedRoles = "ars";
-    public const string MatchedRoles = "mrs";
+    public const string UserStored = "ust";
 }

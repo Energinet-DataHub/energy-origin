@@ -15,7 +15,7 @@ public class CryptographyTests
             Key = "secretsecretsecretsecret"
         };
 
-        cryptography = new Cryptography(options);
+        cryptography = new Cryptography(Microsoft.Extensions.Options.Options.Create(options));
     }
 
     [Fact]

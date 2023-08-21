@@ -2,8 +2,8 @@ namespace EnergyOrigin.TokenValidation.Values;
 
 public enum ProviderKeyType
 {
-    Pid,
-    Rid,
-    Eia,
-    MitIdUuid
+    PID,
+    RID,
+    EIA,
+    MitID_UUID
 }

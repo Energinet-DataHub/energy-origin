@@ -38,9 +38,27 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             return null;
         }
 
-        if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var allowCprLookup))
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.CurrentTermsVersion), out var currentVersion))
         {
-            MissingProperty(nameof(UserClaimName.AllowCprLookup));
+            MissingProperty(nameof(UserClaimName.CurrentTermsVersion));
+            return null;
+        }
+
+        if (!int.TryParse(user.FindFirstValue(UserClaimName.AcceptedTermsVersion), out var acceptedVersion))
+        {
+            MissingProperty(nameof(UserClaimName.AcceptedTermsVersion));
+            return null;
+        }
+
+        if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCPRLookup), out var allowCPRLookup))
+        {
+            MissingProperty(nameof(UserClaimName.AllowCPRLookup));
+            return null;
+        }
+
+        if (!bool.TryParse(user.FindFirstValue(UserClaimName.UserStored), out var userStored))
+        {
+            MissingProperty(nameof(UserClaimName.UserStored));
             return null;
         }
 
@@ -80,8 +98,10 @@ public class UserDescriptorMapperBase : IUserDescriptorMapperBase
             CompanyId = Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var companyId) ? companyId : null,
             Tin = user.FindFirstValue(UserClaimName.Tin),
             CompanyName = user.FindFirstValue(UserClaimName.CompanyName),
-            MatchedRoles = user.FindFirstValue(UserClaimName.MatchedRoles) ?? string.Empty,
-            AllowCprLookup = allowCprLookup,
+            AcceptedTermsVersion = acceptedVersion,
+            CurrentTermsVersion = currentVersion,
+            AllowCPRLookup = allowCPRLookup,
+            UserStored = userStored,
             EncryptedAccessToken = encryptedAccessToken,
             EncryptedIdentityToken = encryptedIdentityToken,
             EncryptedProviderKeys = encryptedProviderKeys

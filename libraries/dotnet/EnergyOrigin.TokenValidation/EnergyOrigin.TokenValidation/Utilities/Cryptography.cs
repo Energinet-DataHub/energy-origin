@@ -12,7 +12,7 @@ public class Cryptography : ICryptography
 {
     private readonly byte[] secret;
 
-    public Cryptography(CryptographyOptions options) => secret = Encoding.UTF8.GetBytes(options.Key);
+    public Cryptography(IOptions<CryptographyOptions> options) => secret = Encoding.UTF8.GetBytes(options.Value.Key);
 
     public string Encrypt<T>(T state)
     {
