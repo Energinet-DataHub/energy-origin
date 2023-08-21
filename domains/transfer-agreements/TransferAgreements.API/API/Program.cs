@@ -7,6 +7,7 @@ using API.BackgroundServices;
 using API.Data;
 using API.Filters;
 using API.Metrics;
+using API.Models;
 using API.Options;
 using API.Services;
 using API.TransferAgreementsAutomation;

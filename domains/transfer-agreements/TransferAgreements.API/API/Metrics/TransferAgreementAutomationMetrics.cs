@@ -16,6 +16,7 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     private Counter<int> TransferRetriesPerCertificate { get; }
 
     private const string certificateIdKey = "CertificateId";
+    private const string registryIdKey = "registry";
     public TransferAgreementAutomationMetrics()
     {
         var meter = new Meter(MetricName);
@@ -28,11 +29,15 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     public void SetNumberOfTransferAgreementsOnLastRun(int transferAgreementsOnLastRun) =>
         numberOfTransferAgreementsOnLastRun = transferAgreementsOnLastRun;
 
-    public void SetCertificatesTransferredOnLastRun(int certificatesTransferred) =>
-        certificatesTransferredOnLastRun = certificatesTransferred;
+    public void AddCertificatesTransferred(int certificatesTransferred) =>
+        certificatesTransferredOnLastRun += certificatesTransferred;
 
-    public void AddTransferAttempt(Guid certificateId) =>
+    public void ResetCertificatesTransferred() =>
+        certificatesTransferredOnLastRun = 0;
+
+    public void AddTransferAttempt(string registry, Guid certificateId) =>
         TransferRetriesPerCertificate.Add(1,
+            CreateTag(registryIdKey, registry),
             CreateTag(certificateIdKey, certificateId));
 
     private static KeyValuePair<string, object?> CreateTag(string key, object? value) => new(key, value);

@@ -21,11 +21,12 @@ namespace API.BackgroundServices
             var certId2 = Guid.NewGuid();
             while (!stoppingToken.IsCancellationRequested)
             {
+                metrics.ResetCertificatesTransferred();
                 var rand = new Random();
-                metrics.SetCertificatesTransferredOnLastRun(rand.Next(0, 100));
+                metrics.AddCertificatesTransferred(rand.Next(0, 100));
                 metrics.SetNumberOfTransferAgreementsOnLastRun(rand.Next(0, 100));
-                metrics.AddTransferAttempt(certId1);
-                metrics.AddTransferAttempt(certId2);
+                metrics.AddTransferAttempt("SomeReg", certId1);
+                metrics.AddTransferAttempt("SomeReg", certId2);
 
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
