@@ -329,6 +329,9 @@
           },
           "receiverTin": {
             "type": "string"
+          },
+          "base64EncodedWalletDepositEndpoint": {
+            "type": "string"
           }
         },
         "additionalProperties": false

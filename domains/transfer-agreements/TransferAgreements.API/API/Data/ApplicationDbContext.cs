@@ -1,3 +1,4 @@
+using API.Models;
 using Audit.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 

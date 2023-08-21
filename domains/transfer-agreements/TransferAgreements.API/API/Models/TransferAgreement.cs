@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Data;
+namespace API.Models;
 
 public class TransferAgreement
 {
@@ -11,4 +11,5 @@ public class TransferAgreement
     public string SenderName { get; set; }
     public string SenderTin { get; set; }
     public string ReceiverTin { get; set; }
+    public Guid ReceiverReference { get; set; }
 }

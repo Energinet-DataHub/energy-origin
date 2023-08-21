@@ -7,6 +7,7 @@ using API.ContractService.Clients;
 using API.ContractService.Repositories;
 using CertificateValueObjects;
 using Marten.Exceptions;
+using ProjectOrigin.WalletSystem.V1;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
@@ -14,19 +15,24 @@ namespace API.ContractService;
 
 internal class ContractServiceImpl : IContractService
 {
-    private readonly IMeteringPointsClient client;
+    private readonly IMeteringPointsClient meteringPointsClient;
     private readonly ICertificateIssuingContractRepository repository;
+    private readonly WalletService.WalletServiceClient walletServiceClient;
 
-    public ContractServiceImpl(IMeteringPointsClient client, ICertificateIssuingContractRepository repository)
+    public ContractServiceImpl(
+        IMeteringPointsClient meteringPointsClient,
+        WalletService.WalletServiceClient walletServiceClient,
+        ICertificateIssuingContractRepository repository)
     {
-        this.client = client;
+        this.meteringPointsClient = meteringPointsClient;
         this.repository = repository;
+        this.walletServiceClient = walletServiceClient;
     }
 
     public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate,
         CancellationToken cancellationToken)
     {
-        var meteringPoints = await client.GetMeteringPoints(meteringPointOwner, cancellationToken);
+        var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == gsrn);
 
         if (matchingMeteringPoint == null)
@@ -51,21 +57,22 @@ internal class ContractServiceImpl : IContractService
             ? contracts.Max(c => c.ContractNumber) + 1
             : 0;
 
+        var response = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
+        var walletDepositEndpoint = response.WalletDepositEndpoint;
+
+        var contract = CertificateIssuingContract.Create(
+            contractNumber,
+            gsrn,
+            matchingMeteringPoint.GridArea,
+            MeteringPointType.Production,
+            meteringPointOwner,
+            startDate,
+            endDate,
+            walletDepositEndpoint.Endpoint,
+            walletDepositEndpoint.PublicKey.ToByteArray());
+
         try
         {
-            var contract = new CertificateIssuingContract
-            {
-                Id = Guid.Empty,
-                ContractNumber = contractNumber,
-                GSRN = gsrn,
-                GridArea = matchingMeteringPoint.GridArea,
-                MeteringPointType = MeteringPointType.Production,
-                MeteringPointOwner = meteringPointOwner,
-                StartDate = startDate,
-                EndDate = endDate,
-                Created = DateTimeOffset.UtcNow
-            };
-
             await repository.Save(contract);
 
             return new CreateContractResult.Success(contract);

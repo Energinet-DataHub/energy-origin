@@ -31,6 +31,9 @@ namespace API.Migrations
                     b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("ReceiverReference")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ReceiverTin")
                         .IsRequired()
                         .HasColumnType("text");

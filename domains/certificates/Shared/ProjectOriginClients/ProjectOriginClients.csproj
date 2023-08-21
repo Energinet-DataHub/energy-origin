@@ -14,6 +14,10 @@
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="0.2.0-rc.17" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="API.IntegrationTests" />
+	</ItemGroup>
+
 	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
 		<Exec Command="dotnet tool restore"/>
 		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)"/>
@@ -30,7 +34,16 @@
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/registry.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v$(WalletVersion)/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<WalletVersion>0.1.3</WalletVersion>
+	</PropertyGroup>
+	<ItemGroup>
+		<AssemblyAttribute Include="ProjectOriginClients.WalletVersionAttribute">
+			<_Parameter1>"$(WalletVersion)"</_Parameter1>
+		</AssemblyAttribute>
 	</ItemGroup>
 </Project>

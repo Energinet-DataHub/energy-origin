@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
@@ -56,7 +57,11 @@ public class DataSyncService
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
 
-                syncState.SetSyncPosition(new SyncPosition(Guid.NewGuid(), syncInfo.GSRN, nearestHour));
+                if (result.Any())
+                {
+                    var nextSyncPosition = result.Max(m => m.DateTo);
+                    syncState.SetSyncPosition(new SyncPosition(Guid.NewGuid(), syncInfo.GSRN, nextSyncPosition));
+                }
 
                 return result;
             }
