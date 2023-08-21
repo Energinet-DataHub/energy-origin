@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+// FIXME: We have no handling to avoid being able to accept a version newer than the latest version.
 [Authorize]
 [ApiController]
 public class TermsController : ControllerBase
@@ -57,6 +58,8 @@ public class TermsController : ControllerBase
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
 
+            // FIXME: We only add default roles when the user is created, but this is problematic if new default roles are added later.
+            // This might need to be added somewhere in the OidcController to be done on Login if the user already exists. I think we already do something similar for UserProviders.
             user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
                 new UserRole { Role = x.Key, UserId = descriptor.Id }
             ));

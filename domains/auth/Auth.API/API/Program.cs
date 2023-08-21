@@ -69,6 +69,10 @@ if (builder.Environment.IsDevelopment() == false)
 {
     builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 }
+else
+{
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
+}
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
 {
