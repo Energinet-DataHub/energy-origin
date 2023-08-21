@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Data;
+namespace API.Models;
 
 public class TransferAgreement
 {

@@ -10,6 +10,7 @@ using API.ApiModels.Responses;
 using API.Data;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
+using API.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 using VerifyTests;
