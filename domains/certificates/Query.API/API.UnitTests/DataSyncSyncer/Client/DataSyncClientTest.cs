@@ -10,9 +10,9 @@ using CertificateValueObjects;
 using FluentAssertions;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NSubstitute;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -24,7 +24,6 @@ public class DataSyncClientTest
     private const string validOwner = "foo";
 
     private readonly MockHttpMessageHandler fakeHttpHandler = new();
-    private readonly Mock<ILogger<DataSyncClient>> fakeLogger = new();
 
     private DataSyncClient Setup()
     {
@@ -33,7 +32,7 @@ public class DataSyncClientTest
 
         return new DataSyncClient(
             httpClient: client,
-            logger: fakeLogger.Object
+            logger: Substitute.For<ILogger<DataSyncClient>>()
         );
     }
 

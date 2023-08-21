@@ -12,3 +12,5 @@ cnpg:
     storageSize:
   bouncer:
     replicaCount:
+projectOrigin:
+  walletUrl:

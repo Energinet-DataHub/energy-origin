@@ -11,12 +11,12 @@ public class CreateContract
     public string GSRN { get; init; } = "";
 
     /// <summary>
-    /// Starting date for generation of certificates in Unix time
+    /// Starting date for generation of certificates in Unix time seconds
     /// </summary>
     public long StartDate { get; init; }
 
     /// <summary>
-    /// OPTIONAL: End date for generation of certificates in Unix time
+    /// End date for generation of certificates in Unix time seconds. Set to null for no end date
     /// </summary>
     public long? EndDate { get; set; }
 }

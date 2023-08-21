@@ -5,7 +5,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using API.Data;
 using API.Filters;
+using API.Models;
 using API.Options;
+using API.Services;
+using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
+using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -36,6 +40,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 Audit.Core.Configuration.Setup()
@@ -124,13 +129,17 @@ builder.Services.AddSwaggerGen(o =>
     }
 });
 
+builder.Services.AddLogging();
 builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
+builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"] ?? "http://localhost:8080"));
+builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
+builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
-        // TODO: Is the following needed in this form after the new Auth service release?
         o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,

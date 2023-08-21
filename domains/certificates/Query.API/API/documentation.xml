@@ -4,6 +4,38 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="M:API.ContractService.CertificateIssuingContract.Overlaps(System.DateTimeOffset,System.Nullable{System.DateTimeOffset})">
+            <summary>
+            Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if there is overlap</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Overlaps(System.Int64,System.Nullable{System.Int64})">
+            <summary>
+            Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if there is overlap</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Contains(System.DateTimeOffset,System.DateTimeOffset)">
+            <summary>
+            Tests if the period from <paramref name="startDate"/> to <paramref name="endDate"/> is completely within the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if completely within</returns>
+        </member>
+        <member name="M:API.ContractService.CertificateIssuingContract.Contains(System.Int64,System.Int64)">
+            <summary>
+            Tests if the period from <paramref name="startDate"/> to <paramref name="endDate"/> is completely within the period of the contract
+            </summary>
+            <param name="startDate"></param>
+            <param name="endDate"></param>
+            <returns>true if completely within</returns>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -11,22 +43,17 @@
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.StartDate">
             <summary>
-            Starting date for generation of certificates in Unix time
+            Starting date for generation of certificates in Unix time seconds
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.EndDate">
             <summary>
-            OPTIONAL: End date for generation of certificates in Unix time
+            End date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.EndContract.ContractId">
+        <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
             <summary>
-            Global Service Relation Number (GSRN) for the metering point
-            </summary>
-        </member>
-        <member name="P:API.Query.API.ApiModels.Requests.EndContract.EndDate">
-            <summary>
-            End Date for generation of certificates in Unix time
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Certificate.Id">
@@ -76,7 +103,12 @@
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.StartDate">
             <summary>
-            Starting date for generation of certificates in Unix time
+            Starting date for generation of certificates in Unix time seconds
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.EndDate">
+            <summary>
+            End date for generation of certificates in Unix time seconds. The value null indicates no end date
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.Created">
@@ -99,9 +131,9 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.EndContract(API.Query.API.ApiModels.Requests.EndContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EndContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.PatchEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
-            Ends the contract on a specific date
+            Edit the end date for contract
             </summary>
         </member>
     </members>

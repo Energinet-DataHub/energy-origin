@@ -12,7 +12,7 @@ using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
-using static API.ContractService.EndContractResult;
+using static API.ContractService.SetEndDateResult;
 
 namespace API.Query.API.Controllers;
 
@@ -43,10 +43,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var endDate = createContract.EndDate == null ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds((long)createContract.EndDate);
+        var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
+        DateTimeOffset? endDate = createContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value) : null;
 
-        var result = await service.Create(createContract.GSRN, meteringPointOwner!,
-            DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate),
+        var result = await service.Create(
+            createContract.GSRN,
+            meteringPointOwner,
+            startDate,
             endDate,
             cancellationToken);
 
@@ -55,7 +58,7 @@ public class ContractsController : ControllerBase
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
             NotProductionMeteringPoint => ValidationProblem($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
-            Success(var createdContract) => CreatedAtRoute(
+            CreateContractResult.Success(var createdContract) => CreatedAtRoute(
                 "GetContract",
                 new { id = createdContract.Id },
                 Contract.CreateFrom(createdContract)),
@@ -75,7 +78,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
 
@@ -95,7 +98,7 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
@@ -105,37 +108,43 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
-    /// Ends the contract on a specific date
+    /// Edit the end date for contract
     /// </summary>
     [HttpPatch]
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [Route("api/certificates/contracts")]
-    public async Task<ActionResult> EndContract(
-        [FromBody] EndContract endContract,
-        [FromServices] IValidator<EndContract> validator,
+    [Route("api/certificates/contracts/{id}")]
+    public async Task<ActionResult> PatchEndDate(
+        [FromRoute] Guid id,
+        [FromBody] EditContractEndDate editContractEndDate,
+        [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject");
+        var meteringPointOwner = User.FindFirstValue("subject")!;
 
-        var validationResult = await validator.ValidateAsync(endContract, cancellationToken);
+        var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
         if (!validationResult.IsValid)
         {
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
         }
 
-        var result = await service.EndContract(meteringPointOwner!, endContract.ContractId,
-            endContract.EndDate != null ? DateTimeOffset.FromUnixTimeSeconds((long)endContract.EndDate) : DateTimeOffset.Now,
+        DateTimeOffset? newEndDate = editContractEndDate.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(editContractEndDate.EndDate.Value) : null;
+
+        var result = await service.SetEndDate(
+            id,
+            meteringPointOwner,
+            newEndDate,
             cancellationToken);
 
         return result switch
         {
-            NonExistingContract => NotFound($"No contract with id {endContract.ContractId} found"),
+            NonExistingContract => NotFound($"No contract with id {id} found"),
             MeteringPointOwnerNoMatch => Forbid(),
-            Ended => Ok(),
+            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }

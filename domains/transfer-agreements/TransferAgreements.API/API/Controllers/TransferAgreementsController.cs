@@ -1,13 +1,17 @@
 using System;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Extensions;
+using API.Models;
+using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -19,10 +23,20 @@ public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
+    private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly IHttpContextAccessor httpContextAccessor;
 
     public TransferAgreementsController(
-        ITransferAgreementRepository transferAgreementRepository, IValidator<CreateTransferAgreement> createTransferAgreementValidator) =>
-        (this.transferAgreementRepository, this.createTransferAgreementValidator) = (transferAgreementRepository, createTransferAgreementValidator);
+        ITransferAgreementRepository transferAgreementRepository,
+        IValidator<CreateTransferAgreement> createTransferAgreementValidator,
+        IProjectOriginWalletService projectOriginWalletService,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        this.transferAgreementRepository = transferAgreementRepository;
+        this.createTransferAgreementValidator = createTransferAgreementValidator;
+        this.projectOriginWalletService = projectOriginWalletService;
+        this.httpContextAccessor = httpContextAccessor;
+    }
 
     [ProducesResponseType(201)]
     [ProducesResponseType(409)]
@@ -56,6 +70,13 @@ public class TransferAgreementsController : ControllerBase
             return Conflict();
         }
 
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
+
+        transferAgreement.ReceiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
+            bearerToken,
+            request.Base64EncodedWalletDepositEndpoint,
+            request.ReceiverTin);
+
         var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
@@ -66,7 +87,7 @@ public class TransferAgreementsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var tin = User.FindSubjectTinClaim()!;
+        var tin = User.FindSubjectTinClaim();
         var subject = User.FindSubjectGuidClaim();
 
         var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
@@ -110,7 +131,6 @@ public class TransferAgreementsController : ControllerBase
 
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
-        var actorName = User.FindActorNameClaim();
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -160,6 +180,16 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin: transferAgreement.ReceiverTin);
 
         return Ok(response);
+    }
+
+    [ProducesResponseType(typeof(string), 200)]
+    [HttpPost("wallet-deposit-endpoint")]
+    public async Task<ActionResult> CreateWalletDepositEndpoint()
+    {
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
+
+        var base64String = await projectOriginWalletService.CreateWalletDepositEndpoint(bearerToken);
+        return Ok(new { result = base64String });
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
