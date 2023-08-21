@@ -108,7 +108,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy, oldScope);
         Assert.DoesNotContain(UserScopeClaim.NotAcceptedPrivacyPolicy, newScope);
     }
 
@@ -155,7 +155,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, newScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy, oldScope);
+        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy, newScope);
     }
 }

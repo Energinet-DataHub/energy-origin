@@ -54,11 +54,6 @@ public class TokenIssuer : ITokenIssuer
             scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicy);
         }
 
-        if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
-        {
-            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedTermsOfService);
-        }
-
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
 
         scope = scope.Trim();
