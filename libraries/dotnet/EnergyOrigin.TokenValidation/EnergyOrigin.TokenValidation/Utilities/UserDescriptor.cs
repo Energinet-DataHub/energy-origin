@@ -11,20 +11,19 @@ public class UserDescriptor
     public Guid? CompanyId { get; init; }
     public string? CompanyName { get; init; }
     public string? Tin { get; init; }
-    public int AcceptedTermsVersion { get; init; }
-    public int CurrentTermsVersion { get; init; }
-    public bool AllowCPRLookup { get; init; }
+    public string MatchedRoles { get; init; } = null!;
+    public bool AllowCprLookup { get; init; }
     public string EncryptedAccessToken { get; init; } = null!;
     public string EncryptedIdentityToken { get; init; } = null!;
-    public bool UserStored { get; init; }
 
     /// <summary>
     /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2=ProviderKey2"
     /// </summary>
     public string EncryptedProviderKeys { get; init; } = null!;
 
-    public string? AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
-    public string? IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
+    public string AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
+    public string IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
+
     public Dictionary<ProviderKeyType, string> ProviderKeys => cryptography.Decrypt<string>(EncryptedProviderKeys)
         .Split(" ")
         .Select(x =>
