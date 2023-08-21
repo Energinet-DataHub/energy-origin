@@ -14,5 +14,5 @@ public record ProductionCertificateCreatedEvent(
     long Quantity,
     byte[] WalletPublicKey,
     string WalletUrl,
-    uint WalletPosition
+    uint WalletDepositEndpointPosition
 );

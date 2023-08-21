@@ -6,7 +6,7 @@ using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;
 
-public class WalletPositionCalculatorTests
+public class WalletDepositEndpointPositionCalculatorTests
 {
     [Theory]
     [InlineData("2022-01-01T00:00:00Z", 0)]
@@ -36,6 +36,6 @@ public class WalletPositionCalculatorTests
         var e = s.AddHours(1);
         var period = new Period(s.ToUnixTimeSeconds(), e.ToUnixTimeSeconds());
 
-        return period.CalculateWalletPosition();
+        return period.CalculateWalletDepositEndpointPosition();
     }
 }

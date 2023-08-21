@@ -40,8 +40,8 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         var commitment = new SecretCommitmentInfo((uint)message.Quantity);
 
         var period = new Period(message.DateFrom, message.DateTo);
-        var walletPosition = period.CalculateWalletPosition();
-        if (!walletPosition.HasValue)
+        var walletDepositEndpointPosition = period.CalculateWalletDepositEndpointPosition();
+        if (!walletDepositEndpointPosition.HasValue)
             throw new WalletException($"Cannot determine wallet position for period {period}");
 
         var productionCertificate = new ProductionCertificate(
@@ -67,7 +67,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             message.Quantity,
             matchingContract.WalletPublicKey,
             matchingContract.WalletUrl,
-            walletPosition.Value));
+            walletDepositEndpointPosition.Value));
 
         logger.LogInformation("Created production certificate for {Message}", message);
     }

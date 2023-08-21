@@ -9,5 +9,5 @@ public record CertificateIssuedInRegistryEvent(
     long Quantity,
     byte[] WalletPublicKey,
     string WalletUrl,
-    uint WalletPosition
+    uint WalletDepositEndpointPosition
 );

@@ -37,7 +37,7 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
         var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
 
         var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);
-        var ownerPublicKey = hdPublicKey.Derive((int)message.WalletPosition).GetPublicKey();
+        var ownerPublicKey = hdPublicKey.Derive((int)message.WalletDepositEndpointPosition).GetPublicKey();
 
         var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
 
@@ -84,7 +84,7 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
                     commitment.Message,
                     message.WalletPublicKey,
                     message.WalletUrl,
-                    message.WalletPosition));
+                    message.WalletDepositEndpointPosition));
                 break;
             }
 
