@@ -35,6 +35,15 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
             {
                 await projectOriginWalletService.TransferCertificates(transferAgreement);
             }
+
+            await SleepToNearestHour(stoppingToken);
         }
+    }
+
+    private async Task SleepToNearestHour(CancellationToken cancellationToken)
+    {
+        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
+        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
     }
 }
