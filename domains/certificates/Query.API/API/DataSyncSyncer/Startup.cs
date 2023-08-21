@@ -3,7 +3,6 @@ using API.Configurations;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Persistence;
 using Marten;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -11,9 +10,9 @@ namespace API.DataSyncSyncer;
 
 public static class Startup
 {
-    public static void AddDataSyncSyncer(this IServiceCollection services, IConfiguration configuration)
+    public static void AddDataSyncSyncer(this IServiceCollection services)
     {
-        services.Configure<DatasyncOptions>(configuration.GetSection(DatasyncOptions.Datasync));
+        services.AddDatasyncOptions();
 
         services.AddSingleton<IDataSyncClientFactory, DataSyncClientFactory>();
         services.AddHttpClient<IDataSyncClient, DataSyncClient>((sp, client) =>

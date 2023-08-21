@@ -167,3 +167,29 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230807080407_AddTransferAgreementReceiverReference') THEN
+    ALTER TABLE "TransferAgreements" ADD "ReceiverReference" uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230807080407_AddTransferAgreementReceiverReference') THEN
+    ALTER TABLE "TransferAgreements" ALTER COLUMN "ReceiverReference" DROP DEFAULT;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230807080407_AddTransferAgreementReceiverReference') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230807080407_AddTransferAgreementReceiverReference', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+

@@ -59,7 +59,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
-builder.Services.AddDataSyncSyncer(builder.Configuration);
+builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
