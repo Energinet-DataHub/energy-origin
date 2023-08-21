@@ -16,7 +16,7 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     private Counter<int> TransferRetriesPerCertificate { get; }
 
     private const string certificateIdKey = "CertificateId";
-    private const string registryIdKey = "registry";
+    private const string registryIdKey = "Registry";
     public TransferAgreementAutomationMetrics()
     {
         var meter = new Meter(MetricName);
