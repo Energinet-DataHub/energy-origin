@@ -141,7 +141,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            UserTerms = new List<UserTerms>(){ new UserTerms(){ AcceptedVersion = 3 } }
+            UserTerms = new List<UserTerms> { new() { AcceptedVersion = 3 } }
         });
         var client = factory.CreateAuthenticatedClient(user);
 

@@ -218,7 +218,9 @@ public class TokenIssuerTests
     {
         var user = new User
         {
-            Id = Guid.NewGuid(), Name = name ?? "Amigo", AllowCprLookup = false,
+            Id = Guid.NewGuid(),
+            Name = name ?? "Amigo",
+            AllowCprLookup = false,
             Company = new Company
             {
                 Name = "testCompany"
