@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.BackgroundServices;
 using API.Data;
 using API.Filters;
 using API.Metrics;
@@ -162,8 +161,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
-
-builder.Services.AddHostedService<DummyMetricsWorker>();
 
 var app = builder.Build();
 

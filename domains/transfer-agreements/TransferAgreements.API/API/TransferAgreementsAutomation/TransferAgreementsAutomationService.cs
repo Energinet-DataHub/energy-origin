@@ -33,7 +33,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
-            //metrics.ResetCertificatesTransferred();
+            metrics.ResetCertificatesTransferred();
             var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
 
             foreach (var transferAgreement in transferAgreements)
@@ -41,7 +41,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
                 await projectOriginWalletService.TransferCertificates(transferAgreement);
             }
 
-            //metrics.SetNumberOfTransferAgreementsOnLastRun(transferAgreements.Count);
+            metrics.SetNumberOfTransferAgreementsOnLastRun(transferAgreements.Count);
 
             await SleepToNearestHour(stoppingToken);
         }

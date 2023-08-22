@@ -119,13 +119,13 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
             logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
                 certificate.FederatedId, transferAgreement.ReceiverTin);
-            //metrics.AddTransferAttempt(certificate.FederatedId.Registry, new Guid(certificate.FederatedId.StreamId.Value));
+            metrics.AddTransferAttempt(certificate.FederatedId.Registry, new Guid(certificate.FederatedId.StreamId.Value));
 
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
         }
 
-        //metrics.AddCertificatesTransferred(certificates.Count);
+        metrics.AddCertificatesTransferred(certificates.Count);
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)
