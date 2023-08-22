@@ -190,7 +190,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService && x.AcceptedVersion == acceptedVersion );
+        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService && x.AcceptedVersion == acceptedVersion);
     }
 
     [Fact]
