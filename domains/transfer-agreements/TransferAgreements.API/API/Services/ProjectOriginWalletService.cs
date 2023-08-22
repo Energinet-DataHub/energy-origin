@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Converters;
 using API.Data;
+using API.Metrics;
 using API.Models;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
@@ -19,14 +20,17 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 {
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly WalletService.WalletServiceClient walletServiceClient;
+    private readonly ITransferAgreementAutomationMetrics metrics;
 
     public ProjectOriginWalletService(
         ILogger<ProjectOriginWalletService> logger,
-        WalletService.WalletServiceClient walletServiceClient
+        WalletService.WalletServiceClient walletServiceClient,
+        ITransferAgreementAutomationMetrics metrics
     )
     {
         this.logger = logger;
         this.walletServiceClient = walletServiceClient;
+        this.metrics = metrics;
     }
 
     public async Task<string> CreateWalletDepositEndpoint(string bearerToken)
@@ -115,10 +119,13 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
             logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
                 certificate.FederatedId, transferAgreement.ReceiverTin);
+            metrics.AddTransferAttempt(certificate.FederatedId.Registry, new Guid(certificate.FederatedId.StreamId.Value));
 
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
         }
+
+        metrics.AddCertificatesTransferred(certificates.Count);
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)
@@ -151,10 +158,9 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             Expires = DateTime.UtcNow.AddDays(7),
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
-
         return new Metadata
         {
-            { "Authorization", tokenHandler.WriteToken(token) }
+            { "Authorization", $"Bearer {tokenHandler.WriteToken(token)}" }
         };
     }
 }
