@@ -27,9 +27,9 @@ public class RemoveUserController : ControllerBase
         await userService.RemoveUserAsync(user);
 
         logger.AuditLog(
-            "User: {userId} was removed by {User} at {TimeStamp}.",
+            "User: {UserId} was removed by {AdminId} at {TimeStamp}.",
             userId,
-            user.Id,
+            descriptor.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
         return Ok();

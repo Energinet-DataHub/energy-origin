@@ -103,7 +103,7 @@ public class TermsController : ControllerBase
         }
 
         logger.AuditLog(
-            "{User} updated accepted Privacy policy {Versions} at {TimeStamp}.",
+            "{User} updated accepted Privacy policy {Version} at {TimeStamp}.",
             user.Id,
             userTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
@@ -145,7 +145,7 @@ public class TermsController : ControllerBase
         await userService.UpsertUserAsync(user);
 
         logger.AuditLog(
-            "{User} updated accepted Terms of service {Versions} at {TimeStamp}.",
+            "{User} updated accepted Terms of service {Version} at {TimeStamp}.",
             user.Id,
             companyTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
