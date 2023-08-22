@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Options;
 
@@ -27,7 +29,33 @@ public class RoleOptions
                 }
             }
         }
+        var configurations = options.RoleConfigurations.ToDictionary(x => x.Key);
+        foreach (var role in options.RoleConfigurations)
+        {
+            var inherited = FindInheritedRoles(configurations, role.Key, role.Inherits);
+            if (inherited.Contains(role.Key))
+            {
+                return new ValidationResult($"Role {role.Key} will inherit itself");
+            }
+        }
         return ValidationResult.Success;
+    }
+
+    private static IEnumerable<string> FindInheritedRoles(Dictionary<string, RoleConfiguration> configurations, string forbidden, IEnumerable<string> roles)
+    {
+        if (roles.IsNullOrEmpty())
+        {
+            return Enumerable.Empty<string>();
+        }
+        var inherited = roles.Where(x => configurations[x].Inherits.IsNullOrEmpty() == false).SelectMany(x => configurations[x].Inherits);
+        if (inherited.Contains(forbidden))
+        {
+            return new List<string>() { forbidden };
+        }
+        else
+        {
+            return roles.Concat(inherited).Concat(FindInheritedRoles(configurations, forbidden, inherited));
+        }
     }
 }
 

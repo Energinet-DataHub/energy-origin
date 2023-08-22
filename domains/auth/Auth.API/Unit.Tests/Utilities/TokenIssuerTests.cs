@@ -81,7 +81,7 @@ public class TokenIssuerTests
     }
 
     [Fact]
-    public void Issue_ShouldReturnATokenWithAllIneritedRoles_WhenInheritedRolesHasInheritedRoles()
+    public void Issue_ShouldReturnATokenWithAllInheritedRoles_WhenInheritedRolesHasInheritedRoles()
     {
         var matched = "matched";
         var intermediate = "intermediate";
