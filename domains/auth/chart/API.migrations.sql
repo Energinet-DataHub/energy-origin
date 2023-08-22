@@ -239,6 +239,14 @@ END $EF$;
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
+        INSERT INTO "UserTerms" ("Id", "UserId", "AcceptedVersion", "Type")
+        SELECT gen_random_uuid(), "Id", "AcceptedTermsVersion", 'privacy_policy' FROM "Users"
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
     CREATE UNIQUE INDEX "IX_CompanyTerms_CompanyId_Type" ON "CompanyTerms" ("CompanyId", "Type");
     END IF;
 END $EF$;
@@ -254,14 +262,6 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
     CREATE UNIQUE INDEX "IX_UserTerms_UserId_Type" ON "UserTerms" ("UserId", "Type");
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
-        INSERT INTO "UserTerms" ("Id", "UserId", "AcceptedVersion", "Type")
-        SELECT gen_random_uuid(), "Id", "AcceptedTermsVersion", 'privacy_policy' FROM "Users"
     END IF;
 END $EF$;
 
