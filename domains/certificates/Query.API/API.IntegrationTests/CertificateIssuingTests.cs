@@ -141,8 +141,7 @@ public sealed class CertificateIssuingTests :
 
         var certificateList =
             await client.RepeatedlyGetUntil<CertificateList>("api/certificates",
-                res => res.Result.Count() == measurementCount,
-                timeLimit: TimeSpan.FromMinutes(1));
+                res => res.Result.Count() == measurementCount);
 
         var expected = new CertificateList
         {
