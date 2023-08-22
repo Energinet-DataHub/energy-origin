@@ -126,6 +126,33 @@ public class RoleOptionsTests
     }
 
     [Fact]
+    public void DANGER_WILL_ROBINSON_Validate_ShouldFail_WhenRoleInheritanceHasCircularReference()
+    {
+        var first = Guid.NewGuid().ToString();
+        var second = Guid.NewGuid().ToString();
+        var options = new RoleOptions()
+        {
+            RoleConfigurations = new() {
+                new() {
+                    Key = first,
+                    Name = Guid.NewGuid().ToString(),
+                    Inherits = new() { second }
+                },
+                new() {
+                    Key = second,
+                    Name = Guid.NewGuid().ToString(),
+                    Inherits = new() { first }
+                }
+            }
+        };
+
+        var result = RoleOptions.Validate(options);
+
+        Assert.NotEqual(ValidationResult.Success, result);
+        Assert.IsType<ValidationResult>(result);
+    }
+
+    [Fact]
     public void Validate_ShouldReturnSuccess_WhenALotOfOptionsAreGiven()
     {
         var matched = "matched";
