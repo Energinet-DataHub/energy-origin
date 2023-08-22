@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
+using API.Metrics;
 using API.Services;
 using Microsoft.Extensions.Logging;
 
@@ -12,16 +13,19 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     private readonly ILogger<TransferAgreementsAutomationService> logger;
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly ITransferAgreementAutomationMetrics metrics;
 
     public TransferAgreementsAutomationService(
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
-        IProjectOriginWalletService projectOriginWalletService
+        IProjectOriginWalletService projectOriginWalletService,
+        ITransferAgreementAutomationMetrics metrics
         )
     {
         this.logger = logger;
         this.transferAgreementRepository = transferAgreementRepository;
         this.projectOriginWalletService = projectOriginWalletService;
+        this.metrics = metrics;
     }
 
     public async Task Run(CancellationToken stoppingToken)
@@ -29,12 +33,15 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
+            metrics.ResetCertificatesTransferred();
             var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
 
             foreach (var transferAgreement in transferAgreements)
             {
                 await projectOriginWalletService.TransferCertificates(transferAgreement);
             }
+
+            metrics.SetNumberOfTransferAgreementsOnLastRun(transferAgreements.Count);
 
             await SleepToNearestHour(stoppingToken);
         }
