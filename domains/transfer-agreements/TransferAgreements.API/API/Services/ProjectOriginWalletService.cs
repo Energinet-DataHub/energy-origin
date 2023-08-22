@@ -158,10 +158,9 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             Expires = DateTime.UtcNow.AddDays(7),
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
-
         return new Metadata
         {
-            { "Authorization", tokenHandler.WriteToken(token) }
+            { "Authorization", $"Bearer {tokenHandler.WriteToken(token)}" }
         };
     }
 }
