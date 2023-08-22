@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using API.Metrics;
 using API.Models;
 using API.Services;
 using FluentAssertions.Extensions;
@@ -22,8 +23,9 @@ public class ProjectOriginWalletServiceTest
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
         fakeWalletServiceClient = Substitute.For<WalletService.WalletServiceClient>();
+        var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient);
+        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics);
     }
     [Fact]
     public async Task TransferCertificates_TransferAgreementNoEndDate_ShouldCallWalletTransferCertificate()
