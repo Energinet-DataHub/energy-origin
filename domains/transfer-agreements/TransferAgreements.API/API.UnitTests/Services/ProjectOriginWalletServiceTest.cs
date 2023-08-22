@@ -53,7 +53,7 @@ public class ProjectOriginWalletServiceTest
             .Received(1)
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.Contains("Bearer "))
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
             );
     }
 
@@ -83,7 +83,7 @@ public class ProjectOriginWalletServiceTest
             .DidNotReceive()
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.Contains("Bearer "))
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
             );
     }
 
@@ -113,7 +113,7 @@ public class ProjectOriginWalletServiceTest
             .DidNotReceive()
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.Contains("Bearer "))
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
             );
     }
 
@@ -142,7 +142,7 @@ public class ProjectOriginWalletServiceTest
             .Received(1)
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.Contains("Bearer "))
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
             );
     }
 
