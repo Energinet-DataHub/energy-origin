@@ -32,7 +32,7 @@ public class TokenController : ControllerBase
         {
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
-            if (scope!.Contains(UserScopeClaim.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
+            if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 
         var now = DateTimeOffset.Now;

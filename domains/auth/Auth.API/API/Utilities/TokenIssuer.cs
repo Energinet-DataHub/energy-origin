@@ -15,7 +15,7 @@ namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
-    public const string AllAcceptedScopes = $"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+    public const string AllAcceptedScopes = $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}";
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
@@ -52,7 +52,7 @@ public class TokenIssuer : ITokenIssuer
         string? scope = null;
         if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
         {
-            scope = string.Join(" ", scope, UserScopeClaim.NotAcceptedPrivacyPolicy);
+            scope = string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
         }
 
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
