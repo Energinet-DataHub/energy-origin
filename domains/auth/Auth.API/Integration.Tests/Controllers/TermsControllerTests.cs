@@ -53,7 +53,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var result = await client.PutAsync("terms/user/accept/10", null);
+        var result = await client.PutAsync("terms/user/accept/2", null);
         var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).SingleOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
@@ -62,7 +62,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 10);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 2);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         server.MockRelationsEndpoint();
 
-        var result = await client.PutAsync("terms/user/accept/10", null);
+        var result = await client.PutAsync("terms/user/accept/2", null);
         var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
@@ -109,7 +109,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
         Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy);
-        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 10);
+        Assert.Contains(dbUser.UserTerms, x => x.AcceptedVersion == 2);
         Assert.Contains(dbUser.UserRoles, x => x.Role == role);
     }
 
@@ -135,23 +135,58 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenAcceptingOlderVersion()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        var user = await factory.AddUserToDatabaseAsync(new User
         {
-            var userService = Mock.Of<IUserService>();
-            Mock.Get(userService)
-                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-                .Returns(value: null!);
-
-            builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            UserTerms = new List<UserTerms>(){ new UserTerms(){ AcceptedVersion = 3 } }
         });
+        var client = factory.CreateAuthenticatedClient(user);
 
         var response = await client.PutAsync("terms/user/accept/10", null);
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenAcceptedTermsVersionDoesNotExist()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user);
+
+        var response = await client.PutAsync("terms/user/accept/10", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsExists()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = "123123",
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var result = await client.PutAsync("terms/company/accept/2", null);
+
+        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
+        Assert.Contains(company.CompanyTerms, x => x.AcceptedVersion == 2);
     }
 
     [Fact]
@@ -164,20 +199,64 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             Company = new Company
             {
                 Name = "TestCompany",
-                Tin = "123123",
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 9 } }
+                Tin = "1231233"
             },
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
         });
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
 
-        var result = await client.PutAsync("terms/company/accept/10", null);
+        var result = await client.PutAsync("terms/company/accept/2", null);
 
         var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService);
-        Assert.Contains(company.CompanyTerms, x => x.AcceptedVersion == 10);
+        Assert.Contains(company.CompanyTerms, x => x.AcceptedVersion == 2);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnInternalServerError_WhenAcceptingOlderVersion()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = "1231231",
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 3 } }
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/2", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnInternalServerError_WhenAcceptedTermsVersionDoesNotExist()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = "1231232"
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/10", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]

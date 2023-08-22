@@ -65,13 +65,13 @@ builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(Iden
 builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-if (builder.Environment.IsDevelopment() == false)
+if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
 }
 else
 {
-    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 }
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)

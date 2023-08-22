@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-// FIXME: We have no handling to avoid being able to accept a version newer than the latest version.
 [Authorize]
 [ApiController]
 public class TermsController : ControllerBase
@@ -27,16 +26,23 @@ public class TermsController : ControllerBase
         IHttpClientFactory clientFactory,
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
+        TermsOptions termsOptions,
         int version)
     {
+        if (termsOptions.PrivacyPolicyVersion < version)
+        {
+            throw new ArgumentException($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
+        }
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
         var type = UserTermsType.PrivacyPolicy;
         var user = await userService.GetUserByIdAsync(descriptor.Id);
         var acceptedVersion = user?.UserTerms.SingleOrDefault(x => x.Type == type)?.AcceptedVersion ?? 0;
+
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept privacy policy version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            throw new ArgumentException($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -58,8 +64,6 @@ public class TermsController : ControllerBase
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
 
-            // FIXME: We only add default roles when the user is created, but this is problematic if new default roles are added later.
-            // This might need to be added somewhere in the OidcController to be done on Login if the user already exists. I think we already do something similar for UserProviders.
             user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
                 new UserRole { Role = x.Key, UserId = descriptor.Id }
             ));
@@ -119,8 +123,14 @@ public class TermsController : ControllerBase
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
+        TermsOptions termsOptions,
         int version)
     {
+        if (termsOptions.TermsOfServiceVersion < version)
+        {
+            throw new ArgumentException($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
+        }
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
@@ -128,7 +138,7 @@ public class TermsController : ControllerBase
         var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0;
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            throw new ArgumentException($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var companyTerms = user!.Company!.CompanyTerms.SingleOrDefault(x => x.Type == type);

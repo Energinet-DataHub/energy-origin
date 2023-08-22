@@ -31,6 +31,7 @@ public class TermsControllerTests
     private readonly DataSyncOptions dataSyncOptions;
     private readonly ICryptography cryptography;
     private readonly RoleOptions roleOptions;
+    private readonly TermsOptions termsOptions;
 
     public TermsControllerTests()
     {
@@ -45,6 +46,7 @@ public class TermsControllerTests
 
         dataSyncOptions = configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!;
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
+        termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
         cryptography = new Cryptography(cryptographyOptions);
     }
 
@@ -84,7 +86,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -126,7 +128,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, newAcceptedTermsVersion);
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -156,7 +158,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 3));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, 3));
     }
 
     [Fact]
@@ -180,7 +182,7 @@ public class TermsControllerTests
            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
            .ReturnsAsync(value: null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 2));
+        await Assert.ThrowsAsync<NullReferenceException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, 2));
     }
 
     [Fact]
@@ -203,6 +205,6 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 2 } }
             });
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, 1));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, 1));
     }
 }
