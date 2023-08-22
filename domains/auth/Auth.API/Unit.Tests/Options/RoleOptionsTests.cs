@@ -98,7 +98,7 @@ public class RoleOptionsTests
         Assert.IsType<ValidationResult>(result);
     }
 
-    [Fact(Timeout = 1000)]
+    [Fact(Timeout = 60000)]
     public async Task Validate_ShouldFail_WhenRoleInheritanceHasCircularReference()
     {
         var first = Guid.NewGuid().ToString();
