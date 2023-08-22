@@ -31,7 +31,7 @@ public class TermsController : ControllerBase
     {
         if (termsOptions.PrivacyPolicyVersion < version)
         {
-            throw new ArgumentException($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
         }
 
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -42,7 +42,7 @@ public class TermsController : ControllerBase
 
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -128,7 +128,7 @@ public class TermsController : ControllerBase
     {
         if (termsOptions.TermsOfServiceVersion < version)
         {
-            throw new ArgumentException($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
         }
 
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
@@ -138,7 +138,7 @@ public class TermsController : ControllerBase
         var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0;
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var companyTerms = user!.Company!.CompanyTerms.SingleOrDefault(x => x.Type == type);

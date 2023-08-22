@@ -205,6 +205,9 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 2 } }
             });
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, 1));
+        var result = await termsController.AcceptUserTermsAsync(logger, accessor, mapper, userService, companyService, factory, dataSyncOptions, roleOptions, termsOptions, 1);
+
+        Assert.NotNull(result);
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 }
