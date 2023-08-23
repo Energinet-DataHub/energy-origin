@@ -47,6 +47,8 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<ProductionCertificateCreatedEventHandler>();
 
+    o.AddConsumer<WalletSliceSender>();
+
     o.UsingRabbitMq((context, cfg) =>
     {
         var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;

@@ -3,12 +3,11 @@ using CertificateValueObjects;
 
 namespace CertificateEvents;
 
-public record ProductionCertificateCreated(
-    Guid CertificateId,
+public record ProductionCertificateCreated(Guid CertificateId,
     string GridArea,
     Period Period,
     Technology Technology,
     string MeteringPointOwner,
     ShieldedValue<string> ShieldedGSRN,
-    ShieldedValue<long> ShieldedQuantity
-);
+    ShieldedValue<long> ShieldedQuantity,
+    byte[] BlindingValue);

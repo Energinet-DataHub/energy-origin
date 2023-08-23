@@ -15,7 +15,8 @@ public class ProductionCertificateTest
         new Technology(FuelCode: "F00000000", TechCode: "T010000"),
         "owner1",
         "gsrn",
-        42);
+        42,
+        Array.Empty<byte>());
 
     [Fact]
     public void is_initially_not_issued_or_rejected()

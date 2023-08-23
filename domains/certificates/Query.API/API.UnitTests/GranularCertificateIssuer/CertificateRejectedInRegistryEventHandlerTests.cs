@@ -22,7 +22,7 @@ public class CertificateRejectedInRegistryEventHandlerTests
     {
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42);
+        var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
         repositoryMock.Get(default).ReturnsForAnyArgs(cert);
 
         var msg = new CertificateRejectedInRegistryEvent(cert.Id, "SomeReason");
