@@ -35,6 +35,13 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->certificatesDomain->
             autoLayout
         }
+        container energyOrigin "ContainerContextEO" {
+            title "[Container Context] Energy Origin"
+            include *
+            autoLayout
+        }
+
+        # Specific area container views
         container energyOrigin "Auth" {
             title "[Container Context] Auth"
             include ->authDomain->
