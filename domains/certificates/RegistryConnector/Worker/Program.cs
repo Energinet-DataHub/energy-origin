@@ -45,7 +45,7 @@ builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
 
-    o.AddConsumer<ProductionCertificateCreatedEventHandler>();
+    o.AddConsumer<RegistryIssuer>();
 
     o.AddConsumer<WalletSliceSender>();
 
