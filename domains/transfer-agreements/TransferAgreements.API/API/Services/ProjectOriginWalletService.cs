@@ -124,8 +124,6 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
         }
-
-        metrics.AddCertificatesTransferred(certificates.Count);
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)
