@@ -9,7 +9,9 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     public const string MetricName = "TransferAgreementAutomation";
 
     private int numberOfTransferAgreementsOnLastRun = 0;
+    private int numberOfCertificatesOnLastRun = 0;
     private ObservableGauge<int> NumberOfTransferAgreementsOnLastRun { get; }
+    private ObservableGauge<int> NumberOfCertificatesOnLastRun { get; }
     private Counter<int> TransferPerCertificate { get; }
 
     private const string certificateIdKey = "CertificateId";
@@ -19,11 +21,14 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
         var meter = new Meter(MetricName);
 
         NumberOfTransferAgreementsOnLastRun = meter.CreateObservableGauge<int>("transfer-agreements-on-last-run", () => numberOfTransferAgreementsOnLastRun);
+        NumberOfCertificatesOnLastRun = meter.CreateObservableGauge<int>("certificates-on-last-run", () => numberOfCertificatesOnLastRun);
         TransferPerCertificate = meter.CreateCounter<int>("transfer-per-certificate");
     }
 
     public void SetNumberOfTransferAgreements(int transferAgreementsOnLastRun) =>
         numberOfTransferAgreementsOnLastRun = transferAgreementsOnLastRun;
+    public void SetNumberOfCertificates(int certificatesOnLastRun) =>
+        numberOfCertificatesOnLastRun = certificatesOnLastRun;
 
     public void AddTransferAttempt(string registry, Guid certificateId) =>
         TransferPerCertificate.Add(1,

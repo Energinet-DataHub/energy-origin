@@ -1,5 +1,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Converters;
@@ -97,15 +98,20 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         var header = SetupDummyAuthorizationHeader(transferAgreement.SenderId.ToString());
         var certificates = await GetGranularCertificates(header);
 
-        if (certificates.Count == 0)
+        var certificatesCount = certificates.Count;
+
+        if (certificatesCount == 0)
         {
             logger.LogInformation("No certificates found for {senderId}", transferAgreement.SenderId);
-            return;
         }
 
         foreach (var certificate in certificates)
         {
-            if (!IsPeriodMatching(transferAgreement, certificate)) continue;
+            if (!IsPeriodMatching(transferAgreement, certificate))
+            {
+                certificatesCount--;
+                continue;
+            }
 
             TransferRequest request = new()
             {
@@ -124,6 +130,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
         }
+        metrics.SetNumberOfCertificates(certificatesCount);
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)
