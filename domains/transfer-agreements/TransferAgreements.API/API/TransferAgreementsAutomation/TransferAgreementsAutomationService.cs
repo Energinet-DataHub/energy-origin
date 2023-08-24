@@ -34,7 +34,6 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         {
 
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
-            metrics.SetNumberOfTransferAgreements(0);
 
             try
             {
