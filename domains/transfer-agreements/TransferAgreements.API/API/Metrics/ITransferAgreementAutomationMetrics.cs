@@ -7,5 +7,6 @@ namespace API.Metrics
         void SetNumberOfTransferAgreements(int transferAgreementsOnLastRun);
         void AddTransferAttempt(string registry, Guid certificateId);
         void SetNumberOfCertificates(int certificatesOnLastRun);
+        void ResetCertificatesTransferred();
     }
 }

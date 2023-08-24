@@ -28,7 +28,10 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     public void SetNumberOfTransferAgreements(int transferAgreementsOnLastRun) =>
         numberOfTransferAgreementsOnLastRun = transferAgreementsOnLastRun;
     public void SetNumberOfCertificates(int certificatesOnLastRun) =>
-        numberOfCertificatesOnLastRun = certificatesOnLastRun;
+        numberOfCertificatesOnLastRun += certificatesOnLastRun;
+
+    public void ResetCertificatesTransferred() =>
+        numberOfCertificatesOnLastRun = 0;
 
     public void AddTransferAttempt(string registry, Guid certificateId) =>
         TransferPerCertificate.Add(1,

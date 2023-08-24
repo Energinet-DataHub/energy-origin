@@ -34,6 +34,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         {
 
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
+            metrics.ResetCertificatesTransferred();
 
             try
             {
@@ -47,7 +48,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
             }
             catch (Exception e)
             {
-                logger.LogInformation("Something went wrong with the TransferAgreementsAutomationService: {exception}", e.Message);
+                logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
             }
 
             await SleepToNearestHour(stoppingToken);
