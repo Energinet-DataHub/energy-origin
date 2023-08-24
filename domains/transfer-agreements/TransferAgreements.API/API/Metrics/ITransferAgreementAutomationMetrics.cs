@@ -4,9 +4,9 @@ namespace API.Metrics
 {
     public interface ITransferAgreementAutomationMetrics
     {
-        void SetNumberOfTransferAgreementsOnLastRun(int numberOfTransferAgreementsOnLastRun);
-        void AddCertificatesTransferred(int certificatesTransferred);
-        void ResetCertificatesTransferred();
+        void SetNumberOfTransferAgreements(int transferAgreementsOnLastRun);
         void AddTransferAttempt(string registry, Guid certificateId);
+        void SetNumberOfCertificates(int certificatesOnLastRun);
+        void ResetCertificatesTransferred();
     }
 }
