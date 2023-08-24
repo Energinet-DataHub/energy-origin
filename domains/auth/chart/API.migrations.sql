@@ -240,7 +240,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
         INSERT INTO "UserTerms" ("Id", "UserId", "AcceptedVersion", "Type")
-        SELECT gen_random_uuid(), "Id", "AcceptedTermsVersion", 'privacy_policy' FROM "Users"
+        SELECT gen_random_uuid(), "Id", "AcceptedTermsVersion", 'privacy_policy' FROM "Users";
     END IF;
 END $EF$;
 
