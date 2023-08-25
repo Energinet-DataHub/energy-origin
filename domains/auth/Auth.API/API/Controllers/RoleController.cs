@@ -65,6 +65,10 @@ public class RoleController : ControllerBase
     [Route("role/{role}/remove/{userId:guid}")]
     public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
+        // FIXME: Should we also check if the role is valid here or only for assignment?
+        // Would it be better not to check in case we remove a role from the config so that role can still be removed from users,
+        // or should we just automatically remove role assignments when a role is removed from the config?
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
         var user = await userService.GetUserByIdAsync(userId);
@@ -72,7 +76,7 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
-        if (user.Id == descriptor.Id)
+        if (user.Id == descriptor.Id && role == RoleKey.RoleAdmin)
         {
             return BadRequest("An admin cannot remove his admin role");
         }
