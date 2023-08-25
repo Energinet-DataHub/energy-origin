@@ -54,7 +54,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             await SleepToNearestHour(stoppingToken);
         }
     }
-    
+
     private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
     {
         try

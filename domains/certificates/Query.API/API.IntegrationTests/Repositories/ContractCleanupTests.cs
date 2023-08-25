@@ -181,7 +181,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             MeteringPointOwner = "owner2",
             MeteringPointType = MeteringPointType.Production
         };
-        
+
         await InsertContracts(store, contract1, contract2);
 
         await store.CleanupContracts(CancellationToken.None);
