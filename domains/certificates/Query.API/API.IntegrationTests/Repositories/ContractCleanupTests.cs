@@ -77,10 +77,100 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
 
         await store.CleanupContracts(CancellationToken.None);
 
-        await using var session = store.OpenSession();
-        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+        var numberOfContracts = await GetNumberOfContracts(store);
+        numberOfContracts.Should().Be(0);
 
-        allContracts.Should().HaveCount(0);
+        await DeleteAllContracts(store);
+    }
+
+    [Fact]
+    public async Task deletes_only_everything_for_multiple_owners_for_571313000000000200()
+    {
+        using var store = DocumentStore.For(opts => opts.Connection(dbContainer.ConnectionString));
+
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.Now,
+            StartDate = DateTimeOffset.Now,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = "571313000000000200", //TODO: Const
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
+
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.Now,
+            StartDate = DateTimeOffset.Now,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = "571313000000000200", //TODO: Const
+            MeteringPointOwner = "owner2",
+            MeteringPointType = MeteringPointType.Production
+        };
+
+        var contract3 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.Now,
+            StartDate = DateTimeOffset.Now,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = GsrnHelper.GenerateRandom(),
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
+
+        await InsertContracts(store, contract1, contract2, contract3);
+
+        await store.CleanupContracts(CancellationToken.None);
+
+        var numberOfContracts = await GetNumberOfContracts(store);
+        numberOfContracts.Should().Be(1);
+
+        await DeleteAllContracts(store);
+    }
+
+    [Fact]
+    public async Task deletes_nothing_for_same_owner_for_571313000000000200()
+    {
+        using var store = DocumentStore.For(opts => opts.Connection(dbContainer.ConnectionString));
+
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.Now,
+            StartDate = DateTimeOffset.Now,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = "571313000000000200", //TODO: Const
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
+
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.Now,
+            StartDate = DateTimeOffset.Now,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = "571313000000000200", //TODO: Const
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
+
+        await InsertContracts(store, contract1, contract2);
+
+        await store.CleanupContracts(CancellationToken.None);
+
+        var numberOfContracts = await GetNumberOfContracts(store);
+        numberOfContracts.Should().Be(2);
+
+        await DeleteAllContracts(store);
     }
 
     [Fact]
@@ -118,10 +208,10 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
 
         await store.CleanupContracts(CancellationToken.None);
 
-        await using var session = store.OpenSession();
-        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+        var numberOfContracts = await GetNumberOfContracts(store);
+        numberOfContracts.Should().Be(2);
 
-        allContracts.Should().HaveCount(2);
+        await DeleteAllContracts(store);
     }
 
     private static async Task InsertContracts(IDocumentStore store, params CertificateIssuingContract[] certificateIssuingContract)
@@ -129,6 +219,27 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
         await using var session = store.OpenSession();
 
         session.Insert(certificateIssuingContract);
+
+        await session.SaveChangesAsync();
+    }
+
+    private static async Task<int> GetNumberOfContracts(IDocumentStore store)
+    {
+        await using var session = store.QuerySession();
+        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+
+        return allContracts.Count;
+    }
+
+    private static async Task DeleteAllContracts(IDocumentStore store)
+    {
+        await using var session = store.OpenSession();
+        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+
+        foreach (var contract in allContracts)
+        {
+            session.Delete(contract);
+        }
 
         await session.SaveChangesAsync();
     }
