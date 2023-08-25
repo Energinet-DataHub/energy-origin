@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230825083202_AddConnectionTable")]
+    [Migration("20230825093309_AddConnectionTable")]
     partial class AddConnectionTable
     {
         /// <inheritdoc />
@@ -31,10 +31,10 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("OrganizationId")
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("OrganizationTin")
+                    b.Property<string>("CompanyTin")
                         .IsRequired()
                         .HasColumnType("text");
 

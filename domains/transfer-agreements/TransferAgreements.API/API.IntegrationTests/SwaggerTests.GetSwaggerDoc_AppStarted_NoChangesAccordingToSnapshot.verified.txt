@@ -350,11 +350,11 @@
       "ConnectionDto": {
         "type": "object",
         "properties": {
-          "organizationId": {
+          "companyId": {
             "type": "string",
             "format": "uuid"
           },
-          "organizationTin": {
+          "companyTin": {
             "type": "string"
           }
         },

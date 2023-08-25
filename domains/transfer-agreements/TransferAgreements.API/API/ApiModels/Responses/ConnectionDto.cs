@@ -2,5 +2,5 @@ using System;
 
 namespace API.ApiModels.Responses;
 
-public record ConnectionDto(Guid OrganizationId,
-    string OrganizationTin);
+public record ConnectionDto(Guid CompanyId,
+    string CompanyTin);

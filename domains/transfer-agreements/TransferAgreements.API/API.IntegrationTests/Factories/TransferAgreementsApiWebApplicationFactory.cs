@@ -159,12 +159,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var connectionTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{connectionTable}\" (\"Id\", \"OrganizationId\", \"OrganizationTin\", \"OwnerId\") VALUES (@Id, @OrganizationId, @OrganizationTin, @OwnerId)";
+        var agreementQuery = $"INSERT INTO \"{connectionTable}\" (\"Id\", \"CompanyId\", \"CompanyTin\", \"OwnerId\") VALUES (@Id, @CompanyId, @CompanyTin, @OwnerId)";
         var agreementFields = new[]
         {
             new NpgsqlParameter("Id", connection.Id),
-            new NpgsqlParameter("OrganizationId", connection.OrganizationId),
-            new NpgsqlParameter("OrganizationTin", connection.OrganizationTin),
+            new NpgsqlParameter("CompanyId", connection.CompanyId),
+            new NpgsqlParameter("CompanyTin", connection.CompanyTin),
             new NpgsqlParameter("OwnerId", connection.OwnerId)
         };
 

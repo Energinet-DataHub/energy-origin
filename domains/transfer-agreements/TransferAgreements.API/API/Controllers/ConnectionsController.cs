@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using API.ApiModels.Responses;
 using API.Data;
@@ -41,5 +41,5 @@ public class ConnectionsController : Controller
     }
 
     private static ConnectionDto ToDto(Connection connection) =>
-        new(connection.OrganizationId, connection.OrganizationTin);
+        new(connection.CompanyId, connection.CompanyTin);
 }

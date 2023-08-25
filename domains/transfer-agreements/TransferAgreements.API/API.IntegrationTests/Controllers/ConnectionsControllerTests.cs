@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
@@ -26,15 +26,15 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
         var ownedConnection = new Connection
         {
             Id = Guid.NewGuid(),
-            OrganizationId = Guid.NewGuid(),
-            OrganizationTin = "12345678",
+            CompanyId = Guid.NewGuid(),
+            CompanyTin = "12345678",
             OwnerId = sub
         };
         var notOwnedConnection = new Connection
         {
             Id = Guid.NewGuid(),
-            OrganizationId = Guid.NewGuid(),
-            OrganizationTin = "12345679",
+            CompanyId = Guid.NewGuid(),
+            CompanyTin = "12345679",
             OwnerId = Guid.NewGuid()
         };
 

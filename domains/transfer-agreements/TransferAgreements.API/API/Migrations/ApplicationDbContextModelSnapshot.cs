@@ -28,10 +28,10 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("OrganizationId")
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("OrganizationTin")
+                    b.Property<string>("CompanyTin")
                         .IsRequired()
                         .HasColumnType("text");
 
