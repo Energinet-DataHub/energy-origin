@@ -51,7 +51,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var client = factory.CreateAnonymousClient();
 
-        var result = await client.PutAsync($"role/{RoleKey.Viewer}/assign/{Guid.NewGuid()}", null);
+        var result = await client.PutAsync($"role/{RoleKey.UserAdmin}/assign/{Guid.NewGuid()}", null);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
@@ -62,7 +62,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var client = factory.CreateAnonymousClient();
 
-        var result = await client.PutAsync($"role/{RoleKey.Viewer}/remove/{Guid.NewGuid()}", null);
+        var result = await client.PutAsync($"role/{RoleKey.UserAdmin}/remove/{Guid.NewGuid()}", null);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
@@ -86,7 +86,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var response = await client.PutAsync($"role/{role}/assign/{user.Id}", null);
         var dbUser = factory.DataContext.Users.Include(x => x.UserRoles).SingleOrDefault(x => x.Id == user.Id)!;
 
@@ -100,7 +100,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
-        var response = await client.PutAsync($"role/{RoleKey.Viewer}/assign/{Guid.NewGuid()}", null);
+        var response = await client.PutAsync($"role/{RoleKey.UserAdmin}/assign/{Guid.NewGuid()}", null);
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -143,7 +143,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Remove_ShouldReturnOk_WhenRoleIsAssigned()
     {
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var dataContext = factory.DataContext;
         var userWithRole = new User
         {
@@ -173,7 +173,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task Remove_ShouldReturnOk_WhenRoleIsNotAssigned()
     {
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(adminUser, role: RoleKey.RoleAdmin);
 
@@ -188,7 +188,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
 
-        var response = await client.PutAsync($"role/{RoleKey.Viewer}/remove/{Guid.NewGuid()}", null);
+        var response = await client.PutAsync($"role/{RoleKey.UserAdmin}/remove/{Guid.NewGuid()}", null);
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -205,12 +205,23 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Remove_ShouldReturnOk_WhenUserTriesToNonAdminFromThemselves()
+    {
+        var user = await factory.AddUserToDatabaseAsync(adminUser);
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
+        var response = await client.PutAsync($"role/{RoleKey.UserAdmin}/remove/{user.Id}", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     [Theory]
     [InlineData("assign")]
     [InlineData("remove")]
     public async Task RoleCalls_ShouldReturnForbidden_WhenNonAdminUser(string action)
     {
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var user = await factory.AddUserToDatabaseAsync(this.user);
         var client = factory.CreateAuthenticatedClient(user);
         var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
@@ -224,7 +235,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [InlineData("remove")]
     public async Task RoleCalls_ShouldReturnForbidden_WhenAdminUserButPrivate(string action)
     {
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var user = await factory.AddUserToDatabaseAsync(new() { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() });
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin);
         var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
@@ -238,7 +249,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [InlineData("remove")]
     public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string action)
     {
-        var role = RoleKey.Viewer;
+        var role = RoleKey.UserAdmin;
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder =>
         {
             var mapper = Mock.Of<IUserDescriptorMapper>();
