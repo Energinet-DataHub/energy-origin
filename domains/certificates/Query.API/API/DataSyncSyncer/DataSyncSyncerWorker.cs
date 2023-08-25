@@ -34,7 +34,8 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await DeleteContractsWithoutWalletDepositEndpoint(stoppingToken);
+        var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
+        logger.LogInformation("Deleted all ({deletionCount}) contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -53,30 +54,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             await SleepToNearestHour(stoppingToken);
         }
     }
-
-    // TODO: Remove this on a later release
-    private async Task DeleteContractsWithoutWalletDepositEndpoint(CancellationToken cancellationToken)
-    {
-        await using var session = documentStore.OpenSession();
-
-        var contracts = await session.Query<CertificateIssuingContract>()
-            .ToListAsync(cancellationToken);
-
-        var i = 0;
-        foreach (var contract in contracts)
-        {
-            if (contract.WalletPublicKey.Length == 0)
-            {
-                session.Delete<CertificateIssuingContract>(contract.Id);
-                i++;
-            }
-        }
-
-        logger.LogInformation("Removing {contractCount} contracts without wallet deposit endpoint", i);
-
-        await session.SaveChangesAsync(cancellationToken);
-    }
-
+    
     private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
     {
         try
@@ -149,4 +127,34 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
+}
+
+public static class ContractCleanup
+{
+    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken)
+    {
+        await using var session = store.OpenSession();
+
+        const string badMeteringPointInDemoEnvironment = "571313000000000200";
+
+        var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
+            .Where(c => c.GSRN == badMeteringPointInDemoEnvironment)
+            .ToListAsync(cancellationToken);
+
+        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
+
+        if (owners.Count() == 1)
+            return (badMeteringPointInDemoEnvironment, 0);
+
+        int deletionCount = contractsForBadMeteringPoint.Count;
+
+        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
+        {
+            session.Delete(certificateIssuingContract);
+        }
+
+        await session.SaveChangesAsync(cancellationToken);
+
+        return (badMeteringPointInDemoEnvironment, deletionCount);
+    }
 }

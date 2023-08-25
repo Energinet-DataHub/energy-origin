@@ -1,43 +1,21 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using API.ContractService;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Testcontainers;
 using CertificateValueObjects;
 using FluentAssertions;
 using Marten;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using API.DataSyncSyncer;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public static class ContractCleanup
-{
-    public static async Task CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken) //TODO: Cancellation token
-    {
-        await using var session = store.OpenSession();
-        var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
-            .Where(c => c.GSRN == "571313000000000200")
-            .ToListAsync(cancellationToken);
-
-        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
-
-        if (owners.Count() == 1)
-            return;
-
-        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
-        {
-            session.Delete(certificateIssuingContract);
-        }
-
-        await session.SaveChangesAsync(cancellationToken);
-    }
-}
-
 public class ContractCleanupTests : IClassFixture<MartenDbContainer>
 {
     private readonly MartenDbContainer dbContainer;
+    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
 
     public ContractCleanupTests(MartenDbContainer dbContainer)
     {
@@ -56,7 +34,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner1",
             MeteringPointType = MeteringPointType.Production
         };
@@ -68,7 +46,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner2",
             MeteringPointType = MeteringPointType.Production
         };
@@ -95,7 +73,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner1",
             MeteringPointType = MeteringPointType.Production
         };
@@ -107,7 +85,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner2",
             MeteringPointType = MeteringPointType.Production
         };
@@ -146,7 +124,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner1",
             MeteringPointType = MeteringPointType.Production
         };
@@ -158,7 +136,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>
             StartDate = DateTimeOffset.Now,
             EndDate = null,
             GridArea = "DK1",
-            GSRN = "571313000000000200", //TODO: Const
+            GSRN = BadMeteringPointInDemoEnvironment,
             MeteringPointOwner = "owner1",
             MeteringPointType = MeteringPointType.Production
         };
