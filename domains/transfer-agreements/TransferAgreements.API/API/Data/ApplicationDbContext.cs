@@ -12,4 +12,5 @@ public class ApplicationDbContext : AuditDbContext
 
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
+    public DbSet<Connection> Connections { get; set; }
 }

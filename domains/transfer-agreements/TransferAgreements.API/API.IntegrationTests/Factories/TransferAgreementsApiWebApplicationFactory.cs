@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using Org.BouncyCastle.Crypto.Agreement;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -81,6 +82,18 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
     }
 
+    public async Task SeedConnections(IEnumerable<Connection> connections)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await TruncateTables(dbContext);
+
+        foreach (var connection in connections)
+        {
+            await InsertConnection(dbContext, connection);
+        }
+    }
+
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
@@ -135,9 +148,27 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
+    }
+
+    private static async Task InsertConnection(ApplicationDbContext dbContext, Connection connection)
+    {
+        var connectionTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
+
+        var agreementQuery = $"INSERT INTO \"{connectionTable}\" (\"Id\", \"OrganizationId\", \"OrganizationTin\", \"OwnerId\") VALUES (@Id, @OrganizationId, @OrganizationTin, @OwnerId)";
+        var agreementFields = new[]
+        {
+            new NpgsqlParameter("Id", connection.Id),
+            new NpgsqlParameter("OrganizationId", connection.OrganizationId),
+            new NpgsqlParameter("OrganizationTin", connection.OrganizationTin),
+            new NpgsqlParameter("OwnerId", connection.OwnerId)
+        };
+
+        await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
