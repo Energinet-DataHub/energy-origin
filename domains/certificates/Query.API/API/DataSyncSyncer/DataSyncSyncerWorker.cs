@@ -131,22 +131,22 @@ internal class DataSyncSyncerWorker : BackgroundService
 
 public static class ContractCleanup
 {
+    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
+
     public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken)
     {
         await using var session = store.OpenSession();
 
-        const string badMeteringPointInDemoEnvironment = "571313000000000200";
-
         var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
-            .Where(c => c.GSRN == badMeteringPointInDemoEnvironment)
+            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
             .ToListAsync(cancellationToken);
 
         var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
 
         if (owners.Count() == 1)
-            return (badMeteringPointInDemoEnvironment, 0);
+            return (BadMeteringPointInDemoEnvironment, 0);
 
-        int deletionCount = contractsForBadMeteringPoint.Count;
+        var deletionCount = contractsForBadMeteringPoint.Count;
 
         foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
         {
@@ -155,6 +155,6 @@ public static class ContractCleanup
 
         await session.SaveChangesAsync(cancellationToken);
 
-        return (badMeteringPointInDemoEnvironment, deletionCount);
+        return (BadMeteringPointInDemoEnvironment, deletionCount);
     }
 }
