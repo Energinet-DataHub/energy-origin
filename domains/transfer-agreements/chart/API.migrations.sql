@@ -193,3 +193,28 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825083202_AddConnectionTable') THEN
+    CREATE TABLE "Connections" (
+        "Id" uuid NOT NULL,
+        "OrganizationId" uuid NOT NULL,
+        "OrganizationTin" text NOT NULL,
+        "OwnerId" uuid NOT NULL,
+        CONSTRAINT "PK_Connections" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825083202_AddConnectionTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230825083202_AddConnectionTable', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
