@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using API.ApiModels.Responses;
 using API.Data;
