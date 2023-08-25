@@ -9,11 +9,10 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
     public const string MetricName = "TransferAgreementAutomation";
 
     private int numberOfTransferAgreementsOnLastRun = 0;
+    private int numberOfCertificatesOnLastRun = 0;
     private ObservableGauge<int> NumberOfTransferAgreementsOnLastRun { get; }
-    private int certificatesTransferredOnLastRun = 0;
-    private ObservableGauge<int> CertificatesTransferredOnLastRun { get; }
-
-    private Counter<int> TransferRetriesPerCertificate { get; }
+    private ObservableGauge<int> NumberOfCertificatesOnLastRun { get; }
+    private Counter<int> TransferPerCertificate { get; }
 
     private const string certificateIdKey = "CertificateId";
     private const string registryIdKey = "Registry";
@@ -22,21 +21,20 @@ public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMe
         var meter = new Meter(MetricName);
 
         NumberOfTransferAgreementsOnLastRun = meter.CreateObservableGauge<int>("transfer-agreements-on-last-run", () => numberOfTransferAgreementsOnLastRun);
-        CertificatesTransferredOnLastRun = meter.CreateObservableGauge<int>("certificates-transferred-on-last-run", () => certificatesTransferredOnLastRun);
-        TransferRetriesPerCertificate = meter.CreateCounter<int>("transfer-retries-per-certificate");
+        NumberOfCertificatesOnLastRun = meter.CreateObservableGauge<int>("certificates-on-last-run", () => numberOfCertificatesOnLastRun);
+        TransferPerCertificate = meter.CreateCounter<int>("transfer-per-certificate");
     }
 
-    public void SetNumberOfTransferAgreementsOnLastRun(int transferAgreementsOnLastRun) =>
+    public void SetNumberOfTransferAgreements(int transferAgreementsOnLastRun) =>
         numberOfTransferAgreementsOnLastRun = transferAgreementsOnLastRun;
-
-    public void AddCertificatesTransferred(int certificatesTransferred) =>
-        certificatesTransferredOnLastRun += certificatesTransferred;
+    public void SetNumberOfCertificates(int certificatesOnLastRun) =>
+        numberOfCertificatesOnLastRun += certificatesOnLastRun;
 
     public void ResetCertificatesTransferred() =>
-        certificatesTransferredOnLastRun = 0;
+        numberOfCertificatesOnLastRun = 0;
 
     public void AddTransferAttempt(string registry, Guid certificateId) =>
-        TransferRetriesPerCertificate.Add(1,
+        TransferPerCertificate.Add(1,
             CreateTag(registryIdKey, registry),
             CreateTag(certificateIdKey, certificateId));
 
