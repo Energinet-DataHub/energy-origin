@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using API.Metrics;
 using API.Models;
 using API.Services;
-using FluentAssertions.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -12,12 +11,12 @@ using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
 using Xunit;
 
-namespace API.UnitTests;
+namespace API.UnitTests.Services;
 
 public class ProjectOriginWalletServiceTest
 {
-    private ProjectOriginWalletService service;
-    private WalletService.WalletServiceClient fakeWalletServiceClient;
+    private readonly ProjectOriginWalletService service;
+    private readonly WalletService.WalletServiceClient fakeWalletServiceClient;
 
     public ProjectOriginWalletServiceTest()
     {
@@ -27,6 +26,7 @@ public class ProjectOriginWalletServiceTest
 
         service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics);
     }
+
     [Fact]
     public async Task TransferCertificates_TransferAgreementNoEndDate_ShouldCallWalletTransferCertificate()
     {
@@ -49,7 +49,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient.Received(1).TransferCertificateAsync(Arg.Any<TransferRequest>(), Arg.Any<Metadata>());
+        fakeWalletServiceClient
+            .Received(1)
+            .TransferCertificateAsync(
+                Arg.Any<TransferRequest>(),
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+            );
     }
 
     [Fact]
@@ -74,7 +79,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient.Received(0).TransferCertificateAsync(Arg.Any<TransferRequest>(), Arg.Any<Metadata>());
+        fakeWalletServiceClient
+            .DidNotReceive()
+            .TransferCertificateAsync(
+                Arg.Any<TransferRequest>(),
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+            );
     }
 
     [Fact]
@@ -99,7 +109,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient.Received(0).TransferCertificateAsync(Arg.Any<TransferRequest>(), Arg.Any<Metadata>());
+        fakeWalletServiceClient
+            .DidNotReceive()
+            .TransferCertificateAsync(
+                Arg.Any<TransferRequest>(),
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+            );
     }
 
     [Fact]
@@ -123,7 +138,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient.Received(1).TransferCertificateAsync(Arg.Any<TransferRequest>(), Arg.Any<Metadata>());
+        fakeWalletServiceClient
+            .Received(1)
+            .TransferCertificateAsync(
+                Arg.Any<TransferRequest>(),
+                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+            );
     }
 
     private void SetupWalletServiceClient(AsyncUnaryCall<QueryResponse> fakeGranularCertificatesResponse,
