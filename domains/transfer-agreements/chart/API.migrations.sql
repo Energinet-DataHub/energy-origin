@@ -203,7 +203,7 @@ BEGIN
         "Id" uuid NOT NULL,
         "SenderCompanyId" uuid NOT NULL,
         "SenderCompanyTin" text NOT NULL,
-        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (current_timestamp at time zone 'UTC'),
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP at time zone 'UTC'),
         CONSTRAINT "PK_Invitations" PRIMARY KEY ("Id")
     );
     END IF;
