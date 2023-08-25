@@ -35,10 +35,12 @@ public class TokenIssuerTests
     }
 
     [Theory]
-    [InlineData(UserScopeName.NotAcceptedPrivacyPolicy, 0, 0, false)]
-    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, false)]
+    [InlineData(UserScopeName.NotAcceptedPrivacyPolicy + " " + UserScopeName.NotAcceptedTermsOfService, 0, 0, false)]
+    [InlineData(UserScopeName.NotAcceptedPrivacyPolicy, 0, 3, false)]
+    [InlineData(UserScopeName.NotAcceptedTermsOfService, 3, 0, false)]
+    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 3, true)]
+    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 0, true)]
     [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 0, true)]
-    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, true)]
     public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int privacyVersion, int tosVersion, bool bypass)
     {
         var (descriptor, data) = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion);

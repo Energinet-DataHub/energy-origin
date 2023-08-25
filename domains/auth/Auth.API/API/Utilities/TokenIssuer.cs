@@ -50,9 +50,15 @@ public class TokenIssuer : ITokenIssuer
     private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass)
     {
         string? scope = null;
+
         if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
         {
             scope = string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
+        }
+
+        if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
+        {
+            scope = string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
         }
 
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
