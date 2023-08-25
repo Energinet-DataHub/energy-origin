@@ -222,25 +222,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataSyncOptions"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataSyncOptions"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataSyncOptions"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Success"
@@ -286,21 +267,6 @@
     }
   },
   "components": {
-    "schemas": {
-      "DataSyncOptions": {
-        "required": [
-          "uri"
-        ],
-        "type": "object",
-        "properties": {
-          "uri": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "additionalProperties": false
-      }
-    },
     "securitySchemes": {
       "Bearer": {
         "type": "apiKey",

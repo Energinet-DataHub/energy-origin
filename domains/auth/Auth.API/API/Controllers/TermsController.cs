@@ -26,16 +26,23 @@ public class TermsController : ControllerBase
         IHttpClientFactory clientFactory,
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
+        TermsOptions termsOptions,
         int version)
     {
+        if (termsOptions.PrivacyPolicyVersion < version)
+        {
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
+        }
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
         var type = UserTermsType.PrivacyPolicy;
         var user = await userService.GetUserByIdAsync(descriptor.Id);
         var acceptedVersion = user?.UserTerms.SingleOrDefault(x => x.Type == type)?.AcceptedVersion ?? 0;
+
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept privacy policy version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -100,7 +107,7 @@ public class TermsController : ControllerBase
         }
 
         logger.AuditLog(
-            "{User} updated accepted Privacy policy {Versions} at {TimeStamp}.",
+            "{User} updated accepted Privacy policy {Version} at {TimeStamp}.",
             user.Id,
             userTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
@@ -116,8 +123,14 @@ public class TermsController : ControllerBase
         ILogger<TermsController> logger,
         IUserDescriptorMapper mapper,
         IUserService userService,
+        TermsOptions termsOptions,
         int version)
     {
+        if (termsOptions.TermsOfServiceVersion < version)
+        {
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
+        }
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
@@ -125,7 +138,7 @@ public class TermsController : ControllerBase
         var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0;
         if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept terms of service version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var companyTerms = user!.Company!.CompanyTerms.SingleOrDefault(x => x.Type == type);
@@ -142,7 +155,7 @@ public class TermsController : ControllerBase
         await userService.UpsertUserAsync(user);
 
         logger.AuditLog(
-            "{User} updated accepted Terms of service {Versions} at {TimeStamp}.",
+            "{User} updated accepted Terms of service {Version} at {TimeStamp}.",
             user.Id,
             companyTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()

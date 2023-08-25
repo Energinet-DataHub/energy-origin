@@ -1,6 +1,6 @@
 namespace API.Values;
 
-public struct UserScopeClaim
+public struct UserScopeName
 {
     public const string NotAcceptedTermsOfService = "not-accepted-termsofservice-terms";
     public const string NotAcceptedPrivacyPolicy = "not-accepted-privacypolicy-terms";

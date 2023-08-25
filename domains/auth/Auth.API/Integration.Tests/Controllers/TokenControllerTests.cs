@@ -28,7 +28,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedSDuringCurrentLogin()
+    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedDuringCurrentLogin()
     {
         var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
         var oldClient = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
@@ -108,8 +108,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
-        Assert.DoesNotContain(UserScopeClaim.NotAcceptedPrivacyPolicy, newScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
+        Assert.DoesNotContain(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, newScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
     }
 }

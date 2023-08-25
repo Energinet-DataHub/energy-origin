@@ -35,10 +35,10 @@ public class TokenIssuerTests
     }
 
     [Theory]
-    [InlineData(UserScopeClaim.NotAcceptedPrivacyPolicy + " " + UserScopeClaim.NotAcceptedTermsOfService, 0, 0, false)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, false)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 0, 0, true)]
-    [InlineData($"{UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", 3, 1, true)]
+    [InlineData(UserScopeName.NotAcceptedPrivacyPolicy, 0, 0, false)]
+    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, false)]
+    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 0, true)]
+    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, true)]
     public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int privacyVersion, int tosVersion, bool bypass)
     {
         var (descriptor, data) = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion);
@@ -78,6 +78,35 @@ public class TokenIssuerTests
 
         Assert.NotNull(jwt);
         Assert.Empty(jwt.Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value));
+    }
+
+    [Fact]
+    public void Issue_ShouldReturnATokenWithAllInheritedRoles_WhenInheritedRolesHasInheritedRoles()
+    {
+        var matched = "matched";
+        var intermediate = "intermediate";
+        var halfway = "halfway";
+        var transitional = "transitional";
+        var required = "required";
+        var options = new RoleOptions()
+        {
+            RoleConfigurations = new() {
+                new() { Key = matched, Name = matched, Inherits = new() { intermediate } },
+                new() { Key = intermediate, Name = intermediate, Inherits = new() { halfway } },
+                new() { Key = halfway, Name = halfway, Inherits = new() { transitional } },
+                new() { Key = transitional, Name = transitional, Inherits = new() { required } },
+                new() { Key = required, Name = required }
+            }
+        };
+        var (descriptor, data) = PrepareUser(matchedRoles: matched);
+
+        var token = GetTokenIssuer(roles: options).Issue(descriptor, data);
+
+        Assert.NotNull(token);
+        var jwt = Convert(token);
+        Assert.NotNull(jwt);
+        var roles = jwt.Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value);
+        Assert.Contains(required, roles);
     }
 
     [Fact]
@@ -189,7 +218,9 @@ public class TokenIssuerTests
     {
         var user = new User
         {
-            Id = Guid.NewGuid(), Name = name ?? "Amigo", AllowCprLookup = false,
+            Id = Guid.NewGuid(),
+            Name = name ?? "Amigo",
+            AllowCprLookup = false,
             Company = new Company
             {
                 Name = "testCompany"
