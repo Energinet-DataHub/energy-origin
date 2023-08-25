@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
