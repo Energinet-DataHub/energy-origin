@@ -198,12 +198,12 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825082103_AddInvitationsTable') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825101816_AddInvitationsTable') THEN
     CREATE TABLE "Invitations" (
         "Id" uuid NOT NULL,
         "SenderCompanyId" uuid NOT NULL,
         "SenderCompanyTin" text NOT NULL,
-        "CreatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (CURRENT_TIMESTAMP),
         CONSTRAINT "PK_Invitations" PRIMARY KEY ("Id")
     );
     END IF;
@@ -211,9 +211,10 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825082103_AddInvitationsTable') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230825101816_AddInvitationsTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230825082103_AddInvitationsTable', '7.0.5');
+    VALUES ('20230825101816_AddInvitationsTable', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;
+

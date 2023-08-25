@@ -31,7 +31,7 @@ namespace API.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("SenderCompanyId")
                         .HasColumnType("uuid");
