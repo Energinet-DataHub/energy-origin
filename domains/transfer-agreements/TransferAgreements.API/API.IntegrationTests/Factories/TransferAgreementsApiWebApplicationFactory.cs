@@ -18,7 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
-using Org.BouncyCastle.Crypto.Agreement;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -69,11 +68,11 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
+    public async Task SeedTransferAgreements(IEnumerable<TransferAgreement> transferAgreements)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateTables(dbContext);
+        await TruncateTransferAgreementTables(dbContext);
 
         foreach (var agreement in transferAgreements)
         {
@@ -86,12 +85,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateTables(dbContext);
+        await TruncateConnectionTable(dbContext);
 
         foreach (var connection in connections)
         {
-            await InsertConnection(dbContext, connection);
+            dbContext.Connections.Add(connection);
         }
+
+        await dbContext.SaveChangesAsync();
     }
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
@@ -144,31 +145,20 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return tokenHandler.WriteToken(token);
     }
 
-    private static async Task TruncateTables(ApplicationDbContext dbContext)
+    private static async Task TruncateTransferAgreementTables(ApplicationDbContext dbContext)
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
-    private static async Task InsertConnection(ApplicationDbContext dbContext, Connection connection)
+    private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
     {
-        var connectionTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{connectionTable}\" (\"Id\", \"CompanyId\", \"CompanyTin\", \"OwnerId\") VALUES (@Id, @CompanyId, @CompanyTin, @OwnerId)";
-        var agreementFields = new[]
-        {
-            new NpgsqlParameter("Id", connection.Id),
-            new NpgsqlParameter("CompanyId", connection.CompanyId),
-            new NpgsqlParameter("CompanyTin", connection.CompanyTin),
-            new NpgsqlParameter("OwnerId", connection.OwnerId)
-        };
-
-        await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)

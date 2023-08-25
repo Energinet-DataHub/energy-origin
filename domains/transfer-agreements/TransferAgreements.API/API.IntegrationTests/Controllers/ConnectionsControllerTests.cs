@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using API.Models;
@@ -51,6 +52,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
         var response = JsonConvert.DeserializeObject<ConnectionsResponse>(await get.Content.ReadAsStringAsync());
 
         response.Should().NotBeNull();
-        response.Connections.Should().HaveCount(1);
+        response.Result.Should().HaveCount(1);
+        response.Result.FirstOrDefault().CompanyTin.Should().Be(ownedConnection.CompanyTin);
     }
 }
