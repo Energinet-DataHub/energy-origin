@@ -1,8 +1,14 @@
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using API.Models.Entities;
+using API.Repositories;
+using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Unit.Tests.Services;
 
@@ -56,14 +62,14 @@ public class UserProviderServiceTests
     [Fact]
     public void GetNonMatchingUserProviders_ShouldReturnUserProviderListWithNonMatches_WhenInvokedWithNonMatchingLists()
     {
-        var expectedProviderKeyType = ProviderKeyType.PID;
+        var expectedProviderKeyType = ProviderKeyType.Pid;
         var expectedUserProviderKey = Guid.NewGuid().ToString();
 
         var newUserProviders = new List<UserProvider>()
         {
             new UserProvider()
             {
-                ProviderKeyType = ProviderKeyType.MitID_UUID,
+                ProviderKeyType = ProviderKeyType.MitIdUuid,
                 UserProviderKey = Guid.NewGuid().ToString()
             },
             new UserProvider()
@@ -76,7 +82,7 @@ public class UserProviderServiceTests
         {
             new UserProvider()
             {
-                ProviderKeyType = ProviderKeyType.RID,
+                ProviderKeyType = ProviderKeyType.Rid,
                 UserProviderKey = Guid.NewGuid().ToString()
             },
             newUserProviders.First()

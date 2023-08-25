@@ -1,36 +1,40 @@
+using System.Collections;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using API.Models.Entities;
 using API.Options;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
 
 public class TokenIssuer : ITokenIssuer
 {
-    public const string AllAcceptedScopes = $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}";
+    public const string AllAcceptedScopes = $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}";
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
+    private readonly RoleOptions roleOptions;
 
-    public TokenIssuer(IOptions<TermsOptions> termsOptions, IOptions<TokenOptions> tokenOptions)
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions)
     {
-        this.termsOptions = termsOptions.Value;
-        this.tokenOptions = tokenOptions.Value;
+        this.termsOptions = termsOptions;
+        this.tokenOptions = tokenOptions;
+        this.roleOptions = roleOptions;
     }
 
-    public string Issue(UserDescriptor descriptor, bool versionBypass = false, DateTime? issueAt = default)
+    public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, descriptor, versionBypass);
+        var state = ResolveState(termsOptions, data, versionBypass);
 
-        return CreateToken(CreateTokenDescriptor(termsOptions, tokenOptions, credentials, descriptor, state, issueAt ?? DateTime.UtcNow));
+        return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
 
     private static SigningCredentials CreateSigningCredentials(TokenOptions options)
@@ -43,32 +47,44 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserDescriptor descriptor, bool versionBypass)
+    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass)
     {
-        var version = descriptor.AcceptedTermsVersion;
+        string? scope = null;
+        if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
+        {
+            scope = string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
+        }
 
-        var scope = version == options.CurrentVersion || versionBypass ? AllAcceptedScopes : UserScopeClaim.NotAcceptedTerms;
+        scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
 
-        return new(version, scope);
+        scope = scope.Trim();
+
+        return new(scope);
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TermsOptions termsOptions, TokenOptions tokenOptions, SigningCredentials credentials, UserDescriptor descriptor, UserState state, DateTime issueAt)
+    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
             { UserClaimName.Scope, state.Scope },
             { UserClaimName.AccessToken, descriptor.EncryptedAccessToken },
             { UserClaimName.IdentityToken, descriptor.EncryptedIdentityToken },
+            { UserClaimName.MatchedRoles, descriptor.MatchedRoles },
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
-            { UserClaimName.AcceptedTermsVersion, state.AcceptedVersion },
-            { UserClaimName.CurrentTermsVersion, termsOptions.CurrentVersion },
-            { UserClaimName.AllowCPRLookup, descriptor.AllowCPRLookup },
-            { UserClaimName.UserStored, descriptor.UserStored },
+            { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
             { UserClaimName.Subject, descriptor.Subject },
             { UserClaimName.Actor, descriptor.Id },
-            { UserClaimName.ActorLegacy, descriptor.Id }
+            { UserClaimName.ActorLegacy, descriptor.Id },
         };
+
+        var validRoles = roleOptions.RoleConfigurations.Select(x => x.Key);
+        var assignedRoles = data.AssignedRoles ?? Array.Empty<string>();
+        var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
+        var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
+        var roles = AddInheritedRoles(roleOptions.RoleConfigurations.ToDictionary(x => x.Key), allottedRoles).Distinct().Where(x => validRoles.Contains(x));
+
+        claims.Add(UserClaimName.Roles, roles);
 
         if (descriptor.CompanyId is not null)
         {
@@ -85,8 +101,8 @@ public class TokenIssuer : ITokenIssuer
 
         var identity = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, descriptor.Name),
-            new Claim(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
+            new(JwtRegisteredClaimNames.Name, descriptor.Name),
+            new(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
         };
 
         return new()
@@ -101,6 +117,16 @@ public class TokenIssuer : ITokenIssuer
         };
     }
 
+    private static IEnumerable<string> AddInheritedRoles(Dictionary<string, RoleConfiguration> configurations, IEnumerable<string> roles)
+    {
+        if (roles.IsNullOrEmpty())
+        {
+            return Enumerable.Empty<string>();
+        }
+        var inherited = roles.Where(x => configurations[x].Inherits.IsNullOrEmpty() == false).SelectMany(x => configurations[x].Inherits);
+        return roles.Concat(inherited).Concat(AddInheritedRoles(configurations, inherited));
+    }
+
     private static string CreateToken(SecurityTokenDescriptor descriptor)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -108,5 +134,14 @@ public class TokenIssuer : ITokenIssuer
         return handler.WriteToken(token);
     }
 
-    private record UserState(int AcceptedVersion, string Scope);
+    public record UserData(int PrivacyPolicyVersion, int TermsOfServiceVersion, IEnumerable<string>? AssignedRoles = default)
+    {
+        public static UserData From(User? user) => new(
+            user?.UserTerms.SingleOrDefault(x => x.Type == UserTermsType.PrivacyPolicy)?.AcceptedVersion ?? 0,
+            user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0,
+            user?.UserRoles.Select(x => x.Role)
+        );
+    }
+
+    private record UserState(string Scope);
 }
