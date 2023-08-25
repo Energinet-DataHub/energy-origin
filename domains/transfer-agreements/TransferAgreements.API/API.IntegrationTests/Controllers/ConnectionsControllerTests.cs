@@ -5,12 +5,10 @@ using API.IntegrationTests.Factories;
 using API.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
-using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
-[UsesVerify]
 public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
