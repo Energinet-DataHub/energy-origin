@@ -19,7 +19,6 @@ public class ApplicationDbContext : AuditDbContext
         {
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .IsRequired();
         });
 }

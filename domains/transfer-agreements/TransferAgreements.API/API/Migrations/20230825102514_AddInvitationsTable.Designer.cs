@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230825101816_AddInvitationsTable")]
+    [Migration("20230825102514_AddInvitationsTable")]
     partial class AddInvitationsTable
     {
         /// <inheritdoc />
@@ -32,9 +32,7 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SenderCompanyId")
                         .HasColumnType("uuid");
