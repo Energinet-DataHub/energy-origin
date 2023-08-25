@@ -10,5 +10,9 @@ public record ProductionCertificateCreatedEvent(
     Technology Technology,
     string MeteringPointOwner,
     Gsrn Gsrn,
-    ShieldedValue<long> ShieldedQuantity
+    byte[] BlindingValue,
+    long Quantity,
+    byte[] WalletPublicKey,
+    string WalletUrl,
+    uint WalletDepositEndpointPosition
 );
