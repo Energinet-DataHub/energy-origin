@@ -14,14 +14,14 @@ using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCertificateCreatedEvent>
+public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
 {
-    private readonly ILogger<ProductionCertificateCreatedEventHandler> logger;
+    private readonly ILogger<RegistryIssuer> logger;
     private readonly ProjectOriginOptions projectOriginOptions;
 
-    public ProductionCertificateCreatedEventHandler(
+    public RegistryIssuer(
         IOptions<ProjectOriginOptions> projectOriginOptions,
-        ILogger<ProductionCertificateCreatedEventHandler> logger)
+        ILogger<RegistryIssuer> logger)
     {
         this.projectOriginOptions = projectOriginOptions.Value;
         this.logger = logger;
@@ -31,10 +31,13 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
     {
         var message = context.Message;
 
-        var commitment = new SecretCommitmentInfo((uint)message.ShieldedQuantity.Value); //TODO: commitment should be part of message. See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1572
+        if (message.Quantity > uint.MaxValue)
+            throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
 
-        var ownerKey = new Secp256k1Algorithm().GenerateNewPrivateKey(); //TODO: Derive new public key from Deposit Endpoint Reference. See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1693
-        var ownerPublicKey = ownerKey.PublicKey;
+        var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
+
+        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);
+        var ownerPublicKey = hdPublicKey.Derive((int)message.WalletDepositEndpointPosition).GetPublicKey();
 
         var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
 
@@ -44,6 +47,8 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             message.Period.ToDateInterval(),
             message.GridArea,
             message.Gsrn.Value,
+            message.Technology.TechCode,
+            message.Technology.FuelCode,
             commitment,
             ownerPublicKey);
 
@@ -72,7 +77,14 @@ public class ProductionCertificateCreatedEventHandler : IConsumer<ProductionCert
             if (status.Status == TransactionState.Committed)
             {
                 logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
-                await context.Publish(new CertificateIssuedInRegistryEvent(message.CertificateId));
+                await context.Publish(new CertificateIssuedInRegistryEvent(
+                    message.CertificateId,
+                    projectOriginOptions.RegistryName,
+                    commitment.BlindingValue.ToArray(),
+                    commitment.Message,
+                    message.WalletPublicKey,
+                    message.WalletUrl,
+                    message.WalletDepositEndpointPosition));
                 break;
             }
 

@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using API.Query.API.ApiModels.Requests;
-using API.Query.API.Projections;
 using API.Query.API.SwaggerGen;
 using FluentValidation;
-using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
@@ -25,11 +23,6 @@ public static class Startup
                 Version = "v1",
                 Title = "Certificates Query API"
             });
-        });
-
-        services.ConfigureMarten(o =>
-        {
-            o.Projections.Add(new CertificatesByOwnerProjection());
         });
 
         services.AddHttpContextAccessor();

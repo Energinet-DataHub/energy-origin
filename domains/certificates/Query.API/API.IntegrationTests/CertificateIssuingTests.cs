@@ -114,7 +114,7 @@ public sealed class CertificateIssuingTests :
     }
 
     [Fact]
-    public async Task GetList_ThreeMeasurementAddedToBus_ReturnsList()
+    public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
         var gsrn = GsrnHelper.GenerateRandom();
@@ -124,7 +124,7 @@ public sealed class CertificateIssuingTests :
 
         await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
 
-        const int measurementCount = 3;
+        const int measurementCount = 5;
 
         var measurements = Enumerable.Range(0, measurementCount)
             .Select(i => new EnergyMeasuredIntegrationEvent(
@@ -141,13 +141,32 @@ public sealed class CertificateIssuingTests :
 
         var certificateList =
             await client.RepeatedlyGetUntil<CertificateList>("api/certificates",
-                res => res.Result.Count() == measurementCount,
-                timeLimit: TimeSpan.FromMinutes(1));
+                res => res.Result.Count() == measurementCount);
 
         var expected = new CertificateList
         {
             Result = new[]
             {
+                new Certificate
+                {
+                    Quantity = 46,
+                    DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
+                new Certificate
+                {
+                    Quantity = 45,
+                    DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
+                    GridArea = "DK1",
+                    GSRN = gsrn,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000"
+                },
                 new Certificate
                 {
                     Quantity = 44,

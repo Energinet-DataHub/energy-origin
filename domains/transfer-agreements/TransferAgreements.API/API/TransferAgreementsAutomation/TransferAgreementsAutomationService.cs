@@ -32,16 +32,24 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
-            var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
 
-            foreach (var transferAgreement in transferAgreements)
+            try
             {
-                await projectOriginWalletService.TransferCertificates(transferAgreement);
-            }
+                var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
+                metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
-            metrics.SetNumberOfTransferAgreementsOnLastRun(transferAgreements.Count);
+                foreach (var transferAgreement in transferAgreements)
+                {
+                    await projectOriginWalletService.TransferCertificates(transferAgreement);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
+            }
 
             await SleepToNearestHour(stoppingToken);
         }
