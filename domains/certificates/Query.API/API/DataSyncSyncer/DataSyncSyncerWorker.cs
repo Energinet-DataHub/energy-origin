@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
+using API.DataSyncSyncer.Persistence;
 using Marten;
 using MassTransit;
 using MeasurementEvents;
@@ -34,7 +35,8 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await DeleteContractsWithoutWalletDepositEndpoint(stoppingToken);
+        var positionDeletionCount = await documentStore.MigrateSynchronizationPosition(stoppingToken);
+        logger.LogInformation("Deleted ({deletionCount}) SyncPositions", positionDeletionCount);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -53,30 +55,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             await SleepToNearestHour(stoppingToken);
         }
     }
-
-    // TODO: Remove this on a later release
-    private async Task DeleteContractsWithoutWalletDepositEndpoint(CancellationToken cancellationToken)
-    {
-        await using var session = documentStore.OpenSession();
-
-        var contracts = await session.Query<CertificateIssuingContract>()
-            .ToListAsync(cancellationToken);
-
-        var i = 0;
-        foreach (var contract in contracts)
-        {
-            if (contract.WalletPublicKey.Length == 0)
-            {
-                session.Delete<CertificateIssuingContract>(contract.Id);
-                i++;
-            }
-        }
-
-        logger.LogInformation("Removing {contractCount} contracts without wallet deposit endpoint", i);
-
-        await session.SaveChangesAsync(cancellationToken);
-    }
-
+    
     private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
     {
         try
@@ -149,4 +128,30 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
+}
+
+public static class SynchronizationMigration
+{
+    public static async Task<int> MigrateSynchronizationPosition(this IDocumentStore store, CancellationToken cancellationToken)
+    {
+        await using var session = store.OpenSession();
+
+        var allPositions = await session.Query<SyncPosition>().ToListAsync(cancellationToken);
+        int deletedPositions = allPositions.Count;
+
+        var synchronizationPositions = allPositions
+            .GroupBy(p => p.GSRN)
+            .Select(g => new SynchronizationPosition { GSRN = g.Key, SyncedTo = g.Max(p => p.SyncedTo) });
+
+        session.Store(synchronizationPositions);
+
+        foreach (var syncPosition in allPositions)
+        {
+            session.Delete(syncPosition);
+        }
+
+        await session.SaveChangesAsync(cancellationToken);
+
+        return deletedPositions;
+    }
 }

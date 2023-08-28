@@ -7,32 +7,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.DataSyncSyncer;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
-
-public static class SynchronizationMigration
-{
-    public static async Task MigrateSynchronizationPosition(this IDocumentStore store, CancellationToken cancellationToken)
-    {
-        await using var session = store.OpenSession();
-
-        var allPositions = await session.Query<SyncPosition>().ToListAsync(cancellationToken);
-
-        var synchronizationPositions = allPositions
-            .GroupBy(p => p.GSRN)
-            .Select(g => new SynchronizationPosition {GSRN = g.Key, SyncedTo = g.Max(p => p.SyncedTo)});
-
-        session.Store(synchronizationPositions);
-
-        foreach (var syncPosition in allPositions)
-        {
-            session.Delete(syncPosition);
-        }
-
-        await session.SaveChangesAsync(cancellationToken);
-    }
-}
 
 public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, IAsyncLifetime
 {
