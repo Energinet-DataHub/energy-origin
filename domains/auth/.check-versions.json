@@ -1,10 +1,6 @@
 [
     {
-        "yaml-file": "domains/auth/chart/Chart.yaml",
-        "yaml-path": "version"
-    },
-    {
-        "yaml-file": "domains/auth/Auth.API/chart-overrides.yaml",
+        "yaml-file": "domains/auth/configuration.yaml",
         "yaml-path": "version"
     }
 ]
