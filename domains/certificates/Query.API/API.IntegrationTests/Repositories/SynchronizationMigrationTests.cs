@@ -46,7 +46,7 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var sync1 = new SyncPosition(Guid.NewGuid(), gsrn, 42);
-        
+
         await SaveSyncPositions(sync1);
 
         // Call multiple times
@@ -76,7 +76,7 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
         foreach (var gsrn in gsrns)
         {
             var positionsForMeteringPoint = Enumerable.Range(1, hoursInAYear)
-                .Select(h => new SyncPosition(Guid.NewGuid(), gsrn, h+i))
+                .Select(h => new SyncPosition(Guid.NewGuid(), gsrn, h + i))
                 .ToArray();
 
             await SaveSyncPositions(positionsForMeteringPoint);
