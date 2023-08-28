@@ -42,7 +42,7 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
         => store = DocumentStore.For(opts => opts.Connection(dbContainer.ConnectionString));
 
     [Fact]
-    public async Task Test()
+    public async Task migrates_one_metering_point_with_positons()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var sync1 = new SyncPosition(Guid.NewGuid(), gsrn, 42);
@@ -66,24 +66,43 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
     [Fact]
     public async Task can_be_called_multiple_times()
     {
-        true.Should().BeFalse();
+        var gsrn = GsrnHelper.GenerateRandom();
+        var sync1 = new SyncPosition(Guid.NewGuid(), gsrn, 42);
+        
+        await SaveSyncPositions(sync1);
+
+        // Call multiple times
+        await store.MigrateSynchronizationPosition(CancellationToken.None);
+        await store.MigrateSynchronizationPosition(CancellationToken.None);
+        await store.MigrateSynchronizationPosition(CancellationToken.None);
+
+        await using var session = store.QuerySession();
+
+        var syncPositions = await session.Query<SyncPosition>().ToListAsync();
+        syncPositions.Should().HaveCount(0);
+
+        var synchronizationPositions = await session.Query<SynchronizationPosition>().ToListAsync();
+        synchronizationPositions.Should().HaveCount(1);
+        synchronizationPositions.Single().Should().BeEquivalentTo(new SynchronizationPosition { GSRN = gsrn, SyncedTo = 42 });
     }
 
     [Fact]
-    public async Task works_with_20_metering_points_with_1_year_positions()
+    public async Task migrates_20_metering_points_with_1_year_positions()
     {
         const int hoursInAYear = 24 * 365;
         const int numMeteringPoints = 20;
 
         var gsrns = Enumerable.Range(1, numMeteringPoints).Select(_ => GsrnHelper.GenerateRandom()).ToArray();
 
+        int i = 0;
         foreach (var gsrn in gsrns)
         {
             var positionsForMeteringPoint = Enumerable.Range(1, hoursInAYear)
-                .Select(h => new SyncPosition(Guid.NewGuid(), gsrn, h))
+                .Select(h => new SyncPosition(Guid.NewGuid(), gsrn, h+i))
                 .ToArray();
 
             await SaveSyncPositions(positionsForMeteringPoint);
+            i++;
         }
 
         await store.MigrateSynchronizationPosition(CancellationToken.None);
@@ -94,8 +113,8 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
         syncPositions.Should().HaveCount(0);
 
         var synchronizationPositions = await session.Query<SynchronizationPosition>().ToListAsync();
-        synchronizationPositions.Should().HaveCount(numMeteringPoints).And.AllSatisfy(sp => sp.SyncedTo.Should().Be(hoursInAYear));
-        synchronizationPositions.Select(sp => sp.GSRN).Should().BeEquivalentTo(gsrns);
+        var expected = gsrns.Select((gsrn, cnt) => new SynchronizationPosition { GSRN = gsrn, SyncedTo = hoursInAYear + cnt });
+        synchronizationPositions.Should().BeEquivalentTo(expected);
     }
 
 
