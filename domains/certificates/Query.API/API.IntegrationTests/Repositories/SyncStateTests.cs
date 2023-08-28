@@ -45,8 +45,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
     {
         var info = CreateSyncInfo();
 
-        var position = new SynchronizationPosition
-            { GSRN = info.GSRN, SyncedTo = DateTimeOffset.Now.ToUnixTimeSeconds() };
+        var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
         using var store = DocumentStore.For(opts => opts.Connection(martenDbContainer.ConnectionString));
         await using var session = store.LightweightSession();
@@ -65,8 +64,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
     {
         var info = CreateSyncInfo();
 
-        var position = new SynchronizationPosition
-            { GSRN = info.GSRN, SyncedTo = info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds() };
+        var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds() };
 
         using var store = DocumentStore.For(opts => opts.Connection(martenDbContainer.ConnectionString));
         await using var session = store.LightweightSession();

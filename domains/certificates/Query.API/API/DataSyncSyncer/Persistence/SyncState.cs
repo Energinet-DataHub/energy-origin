@@ -23,7 +23,7 @@ public class SyncState : ISyncState
             await using var querySession = documentStore.QuerySession();
 
             var synchronizationPosition = querySession.Load<SynchronizationPosition>(syncInfo.GSRN);
-            
+
             return synchronizationPosition != null
                 ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
                 : syncInfo.StartSyncDate.ToUnixTimeSeconds();
