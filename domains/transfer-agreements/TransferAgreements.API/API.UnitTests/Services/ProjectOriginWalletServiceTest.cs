@@ -32,8 +32,11 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = new TransferAgreement()
         {
-            Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, SenderName = "Producent A/S",
-            SenderTin = "32132112", ReceiverTin = "11223344"
+            Id = Guid.NewGuid(),
+            StartDate = DateTimeOffset.UtcNow,
+            SenderName = "Producent A/S",
+            SenderTin = "32132112",
+            ReceiverTin = "11223344"
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
@@ -63,8 +66,11 @@ public class ProjectOriginWalletServiceTest
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = new TransferAgreement()
         {
-            Id = Guid.NewGuid(), StartDate = now, SenderName = "Producent A/S",
-            SenderTin = "32132112", ReceiverTin = "11223344"
+            Id = Guid.NewGuid(),
+            StartDate = now,
+            SenderName = "Producent A/S",
+            SenderTin = "32132112",
+            ReceiverTin = "11223344"
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
@@ -93,8 +99,12 @@ public class ProjectOriginWalletServiceTest
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = new TransferAgreement()
         {
-            Id = Guid.NewGuid(), StartDate = now, EndDate = now.AddHours(3), SenderName = "Producent A/S",
-            SenderTin = "32132112", ReceiverTin = "11223344"
+            Id = Guid.NewGuid(),
+            StartDate = now,
+            EndDate = now.AddHours(3),
+            SenderName = "Producent A/S",
+            SenderTin = "32132112",
+            ReceiverTin = "11223344"
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
@@ -122,8 +132,12 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = new TransferAgreement()
         {
-            Id = Guid.NewGuid(), StartDate = DateTimeOffset.UtcNow, EndDate = DateTimeOffset.UtcNow.AddDays(3), SenderName = "Producent A/S",
-            SenderTin = "32132112", ReceiverTin = "11223344"
+            Id = Guid.NewGuid(),
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(3),
+            SenderName = "Producent A/S",
+            SenderTin = "32132112",
+            ReceiverTin = "11223344"
         };
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
