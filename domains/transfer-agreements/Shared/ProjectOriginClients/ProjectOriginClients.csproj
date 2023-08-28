@@ -20,10 +20,10 @@
 	</Target>
 
 	<ItemGroup>
-		<Protobuf Include="Protos\common.proto" ProtoRoot="Protos" GrpcServices="None">
+		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
 		</Protobuf>
-		<Protobuf Include="Protos\wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
+		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>
 	</ItemGroup>
