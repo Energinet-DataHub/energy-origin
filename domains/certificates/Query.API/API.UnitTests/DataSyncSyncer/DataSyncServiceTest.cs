@@ -143,7 +143,7 @@ public class DataSyncServiceTest
         await service.FetchMeasurements(info,
             CancellationToken.None);
 
-        fakeSyncState.Received(1).SetSyncPosition(Arg.Is<SyncPosition>(sp => sp.SyncedTo == dateTo));
+        fakeSyncState.Received(1).SetSyncPosition( Arg.Any<string>(),Arg.Is<long>(x => x == dateTo));
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class DataSyncServiceTest
         await service.FetchMeasurements(info,
             CancellationToken.None);
 
-        fakeSyncState.DidNotReceive().SetSyncPosition(Arg.Any<SyncPosition>());
+        fakeSyncState.DidNotReceive().SetSyncPosition(Arg.Any<string>(), Arg.Any<long>());
     }
 
     private DataSyncService SetupService()
