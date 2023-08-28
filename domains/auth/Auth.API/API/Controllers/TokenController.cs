@@ -2,9 +2,11 @@ using System.Security.Claims;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
 
@@ -28,15 +30,13 @@ public class TokenController : ControllerBase
 
         if (user != null)
         {
-            descriptor = mapper.Map(user, descriptor.ProviderType, descriptor.AccessToken!, descriptor.IdentityToken!);
-
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
-            if (scope!.Contains(UserScopeClaim.NotAcceptedTerms) == false) versionBypass = true;
+            if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 
         var now = DateTimeOffset.Now;
-        var token = tokenIssuer.Issue(descriptor, versionBypass, issueAt: now.UtcDateTime);
+        var token = tokenIssuer.Issue(descriptor, UserData.From(user), versionBypass, issueAt: now.UtcDateTime);
 
         logger.AuditLog(
             "{User} updated token for {Subject} at {TimeStamp}.",

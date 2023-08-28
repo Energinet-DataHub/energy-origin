@@ -9,16 +9,18 @@ using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
 
 [ApiController]
 public class OidcController : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     [Route("auth/oidc/callback")]
     public async Task<IActionResult> CallbackAsync(
@@ -29,8 +31,9 @@ public class OidcController : ControllerBase
         IUserProviderService userProviderService,
         IUserService userService,
         ITokenIssuer issuer,
-        IOptions<OidcOptions> oidcOptions,
-        IOptions<IdentityProviderOptions> providerOptions,
+        OidcOptions oidcOptions,
+        IdentityProviderOptions providerOptions,
+        RoleOptions roleOptions,
         ILogger<OidcController> logger,
         [FromQuery] string? code,
         [FromQuery] string? error,
@@ -38,8 +41,8 @@ public class OidcController : ControllerBase
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
-        var redirectionUri = oidcOptions.Value.FrontendRedirectUri.AbsoluteUri;
-        if (oidcOptions.Value.AllowRedirection && oidcState?.RedirectionUri != null)
+        var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
             redirectionUri = oidcState.RedirectionUri;
         }
@@ -62,9 +65,9 @@ public class OidcController : ControllerBase
         {
             Address = discoveryDocument.TokenEndpoint,
             Code = code,
-            ClientId = oidcOptions.Value.ClientId,
-            ClientSecret = oidcOptions.Value.ClientSecret,
-            RedirectUri = oidcOptions.Value.AuthorityCallbackUri.AbsoluteUri
+            ClientId = oidcOptions.ClientId,
+            ClientSecret = oidcOptions.ClientSecret,
+            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
         };
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
         if (response.IsError)
@@ -75,9 +78,10 @@ public class OidcController : ControllerBase
         }
 
         UserDescriptor descriptor;
+        UserData data;
         try
         {
-            descriptor = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions.Value, oidcOptions.Value, discoveryDocument, response);
+            (descriptor, data) = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -95,7 +99,7 @@ public class OidcController : ControllerBase
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
 
-        var token = issuer.Issue(descriptor);
+        var token = issuer.Issue(descriptor, data);
 
         logger.AuditLog(
             "{User} created token for {Subject} at {TimeStamp}.",
@@ -109,7 +113,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<UserDescriptor> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -147,7 +151,7 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
 
         var providerType = GetIdentityProviderEnum(providerName, identityType);
-        if (!providerOptions.Providers.Contains(providerType))
+        if (providerOptions.Providers.Contains(providerType) == false)
         {
             throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
         }
@@ -159,42 +163,41 @@ public class OidcController : ControllerBase
 
         switch (providerType)
         {
-            case ProviderType.MitID_Professional:
+            case ProviderType.MitIdProfessional:
                 name = userInfo.FindFirstValue("nemlogin.name");
                 tin = userInfo.FindFirstValue("nemlogin.cvr");
                 companyName = userInfo.FindFirstValue("nemlogin.org_name");
-
                 var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
                 if (tin is not null && rid is not null)
                 {
-                    keys.Add(ProviderKeyType.RID, $"CVR:{tin}-RID:{rid}");
+                    keys.Add(ProviderKeyType.Rid, $"CVR:{tin}-RID:{rid}");
                 }
 
-                keys.Add(ProviderKeyType.EIA, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
+                keys.Add(ProviderKeyType.Eia, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
 
                 break;
-            case ProviderType.MitID_Private:
+            case ProviderType.MitIdPrivate:
                 name = userInfo.FindFirstValue("mitid.identity_name");
 
                 var pid = userInfo.FindFirstValue("nemid.pid");
                 if (pid is not null)
                 {
-                    keys.Add(ProviderKeyType.PID, pid);
+                    keys.Add(ProviderKeyType.Pid, pid);
                 }
 
-                keys.Add(ProviderKeyType.MitID_UUID, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
+                keys.Add(ProviderKeyType.MitIdUuid, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
                 break;
-            case ProviderType.NemID_Professional:
+            case ProviderType.NemIdProfessional:
                 name = userInfo.FindFirstValue("nemid.common_name");
                 tin = userInfo.FindFirstValue("nemid.cvr");
                 companyName = userInfo.FindFirstValue("nemid.company_name");
 
-                keys.Add(ProviderKeyType.RID, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
+                keys.Add(ProviderKeyType.Rid, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
                 break;
-            case ProviderType.NemID_Private:
+            case ProviderType.NemIdPrivate:
                 name = userInfo.FindFirstValue("nemid.common_name");
 
-                keys.Add(ProviderKeyType.PID, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
+                keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
 
@@ -214,7 +217,6 @@ public class OidcController : ControllerBase
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
-            AcceptedTermsVersion = 0,
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
@@ -227,7 +229,6 @@ public class OidcController : ControllerBase
         };
 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
-
         user.UserProviders.AddRange(newUserProviders);
 
         if (knownUser)
@@ -235,15 +236,27 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return mapper.Map(user, providerType, response.AccessToken, response.IdentityToken);
+        return (mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken), UserData.From(user));
     }
+
+    private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+    {
+        var property = info.FindFirstValue(match.Property);
+        return match.Operator switch
+        {
+            "exists" => property != null,
+            "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+            "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
+            _ => false
+        };
+    }) ? role.Key : null).OfType<string>();
 
     private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
-        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitID_Private,
-        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitID_Professional,
-        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemID_Private,
-        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemID_Professional,
+        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
+        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
+        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemIdPrivate,
+        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 }
