@@ -1,16 +1,13 @@
 using System.Net;
 using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
 using API.Models.Entities;
 using API.Options;
-using API.Services.Interfaces;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
+using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using WireMock.Server;
 
 namespace Integration.Tests.Controllers;
@@ -21,70 +18,106 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public TermsControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnNoContentAndOnlyUpdateAcceptedTermsVersion_WhenUserExists()
+    public async Task AcceptUserTermsAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync("terms/user/accept/1", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
+    {
+        var client = factory.CreateAnonymousClient();
+
+        var result = await client.PutAsync("terms/company/accept/1", null);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists(int acceptedVersion)
     {
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
+        var options = new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
+        };
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1 } }
         });
-        var user = await factory.AddUserToDatabaseAsync();
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsRequest(2);
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
-        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Id == user.Id)!;
+        var result = await client.PutAsync($"terms/user/accept/{acceptedVersion}", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).SingleOrDefault(x => x.Id == user.Id)!;
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.Id, dbUser.Id);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
+        Assert.Contains(dbUser.UserTerms, x => x.Type == UserTermsType.PrivacyPolicy && x.AcceptedVersion == acceptedVersion);
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnNoContentAndCreateUser_WhenUserDoesNotExist()
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUser_WhenUserDoesNotExist()
     {
         var providerKey = Guid.NewGuid().ToString();
-        var providerKeyType = ProviderKeyType.MitID_UUID;
+        var providerKeyType = ProviderKeyType.MitIdUuid;
         var user = new User
         {
             Id = null,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            AcceptedTermsVersion = 0,
             Company = null,
             CompanyId = null,
-            UserProviders = new List<UserProvider>() { new UserProvider() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
-        var options = Options.Create(new DataSyncOptions
+        var datasyncOptions = new DataSyncOptions
         {
             Uri = new Uri($"http://localhost:{server.Port}/")
-        });
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+        };
+
+        var role = "default";
+        var roleOptions = new RoleOptions()
+        {
+            RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
+        };
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => datasyncOptions);
+            services.AddScoped(_ => roleOptions);
+        }));
 
         server.MockRelationsEndpoint();
 
-        var dto = new AcceptTermsRequest(1);
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-        var result = await client.PutAsync("terms/accept", httpContent);
-        var dbUser = factory.DataContext.Users.FirstOrDefault(x => x.Name == user.Name)!;
+        var result = await client.PutAsync("terms/user/accept/2", null);
+        var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefault(x => x.Name == user.Name)!;
 
         Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.NoContent, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal(user.Name, dbUser.Name);
         Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        Assert.Equal(dto.Version, dbUser.AcceptedTermsVersion);
+        Assert.Contains(dbUser.UserTerms, x => x is { Type: UserTermsType.PrivacyPolicy, AcceptedVersion: 2 });
+        Assert.Contains(dbUser.UserRoles, x => x.Role == role);
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
+    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
     {
         var user = await factory.AddUserToDatabaseAsync();
 
@@ -98,29 +131,156 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        var dto = new AcceptTermsRequest(2);
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync("terms/user/accept/2", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldReturnInternalServerError_WhenDescriptorIdExistsButUserCannotBeFound()
+    public async Task AcceptUserTermsAsync_ShouldReturnBadRequestError_WhenAcceptingOlderVersion()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            UserTerms = new List<UserTerms> { new() { AcceptedVersion = 3 } }
+        });
+        var client = factory.CreateAuthenticatedClient(user);
+
+        var response = await client.PutAsync("terms/user/accept/2", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptUserTermsAsync_ShouldReturnBadRequestError_WhenTermsVersionIsInvalid()
     {
         var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        var client = factory.CreateAuthenticatedClient(user);
+
+        var response = await client.PutAsync("terms/user/accept/10", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsExists(int acceptedVersion)
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
         {
-            var userService = Mock.Of<IUserService>();
-            Mock.Get(userService)
-                .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-                .Returns(value: null!);
-
-            builder.ConfigureTestServices(services => services.AddScoped(_ => userService));
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString(),
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
         });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
 
-        var dto = new AcceptTermsRequest(2);
-        var httpContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
+        var result = await client.PutAsync($"terms/company/accept/{acceptedVersion}", null);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.PutAsync("terms/accept", httpContent));
+        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService && x.AcceptedVersion == acceptedVersion);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsDoesNotExist()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString()
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var result = await client.PutAsync("terms/company/accept/2", null);
+
+        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.Contains(company.CompanyTerms, x => x is { Type: CompanyTermsType.TermsOfService, AcceptedVersion: 2 });
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnBadRequestError_WhenAcceptingOlderVersion()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString(),
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 3 } }
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/2", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnBadRequestError_WhenTermsVersionIsInvalid()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString()
+            },
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
+        });
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/10", null);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsNotAuthenticated()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user);
+
+        var response = await client.PutAsync("terms/company/accept/10", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsAuthenticatedByPrivateUser()
+    {
+        var user = await factory.AddUserToDatabaseAsync();
+        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
+
+        var response = await client.PutAsync("terms/company/accept/10", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

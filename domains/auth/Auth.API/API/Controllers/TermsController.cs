@@ -4,10 +4,10 @@ using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Models.Requests;
+using API.Values;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers;
 
@@ -15,23 +15,34 @@ namespace API.Controllers;
 [ApiController]
 public class TermsController : ControllerBase
 {
-    [HttpPut()]
-    [Route("terms/accept")]
-    public async Task<IActionResult> AcceptTermsAsync(
+    [HttpPut]
+    [Route("terms/user/accept/{version}")]
+    public async Task<IActionResult> AcceptUserTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
         IUserDescriptorMapper mapper,
         IUserService userService,
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
-        IOptions<DataSyncOptions> options,
-        [FromBody] AcceptTermsRequest acceptedTermsVersion)
+        DataSyncOptions dataSyncOptions,
+        RoleOptions roleOptions,
+        TermsOptions termsOptions,
+        int version)
     {
+        if (termsOptions.PrivacyPolicyVersion < version)
+        {
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
+        }
+
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
 
-        if (descriptor.AcceptedTermsVersion > acceptedTermsVersion.Version)
+        var type = UserTermsType.PrivacyPolicy;
+        var user = await userService.GetUserByIdAsync(descriptor.Id);
+        var acceptedVersion = user?.UserTerms.SingleOrDefault(x => x.Type == type)?.AcceptedVersion ?? 0;
+
+        if (acceptedVersion > version)
         {
-            throw new ArgumentException($"The user cannot accept terms version '{acceptedTermsVersion.Version}', when they had previously accepted version '{descriptor.AcceptedTermsVersion}'.");
+            return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
         var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
@@ -44,29 +55,38 @@ public class TermsController : ControllerBase
             };
         }
 
-        User user;
-        if (descriptor.UserStored)
-        {
-            var id = descriptor.Id;
-            user = await userService.GetUserByIdAsync(id) ?? throw new NullReferenceException($"GetUserByIdAsync() returned null: {id}");
-        }
-        else
+        if (user == null)
         {
             user = new User
             {
                 Id = descriptor.Id,
                 Name = descriptor.Name,
-                AllowCprLookup = descriptor.AllowCPRLookup,
+                AllowCprLookup = descriptor.AllowCprLookup,
             };
+
+            user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
+                new UserRole { Role = x.Key, UserId = descriptor.Id }
+            ));
+
             await userService.InsertUserAsync(user);
             user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
 
-        user.AcceptedTermsVersion = acceptedTermsVersion.Version;
+        var userTerms = user.UserTerms.SingleOrDefault(x => x.Type == type);
+        if (userTerms == null)
+        {
+            userTerms = new UserTerms()
+            {
+                Type = type,
+            };
+            user.UserTerms.Add(userTerms);
+        }
+        userTerms.AcceptedVersion = version;
+
         await userService.UpsertUserAsync(user);
 
-        var relationUri = options.Value.Uri?.AbsoluteUri.TrimEnd('/');
+        var relationUri = dataSyncOptions.Uri?.AbsoluteUri.TrimEnd('/');
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var client = clientFactory.CreateClient();
@@ -80,19 +100,67 @@ public class TermsController : ControllerBase
                 { "tin", descriptor.Tin }
             });
 
-            if (!result.IsSuccessStatusCode)
+            if (result.IsSuccessStatusCode == false)
             {
                 logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}", descriptor.Subject);
             }
         }
 
         logger.AuditLog(
-            "{User} updated accepted terms {@Versions} at {TimeStamp}.",
+            "{User} updated accepted Privacy policy {Version} at {TimeStamp}.",
             user.Id,
-            new { Old = descriptor.AcceptedTermsVersion, New = acceptedTermsVersion.Version },
+            userTerms.AcceptedVersion,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        return NoContent();
+        return Ok();
+    }
+
+    [Authorize(Roles = RoleKey.OrganizationAdmin, Policy = PolicyName.RequiresCompany)]
+    [HttpPut]
+    [Route("terms/company/accept/{version}")]
+    public async Task<IActionResult> AcceptCompanyAsync(
+        ILogger<TermsController> logger,
+        IUserDescriptorMapper mapper,
+        IUserService userService,
+        TermsOptions termsOptions,
+        int version)
+    {
+        if (termsOptions.TermsOfServiceVersion < version)
+        {
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
+        }
+
+        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var user = await userService.GetUserByIdAsync(descriptor.Id);
+
+        var type = CompanyTermsType.TermsOfService;
+        var acceptedVersion = user?.Company?.CompanyTerms.SingleOrDefault(x => x.Type == CompanyTermsType.TermsOfService)?.AcceptedVersion ?? 0;
+        if (acceptedVersion > version)
+        {
+            return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
+        }
+
+        var companyTerms = user!.Company!.CompanyTerms.SingleOrDefault(x => x.Type == type);
+        if (companyTerms == null)
+        {
+            companyTerms = new CompanyTerms()
+            {
+                Type = type,
+            };
+            user.Company.CompanyTerms.Add(companyTerms);
+        }
+        companyTerms.AcceptedVersion = version;
+
+        await userService.UpsertUserAsync(user);
+
+        logger.AuditLog(
+            "{User} updated accepted Terms of service {Version} at {TimeStamp}.",
+            user.Id,
+            companyTerms.AcceptedVersion,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
+        );
+
+        return Ok();
     }
 }

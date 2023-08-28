@@ -12,8 +12,8 @@ namespace API.IntegrationTests.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {
-    private const string registryImage = "ghcr.io/project-origin/registry-server:0.2.0-rc.17";
-    private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.0-rc.17";
+    private const string registryImage = "ghcr.io/project-origin/registry-server:0.2.2";
+    private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:0.2.2";
     protected const int GrpcPort = 80;
     private const string registryName = "TestRegistry";
 
