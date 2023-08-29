@@ -12,6 +12,7 @@ public class ApplicationDbContext : AuditDbContext
 
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
