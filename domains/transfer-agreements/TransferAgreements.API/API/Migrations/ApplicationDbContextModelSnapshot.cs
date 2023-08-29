@@ -42,7 +42,7 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Invitations");
+                    b.ToTable("Invitation", "con");
                 });
 
             modelBuilder.Entity("API.Models.TransferAgreement", b =>

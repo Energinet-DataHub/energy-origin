@@ -9,11 +9,10 @@ public class InvitationRepository : IInvitationRepository
 
     public InvitationRepository(ApplicationDbContext context) => this.context = context;
 
-    public async Task<Invitation> AddInvitationToDb(Invitation invitation)
+    public async Task<Invitation> AddInvitation(Invitation invitation)
     {
         context.Invitations.Add(invitation);
-        await Save();
+        await  context.SaveChangesAsync();
         return invitation;
     }
-    private async Task Save() => await context.SaveChangesAsync();
 }

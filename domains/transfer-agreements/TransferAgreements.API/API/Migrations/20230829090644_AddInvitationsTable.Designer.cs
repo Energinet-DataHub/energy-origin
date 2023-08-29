@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230829073850_AddInvitationsTable")]
+    [Migration("20230829090644_AddInvitationsTable")]
     partial class AddInvitationsTable
     {
         /// <inheritdoc />
@@ -45,7 +45,7 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Invitations");
+                    b.ToTable("Invitation", "con");
                 });
 
             modelBuilder.Entity("API.Models.TransferAgreement", b =>

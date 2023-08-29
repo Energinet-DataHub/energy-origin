@@ -5,5 +5,5 @@ namespace API.Data;
 
 public interface IInvitationRepository
 {
-    Task<Invitation> AddInvitationToDb(Invitation invitation);
+    Task<Invitation> AddInvitation(Invitation invitation);
 }

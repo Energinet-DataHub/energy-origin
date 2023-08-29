@@ -31,10 +31,8 @@ public class InvitationsController : ControllerBase
             SenderCompanyTin = companySenderTin,
         };
 
-        await invitationRepository.AddInvitationToDb(newInvitation);
+        var addedInvitation = await invitationRepository.AddInvitation(newInvitation);
 
-        var invitationId = newInvitation.Id;
-
-        return Ok(new { result = invitationId });
+        return Ok(new { result = addedInvitation.Id });
     }
 }

@@ -1,9 +1,7 @@
 using System;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
 using VerifyTests;
 using VerifyXunit;
@@ -12,24 +10,22 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class InvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
+public class InvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly HttpClient authenticatedClient;
     private readonly string sub;
 
-    public InvitationsControllerTests(TransferAgreementsApiWebApplicationFactory factory, WalletContainer wallet)
+    public InvitationsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
-        factory.WalletUrl = wallet.WalletUrl;
-        authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        factory.WalletUrl = "UnusedWalletUrl";
     }
 
     [Fact]
     public async Task Create_ShouldReturnInvitationId_WhenInvitationIsCreated()
     {
-
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var result = await authenticatedClient
             .PostAsync("api/invitations", null);
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Models;
 
+[Table(nameof(Invitation), Schema = "con")]
 public class Invitation
 {
     public Guid Id { get; set; }
