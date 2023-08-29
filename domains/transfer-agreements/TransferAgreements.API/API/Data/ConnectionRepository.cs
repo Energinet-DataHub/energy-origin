@@ -14,5 +14,5 @@ public class ConnectionRepository : IConnectionRepository
         this.context = context;
     }
 
-    public List<Connection> GetOwnedConnections(Guid ownerId) => context.Connections.Where(x => x.OwnerId == ownerId).ToList();
+    public List<Connection> GetCompanyConnections(Guid companyId) => context.Connections.Where(x => x.CompanyAId == companyId || x.CompanyBId == companyId).ToList();
 }

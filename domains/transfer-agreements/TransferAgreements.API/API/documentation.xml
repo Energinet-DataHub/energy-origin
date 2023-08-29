@@ -88,16 +88,16 @@
         <member name="M:API.Migrations.AddTransferAgreementReceiverReference.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:API.Migrations.AddConnectionTable">
+        <member name="T:API.Migrations.AddConnectionsTable">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.AddConnectionsTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.AddConnectionsTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:API.Migrations.AddConnectionsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

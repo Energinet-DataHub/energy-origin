@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230825093309_AddConnectionTable")]
-    partial class AddConnectionTable
+    [Migration("20230829092053_AddConnectionsTable")]
+    partial class AddConnectionsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,19 +31,27 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyAId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CompanyTin")
+                    b.Property<string>("CompanyATin")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OwnerId")
+                    b.Property<Guid>("CompanyBId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("CompanyBTin")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Connections");
+                    b.HasIndex("CompanyAId");
+
+                    b.HasIndex("CompanyBId");
+
+                    b.ToTable("Connection", "con");
                 });
 
             modelBuilder.Entity("API.Models.TransferAgreement", b =>

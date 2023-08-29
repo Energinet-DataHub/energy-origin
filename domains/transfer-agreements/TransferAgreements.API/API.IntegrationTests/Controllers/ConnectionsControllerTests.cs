@@ -21,27 +21,38 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     }
 
     [Fact]
-    public async void GetConnections_ShouldOnlyReturnOwnedConnections()
+    public async void GetConnections_ShouldOnlyReturnConnectionsInvolvingTheCompany()
     {
         var sub = Guid.NewGuid();
-        var ownedConnection = new Connection
+        var ownedConnection1 = new Connection
         {
             Id = Guid.NewGuid(),
-            CompanyId = Guid.NewGuid(),
-            CompanyTin = "12345678",
-            OwnerId = sub
+            CompanyAId = sub,
+            CompanyATin = "12345678",
+            CompanyBId = Guid.NewGuid(),
+            CompanyBTin = "12345679"
+        };
+        var ownedConnection2 = new Connection
+        {
+            Id = Guid.NewGuid(),
+            CompanyAId = Guid.NewGuid(),
+            CompanyATin = "23456789",
+            CompanyBId = sub,
+            CompanyBTin = "12345678"
         };
         var notOwnedConnection = new Connection
         {
             Id = Guid.NewGuid(),
-            CompanyId = Guid.NewGuid(),
-            CompanyTin = "12345679",
-            OwnerId = Guid.NewGuid()
+            CompanyAId = Guid.NewGuid(),
+            CompanyATin = "34567891",
+            CompanyBId = Guid.NewGuid(),
+            CompanyBTin = "45679012"
         };
 
         await factory.SeedConnections(new List<Connection>
         {
-            ownedConnection,
+            ownedConnection1,
+            ownedConnection2,
             notOwnedConnection
         });
 
@@ -52,7 +63,8 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
         var response = JsonConvert.DeserializeObject<ConnectionsResponse>(await get.Content.ReadAsStringAsync());
 
         response.Should().NotBeNull();
-        response.Result.Should().HaveCount(1);
-        response.Result.FirstOrDefault().CompanyTin.Should().Be(ownedConnection.CompanyTin);
+        response.Result.Should().HaveCount(2);
+        response.Result.Any(x => x.ComnpanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
+        response.Result.Any(x => x.ComnpanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
     }
 }

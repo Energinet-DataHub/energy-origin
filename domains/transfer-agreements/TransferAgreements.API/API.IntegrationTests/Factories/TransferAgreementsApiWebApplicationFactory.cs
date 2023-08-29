@@ -158,7 +158,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE con.\"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)

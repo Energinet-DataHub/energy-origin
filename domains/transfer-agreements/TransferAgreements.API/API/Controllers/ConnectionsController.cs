@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using API.ApiModels.Responses;
 using API.Data;
+using API.Exceptions;
 using API.Extensions;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -26,20 +27,28 @@ public class ConnectionsController : Controller
     [HttpGet]
     public ActionResult<ConnectionsResponse> GetConnections()
     {
-        var subject = User.FindSubjectGuidClaim();
+        var subject = new Guid(User.FindSubjectGuidClaim());
 
-        var connections = connectionRepository.GetOwnedConnections(new Guid(subject));
+        var connections = connectionRepository.GetCompanyConnections(subject);
 
         if (!connections.Any())
         {
             return NoContent();
         }
 
-        var dtos = connections.Select(ToDto).ToList();
+        var dtos = connections.Select(x => ToDto(x, subject)).ToList();
 
         return Ok(new ConnectionsResponse(dtos));
     }
 
-    private static ConnectionDto ToDto(Connection connection) =>
-        new(connection.CompanyId, connection.CompanyTin);
+    private static ConnectionDto ToDto(Connection connection, Guid loggedInCompanyId)
+    {
+        if (loggedInCompanyId == connection.CompanyAId)
+            return new(connection.Id, connection.CompanyBId, connection.CompanyBTin);
+        if(loggedInCompanyId == connection.CompanyBId)
+            return new(connection.Id, connection.CompanyAId, connection.CompanyATin);
+
+        throw new MappingException($"Connection is not owned by the user. Connection: {connection}, logged in companyId: {loggedInCompanyId}");
+    }
+
 }

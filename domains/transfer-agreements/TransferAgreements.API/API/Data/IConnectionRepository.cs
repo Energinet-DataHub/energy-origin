@@ -6,6 +6,6 @@ namespace API.Data
 {
     public interface IConnectionRepository
     {
-        List<Connection> GetOwnedConnections(Guid ownerId);
+        List<Connection> GetCompanyConnections(Guid ownerId);
     }
 }
