@@ -29,7 +29,9 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
 
                     b.Property<Guid>("SenderCompanyId")
                         .HasColumnType("uuid");

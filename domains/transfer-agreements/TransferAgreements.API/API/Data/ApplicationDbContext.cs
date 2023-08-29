@@ -15,10 +15,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
-        modelBuilder.Entity<Invitation>(entity =>
-        {
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp with time zone")
-                .IsRequired();
-        });
+        modelBuilder.Entity<Invitation>()
+            .Property(b => b.CreatedAt)
+            .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
 }

@@ -18,7 +18,7 @@ namespace API.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderCompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderCompanyTin = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp at time zone 'UTC'")
                 },
                 constraints: table =>
                 {
