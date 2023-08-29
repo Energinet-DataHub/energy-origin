@@ -22,7 +22,7 @@ public class IdentityProviderOptions
         var idpValues = string.Empty;
         var idpParams = string.Empty;
 
-        if (Providers.Contains(ProviderType.NemID_Private) || Providers.Contains(ProviderType.NemID_Professional))
+        if (Providers.Contains(ProviderType.NemIdPrivate) || Providers.Contains(ProviderType.NemIdProfessional))
         {
             scope = string.Join(" ", scope, "nemid");
             idpValues = "nemid";
@@ -31,15 +31,15 @@ public class IdentityProviderOptions
                 "nemid": {"amr_values": "nemid.otp nemid.keyfile"}
                 """;
 
-            if (Providers.Contains(ProviderType.NemID_Private) && Providers.Contains(ProviderType.NemID_Professional))
+            if (Providers.Contains(ProviderType.NemIdPrivate) && Providers.Contains(ProviderType.NemIdProfessional))
             {
                 scope = string.Join(" ", scope, "private_to_business");
             }
         }
 
-        if (Providers.Contains(ProviderType.MitID_Private) || Providers.Contains(ProviderType.MitID_Professional))
+        if (Providers.Contains(ProviderType.MitIdPrivate) || Providers.Contains(ProviderType.MitIdProfessional))
         {
-            if (Providers.Contains(ProviderType.MitID_Private))
+            if (Providers.Contains(ProviderType.MitIdPrivate))
             {
                 // TODO: We get the following error which isn't even available in the documentation: "access_denied: user_navigation_error"
                 //       nemid.pid needs to be added to the scope to be able to map nemid_private and mitid_private users,
@@ -48,7 +48,7 @@ public class IdentityProviderOptions
                 idpValues = string.Join(idpValues.IsNullOrEmpty() ? null : " ", idpValues, "mitid");
             }
 
-            if (Providers.Contains(ProviderType.MitID_Professional))
+            if (Providers.Contains(ProviderType.MitIdProfessional))
             {
                 scope = string.Join(" ", scope, "nemlogin");
                 idpValues = string.Join(idpValues.IsNullOrEmpty() ? null : " ", idpValues, "mitid_erhverv");

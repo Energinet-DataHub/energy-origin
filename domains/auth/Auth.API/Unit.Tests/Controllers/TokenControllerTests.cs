@@ -2,14 +2,15 @@ using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using static API.Utilities.TokenIssuer;
 
 namespace Unit.Tests.Controllers;
 
@@ -30,10 +31,10 @@ public class TokenControllerTests
     };
 
     [Theory]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Private, true)]
-    [InlineData(true, $"{UserScopeClaim.AcceptedTerms} {UserScopeClaim.Dashboard} {UserScopeClaim.Production} {UserScopeClaim.Meters} {UserScopeClaim.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitID_Private, true)]
-    [InlineData(false, UserScopeClaim.NotAcceptedTerms, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemID_Professional, false)]
-    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType, bool isStored)
+    [InlineData(false, UserScopeName.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]
+    [InlineData(true, $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitIdPrivate)]
+    [InlineData(false, UserScopeName.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdProfessional)]
+    public async Task RefreshAsync_ShouldIssueTokenAndReturnOkWithToken_WhenInvokedSuccessfully(bool bypass, string scope, string userId, ProviderType providerType)
     {
         var token = Guid.NewGuid().ToString();
 
@@ -48,12 +49,12 @@ public class TokenControllerTests
                 Id = Guid.Parse(userId),
                 EncryptedAccessToken = Guid.NewGuid().ToString(),
                 EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                UserStored = isStored,
-                ProviderType = providerType
+                ProviderType = providerType,
+                MatchedRoles = ""
             });
 
         Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(new UserDescriptor(cryptography)
             {
                 Id = Guid.NewGuid()
@@ -66,11 +67,11 @@ public class TokenControllerTests
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AllowCprLookup = false,
-                AcceptedTermsVersion = 1
+                UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1, Type = UserTermsType.PrivacyPolicy } }
             });
 
         Mock.Get(issuer)
-            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
+            .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<UserData>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
             .Returns(token);
 
         Mock.Get(claimsPrincipal)
@@ -83,7 +84,7 @@ public class TokenControllerTests
 
         Assert.Equal((result as OkObjectResult)!.Value, token);
 
-        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), bypass, It.IsAny<DateTime>()), Times.Once);
+        Mock.Get(issuer).Verify(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<UserData>(), bypass, It.IsAny<DateTime>()), Times.Once);
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class TokenControllerTests
     {
         var userId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
-        var providerType = ProviderType.MitID_Professional;
+        var providerType = ProviderType.MitIdProfessional;
 
         Mock.Get(cryptography)
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))

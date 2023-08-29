@@ -12,7 +12,6 @@ using IdentityModel;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WireMock.Server;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
@@ -37,21 +36,30 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start();
 
-        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
-        var oidcOptions = Options.Create(new OidcOptions
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<TokenOptions>();
+        var oidcOptions = new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
-        });
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+        };
+        var roleOptions = new RoleOptions()
+        {
+            RoleConfigurations = new() {
+                new() { Key = "exists", Name = "exists", Matches = new() { new() { Property = "mitid.uuid", Operator = "exists" } } },
+                new() { Key = "equals", Name = "equals", Matches = new() { new() { Property = "mitid.uuid", Operator = "equals", Value = providerId } } },
+                new() { Key = "contains", Name = "contains", Matches = new() { new() { Property = "mitid.uuid", Operator = "contains", Value = providerId.Substring(2, 10) } }, Inherits = new() { "inherited" } },
+                new() { Key = "inherited", Name = "inherited" },
+            }
+        };
+        var identityToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId);
+        var accessToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name },
             { "idp", ProviderName.MitId },
@@ -59,10 +67,14 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
 
         server.MockConfigEndpoint()
-            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.PublicKeyPem))
             .MockTokenEndpoint(accessToken, userToken, identityToken);
 
-        var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
+        var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => roleOptions);
+            services.AddScoped(_ => oidcOptions);
+        }));
 
         var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
         var result = await client.GetAsync(queryString);
@@ -72,10 +84,18 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(result.Headers.Location?.AbsoluteUri);
         var uri = new Uri(result.Headers.Location!.AbsoluteUri);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
 
-        var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
-        Assert.Contains("token=", query);
+        var query = HttpUtility.UrlDecode(uri.Query);
+        Assert.NotNull(query);
+
+        var values = HttpUtility.ParseQueryString(query);
+        var token = values["token"];
+        Assert.NotNull(token);
+
+        var allRoles = roleOptions.RoleConfigurations.Select(x => x.Key);
+        var roles = new JwtSecurityTokenHandler().ReadJwtToken(token).Claims.Where(x => x.Type == UserClaimName.Roles).Select(x => x.Value).ToList();
+        Assert.True(allRoles.All(x => roles.Contains(x)), "Roles in token does not contain all roles");
     }
 
     [Fact]
@@ -83,24 +103,24 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start();
 
-        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
-        var oidcOptions = Options.Create(new OidcOptions
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<TokenOptions>();
+        var oidcOptions = new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
-        });
+        };
 
-        var identityToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId);
+        var accessToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, claims: new() {
             { "scope", "something" },
         });
 
         var mitidUuid = Guid.NewGuid().ToString();
         var pid = Guid.NewGuid().ToString();
 
-        var userToken = TokenUsing(tokenOptions.Value, oidcOptions.Value.AuthorityUri.ToString(), oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, claims: new() {
             { "mitid.uuid", mitidUuid },
             { "mitid.identity_name", Guid.NewGuid().ToString() },
             { "nemid.pid", pid },
@@ -109,20 +129,19 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         });
 
         server.MockConfigEndpoint()
-            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.PublicKeyPem))
             .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var user = await factory.AddUserToDatabaseAsync(new User
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
-            AcceptedTermsVersion = 1,
             AllowCprLookup = true,
             UserProviders = new List<UserProvider>
             {
                 new()
                 {
-                    ProviderKeyType = ProviderKeyType.PID,
+                    ProviderKeyType = ProviderKeyType.Pid,
                     UserProviderKey = pid
                 }
             }
@@ -133,20 +152,20 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var queryString = $"auth/oidc/callback?code={Guid.NewGuid()}";
         var result = await client.GetAsync(queryString);
 
-        user = factory.DataContext.Users.Include(x => x.UserProviders).FirstOrDefault(x => x.Id == user.Id);
+        user = factory.DataContext.Users.Include(x => x.UserProviders).SingleOrDefault(x => x.Id == user.Id);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.TemporaryRedirect, result.StatusCode);
 
         Assert.NotNull(result.Headers.Location?.AbsoluteUri);
         var uri = new Uri(result.Headers.Location!.AbsoluteUri);
-        Assert.Equal(oidcOptions.Value.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(result.Headers.Location?.AbsoluteUri);
         Assert.Contains("token=", query);
 
         Assert.Equal(2, user!.UserProviders.Count);
-        Assert.Contains(user.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitID_UUID && x.UserProviderKey == mitidUuid);
+        Assert.Contains(user.UserProviders, x => x.ProviderKeyType == ProviderKeyType.MitIdUuid && x.UserProviderKey == mitidUuid);
     }
 
     [Fact]
@@ -154,13 +173,13 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var server = WireMockServer.Start();
 
-        var oidcOptions = Options.Create(new OidcOptions
+        var oidcOptions = new OidcOptions
         {
             AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
-        });
+        };
 
         server.MockConfigEndpoint().MockJwksEndpoint();
 
@@ -186,27 +205,27 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         var correctIssuer = $"http://localhost:{server.Port}/op";
         var wrongIssuer = "http://example-wrong-issuer.com";
 
-        var tokenOptions = factory.ServiceProvider.GetRequiredService<IOptions<TokenOptions>>();
-        var oidcOptions = Options.Create(new OidcOptions
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<TokenOptions>();
+        var oidcOptions = new OidcOptions
         {
             AuthorityUri = new Uri(correctIssuer),
             ClientId = Guid.NewGuid().ToString(),
             AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
             FrontendRedirectUri = new Uri("https://example-redirect.com")
-        });
+        };
         var providerId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.Identity ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId);
-        var accessToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.Access ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId, claims: new() {
+        var identityToken = TokenUsing(tokenOptions, tokenInvalid == TokenInvalid.Identity ? wrongIssuer : correctIssuer, oidcOptions.ClientId);
+        var accessToken = TokenUsing(tokenOptions, tokenInvalid == TokenInvalid.Access ? wrongIssuer : correctIssuer, oidcOptions.ClientId, claims: new() {
             { "scope", "something" },
         });
-        var userToken = TokenUsing(tokenOptions.Value, tokenInvalid == TokenInvalid.User ? wrongIssuer : correctIssuer, oidcOptions.Value.ClientId, claims: new() {
+        var userToken = TokenUsing(tokenOptions, tokenInvalid == TokenInvalid.User ? wrongIssuer : correctIssuer, oidcOptions.ClientId, claims: new() {
             { "mitid.uuid", providerId },
             { "mitid.identity_name", name }
         });
 
         server.MockConfigEndpoint()
-            .MockJwksEndpoint(KeySetUsing(tokenOptions.Value.PublicKeyPem))
+            .MockJwksEndpoint(KeySetUsing(tokenOptions.PublicKeyPem))
             .MockTokenEndpoint(accessToken, userToken, identityToken);
 
         var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
