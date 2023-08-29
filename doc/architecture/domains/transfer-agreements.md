@@ -2,7 +2,7 @@
 
 ## Container diagram
 
-![Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/)
+[Container diagram](#https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/)
 
 ## Transfer Agreement Automation flow
 
