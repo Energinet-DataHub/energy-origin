@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
+using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using API.Models;
@@ -20,6 +21,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
+[TestCaseOrderer(PriorityOrderer.TypeName, "API.IntegrationTests")]
 [UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
@@ -53,6 +55,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [TestPriority(1)]
     [Fact]
     public async Task CreateTransferAgreement_ConcurrentRequests_OnlyOneTransferAgreementCreated()
     {
