@@ -227,3 +227,29 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829124003_AddUniqueIndexAndTransferAgreementNumber') THEN
+    ALTER TABLE "TransferAgreements" ADD "TransferAgreementNumber" integer NOT NULL DEFAULT 0;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829124003_AddUniqueIndexAndTransferAgreementNumber') THEN
+    CREATE UNIQUE INDEX "IX_TransferAgreements_SenderId_TransferAgreementNumber" ON "TransferAgreements" ("SenderId", "TransferAgreementNumber");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829124003_AddUniqueIndexAndTransferAgreementNumber') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230829124003_AddUniqueIndexAndTransferAgreementNumber', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
