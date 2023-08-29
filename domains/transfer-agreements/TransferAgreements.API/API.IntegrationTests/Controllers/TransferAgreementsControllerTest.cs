@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -50,6 +51,22 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTransferAgreement_ConcurrentRequests_OnlyOneTransferAgreementCreated()
+    {
+        var tenConcurrentRequests = Enumerable
+            .Range(1, 10)
+            .Select(_ => authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement()));
+
+        var responses = await Task.WhenAll(tenConcurrentRequests);
+
+        responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
+        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
+
+        var transferAgreements = await authenticatedClient.GetFromJsonAsync<TransferAgreementsResponse>("api/transfer-agreements");
+        transferAgreements!.Result.Should().HaveCount(1);
     }
 
     [Fact]
@@ -276,8 +293,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
     private static CreateTransferAgreement CreateTransferAgreement()
     {
-        return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
+        return new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
     }
 
     [Fact]
@@ -337,7 +354,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.NewGuid()
+                ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 1
             },
             new()
             {
@@ -348,7 +366,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.NewGuid()
+                ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 2
             }
         });
 
