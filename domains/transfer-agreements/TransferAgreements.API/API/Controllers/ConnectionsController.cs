@@ -45,7 +45,7 @@ public class ConnectionsController : Controller
     {
         if (loggedInCompanyId == connection.CompanyAId)
             return new(connection.Id, connection.CompanyBId, connection.CompanyBTin);
-        if(loggedInCompanyId == connection.CompanyBId)
+        if (loggedInCompanyId == connection.CompanyBId)
             return new(connection.Id, connection.CompanyAId, connection.CompanyATin);
 
         throw new MappingException($"Connection is not owned by the user. Connection: {connection}, logged in companyId: {loggedInCompanyId}");

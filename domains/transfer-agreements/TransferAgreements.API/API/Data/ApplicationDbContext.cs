@@ -19,5 +19,5 @@ public class ApplicationDbContext : AuditDbContext
         modelBuilder.Entity<Invitation>()
             .Property(b => b.CreatedAt)
             .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
-    
+
 }
