@@ -1,6 +1,3 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using API;
 using API.ContractService;
 using API.DataSyncSyncer;
@@ -10,17 +7,20 @@ using API.RabbitMq;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,10 +48,10 @@ builder.Services.AddOpenTelemetry()
 
 builder.Services.AddControllers();
 
-//builder.Services.AddDbContext<ApplicationDbContext>(options => options.us)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-//builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
-
+//TODO: Delete this
 builder.Services.AddMarten(options =>
 {
     options.Connection(builder.Configuration.GetConnectionString("Marten")!);
@@ -60,7 +60,7 @@ builder.Services.AddMarten(options =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Marten")!);
+    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
