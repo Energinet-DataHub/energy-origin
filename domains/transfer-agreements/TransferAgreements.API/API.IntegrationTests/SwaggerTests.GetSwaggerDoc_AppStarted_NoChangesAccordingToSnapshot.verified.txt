@@ -5,35 +5,6 @@
     "version": "v1"
   },
   "paths": {
-    "/api/invitations": {
-      "post": {
-        "tags": [
-          "Invitations"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/connections": {
       "get": {
         "tags": [
@@ -62,6 +33,35 @@
           },
           "204": {
             "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/invitations": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -379,11 +379,15 @@
       "ConnectionDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "companyId": {
             "type": "string",
             "format": "uuid"
           },
-          "companyTin": {
+          "comnpanyTin": {
             "type": "string"
           }
         },
@@ -392,7 +396,7 @@
       "ConnectionsResponse": {
         "type": "object",
         "properties": {
-          "connections": {
+          "result": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ConnectionDto"

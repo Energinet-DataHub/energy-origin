@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230829092053_AddConnectionsTable")]
+    [Migration("20230829103346_AddConnectionsTable")]
     partial class AddConnectionsTable
     {
         /// <inheritdoc />
@@ -52,6 +52,29 @@ namespace API.Migrations
                     b.HasIndex("CompanyBId");
 
                     b.ToTable("Connection", "con");
+                });
+
+            modelBuilder.Entity("API.Models.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
+                    b.Property<Guid>("SenderCompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SenderCompanyTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Invitation", "con");
                 });
 
             modelBuilder.Entity("API.Models.TransferAgreement", b =>

@@ -227,3 +227,43 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
+    CREATE TABLE con."Connection" (
+        "Id" uuid NOT NULL,
+        "CompanyAId" uuid NOT NULL,
+        "CompanyATin" text NOT NULL,
+        "CompanyBId" uuid NOT NULL,
+        "CompanyBTin" text NOT NULL,
+        CONSTRAINT "PK_Connection" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
+    CREATE INDEX "IX_Connection_CompanyAId" ON con."Connection" ("CompanyAId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
+    CREATE INDEX "IX_Connection_CompanyBId" ON con."Connection" ("CompanyBId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230829103346_AddConnectionsTable', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
