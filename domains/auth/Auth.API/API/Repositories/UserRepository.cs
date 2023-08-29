@@ -17,11 +17,17 @@ public class UserRepository : IUserRepository
         await dataContext.SaveChangesAsync();
         return user;
     }
-    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.Include(x => x.Company).Include(x => x.UserProviders).FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<User?> GetUserByIdAsync(Guid id) => await dataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).Include(x => x.UserProviders).Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefaultAsync(x => x.Id == id);
     public async Task<User> InsertUserAsync(User user)
     {
         await dataContext.Users.AddAsync(user);
         await dataContext.SaveChangesAsync();
         return user;
+    }
+
+    public async Task RemoveUserAsync(User user)
+    {
+        dataContext.Users.Remove(user);
+        await dataContext.SaveChangesAsync();
     }
 }

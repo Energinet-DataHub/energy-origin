@@ -2,7 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using API.Models.Entities;
+using API.Options;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,21 +16,33 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     private readonly AuthWebApplicationFactory factory;
     public TokenControllerTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenInvokedAfterLoginWithExistingScope(int version)
+    [Fact]
+    public async Task RefreshAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user);
-        var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
+        var client = factory.CreateAnonymousClient();
 
-        user.AcceptedTermsVersion = version;
+        var result = await client.GetAsync("auth/token");
 
-        var context = factory.DataContext;
-        context.Users.Update(user);
-        await context.SaveChangesAsync();
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+    }
 
+    [Fact]
+    public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedDuringCurrentLogin()
+    {
+        var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
+        var oldClient = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        {
+            PrivacyPolicyVersion = 1,
+            TermsOfServiceVersion = 1
+        })));
+        var oldToken = oldClient.DefaultRequestHeaders.Authorization?.Parameter;
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        {
+            PrivacyPolicyVersion = 2,
+            TermsOfServiceVersion = 2
+        })));
         var result = await client.GetAsync("auth/token");
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -47,8 +61,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
-        var user = await factory.AddUserToDatabaseAsync();
-        user.AcceptedTermsVersion = 0;
+        var newUser = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
+        var user = await factory.AddUserToDatabaseAsync(newUser);
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 4 } };
+
         var client = factory.CreateAuthenticatedClient(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
 
@@ -76,7 +92,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             Name = Guid.NewGuid().ToString()
         };
         var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
-        user.AcceptedTermsVersion = 1;
+        user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } };
         await factory.AddUserToDatabaseAsync(user);
         var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
         var result = await client.GetAsync("auth/token");
@@ -92,8 +108,8 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
-        Assert.Contains(UserScopeClaim.AcceptedTerms, newScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
+        Assert.DoesNotContain(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
     }
 
     [Fact]
@@ -110,7 +126,10 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
             builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => client.GetAsync("auth/token"));
+        var response = await client.GetAsync("auth/token");
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
@@ -136,7 +155,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var newScope = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Scope)!.Value;
         Assert.NotNull(oldScope);
         Assert.NotNull(newScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, oldScope);
-        Assert.Equal(UserScopeClaim.NotAcceptedTerms, newScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
+        Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
     }
 }

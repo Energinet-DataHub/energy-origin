@@ -15,6 +15,10 @@ public class ApplicationDbContext : AuditDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Invitation>()
+            .Property(b => b.CreatedAt)
+            .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
         modelBuilder.Entity<TransferAgreement>()
             .HasIndex(nameof(TransferAgreement.SenderId), nameof(TransferAgreement.TransferAgreementNumber))
             .IsUnique();

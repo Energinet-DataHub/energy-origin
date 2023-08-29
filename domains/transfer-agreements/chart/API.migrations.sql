@@ -193,3 +193,37 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829090644_AddInvitationsTable') THEN
+        IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'con') THEN
+            CREATE SCHEMA con;
+        END IF;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829090644_AddInvitationsTable') THEN
+    CREATE TABLE con."Invitation" (
+        "Id" uuid NOT NULL,
+        "SenderCompanyId" uuid NOT NULL,
+        "SenderCompanyTin" text NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (current_timestamp at time zone 'UTC'),
+        CONSTRAINT "PK_Invitation" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829090644_AddInvitationsTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230829090644_AddInvitationsTable', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+
