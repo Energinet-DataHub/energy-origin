@@ -35,7 +35,7 @@ internal class DataSyncSyncerWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
-        logger.LogInformation("Deleted all ({deletionCount}) contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
+        logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
         while (!stoppingToken.IsCancellationRequested)
         {
