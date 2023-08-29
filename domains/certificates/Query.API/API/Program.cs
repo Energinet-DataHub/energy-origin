@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using API;
 using API.ContractService;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
@@ -45,6 +47,10 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.AddControllers();
+
+//builder.Services.AddDbContext<ApplicationDbContext>(options => options.us)
+
+//builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 builder.Services.AddMarten(options =>
 {
