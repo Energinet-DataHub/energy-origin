@@ -12,7 +12,7 @@ public class InvitationRepository : IInvitationRepository
     public async Task<Invitation> AddInvitation(Invitation invitation)
     {
         context.Invitations.Add(invitation);
-        await  context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return invitation;
     }
 }
