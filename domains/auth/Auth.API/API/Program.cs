@@ -13,7 +13,6 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
@@ -37,6 +36,11 @@ var console = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
+if (builder.Environment.IsTest())
+{
+    builder.Logging.ClearProviders();
+}
+
 var tokenConfiguration = builder.Configuration.GetSection(TokenOptions.Prefix);
 var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 
@@ -51,19 +55,23 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
-builder.Services.AddAuthorization();
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-if (builder.Environment.IsDevelopment() == false)
+if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
+}
+else
+{
+    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 }
 
 builder.AddTokenValidation(new ValidationParameters(tokenOptions.PublicKeyPem)
@@ -101,10 +109,10 @@ builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
-    var options = providers.GetRequiredService<IOptions<OidcOptions>>();
-    return new DiscoveryCache(options.Value.AuthorityUri.AbsoluteUri)
+    var options = providers.GetRequiredService<OidcOptions>();
+    return new DiscoveryCache(options.AuthorityUri.AbsoluteUri)
     {
-        CacheDuration = options.Value.CacheDuration
+        CacheDuration = options.CacheDuration
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
@@ -131,20 +139,14 @@ builder.Services.AddOpenTelemetry()
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }))
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithTracing(provider =>
         provider
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddOtlpExporter(o =>
-            {
-                o.Endpoint = otlpOptions.ReceiverEndpoint;
-            }));
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
 
@@ -153,12 +155,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else if (!app.Environment.IsTest())
+else
 {
+    app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionMiddleware>();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

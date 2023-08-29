@@ -72,10 +72,10 @@ Audit.Core.Configuration.Setup()
                         historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
                         break;
                     case "Update":
-                    {
-                        historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
-                        break;
-                    }
+                        {
+                            historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
+                            break;
+                        }
                 }
                 return true;
             })));
@@ -145,6 +145,7 @@ builder.Services.AddScoped<ITransferAgreementRepository, TransferAgreementReposi
 builder.Services.AddScoped<IConnectionRepository, ConnectionRepository>();
 builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"] ?? "http://localhost:8080"));
 builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();

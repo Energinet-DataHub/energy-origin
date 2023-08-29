@@ -1,6 +1,7 @@
 using API.Models.Entities;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using API.Values;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
@@ -24,7 +25,7 @@ public class UserDescriptorMapperTests
 
         var options = configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!;
 
-        ICryptography cryptography = new Cryptography(Moptions.Create(options));
+        ICryptography cryptography = new Cryptography(options);
 
         mapper = new UserDescriptorMapper(cryptography, logger);
     }
@@ -32,24 +33,18 @@ public class UserDescriptorMapperTests
     [Fact]
     public void Map_ShouldReturnDescriptorWithProperties_WhenMappingDatabaseUserWithTokens()
     {
-        var user = new User()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Amigo",
-            AcceptedTermsVersion = 0,
-            AllowCprLookup = true
-        };
+        var user = new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = true, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
+
         var accesToken = Guid.NewGuid().ToString();
         var identityToken = Guid.NewGuid().ToString();
-        var providerType = ProviderType.NemID_Professional;
+        var providerType = ProviderType.NemIdProfessional;
 
-        var descriptor = mapper.Map(user, providerType, accesToken, identityToken);
+        var descriptor = mapper.Map(user, providerType, Array.Empty<string>(), accesToken, identityToken);
 
         Assert.NotNull(descriptor);
         Assert.Equal(user.Id, descriptor.Id);
         Assert.Equal(user.Name, descriptor.Name);
-        Assert.Equal(user.AcceptedTermsVersion, descriptor.AcceptedTermsVersion);
-        Assert.Equal(user.AllowCprLookup, descriptor.AllowCPRLookup);
+        Assert.Equal(user.AllowCprLookup, descriptor.AllowCprLookup);
         Assert.Equal(accesToken, descriptor.AccessToken);
         Assert.NotEqual(accesToken, descriptor.EncryptedAccessToken);
         Assert.Equal(identityToken, descriptor.IdentityToken);

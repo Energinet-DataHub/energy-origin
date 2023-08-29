@@ -10,8 +10,8 @@ public class UserProviderTests
     {
         var dict = new Dictionary<ProviderKeyType, string>()
         {
-            { ProviderKeyType.MitID_UUID, Guid.NewGuid().ToString() },
-            { ProviderKeyType.PID, Guid.NewGuid().ToString() }
+            { ProviderKeyType.MitIdUuid, Guid.NewGuid().ToString() },
+            { ProviderKeyType.Pid, Guid.NewGuid().ToString() }
         };
 
         var result = UserProvider.ConvertDictionaryToUserProviders(dict);

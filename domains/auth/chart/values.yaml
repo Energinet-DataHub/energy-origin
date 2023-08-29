@@ -3,7 +3,6 @@ api:
   image: {}
   env:
     Cryptography__Key:
-    Terms__CurrentVersion:
     Database__Port: 5432
     Database__Password:
     Token__Issuer:
