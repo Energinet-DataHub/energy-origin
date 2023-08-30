@@ -114,6 +114,61 @@ public sealed class CertificateIssuingTests :
     }
 
     [Fact]
+    public async Task GetList_SameMeasurementAddedTwice_ReturnsList()
+    {
+        var subject = Guid.NewGuid().ToString();
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay);
+
+        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+
+        var dateFrom = utcMidnight.ToUnixTimeSeconds();
+        var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
+
+        var measurement1 = new EnergyMeasuredIntegrationEvent(
+            GSRN: gsrn,
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        var measurement2 = new EnergyMeasuredIntegrationEvent(
+            GSRN: gsrn,
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        await factory.GetMassTransitBus().PublishBatch(new [] {measurement1, measurement2});
+
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+
+        var expected = new CertificateList
+        {
+            Result = new[]
+            {
+                new Certificate
+                {
+                    DateFrom = utcMidnight.ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                    Quantity = 42,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000",
+                    GridArea = "DK1",
+                    GSRN = gsrn
+                }
+            }
+        };
+
+        certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
+    }
+
+    [Fact]
     public async Task GetList_FiveMeasurementAddedToBus_ReturnsList()
     {
         var subject = Guid.NewGuid().ToString();
