@@ -1,9 +1,9 @@
 using API.ContractService;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using CertificateValueObjects;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace API;
 
@@ -17,13 +17,10 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CertificateIssuingContract>()
-            .HasIndex(c => new { c.GSRN, c.ContractNumber })
-            .IsUnique();
+        modelBuilder.Entity<CertificateIssuingContract>().HasIndex(c => new { c.GSRN, c.ContractNumber }).IsUnique();
 
-        var productionCertificateBuilder = modelBuilder.Entity<ProductionCertificate>();
-        productionCertificateBuilder.OwnsOne(c => c.Period);
-        productionCertificateBuilder.OwnsOne(c => c.Technology);
+        modelBuilder.Entity<ProductionCertificate>().OwnsOne(c => c.Technology);
+        modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
@@ -63,7 +60,8 @@ public class ProductionCertificate //TODO: Or just "Certificate"?
     {
         IssuedState = IssuedState.Creating;
         GridArea = gridArea;
-        Period = period;
+        DateFrom = period.DateFrom;
+        DateTo = period.DateTo;
         Technology = technology;
         MeteringPointOwner = meteringPointOwner;
         Gsrn = gsrn;
@@ -75,7 +73,8 @@ public class ProductionCertificate //TODO: Or just "Certificate"?
 
     public IssuedState IssuedState { get; set; }
     public string GridArea { get; set; }
-    public Period Period { get; set; }
+    public long DateFrom { get; set; }
+    public long DateTo { get; set; }
     public Technology Technology { get; set; }
     public string MeteringPointOwner { get; set; }
     public string Gsrn { get; set; } //TODO: Use value type
