@@ -1,43 +1,61 @@
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Marten;
+//using Marten;
 
 namespace API.ContractService.Repositories;
 
 internal class CertificateIssuingContractRepository : ICertificateIssuingContractRepository
 {
-    private readonly IDocumentSession session;
+    private readonly ApplicationDbContext dbContext;
 
-    public CertificateIssuingContractRepository(IDocumentSession session)
-    {
-        this.session = session;
-    }
+    public CertificateIssuingContractRepository(ApplicationDbContext dbContext)
+        => this.dbContext = dbContext;
 
     public Task Save(CertificateIssuingContract certificateIssuingContract)
     {
-        session.Insert(certificateIssuingContract);
-        return session.SaveChangesAsync();
+        dbContext.Add(certificateIssuingContract);
+        return dbContext.SaveChangesAsync();
+        //session.Insert(certificateIssuingContract);
+        //return session.SaveChangesAsync();
     }
 
     public Task Update(CertificateIssuingContract certificateIssuingContract)
     {
-        session.Update(certificateIssuingContract);
-        return session.SaveChangesAsync();
+        dbContext.Update(certificateIssuingContract);
+        return dbContext.SaveChangesAsync();
+        //session.Update(certificateIssuingContract);
+        //return session.SaveChangesAsync();
     }
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(string gsrn, CancellationToken cancellationToken) => session
-        .Query<CertificateIssuingContract>()
-        .Where(x => x.GSRN == gsrn)
-        .ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(string gsrn, CancellationToken cancellationToken) =>
+        await dbContext.Contracts
+            .Where(c => c.GSRN == gsrn)
+            .ToListAsync(cancellationToken);
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken) => session
-        .Query<CertificateIssuingContract>()
-        .Where(x => x.MeteringPointOwner == meteringPointOwner)
-        .ToListAsync(cancellationToken);
+    //session
+        //.Query<CertificateIssuingContract>()
+        //.Where(x => x.GSRN == gsrn)
+        //.ToListAsync(cancellationToken);
 
-    public Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken) => session
-        .LoadAsync<CertificateIssuingContract>(id, cancellationToken);
+    public async Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(
+        string meteringPointOwner, CancellationToken cancellationToken) =>
+        await dbContext.Contracts
+            .Where(x => x.MeteringPointOwner == meteringPointOwner)
+            .ToListAsync(cancellationToken);
+
+    //session
+    //.Query<CertificateIssuingContract>()
+    //.Where(x => x.MeteringPointOwner == meteringPointOwner)
+    //.ToListAsync(cancellationToken);
+
+    public Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken) =>
+        dbContext.Contracts.FindAsync(id, cancellationToken).AsTask();
+
+
+    //session
+    //.LoadAsync<CertificateIssuingContract>(id, cancellationToken);
 }
