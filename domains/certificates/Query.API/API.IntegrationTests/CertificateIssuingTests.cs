@@ -141,7 +141,7 @@ public sealed class CertificateIssuingTests :
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        await factory.GetMassTransitBus().PublishBatch(new [] {measurement1, measurement2});
+        await factory.GetMassTransitBus().PublishBatch(new[] { measurement1, measurement2 });
 
         using var client = factory.CreateAuthenticatedClient(subject);
 
