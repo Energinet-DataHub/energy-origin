@@ -21,10 +21,9 @@ public class ApplicationDbContext : DbContext
             .HasIndex(c => new { c.GSRN, c.ContractNumber })
             .IsUnique();
 
-        modelBuilder.Entity<ProductionCertificate>()
-            .OwnsOne(c => c.Period);
-        modelBuilder.Entity<ProductionCertificate>()
-            .OwnsOne(c => c.Technology);
+        var productionCertificateBuilder = modelBuilder.Entity<ProductionCertificate>();
+        productionCertificateBuilder.OwnsOne(c => c.Period);
+        productionCertificateBuilder.OwnsOne(c => c.Technology);
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
