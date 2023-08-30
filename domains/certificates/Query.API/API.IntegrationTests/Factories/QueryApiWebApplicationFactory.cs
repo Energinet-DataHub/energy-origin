@@ -59,10 +59,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-        var serviceScope = host.Services.CreateScope();
-        var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>(); //TODO: Maybe use factory here instead
-        dbContext.Database.Migrate();
+        if (string.IsNullOrWhiteSpace(ConnectionString))
+            return host;
 
+        var factory = host.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+
+        using var dbContext = factory.CreateDbContext();
+        dbContext.Database.Migrate();
+        
         return host;
     }
 
