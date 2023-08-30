@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
-using Marten;
 using MassTransit;
 using MeasurementEvents;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -17,25 +17,23 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IDocumentStore documentStore;
+    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        IDocumentStore documentStore,
+        IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
-        this.documentStore = documentStore;
+        this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await DeleteContractsWithoutWalletDepositEndpoint(stoppingToken);
-
         while (!stoppingToken.IsCancellationRequested)
         {
             var syncInfos = await GetSyncInfos(stoppingToken);
@@ -54,38 +52,13 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
     }
 
-    // TODO: Remove this on a later release
-    private async Task DeleteContractsWithoutWalletDepositEndpoint(CancellationToken cancellationToken)
-    {
-        await using var session = documentStore.OpenSession();
-
-        var contracts = await session.Query<CertificateIssuingContract>()
-            .ToListAsync(cancellationToken);
-
-        var i = 0;
-        foreach (var contract in contracts)
-        {
-            if (contract.WalletPublicKey.Length == 0)
-            {
-                session.Delete<CertificateIssuingContract>(contract.Id);
-                i++;
-            }
-        }
-
-        logger.LogInformation("Removing {contractCount} contracts without wallet deposit endpoint", i);
-
-        await session.SaveChangesAsync(cancellationToken);
-    }
-
     private async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
     {
         try
         {
-            await using var querySession = documentStore.QuerySession();
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-            var allContracts = await querySession
-                .Query<CertificateIssuingContract>()
-                .ToListAsync(cancellationToken);
+            var allContracts = await context.Contracts.ToListAsync(cancellationToken);
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details 
             var syncInfos = allContracts.GroupBy(c => c.GSRN)

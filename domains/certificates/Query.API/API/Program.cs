@@ -49,6 +49,9 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
 //TODO: Delete this

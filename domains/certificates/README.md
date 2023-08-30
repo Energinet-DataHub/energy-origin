@@ -14,7 +14,7 @@ A key is generated and added as a sealed secret in eo-base-environment. This is 
 Project Origin Registry must know the public key for the issuer for the relevant grid areas (e.g. "DK1" and "DK2") and the format here must be "RawPublicKey" (see https://nsec.rocks/docs/api/nsec.cryptography.keyblobformat).
 
 ## For local development
-In order to test and develop locally, enter the docker-test-env and run:
+In order to test and develop locally, enter the docker-environment and run:
 ```
 docker-compose up
 ```
