@@ -19,7 +19,7 @@ namespace API.IntegrationTests;
 public sealed class CertificateIssuingTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<MartenDbContainer>,
+    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
@@ -30,7 +30,7 @@ public sealed class CertificateIssuingTests :
 
     public CertificateIssuingTests(
         QueryApiWebApplicationFactory factory,
-        MartenDbContainer martenDbContainer,
+        PostgresContainer dbContainer,
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
@@ -38,7 +38,7 @@ public sealed class CertificateIssuingTests :
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
-        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;

@@ -1,8 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using AggregateRepositories;
 using API.ContractService;
-using CertificateEvents.Aggregates;
 using CertificateValueObjects;
 using Contracts.Certificates;
 using MassTransit;

@@ -1,9 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AggregateRepositories;
 using API.GranularCertificateIssuer;
-using CertificateEvents.Aggregates;
 using CertificateValueObjects;
 using Contracts.Certificates;
 using FluentAssertions;
