@@ -12,7 +12,7 @@ public class Period : ValueObject
 {
     private Period()
     {
-        
+
     }
 
     public long DateFrom { get; private set; } // EnergyMeasured.DateFrom

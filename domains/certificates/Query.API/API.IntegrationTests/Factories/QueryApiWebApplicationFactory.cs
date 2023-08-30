@@ -24,7 +24,6 @@ namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public string MartenConnectionString { get; set; } = ""; //TODO: Delete
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
@@ -32,7 +31,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Wallet:Url", WalletUrl);
@@ -66,7 +64,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         using var dbContext = factory.CreateDbContext();
         dbContext.Database.Migrate();
-        
+
         return host;
     }
 
