@@ -15,14 +15,16 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public string MartenConnectionString { get; set; } = "";
+    public string MartenConnectionString { get; set; } = ""; //TODO: Delete
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
@@ -52,6 +54,16 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             // Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        var serviceScope = host.Services.CreateScope();
+        var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>(); //TODO: Maybe use factory here instead
+        dbContext.Database.Migrate();
+
+        return host;
     }
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
