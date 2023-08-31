@@ -111,7 +111,10 @@ jobs:
           docker="$PROJECT/Dockerfile"
           service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
-          configuration="${service}/configuration.yaml"
+          configuration="${domain}/configuration.yaml"
+          if [ ! -f "$configuration" ]; then
+            configuration="${service}/configuration.yaml"
+          fi
           name=$(yq '.name' "$configuration")
           tag=$(yq '.version' "$configuration")
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
