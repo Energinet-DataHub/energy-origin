@@ -125,12 +125,10 @@ jobs:
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
 
           {
-            echo "configuration='$configuration'"
             echo "context=$context"
             echo "docker=$docker"
             echo "name=$name"
             echo "tag=$tag"
-            echo "dryrun=${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}"
           } >> "$GITHUB_ENV"
 
       - name: Push image
@@ -140,7 +138,7 @@ jobs:
           image-name: ${{ env.name }}
           image-tag: ${{ env.tag }}
           docker-context: ${{ env.context }}
-          dry-run: ${{ env.dryrun }}
+          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
 
   update-environment-docker:
     name: Update environment
@@ -159,6 +157,6 @@ jobs:
       - name: Update environment
         uses: ./.github/actions/update-base-environment
         with:
-          configuration: ${{ env.configuration }}
+          configuration: ${{ matrix.item.path }}/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ env.dryrun }}
+          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
