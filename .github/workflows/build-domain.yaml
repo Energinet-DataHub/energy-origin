@@ -8,8 +8,7 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      domains: ${{ env.domains }}
-      projects: ${{ env.projects }}
+      matrix: ${{ env.matrix }}
 
     steps:
       - uses: actions/checkout@v3
