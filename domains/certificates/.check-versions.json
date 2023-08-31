@@ -1,14 +1,10 @@
 [
     {
-        "yaml-file": "domains/certificates/chart/Chart.yaml",
+        "yaml-file": "domains/certificates/Query.API/configuration.yaml",
         "yaml-path": "version"
     },
     {
-        "yaml-file": "domains/certificates/Query.API/chart-overrides.yaml",
-        "yaml-path": "version"
-    },
-    {
-        "yaml-file": "domains/certificates/RegistryConnector/chart-overrides.yaml",
+        "yaml-file": "domains/certificates/RegistryConnector/configuration.yaml",
         "yaml-path": "version"
     }
 ]

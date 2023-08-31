@@ -30,7 +30,11 @@ jobs:
             required_file "$domain/.devcontainer/Dockerfile"
             required_file "$domain/.devcontainer/devcontainer.json"
             required_file "$domain"/*.sln
-            required_file "$domain/configuration.yaml"
+            if [ ! -f "$domain/configuration.yaml" ]; then
+              find "$domain" -name configuration.yaml -mindepth 2 -maxdepth 2 -type f | read || { printf '::error title=Missing file::%s/configuration.yaml\n' "$domain"; exit 1; }
+            else
+              printf '::error title=Missing file::%s/configuration.yaml\n' "$domain"; exit 1;
+            fi
           done
 
       - uses: CodeReaper/find-diff-action@v3
