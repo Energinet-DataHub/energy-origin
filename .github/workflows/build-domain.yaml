@@ -112,7 +112,7 @@ jobs:
           service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
           configuration="${service}/configuration.yaml"
-          name=$(basename $(yq '.name' "$configuration"))
+          name=$(yq '.name' "$configuration")
           tag=$(yq '.version' "$configuration")
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
           dotnet=${{ matrix.build.dotnetVersion }}
