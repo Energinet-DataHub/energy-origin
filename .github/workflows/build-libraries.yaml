@@ -120,6 +120,7 @@ jobs:
           context="$directory"
           docker="$directory/Dockerfile"
           configuration="$directory/configuration.yaml"
+          name=$(yq '.version' "$name")
           tag=$(yq '.version' "$configuration")
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
 
@@ -129,6 +130,7 @@ jobs:
             echo "docker='$docker'"
             echo "name='$name'"
             echo "tag='$tag'"
+            echo "dryrun='${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}'"
           } >> "$GITHUB_ENV"
 
       - name: Push image
@@ -138,7 +140,7 @@ jobs:
           image-name: ${{ env.name }}
           image-tag: ${{ env.tag }}
           docker-context: ${{ env.context }}
-          dry-run: ${{ needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry-run: ${{ env.dryrun }}
 
   update-environment-docker:
     name: Update environment
@@ -159,4 +161,4 @@ jobs:
         with:
           configuration: ${{ env.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry_run: ${{ env.dryrun }}
