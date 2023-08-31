@@ -1,4 +1,4 @@
-using Marten;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -7,12 +7,12 @@ namespace API.DataSyncSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly IDocumentStore documentStore;
+    private readonly IDbContextFactory<ApplicationDbContext> factory;
     private readonly ILogger<SyncState> logger;
 
-    public SyncState(IDocumentStore documentStore, ILogger<SyncState> logger)
+    public SyncState(IDbContextFactory<ApplicationDbContext> factory, ILogger<SyncState> logger)
     {
-        this.documentStore = documentStore;
+        this.factory = factory;
         this.logger = logger;
     }
 
@@ -20,9 +20,13 @@ public class SyncState : ISyncState
     {
         try
         {
-            await using var querySession = documentStore.QuerySession();
+            var dbContext = await factory.CreateDbContextAsync();
 
-            var synchronizationPosition = querySession.Load<SynchronizationPosition>(syncInfo.GSRN);
+            var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(syncInfo.GSRN);
+
+            //await using var querySession = documentStore.QuerySession();
+
+            //var synchronizationPosition = querySession.Load<SynchronizationPosition>(syncInfo.GSRN);
 
             return synchronizationPosition != null
                 ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
@@ -37,12 +41,17 @@ public class SyncState : ISyncState
 
     public async void SetSyncPosition(string gsrn, long syncedTo)
     {
-        await using var session = documentStore.LightweightSession();
-        var synchronizationPosition = session.Load<SynchronizationPosition>(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
+        var dbContext = await factory.CreateDbContextAsync();
 
+        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
+
+        //await using var session = documentStore.LightweightSession();
+        //var synchronizationPosition = session.Load<SynchronizationPosition>(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
         synchronizationPosition.SyncedTo = syncedTo;
 
-        session.Store(synchronizationPosition);
-        await session.SaveChangesAsync();
+        dbContext.Update(synchronizationPosition);
+        await dbContext.SaveChangesAsync();
+        //session.Store(synchronizationPosition);
+        //await session.SaveChangesAsync();
     }
 }

@@ -77,7 +77,7 @@ internal class ContractServiceImpl : IContractService
 
             return new CreateContractResult.Success(contract);
         }
-        catch (DocumentAlreadyExistsException)
+        catch (DocumentAlreadyExistsException) //TODO: Fix this!
         {
             return new ContractAlreadyExists(null);
         }

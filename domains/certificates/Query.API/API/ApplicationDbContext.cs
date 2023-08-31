@@ -1,4 +1,5 @@
 using API.ContractService;
+using API.DataSyncSyncer.Persistence;
 using CertificateValueObjects;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,10 +22,13 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ProductionCertificate>().OwnsOne(c => c.Technology);
         modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
+
+        modelBuilder.Entity<SynchronizationPosition>().HasKey(s => s.GSRN);
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ProductionCertificate> ProductionCertificates { get; set; }
+    public DbSet<SynchronizationPosition> SynchronizationPositions { get; set; }
 }
 
 public interface IProductionCertificateRepository

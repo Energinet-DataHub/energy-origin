@@ -3,22 +3,35 @@ using API.DataSyncSyncer.Persistence;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Testcontainers;
 using FluentAssertions;
-using Marten;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class SyncStateTests : IClassFixture<MartenDbContainer>
+public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
 {
-    private readonly MartenDbContainer martenDbContainer;
+    private readonly IDbContextFactory<ApplicationDbContext> factory;
+    private readonly ConcurrentBag<ApplicationDbContext?> disposableContexts = new();
 
-    public SyncStateTests(MartenDbContainer martenDbContainer) =>
-        this.martenDbContainer = martenDbContainer;
+    public SyncStateTests(PostgresContainer dbContainer)
+    {
+        factory = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
+
+        factory.CreateDbContextAsync().Returns(_ =>
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+            var dbContext = new ApplicationDbContext(options);
+            dbContext.Database.EnsureCreated();
+            disposableContexts.Add(dbContext);
+            return dbContext;
+        });
+    }
 
     private static MeteringPointSyncInfo CreateSyncInfo() =>
         new(
@@ -31,9 +44,7 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
     {
         var info = CreateSyncInfo();
 
-        using var store = DocumentStore.For(opts => opts.Connection(martenDbContainer.ConnectionString));
-
-        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -47,12 +58,13 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
 
         var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = DateTimeOffset.Now.ToUnixTimeSeconds() };
 
-        using var store = DocumentStore.For(opts => opts.Connection(martenDbContainer.ConnectionString));
-        await using var session = store.LightweightSession();
-        session.Store(position);
-        await session.SaveChangesAsync();
+        using (var dbContext = await factory.CreateDbContextAsync())
+        {
+            dbContext.Add(position);
+            await dbContext.SaveChangesAsync();
+        }
 
-        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -66,12 +78,13 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
 
         var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds() };
 
-        using var store = DocumentStore.For(opts => opts.Connection(martenDbContainer.ConnectionString));
-        await using var session = store.LightweightSession();
-        session.Store(position);
-        await session.SaveChangesAsync();
+        using (var dbContext = await factory.CreateDbContextAsync())
+        {
+            dbContext.Add(position);
+            await dbContext.SaveChangesAsync();
+        }
 
-        var syncState = new SyncState(store, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
@@ -82,15 +95,23 @@ public class SyncStateTests : IClassFixture<MartenDbContainer>
     public async Task GetPeriodStartTime_DatabaseCommunicationFailure_ReturnsNull()
     {
         var info = CreateSyncInfo();
+        
+        var factoryMock = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
+        factoryMock.CreateDbContextAsync().ThrowsForAnyArgs<Exception>();
 
-        var storeMock = Substitute.For<IDocumentStore>();
-        storeMock.QuerySession().ThrowsForAnyArgs<Exception>();
-
-        var syncState = new SyncState(storeMock, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(factoryMock, Substitute.For<ILogger<SyncState>>());
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
 
         actualPeriodStartTime.Should().Be(null);
-        storeMock.Received(1).QuerySession();
+        await factoryMock.Received(1).CreateDbContextAsync();
+    }
+
+    public void Dispose()
+    {
+        foreach (var dbContext in disposableContexts)
+        {
+            dbContext?.Dispose();
+        }
     }
 }
