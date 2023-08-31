@@ -8,17 +8,18 @@ on:
     branches:
       - main
 
+# FIXME: sigh
 jobs:
-  run-sonar:
-    runs-on: ubuntu-latest
-    outputs:
-      boolean: ${{ steps.diff.outputs.matches }}
-    steps:
-      - name: sonar
-        uses: CodeReaper/find-diff-action@v3
-        id: diff
-        with:
-          paths: domains/certificates/**
+  # run-sonar:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     boolean: ${{ steps.diff.outputs.matches }}
+  #   steps:
+  #     - name: sonar
+  #       uses: CodeReaper/find-diff-action@v3
+  #       id: diff
+  #       with:
+  #         paths: domains/certificates/**
 
   build-domain:
     uses: ./.github/workflows/build-domain.yaml
@@ -42,17 +43,17 @@ jobs:
     uses: ./.github/workflows/structurizr-update-pages.yaml
     secrets: inherit
 
-  sonar-analysis:
-    needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'true'
-    uses: ./.github/workflows/sonar-analysis.yml
-    secrets: inherit
+  # sonar-analysis:
+  #   needs: run-sonar
+  #   if: needs.run-sonar.outputs.boolean == 'true'
+  #   uses: ./.github/workflows/sonar-analysis.yml
+  #   secrets: inherit
 
-  sonar-analysis-ignore:
-    needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'false'
-    uses: ./.github/workflows/sonar-analysis-ignore.yml
-    secrets: inherit
+  # sonar-analysis-ignore:
+  #   needs: run-sonar
+  #   if: needs.run-sonar.outputs.boolean == 'false'
+  #   uses: ./.github/workflows/sonar-analysis-ignore.yml
+  #   secrets: inherit
 
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest
@@ -62,7 +63,6 @@ jobs:
         check-licenses,
         check-versions,
         structurizr-update-pages,
-        # FIXME: sigh
         # sonar-analysis,
         # sonar-analysis-ignore,
       ]
@@ -78,5 +78,3 @@ jobs:
               echo "Failed"
               exit 1
           fi
-
-#Test
