@@ -1,4 +1,4 @@
-name: eo-transfer-agreements
+name: eo-transfer-agreements-api
 version: 0.8.6
 repo: ghcr.io/energinet-datahub
 references:
