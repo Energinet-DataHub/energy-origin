@@ -102,8 +102,8 @@ public class ContractsController : ControllerBase
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
         return contracts.Any()
-            ? NoContent()
-            : Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) });
+            ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
+            : NoContent();
     }
 
     /// <summary>

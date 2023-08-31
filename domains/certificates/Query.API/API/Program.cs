@@ -20,7 +20,6 @@ using Serilog.Formatting.Json;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using Weasel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
