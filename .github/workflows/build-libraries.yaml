@@ -127,6 +127,7 @@ jobs:
           image-name: ${{ matrix.item.name }}
           image-tag: ${{ matrix.item.tag }}
           docker-context: ${{ matrix.item.context }}
+          dry-run: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
 
   update-environment-docker:
     name: Update environment
@@ -134,7 +135,6 @@ jobs:
     needs:
       - define-matrix
       - build-docker-library
-    if: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
     concurrency: commits-base-environment
     strategy:
       max-parallel: 1
@@ -146,3 +146,4 @@ jobs:
         with:
           configuration: ${{ matrix.item.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))

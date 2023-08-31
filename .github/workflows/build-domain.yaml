@@ -54,13 +54,12 @@ jobs:
         run: |
           matrix=$(while read domain; do
             [ -f "$domain/domain.json" ] || echo "{}" > "$domain/domain.json"
-            echo '{"draft": false}' > "$domain/default.domain.json"
+            echo '{}' > "$domain/default.domain.json"
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] * .[1] * .[2] | .path=$path' --arg path "$domain" "$domain/default.domain.json" "$domain/domain.json" "$domain/global.json")
 
-            draft=$(printf '%s' "$settings" | jq -rce '.draft')
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
-            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","draft":"%s","dotnetVersion":"%s"}' "$directory" "$draft" "$sdk"; done | jq -sc '.')
+            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","dotnetVersion":"%s"}' "$directory" "$sdk"; done | jq -sc '.')
 
             printf '{"domain":%s,"projects":%s}' "$settings" "$projects"
           done <<< $LIST | jq -sc '.')
@@ -147,7 +146,7 @@ jobs:
           image-name: ${{ steps.resolver.outputs.name }}
           image-tag: ${{ steps.resolver.outputs.tag }}
           docker-context: ${{ steps.resolver.outputs.domain }}
-          dry-run: ${{ matrix.build.draft }}
+          dry-run: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
           build-args: |
             SDK_VERSION=${{ matrix.build.dotnetVersion }}
             RUNTIME_VERSION=${{ steps.resolver.outputs.dotnet }}
@@ -158,7 +157,6 @@ jobs:
     needs:
       - setup
       - build-projects
-    if: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
     concurrency: commits-base-environment
     strategy:
       max-parallel: 1
@@ -170,3 +168,4 @@ jobs:
         with:
           configuration: ${{ matrix.build.path }}/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
