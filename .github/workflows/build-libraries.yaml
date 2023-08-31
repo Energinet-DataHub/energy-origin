@@ -116,7 +116,7 @@ jobs:
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
-          directory="${{ matrix.item.name }}"
+          directory="${{ matrix.item.path }}"
           context="$directory"
           docker="$directory/Dockerfile"
           configuration="$directory/configuration.yaml"
