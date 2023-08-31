@@ -48,17 +48,8 @@ jobs:
         shell: bash
         env:
           LIST: ${{ steps.docker.outputs.list }}
-          PR: ${{ github.event.pull_request.number }}
         run: |
-          dockerfiles=$(while read directory; do
-            context="$directory"
-            docker="$directory/Dockerfile"
-            configuration="$directory/configuration.yaml"
-            tag=$(yq '.version' "$configuration")
-            tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
-
-            yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
-          done <<< $LIST | jq -sc '.')
+          dockerfiles=$(while read directory; do printf '{"path": "%s"}' "$directory"; done <<< $LIST | jq -sc '.')
 
           echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"
 
@@ -120,14 +111,34 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Prepare variables
+        shell: bash
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          directory="${{ matrix.item.name }}"
+          context="$directory"
+          docker="$directory/Dockerfile"
+          configuration="$directory/configuration.yaml"
+          tag=$(yq '.version' "$configuration")
+          tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
+
+          {
+            echo "configuration='$configuration'"
+            echo "context='$context'"
+            echo "docker='$docker'"
+            echo "name='$name'"
+            echo "tag='$tag'"
+          } >> "$GITHUB_ENV"
+
       - name: Push image
         uses: ./.github/actions/build-and-push-container
         with:
-          dockerfile: ${{ matrix.item.docker }}
-          image-name: ${{ matrix.item.name }}
-          image-tag: ${{ matrix.item.tag }}
-          docker-context: ${{ matrix.item.context }}
-          dry-run: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
+          dockerfile: ${{ env.docker }}
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.tag }}
+          docker-context: ${{ env.context }}
+          dry-run: ${{ needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
 
   update-environment-docker:
     name: Update environment
@@ -146,6 +157,6 @@ jobs:
       - name: Update environment
         uses: ./.github/actions/update-base-environment
         with:
-          configuration: ${{ matrix.item.configuration }}
+          configuration: ${{ env.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
+          dry_run: ${{ needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
