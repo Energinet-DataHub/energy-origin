@@ -50,7 +50,7 @@ runs:
         repo=$(yq '.repo' < "$configuration")
         name=$(yq '.name' < "$configuration")
         version=$(yq '.version' < "$configuration")
-        tag=$(sh ./.github/tooling/semver.sh "$version" "$PR")
+        tag=$(sh ../.github/tooling/semver.sh "$version" "$PR")
 
         image="$repo/$name:$tag"
         yq -ojson .references < "$configuration" | jq -rc '.[]' | while read -r reference; do
