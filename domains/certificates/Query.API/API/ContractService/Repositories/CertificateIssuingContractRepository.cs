@@ -38,5 +38,5 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
             .ToListAsync(cancellationToken);
 
     public Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken) =>
-        dbContext.Contracts.FindAsync(new object?[] {id}, cancellationToken).AsTask();
+        dbContext.Contracts.FindAsync(new object?[] { id }, cancellationToken).AsTask();
 }
