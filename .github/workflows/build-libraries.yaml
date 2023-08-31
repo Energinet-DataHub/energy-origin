@@ -126,11 +126,11 @@ jobs:
 
           {
             echo "configuration='$configuration'"
-            echo "context='$context'"
-            echo "docker='$docker'"
-            echo "name='$name'"
-            echo "tag='$tag'"
-            echo "dryrun='${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}'"
+            echo "context=$context"
+            echo "docker=$docker"
+            echo "name=$name"
+            echo "tag=$tag"
+            echo "dryrun=${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}"
           } >> "$GITHUB_ENV"
 
       - name: Push image
