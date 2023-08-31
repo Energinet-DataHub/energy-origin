@@ -95,7 +95,7 @@ public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
     public async Task GetPeriodStartTime_DatabaseCommunicationFailure_ReturnsNull()
     {
         var info = CreateSyncInfo();
-        
+
         var factoryMock = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
         factoryMock.CreateDbContextAsync().ThrowsForAnyArgs<Exception>();
 
