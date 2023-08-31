@@ -120,7 +120,7 @@ jobs:
           context="$directory"
           docker="$directory/Dockerfile"
           configuration="$directory/configuration.yaml"
-          name=$(yq '.version' "$name")
+          name=$(yq '.name' "$configuration")
           tag=$(yq '.version' "$configuration")
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
 
