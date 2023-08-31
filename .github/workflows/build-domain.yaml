@@ -151,9 +151,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Resolve
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.build.path }}
+        run: |
+          service=$(dirname "$PROJECT")
+          domain=$(dirname "$service")
+          configuration="${domain}/configuration.yaml"
+          if [ ! -f "$configuration" ]; then
+            configuration="${service}/configuration.yaml"
+          fi
+          echo "configuration=${configuration}" >> $GITHUB_ENV
+
       - name: Update environment
         uses: ./.github/actions/update-base-environment
         with:
-          configuration: ${{ matrix.build.path }}/configuration.yaml
+          configuration: ${{ env.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
