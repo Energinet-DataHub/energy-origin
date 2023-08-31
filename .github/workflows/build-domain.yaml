@@ -111,12 +111,10 @@ jobs:
           docker="$PROJECT/Dockerfile"
           service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
-          overrides="${service}/chart-overrides.yaml"
-          name=$(basename $(yq '.name' "$overrides"))
-
-          tag=$(yq '.version' "$overrides")
+          configuration="${service}/configuration.yaml"
+          name=$(basename $(yq '.name' "$configuration"))
+          tag=$(yq '.version' "$configuration")
           tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
-
           dotnet=${{ matrix.build.dotnetVersion }}
 
           {
