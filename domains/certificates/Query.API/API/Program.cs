@@ -106,7 +106,7 @@ app.Use(async (context, next) =>
     {
         var authorizationHeader = context.Request.Headers.Authorization;
         var cleanedValues = authorizationHeader
-            .Select(s => s.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
+            .Select(s => s?.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
             .ToArray();
 
         context.Request.Headers.Authorization = new StringValues(cleanedValues);
