@@ -24,10 +24,6 @@ public class SyncState : ISyncState
 
             var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(syncInfo.GSRN);
 
-            //await using var querySession = documentStore.QuerySession();
-
-            //var synchronizationPosition = querySession.Load<SynchronizationPosition>(syncInfo.GSRN);
-
             return synchronizationPosition != null
                 ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
                 : syncInfo.StartSyncDate.ToUnixTimeSeconds();
@@ -45,13 +41,9 @@ public class SyncState : ISyncState
 
         var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
 
-        //await using var session = documentStore.LightweightSession();
-        //var synchronizationPosition = session.Load<SynchronizationPosition>(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
         synchronizationPosition.SyncedTo = syncedTo;
 
         dbContext.Update(synchronizationPosition);
         await dbContext.SaveChangesAsync();
-        //session.Store(synchronizationPosition);
-        //await session.SaveChangesAsync();
     }
 }

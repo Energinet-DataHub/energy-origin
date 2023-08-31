@@ -113,5 +113,6 @@ public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
         {
             dbContext?.Dispose();
         }
+        GC.SuppressFinalize(this);
     }
 }
