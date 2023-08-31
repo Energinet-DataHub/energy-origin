@@ -46,7 +46,7 @@ class ProductionCertificateRepository : IProductionCertificateRepository
     }
 
     public Task<ProductionCertificate?> Get(Guid id, int? version = null, CancellationToken cancellationToken = default)
-        => dbContext.ProductionCertificates.FindAsync(id, cancellationToken).AsTask();
+        => dbContext.ProductionCertificates.FindAsync(new object?[] {id}, cancellationToken).AsTask();
 }
 
 public class ProductionCertificate //TODO: Or just "Certificate"?
