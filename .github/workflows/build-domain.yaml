@@ -32,8 +32,6 @@ jobs:
             required_file "$domain"/*.sln
             if [ ! -f "$domain/configuration.yaml" ]; then
               find "$domain" -name configuration.yaml -mindepth 2 -maxdepth 2 -type f | read || { printf '::error title=Missing file::%s/configuration.yaml\n' "$domain"; exit 1; }
-            else
-              printf '::error title=Missing file::%s/configuration.yaml\n' "$domain"; exit 1;
             fi
           done
 
