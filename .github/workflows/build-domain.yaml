@@ -147,7 +147,7 @@ jobs:
           image-name: ${{ steps.resolver.outputs.name }}
           image-tag: ${{ steps.resolver.outputs.tag }}
           docker-context: ${{ steps.resolver.outputs.domain }}
-          dry-run: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
+          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
             SDK_VERSION=${{ matrix.build.dotnetVersion }}
             RUNTIME_VERSION=${{ steps.resolver.outputs.dotnet }}
@@ -171,4 +171,4 @@ jobs:
         with:
           configuration: ${{ matrix.build.path }}/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')
+          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
