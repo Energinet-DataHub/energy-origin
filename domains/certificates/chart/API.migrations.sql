@@ -109,3 +109,26 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230831171652_sync') THEN
+    CREATE TABLE "SynchronizationPositions" (
+        "GSRN" text NOT NULL,
+        "SyncedTo" bigint NOT NULL,
+        CONSTRAINT "PK_SynchronizationPositions" PRIMARY KEY ("GSRN")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230831171652_sync') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20230831171652_sync', '7.0.10');
+    END IF;
+END $EF$;
+COMMIT;
+
