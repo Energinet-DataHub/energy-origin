@@ -22,7 +22,30 @@ namespace API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("API.Data.TransferAgreement", b =>
+            modelBuilder.Entity("API.Models.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
+                    b.Property<Guid>("SenderCompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SenderCompanyTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Invitation", "con");
+                });
+
+            modelBuilder.Entity("API.Models.TransferAgreement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -57,7 +80,7 @@ namespace API.Migrations
                     b.ToTable("TransferAgreements");
                 });
 
-            modelBuilder.Entity("API.Data.TransferAgreementHistoryEntry", b =>
+            modelBuilder.Entity("API.Models.TransferAgreementHistoryEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,9 +132,9 @@ namespace API.Migrations
                     b.ToTable("TransferAgreementHistoryEntries");
                 });
 
-            modelBuilder.Entity("API.Data.TransferAgreementHistoryEntry", b =>
+            modelBuilder.Entity("API.Models.TransferAgreementHistoryEntry", b =>
                 {
-                    b.HasOne("API.Data.TransferAgreement", "TransferAgreement")
+                    b.HasOne("API.Models.TransferAgreement", "TransferAgreement")
                         .WithMany()
                         .HasForeignKey("TransferAgreementId")
                         .OnDelete(DeleteBehavior.Cascade)
