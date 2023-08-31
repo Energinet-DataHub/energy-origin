@@ -33,7 +33,7 @@ public interface IProductionCertificateRepository
     Task<ProductionCertificate?> Get(Guid id, int? version = null, CancellationToken cancellationToken = default);
 }
 
-class ProductionCertificateRepository : IProductionCertificateRepository
+public class ProductionCertificateRepository : IProductionCertificateRepository
 {
     private readonly ApplicationDbContext dbContext;
 
@@ -53,7 +53,6 @@ public class ProductionCertificate //TODO: Or just "Certificate"?
 {
     public ProductionCertificate()
     {
-
     }
 
     public ProductionCertificate(string gridArea, Period period, Technology technology, string meteringPointOwner, string gsrn, long quantity, byte[] blindingValue)
@@ -77,7 +76,7 @@ public class ProductionCertificate //TODO: Or just "Certificate"?
     public long DateTo { get; set; }
     public Technology Technology { get; set; }
     public string MeteringPointOwner { get; set; }
-    public string Gsrn { get; set; } //TODO: Use value type
+    public string Gsrn { get; set; }
     public long Quantity { get; set; } //TODO: long?
     public byte[] BlindingValue { get; set; }
 
