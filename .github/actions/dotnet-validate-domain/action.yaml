@@ -72,13 +72,13 @@ runs:
           name=$(basename "$service" .csproj)
           echo Generating $name
           dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
-          dotnet ef migrations script -i  --no-build --project "$service" -o "/tmp/${name}.migrations.sql"
+          dotnet ef migrations script -i  --no-build --project "$service" -o "/tmp/${name}.sql"
         done
 
-        for tmp in $(find /tmp/ -maxdepth 1 -name "*.migrations.sql"); do
+        for tmp in $(find /tmp/ -maxdepth 1 -name "*.sql"); do
           echo Checking $(basename "$tmp")
-          original=../chart/$(basename "$tmp")
+          original=../migrations/$(basename "$tmp")
           cat < "$tmp" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
           cat < "$original" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
-          diff -q /tmp/a /tmp/b >/dev/null || exit 1
+          diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }
         done
