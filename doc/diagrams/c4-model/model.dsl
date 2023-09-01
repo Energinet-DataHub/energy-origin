@@ -5,11 +5,6 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-walletSystemDomain = container "Wallet System" {
-    description "Stores Granurlar Certificates"
-    technology ".NET gRPC"
-}
-
 authDomain = group "Auth Domain" {
     authApi = container "Auth Web Api" {
         description "API For authentication and authorization"
@@ -61,7 +56,7 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
         technology ".NET Web Api"
 
         apiGateway -> this "Forwards requests to"
-        this -> walletSystemDomain "Transfers certificates"
+        this -> po "Transfers certificates"
     }
     taDb = container "Transfer Agreement Storage" {
         description ""
