@@ -51,12 +51,13 @@ measurementsDomain = group "Measurements Domain" {
 }
 
 transferAgreementsDomain = group "Transfer Agreements Domain" {
-    taApi = container "Transfer Agreement API" {
-        description ""
-        technology ".NET Web Api"
-
-        apiGateway -> this "Forwards requests to"
-        this -> po "Transfers certificates"
+    taApi = container "Transfer Agreement API" "" ".NET Web Api" {
+        connectionsController = component "Connections Controller" "Allows users to see connections of their company." ".NET Web Api Controller"
+        connectionInvitesController = component "Connection-Invites Controller" "Allows users to create connections with other companies" ".NET Web Api Controller"
+        TransferAgreementsController = component "Transfer Agreements Controller" "Allows users to create transfer agreements with other companies" ".NET Web Api Controller"
+        TransferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
+            this -> po "Transfers certificates"
+        }
     }
     taDb = container "Transfer Agreement Storage" {
         description ""
@@ -64,4 +65,11 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
 
         taApi -> this "Saves and reads transfer agreement and connections data"
     }
+    apiGateway -> connectionsController "Forwards requests to"
+    apiGateway -> connectionInvitesController "Forwards requests to"
+    apiGateway -> TransferAgreementsController "Forwards requests to"
+    connectionsController -> taDb "Stores connections"
+    connectionInvitesController -> taDb "Stores connection-invitations"
+    TransferAgreementsController -> taDb "Stores transfer agreements"
+    TransferAgreementAutomation -> taDb "Reads transfer agreements"
 }
