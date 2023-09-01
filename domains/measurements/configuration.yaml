@@ -1,5 +1,5 @@
 name: eo-measurements
-version: 1.1.7
+version: 2.0.0
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/measurements/base/deployment.yaml

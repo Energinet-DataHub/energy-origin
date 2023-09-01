@@ -1,5 +1,5 @@
 name: eo-oidc-mock
-version: 0.1.1
+version: 1.0.0
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/oidc-mock/base/deployment.yaml
