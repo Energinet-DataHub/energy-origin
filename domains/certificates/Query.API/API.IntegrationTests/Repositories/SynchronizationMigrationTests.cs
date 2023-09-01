@@ -49,7 +49,6 @@ public class SynchronizationMigrationTests : IClassFixture<MartenDbContainer>, I
 
         await SaveSyncPositions(sync1);
 
-        // Call multiple times
         await store.MigrateSynchronizationPosition(CancellationToken.None);
         await store.MigrateSynchronizationPosition(CancellationToken.None);
         await store.MigrateSynchronizationPosition(CancellationToken.None);
