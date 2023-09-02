@@ -50,6 +50,7 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
+                Id = descriptor.CompanyId,
                 Name = descriptor.CompanyName!,
                 Tin = descriptor.Tin!
             };
