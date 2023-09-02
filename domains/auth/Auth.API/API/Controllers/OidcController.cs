@@ -219,11 +219,12 @@ public class OidcController : ControllerBase
             Id = identityType == ProviderGroup.Private && oidcOptions.ReuseSubject && Guid.TryParse(subject, out var uId) ? uId : null,
             Name = name,
             AllowCprLookup = false,
+            CompanyId = identityType == ProviderGroup.Professional && oidcOptions.ReuseSubject && Guid.TryParse(subject, out var cId1) ? cId1 : null, // Well, there is both CompanyId and Company.Id, so setting both I guess...
             Company = identityType == ProviderGroup.Private
                 ? null
                 : new Company
                 {
-                    Id = identityType == ProviderGroup.Professional && oidcOptions.ReuseSubject && Guid.TryParse(subject, out var cId) ? cId : null,
+                    Id = identityType == ProviderGroup.Professional && oidcOptions.ReuseSubject && Guid.TryParse(subject, out var cId2) ? cId2 : null,
                     Tin = tin!,
                     Name = companyName!
                 }

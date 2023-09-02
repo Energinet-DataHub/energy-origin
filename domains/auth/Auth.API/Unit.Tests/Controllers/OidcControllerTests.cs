@@ -865,6 +865,67 @@ public class OidcControllerTests
         Assert.Equal(matches, subject == claims[UserClaimName.Subject].Value);
     }
 
+    [Theory]
+    [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", true, true)]
+    [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", false, false)]
+    [InlineData(null, false, true)]
+    public async Task CallbackAsync_ShouldUseSubjectCompanyId_WhenConfigured(string? subject, bool matches, bool enabled)
+    {
+        var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: enabled);
+
+        var tokenEndpoint = new Uri($"http://{testOptions.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{testOptions.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{testOptions.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var name = Guid.NewGuid().ToString();
+        var tin = Guid.NewGuid().ToString();
+        var companyName = Guid.NewGuid().ToString();
+        var ssn = Guid.NewGuid().ToString();
+
+        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject);
+        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+            { "scope", "something" },
+        });
+
+        var userToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+            { "idp", ProviderName.NemId },
+            { "identity_type", ProviderGroup.Professional },
+            { "nemid.cvr", tin },
+            { "nemid.ssn", ssn },
+            { "nemid.company_name", companyName },
+            { "nemid.common_name", name }
+        });
+
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+
+        Assert.NotNull(action);
+        Assert.IsType<RedirectResult>(action);
+
+        var result = (RedirectResult)action;
+        var map = QueryHelpers.ParseNullableQuery(new Uri(result.Url).Query);
+
+        Assert.NotNull(map);
+        Assert.True(map.ContainsKey("token"));
+
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(map["token"]).Claims.ToDictionary(x => x.Type, x => x);
+        Assert.True(claims.ContainsKey(UserClaimName.Subject));
+        Assert.Equal(matches, subject == claims[UserClaimName.Subject].Value);
+    }
+
     [Fact]
     public async Task CallbackAsync_ShouldCallMetricsLogin_WhenInvokedSuccessfully()
     {

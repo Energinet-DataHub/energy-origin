@@ -50,7 +50,7 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
-                Id = descriptor.CompanyId,
+                Id = descriptor.CompanyId, // TODO: There is no test for this
                 Name = descriptor.CompanyName!,
                 Tin = descriptor.Tin!
             };
