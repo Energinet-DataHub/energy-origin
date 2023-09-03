@@ -36,5 +36,13 @@ runs:
       run: |
         cd base
         version=$(yq ".${{ inputs.yaml-path }}" "${{ inputs.yaml-file }}")
-        version=$(sh ./.github/tooling/semver.sh "$version" "${{ github.event.pull_request.number }}")
+        if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
+          version="$version"
+        elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+          version="${version}-pr.${{ github.event.pull_request.number }}-$(git rev-parse --short $GITHUB_SHA)"
+        else
+          >&2 echo "::error:: Not supported on push to branches other than main"
+          exit 1
+        fi
         echo "version=${version}" >> $GITHUB_OUTPUT
+        echo "version=${version}" >> $GITHUB_ENV

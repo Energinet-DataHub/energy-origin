@@ -111,24 +111,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Resolve version
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ matrix.item.path }}/configuration.yaml
+          yaml-path: version
+
       - name: Prepare variables
         shell: bash
-        env:
-          PR: ${{ github.event.pull_request.number }}
         run: |
           directory="${{ matrix.item.path }}"
           context="$directory"
           docker="$directory/Dockerfile"
           configuration="$directory/configuration.yaml"
           name=$(yq '.name' "$configuration")
-          tag=$(yq '.version' "$configuration")
-          tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
 
           {
             echo "context=$context"
             echo "docker=$docker"
             echo "name=$name"
-            echo "tag=$tag"
           } >> "$GITHUB_ENV"
 
       - name: Push image
@@ -136,7 +137,7 @@ jobs:
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
-          image-tag: ${{ env.tag }}
+          image-tag: ${{ env.version }}
           docker-context: ${{ env.context }}
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
 
