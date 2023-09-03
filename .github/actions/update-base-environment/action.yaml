@@ -41,7 +41,7 @@ runs:
       run: git fetch && git checkout ${{ inputs.branch }} 2>/dev/null || git checkout -b ${{ inputs.branch }}
 
     - name: Resolve version
-      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-semver@main
+      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-semver@1745-fixes
       with:
         yaml-file: ${{ inputs.configuration }}
         yaml-path: version
