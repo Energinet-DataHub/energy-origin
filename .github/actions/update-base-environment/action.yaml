@@ -50,8 +50,6 @@ runs:
       shell: bash
       working-directory: base
       run: |
-        find . -type d -maxdepth 3 | grep -v .git
-
         configuration="../${{ inputs.configuration }}"
         repo=$(yq '.repo' < "$configuration")
         name=$(yq '.name' < "$configuration")

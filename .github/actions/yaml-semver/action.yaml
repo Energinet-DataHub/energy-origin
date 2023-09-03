@@ -27,14 +27,14 @@ runs:
 
     - uses: actions/checkout@v3
       with:
-        path: base
+        path: yaml
         ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
 
     - name: Generate semver
       id: output
       shell: bash
       run: |
-        cd base
+        cd yaml
         version=$(yq ".${{ inputs.yaml-path }}" "${{ inputs.yaml-file }}")
         if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
           version="$version"
