@@ -50,7 +50,7 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
-                Id = descriptor.CompanyId, // TODO: There is no test for this
+                //Id = descriptor.CompanyId, // TODO: There is no test for this
                 Name = descriptor.CompanyName!,
                 Tin = descriptor.Tin!
             };
@@ -64,6 +64,7 @@ public class TermsController : ControllerBase
                 Name = descriptor.Name,
                 AllowCprLookup = descriptor.AllowCprLookup,
             };
+            user.CompanyId = descriptor.CompanyId; // TODO: There is no test for this
 
             user.UserRoles.AddRange(roleOptions.RoleConfigurations.Where(x => x.IsDefault).ToList().Select(x =>
                 new UserRole { Role = x.Key, UserId = descriptor.Id }
