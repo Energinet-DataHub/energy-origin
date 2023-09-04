@@ -232,37 +232,64 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
-    CREATE TABLE con."Connection" (
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    DROP TABLE con."Invitation";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    CREATE TABLE "ConnectionInvitations" (
         "Id" uuid NOT NULL,
-        "CompanyAId" uuid NOT NULL,
-        "CompanyATin" text NOT NULL,
-        "CompanyBId" uuid NOT NULL,
-        "CompanyBTin" text NOT NULL,
-        CONSTRAINT "PK_Connection" PRIMARY KEY ("Id")
+        "SenderCompanyId" uuid NOT NULL,
+        "SenderCompanyTin" text NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (current_timestamp at time zone 'UTC'),
+        CONSTRAINT "PK_ConnectionInvitations" PRIMARY KEY ("Id")
     );
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
-    CREATE INDEX "IX_Connection_CompanyAId" ON con."Connection" ("CompanyAId");
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    CREATE TABLE "Connections" (
+        "Id" uuid NOT NULL,
+        "CompanyAId" uuid NOT NULL,
+        "CompanyATin" text NOT NULL,
+        "CompanyBId" uuid NOT NULL,
+        "CompanyBTin" text NOT NULL,
+        CONSTRAINT "PK_Connections" PRIMARY KEY ("Id")
+    );
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
-    CREATE INDEX "IX_Connection_CompanyBId" ON con."Connection" ("CompanyBId");
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    CREATE INDEX "IX_Connections_CompanyAId" ON "Connections" ("CompanyAId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829103346_AddConnectionsTable') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    CREATE INDEX "IX_Connections_CompanyBId" ON "Connections" ("CompanyBId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
+    DROP SCHEMA IF EXISTS con CASCADE;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230829103346_AddConnectionsTable', '7.0.5');
+    VALUES ('20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;

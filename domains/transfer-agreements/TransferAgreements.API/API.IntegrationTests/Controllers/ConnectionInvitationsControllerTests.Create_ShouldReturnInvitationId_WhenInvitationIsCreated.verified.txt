@@ -1,1 +1,1 @@
-﻿{"result":"Guid_1"}
+{"connectionInvitationId":"Guid_1"}

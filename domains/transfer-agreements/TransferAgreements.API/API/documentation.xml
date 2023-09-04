@@ -100,28 +100,16 @@
         <member name="M:API.Migrations.AddInvitationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:API.Migrations.AddConnectionsTable">
+        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionsTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionsTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddConnectionsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitations">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitations.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitations.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitations.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
