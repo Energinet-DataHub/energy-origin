@@ -52,9 +52,11 @@ measurementsDomain = group "Measurements Domain" {
 
 transferAgreementsDomain = group "Transfer Agreements Domain" {
     taApi = container "Transfer Agreement API" "" ".NET Web Api" {
-        connectionsController = component "Connections Controller" "Allows users to see connections of their company." ".NET Web Api Controller"
-        connectionInvitesController = component "Connection-Invites Controller" "Allows users to create connections with other companies" ".NET Web Api Controller"
-        TransferAgreementsController = component "Transfer Agreements Controller" "Allows users to create transfer agreements with other companies" ".NET Web Api Controller"
+        connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
+        TransferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
+            this -> po "Creates wallet deposit endpoint"
+        }
+        deleteConnectionInvitationsWorker = component "Delete Connection-invitations Worker" "Deletes expired connection-invitations" ".NET BackgroundService"
         TransferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
             this -> po "Transfers certificates"
         }
@@ -65,11 +67,10 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
 
         taApi -> this "Saves and reads transfer agreement and connections data"
     }
-    apiGateway -> connectionsController "Forwards requests to"
-    apiGateway -> connectionInvitesController "Forwards requests to"
-    apiGateway -> TransferAgreementsController "Forwards requests to"
-    connectionsController -> taDb "Stores connections"
-    connectionInvitesController -> taDb "Stores connection-invitations"
-    TransferAgreementsController -> taDb "Stores transfer agreements"
+    apiGateway -> connectionsApi "Forwards requests to"
+    apiGateway -> TransferAgreementsApi "Forwards requests to"
+    connectionsApi -> taDb "Stores connections"
+    TransferAgreementsApi -> taDb "Stores transfer agreements"
     TransferAgreementAutomation -> taDb "Reads transfer agreements"
+    deleteConnectionInvitationsWorker -> taDb "Deletes connection-invitations"
 }
