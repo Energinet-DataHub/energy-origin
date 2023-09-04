@@ -33,4 +33,10 @@
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Controllers\ConnectionInvitationsControllerTests.Create_ShouldReturnInvitationId_WhenInvitationIsCreated.verified.txt">
+        <DependentUpon>ConnectionInvitationsControllerTests.cs</DependentUpon>
+      </None>
+    </ItemGroup>
+
 </Project>

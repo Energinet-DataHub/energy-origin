@@ -1,10 +1,8 @@
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Models;
 
-[Table(nameof(Connection), Schema = "con")]
 [Index(nameof(CompanyAId))]
 [Index(nameof(CompanyBId))]
 public class Connection
