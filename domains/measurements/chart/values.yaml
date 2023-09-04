@@ -1,6 +1,0 @@
-api:
-  replicaCount: 3
-  probes: true
-  image: {}
-  env:
-    DATASYNCENDPOINT:
