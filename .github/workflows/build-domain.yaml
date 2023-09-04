@@ -101,16 +101,14 @@ jobs:
             configuration="${service}/configuration.yaml"
           fi
           name=$(yq '.name' "$configuration")
-          tag=$(yq '.version' "$configuration")
-          tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
           dotnet=${{ matrix.build.dotnetVersion }}
 
           {
+            echo "configuration=$configuration"
             echo "service=${service}"
             echo "project=${PROJECT}"
             echo "docker=${docker}"
             echo "domain=${domain}"
-            echo "tag=${tag}"
             echo "name=${name}"
             echo "dotnet=${dotnet::${#dotnet}-2}"
           } >> $GITHUB_OUTPUT
@@ -125,12 +123,18 @@ jobs:
           solution-file-folder: ${{ steps.resolver.outputs.service }}
           dotnet-version: ${{ matrix.build.dotnetVersion }}
 
+      - name: Resolve version
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ env.configuration }}
+          yaml-path: version
+
       - name: Build image
         uses: ./.github/actions/build-and-push-container
         with:
           dockerfile: ${{ steps.resolver.outputs.docker }}
           image-name: ${{ steps.resolver.outputs.name }}
-          image-tag: ${{ steps.resolver.outputs.tag }}
+          image-tag: ${{ env.version }}
           docker-context: ${{ steps.resolver.outputs.domain }}
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
