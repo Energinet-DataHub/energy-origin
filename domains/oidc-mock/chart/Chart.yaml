@@ -1,6 +1,0 @@
-apiVersion: v2
-name: eo-oidc-mock
-description: A chart containing the OIDC mock.
-
-type: application
-version: 0.1.1

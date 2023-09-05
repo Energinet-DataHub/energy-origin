@@ -48,17 +48,8 @@ jobs:
         shell: bash
         env:
           LIST: ${{ steps.docker.outputs.list }}
-          PR: ${{ github.event.pull_request.number }}
         run: |
-          dockerfiles=$(while read directory; do
-            context="$directory"
-            docker="$directory/Dockerfile"
-            configuration="$directory/configuration.yaml"
-            tag=$(yq '.version' "$configuration")
-            tag=$(sh ./.github/tooling/semver.sh "$tag" "$PR")
-
-            yq -ojson "$configuration" | jq '.|.context=$context|.docker=$docker|.tag=$tag' --arg context "$context" --arg docker "$docker" --arg tag "$tag"
-          done <<< $LIST | jq -sc '.')
+          dockerfiles=$(while read directory; do printf '{"path": "%s"}' "$directory"; done <<< $LIST | jq -sc '.')
 
           echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"
 
@@ -120,13 +111,35 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Resolve version
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ matrix.item.path }}/configuration.yaml
+          yaml-path: version
+
+      - name: Prepare variables
+        shell: bash
+        run: |
+          directory="${{ matrix.item.path }}"
+          context="$directory"
+          docker="$directory/Dockerfile"
+          configuration="$directory/configuration.yaml"
+          name=$(yq '.name' "$configuration")
+
+          {
+            echo "context=$context"
+            echo "docker=$docker"
+            echo "name=$name"
+          } >> "$GITHUB_ENV"
+
       - name: Push image
         uses: ./.github/actions/build-and-push-container
         with:
-          dockerfile: ${{ matrix.item.docker }}
-          image-name: ${{ matrix.item.name }}
-          image-tag: ${{ matrix.item.tag }}
-          docker-context: ${{ matrix.item.context }}
+          dockerfile: ${{ env.docker }}
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: ${{ env.context }}
+          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
 
   update-environment-docker:
     name: Update environment
@@ -134,7 +147,6 @@ jobs:
     needs:
       - define-matrix
       - build-docker-library
-    if: needs.define-matrix.outputs.dockerfiles != '[]' && (github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/'))
     concurrency: commits-base-environment
     strategy:
       max-parallel: 1
@@ -142,40 +154,10 @@ jobs:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Update environment
+        uses: ./.github/actions/update-base-environment
         with:
-          repository: ${{ github.repository_owner }}/eo-base-environment
-          ssh-key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          ref: main
-
-      - name: Switch branch if not main
-        shell: bash
-        if: ${{ github.ref_name != 'main' }}
-        run: git fetch && git checkout ${{ github.event.pull_request.head.ref }} 2>/dev/null || git checkout -b ${{ github.event.pull_request.head.ref }}
-
-      - name: Update references
-        shell: bash
-        env:
-          REFERENCES: ${{ toJson(matrix.item.references) }}
-        run: |
-          image="${{ matrix.item.repo }}/${{ matrix.item.name }}:${{ matrix.item.tag }}"
-          jq -r -c '.[]' <<< "$REFERENCES" | while read -r reference; do
-            file=$(jq -r -c '.file' <<< "$reference")
-            path=$(jq -r -c '.path' <<< "$reference")
-            echo yq -ie "'($path) = \"$image\"'" "$file" | bash -x
-          done
-
-      - name: Commit changes
-        id: commit
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: Use ${{ matrix.item.name }}:${{ matrix.item.tag }}
-          new_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
-          push: --force --set-upstream origin ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || github.event.pull_request.head.ref }}
-          default_author: github_actions
-
-      - name: Verify changes were pushed
-        shell: bash
-        if: ${{ steps.commit.outputs.pushed == 'false' }}
-        run: |
-          echo "::error::Nothing was committed or pushed"
-          exit 1
+          configuration: ${{ matrix.item.path }}/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
