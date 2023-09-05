@@ -72,7 +72,7 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
-        if (user.Id == descriptor.Id)
+        if (user.Id == descriptor.Id && role == RoleKey.RoleAdmin)
         {
             return BadRequest("An admin cannot remove his admin role");
         }
