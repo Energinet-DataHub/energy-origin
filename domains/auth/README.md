@@ -30,5 +30,5 @@ __Note__: You will need to base64 encode the key again when using it in a kubern
 Here is an example of how to generate migrations SQL for the API project:
 
 ```shell
-dotnet ef migrations script --idempotent --project Auth.API/API/API.csproj --output chart/API.migrations.sql
+dotnet ef migrations script --idempotent --project Auth.API/API/API.csproj --output migrations/API.sql
 ```

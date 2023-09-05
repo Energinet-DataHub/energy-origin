@@ -12,4 +12,10 @@ public class ApplicationDbContext : AuditDbContext
 
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<Invitation>()
+            .Property(b => b.CreatedAt)
+            .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
 }
