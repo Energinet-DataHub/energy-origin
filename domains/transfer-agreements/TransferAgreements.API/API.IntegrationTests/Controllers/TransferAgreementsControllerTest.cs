@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -8,8 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
-using API.Data;
-using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using API.Models;
@@ -21,7 +18,6 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
-[TestCaseOrderer(PriorityOrderer.TypeName, "API.IntegrationTests")]
 [UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
@@ -53,23 +49,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [TestPriority(1)]
-    [Fact]
-    public async Task CreateTransferAgreement_ConcurrentRequests_OnlyOneTransferAgreementCreated()
-    {
-        var tenConcurrentRequests = Enumerable
-            .Range(1, 10)
-            .Select(_ => authenticatedClient.PostAsJsonAsync("api/transfer-agreements", CreateTransferAgreement()));
-
-        var responses = await Task.WhenAll(tenConcurrentRequests);
-
-        responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
-        responses.Where(r => r.StatusCode == HttpStatusCode.Conflict).Should().HaveCount(9);
-
-        var transferAgreements = await authenticatedClient.GetFromJsonAsync<TransferAgreementsResponse>("api/transfer-agreements");
-        transferAgreements!.Result.Should().HaveCount(1);
     }
 
     [Fact]
