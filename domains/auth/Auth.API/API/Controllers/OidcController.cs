@@ -27,7 +27,6 @@ public class OidcController : ControllerBase
         IMetrics metrics,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
-        IUserDescriptorMapper mapper,
         IUserProviderService userProviderService,
         IUserService userService,
         ITokenIssuer issuer,
@@ -81,7 +80,7 @@ public class OidcController : ControllerBase
         UserData data;
         try
         {
-            (descriptor, data) = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
+            (descriptor, data) = await MapUserDescriptor(userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -113,7 +112,7 @@ public class OidcController : ControllerBase
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {

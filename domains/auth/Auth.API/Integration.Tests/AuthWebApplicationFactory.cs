@@ -2,7 +2,9 @@ using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Repositories.Data;
 using API.Repositories.Data.Interfaces;
+using API.Utilities;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -60,8 +62,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     {
         var matchedRoles = new[] { role }.OfType<string>().Concat(roles ?? Array.Empty<string>());
         var client = CreateAnonymousClient(config);
-        var mapper = ServiceProvider.GetRequiredService<IUserDescriptorMapper>();
-        var descriptor = mapper.Map(user, providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        var descriptor = user.MapDescriptor(cryptography, providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString())
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, UserData.From(user), versionBypass, issueAt));
         return client;
     }

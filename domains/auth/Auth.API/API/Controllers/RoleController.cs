@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class RoleController : ControllerBase
             return BadRequest($"Role not found: {role}");
         }
 
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
 
         var user = await userService.GetUserByIdAsync(userId);
         if (user == null)
@@ -65,7 +66,7 @@ public class RoleController : ControllerBase
     [Route("role/{role}/remove/{userId:guid}")]
     public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
 
         var user = await userService.GetUserByIdAsync(userId);
         if (user == null)

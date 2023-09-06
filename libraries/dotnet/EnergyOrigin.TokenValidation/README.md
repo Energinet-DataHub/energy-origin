@@ -51,10 +51,12 @@ There are a number of predefined roles available, that are referenced by `RoleKe
 
 The values in a token can be found by mapping the ClaimsPrincipal in a controller to a user descriptor like in the following example.
 
+Attempting to map the ClaimPrincipal (`User`) while no token is present or the token is invalid will throw an exception.
+
 ```csharp
-public async IActionResult Get(IUserDescriptorMapperBase mapper)
+public async IActionResult Get()
 {
-    var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+    var descriptor = new UserDescriptor(User);
     // ...
 }
 ```
@@ -69,8 +71,6 @@ The user descriptor can be consider to be mostly a simple object with the values
     - Id
     - Name
     - Tin
-
-> A few properties requires cryptograhpy correctly configured to access and these properties are meant to be accessed only by the issuer.
 
 ## Configuring Token Validation
 

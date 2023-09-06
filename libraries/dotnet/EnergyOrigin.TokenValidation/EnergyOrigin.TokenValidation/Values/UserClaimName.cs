@@ -19,3 +19,5 @@ public struct UserClaimName
     public const string AssignedRoles = "ars";
     public const string MatchedRoles = "mrs";
 }
+
+// FIXME: organization?

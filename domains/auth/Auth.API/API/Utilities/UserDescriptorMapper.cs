@@ -7,24 +7,32 @@ using EnergyOrigin.TokenValidation.Values;
 
 namespace API.Utilities;
 
-public class UserDescriptorMapper : UserDescriptorMapperBase, IUserDescriptorMapper
+public static class UserDescriptorExtensions
 {
-    private readonly ICryptography cryptography;
-
-    public UserDescriptorMapper(ICryptography cryptography, ILogger<UserDescriptorMapper> logger) : base(cryptography, logger) => this.cryptography = cryptography;
-
-    public UserDescriptor Map(User user, ProviderType providerType, IEnumerable<string> matchedRoles, string accessToken, string identityToken) => new(cryptography)
+    public static UserDescriptor MapDescriptor(this User user, ICryptography cryptography, ProviderType providerType, IEnumerable<string> matchedRoles, string accessToken, string identityToken)
     {
-        Id = user.Id ?? Guid.NewGuid(),
-        ProviderType = providerType,
-        Name = user.Name,
-        CompanyId = user.CompanyId,
-        Tin = user.Company?.Tin,
-        CompanyName = user.Company?.Name,
-        AllowCprLookup = user.AllowCprLookup,
-        EncryptedAccessToken = cryptography.Encrypt(accessToken),
-        EncryptedIdentityToken = cryptography.Encrypt(identityToken),
-        EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
-        MatchedRoles = string.Join(" ", matchedRoles),
-    };
+        OrganizationDescriptor? organization = null;
+        if (user.Company != null)
+        {
+            organization = new OrganizationDescriptor()
+            {
+                Id = user.Company!.Id ?? Guid.NewGuid(),
+                Name = user.Company!.Name,
+                Tin = user.Company!.Tin
+            };
+        }
+
+        return new UserDescriptor()
+        {
+            Id = user.Id ?? Guid.NewGuid(),
+            ProviderType = providerType,
+            Name = user.Name,
+            Organization = organization,
+            AllowCprLookup = user.AllowCprLookup,
+            EncryptedAccessToken = cryptography.Encrypt(accessToken),
+            EncryptedIdentityToken = cryptography.Encrypt(identityToken),
+            EncryptedProviderKeys = cryptography.Encrypt(string.Join(" ", user.UserProviders.Select(x => $"{x.ProviderKeyType}={x.UserProviderKey}"))),
+            MatchedRoles = string.Join(" ", matchedRoles),
+        };
+    }
 }

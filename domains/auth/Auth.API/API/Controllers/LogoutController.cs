@@ -1,6 +1,8 @@
 using API.Options;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,7 @@ public class LogoutController : ControllerBase
 {
     [HttpGet()]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(IMetrics metrics, IDiscoveryCache discoveryCache, IUserDescriptorMapper descriptorMapper, OidcOptions oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LogoutAsync(IMetrics metrics, IDiscoveryCache discoveryCache, ICryptography cryptography, OidcOptions oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.AllowRedirection && overrideRedirectionUri != null)
@@ -28,14 +30,14 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var descriptor = descriptorMapper.Map(User);
+        var descriptor = new UserDescriptor(User);
         if (descriptor == null)
         {
             return RedirectPreserveMethod(redirectionUri);
         }
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: descriptor.IdentityToken,
+            idTokenHint: new DecodedUserDescriptor(descriptor, cryptography).IdentityToken,
             postLogoutRedirectUri: redirectionUri
         );
 
@@ -46,7 +48,7 @@ public class LogoutController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        metrics.Logout(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
+        metrics.Logout(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
 
         return RedirectPreserveMethod(url);
     }
