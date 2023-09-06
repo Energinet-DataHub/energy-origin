@@ -53,9 +53,9 @@ public class ProductionCertificateRepository : IProductionCertificateRepository
         => dbContext.ProductionCertificates.FindAsync(new object?[] { id }, cancellationToken).AsTask();
 }
 
-public class ProductionCertificate //TODO: Or just "Certificate"?
+public class ProductionCertificate
 {
-    public ProductionCertificate()
+    private ProductionCertificate()
     {
     }
 
@@ -72,19 +72,19 @@ public class ProductionCertificate //TODO: Or just "Certificate"?
         BlindingValue = blindingValue;
     }
 
-    public Guid Id { get; set; }
+    public Guid Id { get; private set; }
 
-    public IssuedState IssuedState { get; set; }
-    public string GridArea { get; set; }
-    public long DateFrom { get; set; }
-    public long DateTo { get; set; }
-    public Technology Technology { get; set; }
-    public string MeteringPointOwner { get; set; }
-    public string Gsrn { get; set; }
-    public long Quantity { get; set; } //TODO: long?
-    public byte[] BlindingValue { get; set; }
+    public IssuedState IssuedState { get; private set; }
+    public string GridArea { get; private set; } = "";
+    public long DateFrom { get; private set; }
+    public long DateTo { get; private set; }
+    public Technology Technology { get; private set; } = new("unknown", "unknown");
+    public string MeteringPointOwner { get; private set; } = "";
+    public string Gsrn { get; private set; } = "";
+    public long Quantity { get; private set; } //TODO: long?
+    public byte[] BlindingValue { get; private set; } = Array.Empty<byte>();
 
-    public string? RejectionReason { get; set; }
+    public string? RejectionReason { get; private set; }
     //public byte[] WalletPublicKey { get; set; }
     //public string WalletUrl { get; set; }
     //public uint WalletDepositEndpointPosition { get; set; } //todo: Should this be saved...?
