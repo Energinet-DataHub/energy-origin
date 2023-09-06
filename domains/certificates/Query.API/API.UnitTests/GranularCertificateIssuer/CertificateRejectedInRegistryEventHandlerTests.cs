@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Data;
 using API.GranularCertificateIssuer;
 using CertificateValueObjects;
 using Contracts.Certificates;

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using API.Data;
 using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;

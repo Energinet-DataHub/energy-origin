@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Data;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
 using Contracts;

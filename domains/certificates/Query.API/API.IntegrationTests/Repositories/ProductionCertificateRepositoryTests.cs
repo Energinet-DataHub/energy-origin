@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using API.Data;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

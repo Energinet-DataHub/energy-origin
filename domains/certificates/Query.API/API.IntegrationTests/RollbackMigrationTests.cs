@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using API.Data;
 using Xunit;
 
 namespace API.IntegrationTests;
