@@ -10,11 +10,11 @@ using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ProductionCertificateTests : IClassFixture<PostgresContainer>, IDisposable
+public class ProductionCertificateDatabaseTests : IClassFixture<PostgresContainer>, IDisposable
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public ProductionCertificateTests(PostgresContainer dbContainer)
+    public ProductionCertificateDatabaseTests(PostgresContainer dbContainer)
     {
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(options);
@@ -198,5 +198,7 @@ public class ProductionCertificateTests : IClassFixture<PostgresContainer>, IDis
         using var dbContext = new ApplicationDbContext(options);
         var tableName = dbContext.Model.FindEntityType(typeof(ProductionCertificate))?.GetTableName() ?? "";
         dbContext.Database.ExecuteSqlRaw($"TRUNCATE TABLE \"{tableName}\"");
+
+        GC.SuppressFinalize(this);
     }
 }

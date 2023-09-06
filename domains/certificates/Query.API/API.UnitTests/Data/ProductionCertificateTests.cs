@@ -6,7 +6,7 @@ using Xunit;
 
 namespace API.UnitTests.Data;
 
-public class ProductionCertificateTest
+public class ProductionCertificateTests
 {
     private readonly ProductionCertificate productionCertificate = new(
         "gridArea",
