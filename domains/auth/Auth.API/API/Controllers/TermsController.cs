@@ -3,9 +3,9 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +24,7 @@ public class TermsController : ControllerBase
         IUserService userService,
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
+        ICryptography cryptography,
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
         TermsOptions termsOptions,
@@ -34,7 +35,7 @@ public class TermsController : ControllerBase
             return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
         }
 
-        var descriptor = new UserDescriptor(User);
+        var descriptor = new DecodableUserDescriptor(User, cryptography);
 
         var type = UserTermsType.PrivacyPolicy;
         var user = await userService.GetUserByIdAsync(descriptor.Id);

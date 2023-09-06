@@ -1,7 +1,6 @@
 using API.Options;
 using API.Utilities;
 using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
@@ -30,14 +29,14 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var descriptor = new UserDescriptor(User);
+        var descriptor = new DecodableUserDescriptor(User, cryptography);
         if (descriptor == null)
         {
             return RedirectPreserveMethod(redirectionUri);
         }
 
         var url = requestUrl.CreateEndSessionUrl(
-            idTokenHint: new DecodedUserDescriptor(descriptor, cryptography).IdentityToken,
+            idTokenHint: descriptor.IdentityToken,
             postLogoutRedirectUri: redirectionUri
         );
 

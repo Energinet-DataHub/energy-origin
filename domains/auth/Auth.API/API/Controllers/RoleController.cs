@@ -25,7 +25,7 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/assign/{userId:guid}")]
-    public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger)
     {
         var validRoles = roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => x.Key);
         if (validRoles.Any(x => x == role) == false)
@@ -40,9 +40,9 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
-        if (user.Company?.Tin != descriptor.Tin)
+        if (user.Company?.Tin != descriptor.Organization?.Tin)
         {
-            return Forbid($"User is not in the same company");
+            return Forbid($"User is not in the same organization");
         }
         if (user.UserRoles.Any(x => x.Role == role))
         {
@@ -64,7 +64,7 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/remove/{userId:guid}")]
-    public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger)
     {
         var descriptor = new UserDescriptor(User);
 
@@ -77,9 +77,9 @@ public class RoleController : ControllerBase
         {
             return BadRequest("An admin cannot remove his admin role");
         }
-        if (user.Company?.Tin != descriptor.Tin)
+        if (user.Company?.Tin != descriptor.Organization?.Tin)
         {
-            return Forbid($"User is not in the same company");
+            return Forbid($"User is not in the same organization");
         }
 
         var userRole = user.UserRoles.SingleOrDefault(x => x.Role == role);

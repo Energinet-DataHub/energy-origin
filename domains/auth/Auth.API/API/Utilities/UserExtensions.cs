@@ -1,13 +1,11 @@
 using API.Models.Entities;
-using API.Utilities.Interfaces;
-using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 
 namespace API.Utilities;
 
-public static class UserDescriptorExtensions
+public static class UserExtensions
 {
     public static UserDescriptor MapDescriptor(this User user, ICryptography cryptography, ProviderType providerType, IEnumerable<string> matchedRoles, string accessToken, string identityToken)
     {

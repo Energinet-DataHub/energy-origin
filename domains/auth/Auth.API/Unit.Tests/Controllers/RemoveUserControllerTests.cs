@@ -2,9 +2,6 @@ using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
-using API.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +9,12 @@ namespace Unit.Tests.Controllers;
 
 public class RemoveUserControllerTests
 {
-    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
-    private readonly RemoveUserController controller = new();
+    private class TestableRemoveUserController : RemoveUserController
+    {
+        new public ClaimsPrincipal? User { get; set; }
+    }
+
+    private readonly TestableRemoveUserController controller = new();
     private readonly ILogger<RemoveUserController> logger = Mock.Of<ILogger<RemoveUserController>>();
     private readonly IUserService userService = Mock.Of<IUserService>();
 
@@ -21,9 +22,9 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsBadRequest_WhenSelfDeletion()
     {
         var userId = Guid.NewGuid();
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = userId });
+        controller.User = TestClaimsPrincipal.Make(id: userId);
 
-        var result = await controller.RemoveUser(userId, mapper, userService, logger);
+        var result = await controller.RemoveUser(userId, userService, logger);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -32,10 +33,10 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
         var userId = Guid.NewGuid();
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
+        controller.User = TestClaimsPrincipal.Make();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync((User)null!);
 
-        var result = await controller.RemoveUser(userId, mapper, userService, logger);
+        var result = await controller.RemoveUser(userId, userService, logger);
 
         Assert.IsType<OkResult>(result);
     }
@@ -44,20 +45,14 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsOk_WhenSuccessfulDeletion()
     {
         var userId = Guid.NewGuid();
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns(new UserDescriptor(null!) { Id = Guid.NewGuid() });
+        controller.User = TestClaimsPrincipal.Make();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
 
-        var result = await controller.RemoveUser(userId, mapper, userService, logger);
+        var result = await controller.RemoveUser(userId, userService, logger);
 
         Assert.IsType<OkResult>(result);
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldThrowException_WhenMapperFails()
-    {
-        var userId = Guid.NewGuid();
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Throws(new NullReferenceException());
-
-        await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveUser(userId, mapper, userService, logger));
-    }
+    public async Task RemoveUser_ShouldThrowException_WhenMapperFails() => await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveUser(Guid.NewGuid(), userService, logger));
 }

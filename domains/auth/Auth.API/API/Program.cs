@@ -116,7 +116,6 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
-builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
 
