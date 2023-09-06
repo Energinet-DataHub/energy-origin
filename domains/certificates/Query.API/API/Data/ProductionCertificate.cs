@@ -44,12 +44,18 @@ public class ProductionCertificate
 
     public void Reject(string reason)
     {
+        if (IssuedState != IssuedState.Creating)
+            throw new CertificateDomainException(Id, $"Cannot reject when certificate is already {IssuedState.ToString()!.ToLower()}");
+
         IssuedState = IssuedState.Rejected;
         RejectionReason = reason;
     }
 
     public void Issue()
     {
+        if (IssuedState != IssuedState.Creating)
+            throw new CertificateDomainException(Id, $"Cannot issue when certificate is already {IssuedState.ToString()!.ToLower()}");
+
         IssuedState = IssuedState.Issued;
     }
 }
