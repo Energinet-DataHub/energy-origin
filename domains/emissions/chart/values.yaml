@@ -1,8 +1,0 @@
-api:
-  replicaCount: 3
-  image: {}
-  env:
-    DATASYNCENDPOINT:
-    ENERGIDATASERVICEENDPOINT:
-    RENEWABLESOURCES: # "foo,bar"
-    WASTERENEWABLESHARE:

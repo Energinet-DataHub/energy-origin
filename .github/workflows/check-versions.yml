@@ -29,7 +29,7 @@ jobs:
         env:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          matrix=$(find domains libraries/dotnet -name ".check-versions.json" | egrep "$PATTERN" | while read file; do tr -d '\n' < "$file"; done | jq -sc '. | flatten')
+          matrix=$(find domains libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" | jq --raw-input -sc 'split("\n") | .[0:-1]')
 
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
@@ -50,7 +50,5 @@ jobs:
       - name: Check Versions
         uses: ./.github/actions/yaml-check-incremented-version
         with:
-          yaml-file: ${{ matrix.configuration.yaml-file }}
-          yaml-path: ${{ matrix.configuration.yaml-path }}
-          base-yaml-file: ${{ matrix.configuration.base-yaml-file }}
-          base-yaml-path: ${{ matrix.configuration.base-yaml-path }}
+          yaml-file: ${{ matrix.configuration }}
+          yaml-path: version
