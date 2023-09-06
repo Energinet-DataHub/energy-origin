@@ -64,7 +64,7 @@ You must manually remember to generate the complete SQL migration script after a
 This is the command for generating the migration SQL script for the API project:
 
 ```shell
-dotnet ef migrations script --idempotent --project Query.API/API --output chart/API.migrations.sql
+dotnet ef migrations script --idempotent --project Query.API/API/API.csproj --output migrations/API.sql
 ```
 
 ## Domain decisions / DDR (Domain-decision-records)
