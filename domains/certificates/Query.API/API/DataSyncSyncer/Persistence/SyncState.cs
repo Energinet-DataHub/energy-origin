@@ -36,15 +36,22 @@ public class SyncState : ISyncState
         }
     }
 
-    public async void SetSyncPosition(string gsrn, long syncedTo)
+    public async Task SetSyncPosition(string gsrn, long syncedTo)
     {
         var dbContext = await factory.CreateDbContextAsync();
 
-        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
+        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn);
+        if (synchronizationPosition != null)
+        {
+            synchronizationPosition.SyncedTo = syncedTo;
+            dbContext.Update(synchronizationPosition);
+        }
+        else
+        {
+            synchronizationPosition = new SynchronizationPosition { GSRN = gsrn, SyncedTo = syncedTo };
+            await dbContext.AddAsync(synchronizationPosition);
+        }
 
-        synchronizationPosition.SyncedTo = syncedTo;
-
-        dbContext.Update(synchronizationPosition);
         await dbContext.SaveChangesAsync();
     }
 }

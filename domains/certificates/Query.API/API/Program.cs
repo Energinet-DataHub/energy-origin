@@ -1,5 +1,5 @@
-using API;
 using API.ContractService;
+using API.Data;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.Query.API;
@@ -20,7 +20,6 @@ using Serilog.Formatting.Json;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

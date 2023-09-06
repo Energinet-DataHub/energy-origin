@@ -34,9 +34,9 @@ public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
         });
     }
 
-    private static MeteringPointSyncInfo CreateSyncInfo() =>
+    private static MeteringPointSyncInfo CreateSyncInfo(string? gsrn = null) =>
         new(
-            GSRN: GsrnHelper.GenerateRandom(),
+            GSRN: gsrn ?? GsrnHelper.GenerateRandom(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
             MeteringPointOwner: "SomeMeteringPointOwner");
 
@@ -106,6 +106,34 @@ public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
 
         actualPeriodStartTime.Should().Be(null);
         await factoryMock.Received(1).CreateDbContextAsync();
+    }
+
+    [Fact]
+    public async Task SetSyncPosition_FirstTime_ReturnsSyncedTo()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        var syncedTo = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
+        await syncState.SetSyncPosition(gsrn, syncedTo);
+
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn));
+        actualPeriodStartTime.Should().Be(syncedTo);
+    }
+
+    [Fact]
+    public async Task SetSyncPosition_SecondTime_ReturnsSyncedTo()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        var syncedTo1 = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var syncedTo2 = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds();
+
+        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
+        await syncState.SetSyncPosition(gsrn, syncedTo1);
+        await syncState.SetSyncPosition(gsrn, syncedTo2);
+
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn));
+        actualPeriodStartTime.Should().Be(syncedTo2);
     }
 
     public void Dispose()
