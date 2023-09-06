@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace API;
 
-//TODO: Should this be in a shared lib?
 //TODO: What about location of migration scripts?
 public class ApplicationDbContext : DbContext
 {
@@ -34,7 +33,7 @@ public class ApplicationDbContext : DbContext
 public interface IProductionCertificateRepository
 {
     Task Save(ProductionCertificate productionCertificate, CancellationToken cancellationToken = default);
-    Task<ProductionCertificate?> Get(Guid id, int? version = null, CancellationToken cancellationToken = default);
+    Task<ProductionCertificate?> Get(Guid id, CancellationToken cancellationToken = default);
 }
 
 public class ProductionCertificateRepository : IProductionCertificateRepository
@@ -49,7 +48,7 @@ public class ProductionCertificateRepository : IProductionCertificateRepository
         return dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<ProductionCertificate?> Get(Guid id, int? version = null, CancellationToken cancellationToken = default)
+    public Task<ProductionCertificate?> Get(Guid id, CancellationToken cancellationToken = default)
         => dbContext.ProductionCertificates.FindAsync(new object?[] { id }, cancellationToken).AsTask();
 }
 
