@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using API.Models;
 
-namespace API.Data
+namespace API.Data;
+
+public interface IConnectionRepository
 {
-    public interface IConnectionRepository
-    {
-        List<Connection> GetCompanyConnections(Guid ownerId);
-    }
+    List<Connection> GetCompanyConnections(Guid ownerId);
 }

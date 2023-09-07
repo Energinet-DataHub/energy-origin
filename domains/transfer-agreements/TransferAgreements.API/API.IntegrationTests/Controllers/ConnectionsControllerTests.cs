@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using API.Models;
@@ -23,11 +24,11 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     [Fact]
     public async void GetConnections_ShouldOnlyReturnConnectionsInvolvingTheCompany()
     {
-        var sub = Guid.NewGuid();
+        var myCompanyId = Guid.NewGuid();
         var ownedConnection1 = new Connection
         {
             Id = Guid.NewGuid(),
-            CompanyAId = sub,
+            CompanyAId = myCompanyId,
             CompanyATin = "12345678",
             CompanyBId = Guid.NewGuid(),
             CompanyBTin = "12345679"
@@ -37,7 +38,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             Id = Guid.NewGuid(),
             CompanyAId = Guid.NewGuid(),
             CompanyATin = "23456789",
-            CompanyBId = sub,
+            CompanyBId = myCompanyId,
             CompanyBTin = "12345678"
         };
         var notOwnedConnection = new Connection
@@ -56,11 +57,9 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             notOwnedConnection
         });
 
-        var client = factory.CreateAuthenticatedClient(sub: sub.ToString());
+        var client = factory.CreateAuthenticatedClient(sub: myCompanyId.ToString());
 
-        var get = await client.GetAsync($"api/connections");
-        get.EnsureSuccessStatusCode();
-        var response = JsonConvert.DeserializeObject<ConnectionsResponse>(await get.Content.ReadAsStringAsync());
+        var response = await client.GetFromJsonAsync<ConnectionsResponse>($"api/connections");
 
         response.Should().NotBeNull();
         response.Result.Should().HaveCount(2);
