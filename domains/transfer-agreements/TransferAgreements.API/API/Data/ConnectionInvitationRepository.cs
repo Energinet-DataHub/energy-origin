@@ -9,10 +9,9 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
 
     public ConnectionInvitationRepository(ApplicationDbContext context) => this.context = context;
 
-    public async Task<ConnectionInvitation> AddConnectionInvitation(ConnectionInvitation connectionInvitation)
+    public async Task AddConnectionInvitation(ConnectionInvitation connectionInvitation)
     {
         context.ConnectionInvitations.Add(connectionInvitation);
         await context.SaveChangesAsync();
-        return connectionInvitation;
     }
 }
