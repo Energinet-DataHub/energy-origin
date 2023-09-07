@@ -4,6 +4,21 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.Id">
+            <summary>
+            Connection ID
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyId">
+            <summary>
+            Id for the company
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyTin">
+            <summary>
+            Company TIN, e.g. CVR
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

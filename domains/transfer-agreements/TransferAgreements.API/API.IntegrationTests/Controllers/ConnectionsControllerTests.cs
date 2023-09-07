@@ -64,7 +64,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
 
         response.Should().NotBeNull();
         response.Result.Should().HaveCount(2);
-        response.Result.Any(x => x.ComnpanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
-        response.Result.Any(x => x.ComnpanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
+        response.Result.Any(x => x.CompanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
+        response.Result.Any(x => x.CompanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
     }
 }
