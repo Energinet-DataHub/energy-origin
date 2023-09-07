@@ -10,12 +10,12 @@ public record ConnectionDto
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Id for the company
+    /// ID of the company
     /// </summary>
     public required Guid CompanyId { get; init; }
 
     /// <summary>
-    /// Company TIN, e.g. CVR
+    /// Company TIN (e.g. CVR)
     /// </summary>
     public required string CompanyTin { get; init; }
 };

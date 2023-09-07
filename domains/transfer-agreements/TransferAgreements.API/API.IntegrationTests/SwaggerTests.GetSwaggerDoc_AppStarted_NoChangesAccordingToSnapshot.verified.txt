@@ -386,12 +386,12 @@
           },
           "companyId": {
             "type": "string",
-            "description": "Id for the company",
+            "description": "ID of the company",
             "format": "uuid"
           },
           "companyTin": {
             "type": "string",
-            "description": "Company TIN, e.g. CVR"
+            "description": "Company TIN (e.g. CVR)"
           }
         },
         "additionalProperties": false

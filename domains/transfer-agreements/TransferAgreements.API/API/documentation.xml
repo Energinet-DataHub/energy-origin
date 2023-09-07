@@ -11,12 +11,12 @@
         </member>
         <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyId">
             <summary>
-            Id for the company
+            ID of the company
             </summary>
         </member>
         <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyTin">
             <summary>
-            Company TIN, e.g. CVR
+            Company TIN (e.g. CVR)
             </summary>
         </member>
         <member name="T:API.Migrations.InitialCreate">
