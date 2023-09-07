@@ -53,11 +53,11 @@ measurementsDomain = group "Measurements Domain" {
 transferAgreementsDomain = group "Transfer Agreements Domain" {
     taApi = container "Transfer Agreement API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
-        TransferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
+        transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> po "Creates wallet deposit endpoint"
         }
-        deleteConnectionInvitationsWorker = component "Delete Connection-invitations Worker" "Deletes expired connection-invitations" ".NET BackgroundService"
-        TransferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
+        deleteConnectionInvitationsWorker = component "Delete Connection Invitations Worker" "Deletes expired connection invitations" ".NET BackgroundService"
+        transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
             this -> po "Transfers certificates"
         }
     }
@@ -68,9 +68,9 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
         taApi -> this "Saves and reads transfer agreement and connections data"
     }
     apiGateway -> connectionsApi "Forwards requests to"
-    apiGateway -> TransferAgreementsApi "Forwards requests to"
+    apiGateway -> transferAgreementsApi "Forwards requests to"
     connectionsApi -> taDb "Stores connections"
-    TransferAgreementsApi -> taDb "Stores transfer agreements"
-    TransferAgreementAutomation -> taDb "Reads transfer agreements"
+    transferAgreementsApi -> taDb "Stores transfer agreements"
+    transferAgreementAutomation -> taDb "Reads transfer agreements"
     deleteConnectionInvitationsWorker -> taDb "Deletes connection-invitations"
 }
