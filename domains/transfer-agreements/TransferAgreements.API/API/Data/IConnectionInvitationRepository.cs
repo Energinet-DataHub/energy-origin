@@ -5,5 +5,5 @@ namespace API.Data;
 
 public interface IConnectionInvitationRepository
 {
-    Task<ConnectionInvitation> AddConnectionInvitation(ConnectionInvitation connectionInvitation);
+    Task AddConnectionInvitation(ConnectionInvitation connectionInvitation);
 }

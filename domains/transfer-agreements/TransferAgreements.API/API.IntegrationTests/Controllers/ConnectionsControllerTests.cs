@@ -60,11 +60,11 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
 
         var client = factory.CreateAuthenticatedClient(sub: myCompanyId.ToString());
 
-        var response = await client.GetFromJsonAsync<ConnectionsResponse>($"api/connections");
+        var response = await client.GetFromJsonAsync<ConnectionsResponse>("api/connections");
 
         response.Should().NotBeNull();
         response.Result.Should().HaveCount(2);
-        response.Result.Any(x => x.ComnpanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
-        response.Result.Any(x => x.ComnpanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
+        response.Result.Any(x => x.CompanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
+        response.Result.Any(x => x.CompanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
     }
 }

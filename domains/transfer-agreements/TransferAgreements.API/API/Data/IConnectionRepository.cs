@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using API.Models;
 
 namespace API.Data;
 
 public interface IConnectionRepository
 {
-    List<Connection> GetCompanyConnections(Guid ownerId);
+    Task<List<Connection>> GetCompanyConnections(Guid companyId);
 }

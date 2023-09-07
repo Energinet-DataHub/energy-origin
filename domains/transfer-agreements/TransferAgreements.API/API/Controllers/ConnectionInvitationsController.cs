@@ -28,11 +28,11 @@ public class ConnectionInvitationsController : ControllerBase
         var newInvitation = new ConnectionInvitation
         {
             SenderCompanyId = companySenderId,
-            SenderCompanyTin = companySenderTin,
+            SenderCompanyTin = companySenderTin
         };
 
-        var addedInvitation = await connectionInvitationRepository.AddConnectionInvitation(newInvitation);
+        await connectionInvitationRepository.AddConnectionInvitation(newInvitation);
 
-        return Ok(new { connectionInvitationId = addedInvitation.Id });
+        return Ok(new { connectionInvitationId = newInvitation.Id });
     }
 }

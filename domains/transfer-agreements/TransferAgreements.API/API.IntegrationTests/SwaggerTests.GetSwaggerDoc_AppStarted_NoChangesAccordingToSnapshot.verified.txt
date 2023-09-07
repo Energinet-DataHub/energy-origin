@@ -381,14 +381,17 @@
         "properties": {
           "id": {
             "type": "string",
+            "description": "Connection ID",
             "format": "uuid"
           },
           "companyId": {
             "type": "string",
+            "description": "Id for the company",
             "format": "uuid"
           },
-          "comnpanyTin": {
-            "type": "string"
+          "companyTin": {
+            "type": "string",
+            "description": "Company TIN, e.g. CVR"
           }
         },
         "additionalProperties": false
