@@ -17,7 +17,7 @@ namespace API.UnitTests.GranularCertificateIssuer;
 public class CertificateRejectedInRegistryEventHandlerTests
 {
     [Fact]
-    public async void ShouldRejectCertificateAndSave()
+    public async Task ShouldRejectCertificateAndSave()
     {
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
