@@ -9,6 +9,7 @@ using API.Metrics;
 using API.Models;
 using API.Options;
 using API.Services;
+using API.Services.InvitationCleanup;
 using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
@@ -149,6 +150,10 @@ builder.Services.AddScoped<IConnectionInvitationRepository, ConnectionInvitation
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"] ?? "http://localhost:8080"));
 builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<IInvitationCleanupService, InvitationCleanupService>();
+builder.Services.AddHostedService<InvitationCleanupWorker>();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
