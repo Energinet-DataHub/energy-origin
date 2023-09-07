@@ -25,11 +25,12 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     public async void GetConnections_ShouldOnlyReturnConnectionsInvolvingTheCompany()
     {
         var myCompanyId = Guid.NewGuid();
+        var myCompanyTin = "12345678";
         var ownedConnection1 = new Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = myCompanyId,
-            CompanyATin = "12345678",
+            CompanyATin = myCompanyTin,
             CompanyBId = Guid.NewGuid(),
             CompanyBTin = "12345679"
         };
@@ -39,7 +40,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyAId = Guid.NewGuid(),
             CompanyATin = "23456789",
             CompanyBId = myCompanyId,
-            CompanyBTin = "12345678"
+            CompanyBTin = myCompanyTin
         };
         var notOwnedConnection = new Connection
         {
