@@ -60,7 +60,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
 
         var client = factory.CreateAuthenticatedClient(sub: myCompanyId.ToString());
 
-        var response = await client.GetFromJsonAsync<ConnectionsResponse>($"api/connections");
+        var response = await client.GetFromJsonAsync<ConnectionsResponse>("api/connections");
 
         response.Should().NotBeNull();
         response.Result.Should().HaveCount(2);
