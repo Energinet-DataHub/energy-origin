@@ -1,4 +1,5 @@
 using API.Models.Entities;
+using API.Models.Response;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -97,5 +98,15 @@ public class RoleController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
         return Ok();
+    }
+
+    [HttpGet]
+    [Route("role/users/{tin}")]
+    public async Task<IActionResult> GetUsersByTin(string tin, IUserService userService)
+    {
+        var users = await userService.GetUsersByTinAsync(tin);
+        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = user.UserRoles.Select(x => x.Role).ToList() }).ToList();
+
+        return Ok(list);
     }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
+using API.Models.Response;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities.Interfaces;
@@ -234,5 +235,57 @@ public class RoleControllerTests
         Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
         await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, Guid.NewGuid(), userService, logger, mapper));
+    }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldReturnOkAndTransformToResponseObject_WhenExistingTinIsProvided()
+    {
+        string tin = "989898";
+        string name = "test";
+        var guid = Guid.NewGuid();
+        var users = new List<User>
+        {
+            new()
+            {
+                Id = guid, Name = name, UserRoles = new()
+                {
+                    new() { Role = name }
+                }
+            }
+        };
+        Mock.Get(userService).Setup(service => service.GetUsersByTinAsync(tin)).ReturnsAsync(users);
+        var testUserId = Guid.NewGuid();
+        roleController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
+        };
+        var result = await roleController.GetUsersByTin(tin, userService);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
+        foreach (var item in returnValue)
+        {
+            Assert.Equal(guid, item.UserId);
+            Assert.Equal(name, item.Name);
+            Assert.Equal(users.First(x=>x.Id == item.UserId).UserRoles.Select(x=>x.Role), item.Roles);
+        }
+    }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldReturnEmptyList_WhenNotExistingTinIsProvided()
+    {
+        string tin = "gregre";
+        var users = new List<User>();
+        Mock.Get(userService).Setup(service => service.GetUsersByTinAsync(tin)).ReturnsAsync(users);
+        var testUserId = Guid.NewGuid();
+        roleController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
+        };
+        var result = await roleController.GetUsersByTin(tin, userService);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
+        Assert.Empty(returnValue);
     }
 }

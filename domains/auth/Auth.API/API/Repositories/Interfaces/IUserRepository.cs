@@ -8,4 +8,5 @@ public interface IUserRepository
     Task<User> UpsertUserAsync(User user);
     Task<User?> GetUserByIdAsync(Guid id);
     Task RemoveUserAsync(User user);
+    Task<List<User>> GetUsersByTinAsync(string tin);
 }
