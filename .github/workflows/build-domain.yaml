@@ -29,9 +29,6 @@ jobs:
             required_file "$domain/.devcontainer/Dockerfile"
             required_file "$domain/.devcontainer/devcontainer.json"
             required_file "$domain"/*.sln
-            if [ ! -f "$domain/configuration.yaml" ]; then
-              find "$domain" -name configuration.yaml -mindepth 2 -maxdepth 2 -type f | read || { printf '::error title=Missing file::%s/configuration.yaml\n' "$domain"; exit 1; }
-            fi
           done
 
       - uses: CodeReaper/find-diff-action@v3
@@ -53,10 +50,9 @@ jobs:
           matrix=$(while read domain; do
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
-
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
-            projects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$' | while read directory; do printf '{"path":"%s","dotnetVersion":"%s"}' "$directory" "$sdk"; done | jq -sc '.')
-
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","dotnetVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk"; done <<< $csprojects | jq -sc '.')
             printf '{"projects":%s}' "$projects"
           done <<< $LIST | jq -sc '.')
 
@@ -86,25 +82,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Resolve version
+        uses: ./.github/actions/yaml-semver
+        with:
+          yaml-file: ${{ matrix.build.configuration }}
+          yaml-path: version
+
       - name: Resolve
         shell: bash
         id: resolver
         env:
           PROJECT: ${{ matrix.build.path }}
-          PR: ${{ github.event.pull_request.number }}
+          CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
           docker="$PROJECT/Dockerfile"
           service=$(dirname "$PROJECT")
           domain=$(dirname "$service")
-          configuration="${domain}/configuration.yaml"
-          if [ ! -f "$configuration" ]; then
-            configuration="${service}/configuration.yaml"
-          fi
-          name=$(yq '.name' "$configuration")
+          name=$(yq '.name' "$CONFIGURATION")
           dotnet=${{ matrix.build.dotnetVersion }}
 
           {
-            echo "configuration=$configuration"
             echo "service=${service}"
             echo "project=${PROJECT}"
             echo "docker=${docker}"
@@ -122,12 +119,6 @@ jobs:
         with:
           solution-file-folder: ${{ steps.resolver.outputs.service }}
           dotnet-version: ${{ matrix.build.dotnetVersion }}
-
-      - name: Resolve version
-        uses: ./.github/actions/yaml-semver
-        with:
-          yaml-file: ${{ env.configuration }}
-          yaml-path: version
 
       - name: Build image
         uses: ./.github/actions/build-and-push-container
@@ -155,22 +146,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Resolve
-        shell: bash
-        env:
-          PROJECT: ${{ matrix.build.path }}
-        run: |
-          service=$(dirname "$PROJECT")
-          domain=$(dirname "$service")
-          configuration="${domain}/configuration.yaml"
-          if [ ! -f "$configuration" ]; then
-            configuration="${service}/configuration.yaml"
-          fi
-          echo "configuration=${configuration}" >> $GITHUB_ENV
-
       - name: Update environment
         uses: ./.github/actions/update-base-environment
         with:
-          configuration: ${{ env.configuration }}
+          configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
