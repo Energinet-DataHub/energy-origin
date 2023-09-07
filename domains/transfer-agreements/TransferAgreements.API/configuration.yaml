@@ -1,5 +1,5 @@
 name: eo-transfer-agreements-api
-version: 1.0.1
+version: 1.0.2
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/transfer-agreements/base/deployment.yaml
