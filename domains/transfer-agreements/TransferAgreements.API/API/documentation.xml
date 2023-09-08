@@ -115,18 +115,6 @@
         <member name="M:API.Migrations.AddInvitationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="T:API.Migrations.AddUniqueIndexAndTransferAgreementNumber">
             <inheritdoc />
         </member>
@@ -137,6 +125,18 @@
             <inheritdoc />
         </member>
         <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
