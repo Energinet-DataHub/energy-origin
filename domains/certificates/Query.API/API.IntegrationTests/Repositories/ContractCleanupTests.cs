@@ -7,6 +7,7 @@ using CertificateValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using NSubstitute.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -15,7 +16,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ContractCleanupTests : IClassFixture<PostgresContainer>, IAsyncLifetime
+public class ContractCleanupTests : IClassFixture<PostgresContainer>, IDisposable
 {
     private readonly IDbContextFactory<ApplicationDbContext> factory;
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
@@ -25,14 +26,17 @@ public class ContractCleanupTests : IClassFixture<PostgresContainer>, IAsyncLife
     {
         factory = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
 
-        factory.CreateDbContextAsync().Returns(_ =>
+        ApplicationDbContext CreateDbContext(CallInfo _)
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
             var dbContext = new ApplicationDbContext(options);
             dbContext.Database.EnsureCreated();
             disposableContexts.Add(dbContext);
             return dbContext;
-        });
+        }
+
+        factory.CreateDbContextAsync().Returns(CreateDbContext);
+        factory.CreateDbContext().Returns(CreateDbContext);
     }
 
     [Fact]
@@ -193,34 +197,25 @@ public class ContractCleanupTests : IClassFixture<PostgresContainer>, IAsyncLife
     {
         await using var context = await factory.CreateDbContextAsync();
 
-        context.AddRange(certificateIssuingContract); //TODO: ...
+        context.Contracts.AddRange(certificateIssuingContract);
 
         await context.SaveChangesAsync();
     }
 
     private async Task<int> GetTotalNumberOfContracts()
         => (await (await factory.CreateDbContextAsync()).Contracts.ToListAsync()).Count;
-
-    private async Task DeleteAllContracts()
+    
+    public void Dispose()
     {
-        await using var context = await factory.CreateDbContextAsync();
-        var allContracts = await context.Contracts.ToListAsync();
+        using var dbContext = factory.CreateDbContext();
+        var tableName = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))?.GetTableName() ?? "";
+        dbContext.Database.ExecuteSqlRaw($"TRUNCATE TABLE \"{tableName}\"");
 
-        foreach (var contract in allContracts)
+        foreach (var disposableContext in disposableContexts)
         {
-            context.Remove(contract);
+            disposableContext?.Dispose();
         }
 
-        await context.SaveChangesAsync();
-    }
-
-    public Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await DeleteAllContracts();
+        GC.SuppressFinalize(this);
     }
 }
