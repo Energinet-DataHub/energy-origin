@@ -258,11 +258,8 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task GetUsersByTin_ShouldReturnOk_WhenTinIsExisting()
     {
-
         var adminUser = await factory.AddUserToDatabaseAsync(this.adminUser);
-
         var client = factory.CreateAuthenticatedClient(adminUser, role: RoleKey.RoleAdmin);
-
         var response = await client.GetAsync($"role/users/{this.adminUser.Company!.Tin}");
 
         Assert.NotNull(response);
