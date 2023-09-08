@@ -115,6 +115,18 @@
         <member name="M:API.Migrations.AddInvitationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddUniqueIndexAndTransferAgreementNumber">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
             <inheritdoc />
         </member>

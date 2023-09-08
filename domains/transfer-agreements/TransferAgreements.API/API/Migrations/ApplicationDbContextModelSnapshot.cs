@@ -104,7 +104,13 @@ namespace API.Migrations
                     b.Property<DateTimeOffset>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("TransferAgreementNumber")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SenderId", "TransferAgreementNumber")
+                        .IsUnique();
 
                     b.ToTable("TransferAgreements");
                 });
