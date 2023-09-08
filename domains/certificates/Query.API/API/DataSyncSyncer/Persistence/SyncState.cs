@@ -35,7 +35,7 @@ public class SyncState : ISyncState
         }
     }
 
-    public async void SetSyncPosition(string gsrn, long syncedTo)
+    public async Task SetSyncPosition(string gsrn, long syncedTo)
     {
         await using var session = documentStore.LightweightSession();
         var synchronizationPosition = session.Load<SynchronizationPosition>(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
