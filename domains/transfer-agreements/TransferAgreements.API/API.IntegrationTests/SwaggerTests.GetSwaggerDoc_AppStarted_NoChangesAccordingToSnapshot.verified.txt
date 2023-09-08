@@ -1,14 +1,14 @@
-﻿{
+{
   "openapi": "3.0.1",
   "info": {
     "title": "Transfer Agreements API",
     "version": "v1"
   },
   "paths": {
-    "/api/invitations": {
+    "/api/connection-invitations": {
       "post": {
         "tags": [
-          "Invitations"
+          "ConnectionInvitations"
         ],
         "responses": {
           "200": {
@@ -30,6 +30,38 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/connections": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionsResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
           }
         }
       }
@@ -343,6 +375,38 @@
           "Deleted"
         ],
         "type": "string"
+      },
+      "ConnectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Connection ID",
+            "format": "uuid"
+          },
+          "companyId": {
+            "type": "string",
+            "description": "ID of the company",
+            "format": "uuid"
+          },
+          "companyTin": {
+            "type": "string",
+            "description": "Company TIN (e.g. CVR)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConnectionsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionDto"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "CreateTransferAgreement": {
         "type": "object",
