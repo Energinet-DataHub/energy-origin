@@ -31,7 +31,7 @@ public class ProductionCertificate
     public Technology Technology { get; private set; } = new("unknown", "unknown");
     public string MeteringPointOwner { get; private set; } = "";
     public string Gsrn { get; private set; } = "";
-    public long Quantity { get; private set; } //TODO: long?
+    public long Quantity { get; private set; }
     public byte[] BlindingValue { get; private set; } = Array.Empty<byte>();
 
     public string? RejectionReason { get; private set; }
