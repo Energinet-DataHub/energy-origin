@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Client.Dto;
+using API.DataSyncSyncer.Persistence;
 using Marten;
 using MassTransit;
 using MeasurementEvents;
@@ -36,6 +37,8 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
+        var positionDeletionCount = await documentStore.MigrateSynchronizationPosition(stoppingToken);
+        logger.LogInformation("Deleted ({deletionCount}) SyncPositions", positionDeletionCount);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -65,7 +68,7 @@ internal class DataSyncSyncerWorker : BackgroundService
                 .Query<CertificateIssuingContract>()
                 .ToListAsync(cancellationToken);
 
-            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details 
+            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>
@@ -129,6 +132,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             .ToList();
 }
 
+<<<<<<< HEAD
 public static class ContractCleanup
 {
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
@@ -151,10 +155,34 @@ public static class ContractCleanup
         foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
         {
             session.Delete(certificateIssuingContract);
+=======
+public static class SynchronizationMigration
+{
+    public static async Task<int> MigrateSynchronizationPosition(this IDocumentStore store, CancellationToken cancellationToken)
+    {
+        await using var session = store.OpenSession();
+
+        var allPositions = await session.Query<SyncPosition>().ToListAsync(cancellationToken);
+        int deletedPositions = allPositions.Count;
+
+        var synchronizationPositions = allPositions
+            .GroupBy(p => p.GSRN)
+            .Select(g => new SynchronizationPosition { GSRN = g.Key, SyncedTo = g.Max(p => p.SyncedTo) });
+
+        session.Store(synchronizationPositions);
+
+        foreach (var syncPosition in allPositions)
+        {
+            session.Delete(syncPosition);
+>>>>>>> main
         }
 
         await session.SaveChangesAsync(cancellationToken);
 
+<<<<<<< HEAD
         return (BadMeteringPointInDemoEnvironment, deletionCount);
+=======
+        return deletedPositions;
+>>>>>>> main
     }
 }

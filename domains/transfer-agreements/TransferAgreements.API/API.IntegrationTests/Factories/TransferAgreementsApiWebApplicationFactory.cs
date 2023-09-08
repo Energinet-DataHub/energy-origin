@@ -68,17 +68,31 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return host;
     }
 
-    public async Task SeedData(IEnumerable<TransferAgreement> transferAgreements)
+    public async Task SeedTransferAgreements(IEnumerable<TransferAgreement> transferAgreements)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateTables(dbContext);
+        await TruncateTransferAgreementTables(dbContext);
 
         foreach (var agreement in transferAgreements)
         {
             await InsertTransferAgreement(dbContext, agreement);
             await InsertHistoryEntry(dbContext, agreement);
         }
+    }
+
+    public async Task SeedConnections(IEnumerable<Connection> connections)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await TruncateConnectionTable(dbContext);
+
+        foreach (var connection in connections)
+        {
+            dbContext.Connections.Add(connection);
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
@@ -131,13 +145,20 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return tokenHandler.WriteToken(token);
     }
 
-    private static async Task TruncateTables(ApplicationDbContext dbContext)
+    private static async Task TruncateTransferAgreementTables(ApplicationDbContext dbContext)
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
+    }
+
+    private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
+    {
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
+
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)

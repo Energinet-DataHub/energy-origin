@@ -1,8 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Marten;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace API.DataSyncSyncer.Persistence;
 
@@ -23,12 +22,11 @@ public class SyncState : ISyncState
         {
             await using var querySession = documentStore.QuerySession();
 
-            var queryRes = querySession
-                .Query<SyncPosition>()
-                .Where(x => x.GSRN == syncInfo.GSRN)
-                .ToList();
+            var synchronizationPosition = querySession.Load<SynchronizationPosition>(syncInfo.GSRN);
 
-            return queryRes.Any() ? Math.Max(queryRes.Max(x => x.SyncedTo), syncInfo.StartSyncDate.ToUnixTimeSeconds()) : syncInfo.StartSyncDate.ToUnixTimeSeconds();
+            return synchronizationPosition != null
+                ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
+                : syncInfo.StartSyncDate.ToUnixTimeSeconds();
         }
         catch (Exception e)
         {
@@ -37,10 +35,14 @@ public class SyncState : ISyncState
         }
     }
 
-    public async void SetSyncPosition(SyncPosition syncPosition)
+    public async void SetSyncPosition(string gsrn, long syncedTo)
     {
         await using var session = documentStore.LightweightSession();
-        session.Store(syncPosition);
+        var synchronizationPosition = session.Load<SynchronizationPosition>(gsrn) ?? new SynchronizationPosition { GSRN = gsrn };
+
+        synchronizationPosition.SyncedTo = syncedTo;
+
+        session.Store(synchronizationPosition);
         await session.SaveChangesAsync();
     }
 }
