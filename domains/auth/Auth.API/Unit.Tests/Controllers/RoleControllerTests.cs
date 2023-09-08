@@ -267,7 +267,7 @@ public class RoleControllerTests
         {
             Assert.Equal(guid, item.UserId);
             Assert.Equal(name, item.Name);
-            Assert.Equal(users.First(x=>x.Id == item.UserId).UserRoles.Select(x=>x.Role), item.Roles);
+            Assert.Equal(users.First(x => x.Id == item.UserId).UserRoles.Select(x => x.Role), item.Roles);
         }
     }
 
