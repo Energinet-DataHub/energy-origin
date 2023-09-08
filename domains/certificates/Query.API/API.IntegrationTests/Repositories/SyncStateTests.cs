@@ -1,38 +1,24 @@
+using API.Data;
 using API.DataSyncSyncer;
 using API.DataSyncSyncer.Persistence;
 using API.IntegrationTests.Helpers;
-using API.IntegrationTests.Testcontainers;
+using API.IntegrationTests.Mocks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using API.Data;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
+public class SyncStateTests : IClassFixture<DbContextFactoryMock>
 {
     private readonly IDbContextFactory<ApplicationDbContext> factory;
-    private readonly ConcurrentBag<ApplicationDbContext?> disposableContexts = new();
 
-    public SyncStateTests(PostgresContainer dbContainer)
-    {
-        factory = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
-
-        factory.CreateDbContextAsync().Returns(_ =>
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
-            var dbContext = new ApplicationDbContext(options);
-            dbContext.Database.EnsureCreated();
-            disposableContexts.Add(dbContext);
-            return dbContext;
-        });
-    }
+    public SyncStateTests(DbContextFactoryMock mock) => factory = mock;
 
     private static MeteringPointSyncInfo CreateSyncInfo(string? gsrn = null) =>
         new(
@@ -134,14 +120,5 @@ public class SyncStateTests : IClassFixture<PostgresContainer>, IDisposable
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn));
         actualPeriodStartTime.Should().Be(syncedTo2);
-    }
-
-    public void Dispose()
-    {
-        foreach (var dbContext in disposableContexts)
-        {
-            dbContext?.Dispose();
-        }
-        GC.SuppressFinalize(this);
     }
 }

@@ -1,43 +1,25 @@
 using API.ContractService;
 using API.Data;
 using API.DataSyncSyncer;
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Helpers;
-using API.IntegrationTests.Testcontainers;
+using API.IntegrationTests.Mocks;
 using CertificateValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using NSubstitute;
-using NSubstitute.Core;
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ContractCleanupTests : IClassFixture<PostgresContainer>, IDisposable
+public class ContractCleanupTests : IClassFixture<DbContextFactoryMock>, IDisposable
 {
     private readonly IDbContextFactory<ApplicationDbContext> factory;
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
-    private readonly ConcurrentBag<ApplicationDbContext?> disposableContexts = new();
 
-    public ContractCleanupTests(PostgresContainer dbContainer)
-    {
-        factory = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
-
-        ApplicationDbContext CreateDbContext(CallInfo _)
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
-            var dbContext = new ApplicationDbContext(options);
-            dbContext.Database.EnsureCreated();
-            disposableContexts.Add(dbContext);
-            return dbContext;
-        }
-
-        factory.CreateDbContextAsync().Returns(CreateDbContext);
-        factory.CreateDbContext().Returns(CreateDbContext);
-    }
+    public ContractCleanupTests(DbContextFactoryMock mock) => factory = mock;
 
     [Fact]
     public async Task deletes_everything_for_571313000000000200_when_multiple_owners()
@@ -207,14 +189,7 @@ public class ContractCleanupTests : IClassFixture<PostgresContainer>, IDisposabl
 
     public void Dispose()
     {
-        using var dbContext = factory.CreateDbContext();
-        var tableName = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))?.GetTableName() ?? "";
-        dbContext.Database.ExecuteSqlRaw($"TRUNCATE TABLE \"{tableName}\"");
-
-        foreach (var disposableContext in disposableContexts)
-        {
-            disposableContext?.Dispose();
-        }
+        factory.CreateDbContext().RemoveAll(d => d.Contracts);
 
         GC.SuppressFinalize(this);
     }

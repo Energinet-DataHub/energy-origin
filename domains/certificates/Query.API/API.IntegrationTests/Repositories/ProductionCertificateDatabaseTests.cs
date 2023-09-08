@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using API.IntegrationTests.Extensions;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
@@ -196,8 +197,7 @@ public class ProductionCertificateDatabaseTests : IClassFixture<PostgresContaine
     public void Dispose()
     {
         using var dbContext = new ApplicationDbContext(options);
-        var tableName = dbContext.Model.FindEntityType(typeof(ProductionCertificate))?.GetTableName() ?? "";
-        dbContext.Database.ExecuteSqlRaw($"TRUNCATE TABLE \"{tableName}\"");
+        dbContext.RemoveAll(d => d.ProductionCertificates);
 
         GC.SuppressFinalize(this);
     }
