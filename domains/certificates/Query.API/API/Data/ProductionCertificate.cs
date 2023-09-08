@@ -35,9 +35,6 @@ public class ProductionCertificate
     public byte[] BlindingValue { get; private set; } = Array.Empty<byte>();
 
     public string? RejectionReason { get; private set; }
-    //public byte[] WalletPublicKey { get; set; }
-    //public string WalletUrl { get; set; }
-    //public uint WalletDepositEndpointPosition { get; set; } //todo: Should this be saved...?
 
     public bool IsRejected => IssuedState == IssuedState.Rejected;
     public bool IsIssued => IssuedState == IssuedState.Issued;
