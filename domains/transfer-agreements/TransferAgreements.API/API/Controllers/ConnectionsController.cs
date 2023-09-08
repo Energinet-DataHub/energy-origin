@@ -42,6 +42,25 @@ public class ConnectionsController : Controller
         return Ok(new ConnectionsResponse(dtos));
     }
 
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var subject = new Guid(User.FindSubjectGuidClaim());
+
+        var connection = await connectionRepository.GetConnection(id);
+
+        if (connection == null || (subject != connection.CompanyAId && subject != connection.CompanyBId))
+        {
+            return NotFound();
+        }
+
+        await connectionRepository.DeleteConnection(id);
+
+        return NoContent();
+    }
+
     private static ConnectionDto ToDto(Connection connection, Guid loggedInCompanyId)
     {
         if (loggedInCompanyId == connection.CompanyAId)
@@ -62,5 +81,4 @@ public class ConnectionsController : Controller
 
         throw new MappingException($"Connection is not owned by the user. Connection: {connection}, logged in companyId: {loggedInCompanyId}");
     }
-
 }
