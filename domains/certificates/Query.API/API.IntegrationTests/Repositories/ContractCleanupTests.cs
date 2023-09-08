@@ -204,7 +204,7 @@ public class ContractCleanupTests : IClassFixture<PostgresContainer>, IDisposabl
 
     private async Task<int> GetTotalNumberOfContracts()
         => (await (await factory.CreateDbContextAsync()).Contracts.ToListAsync()).Count;
-    
+
     public void Dispose()
     {
         using var dbContext = factory.CreateDbContext();
