@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info: 
+  title: Swagger Connections system 
+  version: 1.0.11
+tags:
+  - name: Connection-invitation
+  - name: Connection
+paths:
+  /api/connection-invitation:
+    post:
+      tags:
+        - Connection-invitation
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+                example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+  /api/connection-invitation/{id}:
+    get:
+      tags:
+        - Connection-invitation
+      summary: Get connection-invitation by Id
+      description: returns single connection-invitation
+      parameters:
+        - name: id
+          in: path
+          description: Id of connection-invitation
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionInvitation'
+        '404':
+          description: Connection-invitation expired or deleted
+        '409':
+          description: Company is already a connection
+    delete:
+      tags:
+        - Connection-invitation
+      description: Delete connection-invitation
+      parameters:
+        - name: id
+          in: path
+          description: id of connection-invitation to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+      responses: 
+        '204':
+          description: Successful operation
+        '404':
+          description: Connection-invitation not found
+  /api/connections:
+    post: 
+      tags:
+        - Connection
+      summary: Add a new connection
+      description: Add a new connection
+      requestBody:
+        description: Id of the company who wants to connect with you
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/ConnectionRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+        '409':
+          description: Company is already a connection
+    get:
+      tags:
+        - Connection
+      responses:
+        '200':
+          description: Successful operation
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionsResult'
+  /api/connections/{id}:
+    get:
+        tags:
+          - Connection
+        summary: Get connection by Id
+        description: returns single connection
+        parameters:
+          - name: id
+            in: path
+            description: Id of connection
+            required: true
+            schema:
+              type: string
+              format: uuid
+              example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Connection'
+          '404':
+            description: Not found
+    delete:
+      tags:
+        - Connection
+      description: Delete connection
+      parameters:
+        - name: id
+          in: path
+          description: id of connection to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+      responses: 
+        '204':
+          description: Successful operation
+        '404':
+          description: Not found
+components:
+  schemas:
+    ConnectionInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+        senderCompanyId:
+          type: string
+          format: uuid
+          example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+        senderCompanyTin:
+          type: string
+          example: "12345678"
+    Connection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+        companyId:
+          type: string
+          format: uuid
+          example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+        companyTin:
+          type: string
+          example: "12345678"
+    ConnectionRequest:
+      type: object
+      properties:
+        connectionInvitationId:
+          type: string
+          format: uuid
+          example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
+    ConnectionsResult:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+          

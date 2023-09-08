@@ -4,6 +4,21 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.Id">
+            <summary>
+            Connection ID
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyId">
+            <summary>
+            ID of the company
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyTin">
+            <summary>
+            Company TIN (e.g. CVR)
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>
@@ -98,6 +113,18 @@
             <inheritdoc />
         </member>
         <member name="M:API.Migrations.AddInvitationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:API.Migrations.AddUniqueIndexAndTransferAgreementNumber">
