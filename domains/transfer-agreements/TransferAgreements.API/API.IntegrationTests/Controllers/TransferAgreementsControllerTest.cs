@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using API.ApiModels.Requests;
 using API.ApiModels.Responses;
-using API.Data;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using API.Models;
@@ -276,8 +275,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
     private static CreateTransferAgreement CreateTransferAgreement()
     {
-        return new CreateTransferAgreement(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
+        return new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
     }
 
     [Fact]
@@ -337,7 +336,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.NewGuid()
+                ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 1
             },
             new()
             {
@@ -348,7 +348,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
                 ReceiverTin = receiverTin,
-                ReceiverReference = Guid.NewGuid()
+                ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 2
             }
         });
 
