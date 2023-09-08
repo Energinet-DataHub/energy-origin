@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
-//TODO: What about location of migration scripts?
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
