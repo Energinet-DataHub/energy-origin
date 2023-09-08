@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using API.ContractService;
 using API.Data;
 using API.DataSyncSyncer.Client.Dto;
@@ -11,6 +6,11 @@ using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace API.DataSyncSyncer;
 
@@ -35,6 +35,9 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
+        logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var syncInfos = await GetSyncInfos(stoppingToken);
@@ -61,7 +64,7 @@ internal class DataSyncSyncerWorker : BackgroundService
 
             var allContracts = await context.Contracts.ToListAsync(cancellationToken);
 
-            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details 
+            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>
@@ -123,4 +126,34 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
+}
+
+public static class ContractCleanup
+{
+    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
+
+    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken)
+    {
+        await using var session = store.OpenSession();
+
+        var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
+            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
+            .ToListAsync(cancellationToken);
+
+        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
+
+        if (owners.Count() == 1)
+            return (BadMeteringPointInDemoEnvironment, 0);
+
+        var deletionCount = contractsForBadMeteringPoint.Count;
+
+        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
+        {
+            session.Delete(certificateIssuingContract);
+        }
+
+        await session.SaveChangesAsync(cancellationToken);
+
+        return (BadMeteringPointInDemoEnvironment, deletionCount);
+    }
 }

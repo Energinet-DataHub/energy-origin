@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Models;
 
-[Table(nameof(Invitation), Schema = "con")]
-public class Invitation
+public class ConnectionInvitation
 {
     public Guid Id { get; set; }
     public Guid SenderCompanyId { get; set; }

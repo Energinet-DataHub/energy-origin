@@ -12,4 +12,5 @@ public class TransferAgreement
     public string SenderTin { get; set; }
     public string ReceiverTin { get; set; }
     public Guid ReceiverReference { get; set; }
+    public int TransferAgreementNumber { get; set; }
 }
