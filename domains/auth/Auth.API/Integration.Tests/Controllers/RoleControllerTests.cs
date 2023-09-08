@@ -140,9 +140,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-
-
-
     [Fact]
     public async Task Remove_ShouldReturnOk_WhenRoleIsAssigned()
     {
@@ -271,5 +268,4 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
 }
