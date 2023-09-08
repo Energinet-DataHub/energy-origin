@@ -254,4 +254,19 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldReturnOk_WhenTinIsExisting()
+    {
+
+        var adminUser = await factory.AddUserToDatabaseAsync(this.adminUser);
+
+        var client = factory.CreateAuthenticatedClient(adminUser, role: RoleKey.RoleAdmin);
+
+        var response = await client.GetAsync($"role/users/{this.adminUser.Company!.Tin}");
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
 }

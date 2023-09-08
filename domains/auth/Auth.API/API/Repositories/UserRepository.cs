@@ -32,7 +32,7 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User>> GetUsersByTinAsync(string tin)
     {
-        return await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u=>u.UserRoles).ToListAsync();
+        return await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
     }
 
 }

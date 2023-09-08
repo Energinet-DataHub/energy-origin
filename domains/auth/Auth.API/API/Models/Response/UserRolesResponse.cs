@@ -1,4 +1,4 @@
-﻿namespace API.Models.Response;
+namespace API.Models.Response;
 
 public class UserRolesResponse
 {
