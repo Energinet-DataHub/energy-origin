@@ -1,8 +1,8 @@
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using API.Data;
 using API.IntegrationTests.Testcontainers;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests.Mocks;
@@ -24,12 +24,15 @@ public class DbContextFactoryMock : IDbContextFactory<ApplicationDbContext>, IAs
     public Task InitializeAsync()
         => dbContainer.InitializeAsync();
 
-    public Task DisposeAsync()
+    public async Task DisposeAsync()
     {
         foreach (var context in disposableContexts)
         {
-            context?.DisposeAsync();
+            if (context != null)
+            {
+                await context.DisposeAsync().AsTask();
+            }
         }
-        return dbContainer.DisposeAsync();
+        await dbContainer.DisposeAsync();
     }
 }
