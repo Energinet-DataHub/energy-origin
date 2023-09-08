@@ -60,7 +60,7 @@ public class DataSyncService
                 if (result.Any())
                 {
                     var nextSyncPosition = result.Max(m => m.DateTo);
-                    await syncState.SetSyncPosition(syncInfo.GSRN, nextSyncPosition);
+                    syncState.SetSyncPosition(syncInfo.GSRN, nextSyncPosition);
                 }
 
                 return result;
