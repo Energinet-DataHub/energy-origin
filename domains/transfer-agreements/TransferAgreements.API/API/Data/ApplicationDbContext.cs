@@ -15,7 +15,8 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<ConnectionInvitation>()
             .Property(b => b.CreatedAt)
             .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
