@@ -1,212 +1,226 @@
-//using API.ContractService;
-//using API.DataSyncSyncer;
-//using API.IntegrationTests.Helpers;
-//using API.IntegrationTests.Testcontainers;
-//using CertificateValueObjects;
-//using FluentAssertions;
-//using Marten;
-//using System;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Xunit;
+using API.ContractService;
+using API.Data;
+using API.DataSyncSyncer;
+using API.IntegrationTests.Helpers;
+using API.IntegrationTests.Testcontainers;
+using CertificateValueObjects;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using NSubstitute;
+using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
-//namespace API.IntegrationTests.Repositories;
+namespace API.IntegrationTests.Repositories;
 
-//public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLifetime
-//{
-//    private readonly IDocumentStore store;
-//    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
+public class ContractCleanupTests : IClassFixture<PostgresContainer>, IAsyncLifetime
+{
+    private readonly IDbContextFactory<ApplicationDbContext> factory;
+    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
+    private readonly ConcurrentBag<ApplicationDbContext?> disposableContexts = new();
 
-//    public ContractCleanupTests(MartenDbContainer dbContainer)
-//        => store = DocumentStore.For(opts => opts.Connection(dbContainer.ConnectionString));
+    public ContractCleanupTests(PostgresContainer dbContainer)
+    {
+        factory = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
 
-//    [Fact]
-//    public async Task deletes_everything_for_571313000000000200_when_multiple_owners()
-//    {
-//        var contract1 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 0,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+        factory.CreateDbContextAsync().Returns(_ =>
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+            var dbContext = new ApplicationDbContext(options);
+            dbContext.Database.EnsureCreated();
+            disposableContexts.Add(dbContext);
+            return dbContext;
+        });
+    }
 
-//        var contract2 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 1,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner2",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+    [Fact]
+    public async Task deletes_everything_for_571313000000000200_when_multiple_owners()
+    {
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await InsertContracts(contract1, contract2);
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner2",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await store.CleanupContracts(CancellationToken.None);
+        await InsertContracts(contract1, contract2);
 
-//        var numberOfContracts = await GetTotalNumberOfContracts();
-//        numberOfContracts.Should().Be(0);
-//    }
+        await factory.CleanupContracts(CancellationToken.None);
 
-//    [Fact]
-//    public async Task deletes_only_everything_for_571313000000000200_when_multiple_owners()
-//    {
-//        var contract1 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 0,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+        var numberOfContracts = await GetTotalNumberOfContracts();
+        numberOfContracts.Should().Be(0);
+    }
 
-//        var contract2 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 1,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner2",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+    [Fact]
+    public async Task deletes_only_everything_for_571313000000000200_when_multiple_owners()
+    {
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        var contract3 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 0,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = GsrnHelper.GenerateRandom(),
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner2",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await InsertContracts(contract1, contract2, contract3);
+        var contract3 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = GsrnHelper.GenerateRandom(),
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await store.CleanupContracts(CancellationToken.None);
+        await InsertContracts(contract1, contract2, contract3);
 
-//        var numberOfContracts = await GetTotalNumberOfContracts();
-//        numberOfContracts.Should().Be(1);
-//    }
+        await factory.CleanupContracts(CancellationToken.None);
 
-//    [Fact]
-//    public async Task deletes_nothing_for_571313000000000200_when_same_owner()
-//    {
-//        var contract1 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 0,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+        var numberOfContracts = await GetTotalNumberOfContracts();
+        numberOfContracts.Should().Be(1);
+    }
 
-//        var contract2 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 1,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = BadMeteringPointInDemoEnvironment,
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+    [Fact]
+    public async Task deletes_nothing_for_571313000000000200_when_same_owner()
+    {
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await InsertContracts(contract1, contract2);
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = BadMeteringPointInDemoEnvironment,
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await store.CleanupContracts(CancellationToken.None);
+        await InsertContracts(contract1, contract2);
 
-//        var numberOfContracts = await GetTotalNumberOfContracts();
-//        numberOfContracts.Should().Be(2);
-//    }
+        await factory.CleanupContracts(CancellationToken.None);
 
-//    [Fact]
-//    public async Task deletes_nothing_for_other_gsrns_when_multiple_owners_()
-//    {
-//        var gsrn = GsrnHelper.GenerateRandom();
+        var numberOfContracts = await GetTotalNumberOfContracts();
+        numberOfContracts.Should().Be(2);
+    }
 
-//        var contract1 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 0,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = gsrn,
-//            MeteringPointOwner = "owner1",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+    [Fact]
+    public async Task deletes_nothing_for_other_gsrns_when_multiple_owners_()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
 
-//        var contract2 = new CertificateIssuingContract
-//        {
-//            ContractNumber = 1,
-//            Created = DateTimeOffset.Now,
-//            StartDate = DateTimeOffset.Now,
-//            EndDate = null,
-//            GridArea = "DK1",
-//            GSRN = gsrn,
-//            MeteringPointOwner = "owner2",
-//            MeteringPointType = MeteringPointType.Production
-//        };
+        var contract1 = new CertificateIssuingContract
+        {
+            ContractNumber = 0,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = gsrn,
+            MeteringPointOwner = "owner1",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await InsertContracts(contract1, contract2);
+        var contract2 = new CertificateIssuingContract
+        {
+            ContractNumber = 1,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
+            EndDate = null,
+            GridArea = "DK1",
+            GSRN = gsrn,
+            MeteringPointOwner = "owner2",
+            MeteringPointType = MeteringPointType.Production
+        };
 
-//        await store.CleanupContracts(CancellationToken.None);
+        await InsertContracts(contract1, contract2);
 
-//        var numberOfContracts = await GetTotalNumberOfContracts();
-//        numberOfContracts.Should().Be(2);
-//    }
+        await factory.CleanupContracts(CancellationToken.None);
 
-//    private async Task InsertContracts(params CertificateIssuingContract[] certificateIssuingContract)
-//    {
-//        await using var session = store.OpenSession();
+        var numberOfContracts = await GetTotalNumberOfContracts();
+        numberOfContracts.Should().Be(2);
+    }
 
-//        session.Insert(certificateIssuingContract);
+    private async Task InsertContracts(params CertificateIssuingContract[] certificateIssuingContract)
+    {
+        await using var context = await factory.CreateDbContextAsync();
 
-//        await session.SaveChangesAsync();
-//    }
+        context.AddRange(certificateIssuingContract); //TODO: ...
 
-//    private async Task<int> GetTotalNumberOfContracts()
-//        => (await store.QuerySession().Query<CertificateIssuingContract>().ToListAsync()).Count;
+        await context.SaveChangesAsync();
+    }
 
-//    private async Task DeleteAllContracts()
-//    {
-//        await using var session = store.OpenSession();
-//        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+    private async Task<int> GetTotalNumberOfContracts()
+        => (await (await factory.CreateDbContextAsync()).Contracts.ToListAsync()).Count;
 
-//        foreach (var contract in allContracts)
-//        {
-//            session.Delete(contract);
-//        }
+    private async Task DeleteAllContracts()
+    {
+        await using var context = await factory.CreateDbContextAsync();
+        var allContracts = await context.Contracts.ToListAsync();
 
-//        await session.SaveChangesAsync();
-//    }
+        foreach (var contract in allContracts)
+        {
+            context.Remove(contract);
+        }
 
-//    public Task InitializeAsync()
-//    {
-//        return Task.CompletedTask;
-//    }
+        await context.SaveChangesAsync();
+    }
 
-//    async Task IAsyncLifetime.DisposeAsync()
-//    {
-//        await DeleteAllContracts();
-//        store.Dispose();
-//    }
-//}
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    async Task IAsyncLifetime.DisposeAsync()
+    {
+        await DeleteAllContracts();
+    }
+}

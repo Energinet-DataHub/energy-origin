@@ -35,8 +35,8 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
-        //logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
+        var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
+        logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -128,32 +128,32 @@ internal class DataSyncSyncerWorker : BackgroundService
             .ToList();
 }
 
-//public static class ContractCleanup
-//{
-//    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
+public static class ContractCleanup
+{
+    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
 
-//    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken)
-//    {
-//        await using var session = store.OpenSession();
+    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDbContextFactory<ApplicationDbContext> contextFactory, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-//        var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
-//            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
-//            .ToListAsync(cancellationToken);
+        var contractsForBadMeteringPoint = await context.Contracts
+            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
+            .ToListAsync(cancellationToken);
 
-//        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
+        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
 
-//        if (owners.Count() == 1)
-//            return (BadMeteringPointInDemoEnvironment, 0);
+        if (owners.Count() == 1)
+            return (BadMeteringPointInDemoEnvironment, 0);
 
-//        var deletionCount = contractsForBadMeteringPoint.Count;
+        var deletionCount = contractsForBadMeteringPoint.Count;
 
-//        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
-//        {
-//            session.Delete(certificateIssuingContract);
-//        }
+        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
+        {
+            context.Remove(certificateIssuingContract);
+        }
 
-//        await session.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
-//        return (BadMeteringPointInDemoEnvironment, deletionCount);
-//    }
-//}
+        return (BadMeteringPointInDemoEnvironment, deletionCount);
+    }
+}
