@@ -4,20 +4,20 @@ using System.Threading.Tasks;
 using API.Data;
 using Microsoft.Extensions.Logging;
 
-namespace API.Services.InvitationCleanup;
+namespace API.Services.ConnectionInvitationCleanup;
 
-public class InvitationCleanupService : IInvitationCleanupService
+public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupService
 {
-    private readonly ILogger<InvitationCleanupService> logger;
-    private readonly IInvitationRepository invitationRepository;
+    private readonly ILogger<ConnectionInvitationCleanupService> logger;
+    private readonly IConnectionInvitationRepository connectionInvitationRepository;
 
-    public InvitationCleanupService(
-        ILogger<InvitationCleanupService> logger,
-        IInvitationRepository invitationRepository
+    public ConnectionInvitationCleanupService(
+        ILogger<ConnectionInvitationCleanupService> logger,
+        IConnectionInvitationRepository connectionInvitationRepository
     )
     {
         this.logger = logger;
-        this.invitationRepository = invitationRepository;
+        this.connectionInvitationRepository = connectionInvitationRepository;
     }
 
     public async Task Run(CancellationToken stoppingToken)
@@ -28,7 +28,7 @@ public class InvitationCleanupService : IInvitationCleanupService
 
             try
             {
-                await invitationRepository.DeleteOldInvitations(TimeSpan.FromDays(14));
+                await connectionInvitationRepository.DeleteOldConnectionInvitations(TimeSpan.FromDays(14));
             }
             catch (Exception e)
             {

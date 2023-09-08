@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
 
@@ -13,5 +15,16 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
     {
         context.ConnectionInvitations.Add(connectionInvitation);
         await context.SaveChangesAsync();
+    }
+
+    public async Task<int> DeleteOldConnectionInvitations(TimeSpan olderThan)
+    {
+        var cutoffDate = DateTimeOffset.Now - olderThan;
+        var oldConnectionInvitations = context.ConnectionInvitations
+            .Where(i => i.CreatedAt < cutoffDate);
+
+        context.ConnectionInvitations.RemoveRange(oldConnectionInvitations);
+
+        return await context.SaveChangesAsync();
     }
 }

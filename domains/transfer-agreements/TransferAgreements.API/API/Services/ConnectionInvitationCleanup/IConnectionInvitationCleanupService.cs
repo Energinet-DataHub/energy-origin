@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace API.Services.InvitationCleanup;
+namespace API.Services.ConnectionInvitationCleanup;
 
-public interface IInvitationCleanupService
+public interface IConnectionInvitationCleanupService
 {
     Task Run(CancellationToken stoppingToken);
 }
