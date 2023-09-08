@@ -132,7 +132,6 @@ internal class DataSyncSyncerWorker : BackgroundService
             .ToList();
 }
 
-<<<<<<< HEAD
 public static class ContractCleanup
 {
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
@@ -155,7 +154,14 @@ public static class ContractCleanup
         foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
         {
             session.Delete(certificateIssuingContract);
-=======
+        }
+
+        await session.SaveChangesAsync(cancellationToken);
+
+        return (BadMeteringPointInDemoEnvironment, deletionCount);
+    }
+}
+
 public static class SynchronizationMigration
 {
     public static async Task<int> MigrateSynchronizationPosition(this IDocumentStore store, CancellationToken cancellationToken)
@@ -174,15 +180,10 @@ public static class SynchronizationMigration
         foreach (var syncPosition in allPositions)
         {
             session.Delete(syncPosition);
->>>>>>> main
         }
 
         await session.SaveChangesAsync(cancellationToken);
 
-<<<<<<< HEAD
-        return (BadMeteringPointInDemoEnvironment, deletionCount);
-=======
         return deletedPositions;
->>>>>>> main
     }
 }
