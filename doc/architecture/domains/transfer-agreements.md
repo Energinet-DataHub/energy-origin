@@ -1,5 +1,9 @@
 # Transfer Agreements Domain
 
+## Container diagram
+
+[Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/)
+
 ## Transfer Agreement Automation flow
 
 First the deposit endpoint is exchanged between receiver and sender. The receiver creates an endpoint in his wallet. Then a Base64 (or what we choose) encoded string of the wallet deposit endpoint is handed to the sender, which then is created on the senders wallet. A reference guid to the receiver wallet is returned to the sender which is used by the transfer agreement automation background service.

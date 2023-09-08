@@ -10,12 +10,12 @@ using Xunit;
 namespace API.IntegrationTests.Controllers;
 
 [UsesVerify]
-public class InvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly string sub;
 
-    public InvitationsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public ConnectionInvitationsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
@@ -27,7 +27,7 @@ public class InvitationsControllerTests : IClassFixture<TransferAgreementsApiWeb
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var result = await authenticatedClient
-            .PostAsync("api/invitations", null);
+            .PostAsync("api/connection-invitations", null);
 
         var response = await result.Content.ReadAsStringAsync();
 
@@ -39,10 +39,10 @@ public class InvitationsControllerTests : IClassFixture<TransferAgreementsApiWeb
     }
 
     [Fact]
-    public async Task CreateInvitation_ShouldReturnUnauthorized_WhenUnauthenticated()
+    public async Task CreateConnectionInvitation_ShouldReturnUnauthorized_WhenUnauthenticated()
     {
         var client = factory.CreateUnauthenticatedClient();
-        var result = await client.PostAsync("api/invitations", null);
+        var result = await client.PostAsync("api/connection-invitations", null);
 
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

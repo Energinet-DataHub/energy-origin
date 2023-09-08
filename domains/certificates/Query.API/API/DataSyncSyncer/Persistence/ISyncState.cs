@@ -5,5 +5,5 @@ namespace API.DataSyncSyncer.Persistence;
 public interface ISyncState
 {
     Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo);
-    void SetSyncPosition(SyncPosition syncPosition);
+    void SetSyncPosition(string gsrn, long syncedTo);
 }
