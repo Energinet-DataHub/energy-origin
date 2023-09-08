@@ -37,8 +37,6 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
-        var positionDeletionCount = await documentStore.MigrateSynchronizationPosition(stoppingToken);
-        logger.LogInformation("Deleted ({deletionCount}) SyncPositions", positionDeletionCount);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -159,31 +157,5 @@ public static class ContractCleanup
         await session.SaveChangesAsync(cancellationToken);
 
         return (BadMeteringPointInDemoEnvironment, deletionCount);
-    }
-}
-
-public static class SynchronizationMigration
-{
-    public static async Task<int> MigrateSynchronizationPosition(this IDocumentStore store, CancellationToken cancellationToken)
-    {
-        await using var session = store.OpenSession();
-
-        var allPositions = await session.Query<SyncPosition>().ToListAsync(cancellationToken);
-        int deletedPositions = allPositions.Count;
-
-        var synchronizationPositions = allPositions
-            .GroupBy(p => p.GSRN)
-            .Select(g => new SynchronizationPosition { GSRN = g.Key, SyncedTo = g.Max(p => p.SyncedTo) });
-
-        session.Store(synchronizationPositions);
-
-        foreach (var syncPosition in allPositions)
-        {
-            session.Delete(syncPosition);
-        }
-
-        await session.SaveChangesAsync(cancellationToken);
-
-        return deletedPositions;
     }
 }
