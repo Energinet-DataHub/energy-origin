@@ -66,8 +66,8 @@ public class UserDescriptor
         EncryptedIdentityToken = user.FindFirstValue(UserClaimName.IdentityToken) ?? throw new PropertyMissingException(nameof(UserClaimName.IdentityToken));
         EncryptedProviderKeys = user.FindFirstValue(UserClaimName.ProviderKeys) ?? throw new PropertyMissingException(nameof(UserClaimName.ProviderKeys));
 
-        Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var organizationId);
-        var organizationName = user.FindFirstValue(UserClaimName.CompanyName);
+        Guid.TryParse(user.FindFirstValue(UserClaimName.OrganizationId), out var organizationId);
+        var organizationName = user.FindFirstValue(UserClaimName.OrganizationName);
         var tin = user.FindFirstValue(UserClaimName.Tin);
 
         if (organizationId != Guid.Empty && organizationName != null && tin != null)

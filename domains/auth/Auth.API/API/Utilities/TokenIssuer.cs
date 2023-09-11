@@ -88,9 +88,9 @@ public class TokenIssuer : ITokenIssuer
 
         if (descriptor.Organization is not null)
         {
-            claims.Add(UserClaimName.CompanyId, descriptor.Organization.Id);
+            claims.Add(UserClaimName.OrganizationId, descriptor.Organization.Id);
             claims.Add(UserClaimName.Tin, descriptor.Organization.Tin);
-            claims.Add(UserClaimName.CompanyName, descriptor.Organization.Name);
+            claims.Add(UserClaimName.OrganizationName, descriptor.Organization.Name);
         }
 
         var identity = new List<Claim>

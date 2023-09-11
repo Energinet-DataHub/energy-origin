@@ -720,7 +720,7 @@ public class OidcControllerTests
         var claims = new JwtSecurityTokenHandler().ReadJwtToken(map["token"]).Claims;
         Assert.Equal(name, claims.First(x => x.Type == JwtRegisteredClaimNames.Name).Value);
         Assert.Equal(tin, claims.First(x => x.Type == UserClaimName.Tin).Value);
-        Assert.Equal(companyName, claims.First(x => x.Type == UserClaimName.CompanyName).Value);
+        Assert.Equal(companyName, claims.First(x => x.Type == UserClaimName.OrganizationName).Value);
     }
 
     [Fact]

@@ -39,8 +39,8 @@ public static class TestClaimsPrincipal
 
         if (organization != null)
         {
-            identity.Add(new(UserClaimName.CompanyId, organization.Id.ToString()));
-            identity.Add(new(UserClaimName.CompanyName, organization.Name));
+            identity.Add(new(UserClaimName.OrganizationId, organization.Id.ToString()));
+            identity.Add(new(UserClaimName.OrganizationName, organization.Name));
             identity.Add(new(UserClaimName.Tin, organization.Tin));
         }
 
