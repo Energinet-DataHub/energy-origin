@@ -54,12 +54,7 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task Assign_ShouldThrowException_WhenUserIsNull()
-    {
-        controller.PrepareUser();
-
-        await Assert.ThrowsAsync<PropertyMissingException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
-    }
+    public async Task Assign_ShouldThrowException_WhenUserIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
 
     [Fact]
     public async Task Assign_ShouldReturnOk_WhenInvoked()
@@ -127,7 +122,12 @@ public class RoleControllerTests
     [Fact]
     public async Task Remove_ShouldNotRemove_WhenInvokedOnUserFromAnotherCompany()
     {
-        controller.PrepareUser(companyId: Guid.NewGuid(), companyName: Guid.NewGuid().ToString(), tin: Guid.NewGuid().ToString());
+        controller.PrepareUser(organization: new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        });
 
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
