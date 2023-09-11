@@ -59,6 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DataSyncSyncer\Migration\" />
     <Folder Include="Data\" />
   </ItemGroup>
 

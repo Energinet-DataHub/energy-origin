@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using API.ContractService;
 using API.DataSyncSyncer.Persistence;
 using CertificateEvents;
 using Marten;
 using Marten.Schema;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace API.DataSyncSyncer;
+namespace API.DataSyncSyncer.Migration;
 
 public class MartenHelper
 {

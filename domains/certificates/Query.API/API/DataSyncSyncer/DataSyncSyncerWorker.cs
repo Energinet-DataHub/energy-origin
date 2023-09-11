@@ -1,10 +1,10 @@
 using API.ContractService;
 using API.Data;
 using API.DataSyncSyncer.Client.Dto;
+using API.DataSyncSyncer.Migration;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -21,30 +21,25 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
-    private readonly MartenHelper martenHelper;
+    private readonly MartenMigration martenMigration;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
-        IConfiguration configuration,
+        MartenMigration martenMigration,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
-        martenHelper = new MartenHelper(configuration);
+        this.martenMigration = martenMigration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var sp = await martenHelper.GetSynchronizationPositions();
-        logger.LogInformation("Got {count} SynchronizationPoints", sp.Count);
-        var ev = await martenHelper.GetEvents();
-        logger.LogInformation("Got {count} events", ev.Count);
-        var co = await martenHelper.GetContracts();
-        logger.LogInformation("Got {count} contracts", co.Count);
+        await martenMigration.Migrate();
 
         var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
