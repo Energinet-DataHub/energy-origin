@@ -16,12 +16,7 @@ namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
-
-    private class TestableTokenController : TokenController
-    {
-        new public ClaimsPrincipal? User { get; set; }
-    }
-    private readonly TestableTokenController controller = new();
+    private readonly TokenController controller = new();
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
@@ -46,7 +41,7 @@ public class TokenControllerTests
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
             .Returns(Guid.NewGuid().ToString());
 
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -103,7 +98,7 @@ public class TokenControllerTests
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
             .Returns(Guid.NewGuid().ToString());
 
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)

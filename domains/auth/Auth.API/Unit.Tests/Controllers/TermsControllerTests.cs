@@ -19,11 +19,7 @@ namespace Unit.Tests.Controllers;
 
 public class TermsControllerTests
 {
-    private class TestableTermsController : TermsController
-    {
-        new public ClaimsPrincipal? User { get; set; }
-    }
-    private readonly TestableTermsController controller = new();
+    private readonly TermsController controller = new();
     private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
     private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
     private readonly IUserService userService = Mock.Of<IUserService>();
@@ -64,7 +60,7 @@ public class TermsControllerTests
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -116,7 +112,7 @@ public class TermsControllerTests
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -155,7 +151,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(value: null);
@@ -169,7 +165,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(null!)
@@ -194,7 +190,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(null!)

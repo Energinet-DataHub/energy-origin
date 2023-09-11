@@ -9,12 +9,7 @@ namespace Unit.Tests.Controllers;
 
 public class RemoveUserControllerTests
 {
-    private class TestableRemoveUserController : RemoveUserController
-    {
-        new public ClaimsPrincipal? User { get; set; }
-    }
-
-    private readonly TestableRemoveUserController controller = new();
+    private readonly RemoveUserController controller = new();
     private readonly ILogger<RemoveUserController> logger = Mock.Of<ILogger<RemoveUserController>>();
     private readonly IUserService userService = Mock.Of<IUserService>();
 
@@ -22,7 +17,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsBadRequest_WhenSelfDeletion()
     {
         var userId = Guid.NewGuid();
-        controller.User = TestClaimsPrincipal.Make(id: userId);
+        controller.SetUser(id: userId);
 
         var result = await controller.RemoveUser(userId, userService, logger);
 
@@ -33,7 +28,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
         var userId = Guid.NewGuid();
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync((User)null!);
 
         var result = await controller.RemoveUser(userId, userService, logger);
@@ -45,7 +40,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsOk_WhenSuccessfulDeletion()
     {
         var userId = Guid.NewGuid();
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
 
         var result = await controller.RemoveUser(userId, userService, logger);

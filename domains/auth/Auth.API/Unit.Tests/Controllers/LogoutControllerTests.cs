@@ -15,11 +15,7 @@ namespace Unit.Tests.Controllers;
 
 public class LogoutControllerTests
 {
-    private class TestableLogoutController : LogoutController
-    {
-        new public ClaimsPrincipal? User { get; set; }
-    }
-    private readonly TestableLogoutController controller = new();
+    private readonly LogoutController controller = new();
     private readonly OidcOptions options;
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
@@ -51,7 +47,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -96,7 +92,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -116,7 +112,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
 
         var testOptions = TestOptions.Oidc(options, allowRedirection: false);
 
@@ -183,7 +179,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldCallMetricsLogout_WhenInvokedSuccessfully()
     {
-        controller.User = TestClaimsPrincipal.Make();
+        controller.SetUser();
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 

@@ -62,7 +62,7 @@ public class UserDescriptor
         var organizationName = user.FindFirstValue(UserClaimName.CompanyName);
         var tin = user.FindFirstValue(UserClaimName.Tin);
 
-        if (organizationId != null && organizationName != null && tin != null)
+        if (organizationId != Guid.Empty && organizationName != null && tin != null)
         {
             Organization = new()
             {
@@ -71,7 +71,7 @@ public class UserDescriptor
                 Tin = tin
             };
         }
-        else if (organizationId != null || organizationName != null || tin != null)
+        else if (organizationId != Guid.Empty || organizationName != null || tin != null)
         {
             throw new PropertyMissingException(nameof(Organization));
         }
@@ -80,5 +80,5 @@ public class UserDescriptor
 
 public class PropertyMissingException : Exception
 {
-    public PropertyMissingException(string parameter) : base($"Missing property: $parmeter") { }
+    public PropertyMissingException(string parameter) : base($"Missing property: {parameter}") { }
 }
