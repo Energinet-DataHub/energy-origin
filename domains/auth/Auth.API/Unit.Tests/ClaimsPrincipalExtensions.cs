@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,9 @@ public static class TestClaimsPrincipal
 {
     public static ClaimsPrincipal Make(
         Guid? id = default,
+        Guid? companyId = default,
+        string? companyName = default,
+        string? tin = default,
         string? matchedRoles = default,
         string? encryptedIdentityToken = default,
         ProviderType providerType = ProviderType.MitIdPrivate
@@ -26,11 +30,23 @@ public static class TestClaimsPrincipal
             new(UserClaimName.MatchedRoles, matchedRoles ?? ""),
             // new(UserClaimName.CompanyId, ""),
             // new(UserClaimName.CompanyName, ""),
-            // new(UserClaimName.Tin, ""),
             new(UserClaimName.AccessToken, ""),
             new(UserClaimName.IdentityToken, encryptedIdentityToken ?? ""),
             new(UserClaimName.ProviderKeys, ""),
         };
+
+        if (companyId != null)
+        {
+            identity.Add(new(UserClaimName.CompanyId, companyId.ToString()!));
+        }
+        if (companyName != null)
+        {
+            identity.Add(new(UserClaimName.CompanyName, companyName));
+        }
+        if (tin != null)
+        {
+            identity.Add(new(UserClaimName.Tin, tin));
+        }
 
         return new ClaimsPrincipal(new ClaimsIdentity(identity));
     }
@@ -38,6 +54,9 @@ public static class TestClaimsPrincipal
     public static void PrepareUser(
         this ControllerBase controller,
         Guid? id = default,
+        Guid? companyId = default,
+        string? companyName = default,
+        string? tin = default,
         string? matchedRoles = default,
         string? encryptedIdentityToken = default,
         ProviderType providerType = ProviderType.MitIdPrivate
@@ -45,7 +64,7 @@ public static class TestClaimsPrincipal
     {
         HttpContext = new DefaultHttpContext()
         {
-            User = Make(id: id, matchedRoles: matchedRoles, encryptedIdentityToken: encryptedIdentityToken, providerType: providerType)
+            User = Make(id: id, companyId: companyId, companyName: companyName, tin: tin, matchedRoles: matchedRoles, encryptedIdentityToken: encryptedIdentityToken, providerType: providerType)
         }
     };
 }
