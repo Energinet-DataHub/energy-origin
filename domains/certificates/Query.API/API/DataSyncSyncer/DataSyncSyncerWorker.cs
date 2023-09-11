@@ -4,6 +4,7 @@ using API.DataSyncSyncer.Client.Dto;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,21 +21,31 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
+    private readonly MartenHelper martenHelper;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
+        IConfiguration configuration,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
+        martenHelper = new MartenHelper(configuration);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var sp = await martenHelper.GetSynchronizationPositions();
+        logger.LogInformation("Got {count} SynchronizationPoints", sp.Count);
+        var ev = await martenHelper.GetEvents();
+        logger.LogInformation("Got {count} events", ev.Count);
+        var co = await martenHelper.GetContracts();
+        logger.LogInformation("Got {count} contracts", co.Count);
+
         var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
@@ -136,9 +147,8 @@ public static class ContractCleanup
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var contractsForBadMeteringPoint = await context.Contracts
-            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
-            .ToListAsync(cancellationToken);
+        var contractsForBadMeteringPoint = await EntityFrameworkQueryableExtensions.ToListAsync(context.Contracts
+                .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment), cancellationToken);
 
         var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
 

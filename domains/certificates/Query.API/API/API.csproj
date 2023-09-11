@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
+    <PackageReference Include="Marten" Version="6.0.5" />
     <PackageReference Include="MassTransit" Version="8.0.12" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" />
@@ -40,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
 	  <ProjectReference Include="..\..\Shared\CertificateValueObjects\CertificateValueObjects.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\MeasurementEvents\MeasurementEvents.csproj" />
