@@ -1,5 +1,4 @@
 using System.Net;
-using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
@@ -58,19 +57,8 @@ public class TermsControllerTests
         var newAcceptedTermsVersion = 2;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
-        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.PrepareUser();
-        // Mock.Get(mapper)
-        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-        //     .Returns(new UserDescriptor(cryptography)
-        //     {
-        //         Id = id,
-        //         Name = Guid.NewGuid().ToString(),
-        //         Tin = Guid.NewGuid().ToString(),
-        //         AllowCprLookup = true,
-        //         EncryptedProviderKeys = providerEncrypted,
-        //     });
+        controller.PrepareUser(id: id, name: name, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
@@ -102,28 +90,20 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldCreateUser_WhenUserDoesNotExist()
     {
+        var organization = new OrganizationDescriptor
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        };
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
-        var companyName = Guid.NewGuid().ToString();
-        var tin = Guid.NewGuid().ToString();
         var allowCprLookup = false;
         var newAcceptedTermsVersion = 1;
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
-        var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.PrepareUser();
-        // Mock.Get(mapper)
-        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-        //     .Returns(new UserDescriptor(cryptography)
-        //     {
-        //         Id = id,
-        //         Name = name,
-        //         CompanyName = companyName,
-        //         Tin = tin,
-        //         AllowCprLookup = allowCprLookup,
-        //         EncryptedProviderKeys = providerEncrypted
-        //     });
+        controller.PrepareUser(id: id, name: name, organization: organization, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
@@ -139,8 +119,8 @@ public class TermsControllerTests
                 && y.AllowCprLookup == allowCprLookup
                 && y.Id == id
                 && y.Company != null
-                && y.Company.Tin == tin
-                && y.Company.Name == companyName
+                && y.Company.Tin == organization.Tin
+                && y.Company.Name == organization.Name
                 && y.UserProviders.Count() == 1
                 && y.UserProviders.First().ProviderKeyType == providerKeyType
                 && y.UserProviders.First().UserProviderKey == providerKey)),
@@ -149,33 +129,12 @@ public class TermsControllerTests
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull()
     {
-        controller.PrepareUser();
-        // Mock.Get(mapper)
-        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-        //     .Returns(value: null);
-
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 3));
-    }
-
-    [Fact]
-    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
-    {
-        controller.PrepareUser();
-
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(value: null);
-
-        Mock.Get(companyService)
-           .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
-           .ReturnsAsync(value: null);
-
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 2));
     }
 
     [Fact]

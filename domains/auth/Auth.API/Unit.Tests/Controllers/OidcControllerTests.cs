@@ -701,17 +701,6 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        // Mock.Get(mockMapper)
-        //     .Setup(x => x.Map(It.IsAny<User>(), It.IsAny<ProviderType>(), It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<string>()))
-        //     .Returns(new UserDescriptor(null!)
-        //     {
-        //         Id = Guid.NewGuid(),
-        //         Name = Guid.NewGuid().ToString(),
-        //         Tin = Guid.NewGuid().ToString(),
-        //         AllowCprLookup = true,
-        //         MatchedRoles = "",
-        //     });
-
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
@@ -728,22 +717,10 @@ public class OidcControllerTests
         Assert.NotNull(map);
         Assert.True(map.ContainsKey("token"));
 
-        // Mock.Get(mockMapper).Verify(x =>
-        //     x.Map(It.Is<User>(y =>
-        //             y.Name == name
-        //             && y.Company != null
-        //             && y.Company.Tin == tin
-        //             && y.Company.Name == companyName
-        //             && y.UserProviders.Count() == 1
-        //             && y.UserProviders.First().ProviderKeyType == ProviderKeyType.Rid
-        //             && y.UserProviders.First().UserProviderKey == ssn),
-        //         It.IsAny<ProviderType>(),
-        //         It.IsAny<IEnumerable<string>>(),
-        //         It.IsAny<string>(),
-        //         It.IsAny<string>()),
-        //     Times.Once
-        // );
-        Assert.Fail("FIX");
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(map["token"]).Claims;
+        Assert.Equal(name, claims.First(x => x.Type == JwtRegisteredClaimNames.Name).Value);
+        Assert.Equal(tin, claims.First(x => x.Type == UserClaimName.Tin).Value);
+        Assert.Equal(companyName, claims.First(x => x.Type == UserClaimName.CompanyName).Value);
     }
 
     [Fact]

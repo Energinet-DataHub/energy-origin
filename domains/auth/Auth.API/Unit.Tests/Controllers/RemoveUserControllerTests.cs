@@ -50,5 +50,5 @@ public class RemoveUserControllerTests
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldThrowException_WhenUserIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.RemoveUser(Guid.NewGuid(), userService, logger));
+    public async Task RemoveUser_ShouldThrowException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.RemoveUser(Guid.NewGuid(), userService, logger));
 }

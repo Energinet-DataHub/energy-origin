@@ -83,5 +83,5 @@ public class TokenControllerTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserReturnsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.RefreshAsync(metrics, logger, userService, issuer));
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.RefreshAsync(metrics, logger, userService, issuer));
 }

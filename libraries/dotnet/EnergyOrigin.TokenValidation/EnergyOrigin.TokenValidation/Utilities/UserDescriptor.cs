@@ -16,7 +16,7 @@ public class UserDescriptor
     public required string EncryptedAccessToken { get; init; }
     public required string EncryptedIdentityToken { get; init; }
     // <summary>
-    // The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2=ProviderKey2"
+    // The unencrypted data should follow this format: "ProviderKeyType1=ProviderKey1 ProviderKeyType2=ProviderKey2"
     // </summary>
     public required string EncryptedProviderKeys { get; init; }
 

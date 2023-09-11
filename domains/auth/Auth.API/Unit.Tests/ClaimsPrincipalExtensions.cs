@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -13,25 +12,29 @@ public static class TestClaimsPrincipal
 {
     public static ClaimsPrincipal Make(
         Guid? id = default,
+        string? name = default,
+        ProviderType providerType = ProviderType.MitIdPrivate,
         OrganizationDescriptor? organization = default,
         string? scope = default,
+        string? allowCprLookup = default,
         string? matchedRoles = default,
+        string? encryptedAccessToken = default,
         string? encryptedIdentityToken = default,
-        ProviderType providerType = ProviderType.MitIdPrivate
+        string? encryptedProviderKeys = default
     )
     {
         var identity = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Name, "descriptor.Name"),
-            new(JwtRegisteredClaimNames.Sub, "descriptor.Subject.ToString()"),
+            new(JwtRegisteredClaimNames.Name, name ?? ""),
+            new(JwtRegisteredClaimNames.Sub, id?.ToString() ?? Guid.NewGuid().ToString()),
             new(UserClaimName.ProviderType, providerType.ToString()),
-            new(UserClaimName.AllowCprLookup, "false"),
+            new(UserClaimName.AllowCprLookup, allowCprLookup ?? "false"),
             new(UserClaimName.Actor, id?.ToString() ?? Guid.NewGuid().ToString()),
             new(UserClaimName.MatchedRoles, matchedRoles ?? ""),
             new(UserClaimName.Scope, scope ?? ""),
-            new(UserClaimName.AccessToken, ""),
+            new(UserClaimName.AccessToken, encryptedAccessToken ?? ""),
             new(UserClaimName.IdentityToken, encryptedIdentityToken ?? ""),
-            new(UserClaimName.ProviderKeys, ""),
+            new(UserClaimName.ProviderKeys, encryptedProviderKeys ?? ""),
         };
 
         if (organization != null)
@@ -47,16 +50,20 @@ public static class TestClaimsPrincipal
     public static void PrepareUser(
         this ControllerBase controller,
         Guid? id = default,
+        string? name = default,
+        ProviderType providerType = ProviderType.MitIdPrivate,
         OrganizationDescriptor? organization = default,
         string? scope = default,
+        string? allowCprLookup = default,
         string? matchedRoles = default,
+        string? encryptedAccessToken = default,
         string? encryptedIdentityToken = default,
-        ProviderType providerType = ProviderType.MitIdPrivate
+        string? encryptedProviderKeys = default
     ) => controller.ControllerContext = new()
     {
         HttpContext = new DefaultHttpContext()
         {
-            User = Make(id: id, organization: organization, scope: scope, matchedRoles: matchedRoles, encryptedIdentityToken: encryptedIdentityToken, providerType: providerType)
+            User = Make(id: id, name: name, providerType: providerType, organization: organization, scope: scope, allowCprLookup: allowCprLookup, matchedRoles: matchedRoles, encryptedAccessToken: encryptedAccessToken, encryptedIdentityToken: encryptedIdentityToken, encryptedProviderKeys: encryptedProviderKeys)
         }
     };
 }

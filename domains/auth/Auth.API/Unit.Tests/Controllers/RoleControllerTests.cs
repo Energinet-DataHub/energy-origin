@@ -36,7 +36,7 @@ public class RoleControllerTests
     }
 
     [Fact]
-    public async Task Assign_ShouldThrowException_WhenUserDescriptorMappingFails() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
+    public async Task Assign_ShouldThrowException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
 
     [Theory]
     [InlineData("")]
@@ -52,9 +52,6 @@ public class RoleControllerTests
 
         Assert.IsType<BadRequestObjectResult>(response);
     }
-
-    [Fact]
-    public async Task Assign_ShouldThrowException_WhenUserIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
 
     [Fact]
     public async Task Assign_ShouldReturnOk_WhenInvoked()
