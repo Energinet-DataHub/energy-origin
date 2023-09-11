@@ -22,6 +22,12 @@ public class ProductionCertificate
         BlindingValue = blindingValue;
     }
 
+    //TODO: Remove after migration
+    public void SetId(Guid id)
+    {
+        Id = id;
+    }
+
     public Guid Id { get; private set; }
 
     public IssuedState IssuedState { get; private set; }

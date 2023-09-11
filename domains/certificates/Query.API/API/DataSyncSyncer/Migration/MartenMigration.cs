@@ -18,26 +18,44 @@ public class MartenMigration
 
     public async Task Migrate()
     {
+        logger.LogInformation("Migrate contracts...");
         await MigrateContracts();
+
+        logger.LogInformation("Migrate certificates...");
+        await MigrateCertificates();
     }
 
     private async Task MigrateContracts()
     {
-        logger.LogInformation("Migrate contracts...");
-        var existingContractCount = await dbContextHelper.GetContractCount() == 0;
-        if (existingContractCount)
+        var existingCount = await dbContextHelper.GetContractCount();
+        if (existingCount == 0)
         {
             var contracts = await martenHelper.GetContracts();
 
             logger.LogInformation("Got {count} contracts from Marten", contracts.Count);
 
             await dbContextHelper.SaveContracts(contracts);
-
-            logger.LogInformation("Migrated contracts");
         }
         else
         {
-            logger.LogInformation("Contracts already exists, no migration performed");
+            logger.LogInformation("Contracts already exists (has {count}), no migration performed", existingCount);
+        }
+    }
+
+    private async Task MigrateCertificates()
+    {
+        var existingCount = await dbContextHelper.GetCertificatesCount();
+        if (existingCount == 0)
+        {
+            var events = await martenHelper.GetEvents();
+
+            logger.LogInformation("Got {count} certificates from Marten", events.Count);
+
+            await dbContextHelper.SaveCertificates(events);
+        }
+        else
+        {
+            logger.LogInformation("Certificates already exists (has {count}), no migration performed", existingCount);
         }
     }
 }
