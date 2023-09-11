@@ -75,6 +75,7 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
             { UserClaimName.Subject, descriptor.Subject },
             { UserClaimName.Actor, descriptor.Id },
+            { "actor", descriptor.Id }
         };
 
         var validRoles = roleOptions.RoleConfigurations.Select(x => x.Key);
