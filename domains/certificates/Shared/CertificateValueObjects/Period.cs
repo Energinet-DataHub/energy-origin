@@ -15,8 +15,8 @@ public class Period : ValueObject
 
     }
 
-    public long DateFrom { get; private set; } // EnergyMeasured.DateFrom
-    public long DateTo { get; private set; } // EnergyMeasured.DateTo
+    public long DateFrom { get; private set; }
+    public long DateTo { get; private set; }
 
     public Period(long dateFrom, long dateTo)
     {

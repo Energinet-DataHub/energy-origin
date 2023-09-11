@@ -9,7 +9,7 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830063723_Initial') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     CREATE TABLE "Contracts" (
         "Id" uuid NOT NULL,
         "ContractNumber" integer NOT NULL,
@@ -29,32 +29,13 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830063723_Initial') THEN
-    CREATE UNIQUE INDEX "IX_Contracts_GSRN_ContractNumber" ON "Contracts" ("GSRN", "ContractNumber");
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830063723_Initial') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230830063723_Initial', '7.0.10');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830095336_Cert') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     CREATE TABLE "ProductionCertificates" (
         "Id" uuid NOT NULL,
         "IssuedState" integer NOT NULL,
         "GridArea" text NOT NULL,
-        "Period_DateFrom" bigint NOT NULL,
-        "Period_DateTo" bigint NOT NULL,
+        "DateFrom" bigint NOT NULL,
+        "DateTo" bigint NOT NULL,
         "Technology_FuelCode" text NOT NULL,
         "Technology_TechCode" text NOT NULL,
         "MeteringPointOwner" text NOT NULL,
@@ -69,52 +50,7 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830095336_Cert') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230830095336_Cert', '7.0.10');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830104717_Unique') THEN
-    ALTER TABLE "ProductionCertificates" RENAME COLUMN "Period_DateTo" TO "DateTo";
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830104717_Unique') THEN
-    ALTER TABLE "ProductionCertificates" RENAME COLUMN "Period_DateFrom" TO "DateFrom";
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830104717_Unique') THEN
-    CREATE UNIQUE INDEX "IX_ProductionCertificates_Gsrn_DateFrom_DateTo" ON "ProductionCertificates" ("Gsrn", "DateFrom", "DateTo");
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230830104717_Unique') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230830104717_Unique', '7.0.10');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230831171652_sync') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     CREATE TABLE "SynchronizationPositions" (
         "GSRN" text NOT NULL,
         "SyncedTo" bigint NOT NULL,
@@ -125,9 +61,23 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230831171652_sync') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
+    CREATE UNIQUE INDEX "IX_Contracts_GSRN_ContractNumber" ON "Contracts" ("GSRN", "ContractNumber");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
+    CREATE UNIQUE INDEX "IX_ProductionCertificates_Gsrn_DateFrom_DateTo" ON "ProductionCertificates" ("Gsrn", "DateFrom", "DateTo");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230831171652_sync', '7.0.10');
+    VALUES ('20230911185804_Initial', '7.0.10');
     END IF;
 END $EF$;
 COMMIT;
