@@ -7,10 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
 WORKDIR /src
-COPY ["TransferAgreements.API/API/API.csproj", "TransferAgreements.API/API/"]
-RUN dotnet restore "TransferAgreements.API/API/API.csproj"
+COPY ["Transfer.API/API/API.csproj", "TransferAgreements.API/API/"]
+RUN dotnet restore "Transfer.API/API/API.csproj"
 COPY . .
-WORKDIR "/src/TransferAgreements.API/API"
+WORKDIR "/src/Transfer.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
 FROM build AS publish
