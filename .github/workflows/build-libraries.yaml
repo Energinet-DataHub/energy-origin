@@ -86,7 +86,7 @@ jobs:
       - name: Resolve version
         id: resolve-version
         shell: bash
-        run: echo "result=$(yq '.version' ${{ env.SOLUTION }}/version.yaml)" >> $GITHUB_OUTPUT
+        run: echo "result=$(yq '.version' ${{ env.SOLUTION }}/configuration.yaml)" >> $GITHUB_OUTPUT
 
       - name: Pin dotnet version
         shell: bash
