@@ -2,6 +2,7 @@ using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsBadRequest_WhenSelfDeletion()
     {
         var userId = Guid.NewGuid();
-        controller.SetUser(id: userId);
+        controller.PrepareUser(id: userId);
 
         var result = await controller.RemoveUser(userId, userService, logger);
 
@@ -28,7 +29,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnOk_WhenUserDoesNotExist()
     {
         var userId = Guid.NewGuid();
-        controller.SetUser();
+        controller.PrepareUser();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync((User)null!);
 
         var result = await controller.RemoveUser(userId, userService, logger);
@@ -40,7 +41,7 @@ public class RemoveUserControllerTests
     public async Task RemoveUser_ShouldReturnsOk_WhenSuccessfulDeletion()
     {
         var userId = Guid.NewGuid();
-        controller.SetUser();
+        controller.PrepareUser();
         Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
 
         var result = await controller.RemoveUser(userId, userService, logger);
@@ -49,5 +50,5 @@ public class RemoveUserControllerTests
     }
 
     [Fact]
-    public async Task RemoveUser_ShouldThrowException_WhenMapperFails() => await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveUser(Guid.NewGuid(), userService, logger));
+    public async Task RemoveUser_ShouldThrowException_WhenUserIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(() => controller.RemoveUser(Guid.NewGuid(), userService, logger));
 }

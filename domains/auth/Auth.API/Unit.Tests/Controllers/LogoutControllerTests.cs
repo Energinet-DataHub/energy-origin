@@ -4,6 +4,8 @@ using API.Controllers;
 using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
@@ -18,10 +20,10 @@ public class LogoutControllerTests
     private readonly LogoutController controller = new();
     private readonly OidcOptions options;
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
-    private readonly ICryptography cryptography = Mock.Of<ICryptography>();
+    private readonly ICryptography cryptography;
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
     private readonly string identityToken = Guid.NewGuid().ToString();
-    // private readonly UserDescriptor descriptor;
+    private readonly string encryptedIdentityToken;
 
     public LogoutControllerTests()
     {
@@ -32,22 +34,17 @@ public class LogoutControllerTests
 
         options = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
-        // var encryptedIdentityToken = Guid.NewGuid().ToString();
-        // identityToken = Guid.NewGuid().ToString();
-
-        // var cryptography = Mock.Of<ICryptography>();
-        // Mock.Get(cryptography).Setup(it => it.Decrypt<string>(encryptedIdentityToken)).Returns(identityToken);
-
-        // descriptor = new UserDescriptor(cryptography)
-        // {
-        //     EncryptedIdentityToken = encryptedIdentityToken
-        // };
+        cryptography = new Cryptography(new CryptographyOptions
+        {
+            Key = "secretsecretsecretsecret"
+        });
+        encryptedIdentityToken = cryptography.Encrypt(identityToken);
     }
 
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        controller.SetUser();
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -92,7 +89,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
     {
-        controller.SetUser();
+        controller.PrepareUser();
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -112,7 +109,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        controller.SetUser();
+        controller.PrepareUser();
 
         var testOptions = TestOptions.Oidc(options, allowRedirection: false);
 
@@ -179,7 +176,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldCallMetricsLogout_WhenInvokedSuccessfully()
     {
-        controller.SetUser();
+        controller.PrepareUser();
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 

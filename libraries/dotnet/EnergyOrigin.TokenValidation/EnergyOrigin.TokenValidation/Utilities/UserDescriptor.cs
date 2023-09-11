@@ -32,14 +32,18 @@ public class UserDescriptor
             throw new PropertyMissingException(nameof(user));
         }
 
-        if (Enum.TryParse<ProviderType>(user.FindFirstValue(UserClaimName.ProviderType), out var providerType) == false)
+        if (Enum.TryParse<ProviderType>(user.FindFirstValue(UserClaimName.ProviderType), out var providerType))
+        {
+            ProviderType = providerType;
+        }
+        else
         {
             throw new PropertyMissingException(nameof(UserClaimName.ProviderType));
         }
 
         Name = user.FindFirstValue(JwtRegisteredClaimNames.Name) ?? throw new PropertyMissingException(nameof(JwtRegisteredClaimNames.Name));
 
-        if (!bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var allowCprLookup))
+        if (bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var allowCprLookup))
         {
             AllowCprLookup = allowCprLookup;
         }
@@ -57,6 +61,10 @@ public class UserDescriptor
         Id = Guid.Parse(actor);
 
         MatchedRoles = user.FindFirstValue(UserClaimName.MatchedRoles) ?? string.Empty;
+
+        EncryptedAccessToken = user.FindFirstValue(UserClaimName.AccessToken) ?? throw new PropertyMissingException(nameof(UserClaimName.AccessToken));
+        EncryptedIdentityToken = user.FindFirstValue(UserClaimName.IdentityToken) ?? throw new PropertyMissingException(nameof(UserClaimName.IdentityToken));
+        EncryptedProviderKeys = user.FindFirstValue(UserClaimName.ProviderKeys) ?? throw new PropertyMissingException(nameof(UserClaimName.ProviderKeys));
 
         Guid.TryParse(user.FindFirstValue(UserClaimName.CompanyId), out var organizationId);
         var organizationName = user.FindFirstValue(UserClaimName.CompanyName);

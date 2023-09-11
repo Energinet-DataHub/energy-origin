@@ -41,7 +41,7 @@ public class TokenControllerTests
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
             .Returns(Guid.NewGuid().ToString());
 
-        controller.SetUser();
+        controller.PrepareUser(id: Guid.Parse(userId), providerType: providerType);
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -98,7 +98,7 @@ public class TokenControllerTests
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
             .Returns(Guid.NewGuid().ToString());
 
-        controller.SetUser();
+        controller.PrepareUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -119,5 +119,5 @@ public class TokenControllerTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await controller.RefreshAsync(metrics, logger, userService, issuer));
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserReturnsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.RefreshAsync(metrics, logger, userService, issuer));
 }

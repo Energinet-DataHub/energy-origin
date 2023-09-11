@@ -226,16 +226,18 @@ public class TokenIssuerTests
                 Name = "testCompany"
             }
         };
-        var descriptor = new UserDescriptor(null!)
-        {
-            Id = user.Id.Value,
-            Name = user.Name,
-            AllowCprLookup = user.AllowCprLookup,
-            ProviderType = ProviderType.NemIdProfessional,
-            EncryptedAccessToken = accessToken ?? "",
-            EncryptedIdentityToken = identityToken ?? "",
-            MatchedRoles = matchedRoles ?? ""
-        };
+        var descriptor = new UserDescriptor(TestClaimsPrincipal.Make(id: user.Id, matchedRoles: matchedRoles));
+        // FIXME: pass
+        // var descriptor = new UserDescriptor(null!)
+        // {
+        //     Id = user.Id.Value,
+        //     Name = user.Name,
+        //     AllowCprLookup = user.AllowCprLookup,
+        //     ProviderType = ProviderType.NemIdProfessional,
+        //     EncryptedAccessToken = accessToken ?? "",
+        //     EncryptedIdentityToken = identityToken ?? "",
+        //     MatchedRoles = matchedRoles ?? ""
+        // };
         if (addToMock)
         {
             Mock.Get(service)

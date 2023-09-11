@@ -60,7 +60,7 @@ public class TermsControllerTests
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.SetUser();
+        controller.PrepareUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -112,7 +112,7 @@ public class TermsControllerTests
         var providerKeyType = ProviderKeyType.MitIdUuid;
         var providerEncrypted = cryptography.Encrypt($"{providerKeyType}={providerKey}");
 
-        controller.SetUser();
+        controller.PrepareUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(new UserDescriptor(cryptography)
@@ -151,7 +151,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull()
     {
-        controller.SetUser();
+        controller.PrepareUser();
         // Mock.Get(mapper)
         //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
         //     .Returns(value: null);
@@ -159,22 +159,13 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<NullReferenceException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 3));
+        await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 3));
     }
 
     [Fact]
     public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenDescriptorIdExistsButUserCannotBeFound()
     {
-        controller.SetUser();
-        // Mock.Get(mapper)
-        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-        //     .Returns(new UserDescriptor(null!)
-        //     {
-        //         Id = Guid.NewGuid(),
-        //         Name = Guid.NewGuid().ToString(),
-        //         Tin = null,
-        //         AllowCprLookup = false,
-        //     });
+        controller.PrepareUser();
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
@@ -190,13 +181,7 @@ public class TermsControllerTests
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
     {
-        controller.SetUser();
-        // Mock.Get(mapper)
-        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-        //     .Returns(new UserDescriptor(null!)
-        //     {
-        //         Id = Guid.NewGuid()
-        //     });
+        controller.PrepareUser();
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
