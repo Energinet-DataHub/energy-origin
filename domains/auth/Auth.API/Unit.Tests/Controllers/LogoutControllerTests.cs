@@ -24,7 +24,7 @@ public class LogoutControllerTests
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
-    // private readonly string identityToken;
+    private readonly string identityToken = Guid.NewGuid().ToString();
     // private readonly UserDescriptor descriptor;
 
     public LogoutControllerTests()

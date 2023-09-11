@@ -241,12 +241,12 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
         var role = RoleKey.Viewer;
         var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder =>
         {
-            var mapper = Mock.Of<IUserDescriptorMapper>();
-            Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: null!);
+            // var mapper = Mock.Of<IUserDescriptorMapper>();
+            // Mock.Get(mapper)
+            //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            //     .Returns(value: null!);
 
-            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
+            // builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
         });
 
         var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);

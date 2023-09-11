@@ -3,7 +3,6 @@ using API.Controllers;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -15,8 +14,11 @@ namespace Unit.Tests.Controllers;
 
 public class RoleControllerTests
 {
-    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
-    private readonly RoleController roleController = new();
+    private class TestableRoleController : RoleController
+    {
+        new public ClaimsPrincipal? User { get; set; }
+    }
+    private readonly TestableRoleController controller = new();
     private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly RoleOptions roleOptions;
@@ -33,7 +35,7 @@ public class RoleControllerTests
     [Fact]
     public void List_ShouldReturnExpected_WhenInvoked()
     {
-        var response = roleController.List(roleOptions);
+        var response = controller.List(roleOptions);
 
         Assert.NotNull(response);
         Assert.IsType<OkObjectResult>(response);
@@ -42,9 +44,10 @@ public class RoleControllerTests
     [Fact]
     public async Task Assign_ShouldThrowException_WhenUserDescriptorMappingFails()
     {
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
     }
 
     [Theory]
@@ -57,7 +60,7 @@ public class RoleControllerTests
     [InlineData("IDK")]
     public async Task Assign_ShouldThrowException_WhenRoleIsInvalid(string role)
     {
-        var response = await roleController.AssignRole(role, Guid.NewGuid(), roleOptions, userService, logger, mapper);
+        var response = await controller.AssignRole(role, Guid.NewGuid(), roleOptions, userService, logger);
 
         Assert.IsType<BadRequestObjectResult>(response);
     }
@@ -67,18 +70,19 @@ public class RoleControllerTests
     {
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(It.IsAny<Guid>())).ReturnsAsync((User)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => controller.AssignRole(RoleKey.Viewer, Guid.NewGuid(), roleOptions, userService, logger));
     }
 
     [Fact]
     public async Task Assign_ShouldReturnOk_WhenInvoked()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid()
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid()
+        //     });
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId };
@@ -86,7 +90,7 @@ public class RoleControllerTests
         var dummyUser = new User();
         Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
 
-        var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
+        var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
         Assert.IsType<OkResult>(result);
     }
@@ -94,13 +98,14 @@ public class RoleControllerTests
     [Fact]
     public async Task Assign_ShouldReturnBadRequest_WhenInvokedOnUserFromAnotherCompany()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid(),
-                Tin = Guid.NewGuid().ToString(),
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         Tin = Guid.NewGuid().ToString(),
+        //     });
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
@@ -108,7 +113,7 @@ public class RoleControllerTests
         var dummyUser = new User();
         Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
 
-        var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
+        var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
         Assert.IsType<ForbidResult>(result);
     }
@@ -116,12 +121,13 @@ public class RoleControllerTests
     [Fact]
     public async Task Assign_ShouldReturnBadRequest_WhenInvokedByPrivateUser()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid()
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid()
+        //     });
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
@@ -129,7 +135,7 @@ public class RoleControllerTests
         var dummyUser = new User();
         Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
 
-        var result = await roleController.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger, mapper);
+        var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
         Assert.IsType<ForbidResult>(result);
     }
@@ -137,23 +143,24 @@ public class RoleControllerTests
     [Fact]
     public async Task Remove_ShouldRemove_WhenInvoked()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid()
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid()
+        //     });
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole } };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
 
-        roleController.ControllerContext = new ControllerContext
+        controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
 
-        var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+        var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
         Assert.IsType<OkResult>(result);
     }
@@ -161,24 +168,25 @@ public class RoleControllerTests
     [Fact]
     public async Task Remove_ShouldRemove_WhenInvokedOnUserFromAnotherCompany()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid(),
-                Tin = Guid.NewGuid().ToString(),
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         Tin = Guid.NewGuid().ToString(),
+        //     });
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
 
-        roleController.ControllerContext = new ControllerContext
+        controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
 
-        var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+        var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
         Assert.IsType<ForbidResult>(result);
     }
@@ -186,23 +194,24 @@ public class RoleControllerTests
     [Fact]
     public async Task Remove_ShouldRemove_WhenInvokedByPrivateUser()
     {
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid()
-            });
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper)
+        //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+        //     .Returns(new UserDescriptor(null!)
+        //     {
+        //         Id = Guid.NewGuid()
+        //     });
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
 
-        roleController.ControllerContext = new ControllerContext
+        controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
 
-        var result = await roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper);
+        var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
         Assert.IsType<ForbidResult>(result);
     }
@@ -214,7 +223,7 @@ public class RoleControllerTests
 
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger));
     }
 
     [Fact]
@@ -225,14 +234,15 @@ public class RoleControllerTests
 
         Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger));
     }
 
     [Fact]
     public async Task Remove_ShouldThrowException_WhenUserDescriptorMappingFails()
     {
-        Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
+        controller.User = TestClaimsPrincipal.Make();
+        // Mock.Get(mapper).Setup(m => m.Map(It.IsAny<ClaimsPrincipal>())).Returns((UserDescriptor)null!);
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => roleController.RemoveRoleFromUser(RoleKey.Viewer, Guid.NewGuid(), userService, logger, mapper));
+        await Assert.ThrowsAsync<NullReferenceException>(() => controller.RemoveRoleFromUser(RoleKey.Viewer, Guid.NewGuid(), userService, logger));
     }
 }
