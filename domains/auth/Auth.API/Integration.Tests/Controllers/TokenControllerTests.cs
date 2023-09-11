@@ -30,8 +30,9 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedDuringCurrentLogin()
     {
+        var earlier = DateTimeOffset.Now.AddSeconds(-1);
         var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
-        var oldClient = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        var oldClient = factory.CreateAuthenticatedClient(user, issueAt: earlier.UtcDateTime, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
         {
             PrivacyPolicyVersion = 1,
             TermsOfServiceVersion = 1
@@ -110,26 +111,6 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newScope);
         Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
         Assert.DoesNotContain(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
-    }
-
-    [Fact]
-    public async Task RefreshAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
-    {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
-        {
-            // var mapper = Mock.Of<IUserDescriptorMapper>();
-            // Mock.Get(mapper)
-            //     .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            //     .Returns(value: null!);
-
-            // builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
-        });
-
-        var response = await client.GetAsync("auth/token");
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]

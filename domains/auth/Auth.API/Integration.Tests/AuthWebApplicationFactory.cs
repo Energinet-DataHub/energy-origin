@@ -4,6 +4,8 @@ using API.Repositories.Data;
 using API.Repositories.Data.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -59,9 +61,13 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     public HttpClient CreateAuthenticatedClient(User user, ProviderType providerType = ProviderType.NemIdProfessional, string? accessToken = null, string? identityToken = null, string? role = null, IEnumerable<string>? roles = null, bool versionBypass = false, DateTime? issueAt = null, Action<IWebHostBuilder>? config = null)
     {
+        var cryptography = new Cryptography(new CryptographyOptions
+        {
+            Key = "secretsecretsecretsecret"
+        });
         var matchedRoles = new[] { role }.OfType<string>().Concat(roles ?? Array.Empty<string>());
         var client = CreateAnonymousClient(config);
-        var descriptor = user.MapDescriptor(new FakeCryptography(), providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
+        var descriptor = user.MapDescriptor(cryptography, providerType, matchedRoles, accessToken ?? Guid.NewGuid().ToString(), identityToken ?? Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ServiceProvider.GetRequiredService<ITokenIssuer>().Issue(descriptor, UserData.From(user), versionBypass, issueAt));
         return client;
     }

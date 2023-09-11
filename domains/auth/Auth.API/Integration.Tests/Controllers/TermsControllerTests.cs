@@ -117,7 +117,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
+    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenPrincipalIsNull()
     {
         var user = await factory.AddUserToDatabaseAsync();
 
