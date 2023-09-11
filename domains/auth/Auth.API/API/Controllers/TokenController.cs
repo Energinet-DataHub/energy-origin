@@ -25,13 +25,11 @@ public class TokenController : ControllerBase
     {
         var descriptor = new UserDescriptor(User);
         var versionBypass = false;
-
         var user = await userService.GetUserByIdAsync(descriptor.Id);
-
         if (user != null)
         {
             var scope = User.FindFirstValue(UserClaimName.Scope);
-
+            descriptor.Organization = new OrganizationDescriptor { Id = user.CompanyId, Name = user.Company.Name, Tin = user.Company.Tin }; // FIXME: this seems wrong
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 

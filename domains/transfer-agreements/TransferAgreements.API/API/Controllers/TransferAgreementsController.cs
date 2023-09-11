@@ -13,6 +13,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -77,9 +78,17 @@ public class TransferAgreementsController : ControllerBase
             request.Base64EncodedWalletDepositEndpoint,
             request.ReceiverTin);
 
-        var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
+        try
+        {
+            var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
 
-        return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+        }
+        catch (DbUpdateException e)
+        {
+            return Conflict();
+        }
+
     }
 
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]

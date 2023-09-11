@@ -14,7 +14,13 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {
+        var agreements = await context.TransferAgreements.Where(t =>
+            t.SenderId == transferAgreement.SenderId)
+            .ToListAsync();
+        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
+        transferAgreement.TransferAgreementNumber = transferAgreementNumber;
         context.TransferAgreements.Add(transferAgreement);
+
         await context.SaveChangesAsync();
         return transferAgreement;
     }
@@ -37,7 +43,6 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {
-
         var overlappingAgreements = await context.TransferAgreements
             .Where(t => t.SenderId == transferAgreement.SenderId &&
                         t.ReceiverTin == transferAgreement.ReceiverTin &&

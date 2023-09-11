@@ -7,7 +7,7 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptor
 {
-    public required OrganizationDescriptor? Organization { get; init; }
+    public required OrganizationDescriptor? Organization { get; set; }
     public required Guid Id { get; init; }
     public required ProviderType ProviderType { get; init; }
     public required string Name { get; init; }

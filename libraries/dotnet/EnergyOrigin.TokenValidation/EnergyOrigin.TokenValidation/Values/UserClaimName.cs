@@ -5,8 +5,8 @@ public struct UserClaimName
 {
     public const string Scope = "scope";
     public const string Subject = "subject";
-    public const string ActorLegacy = "actor";
     public const string Actor = "atr";
+    public const string ActorLegacy = "actor";
     public const string AccessToken = "eat";
     public const string IdentityToken = "eit";
     public const string ProviderKeys = "pke";
