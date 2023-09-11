@@ -31,7 +31,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
-    public string WalletUrl { get; set; }
+    public string WalletUrl { get; set; } = "http://foo";
 
     public string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
@@ -81,6 +81,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
     }
 
+    public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.TransferAgreements.Add(transferAgreement);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task SeedConnections(IEnumerable<Connection> connections)
     {
         using var scope = Services.CreateScope();
@@ -97,7 +105,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent", string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -165,7 +174,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
-        var agreementQuery = $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
+        var agreementQuery =
+            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
         var agreementFields = new[]
         {
             new NpgsqlParameter("Id", agreement.Id),
@@ -186,8 +196,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
 
-        var historyQuery = $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
-                           "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
+        var historyQuery =
+            $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
+            "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
         var historyFields = new[]
         {
             new NpgsqlParameter("Id", Guid.NewGuid()),
