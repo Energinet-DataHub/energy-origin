@@ -18,11 +18,31 @@ public class MartenMigration
 
     public async Task Migrate()
     {
+        logger.LogInformation("Migrate sync positions...");
+        await MigrateSynchronizationPositions();
+
         logger.LogInformation("Migrate contracts...");
         await MigrateContracts();
 
         logger.LogInformation("Migrate certificates...");
         await MigrateCertificates();
+    }
+
+    private async Task MigrateSynchronizationPositions()
+    {
+        var existingCount = await dbContextHelper.GetSynchronizationCount();
+        if (existingCount == 0)
+        {
+            var positions = await martenHelper.GetSynchronizationPositions();
+
+            logger.LogInformation("Got {count} positions from Marten", positions.Count);
+
+            await dbContextHelper.SaveSynchronizationPositions(positions);
+        }
+        else
+        {
+            logger.LogInformation("Positions already exists (has {count}), no migration performed", existingCount);
+        }
     }
 
     private async Task MigrateContracts()

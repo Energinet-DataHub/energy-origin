@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DataSyncSyncer.Persistence;
 
 namespace API.DataSyncSyncer.Migration;
 
@@ -73,32 +74,15 @@ public class DbContextHelper
             })
             .ToArray();
 
-        //var productionCertificates = events.Select(e =>
-        //{
-        //    var cert = new ProductionCertificate(
-        //        gridArea: e.GridArea,
-        //        period: e.Period,
-        //        technology: e.Technology,
-        //        meteringPointOwner: e.MeteringPointOwner,
-        //        gsrn: e.ShieldedGSRN.Value,
-        //        quantity: e.ShieldedQuantity.Value,
-        //        blindingValue: e.BlindingValue);
-
-        //    cert.SetId(e.CertificateId);
-        //    cert.Issue();
-        //    return cert;
-        //}).ToArray();
-
         await using var dbContext = await factory.CreateDbContextAsync();
         dbContext.ProductionCertificates.AddRange(productionCertificates);
         await dbContext.SaveChangesAsync();
+    }
 
-        //foreach (var e in events)
-        //{
-        //    var cert = new ProductionCertificate(e.GridArea, e.Period, e.Technology, e.MeteringPointOwner,
-        //        e.ShieldedGSRN.Value, e.ShieldedQuantity.Value, e.BlindingValue);
-        //    cert.SetId(e.CertificateId);
-        //    cert.Issue();
-        //}
+    public async Task SaveSynchronizationPositions(IEnumerable<SynchronizationPosition> positions)
+    {
+        await using var dbContext = await factory.CreateDbContextAsync();
+        dbContext.SynchronizationPositions.AddRange(positions);
+        await dbContext.SaveChangesAsync();
     }
 }
