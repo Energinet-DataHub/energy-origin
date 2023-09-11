@@ -29,8 +29,12 @@ public class LogoutController : ControllerBase
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
-        var descriptor = new DecodableUserDescriptor(User, cryptography);
-        if (descriptor == null)
+        DecodableUserDescriptor descriptor;
+        try
+        {
+            descriptor = new DecodableUserDescriptor(User, cryptography);
+        }
+        catch
         {
             return RedirectPreserveMethod(redirectionUri);
         }

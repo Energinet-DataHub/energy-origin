@@ -89,7 +89,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
     {
-        controller.PrepareUser();
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -109,7 +109,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        controller.PrepareUser();
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var testOptions = TestOptions.Oidc(options, allowRedirection: false);
 
@@ -176,7 +176,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldCallMetricsLogout_WhenInvokedSuccessfully()
     {
-        controller.PrepareUser();
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
