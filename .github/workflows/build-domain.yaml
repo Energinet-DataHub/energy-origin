@@ -48,6 +48,7 @@ jobs:
           LIST: ${{ steps.diff.outputs.list }}
         run: |
           matrix=$(while read domain; do
+            [ -d "$domain" ] || continue
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
