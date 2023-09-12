@@ -24,7 +24,6 @@ public class ConnectionInvitationsController : ControllerBase
         this.connectionRepository = connectionRepository;
     }
 
-
     [ProducesResponseType(typeof(Guid), 201)]
     [HttpPost]
     public async Task<ActionResult> CreateConnectionInvitation()

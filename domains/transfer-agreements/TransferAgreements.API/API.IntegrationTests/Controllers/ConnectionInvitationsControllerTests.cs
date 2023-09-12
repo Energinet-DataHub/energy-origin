@@ -86,7 +86,6 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         responseBody.Should().Be("Connection-invitation expired or deleted");
     }
 
-
     [Fact]
     public async Task GetConnectionInvitation_ShouldReturnConflict_WhenConflictExists()
     {
