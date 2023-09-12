@@ -24,6 +24,7 @@ public class TokenController : ControllerBase
         ITokenIssuer tokenIssuer)
     {
         var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+
         var versionBypass = false;
 
         var user = await userService.GetUserByIdAsync(descriptor.Id);
@@ -31,7 +32,7 @@ public class TokenController : ControllerBase
         if (user != null)
         {
             var scope = User.FindFirstValue(UserClaimName.Scope);
-
+            descriptor.CompanyId = user.CompanyId;
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 
