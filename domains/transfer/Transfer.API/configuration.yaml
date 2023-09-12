@@ -3,6 +3,6 @@ version: 2.0.0
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/transfer/base/deployment.yaml
-    path: .spec.template.spec.initContainers[] | select(.name == "transfer-agreements-api-init-sql") | .image
+    path: .spec.template.spec.initContainers[] | select(.name == "transfer-api-init-sql") | .image
   - file: k8s/energy-origin-apps/transfer/base/deployment.yaml
-    path: .spec.template.spec.containers[] | select(.name == "transfer-agreements-api") | .image
+    path: .spec.template.spec.containers[] | select(.name == "transfer-api") | .image
