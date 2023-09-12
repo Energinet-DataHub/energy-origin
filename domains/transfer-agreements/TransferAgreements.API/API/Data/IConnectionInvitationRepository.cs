@@ -8,5 +8,7 @@ public interface IConnectionInvitationRepository
 {
     Task AddConnectionInvitation(ConnectionInvitation connectionInvitation);
 
-    Task<int> DeleteOldConnectionInvitations(TimeSpan olderThan);
+    Task DeleteOldConnectionInvitations(DateTimeOffset olderThan);
+
+    Task<ConnectionInvitation?> FindConnectionInvitation(Guid id);
 }

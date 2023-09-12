@@ -103,6 +103,19 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task SeedConnectionInvitations(IEnumerable<ConnectionInvitation> invitations)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        foreach (var invitation in invitations)
+        {
+            dbContext.ConnectionInvitations.Add(invitation);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",

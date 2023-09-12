@@ -24,11 +24,11 @@ public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupSe
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("InvitationCleanupService running at: {Time}", DateTimeOffset.Now);
+            logger.LogInformation("InvitationCleanupService running at: {Time}", DateTimeOffset.UtcNow);
 
             try
             {
-                await connectionInvitationRepository.DeleteOldConnectionInvitations(TimeSpan.FromDays(14));
+                await connectionInvitationRepository.DeleteOldConnectionInvitations(DateTimeOffset.UtcNow.AddDays(-14));
             }
             catch (Exception e)
             {
@@ -41,7 +41,7 @@ public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupSe
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
     {
-        var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
+        var minutesToNextHour = 60 - DateTimeOffset.UtcNow.Minute;
         logger.LogInformation("Sleeping until next full hour {MinutesToNextHour}", minutesToNextHour);
         try
         {

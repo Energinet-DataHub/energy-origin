@@ -11,8 +11,76 @@
           "ConnectionInvitations"
         ],
         "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/connection-invitations/{id}": {
+      "get": {
+        "tags": [
+          "ConnectionInvitations"
+        ],
+        "summary": "Get connection-invitation by Id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of connection-invitation",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
           "200": {
-            "description": "Success",
+            "description": "Successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionInvitation"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionInvitation"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionInvitation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connection-invitation expired or deleted"
+          },
+          "409": {
+            "description": "Company is already a connection",
             "content": {
               "text/plain": {
                 "schema": {
@@ -392,6 +460,27 @@
           "companyTin": {
             "type": "string",
             "description": "Company TIN (e.g. CVR)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConnectionInvitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderCompanyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderCompanyTin": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

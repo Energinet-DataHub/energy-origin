@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
@@ -17,14 +18,21 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
         await context.SaveChangesAsync();
     }
 
-    public async Task<int> DeleteOldConnectionInvitations(TimeSpan olderThan)
+    public async Task DeleteOldConnectionInvitations(DateTimeOffset olderThan)
     {
-        var cutoffDate = DateTimeOffset.Now - olderThan;
         var oldConnectionInvitations = context.ConnectionInvitations
-            .Where(i => i.CreatedAt < cutoffDate);
+            .Where(i => i.CreatedAt < olderThan);
 
         context.ConnectionInvitations.RemoveRange(oldConnectionInvitations);
 
-        return await context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<ConnectionInvitation?> FindConnectionInvitation(Guid id)
+    {
+        var connectionInvitation = await context.ConnectionInvitations
+            .FirstOrDefaultAsync(i => i.Id == id);
+
+        return connectionInvitation;
     }
 }
