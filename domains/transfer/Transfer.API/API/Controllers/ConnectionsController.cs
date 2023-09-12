@@ -14,7 +14,7 @@ namespace API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/connections")]
-public class ConnectionsController : Controller 
+public class ConnectionsController : Controller
 {
     private readonly IConnectionRepository connectionRepository;
 
@@ -39,7 +39,7 @@ public class ConnectionsController : Controller
 
         var dtos = connections.Select(x => ToDto(x, subject)).ToList();
 
-        return Ok(new ConnectionsResponse(dtos));
+        return Ok(new ConnectionsResponse { Result = dtos});
     }
 
     private static ConnectionDto ToDto(Connection connection, Guid loggedInCompanyId)

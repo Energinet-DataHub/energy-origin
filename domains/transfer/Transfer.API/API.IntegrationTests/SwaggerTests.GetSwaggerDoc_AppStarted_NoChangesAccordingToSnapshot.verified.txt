@@ -403,7 +403,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ConnectionDto"
-            }
+            },
+            "description": "List of connections"
           }
         },
         "additionalProperties": false
