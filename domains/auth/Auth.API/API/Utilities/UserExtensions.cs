@@ -14,7 +14,7 @@ public static class UserExtensions
         {
             organization = new OrganizationDescriptor()
             {
-                Id = user.Company!.Id ?? Guid.NewGuid(),
+                Id = user.Company!.Id ?? Guid.Empty,
                 Name = user.Company!.Name,
                 Tin = user.Company!.Tin
             };

@@ -29,6 +29,7 @@ public class TermsControllerTests
     private readonly ICryptography cryptography;
     private readonly RoleOptions roleOptions;
     private readonly TermsOptions termsOptions;
+    private readonly OidcOptions oidcOptions;
 
     public TermsControllerTests()
     {
@@ -40,6 +41,7 @@ public class TermsControllerTests
         dataSyncOptions = configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!;
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
         termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
+        oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
         cryptography = new Cryptography(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!);
     }
 
@@ -69,7 +71,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -104,7 +106,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -130,7 +132,7 @@ public class TermsControllerTests
         http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
-        await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 3));
+        await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, 3));
     }
 
     [Fact]
@@ -148,7 +150,7 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 2 } }
             });
 
-        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, 1);
+        var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, 1);
 
         Assert.NotNull(result);
         Assert.IsType<BadRequestObjectResult>(result);

@@ -28,6 +28,7 @@ public class TermsController : ControllerBase
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
         TermsOptions termsOptions,
+        OidcOptions oidcOptions,
         int version)
     {
         if (termsOptions.PrivacyPolicyVersion < version)
@@ -51,6 +52,7 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
+                Id = oidcOptions.ReuseSubject ? descriptor.Id : null,
                 Name = descriptor.Organization!.Name,
                 Tin = descriptor.Organization!.Tin
             };
