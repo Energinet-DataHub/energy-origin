@@ -1,9 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;

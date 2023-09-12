@@ -34,10 +34,7 @@ public class LogoutControllerTests
 
         options = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
-        cryptography = new Cryptography(new CryptographyOptions
-        {
-            Key = "secretsecretsecretsecret"
-        });
+        cryptography = new Cryptography(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!);
         encryptedIdentityToken = cryptography.Encrypt(identityToken);
     }
 

@@ -29,7 +29,16 @@ public class TokenController : ControllerBase
         if (user != null)
         {
             var scope = User.FindFirstValue(UserClaimName.Scope);
-            descriptor.Organization = new OrganizationDescriptor { Id = user.CompanyId, Name = user.Company.Name, Tin = user.Company.Tin }; // FIXME: this seems wrong
+            var organization = user.Company;
+            if (organization != null)
+            {
+                descriptor.Organization = new OrganizationDescriptor
+                {
+                    Id = (Guid)organization.Id!,
+                    Name = organization.Name,
+                    Tin = organization.Tin
+                };
+            }
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 

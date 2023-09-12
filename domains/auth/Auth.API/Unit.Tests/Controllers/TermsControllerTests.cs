@@ -36,15 +36,11 @@ public class TermsControllerTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
-        var cryptographyOptions = new CryptographyOptions
-        {
-            Key = "secretsecretsecretsecret"
-        };
 
         dataSyncOptions = configuration.GetSection(DataSyncOptions.Prefix).Get<DataSyncOptions>()!;
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
         termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
-        cryptography = new Cryptography(cryptographyOptions);
+        cryptography = new Cryptography(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!);
     }
 
     [Fact]
