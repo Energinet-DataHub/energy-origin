@@ -14,7 +14,7 @@ namespace API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/connections")]
-public class ConnectionsController : Controller
+public class ConnectionsController : Controller 
 {
     private readonly IConnectionRepository connectionRepository;
 
