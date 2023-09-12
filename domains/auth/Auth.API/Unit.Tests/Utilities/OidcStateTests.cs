@@ -7,13 +7,17 @@ namespace Unit.Tests.Utilities;
 public class OidcStateTests
 {
     [Theory]
-    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", "https://example.com/")]
-    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", null)]
-    [InlineData(null, "https://example.com/")]
-    [InlineData(null, null)]
-    public void OidcState_ShouldBeDecodable_WhenEncoded(string? frontendState, string? uri)
+    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", "https://example.com/", "/path")]
+    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", "https://example.com/", null)]
+    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", null, "/path")]
+    [InlineData(null, "https://example.com/", "/path")]
+    [InlineData("WW91IGFyZSBhIGN1cmlvdXMgb25lLiBJIGxpa2UgeW91IDopCg==", null, null)]
+    [InlineData(null, "https://example.com/", null)]
+    [InlineData(null, null, "/path")]
+    [InlineData(null, null, null)]
+    public void OidcState_ShouldBeDecodable_WhenEncoded(string? frontendState, string? uri, string? path)
     {
-        var state = new OidcState(State: frontendState, RedirectionUri: uri);
+        var state = new OidcState(State: frontendState, RedirectionUri: uri, RedirectionPath: path);
         var encoded = state.Encode();
         var decoded = OidcState.Decode(encoded);
 
