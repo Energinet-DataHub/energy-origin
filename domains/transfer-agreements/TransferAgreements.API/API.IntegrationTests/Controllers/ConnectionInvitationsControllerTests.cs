@@ -6,13 +6,10 @@ using API.IntegrationTests.Factories;
 using API.Models;
 using Argon;
 using FluentAssertions;
-using VerifyTests;
-using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
-[UsesVerify]
 public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -70,7 +67,6 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
 
         returnedInvitation.Should().BeEquivalentTo(invitation);
     }
-
 
     [Fact]
     public async Task GetConnectionInvitation_ShouldReturnNotFound_WhenInvitationDoesNotExist()

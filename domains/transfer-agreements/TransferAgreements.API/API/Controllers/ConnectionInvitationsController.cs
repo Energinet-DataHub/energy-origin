@@ -73,4 +73,3 @@ public class ConnectionInvitationsController : ControllerBase
         return Ok(connectionInvitation);
     }
 }
-

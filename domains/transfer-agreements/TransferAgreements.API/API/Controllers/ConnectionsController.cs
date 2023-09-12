@@ -62,5 +62,4 @@ public class ConnectionsController : Controller
 
         throw new MappingException($"Connection is not owned by the user. Connection: {connection}, logged in companyId: {loggedInCompanyId}");
     }
-
 }
