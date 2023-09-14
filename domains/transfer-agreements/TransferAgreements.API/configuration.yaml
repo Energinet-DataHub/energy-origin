@@ -1,8 +1,0 @@
-name: eo-transfer-agreements-api
-version: 1.0.6
-repo: ghcr.io/energinet-datahub
-references:
-  - file: k8s/energy-origin-apps/transfer-agreements/base/deployment.yaml
-    path: .spec.template.spec.initContainers[] | select(.name == "transfer-agreements-api-init-sql") | .image
-  - file: k8s/energy-origin-apps/transfer-agreements/base/deployment.yaml
-    path: .spec.template.spec.containers[] | select(.name == "transfer-agreements-api") | .image

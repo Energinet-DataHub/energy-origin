@@ -111,7 +111,7 @@ builder.Services.AddSwaggerGen(o =>
     o.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "Transfer Agreements API"
+        Title = "Transfer API"
     });
 
     if (builder.Environment.IsDevelopment())
@@ -172,8 +172,8 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer-agreements/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer-agreements/v1/swagger.json", "API v1"));
+app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
+if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
 
 app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

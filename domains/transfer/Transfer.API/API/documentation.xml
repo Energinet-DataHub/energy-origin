@@ -28,6 +28,11 @@
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>
+        <member name="P:API.ApiModels.Responses.ConnectionsResponse.Result">
+            <summary>
+            List of connections
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

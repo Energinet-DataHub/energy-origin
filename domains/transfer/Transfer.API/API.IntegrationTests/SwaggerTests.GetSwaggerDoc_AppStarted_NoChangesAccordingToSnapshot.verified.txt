@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Transfer Agreements API",
+    "title": "Transfer API",
     "version": "v1"
   },
   "paths": {
@@ -492,7 +492,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ConnectionDto"
-            }
+            },
+            "description": "List of connections"
           }
         },
         "additionalProperties": false
