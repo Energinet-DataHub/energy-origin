@@ -14,10 +14,10 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     private readonly ILogger<TransferAgreementsAutomationService> logger;
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IProjectOriginWalletService projectOriginWalletService;
-    private readonly MyCache memoryCache;
+    private readonly StatusCache memoryCache;
     private readonly ITransferAgreementAutomationMetrics metrics;
 
-    private MemoryCacheEntryOptions cacheOptions = new()
+    private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
         Size = 1
@@ -26,7 +26,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
         IProjectOriginWalletService projectOriginWalletService,
-        MyCache memoryCache,
+        StatusCache memoryCache,
         ITransferAgreementAutomationMetrics metrics
         )
     {

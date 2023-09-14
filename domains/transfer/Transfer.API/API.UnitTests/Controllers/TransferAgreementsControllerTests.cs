@@ -35,7 +35,6 @@ public class TransferAgreementsControllerTests
     public TransferAgreementsControllerTests()
     {
         var mockValidator = Substitute.For<IValidator<CreateTransferAgreement>>();
-        var mockCache = Substitute.For<MyCache>();
         var mockHttpContextAccessor = Substitute.For<IHttpContextAccessor>();
         mockTransferAgreementRepository.AddTransferAgreementToDb(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(new TransferAgreement()));
 
@@ -61,7 +60,6 @@ public class TransferAgreementsControllerTests
             mockTransferAgreementRepository,
             mockValidator,
             mockProjectOriginWalletDepositEndpointService,
-            mockCache,
             mockHttpContextAccessor)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }

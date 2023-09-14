@@ -3,9 +3,9 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace API.TransferAgreementsAutomation;
 
-public class MyCache
+public class StatusCache
 {
-    public MemoryCache Cache { get; } = new MemoryCache(
+    public MemoryCache Cache { get; } = new(
         new MemoryCacheOptions
         {
             SizeLimit = 1024
@@ -16,7 +16,7 @@ public class MyCache
 
 public static class CacheValues
 {
-    public static string Key = "Status";
-    public static string Success = "Success";
-    public static string Error = "Error";
+    public const string Key = "Status";
+    public const string Success = "Success";
+    public const string Error = "Error";
 }
