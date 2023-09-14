@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Models;
@@ -47,26 +49,22 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     [Fact]
     public async Task GetConnectionInvitation_ShouldReturnOK_WhenInvitationExists()
     {
-        var invitationId = Guid.NewGuid();
-        var invitation = new ConnectionInvitation
-        {
-            Id = invitationId,
-            SenderCompanyId = Guid.NewGuid(),
-            SenderCompanyTin = "12345678"
-        };
-
-        await factory.SeedConnectionInvitations(new List<ConnectionInvitation> { invitation });
-
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var response = await client.GetAsync($"api/connection-invitations/{invitationId}");
+        var createResponse = await client.PostAsync("api/connection-invitations", new StringContent("", Encoding.UTF8, "application/json"));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var createResponseBody = await createResponse.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
 
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(responseBody);
+        var getResponse = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
 
-        returnedInvitation.Should().BeEquivalentTo(invitation);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(getResponseBody);
+
+        returnedInvitation.Should().BeEquivalentTo(createdInvitation);
     }
 
     [Fact]
@@ -116,5 +114,31 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
         var responseBody = await response.Content.ReadAsStringAsync();
         responseBody.Should().Be("Company is already a connection");
+    }
+
+    [Fact]
+    public async Task GetConnectionInvitation_ShouldReturnNotFound_WhenConnectionInvitationExpired()
+    {
+        var companyId = Guid.NewGuid();
+        var companyTin = "12345678";
+        var invitationId = Guid.NewGuid();
+
+        var invitation = new ConnectionInvitation
+        {
+            Id = invitationId,
+            SenderCompanyId = companyId,
+            SenderCompanyTin = companyTin,
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-14)
+        };
+
+        await factory.SeedConnectionInvitations(new List<ConnectionInvitation> { invitation });
+
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
+
+        var response = await client.GetAsync($"api/connection-invitations/{invitationId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        responseBody.Should().Be("Connection-invitation expired or deleted");
     }
 }
