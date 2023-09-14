@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata;
+using System.Reflection.Metadata;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace API.TransferAgreementsAutomation;
