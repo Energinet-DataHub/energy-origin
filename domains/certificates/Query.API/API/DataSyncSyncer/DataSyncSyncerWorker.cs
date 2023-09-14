@@ -1,8 +1,9 @@
 using API.ContractService;
+using API.Data;
 using API.DataSyncSyncer.Client.Dto;
-using Marten;
 using MassTransit;
 using MeasurementEvents;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,24 +18,24 @@ internal class DataSyncSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<DataSyncSyncerWorker> logger;
-    private readonly IDocumentStore documentStore;
+    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
-        IDocumentStore documentStore,
+        IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
-        this.documentStore = documentStore;
+        this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var cleanupResult = await documentStore.CleanupContracts(stoppingToken);
+        var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -59,11 +60,9 @@ internal class DataSyncSyncerWorker : BackgroundService
     {
         try
         {
-            await using var querySession = documentStore.QuerySession();
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-            var allContracts = await querySession
-                .Query<CertificateIssuingContract>()
-                .ToListAsync(cancellationToken);
+            var allContracts = await context.Contracts.ToListAsync(cancellationToken);
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)
@@ -133,13 +132,12 @@ public static class ContractCleanup
 {
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
 
-    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDocumentStore store, CancellationToken cancellationToken)
+    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDbContextFactory<ApplicationDbContext> contextFactory, CancellationToken cancellationToken)
     {
-        await using var session = store.OpenSession();
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var contractsForBadMeteringPoint = await session.Query<CertificateIssuingContract>()
-            .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment)
-            .ToListAsync(cancellationToken);
+        var contractsForBadMeteringPoint = await EntityFrameworkQueryableExtensions.ToListAsync(context.Contracts
+                .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment), cancellationToken);
 
         var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
 
@@ -150,10 +148,10 @@ public static class ContractCleanup
 
         foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
         {
-            session.Delete(certificateIssuingContract);
+            context.Remove(certificateIssuingContract);
         }
 
-        await session.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return (BadMeteringPointInDemoEnvironment, deletionCount);
     }

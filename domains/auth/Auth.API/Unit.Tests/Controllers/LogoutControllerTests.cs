@@ -4,6 +4,7 @@ using API.Controllers;
 using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
@@ -16,12 +17,13 @@ namespace Unit.Tests.Controllers;
 
 public class LogoutControllerTests
 {
+    private readonly LogoutController controller = new();
     private readonly OidcOptions options;
-    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
+    private readonly ICryptography cryptography;
     private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
-    private readonly string identityToken;
-    private readonly UserDescriptor descriptor;
+    private readonly string identityToken = Guid.NewGuid().ToString();
+    private readonly string encryptedIdentityToken;
 
     public LogoutControllerTests()
     {
@@ -32,31 +34,21 @@ public class LogoutControllerTests
 
         options = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
-        var encryptedIdentityToken = Guid.NewGuid().ToString();
-        identityToken = Guid.NewGuid().ToString();
-
-        var cryptography = Mock.Of<ICryptography>();
-        Mock.Get(cryptography).Setup(it => it.Decrypt<string>(encryptedIdentityToken)).Returns(identityToken);
-
-        descriptor = new UserDescriptor(cryptography)
-        {
-            EncryptedIdentityToken = encryptedIdentityToken
-        };
+        cryptography = new Cryptography(configuration.GetSection(CryptographyOptions.Prefix).Get<CryptographyOptions>()!);
+        encryptedIdentityToken = cryptography.Encrypt(identityToken);
     }
 
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
     {
-        Mock.Get(mapper)
-            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: descriptor);
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -81,7 +73,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -94,9 +86,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
     {
-        Mock.Get(mapper)
-            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: descriptor);
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
@@ -105,7 +95,7 @@ public class LogoutControllerTests
 
         var redirectionUri = "http://redirection.r.us";
 
-        var result = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger, redirectionUri);
+        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger, redirectionUri);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -116,9 +106,7 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
-        Mock.Get(mapper)
-            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: descriptor);
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var testOptions = TestOptions.Oidc(options, allowRedirection: false);
 
@@ -129,7 +117,7 @@ public class LogoutControllerTests
 
         var redirectionUri = Guid.NewGuid().ToString();
 
-        var result = await new LogoutController().LogoutAsync(metrics, cache, mapper, testOptions, logger, redirectionUri);
+        var result = await controller.LogoutAsync(metrics, cache, cryptography, testOptions, logger, redirectionUri);
 
         var redirectResult = (RedirectResult)result;
         var uri = new Uri(redirectResult.Url);
@@ -146,7 +134,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        var result = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -170,7 +158,7 @@ public class LogoutControllerTests
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+        await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Mock.Get(logger).Verify(it => it.Log(
             It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -185,16 +173,14 @@ public class LogoutControllerTests
     [Fact]
     public async Task LogoutAsync_ShouldCallMetricsLogout_WhenInvokedSuccessfully()
     {
-        Mock.Get(mapper)
-            .Setup(it => it.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(value: descriptor);
+        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
         var cache = Mock.Of<IDiscoveryCache>();
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
-        _ = await new LogoutController().LogoutAsync(metrics, cache, mapper, options, logger);
+        _ = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Mock.Get(metrics).Verify(x => x.Logout(
             It.IsAny<Guid>(),

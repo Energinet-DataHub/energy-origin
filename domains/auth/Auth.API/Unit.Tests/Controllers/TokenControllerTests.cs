@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
@@ -7,7 +6,6 @@ using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using static API.Utilities.TokenIssuer;
@@ -16,19 +14,12 @@ namespace Unit.Tests.Controllers;
 
 public class TokenControllerTests
 {
-    private readonly TokenController tokenController = new();
+    private readonly TokenController controller = new();
     private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<TokenController> logger = Mock.Of<ILogger<TokenController>>();
     private readonly ITokenIssuer issuer = Mock.Of<ITokenIssuer>();
-    private readonly IUserDescriptorMapper mapper = Mock.Of<IUserDescriptorMapper>();
     private readonly IUserService userService = Mock.Of<IUserService>();
     private readonly ICryptography cryptography = Mock.Of<ICryptography>();
-    private readonly ClaimsPrincipal claimsPrincipal = Mock.Of<ClaimsPrincipal>();
-
-    public TokenControllerTests() => tokenController.ControllerContext = new()
-    {
-        HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-    };
 
     [Theory]
     [InlineData(false, UserScopeName.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]
@@ -42,23 +33,7 @@ public class TokenControllerTests
             .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
             .Returns(Guid.NewGuid().ToString());
 
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(cryptography)
-            {
-                Id = Guid.Parse(userId),
-                EncryptedAccessToken = Guid.NewGuid().ToString(),
-                EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                ProviderType = providerType,
-                MatchedRoles = ""
-            });
-
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<User>(), providerType, It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(new UserDescriptor(cryptography)
-            {
-                Id = Guid.NewGuid()
-            });
+        controller.PrepareUser(id: Guid.Parse(userId), providerType: providerType, scope: scope);
 
         Mock.Get(userService)
             .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
@@ -75,11 +50,7 @@ public class TokenControllerTests
             .Setup(x => x.Issue(It.IsAny<UserDescriptor>(), It.IsAny<UserData>(), It.IsAny<bool>(), It.IsAny<DateTime>()))
             .Returns(token);
 
-        Mock.Get(claimsPrincipal)
-            .Setup(x => x.FindFirst(UserClaimName.Scope))
-            .Returns(new Claim(UserClaimName.Scope, scope));
-
-        var result = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
+        var result = await controller.RefreshAsync(metrics, logger, userService, issuer);
         Assert.NotNull(result);
         Assert.IsType<OkObjectResult>(result);
 
@@ -91,33 +62,27 @@ public class TokenControllerTests
     [Fact]
     public async Task RefreshAsync_ShouldCallMetricsTokenRefresh_WhenInvokedSuccessfully()
     {
+        var organization = new OrganizationDescriptor
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        };
         var userId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var providerType = ProviderType.MitIdProfessional;
 
-        Mock.Get(cryptography)
-            .Setup(x => x.Decrypt<string>(It.IsAny<string>()))
-            .Returns(Guid.NewGuid().ToString());
+        controller.PrepareUser(id: userId, organization: organization, providerType: providerType);
 
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(cryptography)
-            {
-                Id = userId,
-                CompanyId = companyId,
-                ProviderType = providerType
-            });
-
-        _ = await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer);
+        _ = await controller.RefreshAsync(metrics, logger, userService, issuer);
 
         Mock.Get(metrics).Verify(x => x.TokenRefresh(
             userId,
-            companyId,
+            organization.Id,
             providerType),
             Times.Once
         );
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenUserDescriptMapperReturnsNull() => await Assert.ThrowsAsync<NullReferenceException>(async () => await tokenController.RefreshAsync(metrics, logger, mapper, userService, issuer));
+    public async Task RefreshAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.RefreshAsync(metrics, logger, userService, issuer));
 }

@@ -1,41 +1,85 @@
-using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Diagnostics.CodeAnalysis;
 using EnergyOrigin.TokenValidation.Values;
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class UserDescriptor
 {
-    public Guid Id { get; init; }
-    public ProviderType ProviderType { get; init; }
-    public string Name { get; init; } = null!;
-    public Guid? CompanyId { get; set; }
-    public string? CompanyName { get; init; }
-    public string? Tin { get; init; }
-    public string MatchedRoles { get; init; } = null!;
-    public bool AllowCprLookup { get; init; }
-    public string EncryptedAccessToken { get; init; } = null!;
-    public string EncryptedIdentityToken { get; init; } = null!;
+    public required OrganizationDescriptor? Organization { get; set; }
+    public required Guid Id { get; init; }
+    public required ProviderType ProviderType { get; init; }
+    public required string Name { get; init; }
+    public required string MatchedRoles { get; init; }
+    public required bool AllowCprLookup { get; init; }
+    public required string EncryptedAccessToken { get; init; }
+    public required string EncryptedIdentityToken { get; init; }
+    // <summary>
+    // The unencrypted data should follow this format: "ProviderKeyType1=ProviderKey1 ProviderKeyType2=ProviderKey2"
+    // </summary>
+    public required string EncryptedProviderKeys { get; init; }
 
-    /// <summary>
-    /// The unencrypted data should follow this format: "ProviderKeyType1:ProviderKey1 ProviderKeyType2=ProviderKey2"
-    /// </summary>
-    public string EncryptedProviderKeys { get; init; } = null!;
+    public Guid Subject => Organization?.Id ?? Id;
 
-    public string AccessToken => cryptography.Decrypt<string>(EncryptedAccessToken);
-    public string IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
+    public UserDescriptor() { }
 
-    public Dictionary<ProviderKeyType, string> ProviderKeys => cryptography.Decrypt<string>(EncryptedProviderKeys)
-        .Split(" ")
-        .Select(x =>
+    [SetsRequiredMembers]
+    public UserDescriptor(ClaimsPrincipal? user)
+    {
+        if (user is null)
         {
-            var keyValue = x.Split("=");
-            return new KeyValuePair<ProviderKeyType, string>(Enum.Parse<ProviderKeyType>(keyValue.First()), keyValue.Last());
-        })
-        .ToDictionary(x => x.Key, x => x.Value);
+            throw new PropertyMissingException(nameof(user));
+        }
 
-    public Guid Subject => CompanyId ?? Id;
+        if (Enum.TryParse<ProviderType>(user.FindFirstValue(UserClaimName.ProviderType), out var providerType))
+        {
+            ProviderType = providerType;
+        }
+        else
+        {
+            throw new PropertyMissingException(nameof(UserClaimName.ProviderType));
+        }
 
-    private readonly ICryptography cryptography;
+        Name = user.FindFirstValue(JwtRegisteredClaimNames.Name) ?? throw new PropertyMissingException(nameof(JwtRegisteredClaimNames.Name));
 
-    public UserDescriptor(ICryptography cryptography) => this.cryptography = cryptography;
-};
+        if (bool.TryParse(user.FindFirstValue(UserClaimName.AllowCprLookup), out var allowCprLookup))
+        {
+            AllowCprLookup = allowCprLookup;
+        }
+        else
+        {
+            throw new PropertyMissingException(nameof(UserClaimName.AllowCprLookup));
+        }
+
+        var actor = user.FindFirstValue(UserClaimName.Actor) ?? throw new PropertyMissingException(nameof(UserClaimName.Actor));
+
+        Id = Guid.Parse(actor);
+
+        MatchedRoles = user.FindFirstValue(UserClaimName.MatchedRoles) ?? string.Empty;
+
+        EncryptedAccessToken = user.FindFirstValue(UserClaimName.AccessToken) ?? throw new PropertyMissingException(nameof(UserClaimName.AccessToken));
+        EncryptedIdentityToken = user.FindFirstValue(UserClaimName.IdentityToken) ?? throw new PropertyMissingException(nameof(UserClaimName.IdentityToken));
+        EncryptedProviderKeys = user.FindFirstValue(UserClaimName.ProviderKeys) ?? throw new PropertyMissingException(nameof(UserClaimName.ProviderKeys));
+
+        var claimedOrganizationId = user.FindFirstValue(UserClaimName.OrganizationId);
+        Guid.TryParse(claimedOrganizationId, out var organizationId);
+
+        var organizationName = user.FindFirstValue(UserClaimName.OrganizationName);
+        var tin = user.FindFirstValue(UserClaimName.Tin);
+
+        if (claimedOrganizationId != null && organizationName != null && tin != null)
+        {
+            Organization = new()
+            {
+                Id = organizationId,
+                Name = organizationName,
+                Tin = tin
+            };
+        }
+        else if (claimedOrganizationId != null || organizationName != null || tin != null)
+        {
+            throw new PropertyMissingException(nameof(Organization));
+        }
+    }
+}

@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +16,9 @@ public class RemoveUserController : ControllerBase
 {
     [HttpDelete]
     [Route("user/remove/{userId:guid}")]
-    public async Task<IActionResult> RemoveUser(Guid userId, IUserDescriptorMapper mapper, IUserService userService, ILogger<RemoveUserController> logger)
+    public async Task<IActionResult> RemoveUser(Guid userId, IUserService userService, ILogger<RemoveUserController> logger)
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
         if (userId == descriptor.Id)
         {
             return BadRequest("A user cannot delete themselves.");

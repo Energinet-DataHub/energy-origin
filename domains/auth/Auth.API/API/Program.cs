@@ -65,7 +65,7 @@ builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(Iden
 builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsTest())
 {
     builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
 }
@@ -116,7 +116,6 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
     };
 });
 builder.Services.AddSingleton<ICryptography, Cryptography>();
-builder.Services.AddSingleton<IUserDescriptorMapper, UserDescriptorMapper>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
 

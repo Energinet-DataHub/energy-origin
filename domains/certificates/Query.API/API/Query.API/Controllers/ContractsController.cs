@@ -8,7 +8,6 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
@@ -102,9 +101,9 @@ public class ContractsController : ControllerBase
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
-        return contracts.IsEmpty()
-            ? NoContent()
-            : Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) });
+        return contracts.Any()
+            ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
+            : NoContent();
     }
 
     /// <summary>

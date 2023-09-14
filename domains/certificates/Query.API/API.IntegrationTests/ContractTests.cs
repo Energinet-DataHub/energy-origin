@@ -18,7 +18,7 @@ namespace API.IntegrationTests;
 public sealed class ContractTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<MartenDbContainer>,
+    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<ProjectOriginStack>
@@ -28,14 +28,14 @@ public sealed class ContractTests :
 
     public ContractTests(
         QueryApiWebApplicationFactory factory,
-        MartenDbContainer marten,
+        PostgresContainer postgres,
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         ProjectOriginStack projectOriginStack)
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
-        this.factory.MartenConnectionString = marten.ConnectionString;
+        this.factory.ConnectionString = postgres.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
