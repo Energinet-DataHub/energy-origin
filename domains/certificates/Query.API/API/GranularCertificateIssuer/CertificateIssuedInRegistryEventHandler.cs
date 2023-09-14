@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using AggregateRepositories;
+using API.Data;
 using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;

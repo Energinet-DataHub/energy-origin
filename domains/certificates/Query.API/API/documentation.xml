@@ -36,6 +36,18 @@
             <param name="endDate"></param>
             <returns>true if completely within</returns>
         </member>
+        <member name="T:API.Migrations.Initial">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.Initial.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.Initial.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.Initial.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
