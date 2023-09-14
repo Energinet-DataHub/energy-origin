@@ -108,7 +108,7 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
     }
 
     [Fact]
-    public async Task SetSyncPosition_SecondTime_ReturnsSyncedTo()
+    public async Task SetSyncPosition_SecondTime_ReturnsSecondSyncPosition()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var syncedTo1 = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
