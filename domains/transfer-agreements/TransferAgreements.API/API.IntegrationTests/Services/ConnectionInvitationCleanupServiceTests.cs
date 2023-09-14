@@ -1,12 +1,16 @@
-using System;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
 using API.IntegrationTests.Factories;
 using API.Models;
 using API.Services.ConnectionInvitationCleanup;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using NpgsqlTypes;
 using Xunit;
 
 namespace API.IntegrationTests.Services;
@@ -23,6 +27,7 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
         sub = Guid.NewGuid();
         tin = "11223344";
         factory.WalletUrl = "UnusedWalletUrl";
+        factory.CreateClient();
     }
 
     [Fact]
@@ -30,7 +35,6 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
     {
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var cleanupService = scope.ServiceProvider.GetRequiredService<IConnectionInvitationCleanupService>();
 
         dbContext.ConnectionInvitations.RemoveRange(dbContext.ConnectionInvitations);
         await dbContext.SaveChangesAsync();
@@ -55,16 +59,8 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
         dbContext.ConnectionInvitations.Add(oldInvitation);
         await dbContext.SaveChangesAsync();
 
-        var cancellationTokenSource = new CancellationTokenSource();
+        var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<ConnectionInvitation>(1);
 
-        var runTask = cleanupService.Run(cancellationTokenSource.Token);
-
-        await Task.Delay(100);
-
-        cancellationTokenSource.Cancel();
-        await runTask;
-
-        var remainingInvitations = await dbContext.ConnectionInvitations.CountAsync();
-        Assert.Equal(1, remainingInvitations);
+        invitations.FirstOrDefault().Id.Should().Be(newInvitation.Id);
     }
 }

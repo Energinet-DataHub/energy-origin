@@ -14,12 +14,13 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly string sub;
-    private readonly string tin = "12345678";
+    private readonly string tin;
 
     public ConnectionInvitationsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
+        tin = "12345678";
 
         factory.WalletUrl = "UnusedWalletUrl";
     }
@@ -83,7 +84,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     }
 
     [Fact]
-    public async Task GetConnectionInvitation_ShouldReturnConflict_WhenConflictExists()
+    public async Task GetConnectionInvitation_ShouldReturnConflict_WhenConnectionExists()
     {
         var companyAId = Guid.NewGuid();
         var companyATin = "12345678";

@@ -2,7 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
+using API.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace API.Services.ConnectionInvitationCleanup;
 
@@ -10,14 +12,16 @@ public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupSe
 {
     private readonly ILogger<ConnectionInvitationCleanupService> logger;
     private readonly IConnectionInvitationRepository connectionInvitationRepository;
+    private readonly ConnectionInvitationCleanupServiceOptions options;
 
     public ConnectionInvitationCleanupService(
         ILogger<ConnectionInvitationCleanupService> logger,
-        IConnectionInvitationRepository connectionInvitationRepository
-    )
+        IConnectionInvitationRepository connectionInvitationRepository,
+        IOptions<ConnectionInvitationCleanupServiceOptions> options)
     {
         this.logger = logger;
         this.connectionInvitationRepository = connectionInvitationRepository;
+        this.options = options.Value;
     }
 
     public async Task Run(CancellationToken stoppingToken)
@@ -41,11 +45,10 @@ public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupSe
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
     {
-        var minutesToNextHour = 60 - DateTimeOffset.UtcNow.Minute;
-        logger.LogInformation("Sleeping until next full hour {MinutesToNextHour}", minutesToNextHour);
+        logger.LogInformation("Sleep for {SleepTime}", options.SleepTime);
         try
         {
-            await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
+            await Task.Delay(options.SleepTime, cancellationToken);
         }
         catch (TaskCanceledException)
         {

@@ -28,10 +28,10 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
         await context.SaveChangesAsync();
     }
 
-    public async Task<ConnectionInvitation?> FindConnectionInvitation(Guid id)
+    public async Task<ConnectionInvitation?> GetNonExpiredConnectionInvitation(Guid id)
     {
         var connectionInvitation = await context.ConnectionInvitations
-            .FirstOrDefaultAsync(i => i.Id == id);
+            .FirstOrDefaultAsync(i => i.CreatedAt < DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
 
         return connectionInvitation;
     }

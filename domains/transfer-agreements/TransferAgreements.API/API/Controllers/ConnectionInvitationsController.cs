@@ -39,7 +39,7 @@ public class ConnectionInvitationsController : ControllerBase
 
         await connectionInvitationRepository.AddConnectionInvitation(newInvitation);
 
-        return CreatedAtAction(nameof(GetConnectionInvitation), new { id = newInvitation.Id }, new { connectionInvitationId = newInvitation });
+        return CreatedAtAction(nameof(GetConnectionInvitation), new { id = newInvitation.Id }, newInvitation);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class ConnectionInvitationsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ConnectionInvitation>> GetConnectionInvitation(Guid id)
     {
-        var connectionInvitation = await connectionInvitationRepository.FindConnectionInvitation(id);
+        var connectionInvitation = await connectionInvitationRepository.GetNonExpiredConnectionInvitation(id);
 
         if (connectionInvitation == null)
         {
