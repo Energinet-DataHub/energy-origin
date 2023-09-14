@@ -336,6 +336,18 @@
         }
       }
     },
+    "/api/transfer-agreements/status": {
+      "get": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/transfer-agreements/wallet-deposit-endpoint": {
       "post": {
         "tags": [
