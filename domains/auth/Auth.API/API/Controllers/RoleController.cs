@@ -121,8 +121,7 @@ public class RoleController : ControllerBase
             .Select(x => (x.Key, x.Name))
             .ToList();
 
-        var list = users.Select(user => new UserRolesResponse
-        { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
+        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
 
         logger.AuditLog(
             "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
@@ -140,7 +139,7 @@ public class RoleController : ControllerBase
         foreach (var role in userRoles)
         {
             var result = validRoles.FirstOrDefault(x => x.Item1 == role.Role);
-            if (!EqualityComparer<(string, string)>.Default.Equals(result, default))
+            if (result.Equals(default) == false)
             {
                 roles.Add(result.Item1, result.Item2);
             }

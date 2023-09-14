@@ -242,13 +242,13 @@ public class RoleControllerTests
     {
         new object[]
         {
-            new List<User> // List with 0 users
+            new List<User>
             {
             }
         },
         new object[]
         {
-            new List<User> // List with 1 user
+            new List<User>
             {
                 new User
                 {
@@ -263,7 +263,7 @@ public class RoleControllerTests
         },
         new object[]
         {
-            new List<User> // List with 2 users
+            new List<User>
             {
                 new User
                 {
@@ -281,7 +281,7 @@ public class RoleControllerTests
                     UserRoles = new List<UserRole>
                     {
                         new UserRole { Role = RoleKey.RoleAdmin },
-                        new UserRole {Role = RoleKey.Viewer}
+                        new UserRole { Role = RoleKey.Viewer }
                     }
                 }
             }
@@ -328,5 +328,49 @@ public class RoleControllerTests
                 Assert.True(response.Roles.ContainsKey(user.UserRoles[j].Role));
             }
         }
+    }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldFilterOutInvalidRoles_WhenRolesAreInvalid()
+    {
+        Mock.Get(userService)
+            .Setup(service => service.GetUsersByTinAsync(It.IsAny<string>()))
+            .ReturnsAsync(new List<User> {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "test",
+                    UserRoles = new List<UserRole>
+                    {
+                        new() { Role = "non-existent-role" },
+                        new() { Role = RoleKey.Viewer }
+                    }
+                }
+            });
+
+        Mock.Get(mapper)
+            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
+            .Returns(new UserDescriptor(null!)
+            {
+                Id = Guid.NewGuid(),
+                Tin = Guid.NewGuid().ToString(),
+            });
+
+        var testUserId = Guid.NewGuid();
+        roleController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
+        };
+        var result = await roleController.GetUsersByTin(userService, mapper, roleOptions, logger);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
+
+        Assert.Single(returnValue);
+
+        var response = returnValue.Single();
+
+        Assert.Single(response.Roles);
+        Assert.True(response.Roles.Single().Key == RoleKey.Viewer);
     }
 }
