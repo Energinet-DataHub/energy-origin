@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Data;
 using API.Models.Entities;
 using API.Models.Response;
 using API.Options;
@@ -101,12 +103,42 @@ public class RoleController : ControllerBase
     }
 
     [HttpGet]
-    [Route("role/users/{tin}")]
-    public async Task<IActionResult> GetUsersByTin(string tin, IUserService userService)
+    [Route("role/users")]
+    public async Task<IActionResult> GetUsersByTin(IUserService userService, IUserDescriptorMapper mapper, RoleOptions roles, ILogger<RoleController> logger)
     {
-        var users = await userService.GetUsersByTinAsync(tin);
-        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = user.UserRoles.Select(x => x.Role).ToList() }).ToList();
+        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var tin = descriptor.Tin!;
 
+        var users = await userService.GetUsersByTinAsync(tin);
+
+        var validRoles = roles.RoleConfigurations
+            .Where(x => !x.IsTransient)
+            .Select(x => (x.Key, x.Name))
+            .ToList();
+        
+        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
+
+        logger.AuditLog(
+           "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
+           list.Count,
+           tin,
+           descriptor.Id,
+           DateTimeOffset.Now.ToUnixTimeSeconds()
+       );
         return Ok(list);
+    }
+
+    private Dictionary<string,string> PopulateRoles(List<UserRole> userRoles, List<(string,string)> validRoles)
+    {
+        var roles = new Dictionary<string, string>();
+        foreach (var role in userRoles)
+        {
+            var result = validRoles.FirstOrDefault(x => x.Item1 == role.Role);
+            if (!EqualityComparer<(string, string)>.Default.Equals(result, default))
+            {
+                roles.Add(result.Item1, result.Item2);
+            }
+        }
+        return roles;
     }
 }
