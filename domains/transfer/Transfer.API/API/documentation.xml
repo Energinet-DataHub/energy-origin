@@ -19,6 +19,11 @@
             Company TIN (e.g. CVR)
             </summary>
         </member>
+        <member name="P:API.ApiModels.Responses.ConnectionsResponse.Result">
+            <summary>
+            List of connections
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

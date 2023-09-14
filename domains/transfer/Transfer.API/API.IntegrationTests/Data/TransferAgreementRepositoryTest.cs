@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,34 +11,26 @@ using Xunit;
 
 namespace API.IntegrationTests.Data;
 
-public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
+public class TransferAgreementRepositoryTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public TransferAgreementRepositoryTest(PostgresContainer dbContainer)
+    public TransferAgreementRepositoryTest(TransferAgreementsApiWebApplicationFactory factory)
     {
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        this.factory = factory;
     }
 
     [Fact]
     public async Task AddTransferAgreementToDb_SameSenderIdAndTransferAgreementNumber_ShouldThrowException()
     {
-        await using var dbContext = new ApplicationDbContext(options);
-        await dbContext.Database.EnsureCreatedAsync();
-        var repository = new TransferAgreementRepository(dbContext);
-
         var senderId = Guid.NewGuid();
         var agreements = SetupTransferAgreements(senderId);
+        await factory.SeedTransferAgreements(agreements);
 
-        foreach (var agreement in agreements)
-        {
-            await repository.AddTransferAgreementToDb(agreement);
-        }
-
-        var existingTransferAgreement = dbContext.TransferAgreements.First();
 
         var transferAgreement = new TransferAgreement()
         {
+            Id = Guid.NewGuid(),
             StartDate = DateTimeOffset.UtcNow,
             EndDate = DateTimeOffset.UtcNow.AddDays(10),
             SenderId = senderId,
@@ -45,10 +38,10 @@ public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
             SenderTin = "44332211",
             ReceiverTin = "12345678",
             ReceiverReference = Guid.NewGuid(),
-            TransferAgreementNumber = existingTransferAgreement.TransferAgreementNumber
+            TransferAgreementNumber = agreements[0].TransferAgreementNumber
         };
-        dbContext.TransferAgreements.Add(transferAgreement);
-        await Assert.ThrowsAsync<DbUpdateException>(() => dbContext.SaveChangesAsync());
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => factory.SeedTransferAgreementsSaveChangesAsync(transferAgreement));
     }
 
     private static List<TransferAgreement> SetupTransferAgreements(Guid senderId)
@@ -57,6 +50,7 @@ public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
         {
             new()
             {
+                Id = Guid.NewGuid(),
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
@@ -64,9 +58,11 @@ public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
                 ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 1
             },
             new()
             {
+                Id = Guid.NewGuid(),
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
@@ -74,9 +70,11 @@ public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
                 ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 2
             },
             new()
             {
+                Id = Guid.NewGuid(),
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
@@ -84,6 +82,8 @@ public class TransferAgreementRepositoryTest : IClassFixture<PostgresContainer>
                 SenderTin = "44332211",
                 ReceiverTin = "12345678",
                 ReceiverReference = Guid.NewGuid(),
+                TransferAgreementNumber = 3
+
             }
         };
         return agreements;
