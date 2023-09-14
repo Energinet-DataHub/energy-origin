@@ -35,4 +35,12 @@ public class ConnectionRepository : IConnectionRepository
             await context.SaveChangesAsync();
         }
     }
+    public async Task<bool> HasConflict(Guid currentCompanyId, Guid senderCompanyId)
+    {
+        var existingConnections = await GetCompanyConnections(currentCompanyId);
+        return IsConflict(existingConnections, senderCompanyId);
+    }
+
+    private static bool IsConflict(List<Connection> existingConnections, Guid senderCompanyId) =>
+        existingConnections.Any(c => c.CompanyAId == senderCompanyId || c.CompanyBId == senderCompanyId);
 }

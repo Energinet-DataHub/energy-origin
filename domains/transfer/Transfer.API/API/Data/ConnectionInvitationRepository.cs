@@ -1,5 +1,8 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
@@ -13,5 +16,23 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
     {
         context.ConnectionInvitations.Add(connectionInvitation);
         await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteOldConnectionInvitations(DateTimeOffset olderThan)
+    {
+        var oldConnectionInvitations = context.ConnectionInvitations
+            .Where(i => i.CreatedAt < olderThan);
+
+        context.ConnectionInvitations.RemoveRange(oldConnectionInvitations);
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<ConnectionInvitation?> GetNonExpiredConnectionInvitation(Guid id)
+    {
+        var connectionInvitation = await context.ConnectionInvitations
+            .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
+
+        return connectionInvitation;
     }
 }
