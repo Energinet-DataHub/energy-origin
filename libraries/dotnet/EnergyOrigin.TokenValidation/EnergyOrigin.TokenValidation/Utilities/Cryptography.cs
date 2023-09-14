@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
