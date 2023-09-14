@@ -31,7 +31,7 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
     public async Task<ConnectionInvitation?> GetNonExpiredConnectionInvitation(Guid id)
     {
         var connectionInvitation = await context.ConnectionInvitations
-            .FirstOrDefaultAsync(i => i.CreatedAt < DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
+            .FirstOrDefaultAsync(i => i.Id == id);
 
         return connectionInvitation;
     }

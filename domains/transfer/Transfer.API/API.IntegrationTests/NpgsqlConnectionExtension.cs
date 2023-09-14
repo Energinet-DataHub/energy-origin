@@ -1,17 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Data;
-using API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests;
 
 public static class NpgsqlConnectionExtension
 {
-    public static async Task<List<T>> RepeatedlyQueryUntilCountIsMet<T>(this ApplicationDbContext dbContext, int count, TimeSpan? timeLimit = null)
+    public static async Task<List<T>> RepeatedlyQueryUntilCountIsMet<T>(this DbContext dbContext, int count, TimeSpan? timeLimit = null)
         where T : class
     {
         var limit = timeLimit ?? TimeSpan.FromSeconds(15);

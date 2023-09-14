@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Models;
-using Argon;
+using Newtonsoft.Json;
 using FluentAssertions;
 using Xunit;
 
@@ -102,7 +102,8 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         {
             Id = invitationId,
             SenderCompanyId = companyAId,
-            SenderCompanyTin = companyATin
+            SenderCompanyTin = companyATin,
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         await factory.SeedConnections(new List<Connection> { connection });
