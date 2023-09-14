@@ -35,6 +35,7 @@ public class ConnectionRepository : IConnectionRepository
             await context.SaveChangesAsync();
         }
     }
+
     public async Task<bool> HasConflict(Guid currentCompanyId, Guid senderCompanyId)
     {
         var existingConnections = await GetCompanyConnections(currentCompanyId);
