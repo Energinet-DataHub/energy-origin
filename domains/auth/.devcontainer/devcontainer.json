@@ -12,6 +12,9 @@
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     },
+    "mounts": [
+        "source=${localWorkspaceFolder}/../../libraries/dotnet/EnergyOrigin.TokenValidation,target=/workspaces/EnergyOrigin.TokenValidation,type=bind,consistency=cached"
+    ],
     "customizations": {
         "vscode": {
             "extensions": [
