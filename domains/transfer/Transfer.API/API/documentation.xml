@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API</name>
+    </assembly>
+    <members>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.Id">
+            <summary>
+            Connection ID
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyId">
+            <summary>
+            ID of the company
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionDto.CompanyTin">
+            <summary>
+            Company TIN (e.g. CVR)
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.ConnectionsResponse.Result">
+            <summary>
+            List of connections
+            </summary>
+        </member>
+        <member name="M:API.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
+            <summary>
+            Get connection-invitation by Id
+            </summary>
+            <param name="id">Id of connection-invitation</param>
+            <response code="200">Successful operation</response>
+            <response code="404">Connection-invitation expired or deleted</response>
+            <response code="409">Company is already a connection</response>
+        </member>
+        <member name="T:API.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTransferAgreementActorIdAndSenderId">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementActorIdAndSenderId.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementActorIdAndSenderId.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementActorIdAndSenderId.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AlterColumnReceiverTin">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AlterColumnReceiverTin.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AlterColumnReceiverTin.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AlterColumnReceiverTin.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementsSenderNameAndSenderTin.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.UpdateEndDateToNullable">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.UpdateEndDateToNullable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.UpdateEndDateToNullable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.UpdateEndDateToNullable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTransferAgreementHistoryEntry">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementHistoryEntry.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTransferAgreementReceiverReference">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTransferAgreementReceiverReference.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddInvitationsTable">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddInvitationsTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddInvitationsTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddInvitationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddUniqueIndexAndTransferAgreementNumber">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddUniqueIndexAndTransferAgreementNumber.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
