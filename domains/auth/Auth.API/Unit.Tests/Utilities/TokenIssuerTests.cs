@@ -43,7 +43,7 @@ public class TokenIssuerTests
              new object[] { UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin, 3, 2, false, new List<string>{"organization-admin"} },
              new object[] { $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 2, true, new List<string>{"organization-admin"} },
              new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, new List<string>{"viewer"} },
-             new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, null },
+             new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, null! },
              new object[] { $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 0, true, new List<string>() },
         };
 
