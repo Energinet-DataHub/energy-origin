@@ -6,5 +6,5 @@ public class UserRolesResponse
 {
     public Guid UserId { get; set; }
     public string Name { get; set; } = null!;
-    public Dictionary<string,string> Roles { get; set; } = null!;
+    public Dictionary<string, string> Roles { get; set; } = null!;
 }

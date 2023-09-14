@@ -309,7 +309,7 @@ public class RoleControllerTests
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
         };
-        var result = await roleController.GetUsersByTin(userService,mapper,roleOptions,logger);
+        var result = await roleController.GetUsersByTin(userService, mapper, roleOptions, logger);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);

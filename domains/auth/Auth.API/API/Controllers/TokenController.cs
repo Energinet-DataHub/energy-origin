@@ -32,7 +32,7 @@ public class TokenController : ControllerBase
         if (user != null)
         {
             var scope = User.FindFirstValue(UserClaimName.Scope);
-			descriptor.CompanyId = user.CompanyId;
+            descriptor.CompanyId = user.CompanyId;
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
                 && scope.Contains(UserScopeName.NotAcceptedTermsOfService) == false
                 && scope.Contains(UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin) == false)

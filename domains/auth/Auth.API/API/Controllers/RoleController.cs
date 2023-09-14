@@ -19,11 +19,12 @@ public class RoleController : ControllerBase
 {
     [HttpGet]
     [Route("role/all")]
-    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
-    {
-        x.Key,
-        x.Name
-    }));
+    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x =>
+        new
+        {
+            x.Key,
+            x.Name
+        }));
 
     [HttpPut]
     [Route("role/{role}/assign/{userId:guid}")]
@@ -42,10 +43,12 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
+
         if (user.Company?.Tin != descriptor.Tin)
         {
             return Forbid($"User is not in the same company");
         }
+
         if (user.UserRoles.Any(x => x.Role == role))
         {
             return Ok();
@@ -75,10 +78,12 @@ public class RoleController : ControllerBase
         {
             return NotFound($"User not found: {userId}");
         }
+
         if (user.Id == descriptor.Id && role == RoleKey.RoleAdmin)
         {
             return BadRequest("An admin cannot remove his admin role");
         }
+
         if (user.Company?.Tin != descriptor.Tin)
         {
             return Forbid($"User is not in the same company");
@@ -115,20 +120,21 @@ public class RoleController : ControllerBase
             .Where(x => !x.IsTransient)
             .Select(x => (x.Key, x.Name))
             .ToList();
-        
-        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
+
+        var list = users.Select(user => new UserRolesResponse
+        { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
 
         logger.AuditLog(
-           "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
-           list.Count,
-           tin,
-           descriptor.Id,
-           DateTimeOffset.Now.ToUnixTimeSeconds()
-       );
+            "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
+            list.Count,
+            tin,
+            descriptor.Id,
+            DateTimeOffset.Now.ToUnixTimeSeconds()
+        );
         return Ok(list);
     }
 
-    private Dictionary<string,string> PopulateRoles(List<UserRole> userRoles, List<(string,string)> validRoles)
+    private Dictionary<string, string> PopulateRoles(List<UserRole> userRoles, List<(string, string)> validRoles)
     {
         var roles = new Dictionary<string, string>();
         foreach (var role in userRoles)
@@ -139,6 +145,7 @@ public class RoleController : ControllerBase
                 roles.Add(result.Item1, result.Item2);
             }
         }
+
         return roles;
     }
 }
