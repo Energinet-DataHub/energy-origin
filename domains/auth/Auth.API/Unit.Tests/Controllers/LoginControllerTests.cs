@@ -75,8 +75,9 @@ public class LoginControllerTests
 
         var state = Guid.NewGuid().ToString();
         var redirectionUri = Guid.NewGuid().ToString();
+        var redirectionPath = Guid.NewGuid().ToString();
 
-        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger, state, redirectionUri);
+        var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger, state, redirectionUri, redirectionPath);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -93,6 +94,7 @@ public class LoginControllerTests
         Assert.NotNull(decoded);
         Assert.Equal(state, decoded.State);
         Assert.Equal(redirectionUri, decoded.RedirectionUri);
+        Assert.Equal(redirectionPath, decoded.RedirectionPath);
     }
 
     [Fact]

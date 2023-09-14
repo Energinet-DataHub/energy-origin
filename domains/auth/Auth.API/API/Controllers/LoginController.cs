@@ -14,7 +14,14 @@ public class LoginController : ControllerBase
     [AllowAnonymous]
     [HttpGet]
     [Route("auth/login")]
-    public async Task<IActionResult> LoginAsync(IDiscoveryCache discoveryCache, OidcOptions oidcOptions, IdentityProviderOptions providerOptions, ILogger<LoginController> logger, [FromQuery] string? state = default, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LoginAsync(
+        IDiscoveryCache discoveryCache,
+        OidcOptions oidcOptions,
+        IdentityProviderOptions providerOptions,
+        ILogger<LoginController> logger,
+        [FromQuery] string? state = default,
+        [FromQuery] string? overrideRedirectionUri = default,
+        [FromQuery] string? redirectionPath = default)
     {
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -27,7 +34,8 @@ public class LoginController : ControllerBase
 
         var oidcState = new OidcState(
             State: state,
-            RedirectionUri: overrideRedirectionUri
+            RedirectionUri: overrideRedirectionUri,
+            RedirectionPath: redirectionPath
         );
         var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
         var url = requestUrl.CreateAuthorizeUrl(
