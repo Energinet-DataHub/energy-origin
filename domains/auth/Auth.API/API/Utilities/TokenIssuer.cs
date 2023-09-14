@@ -59,17 +59,25 @@ public class TokenIssuer : ITokenIssuer
     private static string? HandleNotAcceptedScope(TermsOptions options, UserData data)
     {
         string? scope = null;
+
         if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
         {
             return string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
         }
-        if (options.TermsOfServiceVersion == data.TermsOfServiceVersion) return null;
 
-        if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
+        if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
         {
-            return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin);
+            if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
+            {
+                return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin);
+            }
+            else
+            {
+                return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
+            }
         }
-        return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
+
+        return scope;
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
