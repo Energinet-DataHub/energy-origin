@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  martendb:
+    image: sibedge/postgres-plv8
+    container_name: marten
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres-init-data/001-plv8.sql:/docker-entrypoint-initdb.d/001-plv8.sql
+      - ./sql:/sql
+    environment:
+      POSTGRES_DB: marten
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  db:
+    image: postgres:15.2
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: Database
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.11.7-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "5050:80" # pgAdmin UI port
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.admin
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+
+volumes:
+  martendb:
+  postgres:
+  pgadmin:

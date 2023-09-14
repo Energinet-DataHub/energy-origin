@@ -50,8 +50,8 @@ measurementsDomain = group "Measurements Domain" {
 
 }
 
-transferAgreementsDomain = group "Transfer Agreements Domain" {
-    taApi = container "Transfer Agreement API" "" ".NET Web Api" {
+transferDomain = group "Transfer Domain" {
+    tApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> po "Creates wallet deposit endpoint"
@@ -61,16 +61,16 @@ transferAgreementsDomain = group "Transfer Agreements Domain" {
             this -> po "Transfers certificates"
         }
     }
-    taDb = container "Transfer Agreement Storage" {
+    tDb = container "Transfer Storage" {
         description ""
         technology "Postgres SQL"
 
-        taApi -> this "Saves and reads transfer agreement and connections data"
+        tApi -> this "Saves and reads transfer agreement and connections data"
     }
     apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"
-    connectionsApi -> taDb "Stores connections"
-    transferAgreementsApi -> taDb "Stores transfer agreements"
-    transferAgreementAutomation -> taDb "Reads transfer agreements"
-    deleteConnectionInvitationsWorker -> taDb "Deletes connection-invitations"
+    connectionsApi -> tDb "Stores connections"
+    transferAgreementsApi -> tDb "Stores transfer agreements"
+    transferAgreementAutomation -> tDb "Reads transfer agreements"
+    deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
 }

@@ -10,8 +10,13 @@ namespace CertificateValueObjects;
 /// <param name="DateTo">In unix timestamp (seconds)</param>
 public class Period : ValueObject
 {
-    public long DateFrom { get; } // EnergyMeasured.DateFrom
-    public long DateTo { get; } // EnergyMeasured.DateTo
+    private Period()
+    {
+
+    }
+
+    public long DateFrom { get; private set; }
+    public long DateTo { get; private set; }
 
     public Period(long dateFrom, long dateTo)
     {

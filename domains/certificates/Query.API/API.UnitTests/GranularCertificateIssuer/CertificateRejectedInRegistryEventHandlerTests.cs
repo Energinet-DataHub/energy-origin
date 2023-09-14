@@ -1,9 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AggregateRepositories;
+using API.Data;
 using API.GranularCertificateIssuer;
-using CertificateEvents.Aggregates;
 using CertificateValueObjects;
 using Contracts.Certificates;
 using FluentAssertions;
@@ -18,7 +17,7 @@ namespace API.UnitTests.GranularCertificateIssuer;
 public class CertificateRejectedInRegistryEventHandlerTests
 {
     [Fact]
-    public async void ShouldRejectCertificateAndSave()
+    public async Task ShouldRejectCertificateAndSave()
     {
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
