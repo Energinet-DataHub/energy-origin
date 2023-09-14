@@ -44,7 +44,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain->
+            include ->certificatesDomain-> dh2
             autoLayout
         }
         container energyOrigin "Transfer" {

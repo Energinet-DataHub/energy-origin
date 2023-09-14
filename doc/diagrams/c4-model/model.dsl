@@ -1,8 +1,24 @@
 # TODO all diagrams should be revised to resemble Energy Origin as-is
 
+// foo = group "bar" {
+//     poRegistry = softwareSystem "Project Origin Registry" {
+//         description "Public permissioned distributed ledger where everyone can validate the Guarantee of Origin for their electricity."
+//         tags "Out of focus"
+//     }
+// }
+
 apiGateway = container "API Gateway" {
     description "Routes requests to services and forwards authentication requests"
     technology "Traefik"
+}
+
+dataSyncDomain = group "Data Sync" {
+    dataSyncApi = container "Data Sync" {
+        description "Facade for DataHub 2.0"
+        technology ".NET"
+
+        this -> dh2 "Forwards requests to"
+    }
 }
 
 authDomain = group "Auth Domain" {
@@ -27,18 +43,25 @@ certificatesDomain = group "Certificate Domain" {
         technology ".NET Web Api"
 
         apiGateway -> this "Forwards requests to"
+        this -> dataSyncApi "Reads measurements from"
+    }
+    certRegistryConnector = container "Registry Connector" {
+        description "Coordinates issurance between registry and wallet"
+
+        this -> po "Sends issued events to registry and slices to wallet"
     }
     certRabbitMq = container "Certificate Message Broker" {
         description ""
         technology "RabbitMQ"
 
         certApi -> this "Produces and consumes messages using"
+        certRegistryConnector -> this "Produces and consumes messages using"
     }
     certEventStore = container "Certificate Storage" {
         description ""
-        technology "EventStore"
+        technology "Postgres"
 
-        certApi -> this "Saves and reads certificate models using"
+        certApi -> this "Saves and reads issuing contracts using"
     }
 }
 
