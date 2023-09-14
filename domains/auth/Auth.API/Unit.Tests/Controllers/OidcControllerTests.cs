@@ -257,8 +257,10 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
-    [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("/testpath")]
+    public async Task CallbackAsync_ShouldReturnRedirectToOverridenUri_WhenConfigured(string? redirectionPath)
     {
         var testOptions = TestOptions.Oidc(oidcOptions, allowRedirection: true);
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
@@ -293,7 +295,7 @@ public class OidcControllerTests
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var redirection = "https://goodguys.com";
-        var oidcState = new OidcState(State: null, RedirectionUri: redirection);
+        var oidcState = new OidcState(State: null, RedirectionUri: redirection, RedirectionPath: redirectionPath);
 
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
@@ -342,7 +344,7 @@ public class OidcControllerTests
         Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
 
         var redirectionUri = "http://hackerz.com";
-        var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri);
+        var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri, RedirectionPath: null);
 
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
@@ -352,6 +354,55 @@ public class OidcControllerTests
         var uri = new Uri(result.Url);
         Assert.NotEqual(new Uri(redirectionUri).Host, uri.Host);
         Assert.Equal(testOptions.FrontendRedirectUri.Host, uri.Host);
+    }
+
+    [Fact]
+    public async Task CallbackAsync_ShouldReturnRedirectToPath_WhenConfigured()
+    {
+        var testOptions = TestOptions.Oidc(oidcOptions, allowRedirection: false);
+
+        var tokenEndpoint = new Uri($"http://{testOptions.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{testOptions.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{testOptions.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.PublicKeyPem)
+        );
+
+        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+
+        var providerId = Guid.NewGuid().ToString();
+        var name = Guid.NewGuid().ToString();
+        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId);
+        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, claims: new() {
+            { "mitid.uuid", providerId },
+            { "mitid.identity_name", name },
+            { "idp", ProviderName.MitId  },
+            { "identity_type", ProviderGroup.Private}
+        });
+
+        Mock.Get(userProviderService).Setup(it => it.GetNonMatchingUserProviders(It.IsAny<List<UserProvider>>(), It.IsAny<List<UserProvider>>())).Returns(new List<UserProvider>());
+
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
+        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
+
+        var redirectionPath = "/testpath";
+        var oidcState = new OidcState(State: null, RedirectionUri: null, RedirectionPath: redirectionPath);
+
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, mapper, userProviderService, service, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+
+        Assert.NotNull(action);
+        var result = (RedirectResult)action;
+
+        var uri = new Uri(result.Url);
+        Assert.Equal(testOptions.FrontendRedirectUri.Host, uri.Host);
+        Assert.Equal(redirectionPath, uri.AbsolutePath);
     }
 
     [Fact]
