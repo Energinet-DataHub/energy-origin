@@ -205,21 +205,10 @@
         }
       }
     },
-    "/role/users/{tin}": {
+    "/role/users": {
       "get": {
         "tags": [
           "Role"
-        ],
-        "parameters": [
-          {
-            "name": "tin",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "responses": {
           "200": {
