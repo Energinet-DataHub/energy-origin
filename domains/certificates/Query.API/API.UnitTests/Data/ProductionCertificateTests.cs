@@ -1,13 +1,12 @@
 using System;
-using CertificateEvents.Aggregates;
-using CertificateEvents.Exceptions;
+using API.Data;
 using CertificateValueObjects;
 using FluentAssertions;
 using Xunit;
 
-namespace API.UnitTests.CertificateEvents.Aggregates;
+namespace API.UnitTests.Data;
 
-public class ProductionCertificateTest
+public class ProductionCertificateTests
 {
     private readonly ProductionCertificate productionCertificate = new(
         "gridArea",
