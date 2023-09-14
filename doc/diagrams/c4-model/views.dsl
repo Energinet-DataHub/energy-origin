@@ -47,13 +47,13 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->certificatesDomain->
             autoLayout
         }
-        container energyOrigin "TransferAgreement" {
-            title "[Container Context] Transfer Agreements"
-            include ->transferAgreementsDomain->
+        container energyOrigin "Transfer" {
+            title "[Container Context] Transfer"
+            include ->transferDomain->
             autoLayout
         }
-        component taApi "TransferAgreementComponents" {
-            title "[Component Context] Transfer Agreements"
+        component tApi "TransferComponents" {
+            title "[Component Context] Transfer"
             include *
             autoLayout
         }

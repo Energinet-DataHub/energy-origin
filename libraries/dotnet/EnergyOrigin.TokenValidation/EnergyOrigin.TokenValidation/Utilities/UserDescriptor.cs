@@ -8,7 +8,7 @@ public class UserDescriptor
     public Guid Id { get; init; }
     public ProviderType ProviderType { get; init; }
     public string Name { get; init; } = null!;
-    public Guid? CompanyId { get; init; }
+    public Guid? CompanyId { get; set; }
     public string? CompanyName { get; init; }
     public string? Tin { get; init; }
     public string MatchedRoles { get; init; } = null!;
