@@ -1,8 +1,8 @@
 using System;
 using API.Configurations;
 using API.DataSyncSyncer.Client;
+using API.DataSyncSyncer.Migration;
 using API.DataSyncSyncer.Persistence;
-using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -24,10 +24,11 @@ public static class Startup
         services.AddSingleton<DataSyncService>();
         services.AddSingleton<ISyncState, SyncState>();
 
-        services.ConfigureMarten(o =>
-        {
-        });
-
         services.AddHostedService<DataSyncSyncerWorker>();
+
+        //TODO: Remove after migration
+        services.AddSingleton<MartenHelper>();
+        services.AddSingleton<DbContextHelper>();
+        services.AddSingleton<MartenMigration>();
     }
 }
