@@ -7,6 +7,6 @@ public class ConnectionInvitationCleanupServiceOptions
 {
     public const string Prefix = "ConnectionInvitationCleanupService";
 
-    [Range(typeof(TimeSpan), "00:00:02", "24:00:00")]
+    [Range(typeof(TimeSpan), "00:00:02", "02:00:00")]
     public TimeSpan SleepTime { get; set; }
 }
