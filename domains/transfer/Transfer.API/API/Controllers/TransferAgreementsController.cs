@@ -8,12 +8,14 @@ using API.Data;
 using API.Extensions;
 using API.Models;
 using API.Services;
+using API.TransferAgreementsAutomation;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace API.Controllers;
 
@@ -25,17 +27,20 @@ public class TransferAgreementsController : ControllerBase
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly MyCache cache;
     private readonly IHttpContextAccessor httpContextAccessor;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
         IProjectOriginWalletService projectOriginWalletService,
+        MyCache cache,
         IHttpContextAccessor httpContextAccessor)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.projectOriginWalletService = projectOriginWalletService;
+        this.cache = cache;
         this.httpContextAccessor = httpContextAccessor;
     }
 
@@ -128,6 +133,12 @@ public class TransferAgreementsController : ControllerBase
             .ToList();
 
         return Ok(new TransferAgreementsResponse(listResponse));
+    }
+
+    [HttpGet("status")]
+    public async Task<ActionResult> GetStatus()
+    {
+        return Ok(cache.Cache.Get(CacheValues.Key));
     }
 
     [ProducesResponseType(204)]

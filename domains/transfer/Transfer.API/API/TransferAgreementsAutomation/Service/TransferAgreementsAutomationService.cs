@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.Metrics;
 using API.Services;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace API.TransferAgreementsAutomation;
@@ -13,18 +14,26 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     private readonly ILogger<TransferAgreementsAutomationService> logger;
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly MyCache memoryCache;
     private readonly ITransferAgreementAutomationMetrics metrics;
 
+    private MemoryCacheEntryOptions cacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
+        Size = 1
+    };
     public TransferAgreementsAutomationService(
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
         IProjectOriginWalletService projectOriginWalletService,
+        MyCache memoryCache,
         ITransferAgreementAutomationMetrics metrics
         )
     {
         this.logger = logger;
         this.transferAgreementRepository = transferAgreementRepository;
         this.projectOriginWalletService = projectOriginWalletService;
+        this.memoryCache = memoryCache;
         this.metrics = metrics;
     }
 
@@ -45,9 +54,11 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
                 {
                     await projectOriginWalletService.TransferCertificates(transferAgreement);
                 }
+                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
             }
             catch (Exception e)
             {
+                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
             }
 
