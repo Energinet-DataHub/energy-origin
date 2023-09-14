@@ -28,7 +28,6 @@ public class TokenController : ControllerBase
         var user = await userService.GetUserByIdAsync(descriptor.Id);
         if (user != null)
         {
-            var scope = User.FindFirstValue(UserClaimName.Scope);
             var organization = user.Company;
             if (organization != null)
             {
@@ -39,6 +38,7 @@ public class TokenController : ControllerBase
                     Tin = organization.Tin
                 };
             }
+            var scope = User.FindFirstValue(UserClaimName.Scope);
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
         }
 

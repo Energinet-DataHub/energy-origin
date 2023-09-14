@@ -139,4 +139,43 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
         Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
     }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldReturnTokenWithUpdatedOrganizationId_WhenOrganizationHasBeenCreated()
+    {
+        var user = new User()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Company = new Company()
+            {
+                Name = Guid.NewGuid().ToString(),
+                Tin = Guid.NewGuid().ToString(),
+            }
+        };
+        var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
+        var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
+
+        await factory.AddUserToDatabaseAsync(user);
+
+        var result = await client.GetAsync("auth/token");
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var newToken = await result.Content.ReadAsStringAsync();
+        Assert.NotNull(newToken);
+        Assert.NotEqual(oldToken, newToken);
+
+        var oldId = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.OrganizationId)!.Value;
+        var newId = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.OrganizationId)!.Value;
+        var subject = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Subject)!.Value;
+        var userId = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Actor)!.Value;
+        Assert.NotNull(oldId);
+        Assert.NotNull(newId);
+        Assert.Equal(Guid.Empty.ToString(), oldId);
+        Assert.Equal(user.Company.Id.ToString(), newId);
+        Assert.Equal(subject, newId);
+        Assert.Equal(user.Id.ToString(), userId);
+    }
 }
