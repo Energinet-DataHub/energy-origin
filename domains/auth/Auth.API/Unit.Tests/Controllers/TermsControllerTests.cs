@@ -68,9 +68,6 @@ public class TermsControllerTests
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
             });
 
-        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
-        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
-
         var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
@@ -103,9 +100,6 @@ public class TermsControllerTests
 
         controller.PrepareUser(id: id, name: name, organization: organization, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
-        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
-        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
-
         var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
@@ -127,13 +121,7 @@ public class TermsControllerTests
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull()
-    {
-        http.When(HttpMethod.Post, dataSyncOptions.Uri!.AbsoluteUri).Respond(HttpStatusCode.OK);
-        Mock.Get(factory).Setup(it => it.CreateClient(It.IsAny<string>())).Returns(http.ToHttpClient());
-
-        await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, 3));
-    }
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, 3));
 
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()

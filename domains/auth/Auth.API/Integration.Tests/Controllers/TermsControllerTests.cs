@@ -1,8 +1,6 @@
 using System.Net;
-using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
@@ -117,7 +115,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnInternalServerError_WhenPrincipalIsNull()
+    public async Task AcceptUserTermsAsync_ShouldReturnOk_ForSimplestTestCase()
     {
         var user = await factory.AddUserToDatabaseAsync();
 
@@ -126,7 +124,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var response = await client.PutAsync("terms/user/accept/2", null);
 
         Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

@@ -18,6 +18,7 @@ public class DecodableUserDescriptor : UserDescriptor
     public string IdentityToken => cryptography.Decrypt<string>(EncryptedIdentityToken);
     public Dictionary<ProviderKeyType, string> ProviderKeys => cryptography.Decrypt<string>(EncryptedProviderKeys)
             .Split(" ")
+            .Where(x => x.Contains("="))
             .Select(x =>
             {
                 var keyValue = x.Split("=");
