@@ -1,9 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
@@ -11,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Integration.Tests.Controllers;
 
+// FIXME: add an actual test for first time refresh of token _after_ a user with an organization has been saved to the database
 public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
@@ -30,8 +29,9 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithSameScope_WhenTermsVersionHasIncreasedDuringCurrentLogin()
     {
-        var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", Company = new Company { Name = "test", Tin = "56565656" }, AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
-        var oldClient = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
+        var earlier = DateTimeOffset.Now.AddSeconds(-1);
+        var user = await factory.AddUserToDatabaseAsync(new User { Id = Guid.NewGuid(), Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } } });
+        var oldClient = factory.CreateAuthenticatedClient(user, issueAt: earlier.UtcDateTime, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => new TermsOptions()
         {
             PrivacyPolicyVersion = 1,
             TermsOfServiceVersion = 1
@@ -114,26 +114,6 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull()
-    {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
-        {
-            var mapper = Mock.Of<IUserDescriptorMapper>();
-            Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: null!);
-
-            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
-        });
-
-        var response = await client.GetAsync("auth/token");
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-    }
-
-    [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithTermsScope_WhenUserHasNotAcceptedTermsPreviously()
     {
         var user = new User()
@@ -158,5 +138,44 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(newScope);
         Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, oldScope);
         Assert.Equal(UserScopeName.NotAcceptedPrivacyPolicy, newScope);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldReturnTokenWithUpdatedOrganizationId_WhenOrganizationHasBeenCreated()
+    {
+        var user = new User()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Company = new Company()
+            {
+                Name = Guid.NewGuid().ToString(),
+                Tin = Guid.NewGuid().ToString(),
+            }
+        };
+        var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
+        var oldToken = client.DefaultRequestHeaders.Authorization?.Parameter;
+
+        await factory.AddUserToDatabaseAsync(user);
+
+        var result = await client.GetAsync("auth/token");
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+        var newToken = await result.Content.ReadAsStringAsync();
+        Assert.NotNull(newToken);
+        Assert.NotEqual(oldToken, newToken);
+
+        var oldId = new JwtSecurityTokenHandler().ReadJwtToken(oldToken).Claims.First(x => x.Type == UserClaimName.OrganizationId)!.Value;
+        var newId = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.OrganizationId)!.Value;
+        var subject = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Subject)!.Value;
+        var userId = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Actor)!.Value;
+        Assert.NotNull(oldId);
+        Assert.NotNull(newId);
+        Assert.Equal(Guid.Empty.ToString(), oldId);
+        Assert.Equal(user.Company.Id.ToString(), newId);
+        Assert.Equal(subject, newId);
+        Assert.Equal(user.Id.ToString(), userId);
     }
 }

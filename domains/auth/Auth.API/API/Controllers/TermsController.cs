@@ -3,8 +3,9 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,13 +21,14 @@ public class TermsController : ControllerBase
     public async Task<IActionResult> AcceptUserTermsAsync(
         ILogger<TermsController> logger,
         IHttpContextAccessor accessor,
-        IUserDescriptorMapper mapper,
         IUserService userService,
         ICompanyService companyService,
         IHttpClientFactory clientFactory,
+        ICryptography cryptography,
         DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
         TermsOptions termsOptions,
+        OidcOptions oidcOptions,
         int version)
     {
         if (termsOptions.PrivacyPolicyVersion < version)
@@ -34,7 +36,7 @@ public class TermsController : ControllerBase
             return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', since the latest version is '{termsOptions.PrivacyPolicyVersion}'.");
         }
 
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new DecodableUserDescriptor(User, cryptography);
 
         var type = UserTermsType.PrivacyPolicy;
         var user = await userService.GetUserByIdAsync(descriptor.Id);
@@ -45,13 +47,14 @@ public class TermsController : ControllerBase
             return BadRequest($"The user cannot accept {nameof(UserTermsType.PrivacyPolicy)} version '{version}', when they had previously accepted version '{acceptedVersion}'.");
         }
 
-        var company = await companyService.GetCompanyByTinAsync(descriptor.Tin);
-        if (company == null && descriptor.Tin != null)
+        var company = await companyService.GetCompanyByTinAsync(descriptor.Organization?.Tin);
+        if (company == null && descriptor.Organization?.Tin != null)
         {
             company = new Company()
             {
-                Name = descriptor.CompanyName!,
-                Tin = descriptor.Tin!
+                Id = oidcOptions.ReuseSubject ? descriptor.Id : null,
+                Name = descriptor.Organization!.Name,
+                Tin = descriptor.Organization!.Tin
             };
         }
 
@@ -97,7 +100,7 @@ public class TermsController : ControllerBase
             var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{relationUri}/relations", new()
             {
                 { "ssn", null },
-                { "tin", descriptor.Tin }
+                { "tin", descriptor.Organization?.Id }
             });
 
             if (result.IsSuccessStatusCode == false)
@@ -121,7 +124,6 @@ public class TermsController : ControllerBase
     [Route("terms/company/accept/{version}")]
     public async Task<IActionResult> AcceptCompanyAsync(
         ILogger<TermsController> logger,
-        IUserDescriptorMapper mapper,
         IUserService userService,
         TermsOptions termsOptions,
         int version)
@@ -131,7 +133,7 @@ public class TermsController : ControllerBase
             return BadRequest($"The user cannot accept {nameof(CompanyTermsType.TermsOfService)} terms of service version '{version}', since the latest version is '{termsOptions.TermsOfServiceVersion}'.");
         }
 
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
         var user = await userService.GetUserByIdAsync(descriptor.Id);
 
         var type = CompanyTermsType.TermsOfService;
