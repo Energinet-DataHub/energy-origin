@@ -6,7 +6,6 @@ using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using API.Models;
 using FluentAssertions;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;

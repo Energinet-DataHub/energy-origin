@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Extensions;
 using Audit.Core;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace API.Filters;
