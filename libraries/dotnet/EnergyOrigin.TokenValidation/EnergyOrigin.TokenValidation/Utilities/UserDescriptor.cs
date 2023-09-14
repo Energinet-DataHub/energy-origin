@@ -52,11 +52,7 @@ public class UserDescriptor
             throw new PropertyMissingException(nameof(UserClaimName.AllowCprLookup));
         }
 
-        var actor = user.FindFirstValue(UserClaimName.Actor);
-        if (actor == null)
-        {
-            throw new PropertyMissingException(nameof(UserClaimName.Actor));
-        }
+        var actor = user.FindFirstValue(UserClaimName.Actor) ?? throw new PropertyMissingException(nameof(UserClaimName.Actor));
 
         Id = Guid.Parse(actor);
 
@@ -66,11 +62,13 @@ public class UserDescriptor
         EncryptedIdentityToken = user.FindFirstValue(UserClaimName.IdentityToken) ?? throw new PropertyMissingException(nameof(UserClaimName.IdentityToken));
         EncryptedProviderKeys = user.FindFirstValue(UserClaimName.ProviderKeys) ?? throw new PropertyMissingException(nameof(UserClaimName.ProviderKeys));
 
-        Guid.TryParse(user.FindFirstValue(UserClaimName.OrganizationId), out var organizationId);
+        var claimedOrganizationId = user.FindFirstValue(UserClaimName.OrganizationId);
+        Guid.TryParse(claimedOrganizationId, out var organizationId);
+
         var organizationName = user.FindFirstValue(UserClaimName.OrganizationName);
         var tin = user.FindFirstValue(UserClaimName.Tin);
 
-        if (organizationId != Guid.Empty && organizationName != null && tin != null)
+        if (claimedOrganizationId != null && organizationName != null && tin != null)
         {
             Organization = new()
             {
@@ -79,7 +77,7 @@ public class UserDescriptor
                 Tin = tin
             };
         }
-        else if (organizationId != Guid.Empty || organizationName != null || tin != null)
+        else if (claimedOrganizationId != null || organizationName != null || tin != null)
         {
             throw new PropertyMissingException(nameof(Organization));
         }
