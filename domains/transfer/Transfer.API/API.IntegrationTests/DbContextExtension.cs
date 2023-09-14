@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests;
 
-public static class NpgsqlConnectionExtension
+public static class DbContextExtension
 {
     public static async Task<List<T>> RepeatedlyQueryUntilCountIsMet<T>(this DbContext dbContext, int count, TimeSpan? timeLimit = null)
         where T : class
