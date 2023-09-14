@@ -2,7 +2,6 @@ using API.Models.Entities;
 using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace API.Repositories;
 
@@ -31,19 +30,5 @@ public class UserRepository : IUserRepository
         await dataContext.SaveChangesAsync();
     }
 
-    public async Task<List<User>> GetUsersByTinAsync(string tin)
-    {
-        try
-        {
-            return await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
-
-        }
-        catch (Exception e)
-        {
-
-            var a = e;
-            return null;
-        }
-    }
-
+    public async Task<List<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
 }
