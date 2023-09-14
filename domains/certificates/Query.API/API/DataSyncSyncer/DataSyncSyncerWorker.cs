@@ -1,7 +1,6 @@
 using API.ContractService;
 using API.Data;
 using API.DataSyncSyncer.Client.Dto;
-using API.DataSyncSyncer.Migration;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
@@ -21,26 +20,21 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
-    private readonly MartenMigration martenMigration;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
-        MartenMigration martenMigration,
         DataSyncService dataSyncService)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
-        this.martenMigration = martenMigration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await martenMigration.Migrate();
-
         var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
         logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
 
