@@ -19,6 +19,7 @@ public class TransferAgreementAutomationController : ControllerBase
         this.cache = cache;
     }
 
+    [ProducesResponseType(typeof(TransferAutomationStatus), 200)]
     [HttpGet("transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()
     {
@@ -26,7 +27,7 @@ public class TransferAgreementAutomationController : ControllerBase
 
         return Ok(value == null ?
             new TransferAutomationStatus(CacheValues.Error) :
-            new TransferAutomationStatus(value.ToString())
+            new TransferAutomationStatus(value.ToString()!)
         );
     }
 }

@@ -66,6 +66,35 @@
         }
       }
     },
+    "/transfer-automation/status": {
+      "get": {
+        "tags": [
+          "TransferAgreementAutomation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/history/transfer-agreements/{transferAgreementId}": {
       "get": {
         "tags": [
@@ -336,18 +365,6 @@
         }
       }
     },
-    "/api/transfer-agreements/status": {
-      "get": {
-        "tags": [
-          "TransferAgreements"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/transfer-agreements/wallet-deposit-endpoint": {
       "post": {
         "tags": [
@@ -548,6 +565,15 @@
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAutomationStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
           }
         },
         "additionalProperties": false

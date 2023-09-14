@@ -1,3 +1,3 @@
 namespace API.ApiModels.Responses;
 
-public record TransferAutomationStatus(string? Status);
+public record TransferAutomationStatus(string Status);

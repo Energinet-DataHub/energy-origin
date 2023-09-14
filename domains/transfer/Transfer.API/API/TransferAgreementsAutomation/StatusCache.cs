@@ -8,10 +8,8 @@ public class StatusCache
     public MemoryCache Cache { get; } = new(
         new MemoryCacheOptions
         {
-            SizeLimit = 1024
+            SizeLimit = 1
         });
-
-
 }
 
 public static class CacheValues

@@ -8,6 +8,8 @@ using API.TransferAgreementsAutomation;
 using Argon;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
@@ -15,16 +17,48 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly HttpClient authenticatedClient;
+    private readonly StatusCache cache;
+    private readonly MemoryCacheEntryOptions cacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
+        Size = 1
+    };
 
     public TransferAgreementAutomationControllerTest(TransferAgreementsApiWebApplicationFactory factory)
     {
+        cache = factory.Services.GetService<StatusCache>()!;
         authenticatedClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
     }
 
     [Fact]
-    public async Task GetStatus_ShouldReturnOk()
+    public async Task GetStatus_ShouldReturnSuccess()
     {
-        StatusCache cache = new();
+        cache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
+
+        var response = await authenticatedClient.GetAsync("transfer-automation/status");
+        response.EnsureSuccessStatusCode();
+
+        var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
+
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Success));
+    }
+
+    [Fact]
+    public async Task GetStatus_ShouldReturnError()
+    {
+        cache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
+
+        var response = await authenticatedClient.GetAsync("transfer-automation/status");
+        response.EnsureSuccessStatusCode();
+
+        var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
+
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Error));
+    }
+
+    [Fact]
+    public async Task GetStatus_ShouldReturnError_OnEmptyCash()
+    {
         cache.Cache.Clear();
 
         var response = await authenticatedClient.GetAsync("transfer-automation/status");
@@ -33,6 +67,5 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
         status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Error));
-
     }
 }
