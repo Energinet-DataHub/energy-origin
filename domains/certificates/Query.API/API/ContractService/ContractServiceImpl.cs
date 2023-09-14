@@ -1,13 +1,13 @@
+using API.ContractService.Clients;
+using API.ContractService.Repositories;
+using CertificateValueObjects;
+using Microsoft.EntityFrameworkCore;
+using ProjectOrigin.WalletSystem.V1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
-using API.ContractService.Repositories;
-using CertificateValueObjects;
-using Marten.Exceptions;
-using ProjectOrigin.WalletSystem.V1;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
@@ -77,7 +77,7 @@ internal class ContractServiceImpl : IContractService
 
             return new CreateContractResult.Success(contract);
         }
-        catch (DocumentAlreadyExistsException)
+        catch (DbUpdateException)
         {
             return new ContractAlreadyExists(null);
         }

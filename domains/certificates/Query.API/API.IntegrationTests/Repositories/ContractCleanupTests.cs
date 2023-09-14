@@ -1,10 +1,12 @@
 using API.ContractService;
+using API.Data;
 using API.DataSyncSyncer;
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Helpers;
-using API.IntegrationTests.Testcontainers;
+using API.IntegrationTests.Mocks;
 using CertificateValueObjects;
 using FluentAssertions;
-using Marten;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +14,12 @@ using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLifetime
+public class ContractCleanupTests : IClassFixture<DbContextFactoryMock>, IDisposable
 {
-    private readonly IDocumentStore store;
+    private readonly IDbContextFactory<ApplicationDbContext> factory;
     private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
 
-    public ContractCleanupTests(MartenDbContainer dbContainer)
-        => store = DocumentStore.For(opts => opts.Connection(dbContainer.ConnectionString));
+    public ContractCleanupTests(DbContextFactoryMock mock) => factory = mock;
 
     [Fact]
     public async Task deletes_everything_for_571313000000000200_when_multiple_owners()
@@ -26,8 +27,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract1 = new CertificateIssuingContract
         {
             ContractNumber = 0,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -38,8 +39,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract2 = new CertificateIssuingContract
         {
             ContractNumber = 1,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -49,7 +50,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
 
         await InsertContracts(contract1, contract2);
 
-        await store.CleanupContracts(CancellationToken.None);
+        await factory.CleanupContracts(CancellationToken.None);
 
         var numberOfContracts = await GetTotalNumberOfContracts();
         numberOfContracts.Should().Be(0);
@@ -61,8 +62,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract1 = new CertificateIssuingContract
         {
             ContractNumber = 0,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -73,8 +74,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract2 = new CertificateIssuingContract
         {
             ContractNumber = 1,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -85,8 +86,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract3 = new CertificateIssuingContract
         {
             ContractNumber = 0,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = GsrnHelper.GenerateRandom(),
@@ -96,7 +97,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
 
         await InsertContracts(contract1, contract2, contract3);
 
-        await store.CleanupContracts(CancellationToken.None);
+        await factory.CleanupContracts(CancellationToken.None);
 
         var numberOfContracts = await GetTotalNumberOfContracts();
         numberOfContracts.Should().Be(1);
@@ -108,8 +109,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract1 = new CertificateIssuingContract
         {
             ContractNumber = 0,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -120,8 +121,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract2 = new CertificateIssuingContract
         {
             ContractNumber = 1,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = BadMeteringPointInDemoEnvironment,
@@ -131,7 +132,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
 
         await InsertContracts(contract1, contract2);
 
-        await store.CleanupContracts(CancellationToken.None);
+        await factory.CleanupContracts(CancellationToken.None);
 
         var numberOfContracts = await GetTotalNumberOfContracts();
         numberOfContracts.Should().Be(2);
@@ -145,8 +146,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract1 = new CertificateIssuingContract
         {
             ContractNumber = 0,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = gsrn,
@@ -157,8 +158,8 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
         var contract2 = new CertificateIssuingContract
         {
             ContractNumber = 1,
-            Created = DateTimeOffset.Now,
-            StartDate = DateTimeOffset.Now,
+            Created = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow,
             EndDate = null,
             GridArea = "DK1",
             GSRN = gsrn,
@@ -168,7 +169,7 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
 
         await InsertContracts(contract1, contract2);
 
-        await store.CleanupContracts(CancellationToken.None);
+        await factory.CleanupContracts(CancellationToken.None);
 
         var numberOfContracts = await GetTotalNumberOfContracts();
         numberOfContracts.Should().Be(2);
@@ -176,37 +177,20 @@ public class ContractCleanupTests : IClassFixture<MartenDbContainer>, IAsyncLife
 
     private async Task InsertContracts(params CertificateIssuingContract[] certificateIssuingContract)
     {
-        await using var session = store.OpenSession();
+        await using var context = await factory.CreateDbContextAsync();
 
-        session.Insert(certificateIssuingContract);
+        context.Contracts.AddRange(certificateIssuingContract);
 
-        await session.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     private async Task<int> GetTotalNumberOfContracts()
-        => (await store.QuerySession().Query<CertificateIssuingContract>().ToListAsync()).Count;
+        => (await (await factory.CreateDbContextAsync()).Contracts.ToListAsync()).Count;
 
-    private async Task DeleteAllContracts()
+    public void Dispose()
     {
-        await using var session = store.OpenSession();
-        var allContracts = await session.Query<CertificateIssuingContract>().ToListAsync();
+        factory.CreateDbContext().RemoveAll(d => d.Contracts);
 
-        foreach (var contract in allContracts)
-        {
-            session.Delete(contract);
-        }
-
-        await session.SaveChangesAsync();
-    }
-
-    public Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await DeleteAllContracts();
-        store.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

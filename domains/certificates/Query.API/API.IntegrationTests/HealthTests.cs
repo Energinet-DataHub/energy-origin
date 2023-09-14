@@ -1,7 +1,7 @@
-using System.Net;
-using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
+using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests;
@@ -9,16 +9,16 @@ namespace API.IntegrationTests;
 public class HealthTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<MartenDbContainer>,
+    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, MartenDbContainer martenDbContainer)
+    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
     }
 
     [Fact]
