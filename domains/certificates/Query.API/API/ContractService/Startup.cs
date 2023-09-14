@@ -1,15 +1,13 @@
-using System;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using API.Configurations;
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using Marten;
-using Marten.Schema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.WalletSystem.V1;
+using System;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace API.ContractService;
 
@@ -17,13 +15,6 @@ public static class Startup
 {
     public static void AddContractService(this IServiceCollection services)
     {
-        services.ConfigureMarten(o =>
-        {
-            o.Schema
-                .For<CertificateIssuingContract>()
-                .UniqueIndex(UniqueIndexType.Computed, "uidx_gsrn_contractnumber", c => c.GSRN, c => c.ContractNumber);
-        });
-
         services.AddScoped<IContractService, ContractServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
