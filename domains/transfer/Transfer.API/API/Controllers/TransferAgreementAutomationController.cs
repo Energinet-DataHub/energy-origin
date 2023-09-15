@@ -3,8 +3,6 @@ using API.ApiModels.Responses;
 using API.TransferAgreementsAutomation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using OpenTelemetry.Trace;
 
 namespace API.Controllers;
 
