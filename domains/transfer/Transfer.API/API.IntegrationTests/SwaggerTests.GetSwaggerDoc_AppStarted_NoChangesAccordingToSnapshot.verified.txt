@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.1",
   "info": {
     "title": "Transfer API",
@@ -177,7 +177,7 @@
         }
       }
     },
-"/api/cvr/{cvrNummer}": {
+    "/api/cvr/{cvrNummer}": {
       "get": {
         "tags": [
           "Cvr"
@@ -620,7 +620,7 @@
         },
         "additionalProperties": false
       },
-"Hit": {
+      "Hit": {
         "type": "object",
         "properties": {
           "_source": {
@@ -681,7 +681,7 @@
         },
         "additionalProperties": { }
       },
-"Root": {
+      "Root": {
         "type": "object",
         "properties": {
           "took": {
@@ -777,7 +777,7 @@
           }
         },
         "additionalProperties": false
-},
+      },
       "VirksomhedMetadata": {
         "type": "object",
         "properties": {
