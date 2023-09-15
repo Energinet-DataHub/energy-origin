@@ -1,12 +1,5 @@
 # TODO all diagrams should be revised to resemble Energy Origin as-is
 
-// foo = group "bar" {
-//     poRegistry = softwareSystem "Project Origin Registry" {
-//         description "Public permissioned distributed ledger where everyone can validate the Guarantee of Origin for their electricity."
-//         tags "Out of focus"
-//     }
-// }
-
 apiGateway = container "API Gateway" {
     description "Routes requests to services and forwards authentication requests"
     technology "Traefik"
@@ -27,6 +20,7 @@ authDomain = group "Auth Domain" {
 
         this -> mitId "Executes UIDC callbacks"
         apiGateway -> this "Forwards requests to"
+        this -> dataSyncApi "Creates relations for metering points in"
     }
 
     authDb = container "Database" {
@@ -43,7 +37,7 @@ certificatesDomain = group "Certificate Domain" {
         technology ".NET Web Api"
 
         apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Reads measurements from"
+        this -> dataSyncApi "Reads measurements and metering points from"
     }
     certRegistryConnector = container "Registry Connector" {
         description "Coordinates issurance between registry and wallet"
@@ -58,7 +52,7 @@ certificatesDomain = group "Certificate Domain" {
         certRegistryConnector -> this "Produces and consumes messages using"
     }
     certEventStore = container "Certificate Storage" {
-        description ""
+        description "Storage for contracts and information from the issuance of a certificate"
         technology "Postgres"
 
         certApi -> this "Saves and reads issuing contracts using"

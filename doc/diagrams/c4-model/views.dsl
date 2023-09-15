@@ -37,6 +37,11 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
 
         # Specific area container views
+        container energyOrigin "DataSync" {
+            title "[Container Context] DataSync"
+            include ->dataSyncDomain->
+            autoLayout
+        }
         container energyOrigin "Auth" {
             title "[Container Context] Auth"
             include ->authDomain->
@@ -44,7 +49,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain-> dh2
+            include ->certificatesDomain-> dataSyncApi->
             autoLayout
         }
         container energyOrigin "Transfer" {
