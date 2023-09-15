@@ -32,30 +32,48 @@ authDomain = group "Auth Domain" {
 }
 
 certificatesDomain = group "Certificate Domain" {
-    certApi = container "Certificate API" {
+    certRabbitMq = container "Certificate Message Broker" {
         description ""
-        technology ".NET Web Api"
-
-        apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Reads measurements and metering points from"
+        technology "RabbitMQ"
+    }
+    certStorage = container "Certificate Storage" {
+        description "Storage for contracts and information from the issuance of a certificate"
+        technology "Postgres"
     }
     certRegistryConnector = container "Registry Connector" {
         description "Coordinates issurance between registry and wallet"
 
-        this -> po "Sends issued events to registry and slices to wallet"
+        this -> poRegistry "Sends issued events to"
+        this -> poWallet "Sends slices to"
+        this -> certRabbitMq "Produces and consumes messages using"
     }
-    certRabbitMq = container "Certificate Message Broker" {
-        description ""
-        technology "RabbitMQ"
+    certApi = container "Certificate API" {
+        description "Contains background workers for fetching measurements and issuing a certificate and provides an API for queries related to certificates and contracts"
+        technology ".NET Web Api"
 
-        certApi -> this "Produces and consumes messages using"
-        certRegistryConnector -> this "Produces and consumes messages using"
-    }
-    certEventStore = container "Certificate Storage" {
-        description "Storage for contracts and information from the issuance of a certificate"
-        technology "Postgres"
+        contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
+            this -> dataSyncApi "Get metering point info from"
+            this -> certStorage "Stores contracts in"
+            this -> poWallet "Creates Wallet Deposit Endpoints"
+        }
+        dataSyncSyncer = component "DataSyncSyncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
+            tags "MockingComponent"
 
-        certApi -> this "Saves and reads issuing contracts using"
+            this -> certRabbitMq "Publishes measurement events to"
+            this -> contractService "Reads list of metering points to sync from"
+            this -> dataSyncApi "Pulls measurements from"
+        }
+        granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
+            this -> contractService "Checks for a valid contract in"
+            this -> certRabbitMq "Subscribes to measurement event from"
+            this -> certStorage "Saves information about issued certificate in"
+        }
+        certQueryAPI = component "Query API" "API for issuing contracts and proxies requests to Wallet" "ASP.NET Core WebAPI" {
+            this -> contractService "Reads contracts from"
+            this -> poWallet "Reads certificates from"
+        }
+
+        apiGateway -> this "Forwards requests to"
     }
 }
 
@@ -71,11 +89,11 @@ transferDomain = group "Transfer Domain" {
     tApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
-            this -> po "Creates wallet deposit endpoint"
+            this -> poWallet "Creates wallet deposit endpoint"
         }
         deleteConnectionInvitationsWorker = component "Delete Connection Invitations Worker" "Deletes expired connection invitations" ".NET BackgroundService"
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
-            this -> po "Transfers certificates"
+            this -> poWallet "Transfers certificates"
         }
     }
     tDb = container "Transfer Storage" {
