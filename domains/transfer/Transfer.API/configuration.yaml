@@ -1,5 +1,5 @@
 name: eo-transfer-api
-version: 2.0.0
+version: 2.0.4
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/transfer/base/deployment.yaml

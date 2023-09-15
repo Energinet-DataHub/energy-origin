@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Data;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
 using Contracts;
@@ -15,21 +16,23 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public string MartenConnectionString { get; set; } = "";
+    public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("ConnectionStrings:Marten", MartenConnectionString);
+        builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
@@ -50,6 +53,20 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             // Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        if (string.IsNullOrWhiteSpace(ConnectionString))
+            return host;
+
+        var factory = host.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+
+        using var dbContext = factory.CreateDbContext();
+        dbContext.Database.Migrate();
+
+        return host;
     }
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();

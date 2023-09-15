@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace API.Utilities;
 
-public record OidcState(string? State, string? RedirectionUri)
+public record OidcState(string? State, string? RedirectionUri, string? RedirectionPath)
 {
     public string Encode()
     {

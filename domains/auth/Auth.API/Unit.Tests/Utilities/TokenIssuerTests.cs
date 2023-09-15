@@ -226,16 +226,7 @@ public class TokenIssuerTests
                 Name = "testCompany"
             }
         };
-        var descriptor = new UserDescriptor(null!)
-        {
-            Id = user.Id.Value,
-            Name = user.Name,
-            AllowCprLookup = user.AllowCprLookup,
-            ProviderType = ProviderType.NemIdProfessional,
-            EncryptedAccessToken = accessToken ?? "",
-            EncryptedIdentityToken = identityToken ?? "",
-            MatchedRoles = matchedRoles ?? ""
-        };
+        var descriptor = new UserDescriptor(TestClaimsPrincipal.Make(id: user.Id, name: user.Name, allowCprLookup: $"{user.AllowCprLookup}", matchedRoles: matchedRoles, encryptedAccessToken: accessToken, encryptedIdentityToken: identityToken));
         if (addToMock)
         {
             Mock.Get(service)

@@ -19,7 +19,7 @@ namespace API.IntegrationTests;
 public sealed class CertificateIssuingTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<MartenDbContainer>,
+    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<DataSyncWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
@@ -30,7 +30,7 @@ public sealed class CertificateIssuingTests :
 
     public CertificateIssuingTests(
         QueryApiWebApplicationFactory factory,
-        MartenDbContainer martenDbContainer,
+        PostgresContainer dbContainer,
         RabbitMqContainer rabbitMqContainer,
         DataSyncWireMock dataSyncWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
@@ -38,7 +38,7 @@ public sealed class CertificateIssuingTests :
     {
         this.dataSyncWireMock = dataSyncWireMock;
         this.factory = factory;
-        this.factory.MartenConnectionString = martenDbContainer.ConnectionString;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
         this.factory.DataSyncUrl = dataSyncWireMock.Url;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
@@ -87,6 +87,61 @@ public sealed class CertificateIssuingTests :
             Quality: MeasurementQuality.Measured);
 
         await factory.GetMassTransitBus().Publish(measurement);
+
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var certificateList =
+            await client.RepeatedlyGetUntil<CertificateList>("api/certificates", res => res.Result.Any());
+
+        var expected = new CertificateList
+        {
+            Result = new[]
+            {
+                new Certificate
+                {
+                    DateFrom = utcMidnight.ToUnixTimeSeconds(),
+                    DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
+                    Quantity = 42,
+                    FuelCode = "F00000000",
+                    TechCode = "T070000",
+                    GridArea = "DK1",
+                    GSRN = gsrn
+                }
+            }
+        };
+
+        certificateList.Should().BeEquivalentTo(expected, CertificateListAssertionOptions);
+    }
+
+    [Fact]
+    public async Task GetList_SameMeasurementAddedTwice_ReturnsList()
+    {
+        var subject = Guid.NewGuid().ToString();
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        var now = DateTimeOffset.UtcNow;
+        var utcMidnight = now.Subtract(now.TimeOfDay);
+
+        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+
+        var dateFrom = utcMidnight.ToUnixTimeSeconds();
+        var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
+
+        var measurement1 = new EnergyMeasuredIntegrationEvent(
+            GSRN: gsrn,
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        var measurement2 = new EnergyMeasuredIntegrationEvent(
+            GSRN: gsrn,
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            Quantity: 42,
+            Quality: MeasurementQuality.Measured);
+
+        await factory.GetMassTransitBus().PublishBatch(new[] { measurement1, measurement2 });
 
         using var client = factory.CreateAuthenticatedClient(subject);
 

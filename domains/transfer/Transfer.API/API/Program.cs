@@ -10,6 +10,7 @@ using API.Metrics;
 using API.Models;
 using API.Options;
 using API.Services;
+using API.Services.ConnectionInvitationCleanup;
 using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
@@ -51,6 +52,7 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>().BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
@@ -163,6 +165,8 @@ builder.Services.AddScoped<IConnectionInvitationRepository, ConnectionInvitation
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>(o => o.Address = new Uri(builder.Configuration["ProjectOrigin:WalletUrl"] ?? "http://localhost:8080"));
 builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
+builder.Services.AddScoped<IConnectionInvitationCleanupService, ConnectionInvitationCleanupService>();
+builder.Services.AddHostedService<ConnectionInvitationCleanupWorker>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

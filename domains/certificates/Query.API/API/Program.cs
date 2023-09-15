@@ -1,14 +1,12 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using API.ContractService;
+using API.Data;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.Query.API;
 using API.RabbitMq;
-using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +17,9 @@ using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-using Weasel.Core;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,15 +46,13 @@ builder.Services.AddOpenTelemetry()
 
 builder.Services.AddControllers();
 
-builder.Services.AddMarten(options =>
-{
-    options.Connection(builder.Configuration.GetConnectionString("Marten")!);
-
-    options.AutoCreateSchemaObjects = AutoCreate.All;
-});
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Marten")!);
+    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
@@ -98,7 +96,7 @@ app.Use(async (context, next) =>
     {
         var authorizationHeader = context.Request.Headers.Authorization;
         var cleanedValues = authorizationHeader
-            .Select(s => s.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
+            .Select(s => s?.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
             .ToArray();
 
         context.Request.Headers.Authorization = new StringValues(cleanedValues);

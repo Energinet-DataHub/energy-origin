@@ -42,6 +42,15 @@
             Company name
             </summary>
         </member>
+        <member name="M:API.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
+            <summary>
+            Get connection-invitation by Id
+            </summary>
+            <param name="id">Id of connection-invitation</param>
+            <response code="200">Successful operation</response>
+            <response code="404">Connection-invitation expired or deleted</response>
+            <response code="409">Company is already a connection</response>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

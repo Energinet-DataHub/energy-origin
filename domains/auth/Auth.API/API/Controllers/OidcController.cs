@@ -7,6 +7,7 @@ using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Authorization;
@@ -27,9 +28,9 @@ public class OidcController : ControllerBase
         IMetrics metrics,
         IDiscoveryCache discoveryCache,
         IHttpClientFactory clientFactory,
-        IUserDescriptorMapper mapper,
         IUserProviderService userProviderService,
         IUserService userService,
+        ICryptography cryptography,
         ITokenIssuer issuer,
         OidcOptions oidcOptions,
         IdentityProviderOptions providerOptions,
@@ -42,6 +43,10 @@ public class OidcController : ControllerBase
     {
         var oidcState = OidcState.Decode(state);
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        if (oidcState?.RedirectionPath != null)
+        {
+            redirectionUri = $"{oidcOptions.FrontendRedirectUri.Scheme}://{oidcOptions.FrontendRedirectUri.Host}/{oidcState.RedirectionPath.Trim('/')}";
+        }
         if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
             redirectionUri = oidcState.RedirectionUri;
@@ -81,7 +86,7 @@ public class OidcController : ControllerBase
         UserData data;
         try
         {
-            (descriptor, data) = await MapUserDescriptor(mapper, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
+            (descriptor, data) = await MapUserDescriptor(cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
         }
         catch (Exception exception)
         {
@@ -108,12 +113,12 @@ public class OidcController : ControllerBase
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
 
-        metrics.Login(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
+        metrics.Login(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
     }
 
-    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(IUserDescriptorMapper mapper, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -236,7 +241,8 @@ public class OidcController : ControllerBase
             await userService.UpsertUserAsync(user);
         }
 
-        return (mapper.Map(user, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken), UserData.From(user));
+        var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
+        return (descriptor, UserData.From(user));
     }
 
     private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>

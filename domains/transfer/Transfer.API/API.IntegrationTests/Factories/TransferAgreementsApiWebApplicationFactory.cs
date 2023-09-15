@@ -38,6 +38,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
+        builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:03");
 
         builder.ConfigureTestServices(s =>
         {
@@ -98,6 +99,19 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         foreach (var connection in connections)
         {
             dbContext.Connections.Add(connection);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task SeedConnectionInvitations(IEnumerable<ConnectionInvitation> invitations)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        foreach (var invitation in invitations)
+        {
+            dbContext.ConnectionInvitations.Add(invitation);
         }
 
         await dbContext.SaveChangesAsync();
