@@ -31,7 +31,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     }
 
     [Fact]
-    public async Task GetStatus_ShouldReturnSuccess()
+    public async Task GetStatus_CachedSuccess_ShouldReturnSuccess()
     {
         cache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
 
@@ -44,7 +44,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     }
 
     [Fact]
-    public async Task GetStatus_ShouldReturnError()
+    public async Task GetStatus_CachedError_ShouldReturnError()
     {
         cache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
 
@@ -57,7 +57,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     }
 
     [Fact]
-    public async Task GetStatus_ShouldReturnError_OnEmptyCash()
+    public async Task GetStatus_OnEmptyCache_ShouldReturnError_()
     {
         cache.Cache.Clear();
 

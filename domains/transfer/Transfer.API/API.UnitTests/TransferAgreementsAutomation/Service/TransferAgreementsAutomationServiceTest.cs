@@ -7,6 +7,7 @@ using API.Metrics;
 using API.Models;
 using API.Services;
 using API.TransferAgreementsAutomation;
+using API.TransferAgreementsAutomation.Service;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ using NSubstitute.ExceptionExtensions;
 using Xunit;
 using Exception = System.Exception;
 
-namespace API.IntegrationTests.TransferAgreementsAutomation.Service;
+namespace API.UnitTests.TransferAgreementsAutomation.Service;
 
 public class TransferAgreementsAutomationServiceTest
 {
@@ -29,11 +30,14 @@ public class TransferAgreementsAutomationServiceTest
 
         var memoryCache = new StatusCache();
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(2));
 
         transferAgreementRepository
             .When(it => it.GetAllTransferAgreements())
-            .Do(_ => throw new Exception());
+            .Do(_ =>
+            {
+                cts.Cancel();
+                throw new Exception();
+            });
 
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);
@@ -53,7 +57,6 @@ public class TransferAgreementsAutomationServiceTest
 
         var memoryCache = new StatusCache();
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(2));
 
         transferAgreementRepository.GetAllTransferAgreements().Returns(new List<TransferAgreement>()
         {
@@ -68,7 +71,7 @@ public class TransferAgreementsAutomationServiceTest
                 ReceiverTin = "12345678",
                 ReceiverReference = Guid.NewGuid()
             }
-        });
+        }).AndDoes(_ => cts.Cancel());
 
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);

@@ -7,7 +7,7 @@ using API.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace API.TransferAgreementsAutomation;
+namespace API.TransferAgreementsAutomation.Service;
 
 public class TransferAgreementsAutomationService : ITransferAgreementsAutomationService
 {
@@ -20,8 +20,8 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
-        Size = 1
     };
+
     public TransferAgreementsAutomationService(
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
@@ -41,12 +41,13 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
+            memoryCache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
 
             try
             {
+
                 var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
@@ -54,7 +55,6 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
                 {
                     await projectOriginWalletService.TransferCertificates(transferAgreement);
                 }
-                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
             }
             catch (Exception e)
             {

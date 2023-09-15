@@ -11,6 +11,7 @@ using API.Options;
 using API.Services;
 using API.Services.ConnectionInvitationCleanup;
 using API.TransferAgreementsAutomation;
+using API.TransferAgreementsAutomation.Service;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
