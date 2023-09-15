@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.1",
   "info": {
     "title": "Transfer API",
@@ -134,35 +134,6 @@
         }
       }
     },
-    "/transfer-automation/status": {
-      "get": {
-        "tags": [
-          "TransferAgreementAutomation"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/connections/{id}": {
       "delete": {
         "tags": [
@@ -199,6 +170,35 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfer-automation/status": {
+      "get": {
+        "tags": [
+          "TransferAgreementAutomation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAutomationStatus"
                 }
               }
             }
