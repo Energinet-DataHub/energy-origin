@@ -24,6 +24,24 @@
             List of connections
             </summary>
         </member>
+        <member name="M:API.Controllers.CvrController.GetCvrCompany(System.String)">
+            <summary>
+            Get cvr registered company information
+            </summary>
+            <param name="cvrNummer">CVR number of the company</param>
+            <response code="200">Successful operation</response>
+            <response code="204">Cvr company not found</response>
+        </member>
+        <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyTin">
+            <summary>
+            Company TIN (e.g. CVR)
+            </summary>
+        </member>
+        <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyName">
+            <summary>
+            Company name
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

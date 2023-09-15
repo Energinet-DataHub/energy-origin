@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Cvr;
 using API.Data;
 using API.Filters;
 using API.Metrics;
@@ -12,6 +13,7 @@ using API.Services;
 using API.TransferAgreementsAutomation;
 using Audit.Core;
 using FluentValidation;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -79,6 +82,17 @@ Audit.Core.Configuration.Setup()
                 }
                 return true;
             })));
+
+builder.Services.AddHttpClient<CvrClient>(c =>
+{
+    c.BaseAddress = new System.Uri("http://distribution.virk.dk");
+    //TODO Encrypt
+    c.SetBasicAuthentication("Energinet_Datahub_CVR_I_SKYEN", "b90251cd-8787-4b34-a516-f52b4451b893");
+}).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
+{
+    TimeSpan.FromSeconds(1),
+    TimeSpan.FromSeconds(5)
+}));
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
