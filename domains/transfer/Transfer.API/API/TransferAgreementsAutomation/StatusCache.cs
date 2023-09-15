@@ -4,7 +4,7 @@ namespace API.TransferAgreementsAutomation;
 
 public class StatusCache
 {
-    public MemoryCache Cache { get; } = new (
+    public MemoryCache Cache { get; } = new(
         new MemoryCacheOptions
         {
             SizeLimit = 1
