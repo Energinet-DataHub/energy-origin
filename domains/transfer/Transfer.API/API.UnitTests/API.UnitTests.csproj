@@ -32,7 +32,7 @@
 
     <ItemGroup>
       <None Update="Serialization\cvr_response.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

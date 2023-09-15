@@ -28,7 +28,7 @@ public class CvrModelTests
 
         if (!File.Exists(path))
         {
-            throw new ArgumentException($"Could not find file at path: {path}");
+            throw new ArgumentException($"Could not find file at path: {path}. Directory: {currentDir}");
         }
         return File.ReadAllText(filePath);
     }
