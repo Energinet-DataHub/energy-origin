@@ -25,8 +25,8 @@ public class CvrController : Controller
     /// </summary>
     /// <param name="cvrNummer">CVR number of the company</param>
     /// <response code="200">Successful operation</response>
-    /// <response code="204">Cvr company not found</response>
-    [ProducesResponseType(typeof(Root), 200)]
+    /// <response code="404">Cvr company not found</response>
+    [ProducesResponseType(typeof(CvrCompanyDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{cvrNummer}")]
     public async Task<ActionResult<CvrCompanyDto>> GetCvrCompany(string cvrNummer)

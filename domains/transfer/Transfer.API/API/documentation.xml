@@ -39,7 +39,7 @@
             </summary>
             <param name="cvrNummer">CVR number of the company</param>
             <response code="200">Successful operation</response>
-            <response code="204">Cvr company not found</response>
+            <response code="404">Cvr company not found</response>
         </member>
         <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyTin">
             <summary>

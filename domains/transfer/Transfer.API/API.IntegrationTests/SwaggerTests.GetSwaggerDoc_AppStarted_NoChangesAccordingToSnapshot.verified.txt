@@ -200,25 +200,22 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Root"
+                  "$ref": "#/components/schemas/CvrCompanyDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Root"
+                  "$ref": "#/components/schemas/CvrCompanyDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Root"
+                  "$ref": "#/components/schemas/CvrCompanyDto"
                 }
               }
             }
           },
           "404": {
-            "description": "Not Found"
-          },
-          "204": {
             "description": "Cvr company not found"
           }
         }
@@ -609,6 +606,21 @@
         },
         "additionalProperties": false
       },
+      "CvrCompanyDto": {
+        "type": "object",
+        "properties": {
+          "companyTin": {
+            "type": "string",
+            "description": "Company TIN (e.g. CVR)"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "EditTransferAgreementEndDate": {
         "type": "object",
         "properties": {
@@ -616,40 +628,6 @@
             "type": "integer",
             "format": "int64",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Hit": {
-        "type": "object",
-        "properties": {
-          "_source": {
-            "$ref": "#/components/schemas/Source"
-          }
-        },
-        "additionalProperties": false
-      },
-      "HitsRoot": {
-        "type": "object",
-        "properties": {
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "hits": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Hit"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "NyesteNavn": {
-        "type": "object",
-        "properties": {
-          "navn": {
-            "type": "string"
           }
         },
         "additionalProperties": false
@@ -680,31 +658,6 @@
           }
         },
         "additionalProperties": { }
-      },
-      "Root": {
-        "type": "object",
-        "properties": {
-          "took": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "timed_out": {
-            "type": "boolean"
-          },
-          "hits": {
-            "$ref": "#/components/schemas/HitsRoot"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Source": {
-        "type": "object",
-        "properties": {
-          "vrvirksomhed": {
-            "$ref": "#/components/schemas/Vrvirksomhed"
-          }
-        },
-        "additionalProperties": false
       },
       "TransferAgreementDto": {
         "type": "object",
@@ -774,28 +727,6 @@
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"
             }
-          }
-        },
-        "additionalProperties": false
-      },
-      "VirksomhedMetadata": {
-        "type": "object",
-        "properties": {
-          "nyesteNavn": {
-            "$ref": "#/components/schemas/NyesteNavn"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Vrvirksomhed": {
-        "type": "object",
-        "properties": {
-          "cvrNummer": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "virksomhedMetadata": {
-            "$ref": "#/components/schemas/VirksomhedMetadata"
           }
         },
         "additionalProperties": false

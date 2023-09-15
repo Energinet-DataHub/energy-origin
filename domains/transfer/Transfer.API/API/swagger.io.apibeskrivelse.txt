@@ -5,6 +5,7 @@ info:
 tags:
   - name: Connection-invitation
   - name: Connection
+  - name: Cvr
 paths:
   /api/connection-invitation:
     post:
@@ -137,6 +138,29 @@ paths:
           description: Successful operation
         '404':
           description: Not found
+  /api/cvr/{cvrNummer}:
+    get:
+        tags:
+          - cvr
+        summary: Get cvr registered company information
+        description: returns single connection
+        parameters:
+          - name: cvrNummer
+            in: path
+            description: Cvr number of danish company
+            required: true
+            schema:
+              type: string
+              example: "12345678"
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CvrCompanyDto'
+          '404':
+            description: Not found
 components:
   schemas:
     ConnectionInvitation:
@@ -181,4 +205,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Connection'
-          
+    CvrCompanyDto:
+      type: object
+      properties:
+        companyTin:
+          type: string
+          example: "12345678"
+        companyName:
+          type: string
+          example: "Erhvervsstyrelsen"
