@@ -21,6 +21,21 @@ public class ConnectionRepository : IConnectionRepository
             .Where(x => x.CompanyAId == companyId || x.CompanyBId == companyId)
             .ToListAsync();
 
+    public async Task<Connection?> GetConnection(Guid id)
+    {
+        return await context.Connections.FindAsync(id);
+    }
+
+    public async Task DeleteConnection(Guid id)
+    {
+        var connection = await GetConnection(id);
+        if (connection != null)
+        {
+            context.Connections.Remove(connection);
+            await context.SaveChangesAsync();
+        }
+    }
+
     public async Task<bool> HasConflict(Guid currentCompanyId, Guid senderCompanyId)
     {
         var existingConnections = await GetCompanyConnections(currentCompanyId);
