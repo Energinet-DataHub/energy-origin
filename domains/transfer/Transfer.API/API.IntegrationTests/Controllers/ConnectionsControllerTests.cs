@@ -81,7 +81,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     }
 
     [Fact]
-    public async Task DeleteConnection_ShouldReturnNotFound_WhenUserIsUnauthorized()
+    public async Task DeleteConnection_ShouldReturnNotFound_WhenUserNotOwnerOfConnection()
     {
         var myCompanyId = Guid.NewGuid();
         var myCompanyTin = "12345678";
