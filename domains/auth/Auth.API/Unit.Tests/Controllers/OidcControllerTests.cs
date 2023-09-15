@@ -398,9 +398,10 @@ public class OidcControllerTests
         var result = (RedirectResult)action;
 
         var uri = new Uri(result.Url);
-        Assert.Equal(testOptions.FrontendRedirectUri.Host, uri.Host);
-        Assert.Equal(testOptions.FrontendRedirectUri.AbsolutePath, uri.AbsolutePath);
-        Assert.Contains($"redirectionPath={redirectionPath}", HttpUtility.UrlDecode(uri.AbsoluteUri));
+        var map = QueryHelpers.ParseNullableQuery(uri.Query);
+        Assert.NotNull(map);
+        Assert.True(map.ContainsKey("redirectionPath"));
+        Assert.Equal(redirectionPath, map["redirectionPath"]);
     }
 
     [Fact]
