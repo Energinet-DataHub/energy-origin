@@ -1,7 +1,6 @@
 using API.Models;
 using Audit.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace API.Data;
 
@@ -16,13 +15,6 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseLoggerFactory(loggerFactory);
-        base.OnConfiguring(optionsBuilder);
-    }
-    ILoggerFactory loggerFactory = new LoggerFactory();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
