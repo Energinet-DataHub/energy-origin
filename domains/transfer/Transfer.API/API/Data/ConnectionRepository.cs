@@ -16,6 +16,31 @@ public class ConnectionRepository : IConnectionRepository
         this.context = context;
     }
 
+    public async Task AddConnectionAndDeleteInvitation(Connection newConnection, Guid invitationId)
+    {
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            await context.Connections.AddAsync(newConnection);
+
+            var invitation = await context.ConnectionInvitations.FindAsync(invitationId);
+            if (invitation != null)
+            {
+                context.ConnectionInvitations.Remove(invitation);
+            }
+
+            await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     public Task<List<Connection>> GetCompanyConnections(Guid companyId) =>
         context.Connections
             .Where(x => x.CompanyAId == companyId || x.CompanyBId == companyId)

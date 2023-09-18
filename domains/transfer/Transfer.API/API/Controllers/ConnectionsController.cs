@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Exceptions;
@@ -17,10 +18,47 @@ namespace API.Controllers;
 public class ConnectionsController : Controller
 {
     private readonly IConnectionRepository connectionRepository;
+    private readonly IConnectionInvitationRepository connectionInvitationRepository;
 
-    public ConnectionsController(IConnectionRepository connectionRepository)
+
+    public ConnectionsController(IConnectionRepository connectionRepository, IConnectionInvitationRepository connectionInvitationRepository)
     {
         this.connectionRepository = connectionRepository;
+        this.connectionInvitationRepository = connectionInvitationRepository;
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(Connection), 201)]
+    [ProducesResponseType(409)]
+    public async Task<ActionResult> Create([FromBody] CreateConnection request)
+    {
+        var connectionInvitation = await connectionInvitationRepository.GetNonExpiredConnectionInvitation(request.ConnectionInvitationId);
+        if (connectionInvitation == null)
+        {
+            return NotFound("Connection-invitation not found");
+        }
+
+        var companyBId = new Guid(User.FindSubjectGuidClaim());
+        var companyBTin = User.FindSubjectTinClaim();
+
+        var connection = new Connection
+        {
+            Id = Guid.NewGuid(),
+            CompanyAId = connectionInvitation.SenderCompanyId,
+            CompanyATin = connectionInvitation.SenderCompanyTin,
+            CompanyBId = companyBId,
+            CompanyBTin = companyBTin
+        };
+
+        var hasConflict = await connectionRepository.HasConflict(connection.CompanyAId, connection.CompanyBId);
+        if (hasConflict)
+        {
+            return Conflict("Company is already a connection");
+        }
+
+        await connectionRepository.AddConnectionAndDeleteInvitation(connection, request.ConnectionInvitationId);
+
+        return CreatedAtAction(nameof(GetConnections), new { id = connection.Id }, connection);
     }
 
     [ProducesResponseType(typeof(ConnectionsResponse), 200)]
