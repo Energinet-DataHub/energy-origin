@@ -10,6 +10,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="Serialization\cvr_response.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Serialization\cvr_response.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="6.11.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.5" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.1" />
@@ -29,11 +37,4 @@
         <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Update="Serialization\cvr_response.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
 </Project>

@@ -37,13 +37,13 @@
             <summary>
             Get cvr registered company information
             </summary>
-            <param name="cvrNummer">CVR number of the company</param>
+            <param name="cvrNumber">CVR number of the company</param>
             <response code="200">Successful operation</response>
             <response code="404">Cvr company not found</response>
         </member>
-        <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyTin">
+        <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyCvr">
             <summary>
-            Company TIN (e.g. CVR)
+            Company CVR number
             </summary>
         </member>
         <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyName">

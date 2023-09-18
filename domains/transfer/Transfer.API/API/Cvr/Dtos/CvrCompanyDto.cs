@@ -3,9 +3,9 @@ namespace API.Cvr.Dtos
     public record CvrCompanyDto
     {
         /// <summary>
-        /// Company TIN (e.g. CVR)
+        /// Company CVR number
         /// </summary>
-        public required string CompanyTin { get; init; }
+        public required string CompanyCvr { get; init; }
 
         /// <summary>
         /// Company name

@@ -23,15 +23,15 @@ public class CvrController : Controller
     /// <summary>
     /// Get cvr registered company information
     /// </summary>
-    /// <param name="cvrNummer">CVR number of the company</param>
+    /// <param name="cvrNumber">CVR number of the company</param>
     /// <response code="200">Successful operation</response>
     /// <response code="404">Cvr company not found</response>
     [ProducesResponseType(typeof(CvrCompanyDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [HttpGet("{cvrNummer}")]
-    public async Task<ActionResult<CvrCompanyDto>> GetCvrCompany(string cvrNummer)
+    [HttpGet("{cvrNumber}")]
+    public async Task<ActionResult<CvrCompanyDto>> GetCvrCompany(string cvrNumber)
     {
-        var raw = await client.CvrNumberSearch(cvrNummer);
+        var raw = await client.CvrNumberSearch(cvrNumber);
         if (raw == null)
         {
             return NotFound();
@@ -46,7 +46,7 @@ public class CvrController : Controller
         return Ok(dto);
     }
 
-    public static CvrCompanyDto? ToDto(Root cvrCompany)
+    private static CvrCompanyDto? ToDto(Root cvrCompany)
     {
         var cvrInfo = cvrCompany.hits?.hits?.FirstOrDefault()?._source?.Vrvirksomhed;
 
@@ -56,7 +56,7 @@ public class CvrController : Controller
         return new CvrCompanyDto
         {
             CompanyName = cvrInfo.virksomhedMetadata?.nyesteNavn?.navn,
-            CompanyTin = cvrInfo.cvrNummer.ToString()
+            CompanyCvr = cvrInfo.cvrNummer.ToString()
         };
     }
 }

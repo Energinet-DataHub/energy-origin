@@ -34,8 +34,7 @@ public class CvrClient
         var content = new StringContent(postBody, Encoding.UTF8, "application/json");
 
         var res = await client.PostAsync("cvr-permanent/virksomhed/_search", content);
-        var json = res.Content.ReadAsStringAsync().Result;
 
-        return JsonConvert.DeserializeObject<Root>(json);
+        return JsonConvert.DeserializeObject<Root>(res.Content.ReadAsStringAsync().Result);
     }
 }

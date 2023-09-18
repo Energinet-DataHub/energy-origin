@@ -177,7 +177,7 @@
         }
       }
     },
-    "/api/cvr/{cvrNummer}": {
+    "/api/cvr/{cvrNumber}": {
       "get": {
         "tags": [
           "Cvr"
@@ -185,7 +185,7 @@
         "summary": "Get cvr registered company information",
         "parameters": [
           {
-            "name": "cvrNummer",
+            "name": "cvrNumber",
             "in": "path",
             "description": "CVR number of the company",
             "required": true,
@@ -609,9 +609,9 @@
       "CvrCompanyDto": {
         "type": "object",
         "properties": {
-          "companyTin": {
+          "companyCvr": {
             "type": "string",
-            "description": "Company TIN (e.g. CVR)"
+            "description": "Company CVR number"
           },
           "companyName": {
             "type": "string",

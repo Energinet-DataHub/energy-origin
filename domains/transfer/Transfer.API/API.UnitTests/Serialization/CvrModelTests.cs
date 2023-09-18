@@ -9,7 +9,7 @@ namespace API.UnitTests.Serialization;
 public class CvrModelTests
 {
     [Theory]
-    [InlineData("cvr_response.json")]
+    [InlineData("Serialization\\cvr_response.json")]
     public void DeserializeToModel_ExpectSuccess(string filePath)
     {
         var jsonString = LoadFileToString(filePath);

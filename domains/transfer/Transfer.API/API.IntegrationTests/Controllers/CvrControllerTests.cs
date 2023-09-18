@@ -28,7 +28,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         var response = await client.GetFromJsonAsync<CvrCompanyDto>($"api/cvr/{cvrNumber}");
 
         response.Should().NotBeNull();
-        response.CompanyTin.Should().Be(cvrNumber);
+        response.CompanyCvr.Should().Be(cvrNumber);
     }
 
     [Fact]
