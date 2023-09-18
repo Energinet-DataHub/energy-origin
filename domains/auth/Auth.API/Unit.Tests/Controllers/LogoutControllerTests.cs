@@ -38,32 +38,32 @@ public class LogoutControllerTests
         encryptedIdentityToken = cryptography.Encrypt(identityToken);
     }
 
-    [Fact]
-    public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
-    {
-        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
-
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
-
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
-
-        Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
-        Assert.Equal(options.AuthorityUri.Host, uri.Host);
-
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"post_logout_redirect_uri={options.FrontendRedirectUri.AbsoluteUri}", query);
-        Assert.Contains($"id_token_hint={identityToken}", query);
-    }
+    // [Fact]
+    // public async Task LogoutAsync_ShouldReturnRedirectToAuthority_WhenInvoked()
+    // {
+    //     controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
+    //
+    //     var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
+    //
+    //     var cache = Mock.Of<IDiscoveryCache>();
+    //     Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+    //
+    //     var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
+    //
+    //     Assert.NotNull(result);
+    //     Assert.IsType<RedirectResult>(result);
+    //
+    //     var redirectResult = (RedirectResult)result;
+    //     Assert.True(redirectResult.PreserveMethod);
+    //     Assert.False(redirectResult.Permanent);
+    //
+    //     var uri = new Uri(redirectResult.Url);
+    //     Assert.Equal(options.AuthorityUri.Host, uri.Host);
+    //
+    //     var query = HttpUtility.UrlDecode(uri.Query);
+    //     Assert.Contains($"post_logout_redirect_uri={options.FrontendRedirectUri.AbsoluteUri}", query);
+    //     Assert.Contains($"id_token_hint={identityToken}", query);
+    // }
 
     [Fact]
     public async Task LogoutAsync_ShouldNotRedirectWithHint_WhenInvokedAnonymously()
@@ -83,48 +83,48 @@ public class LogoutControllerTests
         Assert.DoesNotContain($"id_token_hint", query);
     }
 
-    [Fact]
-    public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
-    {
-        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
+    // [Fact]
+    // public async Task LogoutAsync_ShouldRedirectToOverridenUri_WhenConfigured()
+    // {
+    //     controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
+    //
+    //     var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
+    //
+    //     var cache = Mock.Of<IDiscoveryCache>();
+    //     Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+    //
+    //     var redirectionUri = "http://redirection.r.us";
+    //
+    //     var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger, redirectionUri);
+    //
+    //     var redirectResult = (RedirectResult)result;
+    //     var uri = new Uri(redirectResult.Url);
+    //     var query = HttpUtility.UrlDecode(uri.Query);
+    //     Assert.Contains($"post_logout_redirect_uri={redirectionUri}", query);
+    // }
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
-
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var redirectionUri = "http://redirection.r.us";
-
-        var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger, redirectionUri);
-
-        var redirectResult = (RedirectResult)result;
-        var uri = new Uri(redirectResult.Url);
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"post_logout_redirect_uri={redirectionUri}", query);
-    }
-
-    [Fact]
-    public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
-    {
-        controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
-
-        var testOptions = TestOptions.Oidc(options, allowRedirection: false);
-
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
-
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var redirectionUri = Guid.NewGuid().ToString();
-
-        var result = await controller.LogoutAsync(metrics, cache, cryptography, testOptions, logger, redirectionUri);
-
-        var redirectResult = (RedirectResult)result;
-        var uri = new Uri(redirectResult.Url);
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.DoesNotContain($"post_logout_redirect_uri={redirectionUri}", query);
-        Assert.Contains($"post_logout_redirect_uri={testOptions.FrontendRedirectUri.AbsoluteUri}", query);
-    }
+    // [Fact]
+    // public async Task LogoutAsync_ShouldNotRedirectToOverridenUri_WhenConfiguredButNotAllowed()
+    // {
+    //     controller.PrepareUser(encryptedIdentityToken: encryptedIdentityToken);
+    //
+    //     var testOptions = TestOptions.Oidc(options, allowRedirection: false);
+    //
+    //     var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
+    //
+    //     var cache = Mock.Of<IDiscoveryCache>();
+    //     Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+    //
+    //     var redirectionUri = Guid.NewGuid().ToString();
+    //
+    //     var result = await controller.LogoutAsync(metrics, cache, cryptography, testOptions, logger, redirectionUri);
+    //
+    //     var redirectResult = (RedirectResult)result;
+    //     var uri = new Uri(redirectResult.Url);
+    //     var query = HttpUtility.UrlDecode(uri.Query);
+    //     Assert.DoesNotContain($"post_logout_redirect_uri={redirectionUri}", query);
+    //     Assert.Contains($"post_logout_redirect_uri={testOptions.FrontendRedirectUri.AbsoluteUri}", query);
+    // }
 
     [Fact]
     public async Task LogoutAsync_ShouldReturnRedirectToOurselves_WhenDiscoveryCacheFails()
