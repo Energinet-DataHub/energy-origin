@@ -72,4 +72,21 @@ public class ConnectionInvitationsController : ControllerBase
 
         return Ok(connectionInvitation);
     }
+
+    [ProducesResponseType(typeof(void), 204)]
+    [ProducesResponseType(typeof(void), 404)]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteConnectionInvitation(Guid id)
+    {
+        var connectionInvitation = await connectionInvitationRepository.GetNonExpiredConnectionInvitation(id);
+
+        if (connectionInvitation == null)
+        {
+            return NotFound("Connection-invitation not found");
+        }
+
+        await connectionInvitationRepository.DeleteConnectionInvitation(id);
+
+        return NoContent();
+    }
 }
