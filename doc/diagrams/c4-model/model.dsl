@@ -24,6 +24,7 @@ authDomain = group "Auth Domain" {
     }
 
     authDb = container "Database" {
+        tags "Data Storage"
         description "Stores user details and settings"
         technology "PostgreSQL"
 
@@ -37,6 +38,7 @@ certificatesDomain = group "Certificate Domain" {
         technology "RabbitMQ"
     }
     certStorage = container "Certificate Storage" {
+        tags "Data Storage"
         description "Storage for contracts and information from the issuance of a certificate"
         technology "Postgres"
     }
@@ -97,6 +99,7 @@ transferDomain = group "Transfer Domain" {
         }
     }
     tDb = container "Transfer Storage" {
+        tags "Data Storage"
         description ""
         technology "Postgres SQL"
 
