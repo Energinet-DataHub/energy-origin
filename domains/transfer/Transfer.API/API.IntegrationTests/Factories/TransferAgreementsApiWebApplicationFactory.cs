@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Cvr;
 using API.Data;
 using API.Models;
 using API.Options;
@@ -35,6 +36,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
+    private const string CvrUser = "SomeUser";
+    private const string CvrPassword = "SomePassword";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
@@ -56,6 +60,11 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             });
 
             s.Configure<ProjectOriginOptions>(o => o.WalletUrl = WalletUrl);
+            s.Configure<CvrOptions>(o =>
+            {
+                o.User = CvrUser;
+                o.Password = CvrPassword;
+            });
         });
     }
 

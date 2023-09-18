@@ -53,6 +53,7 @@ builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>().BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<CvrOptions>().BindConfiguration(CvrOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
@@ -85,11 +86,14 @@ Audit.Core.Configuration.Setup()
                 return true;
             })));
 
+var cvrOptions = builder.Configuration
+    .GetSection("Cvr")
+    .Get<CvrOptions>();
+
 builder.Services.AddHttpClient<CvrClient>(c =>
 {
     c.BaseAddress = new System.Uri("http://distribution.virk.dk");
-    //TODO Encrypt
-    c.SetBasicAuthentication("X", "Y");
+    c.SetBasicAuthentication(cvrOptions.User, cvrOptions.Password);
 }).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
 {
     TimeSpan.FromSeconds(1),
