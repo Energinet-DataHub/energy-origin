@@ -36,7 +36,6 @@ public class LogoutController : ControllerBase
         }
         catch
         {
-            logger.LogError("ERIK");
             return RedirectPreserveMethod(redirectionUri);
         }
 
