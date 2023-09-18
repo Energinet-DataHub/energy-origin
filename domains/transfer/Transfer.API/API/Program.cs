@@ -89,7 +89,7 @@ builder.Services.AddHttpClient<CvrClient>(c =>
 {
     c.BaseAddress = new System.Uri("http://distribution.virk.dk");
     //TODO Encrypt
-    c.SetBasicAuthentication("Energinet_Datahub_CVR_I_SKYEN", "b90251cd-8787-4b34-a516-f52b4451b893");
+    c.SetBasicAuthentication("X", "Y");
 }).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
 {
     TimeSpan.FromSeconds(1),
