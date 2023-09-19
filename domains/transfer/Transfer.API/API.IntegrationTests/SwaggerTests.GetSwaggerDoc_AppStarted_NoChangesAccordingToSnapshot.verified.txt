@@ -177,7 +177,7 @@
         }
       }
     },
-    "/transfer-automation/status": {
+    "/api/transfer-automation/status": {
       "get": {
         "tags": [
           "TransferAgreementAutomation"
