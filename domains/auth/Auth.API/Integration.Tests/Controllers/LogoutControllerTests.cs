@@ -62,7 +62,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task LogoutAsync_DecodableUserDescriptorThrowsException_ReturnsOkResultWithRedirectionUri()
+    public async Task LogoutAsync_DecodableUserDescriptorFails_ReturnsOkResultWithRedirectionUri()
     {
         var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
