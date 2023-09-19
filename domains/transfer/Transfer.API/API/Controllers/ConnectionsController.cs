@@ -36,6 +36,7 @@ public class ConnectionsController : Controller
     /// <response code="409">Company is already a connection</response>
     [HttpPost]
     [ProducesResponseType(typeof(Connection), 201)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(409)]
     public async Task<ActionResult> Create([FromBody] CreateConnection request)
     {
