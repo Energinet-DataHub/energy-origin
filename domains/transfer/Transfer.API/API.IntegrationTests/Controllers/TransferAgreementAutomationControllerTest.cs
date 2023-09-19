@@ -35,7 +35,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     {
         cache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
 
-        var response = await authenticatedClient.GetAsync("transfer-automation/status");
+        var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
@@ -48,7 +48,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     {
         cache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
 
-        var response = await authenticatedClient.GetAsync("transfer-automation/status");
+        var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
@@ -61,7 +61,7 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     {
         cache.Cache.Clear();
 
-        var response = await authenticatedClient.GetAsync("transfer-automation/status");
+        var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
