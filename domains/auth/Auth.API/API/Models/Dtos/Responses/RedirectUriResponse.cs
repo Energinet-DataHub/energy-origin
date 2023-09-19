@@ -1,4 +1,4 @@
-﻿namespace API.Models.Dtos.Responses;
+namespace API.Models.Dtos.Responses;
 
 public class RedirectUriResponse
 {

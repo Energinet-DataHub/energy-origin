@@ -27,7 +27,7 @@ public class LogoutController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return Ok(new RedirectUriResponse{ RedirectionUri = redirectionUri});
+            return Ok(new RedirectUriResponse { RedirectionUri = redirectionUri });
         }
 
         DecodableUserDescriptor descriptor;
@@ -37,7 +37,7 @@ public class LogoutController : ControllerBase
         }
         catch
         {
-            return Ok(new RedirectUriResponse{ RedirectionUri = redirectionUri});
+            return Ok(new RedirectUriResponse { RedirectionUri = redirectionUri });
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
@@ -55,6 +55,6 @@ public class LogoutController : ControllerBase
         );
 
         metrics.Logout(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
-        return Ok(new RedirectUriResponse{ RedirectionUri = url});
+        return Ok(new RedirectUriResponse { RedirectionUri = url });
     }
 }
