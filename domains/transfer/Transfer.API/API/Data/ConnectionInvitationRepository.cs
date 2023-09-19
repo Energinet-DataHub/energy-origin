@@ -35,4 +35,15 @@ public class ConnectionInvitationRepository : IConnectionInvitationRepository
 
         return connectionInvitation;
     }
+
+    public async Task DeleteConnectionInvitation(Guid id)
+    {
+        var connectionInvitation = await context.ConnectionInvitations.FindAsync(id);
+
+        if (connectionInvitation != null)
+        {
+            context.ConnectionInvitations.Remove(connectionInvitation);
+            await context.SaveChangesAsync();
+        }
+    }
 }
