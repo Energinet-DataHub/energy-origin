@@ -100,9 +100,122 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "ConnectionInvitations"
+        ],
+        "summary": "Delete connection-invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of connection-invitation",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful operation"
+          },
+          "404": {
+            "description": "Connection-invitation not found"
+          }
+        }
       }
     },
     "/api/connections": {
+      "post": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Add a new connection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnection"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnection"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connection-invitation expired or deleted",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Company is already a connection",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "Connections"
@@ -531,6 +644,30 @@
         ],
         "type": "string"
       },
+      "Connection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyAId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyATin": {
+            "type": "string"
+          },
+          "companyBId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyBTin": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "ConnectionDto": {
         "type": "object",
         "properties": {
@@ -581,6 +718,16 @@
               "$ref": "#/components/schemas/ConnectionDto"
             },
             "description": "List of connections"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateConnection": {
+        "type": "object",
+        "properties": {
+          "connectionInvitationId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "additionalProperties": false

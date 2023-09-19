@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -140,5 +141,30 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var responseBody = await response.Content.ReadAsStringAsync();
         responseBody.Should().Be("Connection-invitation expired or deleted");
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
+    {
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var postResponse = await authenticatedClient.PostAsync("api/connection-invitations", null);
+
+        var createdInvitation = await postResponse.Content.ReadFromJsonAsync<ConnectionInvitation>();
+        var createdId = createdInvitation!.Id;
+
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/connection-invitations/{createdId}");
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNotFound_WhenConnectionInvitationNonExisting()
+    {
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var randomGuid = Guid.NewGuid();
+
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/connection-invitations/{randomGuid}");
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }
