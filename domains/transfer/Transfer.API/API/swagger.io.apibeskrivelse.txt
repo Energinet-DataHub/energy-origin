@@ -1,6 +1,6 @@
 openapi: 3.0.3
-info: 
-  title: Swagger Connections system 
+info:
+  title: Swagger Connections system
   version: 1.0.11
 tags:
   - name: Connection-invitation
@@ -58,19 +58,19 @@ paths:
             type: string
             format: uuid
             example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
-      responses: 
+      responses:
         '204':
           description: Successful operation
         '404':
           description: Connection-invitation not found
   /api/connections:
-    post: 
+    post:
       tags:
         - Connection
       summary: Add a new connection
       description: Add a new connection
       requestBody:
-        description: Id of the company who wants to connect with you
+        description: Id of connection-invitation
         content:
           application/json:
             schema:
@@ -79,7 +79,7 @@ paths:
       responses:
         '201':
           description: Successful operation
-          content: 
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connection'
@@ -91,7 +91,7 @@ paths:
       responses:
         '200':
           description: Successful operation
-          content: 
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConnectionsResult'
@@ -132,7 +132,7 @@ paths:
             type: string
             format: uuid
             example: "78e3d673-8750-470d-a2dd-794e8e5b4387"
-      responses: 
+      responses:
         '204':
           description: Successful operation
         '404':
@@ -181,4 +181,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Connection'
-          
