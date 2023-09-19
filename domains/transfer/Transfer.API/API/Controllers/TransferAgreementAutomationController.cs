@@ -18,7 +18,7 @@ public class TransferAgreementAutomationController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAutomationStatus), 200)]
-    [HttpGet("transfer-automation/status")]
+    [HttpGet("api/transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()
     {
         cache.Cache.TryGetValue(CacheValues.Key, out var value);
