@@ -40,6 +40,7 @@ public class LogoutController : ControllerBase
         }
 
         var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
+
         var url = requestUrl.CreateEndSessionUrl(
             idTokenHint: descriptor.IdentityToken,
             postLogoutRedirectUri: redirectionUri
