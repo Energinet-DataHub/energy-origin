@@ -54,6 +54,6 @@ public class LogoutController : ControllerBase
         );
 
         metrics.Logout(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
-        return Ok(new {url});
+        return Ok(new {redirectionUri = url});
     }
 }
