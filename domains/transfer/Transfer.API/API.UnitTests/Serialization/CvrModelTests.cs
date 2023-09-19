@@ -9,18 +9,18 @@ using Xunit;
 using Xunit.Sdk;
 
 namespace API.UnitTests.Serialization;
+
 public class CvrModelTests
 {
-    //[Theory]
-    //[EmbeddedResourceData("Serialization/cvr_response.json")]
-    //public void DeserializeToModel_ExpectSuccess(string json)
-    //{
-    //    //var jsonString = LoadFileToString(filePath);
+    [Theory]
+    [InlineData("Serialization/cvr_response.json")]
+    public void DeserializeToModel_ExpectSuccess(string filePath)
+    {
+        var jsonString = LoadFileToString(filePath);
+        var obj = JsonConvert.DeserializeObject<Root>(jsonString);
 
-    //    var obj = JsonConvert.DeserializeObject<Root>(json);
-
-    //    obj.Should().NotBeNull();
-    //}
+        obj.Should().NotBeNull();
+    }
 
     private static string LoadFileToString(string filePath)
     {
@@ -59,7 +59,7 @@ public sealed class EmbeddedResourceDataAttribute : DataAttribute
     public static string ReadManifestData(string resourceName)
     {
         var assembly = typeof(EmbeddedResourceDataAttribute).GetTypeInfo().Assembly;
-        resourceName = resourceName.Replace("/", ".");
+        //resourceName = resourceName.Replace("/", ".");
         using (var stream = assembly.GetManifestResourceStream(resourceName))
         {
             if (stream == null)
@@ -73,3 +73,4 @@ public sealed class EmbeddedResourceDataAttribute : DataAttribute
         }
     }
 }
+
