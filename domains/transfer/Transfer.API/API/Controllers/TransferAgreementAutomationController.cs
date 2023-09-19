@@ -25,7 +25,7 @@ public class TransferAgreementAutomationController : ControllerBase
 
         return Ok(value == null ?
             new TransferAutomationStatus(Healthy: CacheValues.Unhealthy) :
-            new TransferAutomationStatus(Healthy: (bool) value)
+            new TransferAutomationStatus(Healthy: (bool)value)
         );
     }
 }
