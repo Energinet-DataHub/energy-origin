@@ -26,7 +26,7 @@ public class LogoutController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(redirectionUri);
+            return Ok(redirectionUri);
         }
 
         DecodableUserDescriptor descriptor;
@@ -36,7 +36,7 @@ public class LogoutController : ControllerBase
         }
         catch
         {
-            return RedirectPreserveMethod(redirectionUri);
+            return Ok(redirectionUri);
         }
 
         var client = new HttpClient();
@@ -46,7 +46,7 @@ public class LogoutController : ControllerBase
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError("Logout failed: {Error}", response.ReasonPhrase);
-            return BadRequest(redirectionUri);
+            return Ok(redirectionUri);
         }
 
         logger.AuditLog(
