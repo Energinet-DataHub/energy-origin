@@ -24,8 +24,8 @@ public class TransferAgreementAutomationController : ControllerBase
         cache.Cache.TryGetValue(CacheValues.Key, out var value);
 
         return Ok(value == null ?
-            new TransferAutomationStatus(CacheValues.Error) :
-            new TransferAutomationStatus(value.ToString()!)
+            new TransferAutomationStatus(Healthy: CacheValues.Unhealthy) :
+            new TransferAutomationStatus(Healthy: (bool) value)
         );
     }
 }

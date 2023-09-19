@@ -704,8 +704,8 @@
       "TransferAutomationStatus": {
         "type": "object",
         "properties": {
-          "status": {
-            "type": "string"
+          "healthy": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

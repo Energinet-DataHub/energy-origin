@@ -43,7 +43,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         {
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
-            memoryCache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
+            memoryCache.Cache.Set(CacheValues.Key, CacheValues.Healthy, cacheOptions);
 
             try
             {
@@ -58,7 +58,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
             }
             catch (Exception e)
             {
-                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
+                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Unhealthy, cacheOptions);
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
             }
 

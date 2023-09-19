@@ -10,6 +10,6 @@ public class StatusCache
 public static class CacheValues
 {
     public const string Key = "Status";
-    public const string Success = "Success";
-    public const string Error = "Error";
+    public const bool Healthy = true;
+    public const bool Unhealthy = false;
 }

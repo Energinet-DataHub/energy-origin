@@ -21,7 +21,6 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
-        Size = 1
     };
 
     public TransferAgreementAutomationControllerTest(TransferAgreementsApiWebApplicationFactory factory)
@@ -33,27 +32,27 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
     [Fact]
     public async Task GetStatus_CachedSuccess_ShouldReturnSuccess()
     {
-        cache.Cache.Set(CacheValues.Key, CacheValues.Success, cacheOptions);
+        cache.Cache.Set(CacheValues.Key, CacheValues.Healthy, cacheOptions);
 
         var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Success));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Healthy));
     }
 
     [Fact]
     public async Task GetStatus_CachedError_ShouldReturnError()
     {
-        cache.Cache.Set(CacheValues.Key, CacheValues.Error, cacheOptions);
+        cache.Cache.Set(CacheValues.Key, CacheValues.Unhealthy, cacheOptions);
 
         var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Error));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Unhealthy));
     }
 
     [Fact]
@@ -66,6 +65,6 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Error));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Unhealthy));
     }
 }

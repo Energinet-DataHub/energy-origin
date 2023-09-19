@@ -21,7 +21,7 @@ namespace API.UnitTests.TransferAgreementsAutomation.Service;
 public class TransferAgreementsAutomationServiceTest
 {
     [Fact]
-    public async Task Run_WhenFail_CacheIsSetToError()
+    public async Task Run_WhenFail_CacheIsSetToUnhealthy()
     {
         var logger = Substitute.For<ILogger<TransferAgreementsAutomationService>>();
         var transferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
@@ -44,11 +44,11 @@ public class TransferAgreementsAutomationServiceTest
 
         service.Run(cts.Token).Should().Throws(new TaskCanceledException());
 
-        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Error);
+        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Unhealthy);
     }
 
     [Fact]
-    public async Task Run_WhenCalled_CacheIsSetToSuccess()
+    public async Task Run_WhenCalled_CacheIsSetToHealthy()
     {
         var logger = Substitute.For<ILogger<TransferAgreementsAutomationService>>();
         var transferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
@@ -78,6 +78,6 @@ public class TransferAgreementsAutomationServiceTest
 
         service.Run(cts.Token).Should().Throws(new TaskCanceledException());
 
-        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Success);
+        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Healthy);
     }
 }
