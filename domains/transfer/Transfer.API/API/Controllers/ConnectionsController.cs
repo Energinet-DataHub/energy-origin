@@ -27,6 +27,13 @@ public class ConnectionsController : Controller
         this.connectionInvitationRepository = connectionInvitationRepository;
     }
 
+    /// <summary>
+    /// Add a new connection
+    /// </summary>
+    /// <param name="id">Id of connection-invitation</param>
+    /// <response code="201">Successful operation</response>
+    /// <response code="404">Connection-invitation expired or deleted</response>
+    /// <response code="409">Company is already a connection</response>
     [HttpPost]
     [ProducesResponseType(typeof(Connection), 201)]
     [ProducesResponseType(409)]
@@ -35,7 +42,7 @@ public class ConnectionsController : Controller
         var connectionInvitation = await connectionInvitationRepository.GetNonExpiredConnectionInvitation(request.ConnectionInvitationId);
         if (connectionInvitation == null)
         {
-            return NotFound("Connection-invitation not found");
+            return NotFound("Connection-invitation expired or deleted");
         }
 
         var companyBId = new Guid(User.FindSubjectGuidClaim());

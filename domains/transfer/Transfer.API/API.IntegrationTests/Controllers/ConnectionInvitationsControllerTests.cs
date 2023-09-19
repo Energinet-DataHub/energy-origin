@@ -144,7 +144,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     }
 
     [Fact]
-    public async Task Delete_ShouldReturnNoContent_WhenConnectionInvitationIsDeleted()
+    public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var postResponse = await authenticatedClient.PostAsync("api/connection-invitations", null);

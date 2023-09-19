@@ -6,7 +6,6 @@ namespace API.Data;
 
 public class ApplicationDbContext : AuditDbContext
 {
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }

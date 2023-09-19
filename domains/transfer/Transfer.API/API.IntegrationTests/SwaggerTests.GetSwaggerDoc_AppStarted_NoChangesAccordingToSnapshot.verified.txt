@@ -105,10 +105,12 @@
         "tags": [
           "ConnectionInvitations"
         ],
+        "summary": "Delete connection-invitation",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "Id of connection-invitation",
             "required": true,
             "schema": {
               "type": "string",
@@ -118,10 +120,10 @@
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Successful operation"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Connection-invitation not found"
           }
         }
       }
@@ -131,6 +133,7 @@
         "tags": [
           "Connections"
         ],
+        "summary": "Add a new connection",
         "requestBody": {
           "content": {
             "application/json": {
@@ -152,7 +155,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "Successful operation",
             "content": {
               "text/plain": {
                 "schema": {
@@ -172,7 +175,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "Company is already a connection",
             "content": {
               "text/plain": {
                 "schema": {
@@ -190,6 +193,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Connection-invitation expired or deleted"
           }
         }
       },
