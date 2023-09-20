@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Models.Dtos.Responses;
@@ -13,7 +12,6 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Unit.Tests.Controllers;
 
@@ -53,7 +51,7 @@ public class LogoutControllerTests
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
-
+        Assert.IsType<OkObjectResult>(result);
         var okObject = (OkObjectResult)result;
         var redirectResult = (RedirectUriResponse)okObject.Value!;
 
@@ -74,6 +72,7 @@ public class LogoutControllerTests
         Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
+        Assert.IsType<OkObjectResult>(result);
         var okObject = (OkObjectResult)result;
         var redirectResult = (RedirectUriResponse)okObject.Value!;
         var uri = new Uri(redirectResult.RedirectionUri);
@@ -96,6 +95,7 @@ public class LogoutControllerTests
         var redirectionUri = "http://redirection.r.us";
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger, redirectionUri);
+        Assert.IsType<OkObjectResult>(result);
         var okObject = (OkObjectResult)result;
         var redirectResult = (RedirectUriResponse)okObject.Value!;
         var uri = new Uri(redirectResult.RedirectionUri);
@@ -118,6 +118,7 @@ public class LogoutControllerTests
         var redirectionUri = Guid.NewGuid().ToString();
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, testOptions, logger, redirectionUri);
+        Assert.IsType<OkObjectResult>(result);
         var okObject = (OkObjectResult)result;
         var redirectResult = (RedirectUriResponse)okObject.Value!;
         var uri = new Uri(redirectResult.RedirectionUri);
@@ -137,7 +138,7 @@ public class LogoutControllerTests
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
-
+        Assert.IsType<OkObjectResult>(result);
         var okObject = (OkObjectResult)result;
         var redirectResult = (RedirectUriResponse)okObject.Value!;
 

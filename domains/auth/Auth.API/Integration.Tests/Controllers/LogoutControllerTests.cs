@@ -1,13 +1,10 @@
 using System.Net;
-using System.Web;
+using System.Text.Json;
 using API.Models.Dtos.Responses;
 using API.Options;
-using API.Values;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using WireMock.Server;
 
 namespace Integration.Tests.Controllers;
@@ -33,9 +30,10 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user, identityToken: identityToken, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
 
         var result = await client.GetAsync("auth/logout");
-        var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonConvert.DeserializeObject<RedirectUriResponse>(resultContent);
         Assert.NotNull(result);
+
+        var resultContent = await result.Content.ReadAsStringAsync();
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
         var uri = new Uri(redirectUriResponse!.RedirectionUri);
         var map = QueryHelpers.ParseNullableQuery(uri.Query);
         Assert.NotNull(map);
@@ -54,15 +52,16 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user);
 
         var result = await client.GetAsync("auth/logout");
-        var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonConvert.DeserializeObject<RedirectUriResponse>(resultContent);
         Assert.NotNull(result);
+
+        var resultContent = await result.Content.ReadAsStringAsync();
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
     [Fact]
-    public async Task LogoutAsync_DecodableUserDescriptorFails_ReturnsOkResultWithRedirectionUri()
+    public async Task LogoutAsync_ReturnsOkResultWithRedirectionUri_WhenInvokedAnonymously()
     {
         var server = WireMockServer.Start().MockConfigEndpoint().MockJwksEndpoint();
 
@@ -74,10 +73,11 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAnonymousClient(config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
         var result = await client.GetAsync("auth/logout");
-        var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonConvert.DeserializeObject<RedirectUriResponse>(resultContent);
-
         Assert.NotNull(result);
+
+        var resultContent = await result.Content.ReadAsStringAsync();
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
+
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
