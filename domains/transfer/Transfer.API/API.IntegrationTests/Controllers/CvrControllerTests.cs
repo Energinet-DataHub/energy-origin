@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
+using VerifyTests;
+using VerifyXunit;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -12,6 +14,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
+[UsesVerify]
 public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -41,9 +44,9 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         var response = await client.GetFromJsonAsync<CvrCompanyDto>($"api/cvr/{cvrNumber}");
 
         response.Should().NotBeNull();
-        response.CompanyCvr.Should().Be(cvrNumber);
-        response.Address.Should().NotBeNull();
-        response.Address.Kommune.Should().NotBeNull();
+
+        var settings = new VerifySettings();
+        await Verifier.Verify(response, settings);
     }
 
     [Fact]
