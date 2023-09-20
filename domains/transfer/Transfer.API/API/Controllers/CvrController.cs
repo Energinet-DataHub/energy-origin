@@ -63,7 +63,7 @@ public class CvrController : Controller
 
     private static AddressDto? ToDto(NyesteBeliggenhedsadresse? address)
     {
-        if(address == null) return null;
+        if (address == null) return null;
 
         return new AddressDto
         {
@@ -89,7 +89,7 @@ public class CvrController : Controller
 
     private static KommuneDto? ToDto(Kommune? kommune)
     {
-        if(kommune == null) return null;
+        if (kommune == null) return null;
 
         return new KommuneDto
         {
