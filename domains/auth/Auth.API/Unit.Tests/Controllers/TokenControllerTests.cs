@@ -20,6 +20,7 @@ public class TokenControllerTests
     private readonly ITokenIssuer issuer = Substitute.For<ITokenIssuer>();
     private readonly IUserService userService = Substitute.For<IUserService>();
     private readonly ICryptography cryptography = Substitute.For<ICryptography>();
+
     [Theory]
     [InlineData(false, UserScopeName.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]
     [InlineData(true, $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.MitIdPrivate)]

@@ -12,7 +12,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.26.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
-    <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.26.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="3.0.0" />
     <PackageReference Include="WireMock.Net" Version="1.5.16" />

@@ -33,19 +33,12 @@ public class OidcControllerTests
     private readonly RoleOptions roleOptions;
     private readonly ITokenIssuer issuer;
     private readonly ICryptography cryptography = Substitute.For<ICryptography>();
-    //private readonly ICryptography cryptography = Mock.Of<ICryptography>();
     private readonly IDiscoveryCache cache = Substitute.For<IDiscoveryCache>();
-    //private readonly IDiscoveryCache cache = Mock.Of<IDiscoveryCache>();
     private readonly IUserService service = Substitute.For<IUserService>();
-    //private readonly IUserService service = Mock.Of<IUserService>();
     private readonly IHttpClientFactory factory = Substitute.For<IHttpClientFactory>();
-    //private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
     private readonly IUserProviderService userProviderService = Substitute.For<IUserProviderService>();
-    //private readonly IUserProviderService userProviderService = Mock.Of<IUserProviderService>();
     private readonly IMetrics metrics = Substitute.For<IMetrics>();
-    //private readonly IMetrics metrics = Mock.Of<IMetrics>();
     private readonly ILogger<OidcController> logger = Substitute.For<ILogger<OidcController>>();
-    //private readonly ILogger<OidcController> logger = Mock.Of<ILogger<OidcController>>();
     private readonly MockHttpMessageHandler http = new();
 
     public OidcControllerTests()
