@@ -159,25 +159,33 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         validationProblemContent.Should().Contain("ReceiverTin");
     }
 
-    [Fact]
-    public async Task Create_ShouldFail_WhenBase64EncodedWalletDepositEndpointInvalid()
+    [Theory]
+    [InlineData("This is not a valid Base64 string", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("U28gbG9uZyBhbmQgdGhhbmtzIGZvciBhbGwgdGhlIGZpc2gu", true, null)]
+    [InlineData("=", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("12345", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("YWJjZA==", true, null)]
+    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeBase64Encoded(string base64String, bool shouldSucceed, string expectedMessage)
     {
-        var invalidBase64String = "This is not a valid Base64 string";
-
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: "11223344",
-            Base64EncodedWalletDepositEndpoint: invalidBase64String
+            ReceiverTin: "12345678",
+            Base64EncodedWalletDepositEndpoint: base64String
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
-
-        validationProblemContent.Should().Contain("Base64-encoded Wallet Deposit Endpoint is not valid");
+        if (shouldSucceed)
+        {
+            response.StatusCode.Should().NotBe(HttpStatusCode.BadRequest);
+        }
+        else
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var validationProblemContent = await response.Content.ReadAsStringAsync();
+            validationProblemContent.Should().Contain(expectedMessage);
+        }
     }
 
     [Fact]

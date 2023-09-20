@@ -15,7 +15,7 @@ public static class RuleExtensions
             .LessThan(253402300800)
             .WithMessage("{PropertyName} too high! Please make sure the format is UTC in seconds.");
 
-    public static IRuleBuilderOptions<T, string> MustBeValidBase64EncodedWalletDepositEndpoint<T>(this IRuleBuilder<T, string> ruleBuilder)
+    public static IRuleBuilderOptions<T, string> MustBeValidBase64<T>(this IRuleBuilder<T, string> ruleBuilder)
             => ruleBuilder
                 .Must(IsValidBase64String)
                 .WithMessage("Base64-encoded Wallet Deposit Endpoint is not valid");
