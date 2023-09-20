@@ -68,6 +68,11 @@
             Company name
             </summary>
         </member>
+        <member name="P:API.Cvr.Dtos.CvrCompanyDto.Address">
+            <summary>
+            Company address
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

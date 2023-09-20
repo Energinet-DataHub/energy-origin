@@ -56,7 +56,45 @@ public class CvrController : Controller
         return new CvrCompanyDto
         {
             CompanyName = cvrInfo.virksomhedMetadata?.nyesteNavn?.navn,
-            CompanyCvr = cvrInfo.cvrNummer.ToString()
+            CompanyCvr = cvrInfo.cvrNummer.ToString(),
+            Address = ToDto(cvrInfo.virksomhedMetadata?.nyesteBeliggenhedsadresse)
+        };
+    }
+
+    private static AddressDto? ToDto(NyesteBeliggenhedsadresse? address)
+    {
+        if(address == null) return null;
+
+        return new AddressDto
+        {
+            AdresseId = address.adresseId,
+            BogstavFra = address.bogstavFra,
+            BogstavTil = address.bogstavTil,
+            Bynavn = address.bynavn,
+            Conavn = address.conavn,
+            Etage = address.etage,
+            Fritekst = address.fritekst,
+            HusnummerFra = address.husnummerFra,
+            HusnummerTil = address.husnummerTil,
+            Landekode = address.landekode,
+            Postboks = address.postboks,
+            Postdistrikt = address.postdistrikt,
+            Postnummer = address.postnummer,
+            Sidedoer = address.sidedoer,
+            Vejkode = address.vejkode,
+            Vejnavn = address.vejnavn,
+            Kommune = ToDto(address.kommune)
+        };
+    }
+
+    private static KommuneDto? ToDto(Kommune? kommune)
+    {
+        if(kommune == null) return null;
+
+        return new KommuneDto
+        {
+            KommuneKode = kommune.kommuneKode,
+            KommuneNavn = kommune.kommuneNavn
         };
     }
 }

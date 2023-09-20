@@ -37,6 +37,8 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
 
         response.Should().NotBeNull();
         response.CompanyCvr.Should().Be(cvrNumber);
+        response.Address.Should().NotBeNull();
+        response.Address.Kommune.Should().NotBeNull();
     }
 
     [Fact]
