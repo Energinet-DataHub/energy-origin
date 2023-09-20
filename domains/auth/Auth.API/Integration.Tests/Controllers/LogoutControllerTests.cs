@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Web;
 using API.Models.Dtos.Responses;
 using API.Options;
 using Microsoft.AspNetCore.TestHost;
@@ -33,15 +34,16 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true});
         var uri = new Uri(redirectUriResponse!.RedirectionUri);
         var map = QueryHelpers.ParseNullableQuery(uri.Query);
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(map);
         Assert.True(map.ContainsKey("post_logout_redirect_uri"));
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, map["post_logout_redirect_uri"]);
         Assert.True(map.ContainsKey("id_token_hint"));
         Assert.Equal(identityToken, map["id_token_hint"]);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
     [Fact]
@@ -52,12 +54,13 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAuthenticatedClient(user);
 
         var result = await client.GetAsync("auth/logout");
+
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true});
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
     [Fact]
@@ -73,12 +76,12 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         var client = factory.CreateAnonymousClient(config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => oidcOptions)));
         var result = await client.GetAsync("auth/logout");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent);
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true});
 
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 }
