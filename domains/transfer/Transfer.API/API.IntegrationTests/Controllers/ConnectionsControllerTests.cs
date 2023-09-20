@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
 using API.Models;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
@@ -19,6 +22,88 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     {
         this.factory = factory;
         factory.WalletUrl = "UnusedWalletUrl";
+    }
+
+    [Fact]
+    public async Task CreateConnection_ShouldReturnCreated_WhenSuccess()
+    {
+        var senderCompanyId = Guid.NewGuid();
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderCompanyId.ToString());
+
+        var createInvitationRequest = await senderClient.PostAsync("api/connection-invitations", null);
+        var createResponseBody = await createInvitationRequest.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
+
+        var receiverCompanyId = Guid.NewGuid();
+        var receiverClient = factory.CreateAuthenticatedClient(sub: receiverCompanyId.ToString());
+
+        var createConnectionResponse = await receiverClient.PostAsJsonAsync("api/connections", new CreateConnection { ConnectionInvitationId = createdInvitation!.Id });
+
+        createConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateConnection_ShouldReturnUnauthorized_WhenUnauthenticated()
+    {
+        var senderCompanyId = Guid.NewGuid();
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderCompanyId.ToString());
+
+        var createInvitationRequest = await senderClient.PostAsync("api/connection-invitations", null);
+        var createResponseBody = await createInvitationRequest.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
+
+        var unAuthenticatedClient = factory.CreateUnauthenticatedClient();
+
+        var createConnectionResponse = await unAuthenticatedClient.PostAsJsonAsync("api/connections", new CreateConnection { ConnectionInvitationId = createdInvitation!.Id });
+
+        createConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task CreateConnection_ShouldReturnConflict_WhenConnectionAlreadyExists()
+    {
+        var senderCompanyId = Guid.NewGuid();
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderCompanyId.ToString());
+
+        var createFirstInvitationResponse = await senderClient.PostAsync("api/connection-invitations", null);
+        var firstInvitation = await createFirstInvitationResponse.Content.ReadAsStringAsync();
+        var firstCreatedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(firstInvitation);
+
+        var receiverCompanyId = Guid.NewGuid();
+        var receiverClient = factory.CreateAuthenticatedClient(sub: receiverCompanyId.ToString());
+
+        await receiverClient.PostAsJsonAsync("api/connections", new CreateConnection { ConnectionInvitationId = firstCreatedInvitation!.Id });
+
+        var createSecondInvitationResponse = await senderClient.PostAsync("api/connection-invitations", null);
+        var secondInvitation = await createSecondInvitationResponse.Content.ReadAsStringAsync();
+        var secondCreatedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(secondInvitation);
+
+        var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync("api/connections", new CreateConnection { ConnectionInvitationId = secondCreatedInvitation!.Id });
+
+        createSecondConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task CreateConnection_ShouldDeleteInvitation_WhenSuccess()
+    {
+        // Arrange
+        var senderCompanyId = Guid.NewGuid();
+        var senderClient = factory.CreateAuthenticatedClient(sub: senderCompanyId.ToString());
+
+        var createInvitationRequest = await senderClient.PostAsync("api/connection-invitations", null);
+        var createResponseBody = await createInvitationRequest.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
+
+        var receiverCompanyId = Guid.NewGuid();
+        var receiverClient = factory.CreateAuthenticatedClient(sub: receiverCompanyId.ToString());
+        await receiverClient.PostAsJsonAsync("api/connections", new CreateConnection { ConnectionInvitationId = createdInvitation!.Id });
+
+        var getInvitationResponse = await senderClient.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+
+        getInvitationResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var responseBody = await getInvitationResponse.Content.ReadAsStringAsync();
+        responseBody.Should().Be("Connection-invitation expired or deleted");
     }
 
     [Fact]
