@@ -11,6 +11,7 @@ using API.Options;
 using API.Services;
 using API.Services.ConnectionInvitationCleanup;
 using API.TransferAgreementsAutomation;
+using API.TransferAgreementsAutomation.Service;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -153,6 +154,7 @@ builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreeme
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddScoped<IConnectionInvitationCleanupService, ConnectionInvitationCleanupService>();
 builder.Services.AddHostedService<ConnectionInvitationCleanupWorker>();
+builder.Services.AddSingleton<StatusCache>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
