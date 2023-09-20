@@ -43,6 +43,6 @@ public record AddressDto
 
 public class KommuneDto
 {
-    public int KommuneKode { get; set; }
+    public int? KommuneKode { get; set; }
     public string? KommuneNavn { get; set; }
 }
