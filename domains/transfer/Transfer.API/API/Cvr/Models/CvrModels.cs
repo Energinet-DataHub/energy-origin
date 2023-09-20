@@ -49,7 +49,7 @@ public class NyesteBeliggenhedsadresse
     public string landekode { get; set; }
     public string fritekst { get; set; }
     public int? vejkode { get; set; }
-    public Kommune kommune { get; set; }
+    public Kommune? kommune { get; set; }
     public int? husnummerFra { get; set; }
     public Guid? adresseId { get; set; }
     public int? husnummerTil { get; set; }
@@ -67,6 +67,6 @@ public class NyesteBeliggenhedsadresse
 
 public class Kommune
 {
-    public int kommuneKode { get; set; }
+    public int? kommuneKode { get; set; }
     public string kommuneNavn { get; set; }
 }
