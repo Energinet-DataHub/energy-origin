@@ -295,7 +295,7 @@
         "tags": [
           "Cvr"
         ],
-        "summary": "Get cvr registered company information",
+        "summary": "Get CVR registered company information",
         "parameters": [
           {
             "name": "cvrNumber",
@@ -329,7 +329,7 @@
             }
           },
           "404": {
-            "description": "Cvr company not found"
+            "description": "CVR company not found"
           }
         }
       }
