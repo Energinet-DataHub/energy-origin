@@ -88,7 +88,6 @@ public class TransferAgreementsController : ControllerBase
         {
             return Conflict();
         }
-
     }
 
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]

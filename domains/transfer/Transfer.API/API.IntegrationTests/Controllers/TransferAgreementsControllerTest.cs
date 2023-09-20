@@ -160,6 +160,27 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
+    public async Task Create_ShouldFail_WhenBase64EncodedWalletDepositEndpointInvalid()
+    {
+        var invalidBase64String = "This is not a valid Base64 string";
+
+        var request = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            ReceiverTin: "11223344",
+            Base64EncodedWalletDepositEndpoint: invalidBase64String
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+
+        validationProblemContent.Should().Contain("Base64-encoded Wallet Deposit Endpoint is not valid");
+    }
+
+    [Fact]
     public async Task Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid()
     {
         var id = Guid.NewGuid();
