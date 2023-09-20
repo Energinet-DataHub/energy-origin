@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using API.Cvr;
 using API.Cvr.Dtos;
 using API.Cvr.Models;
+using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,17 +22,21 @@ public class CvrController : Controller
     }
 
     /// <summary>
-    /// Get cvr registered company information
+    /// Get CVR registered company information
     /// </summary>
     /// <param name="cvrNumber">CVR number of the company</param>
     /// <response code="200">Successful operation</response>
-    /// <response code="404">Cvr company not found</response>
+    /// <response code="404">CVR company not found</response>
     [ProducesResponseType(typeof(CvrCompanyDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{cvrNumber}")]
     public async Task<ActionResult<CvrCompanyDto>> GetCvrCompany(string cvrNumber)
     {
-        var raw = await client.CvrNumberSearch(cvrNumber);
+        var cvr = CvrNumber.TryParse(cvrNumber);
+        if(cvr == null)
+            return NotFound();
+
+        var raw = await client.CvrNumberSearch(cvr);
         if (raw == null)
         {
             return NotFound();
@@ -48,7 +53,7 @@ public class CvrController : Controller
 
     private static CvrCompanyDto? ToDto(Root cvrCompany)
     {
-        var cvrInfo = cvrCompany.hits?.hits?.FirstOrDefault()?._source?.Vrvirksomhed;
+        var cvrInfo = cvrCompany.hits?.hits?.SingleOrDefault()?._source?.Vrvirksomhed;
 
         if (cvrInfo == null)
             return null;

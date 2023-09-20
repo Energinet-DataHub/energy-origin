@@ -52,11 +52,11 @@
         </member>
         <member name="M:API.Controllers.CvrController.GetCvrCompany(System.String)">
             <summary>
-            Get cvr registered company information
+            Get CVR registered company information
             </summary>
             <param name="cvrNumber">CVR number of the company</param>
             <response code="200">Successful operation</response>
-            <response code="404">Cvr company not found</response>
+            <response code="404">CVR company not found</response>
         </member>
         <member name="P:API.Cvr.Dtos.CvrCompanyDto.CompanyCvr">
             <summary>

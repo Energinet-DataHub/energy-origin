@@ -38,7 +38,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
-    public string CvrBaseUrl = "SomeUrl";
+    public string CvrBaseUrl { get; set; } = "SomeUrl";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

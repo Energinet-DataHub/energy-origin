@@ -35,10 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Mocks\empty_cvr_response.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="Mocks\cvr_response.json">
+      <None Update="Mocks\*.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

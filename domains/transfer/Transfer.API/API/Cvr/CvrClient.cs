@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using API.Cvr.Models;
+using API.Models;
 
 namespace API.Cvr;
 
@@ -15,7 +16,7 @@ public class CvrClient
         this.client = client;
     }
 
-    public async Task<Root?> CvrNumberSearch(string cvr)
+    public async Task<Root?> CvrNumberSearch(CvrNumber cvr)
     {
         var postBody = @"{
                             ""query"": {
