@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Cvr.Dtos;
+namespace API.ApiModels.Responses;
 
 public record CvrCompanyDto
 {

@@ -2,34 +2,39 @@ using System;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Cvr.Dtos;
+using API.ApiModels.Responses;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Mocks;
 using FluentAssertions;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
+using WireMock.Server;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers;
 
-public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>,
-    IClassFixture<CvrWireMock>
+public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly CvrWireMock dataSyncWireMock;
+    private readonly WireMockServer server;
 
-    public CvrControllerTests(TransferAgreementsApiWebApplicationFactory factory,
-        CvrWireMock dataSyncWireMock)
+    public CvrControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
-        this.dataSyncWireMock = dataSyncWireMock;
-        factory.WalletUrl = "UnusedWalletUrl";
-        factory.CvrBaseUrl = dataSyncWireMock.Url;
+        server = WireMockServer.Start();
+        factory.CvrBaseUrl = server.Url!;
     }
 
     [Fact]
     public async Task GetCvrCompany_WhenCorrectCvrNumber_ShouldReturnCvrInfo()
     {
         var cvrNumber = "10150817";
-        dataSyncWireMock.SetupCvrResponse();
+        server.ResetMappings();
+        server
+            .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBodyFromFile("Controllers/CvrControllerTests.cvr_response.json")
+            );
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
 
@@ -45,7 +50,14 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
     public async Task GetCvrCompany_WhenWrongCvrNumber_ShouldReturnNotFound()
     {
         var cvrNumber = "123";
-        dataSyncWireMock.SetupEmptyCvrResponse();
+        server.ResetMappings();
+        server
+            .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBodyFromFile("Controllers/CvrControllerTests.empty_cvr_response.json")
+            );
+
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
 
         var response = await client.GetAsync($"api/cvr/{cvrNumber}");
@@ -57,7 +69,18 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
     public async Task GetCvrCompany_WhenTransientError_ShouldRetry()
     {
         var cvrNumber = "10150817";
-        dataSyncWireMock.SetupUnstableServer();
+        server.Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
+            .InScenario("UnstableServer")
+            .WillSetStateTo("FirstCallDone")
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.InternalServerError));
+
+        server.Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
+            .InScenario("UnstableServer")
+            .WhenStateIs("FirstCallDone")
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithBodyFromFile("Controllers/CvrControllerTests.cvr_response.json"));
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
 

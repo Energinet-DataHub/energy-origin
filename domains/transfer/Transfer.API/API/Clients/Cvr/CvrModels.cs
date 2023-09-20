@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace API.Cvr.Models;
+namespace API.Clients.Cvr;
 
 public class NyesteNavn
 {

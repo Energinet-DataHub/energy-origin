@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using API.Cvr;
 using API.Data;
 using API.Models;
 using API.Options;

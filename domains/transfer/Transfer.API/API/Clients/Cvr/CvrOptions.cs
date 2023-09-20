@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Cvr;
+namespace API.Clients.Cvr;
 
 public class CvrOptions
 {

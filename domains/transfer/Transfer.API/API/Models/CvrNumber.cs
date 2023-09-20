@@ -17,7 +17,7 @@ public class CvrNumber : ValueObject
 
     public static CvrNumber? TryParse(string value)
     {
-        if(!IsValid(value))
+        if (!IsValid(value))
             return null;
 
         return new CvrNumber(value);

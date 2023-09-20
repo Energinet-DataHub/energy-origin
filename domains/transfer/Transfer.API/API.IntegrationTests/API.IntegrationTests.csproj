@@ -34,10 +34,9 @@
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="Mocks\*.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
+	<ItemGroup>
+		<None Update="Controllers\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

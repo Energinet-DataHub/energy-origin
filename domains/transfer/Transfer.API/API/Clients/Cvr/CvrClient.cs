@@ -2,10 +2,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
-using API.Cvr.Models;
 using API.Models;
 
-namespace API.Cvr;
+namespace API.Clients.Cvr;
 
 public class CvrClient
 {

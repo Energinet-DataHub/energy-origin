@@ -1,8 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
-using API.Cvr;
-using API.Cvr.Dtos;
-using API.Cvr.Models;
+using API.ApiModels.Responses;
+using API.Clients.Cvr;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +32,7 @@ public class CvrController : Controller
     public async Task<ActionResult<CvrCompanyDto>> GetCvrCompany(string cvrNumber)
     {
         var cvr = CvrNumber.TryParse(cvrNumber);
-        if(cvr == null)
+        if (cvr == null)
             return NotFound();
 
         var raw = await client.CvrNumberSearch(cvr);

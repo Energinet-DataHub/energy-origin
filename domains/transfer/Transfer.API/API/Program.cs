@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.Cvr;
+using API.Clients.Cvr;
 using API.Data;
 using API.Filters;
 using API.Metrics;
@@ -87,12 +87,9 @@ Audit.Core.Configuration.Setup()
                 return true;
             })));
 
-var cvrOptions = builder.Configuration
-    .GetSection("Cvr")
-    .Get<CvrOptions>();
-
-builder.Services.AddHttpClient<CvrClient>(c =>
+builder.Services.AddHttpClient<CvrClient>((sp, c) =>
 {
+    var cvrOptions = sp.GetRequiredService<IOptions<CvrOptions>>().Value;
     c.BaseAddress = new Uri(cvrOptions.BaseUrl);
     c.SetBasicAuthentication(cvrOptions.User, cvrOptions.Password);
 }).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
