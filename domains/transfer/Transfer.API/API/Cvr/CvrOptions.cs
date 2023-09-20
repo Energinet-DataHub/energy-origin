@@ -11,4 +11,7 @@ public class CvrOptions
 
     [Required]
     public string Password { get; set; } = null!;
+
+    [Required]
+    public string BaseUrl { get; set; } = null!;
 }

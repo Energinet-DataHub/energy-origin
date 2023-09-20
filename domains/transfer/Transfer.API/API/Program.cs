@@ -92,7 +92,7 @@ var cvrOptions = builder.Configuration
 
 builder.Services.AddHttpClient<CvrClient>(c =>
 {
-    c.BaseAddress = new System.Uri("http://distribution.virk.dk");
+    c.BaseAddress = new Uri(cvrOptions.BaseUrl);
     c.SetBasicAuthentication(cvrOptions.User, cvrOptions.Password);
 }).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
 {

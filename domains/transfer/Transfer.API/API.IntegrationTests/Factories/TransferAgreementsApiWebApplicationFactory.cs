@@ -38,11 +38,15 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
+    public string CvrBaseUrl = "SomeUrl";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
+        builder.UseSetting("Cvr:User", CvrUser);
+        builder.UseSetting("Cvr:Password", CvrPassword);
 
         builder.ConfigureTestServices(s =>
         {
@@ -60,11 +64,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             });
 
             s.Configure<ProjectOriginOptions>(o => o.WalletUrl = WalletUrl);
-            s.Configure<CvrOptions>(o =>
-            {
-                o.User = CvrUser;
-                o.Password = CvrPassword;
-            });
         });
     }
 
