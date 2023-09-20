@@ -10,6 +10,7 @@ using API.Controllers;
 using API.Data;
 using API.Models;
 using API.Services;
+using API.TransferAgreementsAutomation;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.AspNetCore;

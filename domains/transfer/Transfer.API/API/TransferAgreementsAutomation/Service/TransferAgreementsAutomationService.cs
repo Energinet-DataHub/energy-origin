@@ -4,27 +4,36 @@ using System.Threading.Tasks;
 using API.Data;
 using API.Metrics;
 using API.Services;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace API.TransferAgreementsAutomation;
+namespace API.TransferAgreementsAutomation.Service;
 
 public class TransferAgreementsAutomationService : ITransferAgreementsAutomationService
 {
     private readonly ILogger<TransferAgreementsAutomationService> logger;
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly StatusCache memoryCache;
     private readonly ITransferAgreementAutomationMetrics metrics;
+
+    private readonly MemoryCacheEntryOptions cacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
+    };
 
     public TransferAgreementsAutomationService(
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
         IProjectOriginWalletService projectOriginWalletService,
+        StatusCache memoryCache,
         ITransferAgreementAutomationMetrics metrics
         )
     {
         this.logger = logger;
         this.transferAgreementRepository = transferAgreementRepository;
         this.projectOriginWalletService = projectOriginWalletService;
+        this.memoryCache = memoryCache;
         this.metrics = metrics;
     }
 
@@ -32,12 +41,13 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
+            memoryCache.Cache.Set(CacheValues.Key, CacheValues.Healthy, cacheOptions);
 
             try
             {
+
                 var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
@@ -48,6 +58,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
             }
             catch (Exception e)
             {
+                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Unhealthy, cacheOptions);
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
             }
 
