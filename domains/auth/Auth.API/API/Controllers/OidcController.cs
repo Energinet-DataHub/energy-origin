@@ -45,7 +45,7 @@ public class OidcController : ControllerBase
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
         if (oidcState?.RedirectionPath != null)
         {
-            redirectionUri = $"{oidcOptions.FrontendRedirectUri.Scheme}://{oidcOptions.FrontendRedirectUri.Host}/{oidcState.RedirectionPath.Trim('/')}";
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "redirectionPath", oidcState.RedirectionPath.Trim('/'));
         }
         if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
