@@ -16,6 +16,9 @@ public class LoginControllerTests
 {
     private readonly OidcOptions oidcOptions;
     private readonly IdentityProviderOptions identityProviderOptions;
+    private readonly ILogger<LoginController> logger = Substitute.For<ILogger<LoginController>>();
+    private readonly IDiscoveryCache cache = Substitute.For<IDiscoveryCache>();
+
     public LoginControllerTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -37,10 +40,7 @@ public class LoginControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.AuthorityUri.Host}/connect") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LoginController>>();
+        cache.GetAsync().Returns(document);
 
         var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
@@ -68,10 +68,7 @@ public class LoginControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("authorization_endpoint", $"http://{options.AuthorityUri.Host}/connect") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LoginController>>();
+        cache.GetAsync().Returns(document);
 
         var state = Guid.NewGuid().ToString();
         var redirectionUri = Guid.NewGuid().ToString();
@@ -104,10 +101,7 @@ public class LoginControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LoginController>>();
+        cache.GetAsync().Returns(document);
 
         var result = await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
@@ -132,20 +126,16 @@ public class LoginControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
-
-        var logger = Mock.Of<ILogger<LoginController>>();
+        cache.GetAsync().Returns(document);
 
         await new LoginController().LoginAsync(cache, options, identityProviderOptions, logger);
 
-        Mock.Get(logger).Verify(it => it.Log(
-            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once
-        );
+
+        logger.Received(1).Log(
+            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 }
