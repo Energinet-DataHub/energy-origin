@@ -42,11 +42,10 @@ public class Base64ConverterTests
         wde.Should().BeNull();
     }
 
-    [Theory]
-    [InlineData(Some.Base64EncodedWalletDepositEndpoint)]
-    public void TryConvertWalletDepositEndpoint_ShouldReturnTrue_WhenConvertible(string base64String)
+    [Fact]
+    public void TryConvertWalletDepositEndpoint_ShouldReturnTrue_WhenConvertible()
     {
-        var result = Base64Converter.TryConvertToWalletDepositEndpoint(base64String, out var wde);
+        var result = Base64Converter.TryConvertToWalletDepositEndpoint(Some.Base64EncodedWalletDepositEndpoint, out var wde);
 
         result.Should().BeTrue();
         wde.Should().NotBeNull();
