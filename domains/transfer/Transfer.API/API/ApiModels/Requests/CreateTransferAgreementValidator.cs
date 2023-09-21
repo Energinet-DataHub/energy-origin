@@ -37,6 +37,6 @@ public class CreateTransferAgreementValidator : AbstractValidator<CreateTransfer
         RuleFor(createTransferAgreement => createTransferAgreement.Base64EncodedWalletDepositEndpoint)
             .NotEmpty()
             .WithMessage("Base64EncodedWalletDepositEndpoint cannot be empty.")
-            .MustBeValidBase64("Base64-encoded Wallet Deposit Endpoint is not valid");
+            .MustBeValidWalletDepositEndpointBase64("Base64-encoded Wallet Deposit Endpoint is not valid");
     }
 }

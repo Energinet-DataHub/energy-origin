@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using API.Converters;
 using FluentValidation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,38 +19,14 @@ public static class RuleExtensions
             .LessThan(253402300800)
             .WithMessage("{PropertyName} too high! Please make sure the format is UTC in seconds.");
 
-    public static IRuleBuilderOptions<T, string> MustBeValidBase64<T>(this IRuleBuilder<T, string> ruleBuilder,
-        string message = "String is not Base64")
+    public static IRuleBuilderOptions<T, string> MustBeValidWalletDepositEndpointBase64<T>(this IRuleBuilder<T, string> ruleBuilder,
+        string message = "String is not a valid Base64-encoded WalletDepositEndpoint")
         => ruleBuilder
-            .Must(IsValidBase64String)
+            .Must(TryConvert)
             .WithMessage(message);
 
-    private static bool IsValidBase64String(string base64)
+    private static bool TryConvert(string base64String)
     {
-        if (string.IsNullOrEmpty(base64))
-            return false;
-
-        var buffer = new Span<byte>(new byte[base64.Length]);
-        if (!Convert.TryFromBase64String(base64, buffer, out _))
-            return false;
-
-        var jsonString = Encoding.UTF8.GetString(buffer.ToArray());
-        return IsValidJson(jsonString);
-    }
-
-    private static bool IsValidJson(string strInput)
-    {
-        strInput = strInput.Trim();
-        if ((!strInput.StartsWith("{") || !strInput.EndsWith("}")) &&
-            (!strInput.StartsWith("[") || !strInput.EndsWith("]"))) return false;
-        try
-        {
-            JToken.Parse(strInput);
-            return true;
-        }
-        catch (JsonReaderException)
-        {
-            return false;
-        }
+        return Base64Converter.TryConvertToWalletDepositEndpoint(base64String, out _);
     }
 }

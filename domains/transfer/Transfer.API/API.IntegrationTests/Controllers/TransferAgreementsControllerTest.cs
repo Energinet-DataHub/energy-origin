@@ -158,17 +158,14 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         validationProblemContent.Should().Contain("ReceiverTin");
     }
 
-    [Theory]
-    [InlineData(Some.Base64EncodedWalletDepositEndpoint)]
-    [InlineData("W3sibmFtZSI6ICJKb2huIn0sIHsibmFtZSI6ICJKYW5lIn1d")]
-    [InlineData("eyJwZXJzb24iOiB7Im5hbWUiOiAiSm9obiIsICJhZGRyZXNzIjogeyJjaXR5IjogIk5ldyBZb3JrIiwgInppcGNvZGUiOiAiMTAwMDEifX19")]
-    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeValidBase64(string base64String)
+    [Fact]
+    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeValidBase64()
     {
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
             ReceiverTin: "12345678",
-            Base64EncodedWalletDepositEndpoint: base64String
+            Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
@@ -180,6 +177,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [InlineData("This is not a valid Base64 string", "Base64-encoded Wallet Deposit Endpoint is not valid")]
     [InlineData("=", "Base64-encoded Wallet Deposit Endpoint is not valid")]
     [InlineData("12345", "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("W3sibmFtZSI6ICJKb2huIn0sIHsibmFtZSI6ICJKYW5lIn1d", "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("eyJwZXJzb24iOiB7Im5hbWUiOiAiSm9obiIsICJhZGRyZXNzIjogeyJjaXR5IjogIk5ldyBZb3JrIiwgInppcGNvZGUiOiAiMTAwMDEifX19", "Base64-encoded Wallet Deposit Endpoint is not valid")]
     public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeInvalidBase64(string base64String, string expectedMessage)
     {
         var request = new CreateTransferAgreement(
