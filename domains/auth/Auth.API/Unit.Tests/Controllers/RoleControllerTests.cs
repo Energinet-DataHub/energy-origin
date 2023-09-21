@@ -3,7 +3,6 @@ using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Values;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,8 +12,8 @@ namespace Unit.Tests.Controllers;
 public class RoleControllerTests
 {
     private readonly RoleController controller = new();
-    private readonly ILogger<RoleController> logger = Mock.Of<ILogger<RoleController>>();
-    private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly ILogger<RoleController> logger = Substitute.For<ILogger<RoleController>>();
+    private readonly IUserService userService = Substitute.For<IUserService>();
     private readonly RoleOptions roleOptions;
     public RoleControllerTests()
     {
@@ -60,9 +59,9 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
-        Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+        userService.UpsertUserAsync(testUser).Returns(dummyUser);
 
         var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
@@ -76,9 +75,9 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
-        Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+        userService.UpsertUserAsync(testUser).Returns(dummyUser);
 
         var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
@@ -92,9 +91,9 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
-        Mock.Get(userService).Setup(service => service.UpsertUserAsync(testUser)).ReturnsAsync(dummyUser);
+        userService.UpsertUserAsync(testUser).Returns(dummyUser);
 
         var result = await controller.AssignRole(RoleKey.Viewer, testUserId, roleOptions, userService, logger);
 
@@ -109,7 +108,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole } };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
@@ -129,7 +128,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
@@ -144,7 +143,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
         var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
@@ -156,7 +155,7 @@ public class RoleControllerTests
     {
         var testUserId = Guid.NewGuid();
 
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync((User)null!);
+        userService.GetUserByIdAsync(testUserId).Returns((User)null!);
 
         await Assert.ThrowsAsync<PropertyMissingException>(() => controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger));
     }
@@ -169,7 +168,7 @@ public class RoleControllerTests
         var testUserId = Guid.NewGuid();
         var testUser = new User { Id = testUserId };
 
-        Mock.Get(userService).Setup(service => service.GetUserByIdAsync(testUserId)).ReturnsAsync(testUser);
+        userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 

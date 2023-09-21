@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Web;
 using API.Controllers;
 using API.Options;
@@ -19,9 +18,9 @@ public class LogoutControllerTests
 {
     private readonly LogoutController controller = new();
     private readonly OidcOptions options;
-    private readonly IMetrics metrics = Mock.Of<IMetrics>();
+    private readonly IMetrics metrics = Substitute.For<IMetrics>();
     private readonly ICryptography cryptography;
-    private readonly ILogger<LogoutController> logger = Mock.Of<ILogger<LogoutController>>();
+    private readonly ILogger<LogoutController> logger = Substitute.For<ILogger<LogoutController>>();
     private readonly string identityToken = Guid.NewGuid().ToString();
     private readonly string encryptedIdentityToken;
 
@@ -45,8 +44,8 @@ public class LogoutControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
@@ -70,8 +69,8 @@ public class LogoutControllerTests
     {
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
@@ -90,8 +89,8 @@ public class LogoutControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         var redirectionUri = "http://redirection.r.us";
 
@@ -112,8 +111,8 @@ public class LogoutControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         var redirectionUri = Guid.NewGuid().ToString();
 
@@ -131,8 +130,8 @@ public class LogoutControllerTests
     {
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
@@ -155,19 +154,17 @@ public class LogoutControllerTests
     {
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
-        Mock.Get(logger).Verify(it => it.Log(
-            It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once
-        );
+        logger.Received(1).Log(
+            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -177,16 +174,15 @@ public class LogoutControllerTests
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("end_session_endpoint", $"http://{options.AuthorityUri.Host}/end_session") });
 
-        var cache = Mock.Of<IDiscoveryCache>();
-        Mock.Get(cache).Setup(it => it.GetAsync()).ReturnsAsync(document);
+        var cache = Substitute.For<IDiscoveryCache>();
+        cache.GetAsync().Returns(document);
 
         _ = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
-        Mock.Get(metrics).Verify(x => x.Logout(
-            It.IsAny<Guid>(),
-            It.IsAny<Guid?>(),
-            It.IsAny<ProviderType>()),
-            Times.Once
+        metrics.Received(1).Logout(
+            Arg.Any<Guid>(),
+            Arg.Any<Guid?>(),
+            Arg.Any<ProviderType>()
         );
     }
 }

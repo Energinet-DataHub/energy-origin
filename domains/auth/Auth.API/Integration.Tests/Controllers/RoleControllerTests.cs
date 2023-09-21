@@ -1,8 +1,6 @@
 using System.Net;
-using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;

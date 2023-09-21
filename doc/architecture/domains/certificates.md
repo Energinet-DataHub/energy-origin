@@ -1,27 +1,19 @@
 # Certificates Domain
 
-The diagrams below are divided into:
-
-* [Current architecture:](#current-architecture) Diagrams for what Team Atlas are building in the current or up-coming sprint
-* [Target architecture:](#target-architecture) Diagrams for the desired target
-
-The reason for this split is certain constraints. The constraints are:
-
-* Integration Event Bus does not exist and the inter-domain events are not defined
-
 ## Current architecture (as-is)
 
 ### Container diagram
-![Container diagram](../diagrams/certificates.current.container.drawio.svg)
+
+![Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/Certificate.png)
 
 
-## Component diagram: Certificate API
+### Component diagram: Certificate API
 
 The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the DataSyncSyncer.
 
 Note: `ContractService` is currently getting information about a metering point from `DataSync`. In the future it is expected to get this from the MeteringPoints domain, but this domain does not exist at this point.
 
-![Issuer component diagram](../diagrams/certificates.current.component.certificate.api.drawio.svg)
+![Certificate API component diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/CertificateApiComponents.png)
 
 ### Message flow: Issue certificate
 The sequence diagram below shows the flow of messages between the components when issuing a single certificate. All messages are published to the message broker; the message broker is not shown in the diagram. Before that flow is possible, a wallet deposit endpoint must be created in the user's wallet; that happens as part of creating the Contract.
@@ -58,9 +50,3 @@ _Why calculate since Jan 1st 2022?_ We need a start date, which is before any ce
 _What is the upper limit?_ The maximum key position is 2,147,483,647, which is the maximum value of at 32-bit integer. With a resolution of 1 minute, this means that the upper limit is a little more than 4,082 years. Or stated the differently, with the start date defined as above the upper limit is 6105-01-24T02:07:00Z.
 
 _Why 1 minute resolution and not market resolution for electrical measurements?_ The market resolution can change (at the time of writing, it is 1 hour and will soon change to 15 minutes). By setting it to 1 minute, the solution does not care about changes in the market resolution as long as they are full minutes. If the market resolution drops below 1 minute, then this approach does not work.
-
-## Target architecture (to-be)
-
-### Container diagram
-![Container diagram](../diagrams/certificates.target.container.drawio.svg)
-

@@ -1,4 +1,3 @@
-using System.Net;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
@@ -19,11 +18,11 @@ namespace Unit.Tests.Controllers;
 public class TermsControllerTests
 {
     private readonly TermsController controller = new();
-    private readonly ILogger<TermsController> logger = Mock.Of<ILogger<TermsController>>();
-    private readonly IHttpContextAccessor accessor = Mock.Of<IHttpContextAccessor>();
-    private readonly IUserService userService = Mock.Of<IUserService>();
-    private readonly IHttpClientFactory factory = Mock.Of<IHttpClientFactory>();
-    private readonly ICompanyService companyService = Mock.Of<ICompanyService>();
+    private readonly ILogger<TermsController> logger = Substitute.For<ILogger<TermsController>>();
+    private readonly IHttpContextAccessor accessor = Substitute.For<IHttpContextAccessor>();
+    private readonly IUserService userService = Substitute.For<IUserService>();
+    private readonly IHttpClientFactory factory = Substitute.For<IHttpClientFactory>();
+    private readonly ICompanyService companyService = Substitute.For<ICompanyService>();
     private readonly MockHttpMessageHandler http = new();
     private readonly DataSyncOptions dataSyncOptions;
     private readonly ICryptography cryptography;
@@ -58,28 +57,25 @@ public class TermsControllerTests
 
         controller.PrepareUser(id: id, name: name, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new User
-            {
-                Id = id,
-                Name = name,
-                AllowCprLookup = allowCprLookup,
-                UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
-            });
+
+        userService.GetUserByIdAsync(Arg.Any<Guid>()).Returns(new User
+        {
+            Id = id,
+            Name = name,
+            AllowCprLookup = allowCprLookup,
+            UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
+        });
+
 
         var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        Mock.Get(userService).Verify(x => x.UpsertUserAsync(
-            It.Is<User>(y =>
-                y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
-                && y.Name == name
-                && y.AllowCprLookup == allowCprLookup
-                && y.Id == id)),
-            Times.Once
-        );
+        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+            y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
+            && y.Name == name
+            && y.AllowCprLookup == allowCprLookup
+            && y.Id == id));
     }
 
     [Fact]
@@ -104,20 +100,17 @@ public class TermsControllerTests
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        Mock.Get(userService).Verify(x => x.UpsertUserAsync(
-            It.Is<User>(y =>
-                y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
-                && y.Name == name
-                && y.AllowCprLookup == allowCprLookup
-                && y.Id == id
-                && y.Company != null
-                && y.Company.Tin == organization.Tin
-                && y.Company.Name == organization.Name
-                && y.UserProviders.Count() == 1
-                && y.UserProviders.First().ProviderKeyType == providerKeyType
-                && y.UserProviders.First().UserProviderKey == providerKey)),
-            Times.Once
-        );
+        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+            y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
+            && y.Name == name
+            && y.AllowCprLookup == allowCprLookup
+            && y.Id == id
+            && y.Company != null
+            && y.Company.Tin == organization.Tin
+            && y.Company.Name == organization.Name
+            && y.UserProviders.Count() == 1
+            && y.UserProviders.First().ProviderKeyType == providerKeyType
+            && y.UserProviders.First().UserProviderKey == providerKey));
     }
 
     [Fact]
@@ -128,15 +121,16 @@ public class TermsControllerTests
     {
         controller.PrepareUser();
 
-        Mock.Get(userService)
-            .Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new User
+
+        userService.GetUserByIdAsync(Arg.Any<Guid>()).Returns(
+            new User
             {
                 Id = Guid.NewGuid(),
                 Name = Guid.NewGuid().ToString(),
                 AllowCprLookup = false,
                 UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 2 } }
-            });
+            }
+        );
 
         var result = await controller.AcceptUserTermsAsync(logger, accessor, userService, companyService, factory, cryptography, dataSyncOptions, roleOptions, termsOptions, oidcOptions, 1);
 

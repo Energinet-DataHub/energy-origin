@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using API.Controllers;
 using API.Models.Entities;
 using API.Services.Interfaces;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -11,8 +9,8 @@ namespace Unit.Tests.Controllers;
 public class RemoveUserControllerTests
 {
     private readonly RemoveUserController controller = new();
-    private readonly ILogger<RemoveUserController> logger = Mock.Of<ILogger<RemoveUserController>>();
-    private readonly IUserService userService = Mock.Of<IUserService>();
+    private readonly ILogger<RemoveUserController> logger = Substitute.For<ILogger<RemoveUserController>>();
+    private readonly IUserService userService = Substitute.For<IUserService>();
 
     [Fact]
     public async Task RemoveUser_ShouldReturnsBadRequest_WhenSelfDeletion()
@@ -30,7 +28,7 @@ public class RemoveUserControllerTests
     {
         var userId = Guid.NewGuid();
         controller.PrepareUser();
-        Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync((User)null!);
+        userService.GetUserByIdAsync(userId).Returns((User)null!);
 
         var result = await controller.RemoveUser(userId, userService, logger);
 
@@ -42,7 +40,7 @@ public class RemoveUserControllerTests
     {
         var userId = Guid.NewGuid();
         controller.PrepareUser();
-        Mock.Get(userService).Setup(s => s.GetUserByIdAsync(userId)).ReturnsAsync(new User());
+        userService.GetUserByIdAsync(userId).Returns(new User());
 
         var result = await controller.RemoveUser(userId, userService, logger);
 
