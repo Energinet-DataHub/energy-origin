@@ -1,21 +1,15 @@
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using API.Models.Entities;
-using API.Repositories;
-using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services;
 using API.Services.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace Unit.Tests.Services;
 
 public class UserProviderServiceTests
 {
     private readonly IUserProviderService userProviderService;
-    private readonly IUserProviderRepository repository = Mock.Of<IUserProviderRepository>();
+    private readonly IUserProviderRepository repository = Substitute.For<IUserProviderRepository>();
 
     public UserProviderServiceTests() => userProviderService = new UserProviderService(repository);
 
@@ -27,9 +21,7 @@ public class UserProviderServiceTests
             new UserProvider()
         };
 
-        Mock.Get(repository)
-            .Setup(x => x.FindUserProviderMatchAsync(It.IsAny<List<UserProvider>>()))
-            .ReturnsAsync(value: userProviders.First());
+        repository.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(userProviders.First());
 
         var result = await userProviderService.FindUserProviderMatchAsync(userProviders);
 
@@ -39,9 +31,7 @@ public class UserProviderServiceTests
     [Fact]
     public async Task FindUserProviderMatchAsync_ShouldReturnNull_WhenUserProviderMatchIsNotFound()
     {
-        Mock.Get(repository)
-            .Setup(x => x.FindUserProviderMatchAsync(It.IsAny<List<UserProvider>>()))
-            .ReturnsAsync(value: null);
+        repository.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(null as UserProvider);
 
         var result = await userProviderService.FindUserProviderMatchAsync(new List<UserProvider>()
         {
