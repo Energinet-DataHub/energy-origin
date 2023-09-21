@@ -8,7 +8,7 @@ namespace Unit.Tests.Services;
 public class CompanyServiceTests
 {
     private readonly ICompanyService companyService;
-    private readonly ICompanyRepository repository = Mock.Of<ICompanyRepository>();
+    private readonly ICompanyRepository repository = Substitute.For<ICompanyRepository>();
 
     public CompanyServiceTests() => companyService = new CompanyService(repository);
 
@@ -17,12 +17,10 @@ public class CompanyServiceTests
     {
         var tin = Guid.NewGuid().ToString();
 
-        Mock.Get(repository)
-            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
-            .ReturnsAsync(value: new Company()
-            {
-                Tin = tin
-            });
+        repository.GetCompanyByTinAsync(Arg.Any<string>()).Returns(new Company()
+        {
+            Tin = tin
+        });
 
         var result = await companyService.GetCompanyByTinAsync(tin);
 
@@ -35,9 +33,7 @@ public class CompanyServiceTests
     [InlineData("89a65914-ccf8-473e-afa4-8055a31e906c")]
     public async Task GetCompanyByTin_ShouldReturnNull_WhenNoCompanyExists(string? tin)
     {
-        Mock.Get(repository)
-            .Setup(x => x.GetCompanyByTinAsync(It.IsAny<string>()))
-            .ReturnsAsync(value: null);
+        repository.GetCompanyByTinAsync(Arg.Any<string>()).Returns(null as Company);
 
         var result = await companyService.GetCompanyByTinAsync(tin);
 
