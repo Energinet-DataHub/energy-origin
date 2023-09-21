@@ -46,6 +46,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         response.Should().NotBeNull();
 
         var settings = new VerifySettings();
+        settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
     }
 
@@ -90,6 +91,9 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         var response = await client.GetFromJsonAsync<CvrCompanyDto>($"api/cvr/{cvrNumber}");
 
         response.Should().NotBeNull();
-        response.CompanyCvr.Should().Be(cvrNumber);
+
+        var settings = new VerifySettings();
+        settings.DontScrubGuids();
+        await Verifier.Verify(response, settings);
     }
 }

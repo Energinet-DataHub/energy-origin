@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace API.Models;
 
-public class CvrNumber : ValueObject
+public class CvrNumber
 {
     private const string Regexp = @"^\d{8}$";
     public string Value { get; }
@@ -29,11 +28,6 @@ public class CvrNumber : ValueObject
             throw new ArgumentException($"Invalid CVR number: {value}.");
 
         Value = value;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Value;
     }
 
     public override string ToString()
