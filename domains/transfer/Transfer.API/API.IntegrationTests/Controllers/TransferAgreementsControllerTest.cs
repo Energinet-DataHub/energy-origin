@@ -133,7 +133,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         validationProblemContent.Should().Contain(property);
     }
 
-
     [Theory]
     [InlineData("", "ReceiverTin cannot be empty")]
     [InlineData("1234567", "ReceiverTin must be 8 digits without any spaces.")]
@@ -160,12 +159,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Theory]
-    [InlineData("This is not a valid Base64 string", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("U28gbG9uZyBhbmQgdGhhbmtzIGZvciBhbGwgdGhlIGZpc2gu", true, null)]
-    [InlineData("=", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("12345", false, "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("YWJjZA==", true, null)]
-    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeBase64Encoded(string base64String, bool shouldSucceed, string expectedMessage)
+    [InlineData("U28gbG9uZyBhbmQgdGhhbmtzIGZvciBhbGwgdGhlIGZpc2gu")]
+    [InlineData("YWJjZA==")]
+    [InlineData(Some.Base64EncodedWalletDepositEndpoint)]
+    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeValidBase64(string base64String)
     {
         var request = new CreateTransferAgreement(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
@@ -176,16 +173,27 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
 
-        if (shouldSucceed)
-        {
-            response.StatusCode.Should().NotBe(HttpStatusCode.BadRequest);
-        }
-        else
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var validationProblemContent = await response.Content.ReadAsStringAsync();
-            validationProblemContent.Should().Contain(expectedMessage);
-        }
+        response.StatusCode.Should().NotBe(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData("This is not a valid Base64 string", "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("=", "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    [InlineData("12345", "Base64-encoded Wallet Deposit Endpoint is not valid")]
+    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeInvalidBase64(string base64String, string expectedMessage)
+    {
+        var request = new CreateTransferAgreement(
+            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            ReceiverTin: "12345678",
+            Base64EncodedWalletDepositEndpoint: base64String
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var validationProblemContent = await response.Content.ReadAsStringAsync();
+        validationProblemContent.Should().Contain(expectedMessage);
     }
 
     [Fact]
