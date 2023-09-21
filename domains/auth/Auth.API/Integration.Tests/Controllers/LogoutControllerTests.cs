@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using System.Web;
 using API.Models.Dtos.Responses;
 using API.Options;
 using Microsoft.AspNetCore.TestHost;
@@ -32,8 +34,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializerExtension.Deserialize<RedirectUriResponse>(resultContent);
-
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         var uri = new Uri(redirectUriResponse!.RedirectionUri);
         var map = QueryHelpers.ParseNullableQuery(uri.Query);
 
@@ -58,8 +59,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializerExtension.Deserialize<RedirectUriResponse>(resultContent);
-
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
     }
 
@@ -80,7 +80,7 @@ public class LogoutControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.NotNull(result);
 
         var resultContent = await result.Content.ReadAsStringAsync();
-        var redirectUriResponse = JsonSerializerExtension.Deserialize<RedirectUriResponse>(resultContent);
+        var redirectUriResponse = JsonSerializer.Deserialize<RedirectUriResponse>(resultContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.Equal(oidcOptions.FrontendRedirectUri.AbsoluteUri, redirectUriResponse?.RedirectionUri);
     }
