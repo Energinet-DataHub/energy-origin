@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Clients.Cvr;
 using API.Data;
 using API.Filters;
 using API.Metrics;
@@ -14,6 +15,7 @@ using API.TransferAgreementsAutomation;
 using API.TransferAgreementsAutomation.Service;
 using Audit.Core;
 using FluentValidation;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -51,6 +54,7 @@ builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>().BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<CvrOptions>().BindConfiguration(CvrOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
 
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
@@ -82,6 +86,17 @@ Audit.Core.Configuration.Setup()
                 }
                 return true;
             })));
+
+builder.Services.AddHttpClient<CvrClient>((sp, c) =>
+{
+    var cvrOptions = sp.GetRequiredService<IOptions<CvrOptions>>().Value;
+    c.BaseAddress = new Uri(cvrOptions.BaseUrl);
+    c.SetBasicAuthentication(cvrOptions.User, cvrOptions.Password);
+}).AddTransientHttpErrorPolicy(b => b.WaitAndRetryAsync(new[]
+{
+    TimeSpan.FromSeconds(1),
+    TimeSpan.FromSeconds(5)
+}));
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
