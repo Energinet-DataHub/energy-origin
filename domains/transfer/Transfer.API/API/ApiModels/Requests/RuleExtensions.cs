@@ -1,5 +1,8 @@
 using System;
+using System.Text;
 using FluentValidation;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace API.ApiModels.Requests;
 
@@ -27,6 +30,26 @@ public static class RuleExtensions
             return false;
 
         var buffer = new Span<byte>(new byte[base64.Length]);
-        return Convert.TryFromBase64String(base64, buffer, out _);
+        if (!Convert.TryFromBase64String(base64, buffer, out _))
+            return false;
+
+        var jsonString = Encoding.UTF8.GetString(buffer.ToArray());
+        return IsValidJson(jsonString);
+    }
+
+    private static bool IsValidJson(string strInput)
+    {
+        strInput = strInput.Trim();
+        if ((!strInput.StartsWith("{") || !strInput.EndsWith("}")) &&
+            (!strInput.StartsWith("[") || !strInput.EndsWith("]"))) return false;
+        try
+        {
+            JToken.Parse(strInput);
+            return true;
+        }
+        catch (JsonReaderException)
+        {
+            return false;
+        }
     }
 }

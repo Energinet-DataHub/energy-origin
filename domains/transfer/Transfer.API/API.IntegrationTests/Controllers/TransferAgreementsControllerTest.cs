@@ -159,9 +159,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Theory]
-    [InlineData("U28gbG9uZyBhbmQgdGhhbmtzIGZvciBhbGwgdGhlIGZpc2gu")]
-    [InlineData("YWJjZA==")]
     [InlineData(Some.Base64EncodedWalletDepositEndpoint)]
+    [InlineData("W3sibmFtZSI6ICJKb2huIn0sIHsibmFtZSI6ICJKYW5lIn1d")]
+    [InlineData("eyJwZXJzb24iOiB7Im5hbWUiOiAiSm9obiIsICJhZGRyZXNzIjogeyJjaXR5IjogIk5ldyBZb3JrIiwgInppcGNvZGUiOiAiMTAwMDEifX19")]
     public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeValidBase64(string base64String)
     {
         var request = new CreateTransferAgreement(
