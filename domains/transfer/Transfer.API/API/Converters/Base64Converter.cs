@@ -58,4 +58,18 @@ public static class Base64Converter
             Version = temp.Version
         };
     }
+
+    public static bool TryConvertToWalletDepositEndpoint(string base64String, out WalletDepositEndpoint? result)
+    {
+        try
+        {
+            result = ConvertToWalletDepositEndpoint(base64String);
+            return true;
+        }
+        catch
+        {
+            result = null;
+            return false;
+        }
+    }
 }
