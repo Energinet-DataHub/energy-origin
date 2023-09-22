@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
