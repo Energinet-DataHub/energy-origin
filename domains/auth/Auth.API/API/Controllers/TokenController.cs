@@ -15,7 +15,7 @@ namespace API.Controllers;
 [ApiController]
 public class TokenController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/token")]
     public async Task<IActionResult> RefreshAsync(
         IMetrics metrics,
