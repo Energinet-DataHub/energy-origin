@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
@@ -42,30 +43,42 @@ public class OidcController : ControllerBase
         [FromQuery] string? state = default)
     {
         var oidcState = OidcState.Decode(state);
-        var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
-        if (oidcState?.RedirectionPath != null)
+
+        var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
+        //var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        /* if (oidcState?.RedirectionPath != null)
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "redirectionPath", oidcState.RedirectionPath.Trim('/'));
         }
         if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
         {
             redirectionUri = oidcState.RedirectionUri;
-        }
+        } */
 
-        if (code == null)
+        //Ternary return checks here maybe?¨
+
+        //not sure this is smart :S
+        var discoveryDocument = await discoveryCache.GetAsync();
+        var val = OnErrorReturnRedirectUrl(code, error, errorDescription, redirectionUri, logger, discoveryDocument);
+        if (val != null)
+        {
+            return val;
+        }
+        /* if (code == null)
         {
             logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
-
         var discoveryDocument = await discoveryCache.GetAsync();
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
-        }
+        }  */
+
 
         var client = clientFactory.CreateClient();
+        //This can be outsourced 
         var request = new AuthorizationCodeTokenRequest
         {
             Address = discoveryDocument.TokenEndpoint,
@@ -74,7 +87,9 @@ public class OidcController : ControllerBase
             ClientSecret = oidcOptions.ClientSecret,
             RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
         };
-        var response = await client.RequestAuthorizationCodeTokenAsync(request);
+        var response = await client.RequestAuthorizationCodeTokenAsync(request); //Put above in here from private method
+
+        //Idk with thuis
         if (response.IsError)
         {
             request.ClientSecret = "<removed>";
@@ -84,6 +99,7 @@ public class OidcController : ControllerBase
 
         UserDescriptor descriptor;
         UserData data;
+        //Try catch outsourcing
         try
         {
             (descriptor, data) = await MapUserDescriptor(cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
@@ -99,6 +115,7 @@ public class OidcController : ControllerBase
             return RedirectPreserveMethod(url);
         }
 
+        //Outsource this
         if (oidcState?.State != null)
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
@@ -120,6 +137,7 @@ public class OidcController : ControllerBase
 
     private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
+        //Outsource creation of vars
         var handler = new JwtSecurityTokenHandler
         {
             MapInboundClaims = false
@@ -132,6 +150,7 @@ public class OidcController : ControllerBase
             ValidAudience = oidcOptions.ClientId
         };
 
+        //Maybe something can be done here
         var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
         var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
 
@@ -151,6 +170,7 @@ public class OidcController : ControllerBase
         var identityType = userInfo.FindFirstValue("identity_type");
         var scope = access.FindFirstValue(UserClaimName.Scope);
 
+        //Exceptions can be outsourced        
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
@@ -166,6 +186,7 @@ public class OidcController : ControllerBase
         string? companyName = null;
         var keys = new Dictionary<ProviderKeyType, string>();
 
+        //outsource this
         switch (providerType)
         {
             case ProviderType.MitIdProfessional:
@@ -206,8 +227,8 @@ public class OidcController : ControllerBase
                 break;
         }
 
+        //Can maube be outsourced
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-
         if (identityType == ProviderGroup.Professional)
         {
             ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
@@ -216,8 +237,9 @@ public class OidcController : ControllerBase
 
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
+        //Here
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
-        var knownUser = user != null;
+        var knownUser = user != null; // this not included
         user ??= new User
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
@@ -232,10 +254,10 @@ public class OidcController : ControllerBase
                     Name = companyName!
                 }
         };
-
+        
+        //oursource this
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
-
         if (knownUser)
         {
             await userService.UpsertUserAsync(user);
@@ -265,4 +287,37 @@ public class OidcController : ControllerBase
         (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
+    
+    private static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
+    {
+        var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
+        if (oidcState?.RedirectionPath != null)
+        {
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "redirectionPath", oidcState.RedirectionPath.Trim('/'));
+        }
+        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
+        {
+            redirectionUri = oidcState.RedirectionUri;
+        }
+        return redirectionUri;
+    }
+
+    private RedirectResult? OnErrorReturnRedirectUrl(string? code, string? error, string? errorDescription, string redirectionUri, ILogger<OidcController> logger, DiscoveryDocumentResponse? discoveryDocument)
+    {
+
+        if (code == null)
+        {
+            logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
+            //return QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription));
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
+        }
+        if (discoveryDocument == null || discoveryDocument.IsError)
+        {
+            logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
+            //return QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable);
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+        } 
+        return null;
 }
+}
+
