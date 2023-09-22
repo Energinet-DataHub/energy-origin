@@ -14,7 +14,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
     private readonly ILogger<TransferAgreementsAutomationService> logger;
     private readonly ITransferAgreementRepository transferAgreementRepository;
     private readonly IProjectOriginWalletService projectOriginWalletService;
-    private readonly StatusCache memoryCache;
+    private readonly AutomationCache memoryCache;
     private readonly ITransferAgreementAutomationMetrics metrics;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
@@ -26,9 +26,9 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         ILogger<TransferAgreementsAutomationService> logger,
         ITransferAgreementRepository transferAgreementRepository,
         IProjectOriginWalletService projectOriginWalletService,
-        StatusCache memoryCache,
+        AutomationCache memoryCache,
         ITransferAgreementAutomationMetrics metrics
-        )
+    )
     {
         this.logger = logger;
         this.transferAgreementRepository = transferAgreementRepository;
@@ -43,11 +43,12 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
         {
             logger.LogInformation("TransferAgreementsAutomationService running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
-            memoryCache.Cache.Set(CacheValues.Key, CacheValues.Healthy, cacheOptions);
+            metrics.ResetTransferErrors();
+
+            memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
 
             try
             {
-
                 var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
@@ -58,7 +59,7 @@ public class TransferAgreementsAutomationService : ITransferAgreementsAutomation
             }
             catch (Exception e)
             {
-                memoryCache.Cache.Set(CacheValues.Key, CacheValues.Unhealthy, cacheOptions);
+                memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Unhealthy, cacheOptions);
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationService: {exception}", e);
             }
 
