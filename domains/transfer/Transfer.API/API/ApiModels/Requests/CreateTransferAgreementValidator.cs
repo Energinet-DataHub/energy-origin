@@ -33,5 +33,10 @@ public class CreateTransferAgreementValidator : AbstractValidator<CreateTransfer
             .WithMessage("ReceiverTin must be 8 digits without any spaces.")
             .NotEqual(context.HttpContext.User.FindSubjectTinClaim())
             .WithMessage("ReceiverTin cannot be the same as SenderTin.");
+
+        RuleFor(createTransferAgreement => createTransferAgreement.Base64EncodedWalletDepositEndpoint)
+            .NotEmpty()
+            .WithMessage("Base64EncodedWalletDepositEndpoint cannot be empty.")
+            .MustBeValidWalletDepositEndpointBase64("Base64-encoded Wallet Deposit Endpoint is not valid");
     }
 }
