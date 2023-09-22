@@ -10,9 +10,9 @@ namespace API.Controllers;
 [ApiController]
 public class TransferAgreementAutomationController : ControllerBase
 {
-    private readonly StatusCache cache;
+    private readonly AutomationCache cache;
 
-    public TransferAgreementAutomationController(StatusCache cache)
+    public TransferAgreementAutomationController(AutomationCache cache)
     {
         this.cache = cache;
     }
@@ -21,10 +21,10 @@ public class TransferAgreementAutomationController : ControllerBase
     [HttpGet("api/transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()
     {
-        cache.Cache.TryGetValue(CacheValues.Key, out var value);
+        cache.Cache.TryGetValue(HealthEntries.Key, out var value);
 
         return Ok(value == null ?
-            new TransferAutomationStatus(Healthy: CacheValues.Unhealthy) :
+            new TransferAutomationStatus(Healthy: HealthEntries.Unhealthy) :
             new TransferAutomationStatus(Healthy: (bool)value)
         );
     }
