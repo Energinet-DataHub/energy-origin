@@ -7,9 +7,11 @@ using API.Converters;
 using API.Data;
 using API.Metrics;
 using API.Models;
+using API.TransferAgreementsAutomation;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Common.V1;
@@ -22,16 +24,19 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly WalletService.WalletServiceClient walletServiceClient;
     private readonly ITransferAgreementAutomationMetrics metrics;
+    private readonly AutomationCache cache;
 
     public ProjectOriginWalletService(
         ILogger<ProjectOriginWalletService> logger,
         WalletService.WalletServiceClient walletServiceClient,
-        ITransferAgreementAutomationMetrics metrics
+        ITransferAgreementAutomationMetrics metrics,
+        AutomationCache cache
     )
     {
         this.logger = logger;
         this.walletServiceClient = walletServiceClient;
         this.metrics = metrics;
+        this.cache = cache;
     }
 
     public async Task<string> CreateWalletDepositEndpoint(string bearerToken)
@@ -60,7 +65,8 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         }
     }
 
-    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
+    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint,
+        string receiverTin)
     {
         var headers = new Metadata
         {
@@ -125,12 +131,26 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
             logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
                 certificate.FederatedId, transferAgreement.ReceiverTin);
-            metrics.AddTransferAttempt(certificate.FederatedId.Registry, new Guid(certificate.FederatedId.StreamId.Value));
 
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
+            SetTransferAttempt(certificate.FederatedId.StreamId.Value);
         }
+
         metrics.SetNumberOfCertificates(certificatesCount);
+    }
+
+    private void SetTransferAttempt(string certificateId)
+    {
+        var attempt = cache.Cache.Get(certificateId);
+        if (attempt == null)
+        {
+            cache.Cache.Set(certificateId, 1, TimeSpan.FromHours(2));
+        }
+        else
+        {
+            metrics.AddTransferError();
+        }
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)

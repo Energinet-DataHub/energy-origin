@@ -17,7 +17,7 @@ namespace API.IntegrationTests.Controllers;
 public class TransferAgreementAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly HttpClient authenticatedClient;
-    private readonly StatusCache cache;
+    private readonly AutomationCache cache;
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
@@ -25,34 +25,34 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
 
     public TransferAgreementAutomationControllerTest(TransferAgreementsApiWebApplicationFactory factory)
     {
-        cache = factory.Services.GetService<StatusCache>()!;
+        cache = factory.Services.GetService<AutomationCache>()!;
         authenticatedClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
     }
 
     [Fact]
     public async Task GetStatus_CachedSuccess_ShouldReturnSuccess()
     {
-        cache.Cache.Set(CacheValues.Key, CacheValues.Healthy, cacheOptions);
+        cache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
 
         var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Healthy));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(HealthEntries.Healthy));
     }
 
     [Fact]
     public async Task GetStatus_CachedError_ShouldReturnError()
     {
-        cache.Cache.Set(CacheValues.Key, CacheValues.Unhealthy, cacheOptions);
+        cache.Cache.Set(HealthEntries.Key, HealthEntries.Unhealthy, cacheOptions);
 
         var response = await authenticatedClient.GetAsync("api/transfer-automation/status");
         response.EnsureSuccessStatusCode();
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Unhealthy));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(HealthEntries.Unhealthy));
     }
 
     [Fact]
@@ -65,6 +65,6 @@ public class TransferAgreementAutomationControllerTest : IClassFixture<TransferA
 
         var status = JsonConvert.DeserializeObject<TransferAutomationStatus>(await response.Content.ReadAsStringAsync());
 
-        status.Should().BeEquivalentTo(new TransferAutomationStatus(CacheValues.Unhealthy));
+        status.Should().BeEquivalentTo(new TransferAutomationStatus(HealthEntries.Unhealthy));
     }
 }

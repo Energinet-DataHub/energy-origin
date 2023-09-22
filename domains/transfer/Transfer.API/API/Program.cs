@@ -169,7 +169,7 @@ builder.Services.AddScoped<ITransferAgreementsAutomationService, TransferAgreeme
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddScoped<IConnectionInvitationCleanupService, ConnectionInvitationCleanupService>();
 builder.Services.AddHostedService<ConnectionInvitationCleanupWorker>();
-builder.Services.AddSingleton<StatusCache>();
+builder.Services.AddSingleton<AutomationCache>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
