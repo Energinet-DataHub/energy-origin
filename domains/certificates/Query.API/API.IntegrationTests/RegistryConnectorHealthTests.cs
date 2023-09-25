@@ -6,19 +6,17 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class HealthTests :
+public class RegistryConnectorHealthTests :
     TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
+    IClassFixture<RegistryConnectorApplicationFactory>,
     IClassFixture<RabbitMqContainer>
 {
-    private readonly QueryApiWebApplicationFactory factory;
+    private readonly RegistryConnectorApplicationFactory factory;
 
-    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
+    public RegistryConnectorHealthTests(RegistryConnectorApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
     }
 
     [Fact]

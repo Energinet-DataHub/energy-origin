@@ -1,19 +1,29 @@
 {
-    "name": "C# (.NET)",
+    "name": "Certificate domain",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "settings": {
-        "editor.formatOnSave": true
-    },
-    "extensions": [
-        "EditorConfig.EditorConfig",
-        "ms-dotnettools.csharp",
-        "formulahendry.dotnet-test-explorer",
-        "ryanluker.vscode-coverage-gutters"
-    ],
     "postCreateCommand": "dotnet restore",
     "remoteUser": "vscode",
-    "features": {}
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:~/.dotnet/tools"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "ms-dotnettools.csharp",
+                "formulahendry.dotnet-test-explorer",
+                "ryanluker.vscode-coverage-gutters"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "omnisharp.enableRoslynAnalyzers": true
+            }
+        }
+    }
 }
