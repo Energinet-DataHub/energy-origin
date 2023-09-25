@@ -70,6 +70,6 @@ if (builder.Environment.IsDevelopment())
 app.UseAuthorization();
 app.UseHttpLogging();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 app.Run();

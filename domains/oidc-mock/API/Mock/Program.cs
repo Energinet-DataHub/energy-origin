@@ -42,7 +42,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 app.Run();
 

@@ -22,5 +22,5 @@ RUN apk add --no-cache tzdata
 
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK CMD wget -qO- http://localhost:80/healthz > /dev/null || exit 1
+
 ENTRYPOINT ["dotnet", "API.dll"]
