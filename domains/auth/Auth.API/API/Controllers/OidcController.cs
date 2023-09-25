@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
@@ -18,6 +17,13 @@ using Microsoft.IdentityModel.Tokens;
 using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
+
+public class OidcException : Exception {
+    public string Query { get; init; }
+    public OidcException(string message, string query) : base(message) {
+        Query = query;
+    }
+}
 
 [ApiController]
 public class OidcController : ControllerBase
@@ -42,43 +48,18 @@ public class OidcController : ControllerBase
         [FromQuery(Name = "error_description")] string? errorDescription,
         [FromQuery] string? state = default)
     {
-        var oidcState = OidcState.Decode(state);
-
+        try {
+             var oidcState = OidcState.Decode(state);
+    
         var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
-        //var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
-        /* if (oidcState?.RedirectionPath != null)
-        {
-            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "redirectionPath", oidcState.RedirectionPath.Trim('/'));
-        }
-        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
-        {
-            redirectionUri = oidcState.RedirectionUri;
-        } */
+        
+        CodeNullCheck(code, logger, error, errorDescription, redirectionUri);
 
-        //Ternary return checks here maybe?¨
-
-        //not sure this is smart :S
         var discoveryDocument = await discoveryCache.GetAsync();
-        var val = OnErrorReturnRedirectUrl(code, error, errorDescription, redirectionUri, logger, discoveryDocument);
-        if (val != null)
-        {
-            return val;
-        }
-        /* if (code == null)
-        {
-            logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
-        }
-        var discoveryDocument = await discoveryCache.GetAsync();
-        if (discoveryDocument == null || discoveryDocument.IsError)
-        {
-            logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
-        }  */
-
+        DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
 
         var client = clientFactory.CreateClient();
-        //This can be outsourced 
+        
         var request = new AuthorizationCodeTokenRequest
         {
             Address = discoveryDocument.TokenEndpoint,
@@ -87,39 +68,16 @@ public class OidcController : ControllerBase
             ClientSecret = oidcOptions.ClientSecret,
             RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
         };
-        var response = await client.RequestAuthorizationCodeTokenAsync(request); //Put above in here from private method
 
-        //Idk with thuis
-        if (response.IsError)
-        {
-            request.ClientSecret = "<removed>";
-            logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
-        }
+        var response = await client.RequestAuthorizationCodeTokenAsync(request);
+
+        ResponseErrorCheck(response, request, logger, redirectionUri);
 
         UserDescriptor descriptor;
         UserData data;
-        //Try catch outsourcing
-        try
-        {
-            (descriptor, data) = await MapUserDescriptor(cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Failure occured after acquiring token.");
+        (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
 
-            var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
-                response.IdentityToken,
-                QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
-            );
-            return RedirectPreserveMethod(url);
-        }
-
-        //Outsource this
-        if (oidcState?.State != null)
-        {
-            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
-        }
+        redirectionUri = OidcStateNotNullCheck(oidcState, redirectionUri);
 
         var token = issuer.Issue(descriptor, data);
 
@@ -133,11 +91,16 @@ public class OidcController : ControllerBase
         metrics.Login(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
 
         return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
+        }
+        catch(OidcException e)
+        {
+            return RedirectPreserveMethod(e.Query);
+        }
+       
     }
 
     private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
-        //Outsource creation of vars
         var handler = new JwtSecurityTokenHandler
         {
             MapInboundClaims = false
@@ -150,7 +113,6 @@ public class OidcController : ControllerBase
             ValidAudience = oidcOptions.ClientId
         };
 
-        //Maybe something can be done here
         var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
         var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
 
@@ -158,92 +120,36 @@ public class OidcController : ControllerBase
         var access = handler.ValidateToken(response.AccessToken, parameters, out _);
 
         var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
-
-        ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
-
-        if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
-        {
-            throw new SecurityTokenException("Subject mismatched found in tokens received.");
-        }
+        
+        SubjectErrorCheck(subject, identity, userInfo);
 
         var providerName = userInfo.FindFirstValue("idp");
         var identityType = userInfo.FindFirstValue("identity_type");
         var scope = access.FindFirstValue(UserClaimName.Scope);
 
-        //Exceptions can be outsourced        
-        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
-        ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
-        ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
+        ClaimsErrorCheck(scope, providerName, identityType);
 
-        var providerType = GetIdentityProviderEnum(providerName, identityType);
-        if (providerOptions.Providers.Contains(providerType) == false)
-        {
-            throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
-        }
+        var providerType = GetIdentityProviderEnum(providerName!, identityType!);
 
-        string? name = null;
-        string? tin = null;
-        string? companyName = null;
+        ProvidertypeIsFalseCheck(providerType, providerOptions);
+
+        string? name;
+        string? tin;
+        string? companyName;
         var keys = new Dictionary<ProviderKeyType, string>();
+        (name, tin, companyName, keys) = MapUserInfo(userInfo, providerType);
 
-        //outsource this
-        switch (providerType)
-        {
-            case ProviderType.MitIdProfessional:
-                name = userInfo.FindFirstValue("nemlogin.name");
-                tin = userInfo.FindFirstValue("nemlogin.cvr");
-                companyName = userInfo.FindFirstValue("nemlogin.org_name");
-                var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
-                if (tin is not null && rid is not null)
-                {
-                    keys.Add(ProviderKeyType.Rid, $"CVR:{tin}-RID:{rid}");
-                }
-
-                keys.Add(ProviderKeyType.Eia, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
-
-                break;
-            case ProviderType.MitIdPrivate:
-                name = userInfo.FindFirstValue("mitid.identity_name");
-
-                var pid = userInfo.FindFirstValue("nemid.pid");
-                if (pid is not null)
-                {
-                    keys.Add(ProviderKeyType.Pid, pid);
-                }
-
-                keys.Add(ProviderKeyType.MitIdUuid, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
-                break;
-            case ProviderType.NemIdProfessional:
-                name = userInfo.FindFirstValue("nemid.common_name");
-                tin = userInfo.FindFirstValue("nemid.cvr");
-                companyName = userInfo.FindFirstValue("nemid.company_name");
-
-                keys.Add(ProviderKeyType.Rid, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
-                break;
-            case ProviderType.NemIdPrivate:
-                name = userInfo.FindFirstValue("nemid.common_name");
-
-                keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
-                break;
-        }
-
-        //Can maube be outsourced
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        if (identityType == ProviderGroup.Professional)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
-            ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
-        }
+        UserTokenNullChecks(name, tin, companyName, identityType!);
 
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
-        //Here
+
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
-        var knownUser = user != null; // this not included
+        var knownUser = user != null;
         user ??= new User
         {
             Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
-            Name = name,
+            Name = name!,
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
@@ -254,8 +160,7 @@ public class OidcController : ControllerBase
                     Name = companyName!
                 }
         };
-        
-        //oursource this
+ 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
         if (knownUser)
@@ -302,22 +207,154 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    private RedirectResult? OnErrorReturnRedirectUrl(string? code, string? error, string? errorDescription, string redirectionUri, ILogger<OidcController> logger, DiscoveryDocumentResponse? discoveryDocument)
+    private static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
     {
-
         if (code == null)
         {
             logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
-            //return QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription));
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
+            throw new OidcException("Code is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
+        return;
+    }
+
+    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
+    {
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            //return QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable);
-            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+            throw new OidcException("Discovery document is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+        }
+        return;
+    }
+
+    private static AuthorizationCodeTokenRequest CreateAuthTokenRequest(string? code, DiscoveryDocumentResponse discoveryDocument, OidcOptions oidcOptions)
+    {
+        var request = new AuthorizationCodeTokenRequest
+        {
+            Address = discoveryDocument.TokenEndpoint,
+            Code = code,
+            ClientId = oidcOptions.ClientId,
+            ClientSecret = oidcOptions.ClientSecret,
+            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
+        };
+        return request;
+    }
+
+    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri)
+    {
+        if (response.IsError)
+        {
+            logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
+            throw new OidcException("Response is error", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
         } 
-        return null;
-}
+    }
+
+    private static string OidcStateNotNullCheck(OidcState? oidcState, string redirectionUri) {
+        if (oidcState?.State != null)
+        {
+            return QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
+        }
+        return redirectionUri;
+    }
+
+    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
+    {
+        try
+        {
+            return await MapUserDescriptor(cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failure occured after acquiring token.");
+
+            var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
+                response.IdentityToken,
+                QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
+            );
+            throw new OidcException("token error", url);
+        }
+    }
+
+    private static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
+        if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
+        {
+            throw new SecurityTokenException("Subject mismatched found in tokens received.");
+        }
+    }
+
+    private static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
+    {
+         if (providerOptions.Providers.Contains(providerType) == false)
+        {
+            throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
+        }
+    }
+
+    private static void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
+        ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
+        ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
+    }
+
+    private static void UserTokenNullChecks(string? name, string? tin, string? companyName, string identityType)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        if (identityType == ProviderGroup.Professional)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
+            ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
+        }
+    }
+
+    private static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) MapUserInfo(ClaimsPrincipal userInfo, ProviderType providerType)
+    {
+        string? name = null;
+        string? tin = null;
+        string? companyName = null;
+        var keys = new Dictionary<ProviderKeyType, string>();
+        switch (providerType)
+        {
+            case ProviderType.MitIdProfessional:
+                name = userInfo.FindFirstValue("nemlogin.name");
+                tin = userInfo.FindFirstValue("nemlogin.cvr");
+                companyName = userInfo.FindFirstValue("nemlogin.org_name");
+                var rid = userInfo.FindFirstValue("nemlogin.nemid.rid");
+                if (tin is not null && rid is not null)
+                {
+                    keys.Add(ProviderKeyType.Rid, $"CVR:{tin}-RID:{rid}");
+                }
+
+                keys.Add(ProviderKeyType.Eia, userInfo.FindFirstValue("nemlogin.persistent_professional_id") ?? throw new KeyNotFoundException("nemlogin.persistent_professional_id"));
+
+                break;
+            case ProviderType.MitIdPrivate:
+                name = userInfo.FindFirstValue("mitid.identity_name");
+
+                var pid = userInfo.FindFirstValue("nemid.pid");
+                if (pid is not null)
+                {
+                    keys.Add(ProviderKeyType.Pid, pid);
+                }
+
+                keys.Add(ProviderKeyType.MitIdUuid, userInfo.FindFirstValue("mitid.uuid") ?? throw new KeyNotFoundException("mitid.uuid"));
+                break;
+            case ProviderType.NemIdProfessional:
+                name = userInfo.FindFirstValue("nemid.common_name");
+                tin = userInfo.FindFirstValue("nemid.cvr");
+                companyName = userInfo.FindFirstValue("nemid.company_name");
+
+                keys.Add(ProviderKeyType.Rid, userInfo.FindFirstValue("nemid.ssn") ?? throw new KeyNotFoundException("nemid.ssn"));
+                break;
+            case ProviderType.NemIdPrivate:
+                name = userInfo.FindFirstValue("nemid.common_name");
+
+                keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
+                break;
+        }
+        return(name, tin, companyName, keys);
+    }
 }
 
