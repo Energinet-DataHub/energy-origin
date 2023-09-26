@@ -28,7 +28,7 @@ public class TransferAgreementsAutomationServiceTest
         var projectOriginWalletService = Substitute.For<IProjectOriginWalletService>();
         var metrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        var memoryCache = new StatusCache();
+        var memoryCache = new AutomationCache();
         using var cts = new CancellationTokenSource();
 
         transferAgreementRepository
@@ -44,7 +44,7 @@ public class TransferAgreementsAutomationServiceTest
 
         service.Run(cts.Token).Should().Throws(new TaskCanceledException());
 
-        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Unhealthy);
+        memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class TransferAgreementsAutomationServiceTest
         var projectOriginWalletService = Substitute.For<IProjectOriginWalletService>();
         var metrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        var memoryCache = new StatusCache();
+        var memoryCache = new AutomationCache();
         using var cts = new CancellationTokenSource();
 
         transferAgreementRepository.GetAllTransferAgreements().Returns(new List<TransferAgreement>()
@@ -78,6 +78,6 @@ public class TransferAgreementsAutomationServiceTest
 
         service.Run(cts.Token).Should().Throws(new TaskCanceledException());
 
-        memoryCache.Cache.Get(CacheValues.Key).Should().Be(CacheValues.Healthy);
+        memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
 }
