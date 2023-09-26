@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
+using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -18,9 +19,11 @@ using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
 
-public class OidcException : Exception {
-    public RedirectResult Url { get; init; }
-    public OidcException(string message, RedirectResult url) : base(message) {
+public class OidcException : Exception
+{
+    public string Url { get; init; }
+    public OidcException(string message, string url) : base(message)
+    {
         Url = url;
     }
 }
@@ -48,70 +51,48 @@ public class OidcController : ControllerBase
         [FromQuery(Name = "error_description")] string? errorDescription,
         [FromQuery] string? state = default)
     {
-        try {
-             var oidcState = OidcState.Decode(state);
-    
-        var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
-        
-        CodeNullCheck(code, logger, error, errorDescription, redirectionUri, this);
-
-        var discoveryDocument = await discoveryCache.GetAsync();
-        DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri, this);
-
-        var client = clientFactory.CreateClient();
-        
-        var request = new AuthorizationCodeTokenRequest
+        try
         {
-            Address = discoveryDocument.TokenEndpoint,
-            Code = code,
-            ClientId = oidcOptions.ClientId,
-            ClientSecret = oidcOptions.ClientSecret,
-            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
-        };
+            var oidcState = OidcState.Decode(state);
 
-        var response = await client.RequestAuthorizationCodeTokenAsync(request);
+            var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
 
-        ResponseErrorCheck(response, request, logger, redirectionUri, this);
+            CodeNullCheck(code, logger, error, errorDescription, redirectionUri);
 
-        UserDescriptor descriptor;
-        UserData data;
-        (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri, this);
+            var discoveryDocument = await discoveryCache.GetAsync();
+            DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
 
-        redirectionUri = OidcStateNotNullCheck(oidcState, redirectionUri);
+            var (request, response) = await GetClientAndResponse(clientFactory, oidcOptions, discoveryDocument, code!);
 
-        var token = issuer.Issue(descriptor, data);
+            ResponseErrorCheck(response, request, logger, redirectionUri);
 
-        logger.AuditLog(
-            "{User} created token for {Subject} at {TimeStamp}.",
-            descriptor.Id,
-            descriptor.Subject,
-            DateTimeOffset.Now.ToUnixTimeSeconds()
-        );
+            var (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
 
-        metrics.Login(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
+            redirectionUri = OidcStateNotNullCheck(oidcState, redirectionUri);
 
-        return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
+            var token = issuer.Issue(descriptor, data);
+
+            logger.AuditLog(
+                "{User} created token for {Subject} at {TimeStamp}.",
+                descriptor.Id,
+                descriptor.Subject,
+                DateTimeOffset.Now.ToUnixTimeSeconds()
+            );
+
+            metrics.Login(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
+
+            return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
         }
-        catch(OidcException e)
+        catch (OidcException e)
         {
-            return e.Url;
+            return RedirectPreserveMethod(e.Url);
         }
-       
+
     }
 
     private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
-        var handler = new JwtSecurityTokenHandler
-        {
-            MapInboundClaims = false
-        };
-        var parameters = new TokenValidationParameters
-        {
-            IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
-            ValidIssuer = discoveryDocument.Issuer,
-            ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
-            ValidAudience = oidcOptions.ClientId
-        };
+        var (handler, parameters) = TokenCreation(discoveryDocument, oidcOptions);
 
         var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
         var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
@@ -120,7 +101,7 @@ public class OidcController : ControllerBase
         var access = handler.ValidateToken(response.AccessToken, parameters, out _);
 
         var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        
+
         SubjectErrorCheck(subject, identity, userInfo);
 
         var providerName = userInfo.FindFirstValue("idp");
@@ -133,40 +114,18 @@ public class OidcController : ControllerBase
 
         ProvidertypeIsFalseCheck(providerType, providerOptions);
 
-        string? name;
-        string? tin;
-        string? companyName;
-        var keys = new Dictionary<ProviderKeyType, string>();
-        (name, tin, companyName, keys) = MapUserInfo(userInfo, providerType);
+        var (name, tin, companyName, keys) = MapUserInfo(userInfo, providerType);
 
         UserTokenNullChecks(name, tin, companyName, identityType!);
 
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
+        var (user, knownUser) = await CreateUserParams(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
 
-        var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
-        var knownUser = user != null;
-        user ??= new User
-        {
-            Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
-            Name = name!,
-            AllowCprLookup = false,
-            Company = identityType == ProviderGroup.Private
-                ? null
-                : new Company
-                {
-                    Id = null,
-                    Tin = tin!,
-                    Name = companyName!
-                }
-        };
- 
         var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
         user.UserProviders.AddRange(newUserProviders);
-        if (knownUser)
-        {
-            await userService.UpsertUserAsync(user);
-        }
+
+        KnownUserCheck(knownUser, user, userService);
 
         var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
         return (descriptor, UserData.From(user));
@@ -192,7 +151,7 @@ public class OidcController : ControllerBase
         (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
-    
+
     private static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
@@ -207,36 +166,53 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    public static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri, OidcController controller)
+    public static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
     {
         if (code == null)
         {
             logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
-            throw new OidcException("Code is null", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription))));
+            throw new OidcException("Code is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
         }
-        return;
     }
 
-    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri, OidcController controller)
+    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
     {
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            throw new OidcException("Discovery document is null", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable)));
+            throw new OidcException("Discovery document is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
-        return;
     }
 
-    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri, OidcController controller)
+    private static async Task<(AuthorizationCodeTokenRequest request, TokenResponse response)> GetClientAndResponse(IHttpClientFactory clientFactory, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code)
+    {
+        var client = clientFactory.CreateClient();
+
+        var request = new AuthorizationCodeTokenRequest
+        {
+            Address = discoveryDocument.TokenEndpoint,
+            Code = code,
+            ClientId = oidcOptions.ClientId,
+            ClientSecret = oidcOptions.ClientSecret,
+            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
+        };
+
+        var response = await client.RequestAuthorizationCodeTokenAsync(request);
+
+        return (request, response);
+    }
+
+    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri)
     {
         if (response.IsError)
         {
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
-            throw new OidcException("Response is error", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse)));
-        } 
+            throw new OidcException("Response is error", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
+        }
     }
 
-    private static string OidcStateNotNullCheck(OidcState? oidcState, string redirectionUri) {
+    private static string OidcStateNotNullCheck(OidcState? oidcState, string redirectionUri)
+    {
         if (oidcState?.State != null)
         {
             return QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
@@ -244,7 +220,7 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri, OidcController controller)
+    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
     {
         try
         {
@@ -258,10 +234,25 @@ public class OidcController : ControllerBase
                 response.IdentityToken,
                 QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );
-            throw new OidcException("token error", controller.RedirectPreserveMethod(url));
+            throw new OidcException("token error", url);
         }
     }
 
+    private static (JwtSecurityTokenHandler handler, TokenValidationParameters parameters) TokenCreation(DiscoveryDocumentResponse discoveryDocument, OidcOptions oidcOptions)
+    {
+        var handler = new JwtSecurityTokenHandler
+        {
+            MapInboundClaims = false
+        };
+        var parameters = new TokenValidationParameters
+        {
+            IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
+            ValidIssuer = discoveryDocument.Issuer,
+            ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
+            ValidAudience = oidcOptions.ClientId
+        };
+        return (handler, parameters);
+    }
     private static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
@@ -273,7 +264,7 @@ public class OidcController : ControllerBase
 
     private static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
     {
-         if (providerOptions.Providers.Contains(providerType) == false)
+        if (providerOptions.Providers.Contains(providerType) == false)
         {
             throw new NotSupportedException($"Rejecting provider: {providerType}. Supported providers: {providerOptions.Providers}");
         }
@@ -341,7 +332,36 @@ public class OidcController : ControllerBase
                 keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
-        return(name, tin, companyName, keys);
+        return (name, tin, companyName, keys);
+    }
+
+    private async static Task<(User user, bool knownUser)> CreateUserParams(IUserService userService, IUserProviderService userProviderService, List<UserProvider> tokenUserProviders, OidcOptions oidcOptions, string? subject, string? identityType, string? name, string? tin, string? companyName)
+    {
+        var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
+        var knownUser = user != null;
+        user ??= new User
+        {
+            Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
+            Name = name!,
+            AllowCprLookup = false,
+            Company = identityType == ProviderGroup.Private
+                ? null
+                : new Company
+                {
+                    Id = null,
+                    Tin = tin!,
+                    Name = companyName!
+                }
+        };
+        return (user, knownUser);
+    }
+
+    private async static void KnownUserCheck(bool knownUser, User user, IUserService userService)
+    {
+        if (knownUser)
+        {
+            await userService.UpsertUserAsync(user);
+        }
     }
 }
 

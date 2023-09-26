@@ -667,23 +667,14 @@ public class OidcControllerTests
     [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
-    public void Test(string? error, string? errorDescription, string expected) {
-       
-        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714", new OidcController())).Url;
+    public void Test(string? error, string? errorDescription, string expected)
+    {
+
+        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-
-        var redirectResult = result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var query = HttpUtility.UrlDecode(uri.Query);
         //VI KAN CUTTE AF HERNED MED DEN ANDEN LØSNING HVOR PRESERVE ER I ENDPOINT
-        Assert.Contains($"{ErrorCode.QueryString}={expected}", query);
+        Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
