@@ -19,9 +19,9 @@ using static API.Utilities.TokenIssuer;
 namespace API.Controllers;
 
 public class OidcException : Exception {
-    public string Query { get; init; }
-    public OidcException(string message, string query) : base(message) {
-        Query = query;
+    public RedirectResult Url { get; init; }
+    public OidcException(string message, RedirectResult url) : base(message) {
+        Url = url;
     }
 }
 
@@ -53,10 +53,10 @@ public class OidcController : ControllerBase
     
         var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
         
-        CodeNullCheck(code, logger, error, errorDescription, redirectionUri);
+        CodeNullCheck(code, logger, error, errorDescription, redirectionUri, this);
 
         var discoveryDocument = await discoveryCache.GetAsync();
-        DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
+        DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri, this);
 
         var client = clientFactory.CreateClient();
         
@@ -71,11 +71,11 @@ public class OidcController : ControllerBase
 
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
 
-        ResponseErrorCheck(response, request, logger, redirectionUri);
+        ResponseErrorCheck(response, request, logger, redirectionUri, this);
 
         UserDescriptor descriptor;
         UserData data;
-        (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
+        (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri, this);
 
         redirectionUri = OidcStateNotNullCheck(oidcState, redirectionUri);
 
@@ -94,7 +94,7 @@ public class OidcController : ControllerBase
         }
         catch(OidcException e)
         {
-            return RedirectPreserveMethod(e.Query);
+            return e.Url;
         }
        
     }
@@ -207,45 +207,32 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    private static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
+    public static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri, OidcController controller)
     {
         if (code == null)
         {
             logger.LogWarning("Callback error: {Error} - description: {ErrorDescription}", error, errorDescription);
-            throw new OidcException("Code is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription)));
+            throw new OidcException("Code is null", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.From(error, errorDescription))));
         }
         return;
     }
 
-    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
+    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri, OidcController controller)
     {
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            throw new OidcException("Discovery document is null", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
+            throw new OidcException("Discovery document is null", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable)));
         }
         return;
     }
 
-    private static AuthorizationCodeTokenRequest CreateAuthTokenRequest(string? code, DiscoveryDocumentResponse discoveryDocument, OidcOptions oidcOptions)
-    {
-        var request = new AuthorizationCodeTokenRequest
-        {
-            Address = discoveryDocument.TokenEndpoint,
-            Code = code,
-            ClientId = oidcOptions.ClientId,
-            ClientSecret = oidcOptions.ClientSecret,
-            RedirectUri = oidcOptions.AuthorityCallbackUri.AbsoluteUri
-        };
-        return request;
-    }
-
-    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri)
+    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri, OidcController controller)
     {
         if (response.IsError)
         {
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
-            throw new OidcException("Response is error", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
+            throw new OidcException("Response is error", controller.RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse)));
         } 
     }
 
@@ -257,7 +244,7 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
+    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri, OidcController controller)
     {
         try
         {
@@ -271,7 +258,7 @@ public class OidcController : ControllerBase
                 response.IdentityToken,
                 QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );
-            throw new OidcException("token error", url);
+            throw new OidcException("token error", controller.RedirectPreserveMethod(url));
         }
     }
 

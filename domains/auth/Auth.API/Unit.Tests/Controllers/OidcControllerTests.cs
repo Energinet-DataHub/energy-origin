@@ -654,6 +654,46 @@ public class OidcControllerTests
         );
     }
 
+    [Theory]
+    [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData("access_denied", "user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
+    [InlineData("access_denied", "private_to_business_user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
+    [InlineData("access_denied", "no_ctx", ErrorCode.AuthenticationUpstream.NoContext)]
+    [InlineData("access_denied", null, ErrorCode.AuthenticationUpstream.Failed)]
+    [InlineData("invalid_request", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
+    [InlineData("unauthorized_client", null, ErrorCode.AuthenticationUpstream.InvalidClient)]
+    [InlineData("unsupported_response_type", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
+    [InlineData("invalid_scope", null, ErrorCode.AuthenticationUpstream.InvalidScope)]
+    [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
+    public void Test(string? error, string? errorDescription, string expected) {
+       
+        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714", new OidcController())).Url;
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+
+        var redirectResult = result;
+        Assert.True(redirectResult.PreserveMethod);
+        Assert.False(redirectResult.Permanent);
+
+        var uri = new Uri(redirectResult.Url);
+        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
+
+        var query = HttpUtility.UrlDecode(uri.Query);
+        //VI KAN CUTTE AF HERNED MED DEN ANDEN LØSNING HVOR PRESERVE ER I ENDPOINT
+        Assert.Contains($"{ErrorCode.QueryString}={expected}", query);
+
+        logger.Received(1).Log(
+            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>()
+        );
+    }
+
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
     {
