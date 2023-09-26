@@ -1,12 +1,13 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Helpers;
+using API.Options;
 using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -27,18 +28,10 @@ var console = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
-builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
-{
-    try
-    {
-        Configuration.GetDataSyncEndpoint();
-        return Task.FromResult(HealthCheckResult.Healthy());
-    }
-    catch
-    {
-        return Task.FromResult(HealthCheckResult.Unhealthy());
-    }
-});
+builder.Services.AddHealthChecks();
+
+builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DataSyncOptions>>().Value);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -54,7 +47,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
 
-builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => client.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
+builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => builder.Services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
 

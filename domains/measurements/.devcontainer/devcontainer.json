@@ -1,15 +1,17 @@
 {
-    "name": "C# (.NET)",
+    "name": "Measurements domain",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "postCreateCommand": "dotnet tool install --global dotnet-outdated-tool ; dotnet restore",
+    "postCreateCommand": "dotnet restore",
     "remoteUser": "vscode",
     "remoteEnv": {
         "PATH": "${containerEnv:PATH}:~/.dotnet/tools"
     },
-    "features": {},
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
     "customizations": {
         "vscode": {
             "extensions": [
