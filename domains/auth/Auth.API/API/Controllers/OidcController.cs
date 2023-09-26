@@ -21,7 +21,6 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
-    //test
     [AllowAnonymous]
     [HttpGet]
     [Route("auth/oidc/callback")]
