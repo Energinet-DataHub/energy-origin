@@ -25,7 +25,7 @@ public class QueryApiHealthTests :
     public async Task Health_IsCalled_ReturnsOk()
     {
         using var client = factory.CreateClient();
-        using var healthResponse = await client.GetAsync("health");
+        using var healthResponse = await client.GetAsync("/health");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
