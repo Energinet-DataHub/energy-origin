@@ -1,4 +1,3 @@
-using API.Helpers;
 using API.Models;
 using API.Models.EnergiDataService;
 
@@ -10,7 +9,8 @@ internal class EmissionsCalculator : IEmissionsCalculator
         IEnumerable<EmissionRecord> emissions,
         IEnumerable<TimeSeries> timeSeriesList,
         TimeZoneInfo timeZone,
-        Aggregation aggregation)
+        Aggregation aggregation,
+        int precision = 5)
     {
         var bucketEmissions = new List<Emissions>();
 
@@ -35,8 +35,8 @@ internal class EmissionsCalculator : IEmissionsCalculator
             bucketEmissions.Add(new Emissions(
                 groupedEmission.First().DateFrom.ToUnixTimeSeconds(),
                 groupedEmission.Last().DateTo.ToUnixTimeSeconds(),
-                new Quantity(Math.Round(totalForBucket / 1000, Configuration.DecimalPrecision), QuantityUnit.g),
-                new Quantity(Math.Round(relativeForBucket, Configuration.DecimalPrecision), QuantityUnit.gPerkWh)
+                new Quantity(Math.Round(totalForBucket / 1000, precision), QuantityUnit.g),
+                new Quantity(Math.Round(relativeForBucket, precision), QuantityUnit.gPerkWh)
             ));
         }
 

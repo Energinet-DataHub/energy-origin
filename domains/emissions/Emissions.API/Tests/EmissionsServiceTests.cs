@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
 using API.Models.EnergiDataService;
+using API.Options;
 using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
@@ -17,6 +18,12 @@ namespace Tests;
 [UnitTest]
 public sealed class EmissionsServiceTests
 {
+    private readonly EnergiDataServiceOptions options = new()
+    {
+        RenewableSourceList = "wood,waste,straw,bioGas,solar,windOnshore,windOffshore",
+        WasteRenewableShare = 55
+    };
+
     [Fact]
     public async void GetEmissions_3MP2Consumption_Success()
     {
@@ -162,7 +169,7 @@ public sealed class EmissionsServiceTests
             )
         ).ReturnsAsync(emissionResponse);
 
-        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator());
+        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator(options));
 
         var result = await service.GetTotalEmissions(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Hour);
 
@@ -174,9 +181,6 @@ public sealed class EmissionsServiceTests
     [Fact]
     public async void GetMix_3MP2Consumption_Success()
     {
-        Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
-        Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
-
         var time0 = 1654034400L;
         var time1 = 1654038000L;
         var time2 = 1654041600L;
@@ -318,7 +322,7 @@ public sealed class EmissionsServiceTests
             )
         ).ReturnsAsync(mixResponse);
 
-        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator());
+        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator(options));
 
         var result = await service.GetSourceDeclaration(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Total);
 

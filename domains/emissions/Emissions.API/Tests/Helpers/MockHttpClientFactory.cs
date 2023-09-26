@@ -36,10 +36,7 @@ public static class MockHttpClientFactory
         }
         handlerMock.Verify();
 
-        return new HttpClient(handlerMock.Object)
-        {
-            BaseAddress = new Uri("http://example.com/"),
-        };
+        return new HttpClient(handlerMock.Object);
     }
 }
 

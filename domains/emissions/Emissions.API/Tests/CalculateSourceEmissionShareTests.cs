@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
+using API.Options;
 using Tests.Helpers;
 using Xunit;
 
@@ -10,6 +11,12 @@ namespace Tests
 {
     public sealed class CalculateSourceEmissionShareTests
     {
+        private readonly EnergiDataServiceOptions options = new()
+        {
+            RenewableSourceList = "wood,waste,straw,bioGas,solar,windOnshore,windOffshore",
+            WasteRenewableShare = 55
+        };
+
         [Theory]
         [InlineData(Aggregation.Total)]
         [InlineData(Aggregation.Actual)]
@@ -19,13 +26,11 @@ namespace Tests
         [InlineData(Aggregation.Year)]
         public void EmissionSharesAndMeasurements_CalculateTotalEmission_TotalAnRelativeEmission(Aggregation aggregation)
         {
-            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
-            Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
             var dateFrom = new DateTimeOffset(2021, 1, 1, 22, 0, 0, TimeSpan.Zero);
             var dateTo = new DateTimeOffset(2021, 1, 2, 2, 0, 0, TimeSpan.Zero);
             var timeSeries = DataSetFactory.CreateTimeSeries();
             var emissionShares = StaticDataSetFactory.CreateEmissionsShares();
-            var calculator = new SourcesCalculator();
+            var calculator = new SourcesCalculator(options);
 
             var result = calculator.CalculateSourceEmissions(emissionShares, timeSeries, TimeZoneInfo.Utc, aggregation);
 
@@ -46,14 +51,12 @@ namespace Tests
         [InlineData(Aggregation.Month, 31 * 24, "Asia/Kolkata")]
         public void Calculate_AggreatingToOne_WhenAggregationMatchesAmountOfHours(Aggregation aggregation, int amount, string timeZoneId)
         {
-            Environment.SetEnvironmentVariable("RENEWABLESOURCES", "wood,waste,straw,bioGas,solar,windOnshore,windOffshore");
-            Environment.SetEnvironmentVariable("WASTERENEWABLESHARE", "55");
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var date = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
             date = date.Add(-timeZone.GetUtcOffset(date.UtcDateTime));
             var series = DataSetFactory.CreateTimeSeries(startingAt: date, amount: amount);
             var mixes = DataSetFactory.CreateMixSeries(startingAt: date, amount: amount);
-            var calculator = new SourcesCalculator();
+            var calculator = new SourcesCalculator(options);
 
             var result = calculator.CalculateSourceEmissions(mixes, series, timeZone, aggregation);
             var utcResult = calculator.CalculateSourceEmissions(mixes, series, TimeZoneInfo.Utc, aggregation);
