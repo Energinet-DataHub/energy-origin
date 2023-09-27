@@ -50,6 +50,29 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     [Fact]
     public async Task GetConnectionInvitation_ShouldReturnOK_WhenInvitationExists()
     {
+        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
+
+        var createResponse = await senderClient.PostAsync("api/connection-invitations", new StringContent("", Encoding.UTF8, "application/json"));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createResponseBody = await createResponse.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
+
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "36923692");
+
+        var getResponse = await receiverClient.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(getResponseBody);
+
+        returnedInvitation.Should().BeEquivalentTo(createdInvitation);
+    }
+
+    [Fact]
+    public async Task GetConnectionInvitation_ShouldReturnBadRequest_WhenCurrentUserIsSender()
+    {
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
         var createResponse = await client.PostAsync("api/connection-invitations", new StringContent("", Encoding.UTF8, "application/json"));
@@ -58,14 +81,13 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
 
-        var getResponse = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+        var response = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
 
-        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
-        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(getResponseBody);
+        var responseBody = await response.Content.ReadAsStringAsync();
 
-        returnedInvitation.Should().BeEquivalentTo(createdInvitation);
+        responseBody.Should().Be("You cannot Accept/Deny your own ConnectionInvitation");
     }
 
     [Fact]

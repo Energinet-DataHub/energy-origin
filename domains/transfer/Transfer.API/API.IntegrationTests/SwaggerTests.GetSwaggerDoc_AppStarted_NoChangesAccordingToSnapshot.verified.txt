@@ -76,6 +76,9 @@
               }
             }
           },
+          "400": {
+            "description": "You cannot Accept/Deny your own ConnectionInvitation"
+          },
           "404": {
             "description": "Connection-invitation expired or deleted"
           },
