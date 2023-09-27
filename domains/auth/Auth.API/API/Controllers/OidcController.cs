@@ -62,13 +62,9 @@ public class OidcController : ControllerBase
             var discoveryDocument = await discoveryCache.GetAsync();
             DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
 
-            var (request, response) = await GetClientAndResponse(clientFactory, oidcOptions, discoveryDocument, code!);
-
-            ResponseErrorCheck(response, request, logger, redirectionUri);
+            var response = await GetClientAndResponse(clientFactory, logger, oidcOptions, discoveryDocument, code!, redirectionUri);
 
             var (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
-
-            redirectionUri = OidcStateNotNullCheck(oidcState, redirectionUri);
 
             var token = issuer.Issue(descriptor, data);
 
@@ -87,12 +83,21 @@ public class OidcController : ControllerBase
         {
             return RedirectPreserveMethod(e.Url);
         }
-
     }
 
     private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
-        var (handler, parameters) = TokenCreation(discoveryDocument, oidcOptions);
+        var handler = new JwtSecurityTokenHandler
+        {
+            MapInboundClaims = false
+        };
+        var parameters = new TokenValidationParameters
+        {
+            IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
+            ValidIssuer = discoveryDocument.Issuer,
+            ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
+            ValidAudience = oidcOptions.ClientId
+        };
 
         var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
         var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
@@ -120,12 +125,7 @@ public class OidcController : ControllerBase
 
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
-        var (user, knownUser) = await CreateUserParams(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
-
-        var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
-        user.UserProviders.AddRange(newUserProviders);
-
-        KnownUserCheck(knownUser, user, userService);
+        var user = await HandleUserAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
 
         var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
         return (descriptor, UserData.From(user));
@@ -163,6 +163,10 @@ public class OidcController : ControllerBase
         {
             redirectionUri = oidcState.RedirectionUri;
         }
+        if (oidcState?.State != null)
+        {
+            redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
+        }
         return redirectionUri;
     }
 
@@ -184,7 +188,7 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static async Task<(AuthorizationCodeTokenRequest request, TokenResponse response)> GetClientAndResponse(IHttpClientFactory clientFactory, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code)
+    private static async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
     {
         var client = clientFactory.CreateClient();
 
@@ -199,25 +203,13 @@ public class OidcController : ControllerBase
 
         var response = await client.RequestAuthorizationCodeTokenAsync(request);
 
-        return (request, response);
-    }
-
-    private static void ResponseErrorCheck(TokenResponse response, AuthorizationCodeTokenRequest request, ILogger<OidcController> logger, string redirectionUri)
-    {
         if (response.IsError)
         {
             logger.LogError(response.Exception, "Failed in acquiring token with request details: {@Request}", request);
             throw new OidcException("Response is error", QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.BadResponse));
         }
-    }
 
-    private static string OidcStateNotNullCheck(OidcState? oidcState, string redirectionUri)
-    {
-        if (oidcState?.State != null)
-        {
-            return QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
-        }
-        return redirectionUri;
+        return response;
     }
 
     private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
@@ -238,21 +230,6 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static (JwtSecurityTokenHandler handler, TokenValidationParameters parameters) TokenCreation(DiscoveryDocumentResponse discoveryDocument, OidcOptions oidcOptions)
-    {
-        var handler = new JwtSecurityTokenHandler
-        {
-            MapInboundClaims = false
-        };
-        var parameters = new TokenValidationParameters
-        {
-            IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
-            ValidIssuer = discoveryDocument.Issuer,
-            ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
-            ValidAudience = oidcOptions.ClientId
-        };
-        return (handler, parameters);
-    }
     private static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
@@ -332,10 +309,20 @@ public class OidcController : ControllerBase
                 keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
         }
+
         return (name, tin, companyName, keys);
     }
 
-    private async static Task<(User user, bool knownUser)> CreateUserParams(IUserService userService, IUserProviderService userProviderService, List<UserProvider> tokenUserProviders, OidcOptions oidcOptions, string? subject, string? identityType, string? name, string? tin, string? companyName)
+    private static async Task<User> HandleUserAsync(
+        IUserService userService,
+        IUserProviderService userProviderService,
+        List<UserProvider> tokenUserProviders,
+        OidcOptions oidcOptions,
+        string? subject,
+        string? identityType,
+        string? name,
+        string? tin,
+        string? companyName)
     {
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
         var knownUser = user != null;
@@ -353,15 +340,15 @@ public class OidcController : ControllerBase
                     Name = companyName!
                 }
         };
-        return (user, knownUser);
-    }
 
-    private async static void KnownUserCheck(bool knownUser, User user, IUserService userService)
-    {
+        var newUserProviders = userProviderService.GetNonMatchingUserProviders(tokenUserProviders, user.UserProviders);
+        user.UserProviders.AddRange(newUserProviders);
+
         if (knownUser)
         {
             await userService.UpsertUserAsync(user);
         }
+
+        return user;
     }
 }
-
