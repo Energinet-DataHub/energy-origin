@@ -52,20 +52,17 @@ public class TokenIssuer : ITokenIssuer
 
     private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, bool companyTermsFeatureFlag)
     {
-        var scope = HandleNotAcceptedScope(options, data, companyTermsFeatureFlag);
+        var scope = PrepareNotAcceptedScope(options, data, companyTermsFeatureFlag);
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
-        scope = scope.Trim();
 
         return new(scope);
     }
 
-    private static string? HandleNotAcceptedScope(TermsOptions options, UserData data, bool companyTermsFeatureFlag)
+    private static string? PrepareNotAcceptedScope(TermsOptions options, UserData data, bool companyTermsFeatureFlag)
     {
-        string? scope = null;
-
         if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
         {
-            return string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
+            return UserScopeName.NotAcceptedPrivacyPolicy;
         }
 
         if (companyTermsFeatureFlag)
@@ -74,16 +71,16 @@ public class TokenIssuer : ITokenIssuer
             {
                 if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
                 {
-                    return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin);
+                    return UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin;
                 }
                 else
                 {
-                    return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
+                    return UserScopeName.NotAcceptedTermsOfService;
                 }
             }
         }
 
-        return scope;
+        return null;
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)

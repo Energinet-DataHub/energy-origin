@@ -176,51 +176,50 @@ public class RoleControllerTests
         Assert.IsType<OkResult>(result);
     }
 
-    public static IEnumerable<object[]> UserData =>
-    new List<object[]>
+    public static IEnumerable<object[]> UserData => new List<object[]>
     {
         new object[]
         {
-            new List<User>
-            {
-            }
+            new List<User>()
         },
+
         new object[]
         {
             new List<User>
             {
-                new User
+                new()
                 {
                     Id = Guid.NewGuid(),
                     Name = "test",
                     UserRoles = new List<UserRole>
                     {
-                        new UserRole { Role = RoleKey.UserAdmin }
+                        new() { Role = RoleKey.UserAdmin }
                     }
                 }
             }
         },
+
         new object[]
         {
             new List<User>
             {
-                new User
+                new()
                 {
                     Id = Guid.NewGuid(),
                     Name = "test",
                     UserRoles = new List<UserRole>
                     {
-                        new UserRole { Role = RoleKey.OrganizationAdmin }
+                        new() { Role = RoleKey.OrganizationAdmin }
                     }
                 },
-                new User
+                new()
                 {
                     Id = Guid.NewGuid(),
                     Name = "test2",
                     UserRoles = new List<UserRole>
                     {
-                        new UserRole { Role = RoleKey.RoleAdmin },
-                        new UserRole { Role = RoleKey.Viewer }
+                        new() { Role = RoleKey.RoleAdmin },
+                        new() { Role = RoleKey.Viewer }
                     }
                 }
             }
@@ -243,20 +242,18 @@ public class RoleControllerTests
         var result = await controller.GetUsersByTin(userService, roleOptions, logger);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
+        var returnValue = Assert.IsType<UserRolesResponse>(okResult.Value);
 
-        Assert.Equal(users.Count, returnValue.Count);
-        for (var i = 0; i < returnValue.Count; i++)
+        Assert.Equal(users.Count, returnValue.UserRoles.Count);
+
+        foreach (var user in users.Zip(returnValue.UserRoles))
         {
-            var response = returnValue[i];
-            var user = users[i];
+            Assert.Equal(user.First.Name, user.Second.Name);
+            Assert.Equal(user.First.UserRoles.Count, user.Second.Roles.Count);
 
-            Assert.Equal(user.Name, response.Name);
-            Assert.Equal(user.UserRoles.Count, response.Roles.Count);
-
-            foreach (var t in user.UserRoles)
+            foreach (var userRole in user.First.UserRoles)
             {
-                Assert.True(response.Roles.ContainsKey(t.Role));
+                Assert.True(user.Second.Roles.ContainsKey(userRole.Role));
             }
         }
     }
@@ -287,11 +284,11 @@ public class RoleControllerTests
         var result = await controller.GetUsersByTin(userService, roleOptions, logger);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
+        var returnValue = Assert.IsType<UserRolesResponse>(okResult.Value);
 
-        Assert.Single(returnValue);
+        Assert.Single(returnValue.UserRoles);
 
-        var response = returnValue.Single();
+        var response = returnValue.UserRoles.Single();
 
         Assert.Single(response.Roles);
         Assert.True(response.Roles.Single().Key == RoleKey.Viewer);

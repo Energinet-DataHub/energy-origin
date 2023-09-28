@@ -20,12 +20,11 @@ public class RoleController : ControllerBase
 {
     [HttpGet]
     [Route("role/all")]
-    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x =>
-        new
-        {
-            x.Key,
-            x.Name
-        }));
+    public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
+    {
+        x.Key,
+        x.Name
+    }));
 
     [HttpPut]
     [Route("role/{role}/assign/{userId:guid}")]
@@ -120,16 +119,19 @@ public class RoleController : ControllerBase
             .Select(x => (x.Key, x.Name))
             .ToList();
 
-        var list = users.Select(user => new UserRolesResponse { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList();
+        var response = new UserRolesResponse
+        {
+            UserRoles = users.Select(user => new UserRoles { UserId = user.Id!.Value, Name = user.Name, Roles = PopulateRoles(user.UserRoles, validRoles) }).ToList()
+        };
 
         logger.AuditLog(
             "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
-            list.Count,
+            response.UserRoles.Count,
             tin,
             descriptor.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()
         );
-        return Ok(list);
+        return Ok(response);
     }
 
     private Dictionary<string, string> PopulateRoles(List<UserRole> userRoles, List<(string, string)> validRoles)

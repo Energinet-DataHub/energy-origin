@@ -4,7 +4,12 @@ namespace API.Models.Response;
 
 public class UserRolesResponse
 {
-    public Guid UserId { get; set; }
-    public string Name { get; set; } = null!;
-    public Dictionary<string, string> Roles { get; set; } = null!;
+    public required List<UserRoles> UserRoles { get; init; }
+}
+
+public class UserRoles
+{
+    public required Guid UserId { get; init; }
+    public required string Name { get; init; }
+    public required Dictionary<string, string> Roles { get; init; }
 }
