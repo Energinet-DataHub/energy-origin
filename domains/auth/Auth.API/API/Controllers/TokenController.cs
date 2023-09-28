@@ -42,7 +42,8 @@ public class TokenController : ControllerBase
             }
             var scope = User.FindFirstValue(UserClaimName.Scope);
 
-            if (featureManager?.IsEnabledAsync(FeatureFlag.CompanyTerms).Result ?? true)
+            //if (featureManager?.IsEnabledAsync(FeatureFlag.CompanyTerms).Result ?? true)
+            if (featureManager.IsEnabled(FeatureFlag.CompanyTerms))
             {
                 if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
                     && scope.Contains(UserScopeName.NotAcceptedTermsOfService) == false

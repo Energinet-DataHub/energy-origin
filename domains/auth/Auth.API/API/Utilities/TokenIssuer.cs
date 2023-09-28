@@ -21,21 +21,21 @@ public class TokenIssuer : ITokenIssuer
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
     private readonly RoleOptions roleOptions;
-    private readonly IFeatureManager? featureManager;
+    private readonly bool companyTermsFeatureFlag;
 
     public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions, IFeatureManager? featureManager = null)
     {
         this.termsOptions = termsOptions;
         this.tokenOptions = tokenOptions;
         this.roleOptions = roleOptions;
-        this.featureManager = featureManager;
+        this.companyTermsFeatureFlag = featureManager.IsEnabled(FeatureFlag.CompanyTerms);
     }
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, data, versionBypass, featureManager);
+        var state = ResolveState(termsOptions, data, versionBypass, companyTermsFeatureFlag);
 
         return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
@@ -50,16 +50,16 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, IFeatureManager? featureManager = null)
+    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, bool companyTermsFeatureFlag)
     {
-        var scope = HandleNotAcceptedScope(options, data, featureManager);
+        var scope = HandleNotAcceptedScope(options, data, companyTermsFeatureFlag);
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
         scope = scope.Trim();
 
         return new(scope);
     }
 
-    private static string? HandleNotAcceptedScope(TermsOptions options, UserData data, IFeatureManager? featureManager)
+    private static string? HandleNotAcceptedScope(TermsOptions options, UserData data, bool companyTermsFeatureFlag)
     {
         string? scope = null;
 
@@ -68,7 +68,7 @@ public class TokenIssuer : ITokenIssuer
             return string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
         }
 
-        if (featureManager?.IsEnabledAsync(FeatureFlag.CompanyTerms).Result ?? true)
+        if (companyTermsFeatureFlag)
         {
             if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
             {
