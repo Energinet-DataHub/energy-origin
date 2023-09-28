@@ -108,10 +108,10 @@ public class RoleController : ControllerBase
 
     [HttpGet]
     [Route("role/users")]
-    public async Task<IActionResult> GetUsersByTin(IUserService userService, IUserDescriptorMapper mapper, RoleOptions roles, ILogger<RoleController> logger)
+    public async Task<IActionResult> GetUsersByTin(IUserService userService, RoleOptions roles, ILogger<RoleController> logger)
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
-        var tin = descriptor.Tin!;
+        var descriptor = new UserDescriptor(User);
+        var tin = descriptor.Organization!.Tin;
 
         var users = await userService.GetUsersByTinAsync(tin);
 

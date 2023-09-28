@@ -8,6 +8,7 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using static API.Utilities.TokenIssuer;
 
 namespace Unit.Tests.Controllers;
@@ -20,6 +21,7 @@ public class TokenControllerTests
     private readonly ITokenIssuer issuer = Substitute.For<ITokenIssuer>();
     private readonly IUserService userService = Substitute.For<IUserService>();
     private readonly ICryptography cryptography = Substitute.For<ICryptography>();
+    private readonly IFeatureManager featureManager = Substitute.For<IFeatureManager>();
 
     [Theory]
     [InlineData(false, UserScopeName.NotAcceptedPrivacyPolicy, "625fa04a-4b17-4727-8066-82cf5b5a8b0d", ProviderType.NemIdPrivate)]

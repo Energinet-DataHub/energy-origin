@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using API.Controllers;
 using API.Models.Entities;
 using API.Models.Response;
@@ -231,40 +232,32 @@ public class RoleControllerTests
     [MemberData(nameof(UserData))]
     public async Task GetUsersByTin_ShouldReturnOkAndTransformToResponseObject_WhenValidTinIsProvided(List<User> users)
     {
-        Mock.Get(userService)
-            .Setup(service => service.GetUsersByTinAsync(It.IsAny<string>()))
-            .ReturnsAsync(users);
-
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
-            {
-                Id = Guid.NewGuid(),
-                Tin = Guid.NewGuid().ToString(),
-            });
-
-        var testUserId = Guid.NewGuid();
-        roleController.ControllerContext = new ControllerContext
+        controller.PrepareUser(organization: new()
         {
-            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
-        };
-        var result = await roleController.GetUsersByTin(userService, mapper, roleOptions, logger);
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        });
+
+        userService.GetUsersByTinAsync(Arg.Any<string>()).Returns(users);
+
+        var result = await controller.GetUsersByTin(userService, roleOptions, logger);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);
 
         Assert.Equal(users.Count, returnValue.Count);
-        for (int i = 0; i < returnValue.Count; i++)
+        for (var i = 0; i < returnValue.Count; i++)
         {
-            UserRolesResponse response = returnValue[i];
-            User user = users[i];
+            var response = returnValue[i];
+            var user = users[i];
 
             Assert.Equal(user.Name, response.Name);
             Assert.Equal(user.UserRoles.Count, response.Roles.Count);
 
-            for (int j = 0; j < user.UserRoles.Count; j++)
+            foreach (var t in user.UserRoles)
             {
-                Assert.True(response.Roles.ContainsKey(user.UserRoles[j].Role));
+                Assert.True(response.Roles.ContainsKey(t.Role));
             }
         }
     }
@@ -272,35 +265,27 @@ public class RoleControllerTests
     [Fact]
     public async Task GetUsersByTin_ShouldFilterOutInvalidRoles_WhenRolesAreInvalid()
     {
-        Mock.Get(userService)
-            .Setup(service => service.GetUsersByTinAsync(It.IsAny<string>()))
-            .ReturnsAsync(new List<User> {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "test",
-                    UserRoles = new List<UserRole>
-                    {
-                        new() { Role = "non-existent-role" },
-                        new() { Role = RoleKey.Viewer }
-                    }
-                }
-            });
+        controller.PrepareUser(organization: new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        });
 
-        Mock.Get(mapper)
-            .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-            .Returns(new UserDescriptor(null!)
+        userService.GetUsersByTinAsync(Arg.Any<string>()).Returns(new List<User> {
+            new()
             {
                 Id = Guid.NewGuid(),
-                Tin = Guid.NewGuid().ToString(),
-            });
+                Name = "test",
+                UserRoles = new List<UserRole>
+                {
+                    new() { Role = "non-existent-role" },
+                    new() { Role = RoleKey.Viewer }
+                }
+            }
+        });
 
-        var testUserId = Guid.NewGuid();
-        roleController.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new(ClaimTypes.NameIdentifier, testUserId.ToString()) })) }
-        };
-        var result = await roleController.GetUsersByTin(userService, mapper, roleOptions, logger);
+        var result = await controller.GetUsersByTin(userService, roleOptions, logger);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnValue = Assert.IsType<List<UserRolesResponse>>(okResult.Value);

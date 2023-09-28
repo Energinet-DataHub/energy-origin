@@ -9,6 +9,7 @@ using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
@@ -20,19 +21,21 @@ public class TokenIssuer : ITokenIssuer
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
     private readonly RoleOptions roleOptions;
+    private readonly IFeatureManager? featureManager;
 
-    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions)
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions, IFeatureManager? featureManager = null)
     {
         this.termsOptions = termsOptions;
         this.tokenOptions = tokenOptions;
         this.roleOptions = roleOptions;
+        this.featureManager = featureManager;
     }
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, data, versionBypass);
+        var state = ResolveState(termsOptions, data, versionBypass, featureManager);
 
         return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
@@ -47,16 +50,16 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass)
+    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, IFeatureManager? featureManager = null)
     {
-        var scope = HandleNotAcceptedScope(options, data);
+        var scope = HandleNotAcceptedScope(options, data, featureManager);
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
         scope = scope.Trim();
 
         return new(scope);
     }
 
-    private static string? HandleNotAcceptedScope(TermsOptions options, UserData data)
+    private static string? HandleNotAcceptedScope(TermsOptions options, UserData data, IFeatureManager? featureManager)
     {
         string? scope = null;
 
@@ -65,15 +68,18 @@ public class TokenIssuer : ITokenIssuer
             return string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
         }
 
-        if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
+        if (featureManager?.IsEnabledAsync(FeatureFlag.CompanyTerms).Result ?? true)
         {
-            if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
+            if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
             {
-                return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin);
-            }
-            else
-            {
-                return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
+                if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
+                {
+                    return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin);
+                }
+                else
+                {
+                    return string.Join(" ", scope, UserScopeName.NotAcceptedTermsOfService);
+                }
             }
         }
 
