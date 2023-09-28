@@ -3,6 +3,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,18 +20,24 @@ public class TokenController : ControllerBase
     public async Task<IActionResult> RefreshAsync(
         IMetrics metrics,
         ILogger<TokenController> logger,
-        IUserDescriptorMapper mapper,
         IUserService userService,
         ITokenIssuer tokenIssuer)
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
-
+        var descriptor = new UserDescriptor(User);
         var versionBypass = false;
-
         var user = await userService.GetUserByIdAsync(descriptor.Id);
-
         if (user != null)
         {
+            var organization = user.Company;
+            if (organization != null)
+            {
+                descriptor.Organization = new OrganizationDescriptor
+                {
+                    Id = (Guid)organization.Id!,
+                    Name = organization.Name,
+                    Tin = organization.Tin
+                };
+            }
             var scope = User.FindFirstValue(UserClaimName.Scope);
             descriptor.CompanyId = user.CompanyId;
             if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
@@ -49,7 +56,7 @@ public class TokenController : ControllerBase
             now.ToUnixTimeSeconds()
         );
 
-        metrics.TokenRefresh(descriptor.Id, descriptor.CompanyId, descriptor.ProviderType);
+        metrics.TokenRefresh(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
 
         return Ok(token);
     }

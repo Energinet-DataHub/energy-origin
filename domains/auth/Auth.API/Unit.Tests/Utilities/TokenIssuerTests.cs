@@ -16,7 +16,7 @@ namespace Unit.Tests.Utilities;
 
 public class TokenIssuerTests
 {
-    private readonly IUserService service = Mock.Of<IUserService>();
+    private readonly IUserService service = Substitute.For<IUserService>();
 
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
@@ -236,21 +236,10 @@ public class TokenIssuerTests
                 Name = "testCompany"
             }
         };
-        var descriptor = new UserDescriptor(null!)
-        {
-            Id = user.Id.Value,
-            Name = user.Name,
-            AllowCprLookup = user.AllowCprLookup,
-            ProviderType = ProviderType.NemIdProfessional,
-            EncryptedAccessToken = accessToken ?? "",
-            EncryptedIdentityToken = identityToken ?? "",
-            MatchedRoles = matchedRoles ?? ""
-        };
+        var descriptor = new UserDescriptor(TestClaimsPrincipal.Make(id: user.Id, name: user.Name, allowCprLookup: $"{user.AllowCprLookup}", matchedRoles: matchedRoles, encryptedAccessToken: accessToken, encryptedIdentityToken: identityToken));
         if (addToMock)
         {
-            Mock.Get(service)
-                .Setup(it => it.GetUserByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(value: user);
+            service.GetUserByIdAsync(Arg.Any<Guid>()).Returns(user);
         }
         return (descriptor, new UserData(privacyVersion, tosVersion, assignedRoles));
     }

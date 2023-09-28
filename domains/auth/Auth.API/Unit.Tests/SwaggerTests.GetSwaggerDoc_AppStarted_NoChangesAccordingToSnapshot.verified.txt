@@ -26,6 +26,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "redirectionPath",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

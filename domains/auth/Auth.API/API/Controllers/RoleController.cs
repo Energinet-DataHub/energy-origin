@@ -7,6 +7,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/assign/{userId:guid}")]
-    public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger)
     {
         var validRoles = roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => x.Key);
         if (validRoles.Any(x => x == role) == false)
@@ -36,17 +37,16 @@ public class RoleController : ControllerBase
             return BadRequest($"Role not found: {role}");
         }
 
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
 
         var user = await userService.GetUserByIdAsync(userId);
         if (user == null)
         {
             return NotFound($"User not found: {userId}");
         }
-
-        if (user.Company?.Tin != descriptor.Tin)
+        if (user.Company?.Tin != descriptor.Organization?.Tin)
         {
-            return Forbid($"User is not in the same company");
+            return Forbid($"User is not in the same organization");
         }
 
         if (user.UserRoles.Any(x => x.Role == role))
@@ -69,9 +69,9 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/remove/{userId:guid}")]
-    public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger, IUserDescriptorMapper mapper)
+    public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger)
     {
-        var descriptor = mapper.Map(User) ?? throw new NullReferenceException($"UserDescriptorMapper failed: {User}");
+        var descriptor = new UserDescriptor(User);
 
         var user = await userService.GetUserByIdAsync(userId);
         if (user == null)
@@ -83,10 +83,9 @@ public class RoleController : ControllerBase
         {
             return BadRequest("An admin cannot remove his admin role");
         }
-
-        if (user.Company?.Tin != descriptor.Tin)
+        if (user.Company?.Tin != descriptor.Organization?.Tin)
         {
-            return Forbid($"User is not in the same company");
+            return Forbid($"User is not in the same organization");
         }
 
         var userRole = user.UserRoles.SingleOrDefault(x => x.Role == role);

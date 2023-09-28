@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -49,6 +50,29 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     [Fact]
     public async Task GetConnectionInvitation_ShouldReturnOK_WhenInvitationExists()
     {
+        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
+
+        var createResponse = await senderClient.PostAsync("api/connection-invitations", new StringContent("", Encoding.UTF8, "application/json"));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createResponseBody = await createResponse.Content.ReadAsStringAsync();
+        var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
+
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "36923692");
+
+        var getResponse = await receiverClient.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(getResponseBody);
+
+        returnedInvitation.Should().BeEquivalentTo(createdInvitation);
+    }
+
+    [Fact]
+    public async Task GetConnectionInvitation_ShouldReturnBadRequest_WhenCurrentUserIsSender()
+    {
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
         var createResponse = await client.PostAsync("api/connection-invitations", new StringContent("", Encoding.UTF8, "application/json"));
@@ -57,14 +81,13 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
 
-        var getResponse = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+        var response = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
 
-        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
-        var returnedInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(getResponseBody);
+        var responseBody = await response.Content.ReadAsStringAsync();
 
-        returnedInvitation.Should().BeEquivalentTo(createdInvitation);
+        responseBody.Should().Be("You cannot Accept/Deny your own ConnectionInvitation");
     }
 
     [Fact]
@@ -140,5 +163,30 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var responseBody = await response.Content.ReadAsStringAsync();
         responseBody.Should().Be("Connection-invitation expired or deleted");
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
+    {
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var postResponse = await authenticatedClient.PostAsync("api/connection-invitations", null);
+
+        var createdInvitation = await postResponse.Content.ReadFromJsonAsync<ConnectionInvitation>();
+        var createdId = createdInvitation!.Id;
+
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/connection-invitations/{createdId}");
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNotFound_WhenConnectionInvitationNonExisting()
+    {
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var randomGuid = Guid.NewGuid();
+
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/connection-invitations/{randomGuid}");
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

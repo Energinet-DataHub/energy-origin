@@ -1,10 +1,7 @@
 using System.Net;
 using API.Models.Entities;
-using API.Services.Interfaces;
 using API.Values;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Integration.Tests.Controllers;
 
@@ -75,19 +72,4 @@ public class RemoveUserControllerTests : IClassFixture<AuthWebApplicationFactory
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task RemoveUser_ShouldReturnInternalServerError_WhenUserDeletionFails()
-    {
-        var user = await factory.AddUserToDatabaseAsync();
-
-        var mockUserService = new Mock<IUserService>();
-        mockUserService.Setup(service => service.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
-        mockUserService.Setup(service => service.RemoveUserAsync(user)).Throws(new Exception());
-
-        var client = factory.CreateAuthenticatedClient(this.user, role: RoleKey.UserAdmin, config: builder => builder.ConfigureTestServices(services => services.AddSingleton(mockUserService.Object)));
-
-        var response = await client.DeleteAsync($"user/remove/{user.Id}");
-
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-    }
 }

@@ -24,14 +24,55 @@
             List of connections
             </summary>
         </member>
+        <member name="P:API.ApiModels.Responses.CvrCompanyDto.CompanyCvr">
+            <summary>
+            Company CVR number
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.CvrCompanyDto.CompanyName">
+            <summary>
+            Company name
+            </summary>
+        </member>
+        <member name="P:API.ApiModels.Responses.CvrCompanyDto.Address">
+            <summary>
+            Company address
+            </summary>
+        </member>
         <member name="M:API.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
             <summary>
             Get connection-invitation by Id
             </summary>
             <param name="id">Id of connection-invitation</param>
             <response code="200">Successful operation</response>
+            <response code="400">You cannot Accept/Deny your own ConnectionInvitation</response>
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>
+        </member>
+        <member name="M:API.Controllers.ConnectionInvitationsController.DeleteConnectionInvitation(System.Guid)">
+            <summary>
+            Delete connection-invitation
+            </summary>
+            <param name="id">Id of connection-invitation</param>
+            <response code="204">Successful operation</response>
+            <response code="404">Connection-invitation not found</response>
+        </member>
+        <member name="M:API.Controllers.ConnectionsController.Create(API.ApiModels.Requests.CreateConnection)">
+            <summary>
+            Add a new connection
+            </summary>
+            <param name="id">Id of connection-invitation</param>
+            <response code="201">Successful operation</response>
+            <response code="404">Connection-invitation expired or deleted</response>
+            <response code="409">Company is already a connection</response>
+        </member>
+        <member name="M:API.Controllers.CvrController.GetCvrCompany(System.String)">
+            <summary>
+            Get CVR registered company information
+            </summary>
+            <param name="cvrNumber">CVR number of the company</param>
+            <response code="200">Successful operation</response>
+            <response code="404">CVR company not found</response>
         </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />

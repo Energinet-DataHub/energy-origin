@@ -1,8 +1,6 @@
 using System.Net;
-using System.Security.Claims;
 using API.Models.Entities;
 using API.Options;
-using API.Utilities.Interfaces;
 using API.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -231,28 +229,6 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("assign")]
-    [InlineData("remove")]
-    public async Task RoleCalls_ShouldReturnInternalServerError_WhenUserDescriptMapperReturnsNull(string action)
-    {
-        var role = RoleKey.Viewer;
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.RoleAdmin, config: builder =>
-        {
-            var mapper = Mock.Of<IUserDescriptorMapper>();
-            Mock.Get(mapper)
-                .Setup(x => x.Map(It.IsAny<ClaimsPrincipal>()))
-                .Returns(value: null!);
-
-            builder.ConfigureTestServices(services => services.AddScoped(_ => mapper));
-        });
-
-        var response = await client.PutAsync($"role/{role}/{action}/{user.Id}", null);
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]

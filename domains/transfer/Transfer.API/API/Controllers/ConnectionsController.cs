@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using API.ApiModels.Requests;
 using API.ApiModels.Responses;
 using API.Data;
 using API.Exceptions;
@@ -17,10 +18,55 @@ namespace API.Controllers;
 public class ConnectionsController : Controller
 {
     private readonly IConnectionRepository connectionRepository;
+    private readonly IConnectionInvitationRepository connectionInvitationRepository;
 
-    public ConnectionsController(IConnectionRepository connectionRepository)
+
+    public ConnectionsController(IConnectionRepository connectionRepository, IConnectionInvitationRepository connectionInvitationRepository)
     {
         this.connectionRepository = connectionRepository;
+        this.connectionInvitationRepository = connectionInvitationRepository;
+    }
+
+    /// <summary>
+    /// Add a new connection
+    /// </summary>
+    /// <param name="id">Id of connection-invitation</param>
+    /// <response code="201">Successful operation</response>
+    /// <response code="404">Connection-invitation expired or deleted</response>
+    /// <response code="409">Company is already a connection</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(Connection), 201)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(409)]
+    public async Task<ActionResult> Create([FromBody] CreateConnection request)
+    {
+        var connectionInvitation = await connectionInvitationRepository.GetNonExpiredConnectionInvitation(request.ConnectionInvitationId);
+        if (connectionInvitation == null)
+        {
+            return NotFound("Connection-invitation expired or deleted");
+        }
+
+        var companyBId = new Guid(User.FindSubjectGuidClaim());
+        var companyBTin = User.FindSubjectTinClaim();
+
+        var connection = new Connection
+        {
+            Id = Guid.NewGuid(),
+            CompanyAId = connectionInvitation.SenderCompanyId,
+            CompanyATin = connectionInvitation.SenderCompanyTin,
+            CompanyBId = companyBId,
+            CompanyBTin = companyBTin
+        };
+
+        var hasConflict = await connectionRepository.HasConflict(connection.CompanyAId, connection.CompanyBId);
+        if (hasConflict)
+        {
+            return Conflict("Company is already a connection");
+        }
+
+        await connectionRepository.AddConnectionAndDeleteInvitation(connection, request.ConnectionInvitationId);
+
+        return CreatedAtAction(nameof(GetConnections), new { id = connection.Id }, connection);
     }
 
     [ProducesResponseType(typeof(ConnectionsResponse), 200)]
@@ -40,6 +86,25 @@ public class ConnectionsController : Controller
         var dtos = connections.Select(x => ToDto(x, subject)).ToList();
 
         return Ok(new ConnectionsResponse { Result = dtos });
+    }
+
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var subject = new Guid(User.FindSubjectGuidClaim());
+
+        var connection = await connectionRepository.GetConnection(id);
+
+        if (connection == null || (subject != connection.CompanyAId && subject != connection.CompanyBId))
+        {
+            return NotFound();
+        }
+
+        await connectionRepository.DeleteConnection(id);
+
+        return NoContent();
     }
 
     private static ConnectionDto ToDto(Connection connection, Guid loggedInCompanyId)

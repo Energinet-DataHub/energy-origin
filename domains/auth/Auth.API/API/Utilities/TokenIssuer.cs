@@ -107,17 +107,11 @@ public class TokenIssuer : ITokenIssuer
 
         claims.Add(UserClaimName.Roles, roles);
 
-        if (descriptor.CompanyId is not null)
+        if (descriptor.Organization is not null)
         {
-            claims.Add(UserClaimName.CompanyId, descriptor.CompanyId);
-        }
-        if (descriptor.Tin is not null)
-        {
-            claims.Add(UserClaimName.Tin, descriptor.Tin);
-        }
-        if (descriptor.CompanyName is not null)
-        {
-            claims.Add(UserClaimName.CompanyName, descriptor.CompanyName);
+            claims.Add(UserClaimName.OrganizationId, descriptor.Organization.Id);
+            claims.Add(UserClaimName.Tin, descriptor.Organization.Tin);
+            claims.Add(UserClaimName.OrganizationName, descriptor.Organization.Name);
         }
 
         var identity = new List<Claim>

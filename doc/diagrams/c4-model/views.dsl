@@ -37,14 +37,24 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
 
         # Specific area container views
+        container energyOrigin "DataSync" {
+            title "[Container Context] DataSync"
+            include ->dataSyncDomain->
+            autoLayout
+        }
         container energyOrigin "Auth" {
             title "[Container Context] Auth"
-            include ->authDomain->
+            include ->authDomain-> dataSyncApi->
             autoLayout
         }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain->
+            include ->certificatesDomain-> dataSyncApi->
+            autoLayout
+        }
+        component certApi "CertificateApiComponents" {
+            title "[Component Context] Certificate API"
+            include *
             autoLayout
         }
         container energyOrigin "Transfer" {
@@ -52,9 +62,16 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->transferDomain->
             autoLayout
         }
-        component tApi "TransferComponents" {
-            title "[Component Context] Transfer"
+        component tApi "TransferApiComponents" {
+            title "[Component Context] Transfer API"
             include *
             autoLayout
         }
+
+        styles {
+            element "MockingComponent" {
+                background #ffbb55
+                color #ffffff
+            }
+    }
 }

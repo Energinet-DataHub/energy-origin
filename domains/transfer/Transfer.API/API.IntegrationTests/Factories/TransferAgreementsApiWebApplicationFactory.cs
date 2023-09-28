@@ -35,10 +35,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
+    private const string CvrUser = "SomeUser";
+    private const string CvrPassword = "SomePassword";
+    public string CvrBaseUrl { get; set; } = "SomeUrl";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
-        builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:02");
+        builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
+        builder.UseSetting("Cvr:User", CvrUser);
+        builder.UseSetting("Cvr:Password", CvrPassword);
 
         builder.ConfigureTestServices(s =>
         {
