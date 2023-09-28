@@ -1,4 +1,4 @@
-﻿using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement;
 
 namespace API.Utilities;
 
