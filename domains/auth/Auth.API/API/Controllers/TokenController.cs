@@ -41,7 +41,7 @@ public class TokenController : ControllerBase
                 };
             }
             var scope = User.FindFirstValue(UserClaimName.Scope);
-            
+
             if (featureManager.IsEnabled(FeatureFlag.CompanyTerms))
             {
                 if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
