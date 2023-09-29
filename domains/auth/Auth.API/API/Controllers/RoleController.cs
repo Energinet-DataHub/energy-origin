@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Data;
 using API.Models.Entities;
 using API.Models.Response;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
-using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -15,11 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-[Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
 public class RoleController : ControllerBase
 {
     [HttpGet]
     [Route("role/all")]
+    [Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
     public IActionResult List(RoleOptions roles) => Ok(roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => new
     {
         x.Key,
@@ -28,6 +25,7 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/assign/{userId:guid}")]
+    [Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
     public async Task<IActionResult> AssignRole(string role, Guid userId, RoleOptions roles, IUserService userService, ILogger<RoleController> logger)
     {
         var validRoles = roles.RoleConfigurations.Where(x => !x.IsTransient).Select(x => x.Key);
@@ -68,6 +66,7 @@ public class RoleController : ControllerBase
 
     [HttpPut]
     [Route("role/{role}/remove/{userId:guid}")]
+    [Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
     public async Task<IActionResult> RemoveRoleFromUser(string role, Guid userId, IUserService userService, ILogger<RoleController> logger)
     {
         var descriptor = new UserDescriptor(User);
@@ -107,6 +106,7 @@ public class RoleController : ControllerBase
 
     [HttpGet]
     [Route("role/users")]
+    [Authorize(Roles = RoleKey.RoleAdmin, Policy = PolicyName.RequiresCompany)]
     public async Task<IActionResult> GetUsersByTin(IUserService userService, RoleOptions roles, ILogger<RoleController> logger)
     {
         var descriptor = new UserDescriptor(User);
@@ -126,7 +126,7 @@ public class RoleController : ControllerBase
 
         logger.AuditLog(
             "List of {UserCount} users was retrieved from {tin} by {AdminId} at {TimeStamp}",
-            response.UserRoles.Count,
+            response.UserRoles.Count(),
             tin,
             descriptor.Id,
             DateTimeOffset.Now.ToUnixTimeSeconds()

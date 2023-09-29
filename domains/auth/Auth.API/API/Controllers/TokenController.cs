@@ -40,18 +40,18 @@ public class TokenController : ControllerBase
                     Tin = organization.Tin
                 };
             }
-            var scope = User.FindFirstValue(UserClaimName.Scope);
+            var scope = User.FindFirstValue(UserClaimName.Scope) ?? string.Empty;
 
             if (featureManager.IsEnabled(FeatureFlag.CompanyTerms))
             {
-                if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
+                if (scope.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
                     && scope.Contains(UserScopeName.NotAcceptedTermsOfService) == false
                     && scope.Contains(UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin) == false)
                     versionBypass = true;
             }
             else
             {
-                if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
+                if (scope.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
             }
         }
 

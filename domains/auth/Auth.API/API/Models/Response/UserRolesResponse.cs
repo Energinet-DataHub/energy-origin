@@ -4,7 +4,7 @@ namespace API.Models.Response;
 
 public class UserRolesResponse
 {
-    public required List<UserRoles> UserRoles { get; init; }
+    public required IEnumerable<UserRoles> UserRoles { get; init; }
 }
 
 public class UserRoles
