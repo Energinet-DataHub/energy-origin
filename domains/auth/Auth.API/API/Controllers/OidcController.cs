@@ -85,7 +85,7 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    public static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -119,9 +119,7 @@ public class OidcController : ControllerBase
 
         ProvidertypeIsFalseCheck(providerType, providerOptions);
 
-        var (name, tin, companyName, keys) = MapUserInfo(userInfo, providerType);
-
-        UserTokenNullChecks(name, tin, companyName, identityType!);
+        var (name, tin, companyName, keys) = HandleUserInfo(userInfo, providerType, identityType);
 
         var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
@@ -254,17 +252,7 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
     }
 
-    private static void UserTokenNullChecks(string? name, string? tin, string? companyName, string identityType)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        if (identityType == ProviderGroup.Professional)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
-            ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
-        }
-    }
-
-    private static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) MapUserInfo(ClaimsPrincipal userInfo, ProviderType providerType)
+    private static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;
         string? tin = null;
@@ -308,6 +296,13 @@ public class OidcController : ControllerBase
 
                 keys.Add(ProviderKeyType.Pid, userInfo.FindFirstValue("nemid.pid") ?? throw new KeyNotFoundException("nemid.pid"));
                 break;
+        }
+
+        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        if (identityType == ProviderGroup.Professional)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
+            ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
         }
 
         return (name, tin, companyName, keys);

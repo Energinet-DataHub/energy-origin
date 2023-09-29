@@ -217,6 +217,12 @@ public class OidcControllerTests
     }
 
     [Theory]
+    [MemberData(nameof(ClaimsTestDataCorrect))]
+    public async Task HandleUserInfo_ShouldReturnUserInfo_WhenProvidedVariousIdentityProviders(Dictionary<string, object> claims)
+    {
+    }
+
+    [Theory]
     [MemberData(nameof(ClaimsTestDataWrong))]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenArgumentsAreWrong(Dictionary<string, object> claims)
     {
