@@ -24,10 +24,11 @@ public class UserRepository : IUserRepository
         await dataContext.SaveChangesAsync();
         return user;
     }
-
     public async Task RemoveUserAsync(User user)
     {
         dataContext.Users.Remove(user);
         await dataContext.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
 }

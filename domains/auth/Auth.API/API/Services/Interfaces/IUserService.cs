@@ -8,4 +8,5 @@ public interface IUserService
     Task<User> InsertUserAsync(User user);
     Task<User?> GetUserByIdAsync(Guid? id);
     Task RemoveUserAsync(User user);
+    Task<IEnumerable<User>> GetUsersByTinAsync(string tin);
 }
