@@ -244,7 +244,7 @@ public class RoleControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnValue = Assert.IsType<UserRolesResponse>(okResult.Value);
 
-        Assert.Equal(users.Count, returnValue.UserRoles.Count);
+        Assert.Equal(users.Count, returnValue.UserRoles.Count());
 
         foreach (var user in users.Zip(returnValue.UserRoles))
         {
