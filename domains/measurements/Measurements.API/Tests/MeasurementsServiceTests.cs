@@ -6,7 +6,7 @@ using API.Models;
 using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
-using Moq;
+using NSubstitute;
 using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
@@ -27,17 +27,16 @@ public sealed class MeasurementsServiceTest
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
         var measurements = MeasurementDataSet.CreateMeasurements();
 
-        var mockDataSyncService = new Mock<IDataSyncService>();
+        var mockDataSyncService = Substitute.For<IDataSyncService>();
 
-        mockDataSyncService.Setup(a => a.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.IsAny<string>(),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()))
-            .Returns(Task.FromResult(measurements.AsEnumerable()
-        ));
+        mockDataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Any<string>(),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(Task.FromResult(measurements.AsEnumerable()));
 
-        var sut = new MeasurementsService(mockDataSyncService.Object, new Mock<IAggregator>().Object);
+        var sut = new MeasurementsService(mockDataSyncService, Substitute.For<IAggregator>());
 
         //Act
 

@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using Moq.Protected;
+using NSubstitute;
 
 namespace Tests.Helpers;
 
@@ -22,25 +22,20 @@ public static class MockHttpClientFactory
 
     public static HttpClient SetupHttpClient(string serialize)
     {
-        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var handlerMock = Substitute.For<HttpMessageHandler>();
 
-        handlerMock
-            .Protected()
-            // Setup the PROTECTED method to mock
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            // prepare the expected response of the mocked http call
-            .ReturnsAsync(new HttpResponseMessage()
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(serialize),
-            }).Verifiable();
+        var httpResponseMessage = new HttpResponseMessage()
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(serialize),
+        };
+        var task = Task.FromResult(httpResponseMessage);
 
+        handlerMock.GetType().GetMethod("SendAsync", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(handlerMock, new object[] { Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>() })
+            .Returns(task);
 
-        return new HttpClient(handlerMock.Object)
+        return new HttpClient(handlerMock)
         {
             BaseAddress = new Uri("http://example.com/"),
         };
