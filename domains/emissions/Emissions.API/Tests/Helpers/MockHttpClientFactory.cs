@@ -15,8 +15,8 @@ public static class MockHttpClientFactory
     public static HttpClient SetupHttpClientWithFiles(List<string> resources)
     {
         var handlerMock = Substitute.For<HttpMessageHandler>();
-        var handlerPart =  handlerMock.GetType().GetMethod("SendAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(handlerMock, new object[] { Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>()});
+        var handlerPart = handlerMock.GetType().GetMethod("SendAsync", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(handlerMock, new object[] { Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>() });
 
         var response = new Queue<object>();
         foreach (var item in resources)
@@ -32,7 +32,7 @@ public static class MockHttpClientFactory
             var task = Task.FromResult(httpResponseMessage);
             response.Enqueue(task);
         }
-        handlerPart.Returns(response.Dequeue(),response.ToArray());
+        handlerPart.Returns(response.Dequeue(), response.ToArray());
 
         return new HttpClient(handlerMock)
         {
