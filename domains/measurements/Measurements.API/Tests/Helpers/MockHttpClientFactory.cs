@@ -29,11 +29,12 @@ public static class MockHttpClientFactory
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(serialize),
         };
-        var task = Task.FromResult(httpResponseMessage);
 
-        handlerMock.GetType().GetMethod("SendAsync", BindingFlags.Instance | BindingFlags.NonPublic)!
+        handlerMock
+            .GetType()
+            .GetMethod("SendAsync", BindingFlags.Instance | BindingFlags.NonPublic)!
             .Invoke(handlerMock, new object[] { Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>() })
-            .Returns(task);
+            .Returns(Task.FromResult(httpResponseMessage));
 
         return new HttpClient(handlerMock)
         {
