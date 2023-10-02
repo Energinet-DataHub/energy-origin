@@ -7,7 +7,7 @@ using API.Models.EnergiDataService;
 using API.Services;
 using AutoFixture;
 using EnergyOriginAuthorization;
-using Moq;
+using NSubstitute;
 using Tests.Helpers;
 using Xunit;
 using Xunit.Categories;
@@ -125,44 +125,40 @@ public sealed class EmissionsServiceTests
             new EmissionRecord("DK1", 0, time2Co2, DateTimeOffset.FromUnixTimeSeconds(time2).DateTime),
         };
 
-        var dataSyncService = new Mock<IDataSyncService>();
-        dataSyncService.Setup(x => x.GetListOfMeteringPoints(
-            It.IsAny<AuthorizationContext>()
-        )).ReturnsAsync(mps);
+        var dataSyncService = Substitute.For<IDataSyncService>();
+        dataSyncService.GetListOfMeteringPoints(
+            Arg.Any<AuthorizationContext>()
+        ).Returns(mps);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400001"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements1);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400001"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements1);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400002"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements2);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400002"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements2);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400003"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements3);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400003"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements3);
 
-        var emissionsDataService = new Mock<IEnergiDataService>();
-        emissionsDataService.Setup(
-            x => x.GetEmissionsPerHour(
-                It.IsAny<DateTimeOffset>(),
-                It.IsAny<DateTimeOffset>()
-            )
-        ).ReturnsAsync(emissionResponse);
+        var emissionsDataService = Substitute.For<IEnergiDataService>();
 
-        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator());
+        emissionsDataService.GetEmissionsPerHour(
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(emissionResponse);
+
+        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator());
 
         var result = await service.GetTotalEmissions(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Hour);
 
@@ -281,44 +277,39 @@ public sealed class EmissionsServiceTests
             new MixRecord(30, DateTimeOffset.FromUnixTimeSeconds(time2).DateTime, "", "DK1", "coal"),
         };
 
-        var dataSyncService = new Mock<IDataSyncService>();
-        dataSyncService.Setup(x => x.GetListOfMeteringPoints(
-            It.IsAny<AuthorizationContext>()
-        )).ReturnsAsync(mps);
+        var dataSyncService = Substitute.For<IDataSyncService>();
+        dataSyncService.GetListOfMeteringPoints(
+            Arg.Any<AuthorizationContext>()
+        ).Returns(mps);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400001"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements1);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400001"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements1);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400002"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements2);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400002"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements2);
 
-        dataSyncService.Setup(
-            x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.Is<string>(x => x == "286432579631400003"),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).ReturnsAsync(measurements3);
+        dataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Is<string>(x => x == "286432579631400003"),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(measurements3);
 
-        var emissionsDataService = new Mock<IEnergiDataService>();
-        emissionsDataService.Setup(
-            x => x.GetResidualMixPerHour(
-                It.IsAny<DateTimeOffset>(),
-                It.IsAny<DateTimeOffset>()
-            )
-        ).ReturnsAsync(mixResponse);
+        var emissionsDataService = Substitute.For<IEnergiDataService>();
+        emissionsDataService.GetResidualMixPerHour(
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(mixResponse);
 
-        var service = new EmissionsService(dataSyncService.Object, emissionsDataService.Object, new EmissionsCalculator(), new SourcesCalculator());
+        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator());
 
         var result = await service.GetSourceDeclaration(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Total);
 
@@ -338,19 +329,19 @@ public sealed class EmissionsServiceTests
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
         var measurements = StaticDataSetFactory.CreateMeasurementsFirstMP();
 
-        var mockDataSyncService = new Mock<IDataSyncService>();
-        var mockEds = new Mock<IEnergiDataService>();
-        var mockEmissionsCalculator = new Mock<IEmissionsCalculator>();
-        var mockSourcesCalculator = new Mock<ISourcesCalculator>();
+        var mockDataSyncService = Substitute.For<IDataSyncService>();
+        var mockEds = Substitute.For<IEnergiDataService>();
+        var mockEmissionsCalculator = Substitute.For<IEmissionsCalculator>();
+        var mockSourcesCalculator = Substitute.For<ISourcesCalculator>();
 
-        mockDataSyncService.Setup(x => x.GetMeasurements(
-            It.IsAny<AuthorizationContext>(),
-            It.IsAny<string>(),
-            It.IsAny<DateTimeOffset>(),
-            It.IsAny<DateTimeOffset>()
-        )).Returns(Task.FromResult(measurements.AsEnumerable()));
+        mockDataSyncService.GetMeasurements(
+            Arg.Any<AuthorizationContext>(),
+            Arg.Any<string>(),
+            Arg.Any<DateTimeOffset>(),
+            Arg.Any<DateTimeOffset>()
+        ).Returns(Task.FromResult(measurements.AsEnumerable()));
 
-        var service = new EmissionsService(mockDataSyncService.Object, mockEds.Object, mockEmissionsCalculator.Object, mockSourcesCalculator.Object);
+        var service = new EmissionsService(mockDataSyncService, mockEds, mockEmissionsCalculator, mockSourcesCalculator);
 
         var timeSeries = (await service.GetTimeSeries(context, dateFrom, dateTo, meteringPoints)).ToArray();
 
