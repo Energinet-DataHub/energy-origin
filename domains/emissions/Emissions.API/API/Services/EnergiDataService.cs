@@ -1,6 +1,7 @@
 using System.Text.Json;
 using API.Models;
 using API.Models.EnergiDataService;
+using API.Options;
 
 namespace API.Services;
 
@@ -11,7 +12,11 @@ public class EnergiDataService : IEnergiDataService
     private readonly HttpClient httpClient;
     private readonly JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
 
-    public EnergiDataService(HttpClient httpClient) => this.httpClient = httpClient;
+    public EnergiDataService(HttpClient httpClient, EnergiDataServiceOptions options)
+    {
+        httpClient.BaseAddress = options.Endpoint;
+        this.httpClient = httpClient;
+    }
 
     public async Task<IEnumerable<EmissionRecord>> GetEmissionsPerHour(DateTimeOffset dateFrom, DateTimeOffset dateTo)
     {

@@ -32,10 +32,7 @@ public static class MockHttpClientFactory
         }
         handlerPart.Returns(response.Dequeue(), response.ToArray());
 
-        return new HttpClient(handlerMock)
-        {
-            BaseAddress = new Uri("http://example.com/"),
-        };
+        return new HttpClient(handlerMock);
     }
 }
 

@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
+using API.Options;
 using EnergyOriginAuthorization;
 
 namespace API.Services;
@@ -11,10 +12,11 @@ public class DataSyncService : IDataSyncService
     private readonly HttpClient httpClient;
     private readonly JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
 
-    public DataSyncService(HttpClient httpClient)
+    public DataSyncService(HttpClient httpClient, DataSyncOptions options)
     {
+        httpClient.BaseAddress = options.Endpoint;
         this.httpClient = httpClient;
-        options.Converters.Add(new JsonStringEnumConverter());
+        this.options.Converters.Add(new JsonStringEnumConverter());
     }
 
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo)

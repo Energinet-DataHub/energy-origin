@@ -9,5 +9,6 @@ public interface IEmissionsCalculator
         IEnumerable<EmissionRecord> emissionRecords,
         IEnumerable<TimeSeries> measurements,
         TimeZoneInfo timeZone,
-        Aggregation aggregation);
+        Aggregation aggregation,
+        int precision = 5);
 }

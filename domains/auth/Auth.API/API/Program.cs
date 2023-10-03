@@ -54,7 +54,7 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks().AddNpgSql(databaseOptions.ConnectionString);
 builder.Services.AddControllers();
 builder.Services.AddFeatureManagement();
 
@@ -106,7 +106,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder(databaseOptions.ConnectionString));
 builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
@@ -165,7 +165,7 @@ else
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 try
 {
