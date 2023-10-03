@@ -4,7 +4,7 @@ namespace API.Options;
 
 public class DataSyncOptions
 {
-    public const string Prefix = "DataSyncOptions";
+    public const string Prefix = "DataSync";
 
     [Required]
     [RegularExpression(@"^https?:\/\/[^\s]+")]

@@ -4,7 +4,7 @@ namespace API.Options;
 
 public class EnergiDataServiceOptions
 {
-    public const string Prefix = "EnergiDataServiceOptions";
+    public const string Prefix = "EnergiDataService";
 
     [Required]
     [RegularExpression(@"^https?:\/\/[^\s]+")]
