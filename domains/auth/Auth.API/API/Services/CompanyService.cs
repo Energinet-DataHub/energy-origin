@@ -10,5 +10,7 @@ public class CompanyService : ICompanyService
 
     public CompanyService(ICompanyRepository repository) => this.repository = repository;
 
+    public Task<Company> InsertCompanyAsync(Company company) => repository.InsertCompanyAsync(company);
+
     public async Task<Company?> GetCompanyByTinAsync(string? tin) => tin is null ? null : await repository.GetCompanyByTinAsync(tin);
 }

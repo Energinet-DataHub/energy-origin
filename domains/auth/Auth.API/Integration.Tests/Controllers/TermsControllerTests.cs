@@ -115,6 +115,59 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Bla()
+    {
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitIdUuid;
+        var cmpId = Guid.NewGuid();
+        var user = new User
+        {
+            Id = null,
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Id = cmpId,
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString(),
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
+            },
+            CompanyId = cmpId,
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+        };
+
+        var server = WireMockServer.Start();
+        var datasyncOptions = new DataSyncOptions
+        {
+            Uri = new Uri($"http://localhost:{server.Port}/")
+        };
+
+        var role = "default";
+        var roleOptions = new RoleOptions()
+        {
+            RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
+        };
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => datasyncOptions);
+            services.AddScoped(_ => roleOptions);
+        }));
+
+        server.MockRelationsEndpoint();
+
+        var result = await client.PutAsync("terms/user/accept/2", null);
+        //var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefault(x => x.Name == user.Name)!;
+
+        //Assert.NotNull(result);
+        //Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        //Assert.Equal(user.Name, dbUser.Name);
+        //Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
+        //Assert.Contains(dbUser.UserTerms, x => x is { Type: UserTermsType.PrivacyPolicy, AcceptedVersion: 2 });
+        //Assert.Contains(dbUser.UserRoles, x => x.Role == role);
+    }
+
+    [Fact]
     public async Task AcceptUserTermsAsync_ShouldReturnOk_ForSimplestTestCase()
     {
         var user = await factory.AddUserToDatabaseAsync();

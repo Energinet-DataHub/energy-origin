@@ -38,6 +38,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
+        builder.UseSetting("Oidc:ReuseSubject", "true"); //TODO: This is not the default value
 
         builder.ConfigureTestServices(services =>
         {
