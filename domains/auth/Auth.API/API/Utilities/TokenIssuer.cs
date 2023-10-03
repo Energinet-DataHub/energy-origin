@@ -9,6 +9,7 @@ using API.Utilities.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Utilities;
@@ -20,19 +21,21 @@ public class TokenIssuer : ITokenIssuer
     private readonly TermsOptions termsOptions;
     private readonly TokenOptions tokenOptions;
     private readonly RoleOptions roleOptions;
+    private readonly bool companyTermsFeatureFlag;
 
-    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions)
+    public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions, IFeatureManager? featureManager = null)
     {
         this.termsOptions = termsOptions;
         this.tokenOptions = tokenOptions;
         this.roleOptions = roleOptions;
+        this.companyTermsFeatureFlag = featureManager.IsEnabled(FeatureFlag.CompanyTerms);
     }
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
         var credentials = CreateSigningCredentials(tokenOptions);
 
-        var state = ResolveState(termsOptions, data, versionBypass);
+        var state = ResolveState(termsOptions, data, versionBypass, companyTermsFeatureFlag);
 
         return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
     }
@@ -47,19 +50,37 @@ public class TokenIssuer : ITokenIssuer
         return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
     }
 
-    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass)
+    private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, bool companyTermsFeatureFlag)
     {
-        string? scope = null;
-        if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
-        {
-            scope = string.Join(" ", scope, UserScopeName.NotAcceptedPrivacyPolicy);
-        }
-
+        var scope = PrepareNotAcceptedScope(options, data, companyTermsFeatureFlag);
         scope = versionBypass ? AllAcceptedScopes : scope ?? AllAcceptedScopes;
 
-        scope = scope.Trim();
-
         return new(scope);
+    }
+
+    private static string? PrepareNotAcceptedScope(TermsOptions options, UserData data, bool companyTermsFeatureFlag)
+    {
+        if (options.PrivacyPolicyVersion != data.PrivacyPolicyVersion)
+        {
+            return UserScopeName.NotAcceptedPrivacyPolicy;
+        }
+
+        if (companyTermsFeatureFlag)
+        {
+            if (options.TermsOfServiceVersion != data.TermsOfServiceVersion)
+            {
+                if (data.AssignedRoles != null && data.AssignedRoles.Contains(RoleKey.OrganizationAdmin))
+                {
+                    return UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin;
+                }
+                else
+                {
+                    return UserScopeName.NotAcceptedTermsOfService;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
@@ -82,7 +103,10 @@ public class TokenIssuer : ITokenIssuer
         var assignedRoles = data.AssignedRoles ?? Array.Empty<string>();
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
         var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
-        var roles = AddInheritedRoles(roleOptions.RoleConfigurations.ToDictionary(x => x.Key), allottedRoles).Distinct().Where(x => validRoles.Contains(x));
+        var roles = AddInheritedRoles(roleOptions.RoleConfigurations
+            .ToDictionary(x => x.Key), allottedRoles)
+            .Distinct()
+            .Where(x => validRoles.Contains(x));
 
         claims.Add(UserClaimName.Roles, roles);
 

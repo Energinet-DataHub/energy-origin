@@ -47,9 +47,11 @@ public class ConnectionInvitationsController : ControllerBase
     /// </summary>
     /// <param name="id">Id of connection-invitation</param>
     /// <response code="200">Successful operation</response>
+    /// <response code="400">You cannot Accept/Deny your own ConnectionInvitation</response>
     /// <response code="404">Connection-invitation expired or deleted</response>
     /// <response code="409">Company is already a connection</response>
     [ProducesResponseType(typeof(ConnectionInvitation), 200)]
+    [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(string), 409)]
     [HttpGet("{id}")]
@@ -63,6 +65,12 @@ public class ConnectionInvitationsController : ControllerBase
         }
 
         var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
+
+        if (currentCompanyId == connectionInvitation.SenderCompanyId)
+        {
+            return BadRequest("You cannot Accept/Deny your own ConnectionInvitation");
+        }
+
         var hasConflict = await connectionRepository.HasConflict(currentCompanyId, connectionInvitation.SenderCompanyId);
 
         if (hasConflict)

@@ -45,6 +45,7 @@
             </summary>
             <param name="id">Id of connection-invitation</param>
             <response code="200">Successful operation</response>
+            <response code="400">You cannot Accept/Deny your own ConnectionInvitation</response>
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>

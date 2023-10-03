@@ -1,5 +1,6 @@
 using System.Web;
 using API.Controllers;
+using API.Models.Dtos.Responses;
 using API.Options;
 using API.Utilities.Interfaces;
 using API.Values;
@@ -50,13 +51,11 @@ public class LogoutControllerTests
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
+        Assert.IsType<OkObjectResult>(result);
+        var okObject = (OkObjectResult)result;
+        var redirectResult = (RedirectUriResponse)okObject.Value!;
 
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
+        var uri = new Uri(redirectResult.RedirectionUri);
         Assert.Equal(options.AuthorityUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
@@ -73,9 +72,10 @@ public class LogoutControllerTests
         cache.GetAsync().Returns(document);
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
-
-        var redirectResult = (RedirectResult)result;
-        var uri = new Uri(redirectResult.Url);
+        Assert.IsType<OkObjectResult>(result);
+        var okObject = (OkObjectResult)result;
+        var redirectResult = (RedirectUriResponse)okObject.Value!;
+        var uri = new Uri(redirectResult.RedirectionUri);
         Assert.NotEqual(options.AuthorityUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
@@ -95,9 +95,10 @@ public class LogoutControllerTests
         var redirectionUri = "http://redirection.r.us";
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger, redirectionUri);
-
-        var redirectResult = (RedirectResult)result;
-        var uri = new Uri(redirectResult.Url);
+        Assert.IsType<OkObjectResult>(result);
+        var okObject = (OkObjectResult)result;
+        var redirectResult = (RedirectUriResponse)okObject.Value!;
+        var uri = new Uri(redirectResult.RedirectionUri);
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.Contains($"post_logout_redirect_uri={redirectionUri}", query);
     }
@@ -117,9 +118,10 @@ public class LogoutControllerTests
         var redirectionUri = Guid.NewGuid().ToString();
 
         var result = await controller.LogoutAsync(metrics, cache, cryptography, testOptions, logger, redirectionUri);
-
-        var redirectResult = (RedirectResult)result;
-        var uri = new Uri(redirectResult.Url);
+        Assert.IsType<OkObjectResult>(result);
+        var okObject = (OkObjectResult)result;
+        var redirectResult = (RedirectUriResponse)okObject.Value!;
+        var uri = new Uri(redirectResult.RedirectionUri);
         var query = HttpUtility.UrlDecode(uri.Query);
         Assert.DoesNotContain($"post_logout_redirect_uri={redirectionUri}", query);
         Assert.Contains($"post_logout_redirect_uri={testOptions.FrontendRedirectUri.AbsoluteUri}", query);
@@ -136,13 +138,11 @@ public class LogoutControllerTests
         var result = await controller.LogoutAsync(metrics, cache, cryptography, options, logger);
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
+        Assert.IsType<OkObjectResult>(result);
+        var okObject = (OkObjectResult)result;
+        var redirectResult = (RedirectUriResponse)okObject.Value!;
 
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
+        var uri = new Uri(redirectResult.RedirectionUri);
         Assert.Equal(options.FrontendRedirectUri.Host, uri.Host);
 
         var query = HttpUtility.UrlDecode(uri.Query);
