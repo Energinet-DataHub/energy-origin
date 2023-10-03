@@ -17,5 +17,5 @@ public class DatabaseOptions
     [Required]
     public string Password { get; init; } = null!;
 
-    public string ConnectionString { get { return $"Host={Host};Port={Port};Database={Name};User Id={User};Password={Password};"; } }
+    public string ConnectionString => $"Host={Host};Port={Port};Database={Name};User Id={User};Password={Password};";
 }
