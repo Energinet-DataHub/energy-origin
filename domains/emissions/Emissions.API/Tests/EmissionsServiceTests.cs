@@ -165,7 +165,7 @@ public sealed class EmissionsServiceTests
             Arg.Any<DateTimeOffset>()
         ).Returns(emissionResponse);
 
-        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator());
+        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator(options));
 
         var result = await service.GetTotalEmissions(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Hour);
 
@@ -313,7 +313,7 @@ public sealed class EmissionsServiceTests
             Arg.Any<DateTimeOffset>()
         ).Returns(mixResponse);
 
-        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator());
+        var service = new EmissionsService(dataSyncService, emissionsDataService, new EmissionsCalculator(), new SourcesCalculator(options));
 
         var result = await service.GetSourceDeclaration(new AuthorizationContext("", "", ""), DateTimeOffset.FromUnixTimeSeconds(time0), DateTimeOffset.FromUnixTimeSeconds(time3), TimeZoneInfo.Utc, Aggregation.Total);
 
