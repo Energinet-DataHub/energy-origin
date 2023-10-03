@@ -72,6 +72,10 @@ public class TermsController : ControllerBase
             ));
 
             await userService.InsertUserAsync(user);
+            if (company != null)
+            {
+                user.CompanyId = company.Id;
+            }
             user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
