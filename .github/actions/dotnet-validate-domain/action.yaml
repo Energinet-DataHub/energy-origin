@@ -56,7 +56,7 @@ runs:
     - name: Test
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-restore --verbosity normal -warnaserror
 
     - name: Build
       shell: bash
