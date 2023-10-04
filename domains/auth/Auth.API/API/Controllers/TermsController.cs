@@ -52,22 +52,15 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
-                Id = oidcOptions.ReuseSubject ? descriptor.Organization!.Id : null,
+                Id = null,
                 Name = descriptor.Organization!.Name,
                 Tin = descriptor.Organization!.Tin
             };
+
             if (oidcOptions.ReuseSubject)
             {
-                try
-                {
-                    await companyService.InsertCompanyAsync(company);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-
+                company = company with { Id = descriptor.Organization!.Id };
+                await companyService.InsertCompanyAsync(company);
             }
         }
 
@@ -85,11 +78,6 @@ public class TermsController : ControllerBase
             ));
 
             await userService.InsertUserAsync(user);
-            //if (company != null)
-            //{
-            //    companyService.GetCompanyByTinAsync()
-            //    user.CompanyId = company.Id;
-            //}
             user.Company = company;
             user.UserProviders = UserProvider.ConvertDictionaryToUserProviders(descriptor.ProviderKeys);
         }
@@ -105,15 +93,7 @@ public class TermsController : ControllerBase
         }
         userTerms.AcceptedVersion = version;
 
-        try
-        {
-            await userService.UpsertUserAsync(user);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            throw;
-        }
+        await userService.UpsertUserAsync(user);
 
         var relationUri = dataSyncOptions.Uri?.AbsoluteUri.TrimEnd('/');
         if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
