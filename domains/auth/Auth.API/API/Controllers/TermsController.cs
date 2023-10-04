@@ -52,7 +52,7 @@ public class TermsController : ControllerBase
         {
             company = new Company()
             {
-                Id = oidcOptions.ReuseSubject ? descriptor.Id : null,
+                Id = oidcOptions.ReuseSubject ? descriptor.Organization!.Id : null,
                 Name = descriptor.Organization!.Name,
                 Tin = descriptor.Organization!.Tin
             };

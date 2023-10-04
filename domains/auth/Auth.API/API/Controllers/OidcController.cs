@@ -220,14 +220,14 @@ public class OidcController : ControllerBase
         var knownUser = user != null;
         user ??= new User
         {
-            Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
+            Id = oidcOptions.ReuseSubject && identityType == ProviderGroup.Private && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
             Name = name,
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
                 : new Company
                 {
-                    Id = null,
+                    Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var companyId) ? companyId : null,
                     Tin = tin!,
                     Name = companyName!
                 }
