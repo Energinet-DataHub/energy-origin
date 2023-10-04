@@ -67,7 +67,7 @@ public class TermsController : ControllerBase
                     Console.WriteLine(e);
                     throw;
                 }
-                
+
             }
         }
 
