@@ -85,7 +85,7 @@ public class OidcController : ControllerBase
         }
     }
 
-    public static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+    internal static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -129,7 +129,7 @@ public class OidcController : ControllerBase
         return (descriptor, UserData.From(user));
     }
 
-    private static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+    internal static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
     {
         var property = info.FindFirstValue(match.Property);
         return match.Operator switch
@@ -141,7 +141,7 @@ public class OidcController : ControllerBase
         };
     }) ? role.Key : null).OfType<string>();
 
-    private static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+    internal static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
         (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
@@ -150,7 +150,7 @@ public class OidcController : ControllerBase
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 
-    private static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
+    internal static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
         if (oidcState?.RedirectionPath != null)
@@ -168,7 +168,8 @@ public class OidcController : ControllerBase
         return redirectionUri;
     }
 
-    public static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
+    //DONE
+    internal static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
     {
         if (code == null)
         {
@@ -177,7 +178,8 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
+    //DONE
+    internal static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
     {
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
@@ -186,7 +188,8 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
+    //DONE
+    internal static async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
     {
         var client = clientFactory.CreateClient();
 
@@ -210,7 +213,7 @@ public class OidcController : ControllerBase
         return response;
     }
 
-    private static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
+    internal static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
     {
         try
         {
@@ -228,7 +231,7 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
+    internal static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
         if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
@@ -237,7 +240,7 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
+    internal static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
     {
         if (providerOptions.Providers.Contains(providerType) == false)
         {
@@ -245,14 +248,14 @@ public class OidcController : ControllerBase
         }
     }
 
-    private static void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
+    internal static void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
     {
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
     }
 
-    private static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
+    internal static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;
         string? tin = null;
@@ -308,7 +311,7 @@ public class OidcController : ControllerBase
         return (name, tin, companyName, keys);
     }
 
-    private static async Task<User> HandleUserAsync(
+    internal static async Task<User> HandleUserAsync(
         IUserService userService,
         IUserProviderService userProviderService,
         List<UserProvider> tokenUserProviders,

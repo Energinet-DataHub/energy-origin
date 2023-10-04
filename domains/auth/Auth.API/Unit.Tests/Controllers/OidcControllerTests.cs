@@ -172,6 +172,7 @@ public class OidcControllerTests
         }
     };
 
+    //Some soft of success :===============)
     [Theory]
     [MemberData(nameof(ClaimsTestDataCorrect))]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontend_WhenInvokedWithVariousIdentityProviders(Dictionary<string, object> claims)
@@ -216,12 +217,7 @@ public class OidcControllerTests
         Assert.True(map.ContainsKey("token"));
     }
 
-    [Theory]
-    [MemberData(nameof(ClaimsTestDataCorrect))]
-    public async Task HandleUserInfo_ShouldReturnUserInfo_WhenProvidedVariousIdentityProviders(Dictionary<string, object> claims)
-    {
-    }
-
+    //TODO: HandleUserInfo - Error checks
     [Theory]
     [MemberData(nameof(ClaimsTestDataWrong))]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenArgumentsAreWrong(Dictionary<string, object> claims)
@@ -260,6 +256,7 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
+    //TODO: Some sort of success ??
     [Theory]
     [InlineData(null)]
     [InlineData("/testpath")]
@@ -310,6 +307,7 @@ public class OidcControllerTests
         Assert.Equal(redirectionUri.Host, uri.Host);
     }
 
+    //TODO: Some sort of success ??
     [Fact]
     public async Task CallbackAsync_ShouldNotReturnRedirectToOverridenUri_WhenConfiguredButNotAllowed()
     {
@@ -359,6 +357,7 @@ public class OidcControllerTests
         Assert.Equal(testOptions.FrontendRedirectUri.Host, uri.Host);
     }
 
+    //TODO: Some sort of success ??
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToPath_WhenConfigured()
     {
@@ -410,38 +409,21 @@ public class OidcControllerTests
         Assert.Equal(redirectionPath, map["redirectionPath"]);
     }
 
-    [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenDiscoveryFails()
+    public static IEnumerable<object[]> WrongDiscoveryDocumentResponse =>
+        new List<object[]>
+        {
+            new object[] {DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") })},
+            new object[] {null}
+        };
+
+    [Theory]
+    [MemberData(nameof(WrongDiscoveryDocumentResponse))]
+    public void DiscoveryDocumentErrorChecks_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(object? document)
     {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
-
-        cache.GetAsync().Returns(document);
-
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = Assert.Throws<OidcException>(() => OidcController.DiscoveryDocumentErrorChecks((DiscoveryDocumentResponse?)document, logger, "https://test.dk")).Url;
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", query);
-    }
-
-    [Fact]
-    public async Task CallbackAsync_ShouldLogError_WhenDiscoveryFails()
-    {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") });
-
-        cache.GetAsync().Returns(document);
-
-        _ = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
-
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -452,55 +434,47 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenCodeExchangeFails()
+    public void DiscoveryDocumentErrorChecks_ShouldNotThrowWhen_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.DiscoveryDocumentErrorChecks(DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", "https://test.dk") }), logger, "https://test.dk")));
+
+
+    [Fact]
+    public void GetClientAndResponse_ShouldThrowAndLogErrorAndReturnRedirectUrl_WhenRequestingTokenFails()
     {
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
 
-        cache.GetAsync().Returns(document);
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
-
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = Assert.ThrowsAsync<OidcException>(() => OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://test.dk")).Result.Url;
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result);
 
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", query);
+        logger.Received(1).Log(
+           Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+           Arg.Any<EventId>(),
+           Arg.Any<object>(),
+           Arg.Any<Exception>(),
+           Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
-    public async Task CallbackAsync_ShouldLogError_WhenCodeExchangeFails()
+    public void GetClientAndResponse_ShouldReturnTokenResponse_WhenProvidedWithCorrectConditions()
     {
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.PublicKeyPem)
+        );
 
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
-
-        cache.GetAsync().Returns(document);
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", """{"error":"it went all wrong"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        _ = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
-
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
-            Arg.Any<EventId>(),
-            Arg.Any<object>(),
-            Arg.Any<Exception>(),
-            Arg.Any<Func<object, Exception?, string>>());
+        Assert.Null(Record.ExceptionAsync(() => OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login")));
     }
 
+    //TODO: CLAIMS ERROR CHECK - PROVIDERNAME
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenIsMissingId()
     {
@@ -538,6 +512,7 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
+    //TODO: CLAIMS ERROR CHECK - MISSING SCOPE
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenAccessTokenIsMissingScope()
     {
@@ -575,6 +550,7 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
+    //TODO: MapUserDescriptor - ValidateToken errors
     [Theory]
     [InlineData("incorrect", "as expected", "as expected", "as expected")]
     [InlineData("as expected", "incorrect", "as expected", "as expected")]
@@ -617,6 +593,7 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
+    //TODO: CodeNullCheck tests
     [Theory]
     [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData("access_denied", "user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
@@ -630,56 +607,12 @@ public class OidcControllerTests
     [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
     [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
-    {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>());
-
-        cache.GetAsync().Returns(document);
-
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, null, error, errorDescription);
-
-        Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-
-        var redirectResult = (RedirectResult)result;
-        Assert.True(redirectResult.PreserveMethod);
-        Assert.False(redirectResult.Permanent);
-
-        var uri = new Uri(redirectResult.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var query = HttpUtility.UrlDecode(uri.Query);
-        Assert.Contains($"{ErrorCode.QueryString}={expected}", query);
-
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
-            Arg.Any<EventId>(),
-            Arg.Any<object>(),
-            Arg.Any<Exception>(),
-            Arg.Any<Func<object, Exception?, string>>()
-        );
-    }
-
-    [Theory]
-    [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData("access_denied", "user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
-    [InlineData("access_denied", "private_to_business_user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
-    [InlineData("access_denied", "no_ctx", ErrorCode.AuthenticationUpstream.NoContext)]
-    [InlineData("access_denied", null, ErrorCode.AuthenticationUpstream.Failed)]
-    [InlineData("invalid_request", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
-    [InlineData("unauthorized_client", null, ErrorCode.AuthenticationUpstream.InvalidClient)]
-    [InlineData("unsupported_response_type", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
-    [InlineData("invalid_scope", null, ErrorCode.AuthenticationUpstream.InvalidScope)]
-    [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
-    public void Test(string? error, string? errorDescription, string expected)
+    public void CodeNullCheck_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
 
         var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
 
         Assert.NotNull(result);
-        //VI KAN CUTTE AF HERNED MED DEN ANDEN LØSNING HVOR PRESERVE ER I ENDPOINT
         Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
 
         logger.Received(1).Log(
@@ -691,6 +624,10 @@ public class OidcControllerTests
         );
     }
 
+    [Fact]
+    public void CodeNullCheck_ShouldNotThrow_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.CodeNullCheck("code", logger, null, null, "https://example.com/login?errorCode=714")));
+
+    //TODO: ClaimsErrorCheck tests
     [Fact]
     public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
     {
@@ -749,6 +686,7 @@ public class OidcControllerTests
         Assert.True(map.ContainsKey("errorCode"));
     }
 
+    //TODO: HandleUserInfo i thinks
     [Fact]
     public async Task CallbackAsync_ShouldInvokeMapWithCorrectUserValues_WhenInvokedAsNemIdProfessional()
     {
@@ -808,6 +746,8 @@ public class OidcControllerTests
         Assert.Equal(companyName, claims.First(x => x.Type == UserClaimName.OrganizationName).Value);
     }
 
+
+    //TODO: Test HandleUserAsync method instead
     [Fact]
     public async Task CallbackAsync_ShouldInvokeUpsertUser_WhenInvokedWithExistingUser()
     {
@@ -866,6 +806,7 @@ public class OidcControllerTests
         await service.Received(1).UpsertUserAsync(Arg.Any<User>());
     }
 
+    //TODO: Er det en eller anden form for success scenarie?
     [Theory]
     [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", true, true)]
     [InlineData("0f2ffacc-3dd9-4e46-a446-dd632010e56b", false, false)]
@@ -920,6 +861,8 @@ public class OidcControllerTests
         Assert.Equal(matches, subject == claims[UserClaimName.Subject].Value);
     }
 
+
+    //TODO: Er det en eller anden form for success scenarie på metrics?
     [Fact]
     public async Task CallbackAsync_ShouldCallMetricsLogin_WhenInvokedSuccessfully()
     {
@@ -947,12 +890,13 @@ public class OidcControllerTests
             { "identity_type", ProviderGroup.Private}
         });
 
+
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        _ = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
 
         metrics.Received(1).Login(
             Arg.Any<Guid>(),
