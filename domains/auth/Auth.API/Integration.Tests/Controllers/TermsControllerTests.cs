@@ -115,11 +115,11 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Bla()
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUser_WhenReuseSubjectIsEnabled()
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
-        var cmpId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var user = new User
         {
             Id = null,
@@ -127,12 +127,12 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
-                Id = cmpId,
+                Id = companyId,
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString(),
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
             },
-            CompanyId = cmpId,
+            CompanyId = companyId,
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
@@ -148,23 +148,28 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
         };
 
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            services.AddScoped(_ => datasyncOptions);
-            services.AddScoped(_ => roleOptions);
-        }));
+            builder.UseSetting("Oidc:ReuseSubject", "true");
+
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddScoped(_ => datasyncOptions);
+                services.AddScoped(_ => roleOptions);
+            });
+        });
 
         server.MockRelationsEndpoint();
 
         var result = await client.PutAsync("terms/user/accept/2", null);
-        //var dbUser = factory.DataContext.Users.Include(x => x.UserTerms).Include(x => x.UserRoles).SingleOrDefault(x => x.Name == user.Name)!;
+        var dbCompany = factory.DataContext.Companies.SingleOrDefault(x => x.Id == companyId);
+        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.CompanyId == companyId);
 
-        //Assert.NotNull(result);
-        //Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        //Assert.Equal(user.Name, dbUser.Name);
-        //Assert.Equal(user.AllowCprLookup, dbUser.AllowCprLookup);
-        //Assert.Contains(dbUser.UserTerms, x => x is { Type: UserTermsType.PrivacyPolicy, AcceptedVersion: 2 });
-        //Assert.Contains(dbUser.UserRoles, x => x.Role == role);
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.NotNull(dbCompany);
+        Assert.NotNull(dbUser);
+        Assert.NotEqual(companyId, dbUser.Id);
     }
 
     [Fact]
