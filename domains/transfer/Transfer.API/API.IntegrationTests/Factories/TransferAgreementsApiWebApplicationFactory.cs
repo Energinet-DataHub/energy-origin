@@ -80,7 +80,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateTransferAgreementTables(dbContext);
+        await dbContext.TruncateTransferAgreementsTable();
+        await dbContext.TruncateTransferAgreementHistoryTables();
 
         foreach (var agreement in transferAgreements)
         {
@@ -173,15 +174,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
-    }
-
-    private static async Task TruncateTransferAgreementTables(ApplicationDbContext dbContext)
-    {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
-
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
     }
 
     private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
