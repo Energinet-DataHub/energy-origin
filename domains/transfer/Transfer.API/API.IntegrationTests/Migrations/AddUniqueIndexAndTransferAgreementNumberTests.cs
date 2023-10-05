@@ -34,28 +34,8 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         await migrator.MigrateAsync("20230829090644_AddInvitationsTable");
         await dbContext.TruncateTransferAgreementsTable();
 
-        await InsertOldTransferAgreement(dbContext, new TransferAgreement
-        {
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            Id = Guid.NewGuid(),
-            ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = "11223344",
-            SenderId = Guid.NewGuid(),
-            SenderName = "Producent A/S",
-            SenderTin = "12345678",
-            StartDate = DateTimeOffset.UtcNow
-        });
-        await InsertOldTransferAgreement(dbContext, new TransferAgreement
-        {
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            Id = Guid.NewGuid(),
-            ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = "11223345",
-            SenderId = Guid.NewGuid(),
-            SenderName = "Producent A/S2",
-            SenderTin = "12345679",
-            StartDate = DateTimeOffset.UtcNow
-        });
+        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), Guid.NewGuid(), "Producent A/S", "12345678", "11223344", Guid.NewGuid());
+        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), Guid.NewGuid(), "Producent A/S2", "12345679", "11223345", Guid.NewGuid());
 
         var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
         applyMigration.Should().NotThrow();
@@ -63,7 +43,6 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         var tas = dbContext.TransferAgreements.ToList();
 
         tas.Count.Should().Be(2);
-
     }
 
     [Fact]
@@ -78,34 +57,15 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         await dbContext.TruncateTransferAgreementsTable();
 
         var senderId = Guid.NewGuid();
-        await InsertOldTransferAgreement(dbContext, new TransferAgreement
-        {
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            Id = Guid.NewGuid(),
-            ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = "11223344",
-            SenderId = senderId,
-            SenderName = "Producent A/S",
-            SenderTin = "12345678",
-            StartDate = DateTimeOffset.UtcNow
-        });
-        await InsertOldTransferAgreement(dbContext, new TransferAgreement
-        {
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            Id = Guid.NewGuid(),
-            ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = "11223345",
-            SenderId = senderId,
-            SenderName = "Producent A/S2",
-            SenderTin = "12345679",
-            StartDate = DateTimeOffset.UtcNow
-        });
+        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), senderId, "Producent A/S", "12345678", "11223344", Guid.NewGuid());
+        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), senderId, "Producent A/S2", "12345679", "11223345", Guid.NewGuid());
 
         var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
         applyMigration.Should().Throw<PostgresException>();
     }
 
-    private static async Task InsertOldTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
+    private static async Task InsertOldTransferAgreement(ApplicationDbContext dbContext, Guid id, DateTimeOffset startDate, DateTimeOffset endDate, Guid senderId, string senderName,
+        string senderTin, string receiverTin, Guid receiverReference)
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
 
@@ -113,14 +73,14 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
             $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference)";
         var agreementFields = new[]
         {
-            new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
-            new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference)
+            new NpgsqlParameter("Id", id),
+            new NpgsqlParameter("StartDate", startDate),
+            new NpgsqlParameter("EndDate", endDate),
+            new NpgsqlParameter("SenderId", senderId),
+            new NpgsqlParameter("SenderName", senderName),
+            new NpgsqlParameter("SenderTin", senderTin),
+            new NpgsqlParameter("ReceiverTin", receiverTin),
+            new NpgsqlParameter("ReceiverReference", receiverReference)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
