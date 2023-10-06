@@ -240,9 +240,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Theory]
-    [InlineData("predictable", true)]
-    [InlineData("random", false)]
-    public async Task CallbackAsync_ShouldReuseSubjectIdAsSubjectIdForPrivateUsers_WhenIdGenerationIs(string idGeneration, bool expected)
+    [InlineData(OidcOptions.Generation.Predictable, true)]
+    [InlineData(OidcOptions.Generation.Random, false)]
+    public async Task CallbackAsync_ShouldReuseSubjectIdAsSubjectIdForPrivateUsers_WhenIdGenerationIs(OidcOptions.Generation idGeneration, bool expected)
     {
         var server = WireMockServer.Start();
 
@@ -289,9 +289,9 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Theory]
-    [InlineData("predictable", true)]
-    [InlineData("random", false)]
-    public async Task CallbackAsync_ShouldReuseSubjectIdAsOrganizationIdForOrganizationUsers_WhenIdGenerationIs(string idGeneration, bool expected)
+    [InlineData(OidcOptions.Generation.Predictable, true)]
+    [InlineData(OidcOptions.Generation.Random, false)]
+    public async Task CallbackAsync_ShouldReuseSubjectIdAsOrganizationIdForOrganizationUsers_WhenIdGenerationIs(OidcOptions.Generation idGeneration, bool expected)
     {
         var server = WireMockServer.Start();
 
