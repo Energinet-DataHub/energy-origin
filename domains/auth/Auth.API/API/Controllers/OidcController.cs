@@ -128,27 +128,10 @@ public class OidcController : ControllerBase
         return (descriptor, UserData.From(user));
     }
 
-    internal static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
-    {
-        var property = info.FindFirstValue(match.Property);
-        return match.Operator switch
-        {
-            "exists" => property != null,
-            "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
-            "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
-            _ => false
-        };
-    }) ? role.Key : null).OfType<string>();
 
-    internal static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
-    {
-        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
-        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
-        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemIdPrivate,
-        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
-        _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
-    };
 
+
+    //DONE
     internal static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
@@ -230,6 +213,7 @@ public class OidcController : ControllerBase
         }
     }
 
+    //DONE
     internal static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
@@ -239,6 +223,7 @@ public class OidcController : ControllerBase
         }
     }
 
+    //DONE
     internal static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
     {
         if (providerOptions.Providers.Contains(providerType) == false)
@@ -247,6 +232,7 @@ public class OidcController : ControllerBase
         }
     }
 
+    //DONE
     internal static void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
     {
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
@@ -254,6 +240,17 @@ public class OidcController : ControllerBase
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
     }
 
+    //DONE
+    internal static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+    {
+        (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
+        (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
+        (ProviderName.NemId, ProviderGroup.Private) => ProviderType.NemIdPrivate,
+        (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
+        _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
+    };
+
+    //DONE
     internal static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;
@@ -348,4 +345,16 @@ public class OidcController : ControllerBase
 
         return user;
     }
+
+    internal static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+    {
+        var property = info.FindFirstValue(match.Property);
+        return match.Operator switch
+        {
+            "exists" => property != null,
+            "contains" => property?.ToLowerInvariant().Contains(match.Value.ToLowerInvariant()) ?? false,
+            "equals" => property?.ToLowerInvariant().Equals(match.Value.ToLowerInvariant()) ?? false,
+            _ => false
+        };
+    }) ? role.Key : null).OfType<string>();
 }

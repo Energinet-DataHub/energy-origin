@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -20,6 +21,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NSubstitute.Core;
+using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
 
@@ -409,6 +412,61 @@ public class OidcControllerTests
         Assert.Equal(redirectionPath, map["redirectionPath"]);
     }
 
+     public static IEnumerable<object[]> RedirectionCheckParameters =>
+        new List<object[]>
+        {
+            new object[] {null,true,"https://test.dk/"},
+            new object[] {new OidcState(null, null, "/path/to/redirect"),false, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
+            new object[] {new OidcState("someState", null, null), false, "https://test.dk/?state=someState"},
+            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), false, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
+            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), true, "https://example.com/redirect?state=someState"},
+            new object[] {new OidcState(null, "https://example.com/redirect", null), true, "https://example.com/redirect"}
+        };
+
+    [Theory]
+    [MemberData(nameof(RedirectionCheckParameters))]
+    public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, bool direction, string expectedUri)
+    {
+        var options = new OidcOptions(){AllowRedirection = direction, FrontendRedirectUri = new Uri("https://test.dk")};
+
+        var result = OidcController.RedirectionCheck(options, state);
+
+        Assert.Equal(expectedUri, result);
+    }
+
+    [Theory]
+    [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData("access_denied", "user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
+    [InlineData("access_denied", "private_to_business_user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
+    [InlineData("access_denied", "no_ctx", ErrorCode.AuthenticationUpstream.NoContext)]
+    [InlineData("access_denied", null, ErrorCode.AuthenticationUpstream.Failed)]
+    [InlineData("invalid_request", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
+    [InlineData("unauthorized_client", null, ErrorCode.AuthenticationUpstream.InvalidClient)]
+    [InlineData("unsupported_response_type", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
+    [InlineData("invalid_scope", null, ErrorCode.AuthenticationUpstream.InvalidScope)]
+    [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
+    [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
+    public void CodeNullCheck_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
+    {
+
+        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
+
+        Assert.NotNull(result);
+        Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
+
+        logger.Received(1).Log(
+            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>()
+        );
+    }
+
+    [Fact]
+    public void CodeNullCheck_ShouldNotThrow_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.CodeNullCheck("code", logger, null, null, "https://example.com/login?errorCode=714")));
+
     public static IEnumerable<object[]> WrongDiscoveryDocumentResponse =>
         new List<object[]>
         {
@@ -456,99 +514,74 @@ public class OidcControllerTests
            Arg.Any<Func<object, Exception?, string>>());
     }
 
+    //Test at der bliver kreeret en AuthorizationCodeTokenRequest med de korrekte values ??
     [Fact]
     public void GetClientAndResponse_ShouldReturnTokenResponse_WhenProvidedWithCorrectConditions()
     {
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.PublicKeyPem)
         );
-
+        //Har behov alle 3 tokens men de kan bare være null???
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{null}}", "id_token":"{{null}}", "userinfo_token":"{{null}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        //Assert.Null(Record.ExceptionAsync(() => OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login")));
-    }
-
-    //TODO: CLAIMS ERROR CHECK - PROVIDERNAME
-    [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenUserTokenIsMissingId()
-    {
-        var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-
-        var document = DiscoveryDocument.Load(
-            new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
-            },
-            KeySetUsing(tokenOptions.PublicKeyPem)
-        );
-
-        cache.GetAsync().Returns(document);
-
-        var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "scope", "something" },
-        });
-        var userToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "mitid.identity_name", name }
-        });
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
-
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login").Result;
 
         Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-        var redirectResult = (RedirectResult)result;
-        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
-        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+        Assert.IsType<TokenResponse>(result);
     }
 
-    //TODO: CLAIMS ERROR CHECK - MISSING SCOPE
-    [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithError_WhenAccessTokenIsMissingScope()
+    [Theory]
+    [InlineData(null, "Wrong_Identity", "Wrong_UserInfo", typeof(ArgumentNullException))]
+    [InlineData("", "Wrong_Identity", "Wrong_UserInfo", typeof(ArgumentException))]
+    [InlineData("subject", "subject", "Wrong_UserInfo", typeof(SecurityTokenException))]
+    [InlineData("subject", "Wrong_Identity", "subject", typeof(SecurityTokenException))]
+    public void SubjectErrorCheck_ShouldThrow_WhenProvidedWrongConditions(string? subject, string identity, string userInfo, Type expectedException)
     {
-        var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-
-        var document = DiscoveryDocument.Load(
-            new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
-            },
-            KeySetUsing(tokenOptions.PublicKeyPem)
-        );
-
-        cache.GetAsync().Returns(document);
-
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var userToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
-        });
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
-
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
-
-        Assert.NotNull(result);
-        Assert.IsType<RedirectResult>(result);
-        var redirectResult = (RedirectResult)result;
-        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
-        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
+        var identityClaim = new ClaimsPrincipal();
+        identityClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, identity) }));
+        var userInfoClaim = new ClaimsPrincipal();
+        userInfoClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, userInfo) }));
+        var result = Assert.Throws(expectedException, () => OidcController.SubjectErrorCheck(subject, identityClaim, userInfoClaim));
     }
+
+
+    [Fact]
+    public void SubjectErrorCheck_ShouldNotThrow_WhenProvidedCorrectConditions()
+    {
+        var identityClaim = new ClaimsPrincipal();
+        identityClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, "subject") }));
+        var userInfoClaim = new ClaimsPrincipal();
+        userInfoClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, "subject") }));
+        Assert.Null(Record.Exception(() => OidcController.SubjectErrorCheck("subject", identityClaim, userInfoClaim)));
+    }
+
+    [Fact]
+    public void ProvidertypeIsFalseCheck_ShouldThrow_WhenProviderTypeIsNotInProviderOptions()
+    {
+        var newOptions = new IdentityProviderOptions(){ Providers = new List<ProviderType>(){ProviderType.MitIdPrivate, ProviderType.MitIdProfessional}};
+        Assert.Throws<NotSupportedException>(() => OidcController.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,newOptions));
+    }
+    [Fact]
+    public void ProvidertypeIsFalseCheck_ShouldNotThrow_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => OidcController.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,providerOptions)));
+
+    [Theory]
+    [InlineData(null, "TestName", "TestIdentity", typeof(ArgumentNullException))]
+    [InlineData("", "TestName", "TestIdentity", typeof(ArgumentException))]
+    [InlineData("TestProvider", null, "TestIdentity", typeof(ArgumentNullException))]
+    [InlineData("TestProvider", "", "TestIdentity", typeof(ArgumentException))]
+    [InlineData("TestProvider", "TestName", null, typeof(ArgumentNullException))]
+    [InlineData("TestProvider", "TestName", "", typeof(ArgumentException))]
+    public void ClaimsErrorCheck_ShouldThrow_WhenProvidedNullOrEmptyValues(string? scope, string? providerName, string? identityType, Type expectedException)
+    {
+        Assert.Throws(expectedException, () => OidcController.ClaimsErrorCheck(scope, providerName, identityType));
+    }
+
+
 
     //TODO: MapUserDescriptor - ValidateToken errors
     [Theory]
@@ -593,97 +626,174 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
-    //TODO: CodeNullCheck tests
     [Theory]
-    [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData("access_denied", "user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
-    [InlineData("access_denied", "private_to_business_user_aborted", ErrorCode.AuthenticationUpstream.Aborted)]
-    [InlineData("access_denied", "no_ctx", ErrorCode.AuthenticationUpstream.NoContext)]
-    [InlineData("access_denied", null, ErrorCode.AuthenticationUpstream.Failed)]
-    [InlineData("invalid_request", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
-    [InlineData("unauthorized_client", null, ErrorCode.AuthenticationUpstream.InvalidClient)]
-    [InlineData("unsupported_response_type", null, ErrorCode.AuthenticationUpstream.InvalidRequest)]
-    [InlineData("invalid_scope", null, ErrorCode.AuthenticationUpstream.InvalidScope)]
-    [InlineData("server_error", null, ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData("temporarily_unavailable", null, ErrorCode.AuthenticationUpstream.InternalError)]
-    [InlineData(null, null, ErrorCode.AuthenticationUpstream.Failed)]
-    public void CodeNullCheck_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
+    [InlineData(ProviderName.MitId, ProviderGroup.Private, ProviderType.MitIdPrivate)]
+    [InlineData(ProviderName.MitIdProfessional, ProviderGroup.Professional, ProviderType.MitIdProfessional)]
+    [InlineData(ProviderName.NemId, ProviderGroup.Private, ProviderType.NemIdPrivate)]
+    [InlineData(ProviderName.NemId, ProviderGroup.Professional, ProviderType.NemIdProfessional)]
+    public void GetIdentityProviderEnum_ShouldReturnCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected)
     {
-
-        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
-
-        Assert.NotNull(result);
-        Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
-
-        logger.Received(1).Log(
-            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Warning),
-            Arg.Any<EventId>(),
-            Arg.Any<object>(),
-            Arg.Any<Exception>(),
-            Arg.Any<Func<object, Exception?, string>>()
-        );
+        Assert.Equal(OidcController.GetIdentityProviderEnum(providerName,identity), expected);
     }
 
     [Fact]
-    public void CodeNullCheck_ShouldNotThrow_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.CodeNullCheck("code", logger, null, null, "https://example.com/login?errorCode=714")));
+    public void GetIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcController.GetIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
 
-    //TODO: ClaimsErrorCheck tests
-    [Fact]
-    public async Task CallbackAsync_ShouldReturnRedirectToFrontendWithErrorCode_WhenUsingProhibitedProvider()
-    {
-        var testProviderOptions = new IdentityProviderOptions
+    public static IEnumerable<object[]> ValidUserInfoClaims =>
+        new List<object[]>
         {
-            Providers = new List<ProviderType>()
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, ("nemlogin.name","nemlogin.cvr", "nemlogin.org_name",
+            new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id")})},
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, ("nemlogin.name","nemlogin.cvr", "nemlogin.org_name",
+            new List<(ProviderKeyType,string)>(){(ProviderKeyType.Eia, "nemlogin.persistent_professional_id"), (ProviderKeyType.Rid, "nemlogin.nemid.rid"), (ProviderKeyType.Rid, "nemlogin.cvr")})},
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("mitid.uuid", Guid.NewGuid().ToString()),
+                new("mitid.identity_name", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdPrivate, ProviderGroup.Private, ("mitid.identity_name","NotACompany", "notACompany",
+            new List<(ProviderKeyType, string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid")})},
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("mitid.uuid", Guid.NewGuid().ToString()),
+                new("mitid.identity_name", Guid.NewGuid().ToString()),
+                new("nemid.pid", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdPrivate, ProviderGroup.Private, ("mitid.identity_name","NotACompany", "notACompany",
+            new List<(ProviderKeyType,string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid"), (ProviderKeyType.Pid, "nemid.pid")})},
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemid.common_name", Guid.NewGuid().ToString()),
+                new("nemid.cvr", Guid.NewGuid().ToString()),
+                new("nemid.company_name", Guid.NewGuid().ToString()),
+                new("nemid.ssn", Guid.NewGuid().ToString()),
+            }), ProviderType.NemIdProfessional, ProviderGroup.Professional, ("nemid.common_name","nemid.cvr", "nemid.company_name",
+            new List<(ProviderKeyType, string)>(){(ProviderKeyType.Rid, "nemid.ssn")})},
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemid.common_name", Guid.NewGuid().ToString()),
+                new("nemid.pid", Guid.NewGuid().ToString()),
+            }), ProviderType.NemIdPrivate, ProviderGroup.Private, ("nemid.common_name", "NotACompany", "notACompany",
+            new List<(ProviderKeyType, string)>(){(ProviderKeyType.Pid, "nemid.pid")})},
         };
-        var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
 
-        var document = DiscoveryDocument.Load(
-            new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
-            },
-            KeySetUsing(tokenOptions.PublicKeyPem)
-        );
+    [Theory]
+    [MemberData(nameof(ValidUserInfoClaims))]
+    public void HandleUserInfo_ShouldReturnCorrectUserinfoAndNotThrow_WhenProvidedVariousParams(ClaimsIdentity claims, ProviderType providerType, string identityType, (string name, string tin, string companyName, List<(ProviderKeyType dictionaryKeys,string claimsKeys)> keyPairs) expected)
+    {
+        var userInfoClaim = new ClaimsPrincipal();
+        userInfoClaim.AddIdentity(claims);
 
-        cache.GetAsync().Returns(document);
+        var (name, tin, companyName, keys) = OidcController.HandleUserInfo(userInfoClaim, providerType, identityType);
 
-        var providerId = Guid.NewGuid().ToString();
-        var name = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "scope", "something" },
-        });
-        var userToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "mitid.uuid", providerId },
-            { "mitid.identity_name", name }
-        });
+        Assert.Equal(userInfoClaim.FindFirstValue(expected.name), name);
+        Assert.Equal(userInfoClaim.FindFirstValue(expected.tin), tin);
+        Assert.Equal(userInfoClaim.FindFirstValue(expected.companyName), companyName);
 
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
+        foreach(var item in expected.keyPairs)
+        {
+            Assert.True(keys.TryGetValue(item.dictionaryKeys, out string? value));
+            Assert.Contains(userInfoClaim.FindFirstValue(item.claimsKeys)!, value);
+        }
+    }
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, testProviderOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+    public static IEnumerable<object[]> wrongUserClaims =>
+        new List<object[]>
+        {
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException)},
 
-        Assert.NotNull(action);
-        Assert.IsType<RedirectResult>(action);
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
 
-        var result = (RedirectResult)action;
-        Assert.True(result.PreserveMethod);
-        Assert.False(result.Permanent);
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                new("nemlogin.org_name",  string.Empty),
+                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
 
-        var uri = new Uri(result.Url);
-        Assert.Equal(oidcOptions.AuthorityUri.Host, uri.Host);
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
 
-        var map = QueryHelpers.ParseNullableQuery(uri.Query);
-        Assert.NotNull(map);
-        Assert.True(map.ContainsKey("post_logout_redirect_uri"));
+             new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemlogin.name", Guid.NewGuid().ToString()),
+                new("nemlogin.cvr", string.Empty),
+                new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
 
-        uri = new Uri(map["post_logout_redirect_uri"]!);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
 
-        map = QueryHelpers.ParseNullableQuery(uri.Query);
-        Assert.NotNull(map);
-        Assert.True(map.ContainsKey("errorCode"));
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("mitid.identity_name", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException) },
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("mitid.uuid", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentNullException) },
+
+              new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("mitid.identity_name", string.Empty),
+                new("mitid.uuid", Guid.NewGuid().ToString()),
+            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentException) },
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemid.common_name", Guid.NewGuid().ToString()),
+                new("nemid.cvr", Guid.NewGuid().ToString()),
+                new("nemid.company_name", Guid.NewGuid().ToString()),
+            }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException) },
+
+            new object[] {new ClaimsIdentity(new List<Claim>
+            {
+                new("nemid.common_name", Guid.NewGuid().ToString()),
+            }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException)},
+        };
+    [Theory]
+    [MemberData(nameof(wrongUserClaims))]
+    public void HandleUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity claims, ProviderType providerType, string identityType, Type expectedException)
+    {
+        var userInfoClaim = new ClaimsPrincipal();
+        userInfoClaim.AddIdentity(claims);
+
+        Assert.Throws(expectedException, () => OidcController.HandleUserInfo(userInfoClaim, providerType, identityType));
     }
 
     //TODO: HandleUserInfo i thinks
