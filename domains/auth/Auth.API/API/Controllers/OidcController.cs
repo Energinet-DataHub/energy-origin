@@ -218,16 +218,19 @@ public class OidcController : ControllerBase
 
         var user = await userService.GetUserByIdAsync((await userProviderService.FindUserProviderMatchAsync(tokenUserProviders))?.UserId);
         var knownUser = user != null;
+        Guid? subjectId = Guid.TryParse(subject, out var subjectGuid) ? subjectGuid : null;
+        var userId = oidcOptions.ReuseSubject && identityType == ProviderGroup.Private ? subjectId : null;
+        var companyId = oidcOptions.ReuseSubject && identityType != ProviderGroup.Private ? subjectId : null;
         user ??= new User
         {
-            Id = oidcOptions.ReuseSubject && identityType == ProviderGroup.Private && Guid.TryParse(subject, out var subjectId) ? subjectId : null,
+            Id = userId,
             Name = name,
             AllowCprLookup = false,
             Company = identityType == ProviderGroup.Private
                 ? null
                 : new Company
                 {
-                    Id = oidcOptions.ReuseSubject && Guid.TryParse(subject, out var companyId) ? companyId : null,
+                    Id = companyId,
                     Tin = tin!,
                     Name = companyName!
                 }

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Integration.Tests.Controllers;
 
-// FIXME: add an actual test for first time refresh of token _after_ a user with an organization has been saved to the database
 public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;

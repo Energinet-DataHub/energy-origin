@@ -18,8 +18,12 @@ public class OidcOptions
     public Uri AuthorityCallbackUri { get; init; } = null!;
     [Required]
     public Uri FrontendRedirectUri { get; init; } = null!;
-    [Range(typeof(bool), "false", "true")]
-    public bool AllowRedirection { get; init; }
-    [Range(typeof(bool), "false", "true")]
-    public bool ReuseSubject { get; init; }
+    [Required]
+    [RegularExpression("allow|deny", ErrorMessage = "Invalid mode")]
+    public string RedirectionMode { get; init; } = null!;
+    public bool AllowRedirection => RedirectionMode == "allow";
+    [Required]
+    [RegularExpression("predictable|random", ErrorMessage = "Invalid mode")]
+    public string IdGeneration { get; init; } = null!;
+    public bool ReuseSubject => IdGeneration == "predictable";
 }

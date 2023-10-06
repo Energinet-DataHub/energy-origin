@@ -115,14 +115,15 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUser_WhenReuseSubjectIsEnabled()
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUserWithCompanyWithPredictedId_WhenIdGenerationIsPredictable()
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
+        var userId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
         var user = new User
         {
-            Id = null,
+            Id = userId,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
             Company = new Company
@@ -136,40 +137,18 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
-        var server = WireMockServer.Start();
-        var datasyncOptions = new DataSyncOptions
-        {
-            Uri = new Uri($"http://localhost:{server.Port}/")
-        };
-
-        var role = "default";
-        var roleOptions = new RoleOptions()
-        {
-            RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
-        };
-
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
-        {
-            builder.UseSetting("Oidc:ReuseSubject", "true");
-
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped(_ => datasyncOptions);
-                services.AddScoped(_ => roleOptions);
-            });
-        });
-
-        server.MockRelationsEndpoint();
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", "predictable"));
 
         var result = await client.PutAsync("terms/user/accept/2", null);
         var dbCompany = factory.DataContext.Companies.SingleOrDefault(x => x.Id == companyId);
-        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.CompanyId == companyId);
+        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == userId);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(dbCompany);
         Assert.NotNull(dbUser);
         Assert.NotEqual(companyId, dbUser.Id);
+        Assert.Equal(companyId, dbUser.CompanyId);
     }
 
     [Fact]
