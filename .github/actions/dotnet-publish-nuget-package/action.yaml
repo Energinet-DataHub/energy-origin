@@ -53,15 +53,15 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Test
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror
-
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
         languages: csharp
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror
 
     - name: CodeQL Analysis
       uses: github/codeql-action/analyze@v2
