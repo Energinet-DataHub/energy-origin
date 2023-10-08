@@ -28,6 +28,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
@@ -99,6 +100,11 @@ builder.Services.AddHttpClient<CvrClient>((sp, c) =>
 }));
 
 builder.Services.AddOpenTelemetry()
+    .WithTracing(providerBuilder => providerBuilder
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("TransferApi"))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithMetrics(provider =>
         provider
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(TransferAgreementAutomationMetrics.MetricName))
@@ -108,6 +114,7 @@ builder.Services.AddOpenTelemetry()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
