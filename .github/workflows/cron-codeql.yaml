@@ -1,6 +1,7 @@
 name: CodeQL Analysis
 
 on:
+  push: {} # FIXME: remove this!
   workflow_call: {}
   schedule:
     - cron: "30 5,17 * * *"
