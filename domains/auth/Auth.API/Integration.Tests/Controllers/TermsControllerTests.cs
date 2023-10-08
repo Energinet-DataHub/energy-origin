@@ -137,7 +137,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", "predictable"));
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", nameof(OidcOptions.Generation.Predictable)));
 
         var result = await client.PutAsync("terms/user/accept/2", null);
         var dbCompany = factory.DataContext.Companies.SingleOrDefault(x => x.Id == companyId);
