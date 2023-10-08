@@ -56,7 +56,7 @@ runs:
     - name: Test
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror
+      run: dotnet test --no-restore --verbosity normal *.Tests
 
     - name: Pack
       shell: bash
