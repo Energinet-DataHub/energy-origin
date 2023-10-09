@@ -307,6 +307,7 @@ public class OidcController : ControllerBase
         return (name, tin, companyName, keys);
     }
 
+    //DONE
     internal static async Task<User> HandleUserAsync(
         IUserService userService,
         IUserProviderService userProviderService,
@@ -346,6 +347,7 @@ public class OidcController : ControllerBase
         return user;
     }
 
+    //DONE
     internal static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
     {
         var property = info.FindFirstValue(match.Property);

@@ -7,10 +7,12 @@ using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
+using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
 using API.Values;
+using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using IdentityModel;
@@ -21,9 +23,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using NSubstitute.Core;
 using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
+using static API.Options.RoleConfiguration;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
 
 namespace Unit.Tests.Controllers;
@@ -796,99 +798,9 @@ public class OidcControllerTests
         Assert.Throws(expectedException, () => OidcController.HandleUserInfo(userInfoClaim, providerType, identityType));
     }
 
-    //TODO: HandleUserInfo i thinks
     [Fact]
-    public async Task CallbackAsync_ShouldInvokeMapWithCorrectUserValues_WhenInvokedAsNemIdProfessional()
+    public async void HandleUserAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
     {
-        var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-
-        var document = DiscoveryDocument.Load(
-            new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
-            },
-            KeySetUsing(tokenOptions.PublicKeyPem)
-        );
-        cache.GetAsync().Returns(document);
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "scope", "something" },
-        });
-
-        var name = Guid.NewGuid().ToString();
-        var tin = Guid.NewGuid().ToString();
-        var companyName = Guid.NewGuid().ToString();
-        var ssn = Guid.NewGuid().ToString();
-
-        var userToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "idp", ProviderName.NemId },
-            { "identity_type", ProviderGroup.Professional },
-            { "nemid.cvr", tin },
-            { "nemid.ssn", ssn },
-            { "nemid.company_name", companyName },
-            { "nemid.common_name", name }
-        });
-        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
-
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
-
-        Assert.NotNull(action);
-        Assert.IsType<RedirectResult>(action);
-
-        var result = (RedirectResult)action;
-        Assert.True(result.PreserveMethod);
-        Assert.False(result.Permanent);
-
-        var uri = new Uri(result.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var map = QueryHelpers.ParseNullableQuery(uri.Query);
-        Assert.NotNull(map);
-        Assert.True(map.ContainsKey("token"));
-
-        var claims = new JwtSecurityTokenHandler().ReadJwtToken(map["token"]).Claims;
-        Assert.Equal(name, claims.First(x => x.Type == JwtRegisteredClaimNames.Name).Value);
-        Assert.Equal(tin, claims.First(x => x.Type == UserClaimName.Tin).Value);
-        Assert.Equal(companyName, claims.First(x => x.Type == UserClaimName.OrganizationName).Value);
-    }
-
-
-    //TODO: Test HandleUserAsync method instead
-    [Fact]
-    public async Task CallbackAsync_ShouldInvokeUpsertUser_WhenInvokedWithExistingUser()
-    {
-        var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-
-        var document = DiscoveryDocument.Load(
-            new List<KeyValuePair<string, string>>() {
-                new("issuer", $"https://{oidcOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
-                new("end_session_endpoint", $"http://{oidcOptions.AuthorityUri.Host}/connect/endsession")
-            },
-            KeySetUsing(tokenOptions.PublicKeyPem)
-        );
-        cache.GetAsync().Returns(document);
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "scope", "something" },
-        });
-
-        var userToken = TokenUsing(tokenOptions, document.Issuer, oidcOptions.ClientId, claims: new() {
-            { "idp", ProviderName.MitId },
-            { "identity_type", ProviderGroup.Private },
-            { "mitid.uuid", Guid.NewGuid().ToString() },
-            { "mitid.identity_name", Guid.NewGuid().ToString() }
-        });
-
-        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
-
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
-        factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
-
         service.GetUserByIdAsync(Arg.Any<Guid?>()).Returns(new User
         {
             Id = Guid.NewGuid(),
@@ -896,25 +808,137 @@ public class OidcControllerTests
             UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 1 } },
             AllowCprLookup = true
         });
+        userProviderService.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(new UserProvider());
+        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(),Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var userProviders = new List<UserProvider>();
 
-        Assert.NotNull(action);
-        Assert.IsType<RedirectResult>(action);
+        var result = await OidcController.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, "","","","","");
 
-        var result = (RedirectResult)action;
-        Assert.True(result.PreserveMethod);
-        Assert.False(result.Permanent);
-
-        var uri = new Uri(result.Url);
-        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
-
-        var map = QueryHelpers.ParseNullableQuery(uri.Query);
-        Assert.NotNull(map);
-        Assert.True(map.ContainsKey("token"));
+        Assert.NotNull(result);
+        Assert.IsType<User>(result);
 
         await service.Received(1).UpsertUserAsync(Arg.Any<User>());
     }
+
+    [Fact]
+    public async void HandleUserAsync_ShouldCreateNewUserAndNotUpsertUser_WhenUserIsNull()
+    {
+        service.GetUserByIdAsync(Arg.Any<Guid?>()).Returns(null as User);
+        userProviderService.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(new UserProvider());
+        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(),Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
+
+        var userProviders = new List<UserProvider>();
+
+        var result = await OidcController.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString());
+
+        Assert.NotNull(result);
+        Assert.IsType<User>(result);
+
+        await service.Received(0).UpsertUserAsync(Arg.Any<User>());
+    }
+
+    public static IEnumerable<object[]> RoleMatcherData =>
+        new List<object[]>
+        {
+             new object[] {
+                new ClaimsIdentity(new List<Claim>{new("test1","TESTADMIN")}),
+                new List<RoleConfiguration>{
+                    new RoleConfiguration(){
+                        Key = "TestRoleKeyAdmin",
+                        Name = "TestAdmin",
+                        Matches = new List<Match>(){
+                            new Match(){
+                                Property = "test1",
+                                Value = "ADMIN",
+                                Operator = "contains"},
+                        }
+                    },
+                    new RoleConfiguration(){
+                        Key = "TestRoleKeyAdmin2",
+                        Name = "TestAdmin",
+                        Matches = new List<Match>(){
+                            new Match(){
+                                Property = "test1",
+                                Value = "TESTADMIN",
+                                Operator = "equals"},
+                        }
+                    },
+                    new RoleConfiguration(){
+                        Key = "TestRoleKeyAdmin3",
+                        Name = "TestAdmin",
+                        Matches = new List<Match>(){
+                            new Match(){
+                                Property = "test1",
+                                Value = "beep_boop_test",
+                                Operator = "exists"},
+                        }
+                    },
+                    new RoleConfiguration(){
+                        Key = "TestRoleKeyAdmin4",
+                        Name = "TestAdmin",
+                        Matches = new List<Match>(){
+                            new Match(){
+                                Property = "test1",
+                                Value = "boop_beep",
+                                Operator = "equals"},
+                            new Match(){
+                                Property = "test1",
+                                Value = "TEST",
+                                Operator = "contains"},
+                        }
+                    },
+                    new RoleConfiguration(){
+                        Key = "WrongTestRoleKey",
+                        Name = "TestAdmin",
+                        Matches = new List<Match>(){
+                            new Match(){
+                                Property = "test1",
+                                Value = "TESTADMIN",
+                                Operator = "wrong_operator"},
+                        }
+                    },
+                },
+                new List<string>{"TestRoleKeyAdmin","TestRoleKeyAdmin2","TestRoleKeyAdmin3","TestRoleKeyAdmin4"}
+            },
+        };
+
+    [Theory]
+    [MemberData(nameof(RoleMatcherData))]
+    public void CalculateMatchedRoles_ShouldDoSmth_WhenSmth(ClaimsIdentity identity, List<RoleConfiguration> roleConfigurations, List<string> expected)
+    {
+        var claims = new ClaimsPrincipal();
+        claims.AddIdentity(identity);
+
+        var options = new RoleOptions();
+        options.RoleConfigurations.AddRange(roleConfigurations);
+
+        var result = OidcController.CalculateMatchedRoles(claims, options);
+
+        Assert.NotNull(result);
+        Assert.Equal(expected, result);
+    }
+
+    // [Fact]
+    // public async Task GetUserDescriptor_DoesNotThrow_WhenOperationIsASuccess()
+    // {
+    //     var claims = new ClaimsPrincipal();
+    //     OidcController.MapUserDescriptor(
+    //         Arg.Any<ICryptography>(),
+    //         Arg.Any<IUserProviderService>(),
+    //         Arg.Any<IUserService>(),
+    //         Arg.Any<IdentityProviderOptions>(),
+    //         Arg.Any<OidcOptions>(),
+    //         Arg.Any<RoleOptions>(),
+    //         Arg.Any<DiscoveryDocumentResponse>(),
+    //         Arg.Any<TokenResponse>()
+    //         ).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+
+    //     var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
+
+    //     var token = new TokenResponse();
+    //     var result = await OidcController.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document,token,"https://test.com");
+    // }
 
     //TODO: Er det en eller anden form for success scenarie?
     [Theory]
