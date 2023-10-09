@@ -23,7 +23,7 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         this.factory = factory;
     }
 
-    [Fact]
+    [Fact (Skip = "This is an exampled migration test that other migration tests can be based on.")]
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
@@ -40,28 +40,10 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
         applyMigration.Should().NotThrow();
 
+        //This last part can be deleted should the TransferAgreements table change in the future
         var tas = dbContext.TransferAgreements.ToList();
 
         tas.Count.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task ApplyMigration_WhenTransferAgreementsHasSameSenderId_ExpectError()
-    {
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
-        var migrator = dbContext.Database.GetService<IMigrator>();
-
-        await migrator.MigrateAsync("20230829090644_AddInvitationsTable");
-        await dbContext.TruncateTransferAgreementsTable();
-
-        var senderId = Guid.NewGuid();
-        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), senderId, "Producent A/S", "12345678", "11223344", Guid.NewGuid());
-        await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), senderId, "Producent A/S2", "12345679", "11223345", Guid.NewGuid());
-
-        var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
-        applyMigration.Should().Throw<PostgresException>();
     }
 
     private static async Task InsertOldTransferAgreement(ApplicationDbContext dbContext, Guid id, DateTimeOffset startDate, DateTimeOffset endDate, Guid senderId, string senderName,

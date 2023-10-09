@@ -28,7 +28,8 @@ namespace API.Migrations
                 type: "integer",
                 nullable: false,
                 oldClrType: typeof(string),
-                oldType: "text");
+                oldType: "text",
+                defaultValue: 0);
         }
     }
 }
