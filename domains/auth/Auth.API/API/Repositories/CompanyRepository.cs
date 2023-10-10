@@ -18,11 +18,4 @@ public class CompanyRepository : ICompanyRepository
         return company;
     }
     public async Task<Company?> GetCompanyByTinAsync(string tin) => await dataContext.Companies.SingleOrDefaultAsync(x => x.Tin == tin);
-
-    public async Task<Company> InsertCompanyAsync(Company company)
-    {
-        dataContext.Companies.Add(company);
-        await dataContext.SaveChangesAsync();
-        return company;
-    }
 }

@@ -5,5 +5,4 @@ public interface ICompanyRepository
 {
     Task<Company> UpsertCompanyAsync(Company company);
     Task<Company?> GetCompanyByTinAsync(string tin);
-    Task<Company> InsertCompanyAsync(Company company);
 }
