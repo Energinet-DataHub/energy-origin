@@ -46,6 +46,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
+        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
         builder.ConfigureTestServices(s =>
         {
@@ -61,8 +62,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.User = (string)connectionStringBuilder["Username"];
                 o.Password = (string)connectionStringBuilder["Password"];
             });
-
-            s.Configure<ProjectOriginOptions>(o => o.WalletUrl = WalletUrl);
         });
     }
 
