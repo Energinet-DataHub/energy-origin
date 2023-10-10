@@ -220,7 +220,7 @@ public class OidcController : ControllerBase
         var knownUser = user != null;
         Guid? subjectId = Guid.TryParse(subject, out var subjectGuid) ? subjectGuid : null;
         var userId = oidcOptions.ReuseSubject && identityType == ProviderGroup.Private ? subjectId : null;
-        var companyId = oidcOptions.ReuseSubject && identityType != ProviderGroup.Private ? subjectId : null;
+        var companyId = oidcOptions.ReuseSubject && identityType != ProviderGroup.Private ? subjectId : Guid.NewGuid();
         user ??= new User
         {
             Id = userId,
@@ -230,7 +230,7 @@ public class OidcController : ControllerBase
                 ? null
                 : new Company
                 {
-                    Id = companyId,
+                    Id = companyId ?? Guid.NewGuid(),
                     Tin = tin!,
                     Name = companyName!
                 }

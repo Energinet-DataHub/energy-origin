@@ -204,6 +204,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString(),
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
@@ -229,6 +230,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString()
             },
@@ -253,6 +255,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString(),
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 3 } }
@@ -276,6 +279,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString()
             },
