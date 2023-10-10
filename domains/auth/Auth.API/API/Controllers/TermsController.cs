@@ -50,9 +50,9 @@ public class TermsController : ControllerBase
         var company = await companyService.GetCompanyByTinAsync(descriptor.Organization?.Tin);
         if (company == null && descriptor.Organization?.Tin != null)
         {
-            company = new Company()
+            company = new Company
             {
-                Id = oidcOptions.ReuseSubject ? descriptor.Id : null,
+                Id = oidcOptions.ReuseSubject ? descriptor.Organization!.Id : Guid.NewGuid(),
                 Name = descriptor.Organization!.Name,
                 Tin = descriptor.Organization!.Tin
             };

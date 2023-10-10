@@ -20,8 +20,8 @@ public static class TestOptions
         FrontendRedirectUri = new Uri(frontendRedirect ?? options.FrontendRedirectUri.AbsoluteUri),
         ClientId = clientId ?? options.ClientId,
         CacheDuration = cacheDuration ?? options.CacheDuration,
-        AllowRedirection = allowRedirection ?? options.AllowRedirection,
-        ReuseSubject = reuseSubject ?? options.ReuseSubject
+        RedirectionMode = allowRedirection ?? options.AllowRedirection ? OidcOptions.Redirection.Allow : OidcOptions.Redirection.Deny,
+        IdGeneration = reuseSubject ?? options.ReuseSubject ? OidcOptions.Generation.Predictable : OidcOptions.Generation.Random
     };
 
     public static TokenOptions Token(

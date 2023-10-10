@@ -115,6 +115,43 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     }
 
     [Fact]
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUserWithCompanyWithPredictedId_WhenIdGenerationIsPredictable()
+    {
+        var providerKey = Guid.NewGuid().ToString();
+        var providerKeyType = ProviderKeyType.MitIdUuid;
+        var userId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var user = new User
+        {
+            Id = userId,
+            Name = Guid.NewGuid().ToString(),
+            AllowCprLookup = false,
+            Company = new Company
+            {
+                Id = companyId,
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString(),
+                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
+            },
+            CompanyId = companyId,
+            UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
+        };
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", nameof(OidcOptions.Generation.Predictable)));
+
+        var result = await client.PutAsync("terms/user/accept/2", null);
+        var dbCompany = factory.DataContext.Companies.SingleOrDefault(x => x.Id == companyId);
+        var dbUser = factory.DataContext.Users.SingleOrDefault(x => x.Id == userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        Assert.NotNull(dbCompany);
+        Assert.NotNull(dbUser);
+        Assert.NotEqual(companyId, dbUser.Id);
+        Assert.Equal(companyId, dbUser.CompanyId);
+    }
+
+    [Fact]
     public async Task AcceptUserTermsAsync_ShouldReturnOk_ForSimplestTestCase()
     {
         var user = await factory.AddUserToDatabaseAsync();
@@ -167,6 +204,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString(),
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
@@ -192,6 +230,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString()
             },
@@ -216,6 +255,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString(),
                 CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 3 } }
@@ -239,6 +279,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "TestCompany",
                 Tin = Guid.NewGuid().ToString()
             },
