@@ -35,7 +35,7 @@ public class TokenController : ControllerBase
             {
                 descriptor.Organization = new OrganizationDescriptor
                 {
-                    Id = organization.Id!.Value,
+                    Id = organization.Id,
                     Name = organization.Name,
                     Tin = organization.Tin
                 };
