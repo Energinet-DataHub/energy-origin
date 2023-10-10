@@ -7,7 +7,7 @@ namespace API.Models.Entities;
 public record Company
 {
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required Guid? Id { get; init; }
+    public required Guid Id { get; init; }
     public string Name { get; set; } = null!;
     public string Tin { get; set; } = null!;
     public List<User> Users { get; set; } = new List<User>();
