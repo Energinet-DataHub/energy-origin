@@ -7,7 +7,6 @@ using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -919,26 +918,41 @@ public class OidcControllerTests
         Assert.Equal(expected, result);
     }
 
-    // [Fact]
-    // public async Task GetUserDescriptor_DoesNotThrow_WhenOperationIsASuccess()
-    // {
-    //     var claims = new ClaimsPrincipal();
-    //     OidcController.MapUserDescriptor(
-    //         Arg.Any<ICryptography>(),
-    //         Arg.Any<IUserProviderService>(),
-    //         Arg.Any<IUserService>(),
-    //         Arg.Any<IdentityProviderOptions>(),
-    //         Arg.Any<OidcOptions>(),
-    //         Arg.Any<RoleOptions>(),
-    //         Arg.Any<DiscoveryDocumentResponse>(),
-    //         Arg.Any<TokenResponse>()
-    //         ).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+    [Fact]
+    public async Task GetUserDescriptor_DoesNotThrow_WhenOperationIsASuccess()
+    {
+        var claims = new ClaimsPrincipal();
 
-    //     var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
 
-    //     var token = new TokenResponse();
-    //     var result = await OidcController.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document,token,"https://test.com");
-    // }
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
+
+        var expected = (new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>()));
+        SubstituteExtensions.Returns(, OidcController.MapUserDescriptor(
+            Arg.Any<ICryptography>(),
+            Arg.Any<IUserProviderService>(),
+            Arg.Any<IUserService>(),
+            Arg.Any<IdentityProviderOptions>(),
+            Arg.Any<OidcOptions>(),
+            Arg.Any<RoleOptions>(),
+            Arg.Any<DiscoveryDocumentResponse>(),
+            Arg.Any<TokenResponse>()
+            )).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+
+        OidcController.MapUserDescriptor(
+            Arg.Any<ICryptography>(),
+            Arg.Any<IUserProviderService>(),
+            Arg.Any<IUserService>(),
+            Arg.Any<IdentityProviderOptions>(),
+            Arg.Any<OidcOptions>(),
+            Arg.Any<RoleOptions>(),
+            Arg.Any<DiscoveryDocumentResponse>(),
+            Arg.Any<TokenResponse>()
+            ).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+
+
+        var token = new TokenResponse();
+        var result = await OidcController.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document,token,"https://test.com");
+    }
 
     //TODO: Er det en eller anden form for success scenarie?
     [Theory]
