@@ -44,7 +44,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
+            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -67,7 +67,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
 
         var newEndDate = new DateTimeOffset(2125, 5, 5, 5, 5, 5, TimeSpan.Zero).ToUnixTimeSeconds();
         var editRequest = new EditTransferAgreementEndDate(newEndDate);
-        await authenticatedClient.PatchAsync($"api/transfer-agreements/{createdTransferAgreement.Id}", JsonContent.Create(editRequest));
+        await authenticatedClient.PatchAsync($"api/transfer-agreements/{createdTransferAgreement!.Id}", JsonContent.Create(editRequest));
 
         var auditsResponse = await authenticatedClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
             ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
@@ -92,7 +92,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "66332211");
-        var response = await newAuthenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement.Id}");
+        var response = await newAuthenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -114,7 +114,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var otherActorClient = factory.CreateAuthenticatedClient(sub: sub, actor: otherActor.ToString());
 
         var senderResponse = await otherActorClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
+            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -140,7 +140,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var receiverClient = factory.CreateAuthenticatedClient(sub: receiver.ToString(), tin: "12345678");
 
         var receiverResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
+            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");

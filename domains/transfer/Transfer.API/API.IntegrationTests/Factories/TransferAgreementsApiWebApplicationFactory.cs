@@ -176,8 +176,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private static async Task TruncateTransferAgreementTables(ApplicationDbContext dbContext)
     {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
@@ -185,14 +185,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
     {
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         var agreementQuery =
             $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
@@ -214,7 +214,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private static async Task InsertHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
     {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
         var historyQuery =
             $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +

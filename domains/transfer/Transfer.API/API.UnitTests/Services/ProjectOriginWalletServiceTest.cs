@@ -95,7 +95,7 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
+     _ = fakeWalletServiceClient
             .Received(1)
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
@@ -130,7 +130,7 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
+      _ = fakeWalletServiceClient
             .DidNotReceive()
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
@@ -166,7 +166,7 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
+       _ = fakeWalletServiceClient
             .DidNotReceive()
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),
@@ -203,7 +203,7 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
+       _ = fakeWalletServiceClient
             .Received(1)
             .TransferCertificateAsync(
                 Arg.Any<TransferRequest>(),

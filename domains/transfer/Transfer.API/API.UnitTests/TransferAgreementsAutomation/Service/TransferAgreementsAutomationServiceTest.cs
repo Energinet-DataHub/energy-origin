@@ -42,7 +42,7 @@ public class TransferAgreementsAutomationServiceTest
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);
 
-        service.Run(cts.Token).Should().Throws(new TaskCanceledException());
+        await Assert.ThrowsAsync<TaskCanceledException>(() => service.Run(cts.Token));
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
@@ -76,7 +76,7 @@ public class TransferAgreementsAutomationServiceTest
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);
 
-        service.Run(cts.Token).Should().Throws(new TaskCanceledException());
+        await Assert.ThrowsAsync<TaskCanceledException>(() => service.Run(cts.Token));
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }

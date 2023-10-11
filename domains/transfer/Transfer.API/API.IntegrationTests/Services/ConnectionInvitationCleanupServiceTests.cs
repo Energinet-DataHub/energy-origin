@@ -60,6 +60,6 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
 
         var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<ConnectionInvitation>(1);
 
-        invitations.FirstOrDefault().Id.Should().Be(newInvitation.Id);
+        invitations.FirstOrDefault()?.Id.Should().Be(newInvitation.Id);
     }
 }
