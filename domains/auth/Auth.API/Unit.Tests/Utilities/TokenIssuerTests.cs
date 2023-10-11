@@ -233,6 +233,7 @@ public class TokenIssuerTests
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "testCompany"
             }
         };
