@@ -21,7 +21,8 @@ public class TransferAgreementAutomationController : ControllerBase
     [HttpGet("api/transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()
     {
-        return await Task.Run(() => {
+        return await Task.Run(() =>
+        {
             cache.Cache.TryGetValue(HealthEntries.Key, out var value);
 
             return Ok(value == null ?

@@ -84,7 +84,7 @@ public class TransferAgreementsController : ControllerBase
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
-        catch (DbUpdateException )
+        catch (DbUpdateException)
         {
             return Conflict();
         }
