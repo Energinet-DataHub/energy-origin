@@ -26,7 +26,6 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
         this.factory = factory;
         sub = Guid.NewGuid();
         tin = "11223344";
-        factory.WalletUrl = "UnusedWalletUrl";
         factory.CreateClient();
     }
 

@@ -24,8 +24,6 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
         tin = "12345678";
-
-        factory.WalletUrl = "UnusedWalletUrl";
     }
 
     [Fact]

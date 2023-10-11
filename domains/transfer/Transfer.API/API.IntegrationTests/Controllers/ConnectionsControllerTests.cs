@@ -21,7 +21,6 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     public ConnectionsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
-        factory.WalletUrl = "UnusedWalletUrl";
     }
 
     [Fact]
