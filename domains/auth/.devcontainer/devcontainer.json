@@ -7,13 +7,14 @@
     "postCreateCommand": "dotnet tool install --global dotnet-outdated-tool ; dotnet tool install --global dotnet-ef ; dotnet restore",
     "remoteUser": "vscode",
     "remoteEnv": {
-        "PATH": "${containerEnv:PATH}:~/.dotnet/tools"
+        "PATH": "${containerEnv:PATH}:~/.dotnet/tools:/workspaces/tools-dotnet-bin"
     },
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     },
     "mounts": [
-        "source=${localWorkspaceFolder}/../../libraries/dotnet/EnergyOrigin.TokenValidation,target=/workspaces/EnergyOrigin.TokenValidation,type=bind,consistency=cached"
+        "source=${localWorkspaceFolder}/../../libraries/dotnet/EnergyOrigin.TokenValidation,target=/workspaces/EnergyOrigin.TokenValidation,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/../../tools/dotnet/bin,target=/workspaces/tools-dotnet-bin,type=bind,consistency=cached"
     ],
     "customizations": {
         "vscode": {

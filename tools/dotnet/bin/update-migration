@@ -21,7 +21,7 @@ if [ ! -d "$migrations" ]; then
     exit 2
 fi
 
-migrations="$migrations/$(basename "$projectFile" .csproj)."
+projectName=$(basename "$projectFile" .csproj)
 
 dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
 
@@ -35,14 +35,14 @@ generate() {
 
 previous="0"
 for name in $(find "$projectFolder" -name "*.Designer.cs" -exec basename "{}" .Designer.cs \; | sort); do
-    generate "$projectFile" "$previous" "$name" "$migrations$name.up.sql"
+    generate "$projectFile" "$previous" "$name" "$migrations/$projectName.$name.up.sql"
     previous="$name"
 done
 for name in $(find "$projectFolder" -name "*.Designer.cs" -exec basename "{}" .Designer.cs \; | sort -r); do
-    generate "$projectFile" "$previous" "$name" "$migrations$previous.down.sql"
+    generate "$projectFile" "$previous" "$name" "$migrations/$projectName.$previous.down.sql"
     previous="$name"
 done
-generate "$projectFile" "$previous" "0" "$migrations$previous.down.sql"
+generate "$projectFile" "$previous" "0" "$migrations/$projectName.$previous.down.sql"
 
 entry() {
     id="$1"
@@ -69,7 +69,7 @@ EOF
 EOF
 
     id=0
-    for file in $(echo "$migrations*.up.sql"); do # FIXME sort
+    for file in $(find "$migrations" -type f -name "*.up.sql" | sort); do
         file=$(basename "$file")
         entry "$id" "$file" "$(echo "$file" | sed 's/\.up\.sql$/.down.sql/')"
         id=$((id+1))
@@ -78,4 +78,4 @@ EOF
     cat << "EOF"
 </databaseChangeLog>
 EOF
-} > "${migrations}xml"
+} > "${migrations}/$projectName.xml"
