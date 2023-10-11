@@ -14,7 +14,8 @@
             "identity_type": "professional",
             "nemid.cvr": "12345678",
             "bar": "bla",
-            "num": 24
+            "num": 24,
+            "nemid.company_name": "Weyland-Yutani Corporation"
         }
     },
     {
