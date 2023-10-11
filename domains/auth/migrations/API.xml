@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet id="0" author="nobody">
+        <sqlFile path="API.20230203091258_AddUserTable.up.sql"/>
+        <rollback>
+            <sqlFile path="API.20230203091258_AddUserTable.down.sql"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1" author="nobody">
+        <sqlFile path="API.20230328142531_AddCompanyAndUserProviderTable.up.sql"/>
+        <rollback>
+            <sqlFile path="API.20230328142531_AddCompanyAndUserProviderTable.down.sql"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="2" author="nobody">
+        <sqlFile path="API.20230413105444_AddEiaProviderKeyTypeEnum.up.sql"/>
+        <rollback>
+            <sqlFile path="API.20230413105444_AddEiaProviderKeyTypeEnum.down.sql"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="3" author="nobody">
+        <sqlFile path="API.20230424102319_RenameColumn.up.sql"/>
+        <rollback>
+            <sqlFile path="API.20230424102319_RenameColumn.down.sql"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="4" author="nobody">
+        <sqlFile path="API.20230815131520_RolesAndTerms.up.sql"/>
+        <rollback>
+            <sqlFile path="API.20230815131520_RolesAndTerms.down.sql"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

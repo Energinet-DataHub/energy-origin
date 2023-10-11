@@ -43,3 +43,39 @@ for name in $(find "$projectFolder" -name "*.Designer.cs" -exec basename "{}" .D
     previous="$name"
 done
 generate "$projectFile" "$previous" "0" "$migrations$previous.down.sql"
+
+entry() {
+    id="$1"
+    up="$2"
+    down="$3"
+    cat << EOF
+    <changeSet id="$id" author="nobody">
+        <sqlFile path="$up"/>
+        <rollback>
+            <sqlFile path="$down"/>
+        </rollback>
+    </changeSet>
+EOF
+}
+
+{
+    cat << "EOF"
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+EOF
+
+    id=0
+    for file in $(echo "$migrations*.up.sql"); do # FIXME sort
+        file=$(basename "$file")
+        entry "$id" "$file" "$(echo "$file" | sed 's/\.up\.sql$/.down.sql/')"
+        id=$((id+1))
+    done
+
+    cat << "EOF"
+</databaseChangeLog>
+EOF
+} > "${migrations}xml"
