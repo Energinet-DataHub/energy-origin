@@ -41,6 +41,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
         builder.ConfigureTestServices(services =>
         {
+            services.AddDbContextFactory<DataContext>();
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
             services.Remove(services.First(x => x.ServiceType == typeof(NpgsqlDataSourceBuilder)));
@@ -57,8 +58,10 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             });
             services.AddHealthChecks().AddNpgSql(testContainer.GetConnectionString());
         });
-
     }
+
+    public bool Start() => Server != null;
+
     public HttpClient CreateAnonymousClient(Action<IWebHostBuilder>? config = null)
     {
         var factory = config is not null ? WithWebHostBuilder(config) : this;
