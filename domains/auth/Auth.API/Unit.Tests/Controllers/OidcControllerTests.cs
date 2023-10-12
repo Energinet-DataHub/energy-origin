@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.IO.Compression;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
+using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -24,6 +26,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
+using static API.Options.OidcOptions;
 using static API.Options.RoleConfiguration;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
 
@@ -417,24 +420,24 @@ public class OidcControllerTests
      public static IEnumerable<object[]> RedirectionCheckParameters =>
         new List<object[]>
         {
-            new object[] {null,true,"https://test.dk/"},
-            new object[] {new OidcState(null, null, "/path/to/redirect"),false, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
-            new object[] {new OidcState("someState", null, null), false, "https://test.dk/?state=someState"},
-            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), false, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
-            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), true, "https://example.com/redirect?state=someState"},
-            new object[] {new OidcState(null, "https://example.com/redirect", null), true, "https://example.com/redirect"}
+            new object[] {null,Redirection.Allow,"https://test.dk/"},
+            new object[] {new OidcState(null, null, "/path/to/redirect"),Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
+            new object[] {new OidcState("someState", null, null), Redirection.Deny, "https://test.dk/?state=someState"},
+            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
+            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), Redirection.Allow, "https://example.com/redirect?state=someState"},
+            new object[] {new OidcState(null, "https://example.com/redirect", null), Redirection.Allow, "https://example.com/redirect"}
         };
 
-    // [Theory]
-    // [MemberData(nameof(RedirectionCheckParameters))]
-    // public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, bool direction, string expectedUri)
-    // {
-    //     var options = new OidcOptions(){AllowRedirection = direction, FrontendRedirectUri = new Uri("https://test.dk")};
+    [Theory]
+    [MemberData(nameof(RedirectionCheckParameters))]
+    public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, Redirection redirection, string expectedUri)
+    {
+        var options = new OidcOptions(){RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://test.dk")};
 
-    //     var result = oidcHelper.RedirectionCheck(options, state);
+        var result = oidcHelper.RedirectionCheck(options, state);
 
-    //     Assert.Equal(expectedUri, result);
-    // }
+        Assert.Equal(expectedUri, result);
+    }
 
     [Theory]
     [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]
@@ -961,9 +964,16 @@ public class OidcControllerTests
     [Fact]
     public void GetUserDescriptor_LogsThrowsAndReturnsRedirectionQuery_WhenOperationIsAFailure()
     {
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() {
+            new("test_key", "test_value"),
+            new("end_session_endpoint", $"http://connect/endsession") });
 
-        Assert.ThrowsAsync<Exception>(() => oidcHelper.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com"));
+        var exception = Assert.ThrowsAsync<OidcException>(() => oidcHelper.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com")).Result;
+
+        Assert.NotNull(exception);
+        Assert.IsType<OidcException>(exception);
+        Assert.Contains($"{ErrorCode.QueryString}%3D{ErrorCode.Authentication.InvalidTokens}", exception.Url);
+
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -974,40 +984,128 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public async Task MapUserDescriptor_ReturnsUserDescriptorAndUserData_WhenOperationIsASuccess()
+    public async Task CallBackAsync_RedirectsToFrontend_WhenOperationsIsASuccess()
+    {
+
+        var descriptor = new UserDescriptor(){
+                Organization = new OrganizationDescriptor(){
+                    Id = Guid.NewGuid(),
+                    Name = "test_name",
+                    Tin = "test_tin",
+                },
+                    Id = Guid.NewGuid(),
+                    ProviderType = ProviderType.MitIdPrivate,
+                    Name = "test_name",
+                    MatchedRoles = "viewer",
+                    AllowCprLookup = true,
+                    EncryptedAccessToken = Guid.NewGuid().ToString(),
+                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
+                };
+        var helperMock = Substitute.ForPartsOf<OidcHelper>();
+
+        helperMock.RedirectionCheck(Arg.Any<OidcOptions>(), Arg.Any<OidcState>()).Returns("https://example.com");
+        helperMock.When(x => x.CodeNullCheck(Arg.Any<string?>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>())).DoNotCallBase();
+        helperMock.When(x => x.DiscoveryDocumentErrorChecks(Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<string>())).DoNotCallBase();
+        helperMock.GetClientAndResponse(Arg.Any<IHttpClientFactory>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<OidcOptions>(), Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(new TokenResponse()));
+        helperMock.GetUserDescriptor(Arg.Any<ILogger<OidcController>>(), Arg.Any<ICryptography>(), Arg.Any<IUserProviderService>(), Arg.Any<IUserService>(), Arg.Any<IdentityProviderOptions>(), Arg.Any<OidcOptions>(), Arg.Any<RoleOptions>(), Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<TokenResponse>(), Arg.Any<string>()).Returns(Task.FromResult((descriptor, new TokenIssuer.UserData(1,1,new List<string>()))));
+
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, helperMock, null, null, null);
+
+        Assert.NotNull(action);
+        Assert.IsType<RedirectResult>(action);
+
+        var result = (RedirectResult)action;
+        Assert.True(result.PreserveMethod);
+        Assert.False(result.Permanent);
+
+        var uri = new Uri(result.Url);
+        Assert.Equal(oidcOptions.FrontendRedirectUri.Host, uri.Host);
+
+        var map = QueryHelpers.ParseNullableQuery(uri.Query);
+        Assert.NotNull(map);
+        Assert.True(map.ContainsKey("token"));
+    }
+
+    [Fact]
+    public async Task CallBackAsync_RedirectsToFrontend_WhenOperationFails()
+    {
+        var descriptor = new UserDescriptor(){
+                Organization = new OrganizationDescriptor(){
+                    Id = Guid.NewGuid(),
+                    Name = "test_name",
+                    Tin = "test_tin",
+                },
+                    Id = Guid.NewGuid(),
+                    ProviderType = ProviderType.MitIdPrivate,
+                    Name = "test_name",
+                    MatchedRoles = "viewer",
+                    AllowCprLookup = true,
+                    EncryptedAccessToken = Guid.NewGuid().ToString(),
+                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
+                };
+        var helperMock = Substitute.ForPartsOf<OidcHelper>();
+
+        var uri = "https://example.com";
+        helperMock.RedirectionCheck(Arg.Any<OidcOptions>(), Arg.Any<OidcState>()).Returns(uri);
+        helperMock.When(x => x.CodeNullCheck(Arg.Any<string?>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>())).Throw(new OidcException("Code is null", QueryHelpers.AddQueryString(uri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.Failed)));
+
+        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, helperMock, null, null, null);
+
+        Assert.NotNull(result);
+        Assert.IsType<RedirectResult>(result);
+        var redirectResult = (RedirectResult)result;
+        var query = HttpUtility.UrlDecode(new Uri(redirectResult.Url).Query);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.Failed}", query);
+    }
+
+
+
+
+    [Fact]
+    public void MapUserDescriptor_ReturnsUserDescriptorAndUserData_WhenOperationIsASuccess()
     {
         var helperMock = Substitute.ForPartsOf<OidcHelper>();
 
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
 
-        var tokenEndpoint = new Uri($"http://{testOptions.AuthorityUri.Host}/connect/token");
-
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
                 new("issuer", $"https://{testOptions.AuthorityUri.Host}/op"),
-                new("token_endpoint", tokenEndpoint.AbsoluteUri),
                 new("end_session_endpoint", $"http://{testOptions.AuthorityUri.Host}/connect/endsession")
             },
             KeySetUsing(tokenOptions.PublicKeyPem)
         );
 
+        var subject = Guid.NewGuid().ToString();
 
-        var client = new HttpClient();
-        var response = await client.RequestTokenAsync(new TokenRequest
-        {
-            Address = "https://demo.identityserver.io/connect/token",
-            GrantType = "custom",
-            ClientId = "client",
-            ClientSecret = "secret",
-            Parameters =
-            {
-                { "custom_parameter", "custom value"},
-                { "scope", "api1" },
-                { "userinfo_token", "token"}
-            }
+        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject);
+        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+            { "scope", "some_scope" },
+        });
+        var userInfoToken = TokenUsing(tokenOptions,
+        document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+            { "mitid.uuid", Guid.NewGuid().ToString() },
+            { "mitid.identity_name", Guid.NewGuid().ToString() },
+            { "idp", ProviderName.MitId },
+            { "identity_type", ProviderGroup.Private }
         });
 
-        var result = helperMock.MapUserDescriptor(cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, response);
+        helperMock.GetTokens(Arg.Any<TokenResponse>()).Returns((identityToken, accessToken, userInfoToken));
+        helperMock.When(x => x.SubjectErrorCheck(Arg.Any<string>(), Arg.Any<ClaimsPrincipal>(), Arg.Any<ClaimsPrincipal>())).DoNotCallBase();
+        helperMock.When(x => x.ClaimsErrorCheck(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())).DoNotCallBase();
+        helperMock.GetIdentityProviderEnum(Arg.Any<string>(), Arg.Any<string>()).Returns(ProviderType.MitIdPrivate);
+        helperMock.When(x => x.ProvidertypeIsFalseCheck(Arg.Any<ProviderType>(), Arg.Any<IdentityProviderOptions>())).DoNotCallBase();
+        helperMock.HandleUserInfo(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProviderType>(), Arg.Any<string>()).Returns(("test_name",null,null,new Dictionary<ProviderKeyType, string>(){ { ProviderKeyType.Pid, "test_pid" } }));
+        helperMock.HandleUserAsync(Arg.Any<IUserService>(), Arg.Any<IUserProviderService>(), Arg.Any<List<UserProvider>>(), Arg.Any<OidcOptions>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>()).Returns(Task.FromResult(new User() { Name = "test_name" }));
+        helperMock.CalculateMatchedRoles(Arg.Any<ClaimsPrincipal>(), Arg.Any<RoleOptions>()).Returns(new List<string>{"test_role"});
+
+        var result = helperMock.MapUserDescriptor(cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, new TokenResponse()).Result;
+        var(userDescriptor, userData) = result;
+
+        Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
+        Assert.Equal("test_name", userDescriptor.Name);
     }
 
     //TODO: Er det en eller anden form for success scenarie?

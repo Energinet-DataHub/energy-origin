@@ -93,6 +93,7 @@ public class OidcHelper {
         {
             MapInboundClaims = false
         };
+
         var parameters = new TokenValidationParameters
         {
             IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
@@ -101,11 +102,13 @@ public class OidcHelper {
             ValidAudience = oidcOptions.ClientId
         };
 
-        var userInfo = handler.ValidateToken(response.TryGet("userinfo_token"), parameters, out _);
-        var identity = handler.ValidateToken(response.IdentityToken, parameters, out _);
+        var(userInfoToken, identityToken, accessToken) = GetTokens(response);
+
+        var userInfo = handler.ValidateToken(userInfoToken, parameters, out _);
+        var identity = handler.ValidateToken(identityToken, parameters, out _);
 
         parameters.ValidateAudience = false;
-        var access = handler.ValidateToken(response.AccessToken, parameters, out _);
+        var access = handler.ValidateToken(accessToken, parameters, out _);
 
         var subject = access.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
@@ -130,9 +133,6 @@ public class OidcHelper {
         var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
         return (descriptor, UserData.From(user));
     }
-
-
-
 
     //DONE
     public virtual string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
@@ -215,6 +215,15 @@ public class OidcHelper {
             );
             throw new OidcException("token error", url);
         }
+    }
+
+    public virtual (string userInfo, string identity, string access) GetTokens(TokenResponse response)
+    {
+        var userInfoToken = response.TryGet("userinfo_token");
+        var identityToken = response.IdentityToken;
+        var accessToken = response.AccessToken;
+
+        return (userInfoToken, identityToken, accessToken);
     }
 
     //DONE
