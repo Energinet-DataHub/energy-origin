@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using API.ContractService;
+using CertificateValueObjects;
 
 namespace API.Query.API.ApiModels.Responses;
 
@@ -29,6 +30,13 @@ public class Contract
     /// </summary>
     public long Created { get; set; }
 
+    /// <summary>
+    /// Metering point type of the contract. Can be Production or Consumption
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonPropertyName("meteringPointType")]
+    public MeteringPointType MeteringPointType { get; set; }
+
     public static Contract CreateFrom(CertificateIssuingContract contract) =>
         new()
         {
@@ -36,6 +44,7 @@ public class Contract
             GSRN = contract.GSRN,
             StartDate = contract.StartDate.ToUnixTimeSeconds(),
             EndDate = contract.EndDate?.ToUnixTimeSeconds(),
-            Created = contract.Created.ToUnixTimeSeconds()
+            Created = contract.Created.ToUnixTimeSeconds(),
+            MeteringPointType = contract.MeteringPointType
         };
 }

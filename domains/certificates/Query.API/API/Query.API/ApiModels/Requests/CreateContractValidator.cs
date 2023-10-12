@@ -21,5 +21,8 @@ public class CreateContractValidator : AbstractValidator<CreateContract>
 
         RuleFor(cs => cs.GSRN)
             .MustBeValidGsrn();
+
+        RuleFor(cs => cs.MeteringPointType)
+            .NotNull();
     }
 }

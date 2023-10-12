@@ -11,7 +11,7 @@ using ProjectOrigin.PedersenCommitment;
 
 namespace API.GranularCertificateIssuer;
 
-public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
+public class EnergyMeasuredEventHandler : IConsumer<ProductionEnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredEventHandler> logger;
     private readonly IProductionCertificateRepository repository;
@@ -24,7 +24,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         this.contractService = contractService;
     }
 
-    public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
+    public async Task Consume(ConsumeContext<ProductionEnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
 
@@ -71,7 +71,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         logger.LogInformation("Created production certificate for {Message}", message);
     }
 
-    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
+    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract, ProductionEnergyMeasuredIntegrationEvent productionEnergyMeasuredIntegrationEvent)
     {
         if (contract is null)
             return false;
@@ -79,13 +79,13 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
         if (contract.MeteringPointType != MeteringPointType.Production)
             return false;
 
-        if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
+        if (!contract.Contains(productionEnergyMeasuredIntegrationEvent.DateFrom, productionEnergyMeasuredIntegrationEvent.DateTo))
             return false;
 
-        if (energyMeasuredIntegrationEvent.Quantity <= 0)
+        if (productionEnergyMeasuredIntegrationEvent.Quantity <= 0)
             return false;
 
-        if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
+        if (productionEnergyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
         return true;

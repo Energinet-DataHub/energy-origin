@@ -29,7 +29,7 @@ internal class ContractServiceImpl : IContractService
         this.walletServiceClient = walletServiceClient;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate,
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate, MeteringPointType meteringPointType,
         CancellationToken cancellationToken)
     {
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
@@ -38,11 +38,6 @@ internal class ContractServiceImpl : IContractService
         if (matchingMeteringPoint == null)
         {
             return new GsrnNotFound();
-        }
-
-        if (matchingMeteringPoint.Type != MeterType.Production)
-        {
-            return new NotProductionMeteringPoint();
         }
 
         var contracts = await repository.GetByGsrn(gsrn, cancellationToken);
@@ -64,7 +59,7 @@ internal class ContractServiceImpl : IContractService
             contractNumber,
             gsrn,
             matchingMeteringPoint.GridArea,
-            MeteringPointType.Production,
+            meteringPointType,
             meteringPointOwner,
             startDate,
             endDate,

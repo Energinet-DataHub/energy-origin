@@ -20,7 +20,8 @@ public class DataSyncServiceTest
     private readonly MeteringPointSyncInfo syncInfo = new(
         GSRN: "gsrn",
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-        MeteringPointOwner: "meteringPointOwner");
+        MeteringPointOwner: "meteringPointOwner",
+        MeteringPointType.Production);
 
     private readonly IDataSyncClient fakeClient = Substitute.For<IDataSyncClient>();
     private readonly ILogger<DataSyncService> fakeLogger = Substitute.For<ILogger<DataSyncService>>();

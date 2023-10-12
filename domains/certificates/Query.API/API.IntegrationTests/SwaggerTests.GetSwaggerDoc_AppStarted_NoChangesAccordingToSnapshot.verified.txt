@@ -298,6 +298,9 @@
             "type": "integer",
             "description": "Creation date for the contract",
             "format": "int64"
+          },
+          "meteringPointType": {
+            "$ref": "#/components/schemas/MeteringPointType"
           }
         },
         "additionalProperties": false
@@ -331,6 +334,9 @@
             "description": "End date for generation of certificates in Unix time seconds. Set to null for no end date",
             "format": "int64",
             "nullable": true
+          },
+          "meteringPointType": {
+            "$ref": "#/components/schemas/MeteringPointType"
           }
         },
         "additionalProperties": false
@@ -346,6 +352,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "MeteringPointType": {
+        "enum": [
+          "Production",
+          "Consumption"
+        ],
+        "type": "string"
       },
       "ValidationProblemDetails": {
         "type": "object",

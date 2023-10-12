@@ -79,7 +79,7 @@ public sealed class CertificateIssuingTests :
 
         await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
 
-        var measurement = new EnergyMeasuredIntegrationEvent(
+        var measurement = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
             DateFrom: utcMidnight.ToUnixTimeSeconds(),
             DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
@@ -127,14 +127,14 @@ public sealed class CertificateIssuingTests :
         var dateFrom = utcMidnight.ToUnixTimeSeconds();
         var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
 
-        var measurement1 = new EnergyMeasuredIntegrationEvent(
+        var measurement1 = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
             DateFrom: dateFrom,
             DateTo: dateTo,
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
 
-        var measurement2 = new EnergyMeasuredIntegrationEvent(
+        var measurement2 = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
             DateFrom: dateFrom,
             DateTo: dateTo,
@@ -182,7 +182,7 @@ public sealed class CertificateIssuingTests :
         const int measurementCount = 5;
 
         var measurements = Enumerable.Range(0, measurementCount)
-            .Select(i => new EnergyMeasuredIntegrationEvent(
+            .Select(i => new ProductionEnergyMeasuredIntegrationEvent(
                 GSRN: gsrn,
                 DateFrom: utcMidnight.AddHours(i).ToUnixTimeSeconds(),
                 DateTo: utcMidnight.AddHours(i + 1).ToUnixTimeSeconds(),

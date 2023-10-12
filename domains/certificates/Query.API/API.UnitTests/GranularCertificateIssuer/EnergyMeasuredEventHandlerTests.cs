@@ -41,7 +41,7 @@ public class EnergyMeasuredEventHandlerTests
         var contractServiceMock = Substitute.For<IContractService>();
         contractServiceMock.GetByGSRN(string.Empty, default).ReturnsNullForAnyArgs();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -62,7 +62,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -85,7 +85,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -109,7 +109,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -131,7 +131,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -153,7 +153,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var startDateAfterIssuingMaxLimit = DateTimeOffset.Parse("6200-01-01T00:00:00Z");
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: startDateAfterIssuingMaxLimit.ToUnixTimeSeconds(),
             DateTo: startDateAfterIssuingMaxLimit.AddHours(1).ToUnixTimeSeconds(),
@@ -173,7 +173,7 @@ public class EnergyMeasuredEventHandlerTests
 
         var repositoryMock = Substitute.For<IProductionCertificateRepository>();
 
-        var message = new EnergyMeasuredIntegrationEvent(
+        var message = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
@@ -185,7 +185,7 @@ public class EnergyMeasuredEventHandlerTests
         await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
     }
 
-    private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,
+    private static async Task PublishAndConsumeMessage(ProductionEnergyMeasuredIntegrationEvent message,
         IProductionCertificateRepository repository, IContractService contractService)
     {
         await using var provider = new ServiceCollection()
@@ -200,6 +200,6 @@ public class EnergyMeasuredEventHandlerTests
 
         await harness.Bus.Publish(message);
 
-        (await harness.Consumed.Any<EnergyMeasuredIntegrationEvent>()).Should().BeTrue();
+        (await harness.Consumed.Any<ProductionEnergyMeasuredIntegrationEvent>()).Should().BeTrue();
     }
 }

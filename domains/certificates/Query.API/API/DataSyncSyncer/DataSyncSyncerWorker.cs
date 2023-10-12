@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CertificateValueObjects;
 
 namespace API.DataSyncSyncer;
 
@@ -46,9 +47,13 @@ internal class DataSyncSyncerWorker : BackgroundService
                 var measurements = await dataSyncService.FetchMeasurements(syncInfo,
                     stoppingToken);
 
-                if (measurements.Any())
+                if (syncInfo.MeteringPointType == MeteringPointType.Production && measurements.Any())
                 {
-                    await PublishIntegrationEvents(measurements, stoppingToken);
+                    await PublishProductionIntegrationEvents(measurements, stoppingToken);
+                }
+                else if (syncInfo.MeteringPointType == MeteringPointType.Consumption && measurements.Any())
+                {
+                    await PublishConsumptionIntegrationEvents(measurements, stoppingToken);
                 }
             }
 
@@ -71,7 +76,7 @@ internal class DataSyncSyncerWorker : BackgroundService
                 {
                     var oldestContract = g.OrderBy(c => c.StartDate).First();
                     var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner);
+                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner, oldestContract.MeteringPointType);
                 })
                 .ToList();
 
@@ -92,11 +97,24 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
     }
 
-    private async Task PublishIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
+    private async Task PublishProductionIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
     {
-        var integrationsEvents = MapToIntegrationEvents(measurements);
+        var integrationsEvents = MapToProductionIntegrationEvents(measurements);
         logger.LogInformation(
-            "Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
+            "Publishing {numberOfEnergyMeasuredIntegrationEvents} productionEnergyMeasuredIntegrationEvents to the Integration Bus",
+            integrationsEvents.Count);
+
+        foreach (var @event in integrationsEvents)
+        {
+            await bus.Publish(@event, cancellationToken);
+        }
+    }
+
+    private async Task PublishConsumptionIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
+    {
+        var integrationsEvents = MapToConsumptionIntegrationEvents(measurements);
+        logger.LogInformation(
+            "Publishing {numberOfEnergyMeasuredIntegrationEvents} consumptionEnergyMeasuredIntegrationEvents to the Integration Bus",
             integrationsEvents.Count);
 
         foreach (var @event in integrationsEvents)
@@ -115,9 +133,21 @@ internal class DataSyncSyncerWorker : BackgroundService
     private static int GetNumberOfOwners(IGrouping<string, CertificateIssuingContract> g) =>
         g.Select(c => c.MeteringPointOwner).Distinct().Count();
 
-    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements) =>
+    private static List<ProductionEnergyMeasuredIntegrationEvent> MapToProductionIntegrationEvents(List<DataSyncDto> measurements) =>
         measurements
-            .Select(it => new EnergyMeasuredIntegrationEvent(
+            .Select(it => new ProductionEnergyMeasuredIntegrationEvent(
+                    GSRN: it.GSRN,
+                    DateFrom: it.DateFrom,
+                    DateTo: it.DateTo,
+                    Quantity: it.Quantity,
+                    Quality: it.Quality
+                )
+            )
+            .ToList();
+
+    private static List<ConsumptionEnergyMeasuredIntegrationEvent> MapToConsumptionIntegrationEvents(List<DataSyncDto> measurements) =>
+        measurements
+            .Select(it => new ConsumptionEnergyMeasuredIntegrationEvent(
                     GSRN: it.GSRN,
                     DateFrom: it.DateFrom,
                     DateTo: it.DateTo,

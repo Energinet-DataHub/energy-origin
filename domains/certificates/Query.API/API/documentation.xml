@@ -63,6 +63,11 @@
             End date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Requests.CreateContract.MeteringPointType">
+            <summary>
+            Metering point type. Can be either Production or Consumption
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
             <summary>
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
@@ -126,6 +131,11 @@
         <member name="P:API.Query.API.ApiModels.Responses.Contract.Created">
             <summary>
             Creation date for the contract
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.MeteringPointType">
+            <summary>
+            Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">

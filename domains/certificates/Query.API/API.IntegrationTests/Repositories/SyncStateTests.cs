@@ -10,6 +10,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
 using System.Threading.Tasks;
+using CertificateValueObjects;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
@@ -24,7 +25,8 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
         new(
             GSRN: gsrn ?? GsrnHelper.GenerateRandom(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-            MeteringPointOwner: "SomeMeteringPointOwner");
+            MeteringPointOwner: "SomeMeteringPointOwner",
+            MeteringPointType.Production);
 
     [Fact]
     public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()
