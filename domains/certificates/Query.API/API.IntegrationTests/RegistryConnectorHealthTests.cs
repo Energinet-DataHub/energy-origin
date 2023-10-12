@@ -6,26 +6,24 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class HealthTests :
+public class RegistryConnectorHealthTests :
     TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
+    IClassFixture<RegistryConnectorApplicationFactory>,
     IClassFixture<RabbitMqContainer>
 {
-    private readonly QueryApiWebApplicationFactory factory;
+    private readonly RegistryConnectorApplicationFactory factory;
 
-    public HealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
+    public RegistryConnectorHealthTests(RegistryConnectorApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
     }
 
     [Fact]
     public async Task Health_IsCalled_ReturnsOk()
     {
         using var client = factory.CreateClient();
-        using var healthResponse = await client.GetAsync("health");
+        using var healthResponse = await client.GetAsync("/health");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }

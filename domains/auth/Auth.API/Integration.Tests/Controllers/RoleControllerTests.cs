@@ -23,13 +23,13 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
             UserRoles = new List<UserRole> { new() { Role = RoleKey.RoleAdmin } },
-            Company = new() { Tin = tin, Name = Guid.NewGuid().ToString() }
+            Company = new() { Id = Guid.NewGuid(), Tin = tin, Name = Guid.NewGuid().ToString() }
         };
         user = new()
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
-            Company = new() { Tin = tin, Name = Guid.NewGuid().ToString() }
+            Company = new() { Id = Guid.NewGuid(), Tin = tin, Name = Guid.NewGuid().ToString() }
         };
     }
 
@@ -153,7 +153,7 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
                     Role = role
                 }
             },
-            Company = new() { Tin = user.Company!.Tin, Name = "" },
+            Company = new() { Id = Guid.NewGuid(), Tin = user.Company!.Tin, Name = "" },
             AllowCprLookup = false,
             Name = "TestUser"
         };
@@ -229,5 +229,16 @@ public class RoleControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldReturnOk_WhenTinIsValid()
+    {
+        var adminUser = await factory.AddUserToDatabaseAsync(this.adminUser);
+        var client = factory.CreateAuthenticatedClient(adminUser, role: RoleKey.RoleAdmin);
+        var response = await client.GetAsync($"role/users");
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

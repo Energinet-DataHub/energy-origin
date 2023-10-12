@@ -1,5 +1,6 @@
 using API.Controllers;
 using API.Models.Entities;
+using API.Models.Response;
 using API.Options;
 using API.Services.Interfaces;
 using API.Values;
@@ -74,7 +75,7 @@ public class RoleControllerTests
         controller.PrepareUser();
 
         var testUserId = Guid.NewGuid();
-        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
         userService.UpsertUserAsync(testUser).Returns(dummyUser);
@@ -90,7 +91,7 @@ public class RoleControllerTests
         controller.PrepareUser();
 
         var testUserId = Guid.NewGuid();
-        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
         userService.UpsertUserAsync(testUser).Returns(dummyUser);
@@ -127,7 +128,7 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
-        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
@@ -142,7 +143,7 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
-        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
@@ -173,5 +174,123 @@ public class RoleControllerTests
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
 
         Assert.IsType<OkResult>(result);
+    }
+
+    public static IEnumerable<object[]> UserData => new List<object[]>
+    {
+        new object[]
+        {
+            new List<User>()
+        },
+
+        new object[]
+        {
+            new List<User>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "test",
+                    UserRoles = new List<UserRole>
+                    {
+                        new() { Role = RoleKey.UserAdmin }
+                    }
+                }
+            }
+        },
+
+        new object[]
+        {
+            new List<User>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "test",
+                    UserRoles = new List<UserRole>
+                    {
+                        new() { Role = RoleKey.OrganizationAdmin }
+                    }
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "test2",
+                    UserRoles = new List<UserRole>
+                    {
+                        new() { Role = RoleKey.RoleAdmin },
+                        new() { Role = RoleKey.Viewer }
+                    }
+                }
+            }
+        }
+    };
+
+    [Theory]
+    [MemberData(nameof(UserData))]
+    public async Task GetUsersByTin_ShouldReturnOkAndTransformToResponseObject_WhenValidTinIsProvided(List<User> users)
+    {
+        controller.PrepareUser(organization: new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        });
+
+        userService.GetUsersByTinAsync(Arg.Any<string>()).Returns(users);
+
+        var result = await controller.GetUsersByTin(userService, roleOptions, logger);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnValue = Assert.IsType<UserRolesResponse>(okResult.Value);
+
+        Assert.Equal(users.Count, returnValue.UserRoles.Count());
+
+        foreach (var user in users.Zip(returnValue.UserRoles))
+        {
+            Assert.Equal(user.First.Name, user.Second.Name);
+            Assert.Equal(user.First.UserRoles.Count, user.Second.Roles.Count);
+
+            foreach (var userRole in user.First.UserRoles)
+            {
+                Assert.True(user.Second.Roles.ContainsKey(userRole.Role));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetUsersByTin_ShouldFilterOutInvalidRoles_WhenRolesAreInvalid()
+    {
+        controller.PrepareUser(organization: new()
+        {
+            Id = Guid.NewGuid(),
+            Name = Guid.NewGuid().ToString(),
+            Tin = Guid.NewGuid().ToString()
+        });
+
+        userService.GetUsersByTinAsync(Arg.Any<string>()).Returns(new List<User> {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test",
+                UserRoles = new List<UserRole>
+                {
+                    new() { Role = "non-existent-role" },
+                    new() { Role = RoleKey.Viewer }
+                }
+            }
+        });
+
+        var result = await controller.GetUsersByTin(userService, roleOptions, logger);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnValue = Assert.IsType<UserRolesResponse>(okResult.Value);
+
+        Assert.Single(returnValue.UserRoles);
+
+        var response = returnValue.UserRoles.Single();
+
+        Assert.Single(response.Roles);
+        Assert.True(response.Roles.Single().Key == RoleKey.Viewer);
     }
 }

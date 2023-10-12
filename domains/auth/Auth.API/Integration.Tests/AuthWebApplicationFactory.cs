@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using static API.Utilities.TokenIssuer;
@@ -46,6 +47,15 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddSingleton(new NpgsqlDataSourceBuilder(testContainer.GetConnectionString()));
             services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
             services.AddScoped<IUserDataContext, DataContext>();
+            services.Configure<HealthCheckServiceOptions>(x =>
+            {
+                var registration = x.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
+                if (registration != null)
+                {
+                    x.Registrations.Remove(registration);
+                }
+            });
+            services.AddHealthChecks().AddNpgSql(testContainer.GetConnectionString());
         });
 
     }

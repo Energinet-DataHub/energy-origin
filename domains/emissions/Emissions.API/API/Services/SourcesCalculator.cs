@@ -1,20 +1,27 @@
-using API.Helpers;
 using API.Models;
+using API.Options;
 
 namespace API.Services
 {
     public class SourcesCalculator : ISourcesCalculator
     {
-        private readonly IList<string> renewableSources = Configuration.GetRenewableSources();
-        private readonly decimal wasteRenewableShare = Configuration.GetWasteRenewableShare();
+        private readonly IList<string> renewableSources;
+        private readonly decimal wasteRenewableShare;
         private const string waste = "waste";
         private const string total = "total";
+
+        public SourcesCalculator(EnergiDataServiceOptions options)
+        {
+            renewableSources = options.RenewableSources.ToList();
+            wasteRenewableShare = options.WasteRenewableShare;
+        }
 
         public EnergySourceResponse CalculateSourceEmissions(
             IEnumerable<MixRecord> records,
             IEnumerable<TimeSeries> timeSeries,
             TimeZoneInfo timeZone,
-            Aggregation aggregation)
+            Aggregation aggregation,
+            int precision = 5)
         {
             var result = new EnergySourceResponse(new List<EnergySourceDeclaration>());
 
@@ -50,7 +57,7 @@ namespace API.Services
                         shareValue,
                         dateFrom = productionTypeGroup.Min(x => x.measurement.DateFrom),
                         dateTo = productionTypeGroup.Max(x => x.measurement.DateTo),
-                        percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, Configuration.DecimalPrecision)
+                        percentageOfTotal = Math.Round(shareValue / totalConsumption / 100, precision)
                     };
 
                 //Get period in unix timestamps for entire aggregation.

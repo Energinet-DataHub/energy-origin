@@ -17,8 +17,9 @@ public class CompanyServiceTests
     {
         var tin = Guid.NewGuid().ToString();
 
-        repository.GetCompanyByTinAsync(Arg.Any<string>()).Returns(new Company()
+        repository.GetCompanyByTinAsync(Arg.Any<string>()).Returns(new Company
         {
+            Id = Guid.NewGuid(),
             Tin = tin
         });
 

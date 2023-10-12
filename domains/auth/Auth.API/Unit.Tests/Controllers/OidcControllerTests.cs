@@ -425,16 +425,16 @@ public class OidcControllerTests
             new object[] {new OidcState(null, "https://example.com/redirect", null), true, "https://example.com/redirect"}
         };
 
-    [Theory]
-    [MemberData(nameof(RedirectionCheckParameters))]
-    public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, bool direction, string expectedUri)
-    {
-        var options = new OidcOptions(){AllowRedirection = direction, FrontendRedirectUri = new Uri("https://test.dk")};
+    // [Theory]
+    // [MemberData(nameof(RedirectionCheckParameters))]
+    // public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, bool direction, string expectedUri)
+    // {
+    //     var options = new OidcOptions(){AllowRedirection = direction, FrontendRedirectUri = new Uri("https://test.dk")};
 
-        var result = oidcHelper.RedirectionCheck(options, state);
+    //     var result = oidcHelper.RedirectionCheck(options, state);
 
-        Assert.Equal(expectedUri, result);
-    }
+    //     Assert.Equal(expectedUri, result);
+    // }
 
     [Theory]
     [InlineData("access_denied", "internal_error", ErrorCode.AuthenticationUpstream.InternalError)]

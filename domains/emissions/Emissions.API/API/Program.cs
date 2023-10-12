@@ -3,11 +3,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Helpers;
 using API.Models;
+using API.Options;
 using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -28,21 +29,13 @@ var console = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
-builder.Services.AddHealthChecks().AddAsyncCheck("Configuration check", () =>
-{
-    try
-    {
-        Configuration.GetDataSyncEndpoint();
-        Configuration.GetEnergiDataServiceEndpoint();
-        Configuration.GetRenewableSources();
-        Configuration.GetWasteRenewableShare();
-        return Task.FromResult(HealthCheckResult.Healthy());
-    }
-    catch
-    {
-        return Task.FromResult(HealthCheckResult.Unhealthy());
-    }
-});
+builder.Services.AddHealthChecks();
+
+builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DataSyncOptions>>().Value);
+
+builder.Services.AddOptions<EnergiDataServiceOptions>().BindConfiguration(EnergiDataServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddTransient(x => x.GetRequiredService<IOptions<EnergiDataServiceOptions>>().Value);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -62,8 +55,8 @@ builder.Services.AddFluentValidationRulesToSwagger();
 builder.Services.AddSingleton<IEmissionsCalculator, EmissionsCalculator>();
 builder.Services.AddSingleton<ISourcesCalculator, SourcesCalculator>();
 
-builder.Services.AddHttpClient<IEnergiDataService, EnergiDataService>(x => x.BaseAddress = new Uri(Configuration.GetEnergiDataServiceEndpoint()));
-builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(x => x.BaseAddress = new Uri(Configuration.GetDataSyncEndpoint()));
+builder.Services.AddHttpClient<IEnergiDataService, EnergiDataService>();
+builder.Services.AddHttpClient<IDataSyncService, DataSyncService>();
 builder.Services.AddTransient<IEmissionsService, EmissionsService>();
 
 var app = builder.Build();
@@ -76,6 +69,6 @@ if (builder.Environment.IsDevelopment())
 
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 app.Run();

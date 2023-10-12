@@ -1,3 +1,4 @@
+using API.Models.Dtos.Responses;
 using API.Options;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -10,9 +11,11 @@ namespace API.Controllers;
 [ApiController]
 public class LogoutController : ControllerBase
 {
-    [HttpGet()]
+    [HttpGet]
     [Route("auth/logout")]
-    public async Task<IActionResult> LogoutAsync(IMetrics metrics, IDiscoveryCache discoveryCache, ICryptography cryptography, OidcOptions oidcOptions, ILogger<LogoutController> logger, [FromQuery] string? overrideRedirectionUri = default)
+    public async Task<IActionResult> LogoutAsync(IMetrics metrics, IDiscoveryCache discoveryCache,
+        ICryptography cryptography, OidcOptions oidcOptions, ILogger<LogoutController> logger,
+        [FromQuery] string? overrideRedirectionUri = default)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
         if (oidcOptions.AllowRedirection && overrideRedirectionUri != null)
@@ -24,10 +27,8 @@ public class LogoutController : ControllerBase
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
-            return RedirectPreserveMethod(redirectionUri);
+            return Ok(new RedirectUriResponse { RedirectionUri = redirectionUri });
         }
-
-        var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
         DecodableUserDescriptor descriptor;
         try
@@ -36,8 +37,10 @@ public class LogoutController : ControllerBase
         }
         catch
         {
-            return RedirectPreserveMethod(redirectionUri);
+            return Ok(new RedirectUriResponse { RedirectionUri = redirectionUri });
         }
+
+        var requestUrl = new RequestUrl(discoveryDocument.EndSessionEndpoint);
 
         var url = requestUrl.CreateEndSessionUrl(
             idTokenHint: descriptor.IdentityToken,
@@ -52,7 +55,6 @@ public class LogoutController : ControllerBase
         );
 
         metrics.Logout(descriptor.Id, descriptor.Organization?.Id, descriptor.ProviderType);
-
-        return RedirectPreserveMethod(url);
+        return Ok(new RedirectUriResponse { RedirectionUri = url });
     }
 }

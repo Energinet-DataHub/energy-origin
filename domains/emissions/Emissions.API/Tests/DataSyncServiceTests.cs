@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Models;
 using API.Services;
+using API.Options;
 using EnergyOriginAuthorization;
 using Tests.Helpers;
 using Xunit;
@@ -13,11 +14,17 @@ namespace Tests;
 [UnitTest]
 public sealed class DataSyncServiceTests
 {
+
+    private readonly DataSyncOptions options = new()
+    {
+        Endpoint = new Uri("http://example.com/")
+    };
+
     [Fact]
     public async void DataSync_GetListOfMeteringPoints_success()
     {
         var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string> { "datasync_meteringpoints.json" });
-        var datasync = new DataSyncService(mockClient);
+        var datasync = new DataSyncService(mockClient, options);
 
         var res = await datasync.GetListOfMeteringPoints(new AuthorizationContext("", "", ""));
 
@@ -34,7 +41,7 @@ public sealed class DataSyncServiceTests
         var mockClient = MockHttpClientFactory.SetupHttpClientWithFiles(new List<string> { "datasync_measurements.json" });
         var dateFrom = 1609455600L;
         var dateTo = 1609459200L;
-        var datasync = new DataSyncService(mockClient);
+        var datasync = new DataSyncService(mockClient, options);
 
         var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", new DateTimeOffset(), new DateTimeOffset());
 

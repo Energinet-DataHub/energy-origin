@@ -13,6 +13,7 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
@@ -53,8 +54,9 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks().AddNpgSql(databaseOptions.ConnectionString);
 builder.Services.AddControllers();
+builder.Services.AddFeatureManagement();
 
 builder.Services.AttachOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
@@ -104,7 +106,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton(new NpgsqlDataSourceBuilder($"Host={databaseOptions.Host}; Port={databaseOptions.Port}; Database={databaseOptions.Name}; Username={databaseOptions.User}; Password={databaseOptions.Password};"));
+builder.Services.AddSingleton(new NpgsqlDataSourceBuilder(databaseOptions.ConnectionString));
 builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
@@ -163,7 +165,7 @@ else
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 try
 {

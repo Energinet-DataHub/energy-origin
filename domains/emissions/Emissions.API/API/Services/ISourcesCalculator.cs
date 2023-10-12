@@ -1,9 +1,13 @@
 using API.Models;
 
-namespace API.Services
+namespace API.Services;
+
+public interface ISourcesCalculator
 {
-    public interface ISourcesCalculator
-    {
-        EnergySourceResponse CalculateSourceEmissions(IEnumerable<MixRecord> records, IEnumerable<TimeSeries> measurements, TimeZoneInfo timeZone, Aggregation aggregation);
-    }
+    EnergySourceResponse CalculateSourceEmissions(
+        IEnumerable<MixRecord> records,
+        IEnumerable<TimeSeries> measurements,
+        TimeZoneInfo timeZone,
+        Aggregation aggregation,
+        int precision = 5);
 }

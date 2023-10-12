@@ -7,6 +7,7 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using static API.Utilities.TokenIssuer;
 
 namespace API.Controllers;
@@ -21,7 +22,8 @@ public class TokenController : ControllerBase
         IMetrics metrics,
         ILogger<TokenController> logger,
         IUserService userService,
-        ITokenIssuer tokenIssuer)
+        ITokenIssuer tokenIssuer,
+        IFeatureManager? featureManager = null)
     {
         var descriptor = new UserDescriptor(User);
         var versionBypass = false;
@@ -33,13 +35,24 @@ public class TokenController : ControllerBase
             {
                 descriptor.Organization = new OrganizationDescriptor
                 {
-                    Id = (Guid)organization.Id!,
+                    Id = organization.Id,
                     Name = organization.Name,
                     Tin = organization.Tin
                 };
             }
-            var scope = User.FindFirstValue(UserClaimName.Scope);
-            if (scope!.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
+            var scope = User.FindFirstValue(UserClaimName.Scope) ?? string.Empty;
+
+            if (featureManager.IsEnabled(FeatureFlag.CompanyTerms))
+            {
+                if (scope.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false
+                    && scope.Contains(UserScopeName.NotAcceptedTermsOfService) == false
+                    && scope.Contains(UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin) == false)
+                    versionBypass = true;
+            }
+            else
+            {
+                if (scope.Contains(UserScopeName.NotAcceptedPrivacyPolicy) == false) versionBypass = true;
+            }
         }
 
         var now = DateTimeOffset.Now;

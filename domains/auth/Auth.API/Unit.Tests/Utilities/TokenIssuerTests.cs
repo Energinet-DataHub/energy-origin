@@ -34,14 +34,24 @@ public class TokenIssuerTests
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
     }
 
+    public static IEnumerable<object[]> TestCases =>
+        new List<object[]>
+        {
+             new object[] { UserScopeName.NotAcceptedPrivacyPolicy, 0, 0, false, new List<string>()  },
+             new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, new List<string>() },
+             new object[] { $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 3, false, new List<string>() },
+             new object[] { UserScopeName.NotAcceptedTermsOfServiceOrganizationAdmin, 3, 2, false, new List<string>{"organization-admin"} },
+             new object[] { $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 2, true, new List<string>{"organization-admin"} },
+             new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, new List<string>{"viewer"} },
+             new object[] { UserScopeName.NotAcceptedTermsOfService, 3, 2, false, null! },
+             new object[] { $"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 0, true, new List<string>() },
+        };
+
     [Theory]
-    [InlineData(UserScopeName.NotAcceptedPrivacyPolicy, 0, 0, false)]
-    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, false)]
-    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 0, 0, true)]
-    [InlineData($"{UserScopeName.Dashboard} {UserScopeName.Production} {UserScopeName.Meters} {UserScopeName.Certificates}", 3, 1, true)]
-    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int privacyVersion, int tosVersion, bool bypass)
+    [MemberData(nameof(TestCases))]
+    public void Issue_ShouldReturnTokenForUserWithCorrectScope_WhenInvokedWithDifferentVersionsAndBypassValues(string expectedScope, int privacyVersion, int tosVersion, bool bypass, IEnumerable<string>? roles)
     {
-        var (descriptor, data) = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion);
+        var (descriptor, data) = PrepareUser(privacyVersion: privacyVersion, tosVersion: tosVersion, assignedRoles: roles);
 
         var token = GetTokenIssuer().Issue(descriptor, data, versionBypass: bypass);
 
@@ -223,6 +233,7 @@ public class TokenIssuerTests
             AllowCprLookup = false,
             Company = new Company
             {
+                Id = Guid.NewGuid(),
                 Name = "testCompany"
             }
         };

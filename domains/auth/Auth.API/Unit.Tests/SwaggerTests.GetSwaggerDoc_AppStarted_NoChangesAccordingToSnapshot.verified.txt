@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.0.1",
   "info": {
     "title": "API",
@@ -205,6 +205,18 @@
               "format": "uuid"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/role/users": {
+      "get": {
+        "tags": [
+          "Role"
         ],
         "responses": {
           "200": {

@@ -24,7 +24,6 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\CertificateEvents\CertificateEvents.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
