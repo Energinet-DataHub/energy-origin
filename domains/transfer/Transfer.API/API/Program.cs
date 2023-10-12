@@ -73,8 +73,8 @@ Audit.Core.Configuration.Setup()
                 historyEntity.Id = Guid.NewGuid();
                 historyEntity.CreatedAt = DateTimeOffset.UtcNow;
                 historyEntity.AuditAction = eventEntry.Action;
-                historyEntity.ActorId = actorId;
-                historyEntity.ActorName = actorName;
+                historyEntity.ActorId = actorId ?? string.Empty;
+                historyEntity.ActorName = actorName ?? string.Empty;
 
                 switch (eventEntry.Action)
                 {

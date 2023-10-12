@@ -12,7 +12,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 using Exception = System.Exception;
 
@@ -42,7 +41,8 @@ public class TransferAgreementsAutomationServiceTest
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);
 
-        service.Run(cts.Token).Should().Throws(new TaskCanceledException());
+        var act = async () => await service.Run(cts.Token);
+        await act.Should().ThrowAsync<TaskCanceledException>();
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
@@ -76,7 +76,8 @@ public class TransferAgreementsAutomationServiceTest
         var service = new TransferAgreementsAutomationService(logger, transferAgreementRepository,
             projectOriginWalletService, memoryCache, metrics);
 
-        service.Run(cts.Token).Should().Throws(new TaskCanceledException());
+        var act = async () => await service.Run(cts.Token);
+        await act.Should().ThrowAsync<TaskCanceledException>();
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }

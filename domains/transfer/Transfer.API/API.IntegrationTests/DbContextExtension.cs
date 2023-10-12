@@ -33,14 +33,14 @@ public static class DbContextExtension
 
     public static async Task TruncateTransferAgreementsTable(this ApplicationDbContext dbContext)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
     }
 
     public static async Task TruncateTransferAgreementHistoryTables(this ApplicationDbContext dbContext)
     {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
     }

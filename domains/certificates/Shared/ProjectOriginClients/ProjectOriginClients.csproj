@@ -25,13 +25,13 @@
 
 	<ItemGroup>
 		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/common.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos/electricity.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/electricity.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/electricity.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos/registry.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/registry.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/registry.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
 			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v$(WalletVersion)/src/Protos/wallet.proto</SourceUrl>
@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<WalletVersion>0.2.0-rc.1</WalletVersion>
+		<WalletVersion>0.2.1</WalletVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="ProjectOriginClients.WalletVersionAttribute">

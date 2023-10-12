@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Integration.Tests.Controllers;
 
-// FIXME: add an actual test for first time refresh of token _after_ a user with an organization has been saved to the database
 public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
 {
     private readonly AuthWebApplicationFactory factory;
@@ -61,7 +60,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithDifferentScope_WhenTermsVersionHasIncreasedSinceLastLogin()
     {
-        var newUser = new User { Id = Guid.NewGuid(), Company = new Company { Name = "test", Tin = "grgrgr" }, Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
+        var newUser = new User { Id = Guid.NewGuid(), Company = new Company { Id = Guid.NewGuid(), Name = "test", Tin = "grgrgr" }, Name = "TestUser", AllowCprLookup = false, UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } } };
         var user = await factory.AddUserToDatabaseAsync(newUser);
         user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 4 } };
 
@@ -90,7 +89,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
-            Company = new Company { Name = "test", Tin = "rerere" }
+            Company = new Company { Id = Guid.NewGuid(), Name = "test", Tin = "rerere" }
         };
         var client = factory.CreateAuthenticatedClient(user, issueAt: DateTime.UtcNow.AddMinutes(-1));
         user.UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = 3 } };
@@ -143,12 +142,14 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task RefreshAsync_ShouldReturnTokenWithUpdatedOrganizationId_WhenOrganizationHasBeenCreated()
     {
+        var originalId = Guid.NewGuid();
         var user = new User()
         {
             Id = Guid.NewGuid(),
             Name = Guid.NewGuid().ToString(),
             Company = new Company()
             {
+                Id = originalId,
                 Name = Guid.NewGuid().ToString(),
                 Tin = Guid.NewGuid().ToString(),
             }
@@ -173,7 +174,7 @@ public class TokenControllerTests : IClassFixture<AuthWebApplicationFactory>
         var userId = new JwtSecurityTokenHandler().ReadJwtToken(newToken).Claims.First(x => x.Type == UserClaimName.Actor)!.Value;
         Assert.NotNull(oldId);
         Assert.NotNull(newId);
-        Assert.Equal(Guid.Empty.ToString(), oldId);
+        Assert.Equal(originalId.ToString(), oldId);
         Assert.Equal(user.Company.Id.ToString(), newId);
         Assert.Equal(subject, newId);
         Assert.Equal(user.Id.ToString(), userId);

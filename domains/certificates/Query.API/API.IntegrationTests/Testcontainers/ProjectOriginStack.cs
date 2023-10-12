@@ -42,7 +42,7 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
-                .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .WithEnvironment("MessageBroker__Type", "InMemory")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(GrpcPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
