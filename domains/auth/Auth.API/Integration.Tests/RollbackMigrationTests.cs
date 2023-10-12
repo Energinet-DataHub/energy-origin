@@ -1,6 +1,4 @@
-using API.Repositories.Data;
 using Integration.Tests;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,14 +12,10 @@ public class RollbackMigrationTests : IClassFixture<AuthWebApplicationFactory>
     public RollbackMigrationTests(AuthWebApplicationFactory factory) => this.factory = factory;
 
     [Fact]
-    public async Task can_rollback_all_migrations()
+    public void can_rollback_all_migrations()
     {
-        factory.Start(); //This migrates the database to latest migration
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<DataContext>>();
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
-        var migrator = dbContext.Database.GetService<IMigrator>();
-
+        var migrator = factory.DataContext.Database.GetService<IMigrator>(); //Factory migrates the database to latest migration automatically
         migrator.Migrate("0"); //This migrates down to migration no. 0 aka. remove all migrations
+        migrator.Migrate(); //This migrates the database to latest migration (again)
     }
 }
