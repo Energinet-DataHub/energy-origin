@@ -665,9 +665,6 @@ public class OidcControllerTests
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.Failed}", query);
     }
 
-
-
-
     [Fact]
     public void MapUserDescriptor_ReturnsUserDescriptorAndUserData_WhenOperationIsASuccess()
     {

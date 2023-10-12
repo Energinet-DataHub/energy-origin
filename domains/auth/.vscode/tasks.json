@@ -37,15 +37,5 @@
             ],
             "problemMatcher": "$msCompile"
         },
-        {
-            "label": "generate coverage report",
-            "command": "reportgenerator",
-            "type": "shell",
-            "args": [
-                "-reports:${workspaceFolder}/Auth.Api/Unit.Tests/TestResults/lcov.info",
-                "-targetdir:${workspaceFolder}/Auth.Api/Unit.Tests/TestResults/coveragereport"
-            ],
-            "problemMatcher": []
-        }
     ]
 }
