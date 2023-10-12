@@ -21,11 +21,14 @@ public class TransferAgreementAutomationController : ControllerBase
     [HttpGet("api/transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()
     {
-        cache.Cache.TryGetValue(HealthEntries.Key, out var value);
+        return await Task.Run(() =>
+        {
+            cache.Cache.TryGetValue(HealthEntries.Key, out var value);
 
-        return Ok(value == null ?
-            new TransferAutomationStatus(Healthy: HealthEntries.Unhealthy) :
-            new TransferAutomationStatus(Healthy: (bool)value)
-        );
+            return Ok(value == null ?
+                new TransferAutomationStatus(Healthy: HealthEntries.Unhealthy) :
+                new TransferAutomationStatus(Healthy: (bool)value)
+            );
+        });
     }
 }

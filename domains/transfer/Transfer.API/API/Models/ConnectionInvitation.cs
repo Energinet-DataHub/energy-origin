@@ -7,7 +7,7 @@ public class ConnectionInvitation
 {
     public Guid Id { get; set; }
     public Guid SenderCompanyId { get; set; }
-    public string SenderCompanyTin { get; set; }
+    public string SenderCompanyTin { get; set; } = string.Empty;
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public DateTimeOffset CreatedAt { get; set; }
 }

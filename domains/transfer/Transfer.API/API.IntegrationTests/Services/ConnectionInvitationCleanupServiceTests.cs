@@ -26,7 +26,6 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
         this.factory = factory;
         sub = Guid.NewGuid();
         tin = "11223344";
-        factory.WalletUrl = "UnusedWalletUrl";
         factory.CreateClient();
     }
 
@@ -61,6 +60,6 @@ public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgr
 
         var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<ConnectionInvitation>(1);
 
-        invitations.FirstOrDefault().Id.Should().Be(newInvitation.Id);
+        invitations.FirstOrDefault()!.Id.Should().Be(newInvitation.Id);
     }
 }

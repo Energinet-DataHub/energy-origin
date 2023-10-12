@@ -139,7 +139,7 @@ public class TransferAgreementsControllerTests
             EndDate = DateTimeOffset.UtcNow.AddDays(10)
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin).Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
@@ -157,7 +157,7 @@ public class TransferAgreementsControllerTests
             EndDate = DateTimeOffset.UtcNow.AddDays(-1)
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin).Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
@@ -176,7 +176,7 @@ public class TransferAgreementsControllerTests
             ReceiverTin = tin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin).Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(true));
 
@@ -199,7 +199,7 @@ public class TransferAgreementsControllerTests
             ReceiverTin = tin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin).Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(false));
 
@@ -226,7 +226,7 @@ public class TransferAgreementsControllerTests
             ReceiverTin = tin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin).Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
 
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(false));

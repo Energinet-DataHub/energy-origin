@@ -24,8 +24,6 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
         tin = "12345678";
-
-        factory.WalletUrl = "UnusedWalletUrl";
     }
 
     [Fact]
@@ -60,7 +58,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "36923692");
 
-        var getResponse = await receiverClient.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+        var getResponse = await receiverClient.GetAsync($"api/connection-invitations/{createdInvitation!.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -81,7 +79,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdInvitation = JsonConvert.DeserializeObject<ConnectionInvitation>(createResponseBody);
 
-        var response = await client.GetAsync($"api/connection-invitations/{createdInvitation.Id}");
+        var response = await client.GetAsync($"api/connection-invitations/{createdInvitation!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 

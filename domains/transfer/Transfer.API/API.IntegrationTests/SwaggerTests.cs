@@ -15,7 +15,6 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
 
     public SwaggerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
-        factory.WalletUrl = "WalletUrlNotUsedForTheseTests";
         this.factory = factory;
     }
 
