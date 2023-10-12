@@ -31,7 +31,7 @@ public class CreateTransferAgreementValidator : AbstractValidator<CreateTransfer
             .Length(8)
             .Matches("^[0-9]{8}$")
             .WithMessage("ReceiverTin must be 8 digits without any spaces.")
-            .NotEqual(context.HttpContext?.User.FindSubjectTinClaim())
+            .NotEqual(context.HttpContext!.User.FindSubjectTinClaim())
             .WithMessage("ReceiverTin cannot be the same as SenderTin.");
 
         RuleFor(createTransferAgreement => createTransferAgreement.Base64EncodedWalletDepositEndpoint)

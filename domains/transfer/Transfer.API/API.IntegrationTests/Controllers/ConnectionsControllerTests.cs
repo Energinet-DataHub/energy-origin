@@ -85,7 +85,6 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     [Fact]
     public async Task CreateConnection_ShouldDeleteInvitation_WhenSuccess()
     {
-        // Arrange
         var senderCompanyId = Guid.NewGuid();
         var senderClient = factory.CreateAuthenticatedClient(sub: senderCompanyId.ToString());
 
@@ -147,9 +146,9 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
         var response = await client.GetFromJsonAsync<ConnectionsResponse>("api/connections");
 
         response.Should().NotBeNull();
-        response?.Result.Should().HaveCount(2);
-        response?.Result.Any(x => x.CompanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
-        response?.Result.Any(x => x.CompanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
+        response!.Result.Should().HaveCount(2);
+        response.Result.Any(x => x.CompanyTin == ownedConnection1.CompanyBTin).Should().BeTrue();
+        response.Result.Any(x => x.CompanyTin == ownedConnection2.CompanyATin).Should().BeTrue();
     }
 
     [Fact]

@@ -261,12 +261,12 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         getTransferAgreement.Should().NotBeNull();
 
-        getTransferAgreement?.Id.Should().Be(fakeTransferAgreement.Id);
-        getTransferAgreement?.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
-        getTransferAgreement?.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
-        getTransferAgreement?.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
-        getTransferAgreement?.SenderName.Should().Be(fakeTransferAgreement.SenderName);
-        getTransferAgreement?.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
+        getTransferAgreement!.Id.Should().Be(fakeTransferAgreement.Id);
+        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
+        getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
+        getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
+        getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
+        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
     }
 
     [Fact]
@@ -352,7 +352,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
-        transferAgreementsResponse?.Result.Should().HaveCount(2);
+        transferAgreementsResponse!.Result.Should().HaveCount(2);
     }
 
     [Fact]
@@ -527,7 +527,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
-        updatedTransferAgreement?.EndDate.Should().Be(newEndDate);
+        updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
     }
 
     [Fact]
