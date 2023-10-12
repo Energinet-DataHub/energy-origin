@@ -28,7 +28,7 @@ public class ExceptionMiddlewareTests
     public async Task InvokeAsync_ShouldLogErrorAndChangeResposnseStatusCodeToErrorCode500_WhenInvokeNextFails()
     {
         var exception = new Exception("Something went wrong");
-        next.Invoke(httpContext).Throws(exception);
+        next.Invoke(httpContext).ThrowsAsync(exception);
 
         await exceptionMiddleware.InvokeAsync(httpContext);
 

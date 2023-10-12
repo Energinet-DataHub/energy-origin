@@ -85,7 +85,8 @@ public class OidcController : ControllerBase
     }
 }
 
-public class OidcHelper {
+public class OidcHelper
+{
 
     public virtual async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
@@ -102,7 +103,7 @@ public class OidcHelper {
             ValidAudience = oidcOptions.ClientId
         };
 
-        var(userInfoToken, identityToken, accessToken) = GetTokens(response);
+        var (userInfoToken, identityToken, accessToken) = GetTokens(response);
 
         var userInfo = handler.ValidateToken(userInfoToken, parameters, out _);
         var identity = handler.ValidateToken(identityToken, parameters, out _);

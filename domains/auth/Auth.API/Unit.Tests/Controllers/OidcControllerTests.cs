@@ -66,22 +66,22 @@ public class OidcControllerTests
         issuer = new TokenIssuer(configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!, tokenOptions, configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!);
     }
 
-     public static IEnumerable<object[]> RedirectionCheckParameters =>
-        new List<object[]>
-        {
+    public static IEnumerable<object[]> RedirectionCheckParameters =>
+       new List<object[]>
+       {
             new object[] {null,Redirection.Allow,"https://test.dk/"},
             new object[] {new OidcState(null, null, "/path/to/redirect"),Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
             new object[] {new OidcState("someState", null, null), Redirection.Deny, "https://test.dk/?state=someState"},
             new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
             new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), Redirection.Allow, "https://example.com/redirect?state=someState"},
             new object[] {new OidcState(null, "https://example.com/redirect", null), Redirection.Allow, "https://example.com/redirect"}
-        };
+       };
 
     [Theory]
     [MemberData(nameof(RedirectionCheckParameters))]
     public void RedirectionCheck_RerturnCorrectUri_WithDifferentParameters(OidcState? state, Redirection redirection, string expectedUri)
     {
-        var options = new OidcOptions(){RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://test.dk")};
+        var options = new OidcOptions() { RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://test.dk") };
 
         var result = oidcHelper.RedirectionCheck(options, state);
 
@@ -217,11 +217,11 @@ public class OidcControllerTests
     [Fact]
     public void ProvidertypeIsFalseCheck_ShouldThrow_WhenProviderTypeIsNotInProviderOptions()
     {
-        var newOptions = new IdentityProviderOptions(){ Providers = new List<ProviderType>(){ProviderType.MitIdPrivate, ProviderType.MitIdProfessional}};
-        Assert.Throws<NotSupportedException>(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,newOptions));
+        var newOptions = new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional } };
+        Assert.Throws<NotSupportedException>(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate, newOptions));
     }
     [Fact]
-    public void ProvidertypeIsFalseCheck_ShouldNotThrow_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,providerOptions)));
+    public void ProvidertypeIsFalseCheck_ShouldNotThrow_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate, providerOptions)));
 
     [Theory]
     [InlineData(null, "TestName", "TestIdentity", typeof(ArgumentNullException))]
@@ -242,7 +242,7 @@ public class OidcControllerTests
     [InlineData(ProviderName.NemId, ProviderGroup.Professional, ProviderType.NemIdProfessional)]
     public void GetIdentityProviderEnum_ShouldReturnCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected)
     {
-        Assert.Equal(oidcHelper.GetIdentityProviderEnum(providerName,identity), expected);
+        Assert.Equal(oidcHelper.GetIdentityProviderEnum(providerName, identity), expected);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public class OidcControllerTests
 
     [Theory]
     [MemberData(nameof(ValidUserInfoClaims))]
-    public void HandleUserInfo_ShouldReturnCorrectUserinfoAndNotThrow_WhenProvidedVariousParams(ClaimsIdentity claims, ProviderType providerType, string identityType, (string name, string tin, string companyName, List<(ProviderKeyType dictionaryKeys,string claimsKeys)> keyPairs) expected)
+    public void HandleUserInfo_ShouldReturnCorrectUserinfoAndNotThrow_WhenProvidedVariousParams(ClaimsIdentity claims, ProviderType providerType, string identityType, (string name, string tin, string companyName, List<(ProviderKeyType dictionaryKeys, string claimsKeys)> keyPairs) expected)
     {
         var userInfoClaim = new ClaimsPrincipal();
         userInfoClaim.AddIdentity(claims);
@@ -315,7 +315,7 @@ public class OidcControllerTests
         Assert.Equal(userInfoClaim.FindFirstValue(expected.tin), tin);
         Assert.Equal(userInfoClaim.FindFirstValue(expected.companyName), companyName);
 
-        foreach(var item in expected.keyPairs)
+        foreach (var item in expected.keyPairs)
         {
             Assert.True(keys.TryGetValue(item.dictionaryKeys, out string? value));
             Assert.Contains(userInfoClaim.FindFirstValue(item.claimsKeys)!, value);
@@ -416,11 +416,11 @@ public class OidcControllerTests
             AllowCprLookup = true
         });
         userProviderService.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(new UserProvider());
-        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(),Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
+        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
 
-        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, "","","","","");
+        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "");
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -433,11 +433,11 @@ public class OidcControllerTests
     {
         service.GetUserByIdAsync(Arg.Any<Guid?>()).Returns(null as User);
         userProviderService.FindUserProviderMatchAsync(Arg.Any<List<UserProvider>>()).Returns(new UserProvider());
-        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(),Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
+        userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
 
-        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString());
+        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -531,21 +531,23 @@ public class OidcControllerTests
     {
         var helperMock = Substitute.ForPartsOf<OidcHelper>();
 
-        var descriptor = new UserDescriptor(){
-                Organization = new OrganizationDescriptor(){
-                    Id = Guid.NewGuid(),
-                    Name = "test_name",
-                    Tin = "test_tin",
-                },
-                    Id = Guid.NewGuid(),
-                    ProviderType = ProviderType.MitIdPrivate,
-                    Name = "test_name",
-                    MatchedRoles = "test_role",
-                    AllowCprLookup = true,
-                    EncryptedAccessToken = Guid.NewGuid().ToString(),
-                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
-                };
+        var descriptor = new UserDescriptor()
+        {
+            Organization = new OrganizationDescriptor()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test_name",
+                Tin = "test_tin",
+            },
+            Id = Guid.NewGuid(),
+            ProviderType = ProviderType.MitIdPrivate,
+            Name = "test_name",
+            MatchedRoles = "test_role",
+            AllowCprLookup = true,
+            EncryptedAccessToken = Guid.NewGuid().ToString(),
+            EncryptedIdentityToken = Guid.NewGuid().ToString(),
+            EncryptedProviderKeys = Guid.NewGuid().ToString(),
+        };
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
 
@@ -558,9 +560,9 @@ public class OidcControllerTests
             Arg.Any<RoleOptions>(),
             Arg.Any<DiscoveryDocumentResponse>(),
             Arg.Any<TokenResponse>())
-            .Returns((descriptor, new TokenIssuer.UserData(1,1,new List<string>())));
+            .Returns((descriptor, new TokenIssuer.UserData(1, 1, new List<string>())));
 
-        var result = helperMock.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com").Result;
+        var result = helperMock.GetUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, new TokenResponse(), "https://test.com").Result;
 
         Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
     }
@@ -572,7 +574,7 @@ public class OidcControllerTests
             new("test_key", "test_value"),
             new("end_session_endpoint", $"http://connect/endsession") });
 
-        var exception = Assert.ThrowsAsync<OidcException>(() => oidcHelper.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com")).Result;
+        var exception = Assert.ThrowsAsync<OidcException>(() => oidcHelper.GetUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, new TokenResponse(), "https://test.com")).Result;
 
         Assert.NotNull(exception);
         Assert.IsType<OidcException>(exception);
@@ -591,21 +593,23 @@ public class OidcControllerTests
     public async Task CallBackAsync_RedirectsToFrontend_WhenOperationsIsASuccess()
     {
 
-        var descriptor = new UserDescriptor(){
-                Organization = new OrganizationDescriptor(){
-                    Id = Guid.NewGuid(),
-                    Name = "test_name",
-                    Tin = "test_tin",
-                },
-                    Id = Guid.NewGuid(),
-                    ProviderType = ProviderType.MitIdPrivate,
-                    Name = "test_name",
-                    MatchedRoles = "viewer",
-                    AllowCprLookup = true,
-                    EncryptedAccessToken = Guid.NewGuid().ToString(),
-                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
-                };
+        var descriptor = new UserDescriptor()
+        {
+            Organization = new OrganizationDescriptor()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test_name",
+                Tin = "test_tin",
+            },
+            Id = Guid.NewGuid(),
+            ProviderType = ProviderType.MitIdPrivate,
+            Name = "test_name",
+            MatchedRoles = "viewer",
+            AllowCprLookup = true,
+            EncryptedAccessToken = Guid.NewGuid().ToString(),
+            EncryptedIdentityToken = Guid.NewGuid().ToString(),
+            EncryptedProviderKeys = Guid.NewGuid().ToString(),
+        };
 
         var helperMock = Substitute.ForPartsOf<OidcHelper>();
 
@@ -613,7 +617,7 @@ public class OidcControllerTests
         helperMock.When(x => x.CodeNullCheck(Arg.Any<string?>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string>())).DoNotCallBase();
         helperMock.When(x => x.DiscoveryDocumentErrorChecks(Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<string>())).DoNotCallBase();
         helperMock.GetClientAndResponse(Arg.Any<IHttpClientFactory>(), Arg.Any<ILogger<OidcController>>(), Arg.Any<OidcOptions>(), Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(new TokenResponse()));
-        helperMock.GetUserDescriptor(Arg.Any<ILogger<OidcController>>(), Arg.Any<ICryptography>(), Arg.Any<IUserProviderService>(), Arg.Any<IUserService>(), Arg.Any<IdentityProviderOptions>(), Arg.Any<OidcOptions>(), Arg.Any<RoleOptions>(), Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<TokenResponse>(), Arg.Any<string>()).Returns(Task.FromResult((descriptor, new TokenIssuer.UserData(1,1,new List<string>()))));
+        helperMock.GetUserDescriptor(Arg.Any<ILogger<OidcController>>(), Arg.Any<ICryptography>(), Arg.Any<IUserProviderService>(), Arg.Any<IUserService>(), Arg.Any<IdentityProviderOptions>(), Arg.Any<OidcOptions>(), Arg.Any<RoleOptions>(), Arg.Any<DiscoveryDocumentResponse>(), Arg.Any<TokenResponse>(), Arg.Any<string>()).Returns(Task.FromResult((descriptor, new TokenIssuer.UserData(1, 1, new List<string>()))));
 
         var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, helperMock, null, null, null);
 
@@ -635,21 +639,23 @@ public class OidcControllerTests
     [Fact]
     public async Task CallBackAsync_RedirectsToFrontend_WhenOperationFails()
     {
-        var descriptor = new UserDescriptor(){
-                Organization = new OrganizationDescriptor(){
-                    Id = Guid.NewGuid(),
-                    Name = "test_name",
-                    Tin = "test_tin",
-                },
-                    Id = Guid.NewGuid(),
-                    ProviderType = ProviderType.MitIdPrivate,
-                    Name = "test_name",
-                    MatchedRoles = "viewer",
-                    AllowCprLookup = true,
-                    EncryptedAccessToken = Guid.NewGuid().ToString(),
-                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
-                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
-                };
+        var descriptor = new UserDescriptor()
+        {
+            Organization = new OrganizationDescriptor()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test_name",
+                Tin = "test_tin",
+            },
+            Id = Guid.NewGuid(),
+            ProviderType = ProviderType.MitIdPrivate,
+            Name = "test_name",
+            MatchedRoles = "viewer",
+            AllowCprLookup = true,
+            EncryptedAccessToken = Guid.NewGuid().ToString(),
+            EncryptedIdentityToken = Guid.NewGuid().ToString(),
+            EncryptedProviderKeys = Guid.NewGuid().ToString(),
+        };
         var helperMock = Substitute.ForPartsOf<OidcHelper>();
 
         var uri = "https://example.com";
@@ -699,12 +705,12 @@ public class OidcControllerTests
         helperMock.When(x => x.ClaimsErrorCheck(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())).DoNotCallBase();
         helperMock.GetIdentityProviderEnum(Arg.Any<string>(), Arg.Any<string>()).Returns(ProviderType.MitIdPrivate);
         helperMock.When(x => x.ProvidertypeIsFalseCheck(Arg.Any<ProviderType>(), Arg.Any<IdentityProviderOptions>())).DoNotCallBase();
-        helperMock.HandleUserInfo(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProviderType>(), Arg.Any<string>()).Returns(("test_name",null,null,new Dictionary<ProviderKeyType, string>(){ { ProviderKeyType.Pid, "test_pid" } }));
+        helperMock.HandleUserInfo(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProviderType>(), Arg.Any<string>()).Returns(("test_name", null, null, new Dictionary<ProviderKeyType, string>() { { ProviderKeyType.Pid, "test_pid" } }));
         helperMock.HandleUserAsync(Arg.Any<IUserService>(), Arg.Any<IUserProviderService>(), Arg.Any<List<UserProvider>>(), Arg.Any<OidcOptions>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>()).Returns(Task.FromResult(new User() { Name = "test_name" }));
-        helperMock.CalculateMatchedRoles(Arg.Any<ClaimsPrincipal>(), Arg.Any<RoleOptions>()).Returns(new List<string>{"test_role"});
+        helperMock.CalculateMatchedRoles(Arg.Any<ClaimsPrincipal>(), Arg.Any<RoleOptions>()).Returns(new List<string> { "test_role" });
 
         var result = helperMock.MapUserDescriptor(cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, new TokenResponse()).Result;
-        var(userDescriptor, userData) = result;
+        var (userDescriptor, userData) = result;
 
         Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
         Assert.Equal("test_name", userDescriptor.Name);
