@@ -23,7 +23,7 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
         this.factory = factory;
     }
 
-    [Fact (Skip = "This is an exampled migration test that other migration tests can be based on.")]
+    [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
