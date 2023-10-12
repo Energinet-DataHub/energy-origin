@@ -26,7 +26,6 @@ public class OidcException : Exception
         Url = url;
     }
 }
-
 [ApiController]
 public class OidcController : ControllerBase
 {
@@ -45,6 +44,7 @@ public class OidcController : ControllerBase
         IdentityProviderOptions providerOptions,
         RoleOptions roleOptions,
         ILogger<OidcController> logger,
+        OidcHelper helper,
         [FromQuery] string? code,
         [FromQuery] string? error,
         [FromQuery(Name = "error_description")] string? errorDescription,
@@ -54,16 +54,16 @@ public class OidcController : ControllerBase
         {
             var oidcState = OidcState.Decode(state);
 
-            var redirectionUri = RedirectionCheck(oidcOptions, oidcState);
+            var redirectionUri = helper.RedirectionCheck(oidcOptions, oidcState);
 
-            CodeNullCheck(code, logger, error, errorDescription, redirectionUri);
+            helper.CodeNullCheck(code, logger, error, errorDescription, redirectionUri);
 
             var discoveryDocument = await discoveryCache.GetAsync();
-            DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
+            helper.DiscoveryDocumentErrorChecks(discoveryDocument, logger, redirectionUri);
 
-            var response = await GetClientAndResponse(clientFactory, logger, oidcOptions, discoveryDocument, code!, redirectionUri);
+            var response = await helper.GetClientAndResponse(clientFactory, logger, oidcOptions, discoveryDocument, code!, redirectionUri);
 
-            var (descriptor, data) = await GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
+            var (descriptor, data) = await helper.GetUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
 
             var token = issuer.Issue(descriptor, data);
 
@@ -83,8 +83,11 @@ public class OidcController : ControllerBase
             return RedirectPreserveMethod(e.Url);
         }
     }
+}
 
-    internal static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
+public class OidcHelper {
+
+    public virtual async Task<(UserDescriptor, UserData)> MapUserDescriptor(ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response)
     {
         var handler = new JwtSecurityTokenHandler
         {
@@ -132,7 +135,7 @@ public class OidcController : ControllerBase
 
 
     //DONE
-    internal static string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
+    public virtual string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
         if (oidcState?.RedirectionPath != null)
@@ -151,7 +154,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
+    public virtual void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
     {
         if (code == null)
         {
@@ -161,7 +164,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
+    public virtual void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
     {
         if (discoveryDocument == null || discoveryDocument.IsError)
         {
@@ -171,7 +174,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
+    public virtual async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
     {
         var client = clientFactory.CreateClient();
 
@@ -195,7 +198,8 @@ public class OidcController : ControllerBase
         return response;
     }
 
-    internal static async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
+    //DONE
+    public virtual async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
     {
         try
         {
@@ -214,7 +218,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
+    public virtual void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
         if (subject != identity.FindFirstValue(JwtRegisteredClaimNames.Sub) || subject != userInfo.FindFirstValue(JwtRegisteredClaimNames.Sub))
@@ -224,7 +228,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
+    public virtual void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
     {
         if (providerOptions.Providers.Contains(providerType) == false)
         {
@@ -233,7 +237,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
+    public virtual void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
     {
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
         ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
@@ -241,7 +245,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+    public virtual ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
         (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
@@ -251,7 +255,7 @@ public class OidcController : ControllerBase
     };
 
     //DONE
-    internal static (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
+    public virtual (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;
         string? tin = null;
@@ -308,7 +312,7 @@ public class OidcController : ControllerBase
     }
 
     //DONE
-    internal static async Task<User> HandleUserAsync(
+    public virtual async Task<User> HandleUserAsync(
         IUserService userService,
         IUserProviderService userProviderService,
         List<UserProvider> tokenUserProviders,
@@ -347,8 +351,7 @@ public class OidcController : ControllerBase
         return user;
     }
 
-    //DONE
-    internal static IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
+    public virtual IEnumerable<string> CalculateMatchedRoles(ClaimsPrincipal info, RoleOptions options) => options.RoleConfigurations.Select(role => role.Matches.Any(match =>
     {
         var property = info.FindFirstValue(match.Property);
         return match.Operator switch

@@ -44,6 +44,7 @@ public class OidcControllerTests
     private readonly IMetrics metrics = Substitute.For<IMetrics>();
     private readonly ILogger<OidcController> logger = Substitute.For<ILogger<OidcController>>();
     private readonly MockHttpMessageHandler http = new();
+    private readonly OidcHelper oidcHelper = new();
 
     public OidcControllerTests()
     {
@@ -204,7 +205,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
@@ -251,7 +252,7 @@ public class OidcControllerTests
 
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -301,7 +302,7 @@ public class OidcControllerTests
         var redirection = "https://goodguys.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirection, RedirectionPath: redirectionPath);
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
@@ -351,7 +352,7 @@ public class OidcControllerTests
         var redirectionUri = "http://hackerz.com";
         var oidcState = new OidcState(State: null, RedirectionUri: redirectionUri, RedirectionPath: null);
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
@@ -401,7 +402,7 @@ public class OidcControllerTests
         var redirectionPath = "testpath1/testpath2";
         var oidcState = new OidcState(State: null, RedirectionUri: null, RedirectionPath: redirectionPath);
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null, oidcState.Encode());
 
         Assert.NotNull(action);
         var result = (RedirectResult)action;
@@ -430,7 +431,7 @@ public class OidcControllerTests
     {
         var options = new OidcOptions(){AllowRedirection = direction, FrontendRedirectUri = new Uri("https://test.dk")};
 
-        var result = OidcController.RedirectionCheck(options, state);
+        var result = oidcHelper.RedirectionCheck(options, state);
 
         Assert.Equal(expectedUri, result);
     }
@@ -451,7 +452,7 @@ public class OidcControllerTests
     public void CodeNullCheck_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
 
-        var result = Assert.Throws<OidcException>(() => OidcController.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
+        var result = Assert.Throws<OidcException>(() => oidcHelper.CodeNullCheck(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
@@ -466,7 +467,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void CodeNullCheck_ShouldNotThrow_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.CodeNullCheck("code", logger, null, null, "https://example.com/login?errorCode=714")));
+    public void CodeNullCheck_ShouldNotThrow_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => oidcHelper.CodeNullCheck("code", logger, null, null, "https://example.com/login?errorCode=714")));
 
     public static IEnumerable<object[]> WrongDiscoveryDocumentResponse =>
         new List<object[]>
@@ -479,7 +480,7 @@ public class OidcControllerTests
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
     public void DiscoveryDocumentErrorChecks_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(object? document)
     {
-        var result = Assert.Throws<OidcException>(() => OidcController.DiscoveryDocumentErrorChecks((DiscoveryDocumentResponse?)document, logger, "https://test.dk")).Url;
+        var result = Assert.Throws<OidcException>(() => oidcHelper.DiscoveryDocumentErrorChecks((DiscoveryDocumentResponse?)document, logger, "https://test.dk")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
@@ -493,7 +494,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void DiscoveryDocumentErrorChecks_ShouldNotThrowWhen_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.DiscoveryDocumentErrorChecks(DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", "https://test.dk") }), logger, "https://test.dk")));
+    public void DiscoveryDocumentErrorChecks_ShouldNotThrowWhen_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => oidcHelper.DiscoveryDocumentErrorChecks(DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", "https://test.dk") }), logger, "https://test.dk")));
 
 
     [Fact]
@@ -502,7 +503,7 @@ public class OidcControllerTests
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
 
-        var result = Assert.ThrowsAsync<OidcException>(() => OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://test.dk")).Result.Url;
+        var result = Assert.ThrowsAsync<OidcException>(() => oidcHelper.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://test.dk")).Result.Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result);
@@ -530,7 +531,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{null}}", "id_token":"{{null}}", "userinfo_token":"{{null}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = OidcController.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login").Result;
+        var result = oidcHelper.GetClientAndResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login").Result;
 
         Assert.NotNull(result);
         Assert.IsType<TokenResponse>(result);
@@ -547,7 +548,7 @@ public class OidcControllerTests
         identityClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, identity) }));
         var userInfoClaim = new ClaimsPrincipal();
         userInfoClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, userInfo) }));
-        var result = Assert.Throws(expectedException, () => OidcController.SubjectErrorCheck(subject, identityClaim, userInfoClaim));
+        var result = Assert.Throws(expectedException, () => oidcHelper.SubjectErrorCheck(subject, identityClaim, userInfoClaim));
     }
 
 
@@ -558,17 +559,17 @@ public class OidcControllerTests
         identityClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, "subject") }));
         var userInfoClaim = new ClaimsPrincipal();
         userInfoClaim.AddIdentity(new ClaimsIdentity(new List<Claim>() { new(JwtRegisteredClaimNames.Sub, "subject") }));
-        Assert.Null(Record.Exception(() => OidcController.SubjectErrorCheck("subject", identityClaim, userInfoClaim)));
+        Assert.Null(Record.Exception(() => oidcHelper.SubjectErrorCheck("subject", identityClaim, userInfoClaim)));
     }
 
     [Fact]
     public void ProvidertypeIsFalseCheck_ShouldThrow_WhenProviderTypeIsNotInProviderOptions()
     {
         var newOptions = new IdentityProviderOptions(){ Providers = new List<ProviderType>(){ProviderType.MitIdPrivate, ProviderType.MitIdProfessional}};
-        Assert.Throws<NotSupportedException>(() => OidcController.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,newOptions));
+        Assert.Throws<NotSupportedException>(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,newOptions));
     }
     [Fact]
-    public void ProvidertypeIsFalseCheck_ShouldNotThrow_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => OidcController.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,providerOptions)));
+    public void ProvidertypeIsFalseCheck_ShouldNotThrow_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => oidcHelper.ProvidertypeIsFalseCheck(ProviderType.NemIdPrivate,providerOptions)));
 
     [Theory]
     [InlineData(null, "TestName", "TestIdentity", typeof(ArgumentNullException))]
@@ -579,7 +580,7 @@ public class OidcControllerTests
     [InlineData("TestProvider", "TestName", "", typeof(ArgumentException))]
     public void ClaimsErrorCheck_ShouldThrow_WhenProvidedNullOrEmptyValues(string? scope, string? providerName, string? identityType, Type expectedException)
     {
-        Assert.Throws(expectedException, () => OidcController.ClaimsErrorCheck(scope, providerName, identityType));
+        Assert.Throws(expectedException, () => oidcHelper.ClaimsErrorCheck(scope, providerName, identityType));
     }
 
 
@@ -618,7 +619,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var result = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(result);
         Assert.IsType<RedirectResult>(result);
@@ -634,11 +635,11 @@ public class OidcControllerTests
     [InlineData(ProviderName.NemId, ProviderGroup.Professional, ProviderType.NemIdProfessional)]
     public void GetIdentityProviderEnum_ShouldReturnCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected)
     {
-        Assert.Equal(OidcController.GetIdentityProviderEnum(providerName,identity), expected);
+        Assert.Equal(oidcHelper.GetIdentityProviderEnum(providerName,identity), expected);
     }
 
     [Fact]
-    public void GetIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcController.GetIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
+    public void GetIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => oidcHelper.GetIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
 
     public static IEnumerable<object[]> ValidUserInfoClaims =>
         new List<object[]>
@@ -701,7 +702,7 @@ public class OidcControllerTests
         var userInfoClaim = new ClaimsPrincipal();
         userInfoClaim.AddIdentity(claims);
 
-        var (name, tin, companyName, keys) = OidcController.HandleUserInfo(userInfoClaim, providerType, identityType);
+        var (name, tin, companyName, keys) = oidcHelper.HandleUserInfo(userInfoClaim, providerType, identityType);
 
         Assert.Equal(userInfoClaim.FindFirstValue(expected.name), name);
         Assert.Equal(userInfoClaim.FindFirstValue(expected.tin), tin);
@@ -794,7 +795,7 @@ public class OidcControllerTests
         var userInfoClaim = new ClaimsPrincipal();
         userInfoClaim.AddIdentity(claims);
 
-        Assert.Throws(expectedException, () => OidcController.HandleUserInfo(userInfoClaim, providerType, identityType));
+        Assert.Throws(expectedException, () => oidcHelper.HandleUserInfo(userInfoClaim, providerType, identityType));
     }
 
     [Fact]
@@ -812,7 +813,7 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = await OidcController.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, "","","","","");
+        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, "","","","","");
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -829,7 +830,7 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = await OidcController.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString());
+        var result = await oidcHelper.HandleUserAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString(),Guid.NewGuid().ToString());
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -912,22 +913,36 @@ public class OidcControllerTests
         var options = new RoleOptions();
         options.RoleConfigurations.AddRange(roleConfigurations);
 
-        var result = OidcController.CalculateMatchedRoles(claims, options);
+        var result = oidcHelper.CalculateMatchedRoles(claims, options);
 
         Assert.NotNull(result);
         Assert.Equal(expected, result);
     }
 
     [Fact]
-    public async Task GetUserDescriptor_DoesNotThrow_WhenOperationIsASuccess()
+    public void GetUserDescriptor_DoesNotThrow_WhenOperationIsASuccess()
     {
-        var claims = new ClaimsPrincipal();
+        var helperMock = Substitute.ForPartsOf<OidcHelper>();
 
+        var descriptor = new UserDescriptor(){
+                Organization = new OrganizationDescriptor(){
+                    Id = Guid.NewGuid(),
+                    Name = "test_name",
+                    Tin = "test_tin",
+                },
+                    Id = Guid.NewGuid(),
+                    ProviderType = ProviderType.MitIdPrivate,
+                    Name = "test_name",
+                    MatchedRoles = "test_role",
+                    AllowCprLookup = true,
+                    EncryptedAccessToken = Guid.NewGuid().ToString(),
+                    EncryptedIdentityToken = Guid.NewGuid().ToString(),
+                    EncryptedProviderKeys = Guid.NewGuid().ToString(),
+                };
 
         var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
 
-        var expected = (new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>()));
-        SubstituteExtensions.Returns(, OidcController.MapUserDescriptor(
+        helperMock.MapUserDescriptor(
             Arg.Any<ICryptography>(),
             Arg.Any<IUserProviderService>(),
             Arg.Any<IUserService>(),
@@ -935,23 +950,64 @@ public class OidcControllerTests
             Arg.Any<OidcOptions>(),
             Arg.Any<RoleOptions>(),
             Arg.Any<DiscoveryDocumentResponse>(),
-            Arg.Any<TokenResponse>()
-            )).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+            Arg.Any<TokenResponse>())
+            .Returns((descriptor, new TokenIssuer.UserData(1,1,new List<string>())));
 
-        OidcController.MapUserDescriptor(
-            Arg.Any<ICryptography>(),
-            Arg.Any<IUserProviderService>(),
-            Arg.Any<IUserService>(),
-            Arg.Any<IdentityProviderOptions>(),
-            Arg.Any<OidcOptions>(),
-            Arg.Any<RoleOptions>(),
-            Arg.Any<DiscoveryDocumentResponse>(),
-            Arg.Any<TokenResponse>()
-            ).Returns((new UserDescriptor(claims), new TokenIssuer.UserData(1,1,new List<string>())));
+        var result = helperMock.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com").Result;
+
+        Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
+    }
+
+    [Fact]
+    public void GetUserDescriptor_LogsThrowsAndReturnsRedirectionQuery_WhenOperationIsAFailure()
+    {
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("test_key", "test_value") });
+
+        Assert.ThrowsAsync<Exception>(() => oidcHelper.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document, new TokenResponse(),"https://test.com"));
+
+        logger.Received(1).Log(
+            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
+    }
+
+    [Fact]
+    public async Task MapUserDescriptor_ReturnsUserDescriptorAndUserData_WhenOperationIsASuccess()
+    {
+        var helperMock = Substitute.ForPartsOf<OidcHelper>();
+
+        var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
+
+        var tokenEndpoint = new Uri($"http://{testOptions.AuthorityUri.Host}/connect/token");
+
+        var document = DiscoveryDocument.Load(
+            new List<KeyValuePair<string, string>>() {
+                new("issuer", $"https://{testOptions.AuthorityUri.Host}/op"),
+                new("token_endpoint", tokenEndpoint.AbsoluteUri),
+                new("end_session_endpoint", $"http://{testOptions.AuthorityUri.Host}/connect/endsession")
+            },
+            KeySetUsing(tokenOptions.PublicKeyPem)
+        );
 
 
-        var token = new TokenResponse();
-        var result = await OidcController.GetUserDescriptor(logger,cryptography,userProviderService,service,providerOptions,oidcOptions,roleOptions,document,token,"https://test.com");
+        var client = new HttpClient();
+        var response = await client.RequestTokenAsync(new TokenRequest
+        {
+            Address = "https://demo.identityserver.io/connect/token",
+            GrantType = "custom",
+            ClientId = "client",
+            ClientSecret = "secret",
+            Parameters =
+            {
+                { "custom_parameter", "custom value"},
+                { "scope", "api1" },
+                { "userinfo_token", "token"}
+            }
+        });
+
+        var result = helperMock.MapUserDescriptor(cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, response);
     }
 
     //TODO: Er det en eller anden form for success scenarie?
@@ -993,7 +1049,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        var action = await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, testOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null);
 
         Assert.NotNull(action);
         Assert.IsType<RedirectResult>(action);
@@ -1044,7 +1100,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, Guid.NewGuid().ToString(), null, null);
+        await new OidcController().CallbackAsync(metrics, cache, factory, userProviderService, service, cryptography, issuer, oidcOptions, providerOptions, roleOptions, logger, oidcHelper, Guid.NewGuid().ToString(), null, null);
 
         metrics.Received(1).Login(
             Arg.Any<Guid>(),
