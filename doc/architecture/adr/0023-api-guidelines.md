@@ -36,5 +36,5 @@ We do not have to read and understand a very complex guideline
 
 ### Negative Consequences <!-- optional -->
 We need to have specifications on everything we want to include in our API
-There is a higher degree of risk that we are missed something that we should have specified
+There is a higher degree of risk that we missed something that we should have specified
 
