@@ -49,7 +49,7 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
     private static async Task InsertOldTransferAgreement(ApplicationDbContext dbContext, Guid id, DateTimeOffset startDate, DateTimeOffset endDate, Guid senderId, string senderName,
         string senderTin, string receiverTin, Guid receiverReference)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         var agreementQuery =
             $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference)";
