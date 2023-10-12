@@ -22,7 +22,7 @@ public class WalletContainer : IAsyncLifetime
         {
             var postgresConnectionString = postgresContainer.GetConnectionString()
                 .Replace($"Host={postgresContainer.Hostname}", $"Host={postgresContainer.IpAddress}")
-                .Replace($"Port={postgresContainer.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort)}", $"Port={PostgreSqlBuilder.PostgreSqlPort}");;
+                .Replace($"Port={postgresContainer.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort)}", $"Port={PostgreSqlBuilder.PostgreSqlPort}"); ;
 
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.2.1")
