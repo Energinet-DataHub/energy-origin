@@ -1,3 +1,4 @@
+using API.Controllers;
 using API.Middleware;
 using API.Options;
 using API.Repositories;
@@ -130,6 +131,7 @@ builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
+builder.Services.AddScoped<OidcHelper>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
