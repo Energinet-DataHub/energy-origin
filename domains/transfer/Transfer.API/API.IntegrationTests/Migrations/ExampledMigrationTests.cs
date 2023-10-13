@@ -44,7 +44,7 @@ public class ExampledMigrationTests : IClassFixture<TransferAgreementsApiWebAppl
         var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
         applyMigration.Should().NotThrow();
 
-        //This last part can be deleted should the TransferAgreements table change in the future
+        //Assert that data is as expected
         var tas = dbContext.TransferAgreements.ToList();
 
         tas.Count.Should().Be(2);
