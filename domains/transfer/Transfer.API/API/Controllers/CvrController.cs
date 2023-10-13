@@ -60,7 +60,7 @@ public class CvrController : Controller
         return new CvrCompanyDto
         {
             CompanyName = cvrInfo.virksomhedMetadata?.nyesteNavn?.navn,
-            CompanyCvr = cvrInfo.cvrNummer.ToString(),
+            CompanyCvr = cvrInfo.cvrNummer.ToString() ?? string.Empty,
             Address = ToDto(cvrInfo.virksomhedMetadata?.nyesteBeliggenhedsadresse)
         };
     }

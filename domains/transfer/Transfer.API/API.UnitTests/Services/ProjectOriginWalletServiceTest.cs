@@ -95,12 +95,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
-            .Received(1)
-            .TransferCertificateAsync(
-                Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
-            );
+        _ = fakeWalletServiceClient
+               .Received(1)
+               .TransferCertificateAsync(
+                   Arg.Any<TransferRequest>(),
+                   Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+               );
     }
 
     [Fact]
@@ -130,12 +130,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
-            .DidNotReceive()
-            .TransferCertificateAsync(
-                Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
-            );
+        _ = fakeWalletServiceClient
+              .DidNotReceive()
+              .TransferCertificateAsync(
+                  Arg.Any<TransferRequest>(),
+                  Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+              );
     }
 
     [Fact]
@@ -166,12 +166,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
-            .DidNotReceive()
-            .TransferCertificateAsync(
-                Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
-            );
+        _ = fakeWalletServiceClient
+             .DidNotReceive()
+             .TransferCertificateAsync(
+                 Arg.Any<TransferRequest>(),
+                 Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+             );
     }
 
     [Fact]
@@ -203,12 +203,12 @@ public class ProjectOriginWalletServiceTest
 
         await service.TransferCertificates(transferAgreement);
 
-        fakeWalletServiceClient
-            .Received(1)
-            .TransferCertificateAsync(
-                Arg.Any<TransferRequest>(),
-                Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
-            );
+        _ = fakeWalletServiceClient
+             .Received(1)
+             .TransferCertificateAsync(
+                 Arg.Any<TransferRequest>(),
+                 Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+             );
     }
 
     private void SetupWalletServiceClient(AsyncUnaryCall<QueryResponse> fakeGranularCertificatesResponse,

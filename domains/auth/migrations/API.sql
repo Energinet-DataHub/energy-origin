@@ -152,7 +152,7 @@ START TRANSACTION;
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230413105444_AddEiaProviderKeyTypeEnum') THEN
-    ALTER TYPE provider_key_type ADD VALUE 'eia' BEFORE 'mit_id_uuid';
+        ALTER TYPE provider_key_type ADD VALUE 'eia' BEFORE 'mit_id_uuid';
     END IF;
 END $EF$;
 
