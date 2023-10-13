@@ -636,7 +636,7 @@ public class OidcControllerTests
         Assert.NotNull(map);
         Assert.True(map.ContainsKey("token"));
 
-        metrics.Received(1).Login(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<ProviderType>());;
+        metrics.Received(1).Login(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<ProviderType>());
     }
 
     [Fact]
