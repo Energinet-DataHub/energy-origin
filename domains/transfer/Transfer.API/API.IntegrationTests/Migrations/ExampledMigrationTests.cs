@@ -14,16 +14,17 @@ using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class ExampledMigrationTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public AddUniqueIndexAndTransferAgreementNumberTests(TransferAgreementsApiWebApplicationFactory factory)
+    public ExampledMigrationTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
     }
 
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
+    //These tests are to be deleted after the actual migration has happened.
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
@@ -31,12 +32,15 @@ public class AddUniqueIndexAndTransferAgreementNumberTests : IClassFixture<Trans
 
         var migrator = dbContext.Database.GetService<IMigrator>();
 
+        //Here the database is migrated to the specific point we need.
         await migrator.MigrateAsync("20230829090644_AddInvitationsTable");
         await dbContext.TruncateTransferAgreementsTable();
 
+        //'Old' data (data that matches the specific point) is inserted 
         await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), Guid.NewGuid(), "Producent A/S", "12345678", "11223344", Guid.NewGuid());
         await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), Guid.NewGuid(), "Producent A/S2", "12345679", "11223345", Guid.NewGuid());
 
+        //new migration is applied and we assert that we do not get an exception
         var applyMigration = () => migrator.Migrate("20230829124003_AddUniqueIndexAndTransferAgreementNumber");
         applyMigration.Should().NotThrow();
 
