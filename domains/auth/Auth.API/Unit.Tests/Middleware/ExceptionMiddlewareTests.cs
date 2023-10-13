@@ -21,7 +21,7 @@ public class ExceptionMiddlewareTests
 
         await exceptionMiddleware.InvokeAsync(httpContext);
 
-        logger.Received(0);
+        logger.Received(0).Log(LogLevel.Error, Arg.Any<EventId>(), Arg.Any<object>(), Arg.Any<Exception>(), Arg.Any<Func<object, Exception?, string>>());
         Assert.Equal((int)HttpStatusCode.OK, httpContext.Response.StatusCode);
     }
     [Fact]
