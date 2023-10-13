@@ -128,9 +128,9 @@ public class OidcControllerTests
 
     [Theory]
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
-    public void DiscoveryDocumentErrorChecks_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(object? document)
+    public void DiscoveryDocumentErrorChecks_ShouldThrowAndReturnRedirectUrlWithErrorAndLogWarning_WhenGivenErrorConditions(DiscoveryDocumentResponse? document)
     {
-        var result = Assert.Throws<OidcException>(() => oidcHelper.DiscoveryDocumentErrorChecks((DiscoveryDocumentResponse?)document, logger, "https://test.dk")).Url;
+        var result = Assert.Throws<OidcException>(() => oidcHelper.DiscoveryDocumentErrorChecks(document, logger, "https://test.dk")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
