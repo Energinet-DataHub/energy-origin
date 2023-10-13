@@ -24,7 +24,7 @@ public class ExampledMigrationTests : IClassFixture<TransferAgreementsApiWebAppl
     }
 
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
-    //These tests are to be deleted after the actual migration has happened.
+    //These tests are to be deleted after the actual migration has happened. We only keep this class as an example for how to write the migration tests. 
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
         var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
