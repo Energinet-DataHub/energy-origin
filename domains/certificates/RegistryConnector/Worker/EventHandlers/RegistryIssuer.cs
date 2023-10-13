@@ -8,13 +8,14 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
+public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, IConsumer<ConsumptionCertificateCreatedEvent>
 {
     private readonly ILogger<RegistryIssuer> logger;
     private readonly ProjectOriginOptions projectOriginOptions;
@@ -31,15 +32,8 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
     {
         var message = context.Message;
 
-        if (message.Quantity > uint.MaxValue)
-            throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
-
-        var commitment = new SecretCommitmentInfo((uint)message.Quantity, message.BlindingValue);
-
-        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(message.WalletPublicKey);
-        var ownerPublicKey = hdPublicKey.Derive((int)message.WalletDepositEndpointPosition).GetPublicKey();
-
-        var issuerKey = projectOriginOptions.GetIssuerKey(message.GridArea);
+        var (commitment, ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity,
+            message.BlindingValue, message.WalletPublicKey, message.WalletDepositEndpointPosition, message.GridArea);
 
         var issuedEvent = Registry.CreateIssuedEventForProduction(
             projectOriginOptions.RegistryName,
@@ -101,4 +95,45 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>
                 throw new TimeoutException($"Timed out waiting for transaction to commit for certificate {message.CertificateId}");
         }
     }
+
+    public async Task Consume(ConsumeContext<ConsumptionCertificateCreatedEvent> context)
+    {
+        var message = context.Message;
+
+        var (commitment, ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity,
+            message.BlindingValue, message.WalletPublicKey, message.WalletDepositEndpointPosition, message.GridArea);
+
+        var issuedEvent = Registry.CreateIssuedEventForConsumption(
+            projectOriginOptions.RegistryName,
+            message.CertificateId,
+            message.Period.ToDateInterval(),
+            message.GridArea,
+            message.Gsrn.Value,
+            commitment,
+            ownerPublicKey);
+
+        var request = issuedEvent.CreateSendTransactionRequest(issuerKey);
+
+        using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
+        var client = new RegistryService.RegistryServiceClient(channel);
+
+        await client.SendTransactionsAsync(request);
+
+    }
+
+    private (SecretCommitmentInfo, IPublicKey, IPrivateKey) GenerateKeyInfo(long quantity, byte[] blindingValue, byte[] walletPublicKey, uint walletDepositEndpointPosition, string gridArea)
+    {
+        if (quantity > uint.MaxValue)
+            throw new ArgumentOutOfRangeException($"Cannot cast quantity {quantity} to uint");
+
+        var commitment = new SecretCommitmentInfo((uint)quantity, blindingValue);
+
+        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletPublicKey);
+        var ownerPublicKey = hdPublicKey.Derive((int)walletDepositEndpointPosition).GetPublicKey();
+        var issuerKey = projectOriginOptions.GetIssuerKey(gridArea);
+
+        return (commitment, ownerPublicKey, issuerKey);
+    }
+
+    private async Task PollRegistryAndPublishEvent()
 }

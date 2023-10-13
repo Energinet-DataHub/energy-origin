@@ -7,5 +7,8 @@ namespace API.GranularCertificateIssuer;
 public static class Startup
 {
     public static void AddGranularCertificateIssuer(this IServiceCollection services)
-        => services.TryAddScoped<IProductionCertificateRepository, ProductionCertificateRepository>();
+    {
+        services.TryAddScoped<IProductionCertificateRepository, ProductionCertificateRepository>();
+        services.TryAddScoped<IConsumptionCertificateRepository, ConsumptionCertificateRepository>();
+    }
 }
