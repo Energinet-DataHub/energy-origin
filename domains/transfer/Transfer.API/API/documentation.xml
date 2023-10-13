@@ -61,7 +61,7 @@
             <summary>
             Add a new connection
             </summary>
-            <param name="id">Id of connection-invitation</param>
+            <param name="request">The request object containing the ConnectionInvitationId for creating the connection.</param>
             <response code="201">Successful operation</response>
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>

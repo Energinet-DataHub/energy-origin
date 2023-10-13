@@ -8,8 +8,8 @@ namespace API.Converters;
 
 public class TempWalletDepositEndpoint
 {
-    public string Endpoint { get; set; }
-    public byte[] PublicKey { get; set; }
+    public string? Endpoint { get; set; }
+    public byte[]? PublicKey { get; set; }
     public int Version { get; set; }
 }
 

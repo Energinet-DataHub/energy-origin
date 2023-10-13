@@ -20,16 +20,18 @@ public class WalletContainer : IAsyncLifetime
 
         walletContainer = new Lazy<IContainer>(() =>
         {
-            var postgresConnectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
+            var postgresConnectionString = postgresContainer.GetConnectionString()
+                .Replace($"Host={postgresContainer.Hostname}", $"Host={postgresContainer.IpAddress}")
+                .Replace($"Port={postgresContainer.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort)}", $"Port={PostgreSqlBuilder.PostgreSqlPort}");
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:0.1.3")
+                .WithImage("ghcr.io/project-origin/wallet-server:0.2.1")
                 .WithPortBinding(80, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ConnectionStrings__Database", postgresConnectionString)
                 //TODO - This should be implemented correctly, right now it apparently doesn't use it https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1688
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://whatever.com/")
-                .WithEnvironment("VerifySlicesWorkerOptions__SleepTime", "00:00:01")
+                .WithEnvironment("MessageBroker__Type", "InMemory")
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()
                         .UntilPortIsAvailable(80)
