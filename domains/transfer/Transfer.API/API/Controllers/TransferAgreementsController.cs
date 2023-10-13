@@ -8,7 +8,6 @@ using API.Data;
 using API.Extensions;
 using API.Models;
 using API.Services;
-using API.TransferAgreementsAutomation;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -85,7 +84,7 @@ public class TransferAgreementsController : ControllerBase
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
-        catch (DbUpdateException e)
+        catch (DbUpdateException)
         {
             return Conflict();
         }
