@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.IO.Compression;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,7 +7,6 @@ using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
-using API.Services;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Interfaces;
@@ -234,6 +232,9 @@ public class OidcControllerTests
     {
         Assert.Throws(expectedException, () => oidcHelper.ClaimsErrorCheck(scope, providerName, identityType));
     }
+
+    [Fact]
+    public void ClaimsErrorCheck_ShouldNotThrow_WhenProvidedWithCorrectValues() => Assert.Null(Record.Exception(() => oidcHelper.ClaimsErrorCheck("TestScope", "TestProvider", "TestIdentity")));
 
     [Theory]
     [InlineData(ProviderName.MitId, ProviderGroup.Private, ProviderType.MitIdPrivate)]
@@ -634,6 +635,8 @@ public class OidcControllerTests
         var map = QueryHelpers.ParseNullableQuery(uri.Query);
         Assert.NotNull(map);
         Assert.True(map.ContainsKey("token"));
+
+        metrics.Received(1).Login(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<ProviderType>());;
     }
 
     [Fact]

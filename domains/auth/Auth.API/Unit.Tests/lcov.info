@@ -1,0 +1,3361 @@
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Program.cs
+FN:25,System.Void Program::<Main>$(System.String[])
+FNDA:1,System.Void Program::<Main>$(System.String[])
+DA:26,1
+DA:28,1
+DA:29,1
+DA:30,1
+DA:31,1
+DA:33,1
+DA:34,1
+DA:35,1
+DA:37,1
+DA:38,1
+DA:40,1
+DA:41,0
+DA:42,0
+DA:43,0
+DA:45,1
+DA:46,1
+DA:48,1
+DA:49,1
+DA:51,1
+DA:52,1
+DA:54,1
+DA:55,1
+DA:56,1
+DA:57,1
+DA:58,1
+DA:59,1
+DA:61,1
+DA:62,1
+DA:63,1
+DA:64,1
+DA:65,1
+DA:66,1
+DA:67,1
+DA:68,1
+DA:70,1
+DA:71,1
+DA:72,1
+DA:73,1
+DA:75,0
+DA:76,0
+DA:77,0
+DA:79,1
+DA:80,1
+DA:81,1
+DA:82,1
+DA:83,1
+DA:85,1
+DA:86,1
+DA:87,1
+DA:88,1
+DA:89,1
+DA:90,1
+DA:91,1
+DA:92,1
+DA:93,1
+DA:94,1
+DA:95,1
+DA:96,1
+DA:97,1
+DA:98,1
+DA:99,1
+DA:100,1
+DA:101,1
+DA:102,1
+DA:103,1
+DA:104,1
+DA:105,1
+DA:106,1
+DA:107,2
+DA:109,1
+DA:110,1
+DA:112,1
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,1
+DA:120,1
+DA:121,1
+DA:122,1
+DA:124,1
+DA:125,1
+DA:126,1
+DA:127,1
+DA:128,1
+DA:129,1
+DA:130,1
+DA:131,1
+DA:132,1
+DA:134,1
+DA:135,1
+DA:136,1
+DA:137,1
+DA:138,1
+DA:139,1
+DA:140,1
+DA:141,1
+DA:142,1
+DA:143,2
+DA:144,1
+DA:145,2
+DA:146,2
+DA:147,2
+DA:148,2
+DA:149,2
+DA:150,3
+DA:152,1
+DA:154,1
+DA:155,1
+DA:156,1
+DA:157,1
+DA:158,1
+DA:160,0
+DA:161,0
+DA:162,0
+DA:163,0
+DA:165,1
+DA:166,1
+DA:167,1
+DA:168,1
+DA:171,1
+DA:172,1
+DA:173,0
+DA:174,0
+DA:175,0
+DA:176,0
+DA:177,0
+BRDA:33,70,0,0
+BRDA:33,70,1,1
+BRDA:40,185,0,0
+BRDA:40,185,1,1
+BRDA:70,673,0,0
+BRDA:70,673,1,1
+BRDA:70,693,0,1
+BRDA:70,693,1,0
+BRDA:154,1173,0,1
+BRDA:154,1173,1,0
+BRDA:136,71,0,1
+BRDA:136,71,1,1
+BRDA:145,47,0,1
+BRDA:145,47,1,1
+LF:129
+LH:108
+BRF:14
+BRH:9
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Values\ErrorCode.cs
+FN:38,System.String API.Values.ErrorCode/AuthenticationUpstream::From(System.String,System.String)
+FNDA:12,System.String API.Values.ErrorCode/AuthenticationUpstream::From(System.String,System.String)
+DA:39,12
+DA:40,12
+DA:41,12
+DA:42,1
+DA:43,2
+DA:44,3
+DA:45,2
+DA:46,1
+DA:47,1
+DA:48,2
+DA:49,12
+BRDA:39,1,0,1
+BRDA:39,1,1,11
+BRDA:39,13,0,1
+BRDA:39,13,1,12
+BRDA:39,23,0,8
+BRDA:39,23,1,4
+BRDA:39,35,0,8
+BRDA:39,35,1,12
+BRDA:40,49,0,12
+BRDA:40,64,0,10
+BRDA:40,70,0,2
+BRDA:40,64,1,2
+BRDA:40,109,0,1
+BRDA:40,70,2,6
+BRDA:40,136,0,1
+BRDA:40,136,1,5
+BRDA:40,144,1,1
+BRDA:40,70,1,1
+BRDA:40,109,1,1
+BRDA:40,116,1,1
+BRDA:40,70,4,1
+BRDA:40,96,1,1
+BRDA:40,162,1,5
+BRDA:40,288,0,4
+BRDA:40,301,0,3
+BRDA:40,314,0,2
+BRDA:40,288,1,1
+BRDA:40,301,1,2
+BRDA:40,314,1,2
+BRDA:40,201,1,3
+BRDA:40,222,1,3
+BRDA:40,327,1,3
+BRDA:40,240,1,2
+BRDA:40,258,1,2
+BRDA:40,273,1,1
+BRDA:40,180,1,1
+BRDA:40,49,1,2
+BRDA:40,70,3,2
+BRDA:40,96,0,2
+BRDA:40,116,0,2
+BRDA:40,144,0,2
+BRDA:40,162,0,2
+BRDA:40,180,0,2
+BRDA:40,201,0,2
+BRDA:40,222,0,2
+BRDA:40,240,0,2
+BRDA:40,258,0,2
+BRDA:40,273,0,2
+BRDA:40,327,0,2
+LF:11
+LH:11
+BRF:49
+BRH:49
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\DecodableUserDescriptor.cs
+FN:16,System.String API.Utilities.DecodableUserDescriptor::get_AccessToken()
+FNDA:0,System.String API.Utilities.DecodableUserDescriptor::get_AccessToken()
+DA:17,0
+FN:17,System.String API.Utilities.DecodableUserDescriptor::get_IdentityToken()
+FNDA:4,System.String API.Utilities.DecodableUserDescriptor::get_IdentityToken()
+DA:18,4
+FN:18,System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String> API.Utilities.DecodableUserDescriptor::get_ProviderKeys()
+FNDA:1,System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String> API.Utilities.DecodableUserDescriptor::get_ProviderKeys()
+DA:19,1
+DA:20,1
+DA:21,1
+DA:22,1
+DA:23,1
+DA:24,1
+DA:25,1
+DA:26,1
+DA:27,3
+FN:14,System.Void API.Utilities.DecodableUserDescriptor::.ctor(System.Security.Claims.ClaimsPrincipal,EnergyOrigin.TokenValidation.Utilities.Interfaces.ICryptography)
+FNDA:16,System.Void API.Utilities.DecodableUserDescriptor::.ctor(System.Security.Claims.ClaimsPrincipal,EnergyOrigin.TokenValidation.Utilities.Interfaces.ICryptography)
+DA:15,16
+LF:12
+LH:11
+BRF:0
+BRH:0
+FNF:4
+FNH:3
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\FeatureManagerExtensions.cs
+FN:13,System.Boolean API.Utilities.FeatureManagerExtensions::IsEnabled(Microsoft.FeatureManagement.IFeatureManager,System.String)
+FNDA:87,System.Boolean API.Utilities.FeatureManagerExtensions::IsEnabled(Microsoft.FeatureManagement.IFeatureManager,System.String)
+DA:14,87
+BRDA:14,1,0,87
+BRDA:14,1,1,0
+LF:1
+LH:1
+BRF:2
+BRH:1
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\HostEnvironmentExtensions.cs
+FN:4,System.Boolean API.Utilities.HostEnvironmentExtensions::IsTest(Microsoft.Extensions.Hosting.IHostEnvironment)
+FNDA:1,System.Boolean API.Utilities.HostEnvironmentExtensions::IsTest(Microsoft.Extensions.Hosting.IHostEnvironment)
+DA:5,1
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\JsonWebKeyExtensions.cs
+FN:8,Microsoft.IdentityModel.Tokens.SecurityKey API.Utilities.JsonWebKeyExtensions::ToSecurityKey(IdentityModel.Jwk.JsonWebKey)
+FNDA:3,Microsoft.IdentityModel.Tokens.SecurityKey API.Utilities.JsonWebKeyExtensions::ToSecurityKey(IdentityModel.Jwk.JsonWebKey)
+DA:9,3
+DA:10,3
+DA:11,3
+DA:12,3
+LF:4
+LH:4
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\LoggerExtensions.cs
+FN:7,System.Void API.Utilities.LoggerExtensions::AuditLog(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+FNDA:18,System.Void API.Utilities.LoggerExtensions::AuditLog(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+DA:8,18
+DA:9,18
+DA:10,18
+DA:12,18
+DA:14,18
+DA:15,18
+LF:6
+LH:6
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\Metrics.cs
+FN:21,System.Void API.Utilities.Metrics::Login(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+FNDA:0,System.Void API.Utilities.Metrics::Login(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+DA:22,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:26,0
+DA:27,0
+FN:29,System.Void API.Utilities.Metrics::Logout(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+FNDA:0,System.Void API.Utilities.Metrics::Logout(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+FN:37,System.Void API.Utilities.Metrics::TokenRefresh(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+FNDA:0,System.Void API.Utilities.Metrics::TokenRefresh(System.Guid,System.Nullable`1<System.Guid>,EnergyOrigin.TokenValidation.Values.ProviderType)
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+FN:44,System.Collections.Generic.KeyValuePair`2<System.String,System.Object> API.Utilities.Metrics::GetKeyValuePair(System.String,System.Object)
+FNDA:0,System.Collections.Generic.KeyValuePair`2<System.String,System.Object> API.Utilities.Metrics::GetKeyValuePair(System.String,System.Object)
+DA:45,0
+FN:12,System.Void API.Utilities.Metrics::.ctor()
+FNDA:0,System.Void API.Utilities.Metrics::.ctor()
+DA:13,0
+DA:14,0
+DA:15,0
+FN:10,System.Void API.Utilities.Metrics::.cctor()
+FNDA:0,System.Void API.Utilities.Metrics::.cctor()
+DA:11,0
+LF:23
+LH:0
+BRF:0
+BRH:0
+FNF:6
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\OidcState.cs
+FN:5,System.String API.Utilities.OidcState::get_State()
+FNDA:206,System.String API.Utilities.OidcState::get_State()
+DA:6,206
+FN:8,System.String API.Utilities.OidcState::Encode()
+FNDA:10,System.String API.Utilities.OidcState::Encode()
+DA:9,10
+DA:10,10
+DA:11,10
+DA:12,10
+FN:14,API.Utilities.OidcState API.Utilities.OidcState::Decode(System.String)
+FNDA:19,API.Utilities.OidcState API.Utilities.OidcState::Decode(System.String)
+DA:15,19
+DA:16,19
+DA:17,3
+DA:18,3
+DA:20,16
+DA:21,13
+DA:22,13
+BRDA:16,7,0,3
+BRDA:16,7,1,16
+FN:6,System.Void API.Utilities.OidcState::.ctor(System.String,System.String,System.String)
+FNDA:30,System.Void API.Utilities.OidcState::.ctor(System.String,System.String,System.String)
+DA:7,30
+DA:8,30
+DA:13,30
+DA:14,30
+DA:19,30
+DA:23,30
+LF:18
+LH:18
+BRF:2
+BRH:2
+FNF:4
+FNH:4
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\ServiceCollectionExtensions.cs
+FN:7,Microsoft.Extensions.Options.OptionsBuilder`1<T> API.Utilities.ServiceCollectionExtensions::AttachOptions(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:9,Microsoft.Extensions.Options.OptionsBuilder`1<T> API.Utilities.ServiceCollectionExtensions::AttachOptions(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:8,9
+DA:9,9
+DA:10,9
+DA:11,9
+DA:12,9
+BRDA:10,15,0,9
+BRDA:10,15,1,9
+LF:5
+LH:5
+BRF:2
+BRH:2
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\TokenIssuer.cs
+FN:34,System.String API.Utilities.TokenIssuer::Issue(EnergyOrigin.TokenValidation.Utilities.UserDescriptor,API.Utilities.TokenIssuer/UserData,System.Boolean,System.Nullable`1<System.DateTime>)
+FNDA:18,System.String API.Utilities.TokenIssuer::Issue(EnergyOrigin.TokenValidation.Utilities.UserDescriptor,API.Utilities.TokenIssuer/UserData,System.Boolean,System.Nullable`1<System.DateTime>)
+DA:35,18
+DA:36,18
+DA:38,18
+DA:40,18
+DA:41,18
+BRDA:40,59,0,17
+BRDA:40,59,1,1
+FN:43,Microsoft.IdentityModel.Tokens.SigningCredentials API.Utilities.TokenIssuer::CreateSigningCredentials(API.Options.TokenOptions)
+FNDA:18,Microsoft.IdentityModel.Tokens.SigningCredentials API.Utilities.TokenIssuer::CreateSigningCredentials(API.Options.TokenOptions)
+DA:44,18
+DA:45,18
+DA:46,18
+DA:48,18
+DA:50,18
+DA:51,18
+FN:53,API.Utilities.TokenIssuer/UserState API.Utilities.TokenIssuer::ResolveState(API.Options.TermsOptions,API.Utilities.TokenIssuer/UserData,System.Boolean,System.Boolean)
+FNDA:18,API.Utilities.TokenIssuer/UserState API.Utilities.TokenIssuer::ResolveState(API.Options.TermsOptions,API.Utilities.TokenIssuer/UserData,System.Boolean,System.Boolean)
+DA:54,18
+DA:55,18
+DA:56,18
+DA:58,18
+DA:59,18
+BRDA:56,11,0,16
+BRDA:56,15,0,1
+BRDA:56,11,1,2
+BRDA:56,15,1,18
+FN:61,System.String API.Utilities.TokenIssuer::PrepareNotAcceptedScope(API.Options.TermsOptions,API.Utilities.TokenIssuer/UserData,System.Boolean)
+FNDA:18,System.String API.Utilities.TokenIssuer::PrepareNotAcceptedScope(API.Options.TermsOptions,API.Utilities.TokenIssuer/UserData,System.Boolean)
+DA:62,18
+DA:63,18
+DA:64,4
+DA:65,4
+DA:68,14
+DA:69,14
+DA:70,14
+DA:71,13
+DA:72,13
+DA:73,2
+DA:74,2
+DA:77,11
+DA:78,11
+DA:81,1
+DA:83,1
+DA:84,18
+BRDA:63,20,0,4
+BRDA:63,20,1,14
+BRDA:68,34,0,14
+BRDA:70,56,0,13
+BRDA:72,65,0,5
+BRDA:72,65,1,8
+BRDA:72,90,0,2
+BRDA:72,90,1,11
+BRDA:70,56,1,1
+BRDA:68,34,1,1
+FN:86,Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor API.Utilities.TokenIssuer::CreateTokenDescriptor(API.Options.TokenOptions,API.Options.RoleOptions,Microsoft.IdentityModel.Tokens.SigningCredentials,EnergyOrigin.TokenValidation.Utilities.UserDescriptor,API.Utilities.TokenIssuer/UserData,API.Utilities.TokenIssuer/UserState,System.DateTime)
+FNDA:18,Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor API.Utilities.TokenIssuer::CreateTokenDescriptor(API.Options.TokenOptions,API.Options.RoleOptions,Microsoft.IdentityModel.Tokens.SigningCredentials,EnergyOrigin.TokenValidation.Utilities.UserDescriptor,API.Utilities.TokenIssuer/UserData,API.Utilities.TokenIssuer/UserState,System.DateTime)
+DA:87,18
+DA:88,18
+DA:89,18
+DA:90,18
+DA:91,18
+DA:92,18
+DA:93,18
+DA:94,18
+DA:95,18
+DA:96,18
+DA:97,18
+DA:98,18
+DA:99,18
+DA:100,18
+DA:102,94
+DA:103,18
+DA:104,18
+DA:105,124
+DA:106,18
+DA:107,71
+DA:108,18
+DA:109,48
+DA:111,18
+DA:113,18
+DA:114,1
+DA:115,1
+DA:116,1
+DA:117,1
+DA:118,1
+DA:120,18
+DA:121,18
+DA:122,18
+DA:123,18
+DA:124,18
+DA:126,18
+DA:127,18
+DA:128,18
+DA:129,18
+DA:130,18
+DA:131,18
+DA:132,18
+DA:133,18
+DA:134,18
+DA:135,18
+DA:136,18
+BRDA:103,285,0,9
+BRDA:103,285,1,18
+BRDA:104,312,0,0
+BRDA:104,312,1,18
+BRDA:113,474,0,1
+BRDA:113,474,1,18
+FN:138,System.Collections.Generic.IEnumerable`1<System.String> API.Utilities.TokenIssuer::AddInheritedRoles(System.Collections.Generic.Dictionary`2<System.String,API.Options.RoleConfiguration>,System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:30,System.Collections.Generic.IEnumerable`1<System.String> API.Utilities.TokenIssuer::AddInheritedRoles(System.Collections.Generic.Dictionary`2<System.String,API.Options.RoleConfiguration>,System.Collections.Generic.IEnumerable`1<System.String>)
+DA:139,30
+DA:140,30
+DA:141,18
+DA:142,18
+DA:144,195
+DA:145,12
+DA:146,30
+BRDA:140,22,0,18
+BRDA:140,22,1,12
+FN:148,System.String API.Utilities.TokenIssuer::CreateToken(Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor)
+FNDA:18,System.String API.Utilities.TokenIssuer::CreateToken(Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor)
+DA:149,18
+DA:150,18
+DA:151,18
+DA:152,18
+DA:153,18
+FN:25,System.Void API.Utilities.TokenIssuer::.ctor(API.Options.TermsOptions,API.Options.TokenOptions,API.Options.RoleOptions,Microsoft.FeatureManagement.IFeatureManager)
+FNDA:84,System.Void API.Utilities.TokenIssuer::.ctor(API.Options.TermsOptions,API.Options.TokenOptions,API.Options.RoleOptions,Microsoft.FeatureManagement.IFeatureManager)
+DA:26,84
+DA:27,84
+DA:28,84
+DA:29,84
+DA:30,84
+DA:31,84
+DA:32,84
+FN:154,System.Int32 API.Utilities.TokenIssuer/UserData::get_PrivacyPolicyVersion()
+FNDA:164,System.Int32 API.Utilities.TokenIssuer/UserData::get_PrivacyPolicyVersion()
+DA:155,164
+FN:156,API.Utilities.TokenIssuer/UserData API.Utilities.TokenIssuer/UserData::From(API.Models.Entities.User)
+FNDA:5,API.Utilities.TokenIssuer/UserData API.Utilities.TokenIssuer/UserData::From(API.Models.Entities.User)
+DA:157,5
+DA:158,3
+DA:159,0
+DA:160,0
+DA:161,5
+BRDA:157,1,0,1
+BRDA:157,1,1,4
+BRDA:157,57,0,1
+BRDA:157,57,1,3
+BRDA:157,90,0,1
+BRDA:157,90,1,4
+BRDA:157,110,0,4
+BRDA:157,110,1,0
+BRDA:157,166,0,0
+BRDA:157,166,1,0
+BRDA:157,199,0,1
+BRDA:157,199,1,4
+FN:155,System.Void API.Utilities.TokenIssuer/UserData::.ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:24,System.Void API.Utilities.TokenIssuer/UserData::.ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable`1<System.String>)
+DA:156,24
+DA:162,24
+FN:163,System.String API.Utilities.TokenIssuer/UserState::get_Scope()
+FNDA:54,System.String API.Utilities.TokenIssuer/UserState::get_Scope()
+DA:164,54
+LF:105
+LH:103
+BRF:36
+BRH:32
+FNF:12
+FNH:12
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Utilities\UserExtensions.cs
+FN:10,EnergyOrigin.TokenValidation.Utilities.UserDescriptor API.Utilities.UserExtensions::MapDescriptor(API.Models.Entities.User,EnergyOrigin.TokenValidation.Utilities.Interfaces.ICryptography,EnergyOrigin.TokenValidation.Values.ProviderType,System.Collections.Generic.IEnumerable`1<System.String>,System.String,System.String)
+FNDA:2,EnergyOrigin.TokenValidation.Utilities.UserDescriptor API.Utilities.UserExtensions::MapDescriptor(API.Models.Entities.User,EnergyOrigin.TokenValidation.Utilities.Interfaces.ICryptography,EnergyOrigin.TokenValidation.Values.ProviderType,System.Collections.Generic.IEnumerable`1<System.String>,System.String,System.String)
+DA:11,2
+DA:12,2
+DA:13,2
+DA:14,0
+DA:15,0
+DA:16,0
+DA:17,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:21,0
+DA:23,2
+DA:24,2
+DA:25,2
+DA:26,2
+DA:27,2
+DA:28,2
+DA:29,2
+DA:30,2
+DA:31,2
+DA:32,0
+DA:33,2
+DA:34,2
+DA:35,2
+BRDA:13,17,0,0
+BRDA:13,17,1,2
+BRDA:23,101,0,1
+BRDA:23,101,1,1
+LF:24
+LH:15
+BRF:4
+BRH:3
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Services\CompanyService.cs
+FN:10,System.Void API.Services.CompanyService::.ctor(API.Repositories.Interfaces.ICompanyRepository)
+FNDA:6,System.Void API.Services.CompanyService::.ctor(API.Repositories.Interfaces.ICompanyRepository)
+DA:11,6
+FN:12,System.Void API.Services.CompanyService/<GetCompanyByTinAsync>d__2::MoveNext()
+FNDA:3,System.Void API.Services.CompanyService/<GetCompanyByTinAsync>d__2::MoveNext()
+DA:13,3
+BRDA:13,20,0,1
+BRDA:13,20,1,2
+LF:2
+LH:2
+BRF:2
+BRH:2
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Services\UserProviderService.cs
+FN:14,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Services.UserProviderService::GetNonMatchingUserProviders(System.Collections.Generic.List`1<API.Models.Entities.UserProvider>,System.Collections.Generic.List`1<API.Models.Entities.UserProvider>)
+FNDA:1,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Services.UserProviderService::GetNonMatchingUserProviders(System.Collections.Generic.List`1<API.Models.Entities.UserProvider>,System.Collections.Generic.List`1<API.Models.Entities.UserProvider>)
+DA:15,1
+DA:16,1
+DA:17,4
+DA:18,1
+FN:10,System.Void API.Services.UserProviderService::.ctor(API.Repositories.Interfaces.IUserProviderRepository)
+FNDA:8,System.Void API.Services.UserProviderService::.ctor(API.Repositories.Interfaces.IUserProviderRepository)
+DA:11,8
+FN:12,System.Void API.Services.UserProviderService/<FindUserProviderMatchAsync>d__2::MoveNext()
+FNDA:3,System.Void API.Services.UserProviderService/<FindUserProviderMatchAsync>d__2::MoveNext()
+DA:13,3
+BRDA:13,25,0,1
+BRDA:13,25,1,2
+LF:6
+LH:6
+BRF:2
+BRH:2
+FNF:3
+FNH:3
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Services\UserService.cs
+FN:10,System.Void API.Services.UserService::.ctor(API.Repositories.Interfaces.IUserRepository)
+FNDA:4,System.Void API.Services.UserService::.ctor(API.Repositories.Interfaces.IUserRepository)
+DA:11,4
+FN:13,System.Void API.Services.UserService/<GetUserByIdAsync>d__3::MoveNext()
+FNDA:2,System.Void API.Services.UserService/<GetUserByIdAsync>d__3::MoveNext()
+DA:14,2
+BRDA:14,25,0,0
+BRDA:14,25,1,2
+FN:16,System.Void API.Services.UserService/<GetUsersByTinAsync>d__6::MoveNext()
+FNDA:0,System.Void API.Services.UserService/<GetUsersByTinAsync>d__6::MoveNext()
+DA:17,0
+FN:14,System.Void API.Services.UserService/<InsertUserAsync>d__4::MoveNext()
+FNDA:0,System.Void API.Services.UserService/<InsertUserAsync>d__4::MoveNext()
+DA:15,0
+FN:15,System.Void API.Services.UserService/<RemoveUserAsync>d__5::MoveNext()
+FNDA:0,System.Void API.Services.UserService/<RemoveUserAsync>d__5::MoveNext()
+DA:16,0
+FN:12,System.Void API.Services.UserService/<UpsertUserAsync>d__2::MoveNext()
+FNDA:0,System.Void API.Services.UserService/<UpsertUserAsync>d__2::MoveNext()
+DA:13,0
+LF:6
+LH:2
+BRF:2
+BRH:1
+FNF:6
+FNH:2
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Repositories\CompanyRepository.cs
+FN:11,System.Void API.Repositories.CompanyRepository::.ctor(API.Repositories.Data.Interfaces.ICompanyDataContext)
+FNDA:0,System.Void API.Repositories.CompanyRepository::.ctor(API.Repositories.Data.Interfaces.ICompanyDataContext)
+DA:12,0
+FN:19,System.Void API.Repositories.CompanyRepository/<GetCompanyByTinAsync>d__3::MoveNext()
+FNDA:0,System.Void API.Repositories.CompanyRepository/<GetCompanyByTinAsync>d__3::MoveNext()
+DA:20,0
+FN:14,System.Void API.Repositories.CompanyRepository/<UpsertCompanyAsync>d__2::MoveNext()
+FNDA:0,System.Void API.Repositories.CompanyRepository/<UpsertCompanyAsync>d__2::MoveNext()
+DA:15,0
+DA:16,0
+DA:17,0
+DA:18,0
+DA:19,0
+LF:7
+LH:0
+BRF:0
+BRH:0
+FNF:3
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Repositories\UserProviderRepository.cs
+FN:11,System.Void API.Repositories.UserProviderRepository::.ctor(API.Repositories.Data.Interfaces.IUserProviderDataContext)
+FNDA:0,System.Void API.Repositories.UserProviderRepository::.ctor(API.Repositories.Data.Interfaces.IUserProviderDataContext)
+DA:12,0
+FN:14,System.Void API.Repositories.UserProviderRepository/<FindUserProviderMatchAsync>d__2::MoveNext()
+FNDA:0,System.Void API.Repositories.UserProviderRepository/<FindUserProviderMatchAsync>d__2::MoveNext()
+DA:15,0
+DA:16,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:21,0
+DA:23,0
+DA:24,0
+DA:26,0
+DA:27,0
+BRDA:16,34,0,0
+BRDA:16,34,1,0
+BRDA:19,434,1,0
+BRDA:23,376,0,0
+BRDA:23,376,1,0
+BRDA:19,434,0,0
+LF:11
+LH:0
+BRF:6
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Repositories\UserRepository.cs
+FN:11,System.Void API.Repositories.UserRepository::.ctor(API.Repositories.Data.Interfaces.IUserDataContext)
+FNDA:0,System.Void API.Repositories.UserRepository::.ctor(API.Repositories.Data.Interfaces.IUserDataContext)
+DA:12,0
+FN:19,System.Void API.Repositories.UserRepository/<GetUserByIdAsync>d__3::MoveNext()
+FNDA:0,System.Void API.Repositories.UserRepository/<GetUserByIdAsync>d__3::MoveNext()
+DA:20,0
+FN:32,System.Void API.Repositories.UserRepository/<GetUsersByTinAsync>d__6::MoveNext()
+FNDA:0,System.Void API.Repositories.UserRepository/<GetUsersByTinAsync>d__6::MoveNext()
+DA:33,0
+FN:21,System.Void API.Repositories.UserRepository/<InsertUserAsync>d__4::MoveNext()
+FNDA:0,System.Void API.Repositories.UserRepository/<InsertUserAsync>d__4::MoveNext()
+DA:22,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:26,0
+FN:27,System.Void API.Repositories.UserRepository/<RemoveUserAsync>d__5::MoveNext()
+FNDA:0,System.Void API.Repositories.UserRepository/<RemoveUserAsync>d__5::MoveNext()
+DA:28,0
+DA:29,0
+DA:30,0
+DA:31,0
+FN:14,System.Void API.Repositories.UserRepository/<UpsertUserAsync>d__2::MoveNext()
+FNDA:0,System.Void API.Repositories.UserRepository/<UpsertUserAsync>d__2::MoveNext()
+DA:15,0
+DA:16,0
+DA:17,0
+DA:18,0
+DA:19,0
+LF:17
+LH:0
+BRF:0
+BRH:0
+FNF:6
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Repositories\Data\DataContext.cs
+FN:11,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.User> API.Repositories.Data.DataContext::get_Users()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.User> API.Repositories.Data.DataContext::get_Users()
+DA:12,0
+FN:12,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.Company> API.Repositories.Data.DataContext::get_Companies()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.Company> API.Repositories.Data.DataContext::get_Companies()
+DA:13,0
+FN:13,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserProvider> API.Repositories.Data.DataContext::get_UserProviders()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserProvider> API.Repositories.Data.DataContext::get_UserProviders()
+DA:14,0
+FN:14,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserRole> API.Repositories.Data.DataContext::get_UserRoles()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserRole> API.Repositories.Data.DataContext::get_UserRoles()
+DA:15,0
+FN:15,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserTerms> API.Repositories.Data.DataContext::get_UserTerms()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.UserTerms> API.Repositories.Data.DataContext::get_UserTerms()
+DA:16,0
+FN:16,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.CompanyTerms> API.Repositories.Data.DataContext::get_CompanyTerms()
+FNDA:0,Microsoft.EntityFrameworkCore.DbSet`1<API.Models.Entities.CompanyTerms> API.Repositories.Data.DataContext::get_CompanyTerms()
+DA:17,0
+FN:26,System.Void API.Repositories.Data.DataContext::OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.Repositories.Data.DataContext::OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:27,0
+DA:28,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+FN:18,System.Void API.Repositories.Data.DataContext::.ctor(Microsoft.EntityFrameworkCore.DbContextOptions,Npgsql.NpgsqlDataSourceBuilder)
+FNDA:0,System.Void API.Repositories.Data.DataContext::.ctor(Microsoft.EntityFrameworkCore.DbContextOptions,Npgsql.NpgsqlDataSourceBuilder)
+DA:19,0
+DA:20,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:24,0
+LF:18
+LH:0
+BRF:0
+BRH:0
+FNF:8
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\DatabaseOptions.cs
+FN:9,System.String API.Options.DatabaseOptions::get_Host()
+FNDA:7,System.String API.Options.DatabaseOptions::get_Host()
+DA:10,7
+FN:11,System.String API.Options.DatabaseOptions::get_Port()
+FNDA:7,System.String API.Options.DatabaseOptions::get_Port()
+DA:12,7
+FN:13,System.String API.Options.DatabaseOptions::get_Name()
+FNDA:7,System.String API.Options.DatabaseOptions::get_Name()
+DA:14,7
+FN:15,System.String API.Options.DatabaseOptions::get_User()
+FNDA:7,System.String API.Options.DatabaseOptions::get_User()
+DA:16,7
+FN:17,System.String API.Options.DatabaseOptions::get_Password()
+FNDA:7,System.String API.Options.DatabaseOptions::get_Password()
+DA:18,7
+FN:19,System.String API.Options.DatabaseOptions::get_ConnectionString()
+FNDA:2,System.String API.Options.DatabaseOptions::get_ConnectionString()
+DA:20,2
+LF:6
+LH:6
+BRF:0
+BRH:0
+FNF:6
+FNH:6
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\DataSyncOptions.cs
+FN:9,System.Uri API.Options.DataSyncOptions::get_Uri()
+FNDA:2,System.Uri API.Options.DataSyncOptions::get_Uri()
+DA:10,2
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\IdentityProviderOptions.cs
+FN:11,System.Collections.Generic.List`1<EnergyOrigin.TokenValidation.Values.ProviderType> API.Options.IdentityProviderOptions::get_Providers()
+FNDA:310,System.Collections.Generic.List`1<EnergyOrigin.TokenValidation.Values.ProviderType> API.Options.IdentityProviderOptions::get_Providers()
+DA:12,310
+FN:14,System.ValueTuple`2<System.String,System.Collections.Generic.List`1<System.Collections.Generic.KeyValuePair`2<System.String,System.String>>> API.Options.IdentityProviderOptions::GetIdentityProviderArguments()
+FNDA:12,System.ValueTuple`2<System.String,System.Collections.Generic.List`1<System.Collections.Generic.KeyValuePair`2<System.String,System.String>>> API.Options.IdentityProviderOptions::GetIdentityProviderArguments()
+DA:15,12
+DA:16,12
+DA:17,1
+DA:18,1
+DA:21,11
+DA:22,11
+DA:23,11
+DA:25,11
+DA:26,8
+DA:27,8
+DA:28,8
+DA:29,8
+DA:30,8
+DA:31,8
+DA:32,8
+DA:34,8
+DA:35,2
+DA:36,2
+DA:37,2
+DA:38,8
+DA:40,11
+DA:41,6
+DA:42,6
+DA:43,4
+DA:47,4
+DA:48,4
+DA:49,4
+DA:51,6
+DA:52,4
+DA:53,4
+DA:54,4
+DA:55,4
+DA:56,6
+DA:58,11
+DA:60,11
+DA:62,11
+DA:63,11
+DA:64,11
+DA:65,11
+DA:67,11
+DA:68,8
+DA:69,8
+DA:70,8
+DA:72,11
+DA:73,11
+BRDA:16,19,0,1
+BRDA:16,19,1,11
+BRDA:25,63,0,7
+BRDA:25,63,1,4
+BRDA:25,84,0,8
+BRDA:34,140,0,4
+BRDA:34,140,1,4
+BRDA:34,161,0,2
+BRDA:34,161,1,8
+BRDA:25,84,1,11
+BRDA:40,207,0,7
+BRDA:40,207,1,4
+BRDA:40,228,0,6
+BRDA:42,250,0,4
+BRDA:48,288,0,2
+BRDA:48,288,1,2
+BRDA:42,250,1,6
+BRDA:51,339,0,4
+BRDA:54,377,0,3
+BRDA:54,377,1,1
+BRDA:51,339,1,6
+BRDA:40,228,1,11
+BRDA:58,419,0,8
+BRDA:58,419,1,3
+BRDA:62,460,0,11
+BRDA:62,460,1,11
+BRDA:67,495,0,8
+BRDA:67,495,1,11
+LF:46
+LH:46
+BRF:28
+BRH:28
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\OidcOptions.cs
+FN:10,System.Uri API.Options.OidcOptions::get_AuthorityUri()
+FNDA:213,System.Uri API.Options.OidcOptions::get_AuthorityUri()
+DA:11,213
+FN:12,System.TimeSpan API.Options.OidcOptions::get_CacheDuration()
+FNDA:96,System.TimeSpan API.Options.OidcOptions::get_CacheDuration()
+DA:13,96
+FN:14,System.String API.Options.OidcOptions::get_ClientId()
+FNDA:208,System.String API.Options.OidcOptions::get_ClientId()
+DA:15,208
+FN:16,System.String API.Options.OidcOptions::get_ClientSecret()
+FNDA:189,System.String API.Options.OidcOptions::get_ClientSecret()
+DA:17,189
+FN:18,System.Uri API.Options.OidcOptions::get_AuthorityCallbackUri()
+FNDA:204,System.Uri API.Options.OidcOptions::get_AuthorityCallbackUri()
+DA:19,204
+FN:20,System.Uri API.Options.OidcOptions::get_FrontendRedirectUri()
+FNDA:225,System.Uri API.Options.OidcOptions::get_FrontendRedirectUri()
+DA:21,225
+FN:21,API.Options.OidcOptions/Redirection API.Options.OidcOptions::get_RedirectionMode()
+FNDA:128,API.Options.OidcOptions/Redirection API.Options.OidcOptions::get_RedirectionMode()
+DA:22,128
+FN:22,System.Boolean API.Options.OidcOptions::get_AllowRedirection()
+FNDA:18,System.Boolean API.Options.OidcOptions::get_AllowRedirection()
+DA:23,18
+FN:23,API.Options.OidcOptions/Generation API.Options.OidcOptions::get_IdGeneration()
+FNDA:116,API.Options.OidcOptions/Generation API.Options.OidcOptions::get_IdGeneration()
+DA:24,116
+FN:24,System.Boolean API.Options.OidcOptions::get_ReuseSubject()
+FNDA:10,System.Boolean API.Options.OidcOptions::get_ReuseSubject()
+DA:25,10
+FN:37,System.ComponentModel.DataAnnotations.ValidationResult API.Options.OidcOptions::Validate(API.Options.OidcOptions)
+FNDA:9,System.ComponentModel.DataAnnotations.ValidationResult API.Options.OidcOptions::Validate(API.Options.OidcOptions)
+DA:38,9
+DA:39,9
+DA:40,2
+DA:41,2
+DA:43,7
+DA:44,2
+DA:45,2
+DA:47,5
+DA:48,9
+BRDA:39,12,0,2
+BRDA:39,12,1,7
+BRDA:43,39,0,2
+BRDA:43,39,1,5
+LF:19
+LH:19
+BRF:4
+BRH:4
+FNF:11
+FNH:11
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\OtlpOptions.cs
+FN:9,System.Uri API.Options.OtlpOptions::get_ReceiverEndpoint()
+FNDA:7,System.Uri API.Options.OtlpOptions::get_ReceiverEndpoint()
+DA:10,7
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\RoleOptions.cs
+FN:11,System.Collections.Generic.List`1<API.Options.RoleConfiguration> API.Options.RoleOptions::get_RoleConfigurations()
+FNDA:640,System.Collections.Generic.List`1<API.Options.RoleConfiguration> API.Options.RoleOptions::get_RoleConfigurations()
+DA:12,640
+FN:14,System.ComponentModel.DataAnnotations.ValidationResult API.Options.RoleOptions::Validate(API.Options.RoleOptions)
+FNDA:8,System.ComponentModel.DataAnnotations.ValidationResult API.Options.RoleOptions::Validate(API.Options.RoleOptions)
+DA:15,8
+DA:16,49
+DA:17,8
+DA:18,1
+DA:19,1
+DA:21,50
+DA:22,15
+DA:23,64
+DA:24,10
+DA:25,10
+DA:26,1
+DA:27,1
+DA:29,9
+DA:30,14
+DA:31,20
+DA:32,42
+DA:33,13
+DA:34,13
+DA:35,13
+DA:36,2
+DA:37,2
+DA:39,11
+DA:40,4
+DA:41,8
+BRDA:17,73,0,1
+BRDA:17,73,1,7
+BRDA:21,233,1,15
+BRDA:23,206,1,10
+BRDA:25,160,0,1
+BRDA:25,160,1,9
+BRDA:23,206,0,14
+BRDA:21,233,0,6
+BRDA:32,402,1,13
+BRDA:35,361,0,2
+BRDA:35,361,1,11
+BRDA:32,402,0,4
+FN:43,System.Collections.Generic.IEnumerable`1<System.String> API.Options.RoleOptions::FindInheritedRoles(System.Collections.Generic.Dictionary`2<System.String,API.Options.RoleConfiguration>,System.String,System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:24,System.Collections.Generic.IEnumerable`1<System.String> API.Options.RoleOptions::FindInheritedRoles(System.Collections.Generic.Dictionary`2<System.String,API.Options.RoleConfiguration>,System.String,System.Collections.Generic.IEnumerable`1<System.String>)
+DA:44,24
+DA:45,24
+DA:46,11
+DA:47,11
+DA:49,151
+DA:50,13
+DA:51,2
+DA:52,2
+DA:55,11
+DA:56,11
+DA:58,24
+BRDA:45,22,0,11
+BRDA:45,22,1,13
+BRDA:50,80,0,2
+BRDA:50,80,1,11
+FN:63,System.String API.Options.RoleConfiguration::get_Key()
+FNDA:1776,System.String API.Options.RoleConfiguration::get_Key()
+DA:64,1776
+FN:66,System.String API.Options.RoleConfiguration::get_Name()
+FNDA:1497,System.String API.Options.RoleConfiguration::get_Name()
+DA:67,1497
+FN:69,System.Boolean API.Options.RoleConfiguration::get_IsDefault()
+FNDA:2164,System.Boolean API.Options.RoleConfiguration::get_IsDefault()
+DA:70,2164
+FN:72,System.Boolean API.Options.RoleConfiguration::get_IsTransient()
+FNDA:2220,System.Boolean API.Options.RoleConfiguration::get_IsTransient()
+DA:73,2220
+FN:73,System.Collections.Generic.List`1<System.String> API.Options.RoleConfiguration::get_Inherits()
+FNDA:2522,System.Collections.Generic.List`1<System.String> API.Options.RoleConfiguration::get_Inherits()
+DA:74,2522
+FN:74,System.Collections.Generic.List`1<API.Options.RoleConfiguration/Match> API.Options.RoleConfiguration::get_Matches()
+FNDA:2176,System.Collections.Generic.List`1<API.Options.RoleConfiguration/Match> API.Options.RoleConfiguration::get_Matches()
+DA:75,2176
+FN:79,System.String API.Options.RoleConfiguration/Match::get_Property()
+FNDA:386,System.String API.Options.RoleConfiguration/Match::get_Property()
+DA:80,386
+FN:81,System.String API.Options.RoleConfiguration/Match::get_Value()
+FNDA:385,System.String API.Options.RoleConfiguration/Match::get_Value()
+DA:82,385
+FN:84,System.String API.Options.RoleConfiguration/Match::get_Operator()
+FNDA:386,System.String API.Options.RoleConfiguration/Match::get_Operator()
+DA:85,386
+LF:45
+LH:45
+BRF:16
+BRH:16
+FNF:12
+FNH:12
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\TermsOptions.cs
+FN:9,System.Int32 API.Options.TermsOptions::get_PrivacyPolicyVersion()
+FNDA:112,System.Int32 API.Options.TermsOptions::get_PrivacyPolicyVersion()
+DA:10,112
+FN:11,System.Int32 API.Options.TermsOptions::get_TermsOfServiceVersion()
+FNDA:104,System.Int32 API.Options.TermsOptions::get_TermsOfServiceVersion()
+DA:12,104
+LF:2
+LH:2
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Options\TokenOptions.cs
+FN:9,System.String API.Options.TokenOptions::get_Audience()
+FNDA:200,System.String API.Options.TokenOptions::get_Audience()
+DA:10,200
+FN:11,System.TimeSpan API.Options.TokenOptions::get_Duration()
+FNDA:110,System.TimeSpan API.Options.TokenOptions::get_Duration()
+DA:12,110
+FN:13,System.String API.Options.TokenOptions::get_Issuer()
+FNDA:200,System.String API.Options.TokenOptions::get_Issuer()
+DA:14,200
+FN:15,System.Byte[] API.Options.TokenOptions::get_PrivateKeyPem()
+FNDA:203,System.Byte[] API.Options.TokenOptions::get_PrivateKeyPem()
+DA:16,203
+FN:17,System.Byte[] API.Options.TokenOptions::get_PublicKeyPem()
+FNDA:186,System.Byte[] API.Options.TokenOptions::get_PublicKeyPem()
+DA:18,186
+LF:5
+LH:5
+BRF:0
+BRH:0
+FNF:5
+FNH:5
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Response\UserRolesResponse.cs
+FN:6,System.Collections.Generic.IEnumerable`1<API.Models.Response.UserRoles> API.Models.Response.UserRolesResponse::get_UserRoles()
+FNDA:16,System.Collections.Generic.IEnumerable`1<API.Models.Response.UserRoles> API.Models.Response.UserRolesResponse::get_UserRoles()
+DA:7,16
+FN:11,System.Guid API.Models.Response.UserRoles::get_UserId()
+FNDA:4,System.Guid API.Models.Response.UserRoles::get_UserId()
+DA:12,4
+FN:12,System.String API.Models.Response.UserRoles::get_Name()
+FNDA:7,System.String API.Models.Response.UserRoles::get_Name()
+DA:13,7
+FN:13,System.Collections.Generic.Dictionary`2<System.String,System.String> API.Models.Response.UserRoles::get_Roles()
+FNDA:13,System.Collections.Generic.Dictionary`2<System.String,System.String> API.Models.Response.UserRoles::get_Roles()
+DA:14,13
+LF:4
+LH:4
+BRF:0
+BRH:0
+FNF:4
+FNH:4
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\Company.cs
+FN:9,System.Guid API.Models.Entities.Company::get_Id()
+FNDA:24,System.Guid API.Models.Entities.Company::get_Id()
+DA:10,24
+FN:10,System.String API.Models.Entities.Company::get_Name()
+FNDA:44,System.String API.Models.Entities.Company::get_Name()
+DA:11,44
+FN:11,System.String API.Models.Entities.Company::get_Tin()
+FNDA:37,System.String API.Models.Entities.Company::get_Tin()
+DA:12,37
+FN:12,System.Collections.Generic.List`1<API.Models.Entities.User> API.Models.Entities.Company::get_Users()
+FNDA:24,System.Collections.Generic.List`1<API.Models.Entities.User> API.Models.Entities.Company::get_Users()
+DA:13,24
+FN:13,System.Collections.Generic.List`1<API.Models.Entities.CompanyTerms> API.Models.Entities.Company::get_CompanyTerms()
+FNDA:24,System.Collections.Generic.List`1<API.Models.Entities.CompanyTerms> API.Models.Entities.Company::get_CompanyTerms()
+DA:14,24
+LF:5
+LH:5
+BRF:0
+BRH:0
+FNF:5
+FNH:5
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\CompanyTerms.cs
+FN:8,System.Nullable`1<System.Guid> API.Models.Entities.CompanyTerms::get_Id()
+FNDA:0,System.Nullable`1<System.Guid> API.Models.Entities.CompanyTerms::get_Id()
+DA:9,0
+FN:9,System.Guid API.Models.Entities.CompanyTerms::get_CompanyId()
+FNDA:0,System.Guid API.Models.Entities.CompanyTerms::get_CompanyId()
+DA:10,0
+FN:10,API.Values.CompanyTermsType API.Models.Entities.CompanyTerms::get_Type()
+FNDA:0,API.Values.CompanyTermsType API.Models.Entities.CompanyTerms::get_Type()
+DA:11,0
+FN:11,System.Int32 API.Models.Entities.CompanyTerms::get_AcceptedVersion()
+FNDA:0,System.Int32 API.Models.Entities.CompanyTerms::get_AcceptedVersion()
+DA:12,0
+FN:12,API.Models.Entities.Company API.Models.Entities.CompanyTerms::get_Company()
+FNDA:0,API.Models.Entities.Company API.Models.Entities.CompanyTerms::get_Company()
+DA:13,0
+LF:5
+LH:0
+BRF:0
+BRH:0
+FNF:5
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\User.cs
+FN:4,System.Nullable`1<System.Guid> API.Models.Entities.User::get_Id()
+FNDA:79,System.Nullable`1<System.Guid> API.Models.Entities.User::get_Id()
+DA:5,79
+FN:5,System.String API.Models.Entities.User::get_Name()
+FNDA:113,System.String API.Models.Entities.User::get_Name()
+DA:6,113
+FN:6,System.Boolean API.Models.Entities.User::get_AllowCprLookup()
+FNDA:52,System.Boolean API.Models.Entities.User::get_AllowCprLookup()
+DA:7,52
+FN:7,System.Nullable`1<System.Guid> API.Models.Entities.User::get_CompanyId()
+FNDA:6,System.Nullable`1<System.Guid> API.Models.Entities.User::get_CompanyId()
+DA:8,6
+FN:8,API.Models.Entities.Company API.Models.Entities.User::get_Company()
+FNDA:45,API.Models.Entities.Company API.Models.Entities.User::get_Company()
+DA:9,45
+FN:9,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Models.Entities.User::get_UserProviders()
+FNDA:59,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Models.Entities.User::get_UserProviders()
+DA:10,59
+FN:10,System.Collections.Generic.List`1<API.Models.Entities.UserRole> API.Models.Entities.User::get_UserRoles()
+FNDA:79,System.Collections.Generic.List`1<API.Models.Entities.UserRole> API.Models.Entities.User::get_UserRoles()
+DA:11,79
+FN:11,System.Collections.Generic.List`1<API.Models.Entities.UserTerms> API.Models.Entities.User::get_UserTerms()
+FNDA:67,System.Collections.Generic.List`1<API.Models.Entities.UserTerms> API.Models.Entities.User::get_UserTerms()
+DA:12,67
+LF:8
+LH:8
+BRF:0
+BRH:0
+FNF:8
+FNH:8
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\UserProvider.cs
+FN:8,System.Nullable`1<System.Guid> API.Models.Entities.UserProvider::get_Id()
+FNDA:0,System.Nullable`1<System.Guid> API.Models.Entities.UserProvider::get_Id()
+DA:9,0
+FN:9,EnergyOrigin.TokenValidation.Values.ProviderKeyType API.Models.Entities.UserProvider::get_ProviderKeyType()
+FNDA:15,EnergyOrigin.TokenValidation.Values.ProviderKeyType API.Models.Entities.UserProvider::get_ProviderKeyType()
+DA:10,15
+FN:10,System.String API.Models.Entities.UserProvider::get_UserProviderKey()
+FNDA:26,System.String API.Models.Entities.UserProvider::get_UserProviderKey()
+DA:11,26
+FN:12,System.Guid API.Models.Entities.UserProvider::get_UserId()
+FNDA:2,System.Guid API.Models.Entities.UserProvider::get_UserId()
+DA:13,2
+FN:13,API.Models.Entities.User API.Models.Entities.UserProvider::get_User()
+FNDA:11,API.Models.Entities.User API.Models.Entities.UserProvider::get_User()
+DA:14,11
+FN:15,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Models.Entities.UserProvider::ConvertDictionaryToUserProviders(System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String>)
+FNDA:7,System.Collections.Generic.List`1<API.Models.Entities.UserProvider> API.Models.Entities.UserProvider::ConvertDictionaryToUserProviders(System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String>)
+DA:16,7
+DA:17,7
+DA:18,7
+DA:19,7
+DA:20,7
+LF:10
+LH:9
+BRF:0
+BRH:0
+FNF:6
+FNH:5
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\UserRole.cs
+FN:7,System.Nullable`1<System.Guid> API.Models.Entities.UserRole::get_Id()
+FNDA:0,System.Nullable`1<System.Guid> API.Models.Entities.UserRole::get_Id()
+DA:8,0
+FN:8,System.Guid API.Models.Entities.UserRole::get_UserId()
+FNDA:4,System.Guid API.Models.Entities.UserRole::get_UserId()
+DA:9,4
+FN:9,System.String API.Models.Entities.UserRole::get_Role()
+FNDA:51,System.String API.Models.Entities.UserRole::get_Role()
+DA:10,51
+FN:10,API.Models.Entities.User API.Models.Entities.UserRole::get_User()
+FNDA:14,API.Models.Entities.User API.Models.Entities.UserRole::get_User()
+DA:11,14
+LF:4
+LH:3
+BRF:0
+BRH:0
+FNF:4
+FNH:3
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Entities\UserTerms.cs
+FN:8,System.Nullable`1<System.Guid> API.Models.Entities.UserTerms::get_Id()
+FNDA:0,System.Nullable`1<System.Guid> API.Models.Entities.UserTerms::get_Id()
+DA:9,0
+FN:9,System.Guid API.Models.Entities.UserTerms::get_UserId()
+FNDA:0,System.Guid API.Models.Entities.UserTerms::get_UserId()
+DA:10,0
+FN:10,API.Values.UserTermsType API.Models.Entities.UserTerms::get_Type()
+FNDA:14,API.Values.UserTermsType API.Models.Entities.UserTerms::get_Type()
+DA:11,14
+FN:11,System.Int32 API.Models.Entities.UserTerms::get_AcceptedVersion()
+FNDA:18,System.Int32 API.Models.Entities.UserTerms::get_AcceptedVersion()
+DA:12,18
+FN:12,API.Models.Entities.User API.Models.Entities.UserTerms::get_User()
+FNDA:8,API.Models.Entities.User API.Models.Entities.UserTerms::get_User()
+DA:13,8
+LF:5
+LH:3
+BRF:0
+BRH:0
+FNF:5
+FNH:3
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Models\Dtos\Responses\RedirectUriResponse.cs
+FN:4,System.String API.Models.Dtos.Responses.RedirectUriResponse::get_RedirectionUri()
+FNDA:12,System.String API.Models.Dtos.Responses.RedirectUriResponse::get_RedirectionUri()
+DA:5,12
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Middleware\ExceptionMiddleware.cs
+FN:9,System.Void API.Middleware.ExceptionMiddleware::.ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger`1<API.Middleware.ExceptionMiddleware>)
+FNDA:2,System.Void API.Middleware.ExceptionMiddleware::.ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger`1<API.Middleware.ExceptionMiddleware>)
+DA:10,2
+DA:11,2
+DA:12,2
+DA:13,2
+DA:14,2
+FN:29,System.Void API.Middleware.ExceptionMiddleware/<HandleExceptionAsync>d__4::MoveNext()
+FNDA:1,System.Void API.Middleware.ExceptionMiddleware/<HandleExceptionAsync>d__4::MoveNext()
+DA:30,1
+DA:31,1
+DA:32,1
+DA:33,1
+FN:16,System.Void API.Middleware.ExceptionMiddleware/<InvokeAsync>d__3::MoveNext()
+FNDA:2,System.Void API.Middleware.ExceptionMiddleware/<InvokeAsync>d__3::MoveNext()
+DA:17,2
+DA:19,2
+DA:20,2
+DA:21,1
+DA:22,1
+DA:23,1
+DA:24,1
+DA:25,1
+DA:26,1
+DA:27,2
+LF:19
+LH:19
+BRF:0
+BRH:0
+FNF:3
+FNH:3
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\LoginController.cs
+FN:24,System.Void API.Controllers.LoginController/<LoginAsync>d__0::MoveNext()
+FNDA:4,System.Void API.Controllers.LoginController/<LoginAsync>d__0::MoveNext()
+DA:25,4
+DA:26,4
+DA:27,4
+DA:28,2
+DA:29,2
+DA:30,2
+DA:33,2
+DA:35,2
+DA:36,2
+DA:37,2
+DA:38,2
+DA:39,2
+DA:40,2
+DA:41,2
+DA:42,2
+DA:43,2
+DA:44,2
+DA:45,2
+DA:46,2
+DA:47,2
+DA:48,2
+DA:50,2
+DA:51,4
+BRDA:27,146,0,4
+BRDA:27,146,1,0
+BRDA:27,166,0,2
+BRDA:29,195,0,0
+BRDA:29,195,1,2
+BRDA:27,166,1,2
+LF:23
+LH:23
+BRF:6
+BRH:4
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\LogoutController.cs
+FN:18,System.Void API.Controllers.LogoutController/<LogoutAsync>d__0::MoveNext()
+FNDA:7,System.Void API.Controllers.LogoutController/<LogoutAsync>d__0::MoveNext()
+DA:19,7
+DA:20,7
+DA:21,7
+DA:22,1
+DA:23,1
+DA:24,1
+DA:26,7
+DA:27,7
+DA:28,2
+DA:29,2
+DA:30,2
+DA:35,5
+DA:36,5
+DA:37,4
+DA:38,1
+DA:39,1
+DA:40,1
+DA:43,4
+DA:45,4
+DA:46,4
+DA:47,4
+DA:48,4
+DA:50,4
+DA:51,4
+DA:52,4
+DA:53,4
+DA:54,4
+DA:55,4
+DA:57,4
+DA:58,4
+DA:59,7
+BRDA:21,51,0,6
+BRDA:21,51,1,1
+BRDA:21,67,0,1
+BRDA:21,67,1,7
+BRDA:27,215,0,7
+BRDA:27,215,1,0
+BRDA:27,235,0,2
+BRDA:29,264,0,0
+BRDA:29,264,1,2
+BRDA:27,235,1,5
+BRDA:57,557,0,4
+BRDA:57,557,1,0
+LF:31
+LH:31
+BRF:12
+BRH:9
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\OidcController.cs
+FN:22,System.String API.Controllers.OidcException::get_Url()
+FNDA:34,System.String API.Controllers.OidcException::get_Url()
+DA:23,34
+FN:23,System.Void API.Controllers.OidcException::.ctor(System.String,System.String)
+FNDA:17,System.Void API.Controllers.OidcException::.ctor(System.String,System.String)
+DA:24,17
+DA:25,17
+DA:26,17
+DA:27,17
+FN:51,System.Void API.Controllers.OidcController/<CallbackAsync>d__0::MoveNext()
+FNDA:2,System.Void API.Controllers.OidcController/<CallbackAsync>d__0::MoveNext()
+DA:52,2
+DA:54,2
+DA:55,2
+DA:57,2
+DA:59,2
+DA:61,1
+DA:62,1
+DA:64,1
+DA:66,1
+DA:68,1
+DA:70,1
+DA:71,1
+DA:72,1
+DA:73,1
+DA:74,1
+DA:75,1
+DA:77,1
+DA:79,1
+DA:81,1
+DA:82,1
+DA:83,1
+DA:85,2
+BRDA:77,851,0,0
+BRDA:77,851,1,1
+FN:138,System.String API.Controllers.OidcHelper::RedirectionCheck(API.Options.OidcOptions,API.Utilities.OidcState)
+FNDA:6,System.String API.Controllers.OidcHelper::RedirectionCheck(API.Options.OidcOptions,API.Utilities.OidcState)
+DA:139,6
+DA:140,6
+DA:141,6
+DA:142,3
+DA:143,3
+DA:144,3
+DA:145,6
+DA:146,2
+DA:147,2
+DA:148,2
+DA:149,6
+DA:150,3
+DA:151,3
+DA:152,3
+DA:153,6
+DA:154,6
+BRDA:141,14,0,1
+BRDA:141,14,1,5
+BRDA:141,30,0,3
+BRDA:141,30,1,6
+BRDA:145,65,0,3
+BRDA:145,68,0,1
+BRDA:145,68,1,2
+BRDA:145,65,1,3
+BRDA:145,87,0,2
+BRDA:145,87,1,6
+BRDA:149,99,0,1
+BRDA:149,99,1,5
+BRDA:149,115,0,3
+BRDA:149,115,1,6
+FN:156,System.Void API.Controllers.OidcHelper::CodeNullCheck(System.String,Microsoft.Extensions.Logging.ILogger`1<API.Controllers.OidcController>,System.String,System.String,System.String)
+FNDA:13,System.Void API.Controllers.OidcHelper::CodeNullCheck(System.String,Microsoft.Extensions.Logging.ILogger`1<API.Controllers.OidcController>,System.String,System.String,System.String)
+DA:157,13
+DA:158,13
+DA:159,12
+DA:160,12
+DA:161,12
+DA:163,1
+BRDA:158,7,0,12
+BRDA:158,7,1,1
+FN:165,System.Void API.Controllers.OidcHelper::DiscoveryDocumentErrorChecks(IdentityModel.Client.DiscoveryDocumentResponse,Microsoft.Extensions.Logging.ILogger`1<API.Controllers.OidcController>,System.String)
+FNDA:3,System.Void API.Controllers.OidcHelper::DiscoveryDocumentErrorChecks(IdentityModel.Client.DiscoveryDocumentResponse,Microsoft.Extensions.Logging.ILogger`1<API.Controllers.OidcController>,System.String)
+DA:166,3
+DA:167,3
+DA:168,2
+DA:169,2
+DA:170,2
+DA:172,1
+BRDA:167,2,0,2
+BRDA:167,2,1,1
+BRDA:167,15,0,2
+BRDA:169,33,0,1
+BRDA:169,33,1,1
+BRDA:167,15,1,1
+FN:216,System.ValueTuple`3<System.String,System.String,System.String> API.Controllers.OidcHelper::GetTokens(IdentityModel.Client.TokenResponse)
+FNDA:0,System.ValueTuple`3<System.String,System.String,System.String> API.Controllers.OidcHelper::GetTokens(IdentityModel.Client.TokenResponse)
+DA:217,0
+DA:218,0
+DA:219,0
+DA:220,0
+DA:222,0
+DA:223,0
+FN:225,System.Void API.Controllers.OidcHelper::SubjectErrorCheck(System.String,System.Security.Claims.ClaimsPrincipal,System.Security.Claims.ClaimsPrincipal)
+FNDA:5,System.Void API.Controllers.OidcHelper::SubjectErrorCheck(System.String,System.Security.Claims.ClaimsPrincipal,System.Security.Claims.ClaimsPrincipal)
+DA:226,5
+DA:227,5
+DA:228,3
+DA:229,2
+DA:230,2
+DA:232,1
+BRDA:228,30,0,2
+BRDA:228,30,1,1
+BRDA:228,54,0,2
+BRDA:228,54,1,1
+FN:234,System.Void API.Controllers.OidcHelper::ProvidertypeIsFalseCheck(EnergyOrigin.TokenValidation.Values.ProviderType,API.Options.IdentityProviderOptions)
+FNDA:2,System.Void API.Controllers.OidcHelper::ProvidertypeIsFalseCheck(EnergyOrigin.TokenValidation.Values.ProviderType,API.Options.IdentityProviderOptions)
+DA:235,2
+DA:236,2
+DA:237,1
+DA:238,1
+DA:240,1
+BRDA:236,18,0,1
+BRDA:236,18,1,1
+FN:242,System.Void API.Controllers.OidcHelper::ClaimsErrorCheck(System.String,System.String,System.String)
+FNDA:7,System.Void API.Controllers.OidcHelper::ClaimsErrorCheck(System.String,System.String,System.String)
+DA:243,7
+DA:244,7
+DA:245,5
+DA:246,3
+DA:247,1
+FN:248,EnergyOrigin.TokenValidation.Values.ProviderType API.Controllers.OidcHelper::GetIdentityProviderEnum(System.String,System.String)
+FNDA:5,EnergyOrigin.TokenValidation.Values.ProviderType API.Controllers.OidcHelper::GetIdentityProviderEnum(System.String,System.String)
+DA:249,5
+DA:250,5
+DA:251,1
+DA:252,1
+DA:253,1
+DA:254,1
+DA:255,1
+DA:256,5
+BRDA:249,15,0,4
+BRDA:249,28,0,2
+BRDA:249,15,1,1
+BRDA:249,28,1,2
+BRDA:249,41,1,2
+BRDA:249,86,0,1
+BRDA:249,56,1,1
+BRDA:249,71,1,1
+BRDA:249,86,1,1
+BRDA:249,99,1,1
+BRDA:249,41,0,1
+BRDA:249,56,0,1
+BRDA:249,71,0,1
+BRDA:249,99,0,1
+FN:258,System.ValueTuple`4<System.String,System.String,System.String,System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String>> API.Controllers.OidcHelper::HandleUserInfo(System.Security.Claims.ClaimsPrincipal,EnergyOrigin.TokenValidation.Values.ProviderType,System.String)
+FNDA:16,System.ValueTuple`4<System.String,System.String,System.String,System.Collections.Generic.Dictionary`2<EnergyOrigin.TokenValidation.Values.ProviderKeyType,System.String>> API.Controllers.OidcHelper::HandleUserInfo(System.Security.Claims.ClaimsPrincipal,EnergyOrigin.TokenValidation.Values.ProviderType,System.String)
+DA:259,16
+DA:260,16
+DA:261,16
+DA:262,16
+DA:263,16
+DA:264,16
+DA:267,7
+DA:268,7
+DA:269,7
+DA:270,7
+DA:271,7
+DA:272,4
+DA:273,4
+DA:274,4
+DA:276,7
+DA:278,6
+DA:280,5
+DA:282,5
+DA:283,5
+DA:284,1
+DA:285,1
+DA:286,1
+DA:288,5
+DA:289,4
+DA:291,2
+DA:292,2
+DA:293,2
+DA:295,2
+DA:296,1
+DA:298,2
+DA:300,2
+DA:301,1
+DA:304,12
+DA:305,10
+DA:306,7
+DA:307,7
+DA:308,5
+DA:309,3
+DA:311,6
+DA:312,6
+BRDA:264,22,4,7
+BRDA:271,98,0,6
+BRDA:271,98,1,1
+BRDA:271,112,0,4
+BRDA:271,112,1,7
+BRDA:276,156,0,1
+BRDA:276,156,1,6
+BRDA:264,22,2,5
+BRDA:283,215,0,1
+BRDA:283,215,1,5
+BRDA:288,243,0,1
+BRDA:288,243,1,4
+BRDA:264,22,3,2
+BRDA:295,315,0,1
+BRDA:295,315,1,1
+BRDA:264,22,1,2
+BRDA:300,363,0,1
+BRDA:300,363,1,1
+BRDA:264,22,0,12
+BRDA:305,412,0,7
+BRDA:305,412,1,6
+FN:355,System.Collections.Generic.IEnumerable`1<System.String> API.Controllers.OidcHelper::CalculateMatchedRoles(System.Security.Claims.ClaimsPrincipal,API.Options.RoleOptions)
+FNDA:6,System.Collections.Generic.IEnumerable`1<System.String> API.Controllers.OidcHelper::CalculateMatchedRoles(System.Security.Claims.ClaimsPrincipal,API.Options.RoleOptions)
+DA:356,6
+DA:357,6
+DA:358,6
+DA:359,6
+DA:360,6
+DA:361,1
+DA:362,2
+DA:363,2
+DA:364,1
+DA:365,6
+DA:366,12
+BRDA:356,13,0,1
+BRDA:356,13,1,5
+BRDA:356,42,0,1
+BRDA:356,42,1,4
+BRDA:359,41,0,5
+BRDA:359,54,0,3
+BRDA:359,41,1,1
+BRDA:359,54,1,2
+BRDA:362,79,0,0
+BRDA:362,79,1,2
+BRDA:359,67,1,2
+BRDA:363,110,0,0
+BRDA:363,110,1,2
+BRDA:359,67,0,1
+FN:99,Microsoft.IdentityModel.Tokens.SecurityKey API.Controllers.OidcHelper/<>c::<MapUserDescriptor>b__0_0(IdentityModel.Jwk.JsonWebKey)
+FNDA:3,Microsoft.IdentityModel.Tokens.SecurityKey API.Controllers.OidcHelper/<>c::<MapUserDescriptor>b__0_0(IdentityModel.Jwk.JsonWebKey)
+DA:100,3
+FN:174,System.Void API.Controllers.OidcHelper/<GetClientAndResponse>d__4::MoveNext()
+FNDA:2,System.Void API.Controllers.OidcHelper/<GetClientAndResponse>d__4::MoveNext()
+DA:175,2
+DA:176,2
+DA:178,2
+DA:179,2
+DA:180,2
+DA:181,2
+DA:182,2
+DA:183,2
+DA:184,2
+DA:185,2
+DA:187,2
+DA:189,2
+DA:190,1
+DA:191,1
+DA:192,1
+DA:195,1
+DA:196,1
+BRDA:189,292,0,1
+BRDA:189,292,1,1
+FN:198,System.Void API.Controllers.OidcHelper/<GetUserDescriptor>d__5::MoveNext()
+FNDA:2,System.Void API.Controllers.OidcHelper/<GetUserDescriptor>d__5::MoveNext()
+DA:199,2
+DA:201,2
+DA:202,2
+DA:204,1
+DA:205,1
+DA:206,1
+DA:208,1
+DA:209,1
+DA:210,1
+DA:211,1
+DA:212,1
+DA:214,1
+FN:323,System.Void API.Controllers.OidcHelper/<HandleUserAsync>d__12::MoveNext()
+FNDA:2,System.Void API.Controllers.OidcHelper/<HandleUserAsync>d__12::MoveNext()
+DA:324,2
+DA:325,2
+DA:326,2
+DA:327,2
+DA:328,2
+DA:329,2
+DA:330,2
+DA:331,2
+DA:332,2
+DA:333,2
+DA:334,2
+DA:335,2
+DA:336,2
+DA:337,2
+DA:338,2
+DA:339,2
+DA:340,2
+DA:341,2
+DA:342,2
+DA:343,2
+DA:345,2
+DA:346,2
+DA:348,2
+DA:349,1
+DA:350,1
+DA:351,1
+DA:353,2
+DA:354,2
+BRDA:325,177,0,0
+BRDA:325,177,1,2
+BRDA:327,374,0,1
+BRDA:327,374,1,1
+BRDA:328,416,0,0
+BRDA:328,416,1,2
+BRDA:328,434,0,2
+BRDA:328,434,1,0
+BRDA:329,471,0,0
+BRDA:329,471,1,2
+BRDA:329,489,0,2
+BRDA:329,489,1,0
+BRDA:330,520,0,1
+BRDA:330,582,0,1
+BRDA:330,605,0,0
+BRDA:330,605,1,1
+BRDA:330,582,1,0
+BRDA:330,520,1,2
+BRDA:348,734,0,1
+BRDA:348,734,1,2
+FN:91,System.Void API.Controllers.OidcHelper/<MapUserDescriptor>d__0::MoveNext()
+FNDA:2,System.Void API.Controllers.OidcHelper/<MapUserDescriptor>d__0::MoveNext()
+DA:92,2
+DA:93,2
+DA:94,2
+DA:95,2
+DA:96,2
+DA:98,2
+DA:99,2
+DA:101,2
+DA:102,2
+DA:103,2
+DA:104,2
+DA:106,1
+DA:108,1
+DA:109,1
+DA:111,1
+DA:112,1
+DA:114,1
+DA:116,1
+DA:118,1
+DA:119,1
+DA:120,1
+DA:122,1
+DA:124,1
+DA:126,1
+DA:128,1
+DA:130,1
+DA:132,1
+DA:134,1
+DA:135,1
+DA:136,1
+LF:224
+LH:218
+BRF:101
+BRH:91
+FNF:18
+FNH:17
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\RemoveUserController.cs
+FN:19,System.Void API.Controllers.RemoveUserController/<RemoveUser>d__0::MoveNext()
+FNDA:4,System.Void API.Controllers.RemoveUserController/<RemoveUser>d__0::MoveNext()
+DA:20,4
+DA:21,4
+DA:22,3
+DA:23,1
+DA:24,1
+DA:26,2
+DA:27,3
+DA:29,1
+DA:31,1
+DA:32,1
+DA:33,1
+DA:34,1
+DA:35,1
+DA:36,1
+DA:37,1
+DA:38,3
+BRDA:22,75,0,1
+BRDA:22,75,1,2
+BRDA:27,250,0,1
+BRDA:27,250,1,1
+LF:16
+LH:16
+BRF:4
+BRH:4
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\RoleController.cs
+FN:19,Microsoft.AspNetCore.Mvc.IActionResult API.Controllers.RoleController::List(API.Options.RoleOptions)
+FNDA:1,Microsoft.AspNetCore.Mvc.IActionResult API.Controllers.RoleController::List(API.Options.RoleOptions)
+DA:20,1
+DA:21,1
+DA:22,1
+DA:23,1
+DA:24,1
+FN:137,System.Collections.Generic.Dictionary`2<System.String,System.String> API.Controllers.RoleController::PopulateRoles(System.Collections.Generic.List`1<API.Models.Entities.UserRole>,System.Collections.Generic.List`1<System.ValueTuple`2<System.String,System.String>>)
+FNDA:4,System.Collections.Generic.Dictionary`2<System.String,System.String> API.Controllers.RoleController::PopulateRoles(System.Collections.Generic.List`1<API.Models.Entities.UserRole>,System.Collections.Generic.List`1<System.ValueTuple`2<System.String,System.String>>)
+DA:138,4
+DA:139,4
+DA:140,24
+DA:141,6
+DA:142,24
+DA:143,6
+DA:144,5
+DA:145,5
+DA:146,5
+DA:147,6
+DA:149,4
+DA:150,4
+BRDA:140,111,1,6
+BRDA:143,80,0,5
+BRDA:143,80,1,6
+BRDA:140,111,0,4
+FN:30,System.Boolean API.Controllers.RoleController/<>c::<AssignRole>b__1_0(API.Options.RoleConfiguration)
+FNDA:99,System.Boolean API.Controllers.RoleController/<>c::<AssignRole>b__1_0(API.Options.RoleConfiguration)
+DA:31,99
+FN:117,System.Boolean API.Controllers.RoleController/<>c::<GetUsersByTin>b__3_0(API.Options.RoleConfiguration)
+FNDA:16,System.Boolean API.Controllers.RoleController/<>c::<GetUsersByTin>b__3_0(API.Options.RoleConfiguration)
+DA:118,16
+FN:118,System.ValueTuple`2<System.String,System.String> API.Controllers.RoleController/<>c::<GetUsersByTin>b__3_1(API.Options.RoleConfiguration)
+FNDA:16,System.ValueTuple`2<System.String,System.String> API.Controllers.RoleController/<>c::<GetUsersByTin>b__3_1(API.Options.RoleConfiguration)
+DA:119,16
+FN:31,System.Boolean API.Controllers.RoleController/<>c__DisplayClass1_0::<AssignRole>b__2(System.String)
+FNDA:55,System.Boolean API.Controllers.RoleController/<>c__DisplayClass1_0::<AssignRole>b__2(System.String)
+DA:32,55
+FN:48,System.Boolean API.Controllers.RoleController/<>c__DisplayClass1_0::<AssignRole>b__3(API.Models.Entities.UserRole)
+FNDA:1,System.Boolean API.Controllers.RoleController/<>c__DisplayClass1_0::<AssignRole>b__3(API.Models.Entities.UserRole)
+DA:49,1
+FN:88,System.Boolean API.Controllers.RoleController/<>c__DisplayClass2_0::<RemoveRoleFromUser>b__0(API.Models.Entities.UserRole)
+FNDA:3,System.Boolean API.Controllers.RoleController/<>c__DisplayClass2_0::<RemoveRoleFromUser>b__0(API.Models.Entities.UserRole)
+DA:89,3
+FN:123,API.Models.Response.UserRoles API.Controllers.RoleController/<>c__DisplayClass3_0::<GetUsersByTin>b__2(API.Models.Entities.User)
+FNDA:4,API.Models.Response.UserRoles API.Controllers.RoleController/<>c__DisplayClass3_0::<GetUsersByTin>b__2(API.Models.Entities.User)
+DA:124,4
+FN:29,System.Void API.Controllers.RoleController/<AssignRole>d__1::MoveNext()
+FNDA:11,System.Void API.Controllers.RoleController/<AssignRole>d__1::MoveNext()
+DA:30,11
+DA:33,7
+DA:34,7
+DA:37,4
+DA:39,3
+DA:40,3
+DA:41,0
+DA:42,0
+DA:44,3
+DA:45,2
+DA:46,2
+DA:50,0
+DA:51,0
+DA:54,1
+DA:55,1
+DA:56,1
+DA:57,1
+DA:58,1
+DA:59,1
+DA:60,1
+DA:61,1
+DA:62,1
+DA:64,1
+DA:65,10
+BRDA:32,179,0,7
+BRDA:32,179,1,4
+BRDA:40,395,0,0
+BRDA:40,395,1,3
+BRDA:44,471,0,1
+BRDA:44,471,1,2
+BRDA:44,494,0,3
+BRDA:44,494,1,0
+BRDA:44,514,0,2
+BRDA:44,514,1,1
+BRDA:49,585,0,0
+BRDA:49,585,1,1
+FN:110,System.Void API.Controllers.RoleController/<GetUsersByTin>d__3::MoveNext()
+FNDA:4,System.Void API.Controllers.RoleController/<GetUsersByTin>d__3::MoveNext()
+DA:111,4
+DA:112,4
+DA:113,4
+DA:115,4
+DA:117,4
+DA:120,4
+DA:122,4
+DA:123,4
+DA:125,4
+DA:127,4
+DA:128,4
+DA:129,4
+DA:130,4
+DA:131,4
+DA:132,4
+DA:133,4
+DA:134,4
+DA:135,4
+FN:70,System.Void API.Controllers.RoleController/<RemoveRoleFromUser>d__2::MoveNext()
+FNDA:5,System.Void API.Controllers.RoleController/<RemoveRoleFromUser>d__2::MoveNext()
+DA:71,5
+DA:72,5
+DA:74,4
+DA:75,4
+DA:76,0
+DA:77,0
+DA:80,4
+DA:81,0
+DA:82,0
+DA:84,4
+DA:85,2
+DA:86,2
+DA:90,2
+DA:91,1
+DA:92,1
+DA:95,1
+DA:96,1
+DA:97,1
+DA:98,1
+DA:99,1
+DA:100,1
+DA:101,1
+DA:102,1
+DA:103,1
+DA:104,1
+DA:105,4
+BRDA:75,231,0,0
+BRDA:75,231,1,4
+BRDA:80,328,0,0
+BRDA:80,328,1,4
+BRDA:80,340,0,0
+BRDA:80,340,1,4
+BRDA:80,359,0,0
+BRDA:80,359,1,4
+BRDA:80,389,0,0
+BRDA:80,389,1,4
+BRDA:84,426,0,2
+BRDA:84,426,1,2
+BRDA:84,449,0,3
+BRDA:84,449,1,1
+BRDA:84,469,0,2
+BRDA:84,469,1,2
+BRDA:90,558,0,1
+BRDA:90,558,1,1
+LF:92
+LH:84
+BRF:34
+BRH:26
+FNF:12
+FNH:12
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\TermsController.cs
+FN:69,System.Boolean API.Controllers.TermsController/<>c::<AcceptUserTermsAsync>b__0_1(API.Options.RoleConfiguration)
+FNDA:5,System.Boolean API.Controllers.TermsController/<>c::<AcceptUserTermsAsync>b__0_1(API.Options.RoleConfiguration)
+DA:70,5
+FN:139,System.Boolean API.Controllers.TermsController/<>c::<AcceptCompanyAsync>b__1_0(API.Models.Entities.CompanyTerms)
+FNDA:0,System.Boolean API.Controllers.TermsController/<>c::<AcceptCompanyAsync>b__1_0(API.Models.Entities.CompanyTerms)
+DA:140,0
+FN:42,System.Boolean API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__0(API.Models.Entities.UserTerms)
+FNDA:5,System.Boolean API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__0(API.Models.Entities.UserTerms)
+DA:43,5
+FN:70,API.Models.Entities.UserRole API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__2(API.Options.RoleConfiguration)
+FNDA:0,API.Models.Entities.UserRole API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__2(API.Options.RoleConfiguration)
+DA:71,0
+FN:78,System.Boolean API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__3(API.Models.Entities.UserTerms)
+FNDA:3,System.Boolean API.Controllers.TermsController/<>c__DisplayClass0_0::<AcceptUserTermsAsync>b__3(API.Models.Entities.UserTerms)
+DA:79,3
+FN:145,System.Boolean API.Controllers.TermsController/<>c__DisplayClass1_0::<AcceptCompanyAsync>b__1(API.Models.Entities.CompanyTerms)
+FNDA:0,System.Boolean API.Controllers.TermsController/<>c__DisplayClass1_0::<AcceptCompanyAsync>b__1(API.Models.Entities.CompanyTerms)
+DA:146,0
+FN:129,System.Void API.Controllers.TermsController/<AcceptCompanyAsync>d__1::MoveNext()
+FNDA:0,System.Void API.Controllers.TermsController/<AcceptCompanyAsync>d__1::MoveNext()
+DA:130,0
+DA:131,0
+DA:132,0
+DA:133,0
+DA:136,0
+DA:137,0
+DA:139,0
+DA:141,0
+DA:142,0
+DA:143,0
+DA:147,0
+DA:148,0
+DA:149,0
+DA:150,0
+DA:151,0
+DA:152,0
+DA:153,0
+DA:154,0
+DA:155,0
+DA:157,0
+DA:159,0
+DA:160,0
+DA:161,0
+DA:162,0
+DA:163,0
+DA:164,0
+DA:166,0
+DA:167,0
+BRDA:131,61,0,0
+BRDA:131,61,1,0
+BRDA:140,385,0,0
+BRDA:140,385,1,0
+BRDA:140,406,0,0
+BRDA:140,406,1,0
+BRDA:140,463,0,0
+BRDA:140,463,1,0
+BRDA:141,520,0,0
+BRDA:141,520,1,0
+BRDA:147,709,0,0
+BRDA:147,709,1,0
+FN:32,System.Void API.Controllers.TermsController/<AcceptUserTermsAsync>d__0::MoveNext()
+FNDA:4,System.Void API.Controllers.TermsController/<AcceptUserTermsAsync>d__0::MoveNext()
+DA:33,4
+DA:34,4
+DA:35,0
+DA:36,0
+DA:39,4
+DA:41,3
+DA:42,3
+DA:45,3
+DA:46,1
+DA:47,1
+DA:50,2
+DA:51,2
+DA:52,1
+DA:53,1
+DA:54,1
+DA:55,1
+DA:56,1
+DA:57,1
+DA:58,1
+DA:59,1
+DA:61,2
+DA:62,1
+DA:63,1
+DA:64,1
+DA:65,1
+DA:66,1
+DA:67,1
+DA:68,1
+DA:72,1
+DA:74,1
+DA:75,1
+DA:76,1
+DA:77,1
+DA:80,2
+DA:81,1
+DA:82,1
+DA:83,1
+DA:84,1
+DA:85,1
+DA:86,1
+DA:87,1
+DA:88,2
+DA:90,2
+DA:92,2
+DA:93,2
+DA:94,0
+DA:95,0
+DA:96,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:103,0
+DA:104,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:112,2
+DA:113,2
+DA:114,2
+DA:115,2
+DA:116,2
+DA:117,2
+DA:119,2
+DA:120,3
+BRDA:34,93,0,0
+BRDA:34,93,1,4
+BRDA:43,433,0,1
+BRDA:43,433,1,2
+BRDA:43,476,0,0
+BRDA:43,476,1,2
+BRDA:45,533,0,1
+BRDA:45,533,1,2
+BRDA:50,685,0,1
+BRDA:50,685,1,1
+BRDA:51,831,0,2
+BRDA:51,850,0,1
+BRDA:51,850,1,1
+BRDA:51,831,1,0
+BRDA:51,871,0,1
+BRDA:53,892,0,1
+BRDA:53,892,1,0
+BRDA:51,871,1,2
+BRDA:61,1006,0,1
+BRDA:61,1006,1,2
+BRDA:80,1406,0,1
+BRDA:80,1406,1,2
+BRDA:92,1604,0,2
+BRDA:92,1604,1,0
+BRDA:93,1633,0,0
+BRDA:93,1647,0,0
+BRDA:93,1647,1,0
+BRDA:93,1691,0,0
+BRDA:93,1691,1,0
+BRDA:93,1633,1,2
+BRDA:93,1726,0,0
+BRDA:100,1835,0,0
+BRDA:100,1835,1,0
+BRDA:106,2023,0,0
+BRDA:106,2023,1,0
+BRDA:93,1726,1,2
+LF:100
+LH:54
+BRF:48
+BRH:21
+FNF:8
+FNH:4
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\Controllers\TokenController.cs
+FN:26,System.Void API.Controllers.TokenController/<RefreshAsync>d__0::MoveNext()
+FNDA:5,System.Void API.Controllers.TokenController/<RefreshAsync>d__0::MoveNext()
+DA:27,5
+DA:28,5
+DA:29,4
+DA:30,4
+DA:31,4
+DA:32,3
+DA:33,3
+DA:34,3
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,3
+DA:45,3
+DA:46,3
+DA:47,3
+DA:48,3
+DA:49,3
+DA:50,1
+DA:51,3
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,3
+DA:58,4
+DA:59,4
+DA:61,4
+DA:62,4
+DA:63,4
+DA:64,4
+DA:65,4
+DA:66,4
+DA:68,4
+DA:70,4
+DA:71,4
+BRDA:31,201,0,3
+BRDA:34,240,0,0
+BRDA:34,240,1,3
+BRDA:43,338,0,0
+BRDA:43,338,1,3
+BRDA:45,371,0,3
+BRDA:47,390,0,1
+BRDA:47,408,0,1
+BRDA:47,390,1,2
+BRDA:47,408,1,2
+BRDA:47,436,0,1
+BRDA:47,436,1,3
+BRDA:45,371,1,0
+BRDA:54,472,0,0
+BRDA:54,472,1,0
+BRDA:31,201,1,4
+BRDA:68,673,0,3
+BRDA:68,673,1,1
+LF:39
+LH:28
+BRF:18
+BRH:13
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230203091258_AddUserTable.cs
+FN:11,System.Void API.AutoGenerated.Migrations.AddUserTable::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddUserTable::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:12,0
+DA:13,0
+DA:14,0
+DA:15,0
+DA:16,0
+DA:17,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:26,0
+DA:27,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+FN:36,System.Void API.AutoGenerated.Migrations.AddUserTable::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddUserTable::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:37,0
+DA:38,0
+DA:39,0
+LF:24
+LH:0
+BRF:0
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230203091258_AddUserTable.Designer.cs
+FN:19,System.Void API.AutoGenerated.Migrations.AddUserTable::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddUserTable::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:20,0
+DA:22,0
+DA:23,0
+DA:24,0
+DA:26,0
+DA:28,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:58,0
+LF:35
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230328142531_AddCompanyAndUserProviderTable.cs
+FN:12,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:13,0
+DA:14,0
+DA:15,0
+DA:16,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:22,0
+DA:23,0
+DA:24,0
+DA:26,0
+DA:27,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+FN:99,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:100,0
+DA:101,0
+DA:102,0
+DA:103,0
+DA:105,0
+DA:106,0
+DA:108,0
+DA:109,0
+DA:111,0
+DA:112,0
+DA:113,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:119,0
+DA:120,0
+DA:122,0
+DA:123,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:133,0
+DA:135,0
+DA:136,0
+DA:137,0
+DA:138,0
+DA:139,0
+LF:105
+LH:0
+BRF:0
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230328142531_AddCompanyAndUserProviderTable.Designer.cs
+FN:20,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddCompanyAndUserProviderTable::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:21,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:27,0
+DA:28,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:97,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:134,0
+LF:104
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230413105444_AddEiaProviderKeyTypeEnum.cs
+FN:11,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:12,0
+DA:13,0
+DA:14,0
+DA:15,0
+DA:16,0
+FN:19,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:20,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:24,0
+LF:10
+LH:0
+BRF:0
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230413105444_AddEiaProviderKeyTypeEnum.Designer.cs
+FN:20,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.AddEiaProviderKeyTypeEnum::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:21,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:27,0
+DA:28,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:97,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:134,0
+LF:104
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230424102319_RenameColumn.cs
+FN:11,System.Void API.AutoGenerated.Migrations.RenameColumn::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RenameColumn::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:12,0
+DA:13,0
+DA:14,0
+DA:15,0
+DA:16,0
+DA:17,0
+FN:20,System.Void API.AutoGenerated.Migrations.RenameColumn::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RenameColumn::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:21,0
+DA:22,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:26,0
+LF:12
+LH:0
+BRF:0
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230424102319_RenameColumn.Designer.cs
+FN:20,System.Void API.AutoGenerated.Migrations.RenameColumn::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RenameColumn::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:21,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:27,0
+DA:28,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:97,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:134,0
+LF:104
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230815131520_RolesAndTerms.cs
+FN:13,System.Void API.AutoGenerated.Migrations.RolesAndTerms::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RolesAndTerms::Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:14,0
+DA:15,0
+DA:16,0
+DA:17,0
+DA:18,0
+DA:19,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:24,0
+DA:25,0
+DA:26,0
+DA:27,0
+DA:28,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:97,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:103,0
+DA:104,0
+DA:105,0
+DA:106,0
+FN:109,System.Void API.AutoGenerated.Migrations.RolesAndTerms::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RolesAndTerms::Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+DA:110,0
+DA:111,0
+DA:112,0
+DA:114,0
+DA:115,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:128,0
+DA:129,0
+DA:131,0
+DA:132,0
+DA:134,0
+DA:135,0
+DA:136,0
+DA:137,0
+DA:138,0
+DA:139,0
+LF:110
+LH:0
+BRF:0
+BRH:0
+FNF:2
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\20230815131520_RolesAndTerms.Designer.cs
+FN:21,System.Void API.AutoGenerated.Migrations.RolesAndTerms::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.RolesAndTerms::BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:22,0
+DA:24,0
+DA:25,0
+DA:26,0
+DA:28,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:97,0
+DA:98,0
+DA:99,0
+DA:101,0
+DA:102,0
+DA:103,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:112,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:123,0
+DA:124,0
+DA:125,0
+DA:127,0
+DA:128,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:133,0
+DA:134,0
+DA:135,0
+DA:136,0
+DA:137,0
+DA:138,0
+DA:139,0
+DA:140,0
+DA:141,0
+DA:142,0
+DA:143,0
+DA:144,0
+DA:145,0
+DA:146,0
+DA:148,0
+DA:149,0
+DA:150,0
+DA:151,0
+DA:152,0
+DA:153,0
+DA:154,0
+DA:155,0
+DA:156,0
+DA:157,0
+DA:158,0
+DA:159,0
+DA:160,0
+DA:161,0
+DA:162,0
+DA:163,0
+DA:164,0
+DA:165,0
+DA:166,0
+DA:167,0
+DA:168,0
+DA:169,0
+DA:171,0
+DA:172,0
+DA:173,0
+DA:174,0
+DA:175,0
+DA:176,0
+DA:177,0
+DA:178,0
+DA:179,0
+DA:180,0
+DA:182,0
+DA:183,0
+DA:184,0
+DA:185,0
+DA:186,0
+DA:187,0
+DA:188,0
+DA:189,0
+DA:191,0
+DA:192,0
+DA:193,0
+DA:194,0
+DA:195,0
+DA:196,0
+DA:197,0
+DA:198,0
+DA:199,0
+DA:200,0
+DA:202,0
+DA:203,0
+DA:204,0
+DA:205,0
+DA:206,0
+DA:207,0
+DA:208,0
+DA:209,0
+DA:210,0
+DA:211,0
+DA:213,0
+DA:214,0
+DA:215,0
+DA:216,0
+DA:217,0
+DA:218,0
+DA:219,0
+DA:220,0
+DA:221,0
+DA:222,0
+DA:224,0
+DA:225,0
+DA:226,0
+DA:227,0
+DA:228,0
+DA:229,0
+DA:231,0
+DA:232,0
+DA:233,0
+DA:234,0
+DA:235,0
+DA:236,0
+DA:237,0
+DA:238,0
+DA:240,0
+LF:203
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\energy-origin\domains\auth\Auth.API\API\AutoGenerated\Migrations\DataContextModelSnapshot.cs
+FN:18,System.Void API.AutoGenerated.Migrations.DataContextModelSnapshot::BuildModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+FNDA:0,System.Void API.AutoGenerated.Migrations.DataContextModelSnapshot::BuildModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+DA:19,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:25,0
+DA:26,0
+DA:27,0
+DA:28,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+DA:40,0
+DA:41,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:46,0
+DA:47,0
+DA:48,0
+DA:49,0
+DA:50,0
+DA:52,0
+DA:53,0
+DA:54,0
+DA:55,0
+DA:56,0
+DA:57,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:103,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:112,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+DA:126,0
+DA:127,0
+DA:128,0
+DA:129,0
+DA:130,0
+DA:131,0
+DA:132,0
+DA:133,0
+DA:134,0
+DA:135,0
+DA:136,0
+DA:137,0
+DA:138,0
+DA:139,0
+DA:140,0
+DA:141,0
+DA:142,0
+DA:143,0
+DA:145,0
+DA:146,0
+DA:147,0
+DA:148,0
+DA:149,0
+DA:150,0
+DA:151,0
+DA:152,0
+DA:153,0
+DA:154,0
+DA:155,0
+DA:156,0
+DA:157,0
+DA:158,0
+DA:159,0
+DA:160,0
+DA:161,0
+DA:162,0
+DA:163,0
+DA:164,0
+DA:165,0
+DA:166,0
+DA:168,0
+DA:169,0
+DA:170,0
+DA:171,0
+DA:172,0
+DA:173,0
+DA:174,0
+DA:175,0
+DA:176,0
+DA:177,0
+DA:179,0
+DA:180,0
+DA:181,0
+DA:182,0
+DA:183,0
+DA:184,0
+DA:185,0
+DA:186,0
+DA:188,0
+DA:189,0
+DA:190,0
+DA:191,0
+DA:192,0
+DA:193,0
+DA:194,0
+DA:195,0
+DA:196,0
+DA:197,0
+DA:199,0
+DA:200,0
+DA:201,0
+DA:202,0
+DA:203,0
+DA:204,0
+DA:205,0
+DA:206,0
+DA:207,0
+DA:208,0
+DA:210,0
+DA:211,0
+DA:212,0
+DA:213,0
+DA:214,0
+DA:215,0
+DA:216,0
+DA:217,0
+DA:218,0
+DA:219,0
+DA:221,0
+DA:222,0
+DA:223,0
+DA:224,0
+DA:225,0
+DA:226,0
+DA:228,0
+DA:229,0
+DA:230,0
+DA:231,0
+DA:232,0
+DA:233,0
+DA:234,0
+DA:235,0
+DA:237,0
+LF:203
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record

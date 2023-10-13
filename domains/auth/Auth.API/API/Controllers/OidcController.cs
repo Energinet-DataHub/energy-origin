@@ -135,7 +135,6 @@ public class OidcHelper
         return (descriptor, UserData.From(user));
     }
 
-    //DONE
     public virtual string RedirectionCheck(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
@@ -154,7 +153,6 @@ public class OidcHelper
         return redirectionUri;
     }
 
-    //DONE
     public virtual void CodeNullCheck(string? code, ILogger<OidcController> logger, string? error, string? errorDescription, string redirectionUri)
     {
         if (code == null)
@@ -164,7 +162,6 @@ public class OidcHelper
         }
     }
 
-    //DONE
     public virtual void DiscoveryDocumentErrorChecks(DiscoveryDocumentResponse? discoveryDocument, ILogger<OidcController> logger, string redirectionUri)
     {
         if (discoveryDocument == null || discoveryDocument.IsError)
@@ -174,7 +171,6 @@ public class OidcHelper
         }
     }
 
-    //DONE
     public virtual async Task<TokenResponse> GetClientAndResponse(IHttpClientFactory clientFactory, ILogger<OidcController> logger, OidcOptions oidcOptions, DiscoveryDocumentResponse discoveryDocument, string code, string redirectionUri)
     {
         var client = clientFactory.CreateClient();
@@ -199,7 +195,6 @@ public class OidcHelper
         return response;
     }
 
-    //DONE
     public virtual async Task<(UserDescriptor, UserData)> GetUserDescriptor(ILogger<OidcController> logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
     {
         try
@@ -227,7 +222,6 @@ public class OidcHelper
         return (userInfoToken, identityToken, accessToken);
     }
 
-    //DONE
     public virtual void SubjectErrorCheck(string? subject, ClaimsPrincipal identity, ClaimsPrincipal userInfo)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
@@ -237,7 +231,6 @@ public class OidcHelper
         }
     }
 
-    //DONE
     public virtual void ProvidertypeIsFalseCheck(ProviderType providerType, IdentityProviderOptions providerOptions)
     {
         if (providerOptions.Providers.Contains(providerType) == false)
@@ -246,7 +239,6 @@ public class OidcHelper
         }
     }
 
-    //DONE
     public virtual void ClaimsErrorCheck(string? scope, string? providerName, string? identityType)
     {
         ArgumentException.ThrowIfNullOrEmpty(scope, nameof(scope));
@@ -254,7 +246,6 @@ public class OidcHelper
         ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
     }
 
-    //DONE
     public virtual ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
     {
         (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
@@ -264,7 +255,6 @@ public class OidcHelper
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
 
-    //DONE
     public virtual (string? name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;
@@ -321,7 +311,6 @@ public class OidcHelper
         return (name, tin, companyName, keys);
     }
 
-    //DONE
     public virtual async Task<User> HandleUserAsync(
         IUserService userService,
         IUserProviderService userProviderService,

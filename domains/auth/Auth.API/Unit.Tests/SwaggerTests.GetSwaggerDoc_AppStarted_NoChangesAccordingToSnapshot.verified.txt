@@ -104,6 +104,25 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OidcHelper"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OidcHelper"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OidcHelper"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -287,6 +306,12 @@
     }
   },
   "components": {
+    "schemas": {
+      "OidcHelper": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    },
     "securitySchemes": {
       "Bearer": {
         "type": "apiKey",
