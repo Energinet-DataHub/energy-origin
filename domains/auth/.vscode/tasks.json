@@ -36,6 +36,6 @@
                 "${workspaceFolder}/Auth.API/API/API.csproj"
             ],
             "problemMatcher": "$msCompile"
-        },
+        }
     ]
 }
