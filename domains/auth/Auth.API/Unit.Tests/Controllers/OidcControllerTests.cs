@@ -67,7 +67,7 @@ public class OidcControllerTests
     public static IEnumerable<object[]> RedirectionCheckParameters =>
        new List<object[]>
        {
-            new object[] {null,Redirection.Allow,"https://test.dk/"},
+            new object[] {new OidcState(null,null,null),Redirection.Allow,"https://test.dk/"},
             new object[] {new OidcState(null, null, "/path/to/redirect"),Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
             new object[] {new OidcState("someState", null, null), Redirection.Deny, "https://test.dk/?state=someState"},
             new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
