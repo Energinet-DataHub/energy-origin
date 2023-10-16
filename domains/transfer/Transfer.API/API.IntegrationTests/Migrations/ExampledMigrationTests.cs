@@ -13,7 +13,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class ExampledMigrationTests : IDisposable
+public class ExampledMigrationTests : IAsyncDisposable
 {
     private PostgresContainer container;
     public ExampledMigrationTests()
@@ -78,8 +78,8 @@ public class ExampledMigrationTests : IDisposable
         return dbContext;
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        container.DisposeAsync();
+        await container.DisposeAsync();
     }
 }

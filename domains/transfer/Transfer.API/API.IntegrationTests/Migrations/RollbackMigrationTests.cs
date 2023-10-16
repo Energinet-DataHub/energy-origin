@@ -10,7 +10,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class RollbackMigrationTests : IDisposable
+public class RollbackMigrationTests : IAsyncDisposable
 {
     private PostgresContainer container;
     public RollbackMigrationTests()
@@ -34,8 +34,8 @@ public class RollbackMigrationTests : IDisposable
         rollbackAllMigrations.Should().NotThrow();
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        container.DisposeAsync();
+        await container.DisposeAsync();
     }
 }
