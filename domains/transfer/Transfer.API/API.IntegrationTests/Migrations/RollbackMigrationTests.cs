@@ -19,7 +19,8 @@ public class RollbackMigrationTests
 
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        await using var dbContext = new ApplicationDbContext(contextOptions);
+        await dbContext.Database.MigrateAsync();
 
         var migrator = dbContext.Database.GetService<IMigrator>();
 
