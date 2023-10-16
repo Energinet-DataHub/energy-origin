@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using CertificateValueObjects;
 using Contracts.Certificates;
 using Grpc.Net.Client;
 using MassTransit;
@@ -60,40 +61,8 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
             .Single()
             .CreateStatusRequest();
 
-        logger.LogInformation("Sending status request {statusRequest}", statusRequest);
-
-        var stopWatch = new Stopwatch();
-        stopWatch.Start();
-        while (true)
-        {
-            var status = await client.GetTransactionStatusAsync(statusRequest);
-
-            if (status.Status == TransactionState.Committed)
-            {
-                logger.LogInformation("Certificate {id} issued in registry", message.CertificateId);
-                await context.Publish(new CertificateIssuedInRegistryEvent(
-                    message.CertificateId,
-                    projectOriginOptions.RegistryName,
-                    commitment.BlindingValue.ToArray(),
-                    commitment.Message,
-                    message.WalletPublicKey,
-                    message.WalletUrl,
-                    message.WalletDepositEndpointPosition));
-                break;
-            }
-
-            if (status.Status == TransactionState.Failed)
-            {
-                logger.LogInformation("Certificate {id} rejected by registry", message.CertificateId);
-                await context.Publish(new CertificateRejectedInRegistryEvent(message.CertificateId, status.Message));
-                break;
-            }
-
-            await Task.Delay(1000);
-
-            if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
-                throw new TimeoutException($"Timed out waiting for transaction to commit for certificate {message.CertificateId}");
-        }
+        await PollRegistryAndPublishEvent(statusRequest, client, context, message.CertificateId, commitment,
+            MeteringPointType.Production, message.WalletPublicKey, message.WalletUrl, message.WalletDepositEndpointPosition);
     }
 
     public async Task Consume(ConsumeContext<ConsumptionCertificateCreatedEvent> context)
@@ -119,6 +88,15 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
 
         await client.SendTransactionsAsync(request);
 
+        //TODO: Below polling and waiting is not nice on the message broker. To be fixed in https://github.com/Energinet-DataHub/energy-origin-issues/issues/1639
+
+        var statusRequest = request
+            .Transactions
+            .Single()
+            .CreateStatusRequest();
+
+        await PollRegistryAndPublishEvent(statusRequest, client, context, message.CertificateId, commitment,
+            MeteringPointType.Consumption, message.WalletPublicKey, message.WalletUrl, message.WalletDepositEndpointPosition);
     }
 
     private (SecretCommitmentInfo, IPublicKey, IPrivateKey) GenerateKeyInfo(long quantity, byte[] blindingValue, byte[] walletPublicKey, uint walletDepositEndpointPosition, string gridArea)
@@ -135,5 +113,43 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
         return (commitment, ownerPublicKey, issuerKey);
     }
 
-    private async Task PollRegistryAndPublishEvent()
+    private async Task PollRegistryAndPublishEvent(GetTransactionStatusRequest statusRequest, RegistryService.RegistryServiceClient client, ConsumeContext context,
+        Guid certificateId, SecretCommitmentInfo commitment, MeteringPointType meteringPointType, byte[] walletPublicKey, string walletUrl, uint walletDepositEndpointPosition)
+    {
+        logger.LogInformation("Sending status request {statusRequest}", statusRequest);
+
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        while (true)
+        {
+            var status = await client.GetTransactionStatusAsync(statusRequest);
+
+            if (status.Status == TransactionState.Committed)
+            {
+                logger.LogInformation("Certificate {id} issued in registry", certificateId);
+                await context.Publish(new Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent(
+                    certificateId,
+                    projectOriginOptions.RegistryName,
+                    commitment.BlindingValue.ToArray(),
+                    commitment.Message,
+                    meteringPointType,
+                    walletPublicKey,
+                    walletUrl,
+                    walletDepositEndpointPosition));
+                break;
+            }
+
+            if (status.Status == TransactionState.Failed)
+            {
+                logger.LogInformation("Certificate {id} rejected by registry", certificateId);
+                await context.Publish(new Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent(certificateId, meteringPointType, status.Message));
+                break;
+            }
+
+            await Task.Delay(1000);
+
+            if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
+                throw new TimeoutException($"Timed out waiting for transaction to commit for certificate {certificateId}");
+        }
+    }
 }
