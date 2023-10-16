@@ -13,8 +13,14 @@ using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class ExampledMigrationTests
+public class ExampledMigrationTests : IDisposable
 {
+    private PostgresContainer container;
+    public ExampledMigrationTests()
+    {
+        container = new PostgresContainer();
+    }
+
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
     //These tests are to be deleted after the actual migration has happened. We only keep this class as an example for how to write the migration tests. 
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
@@ -62,14 +68,18 @@ public class ExampledMigrationTests
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
 
-    private static async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
     {
-        var container = new PostgresContainer();
         await container.InitializeAsync();
 
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
         var dbContext = new ApplicationDbContext(contextOptions);
         return dbContext;
+    }
+
+    public void Dispose()
+    {
+        container.DisposeAsync();
     }
 }

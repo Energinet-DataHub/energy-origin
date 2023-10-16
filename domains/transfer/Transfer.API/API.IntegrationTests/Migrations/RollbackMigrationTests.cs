@@ -1,3 +1,4 @@
+using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -9,12 +10,17 @@ using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class RollbackMigrationTests
+public class RollbackMigrationTests : IDisposable
 {
+    private PostgresContainer container;
+    public RollbackMigrationTests()
+    {
+        container = new PostgresContainer();
+    }
+
     [Fact]
     public async Task can_rollback_all_migrations()
     {
-        var container = new PostgresContainer();
         await container.InitializeAsync();
 
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
@@ -26,5 +32,10 @@ public class RollbackMigrationTests
 
         var rollbackAllMigrations = () => migrator.Migrate("0");
         rollbackAllMigrations.Should().NotThrow();
+    }
+
+    public void Dispose()
+    {
+        container.DisposeAsync();
     }
 }
