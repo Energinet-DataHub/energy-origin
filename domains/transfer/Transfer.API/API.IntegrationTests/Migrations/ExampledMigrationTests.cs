@@ -2,39 +2,29 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
-using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using API.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Xunit;
 
 namespace API.IntegrationTests.Migrations;
 
-public class ExampledMigrationTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class ExampledMigrationTests
 {
-    private readonly TransferAgreementsApiWebApplicationFactory factory;
-
-    public ExampledMigrationTests(TransferAgreementsApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
-
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
     //These tests are to be deleted after the actual migration has happened.
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await using var dbContext = await CreateNewCleanDatabase();
 
-        var migrator = dbContext.Database.GetService<IMigrator>();
+        var migrator = dbContext.GetService<IMigrator>();
 
         //Here the database is migrated to the specific point we need.
         await migrator.MigrateAsync("20230829090644_AddInvitationsTable");
-        await dbContext.TruncateTransferAgreementsTable();
 
         //'Old' data (data that matches the specific point) is inserted 
         await InsertOldTransferAgreement(dbContext, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(1), Guid.NewGuid(), "Producent A/S", "12345678", "11223344", Guid.NewGuid());
@@ -70,5 +60,16 @@ public class ExampledMigrationTests : IClassFixture<TransferAgreementsApiWebAppl
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
+    }
+
+    private static async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    {
+        var container = new PostgresContainer();
+        await container.InitializeAsync();
+
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+            .Options;
+        var dbContext = new ApplicationDbContext(contextOptions);
+        return dbContext;
     }
 }

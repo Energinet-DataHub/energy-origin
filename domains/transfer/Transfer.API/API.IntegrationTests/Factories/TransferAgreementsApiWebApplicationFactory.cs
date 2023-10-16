@@ -79,7 +79,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateTransferAgreementsTable();
+        await dbContext.TruncateTransferAgreementsTables();
 
         foreach (var agreement in transferAgreements)
         {
