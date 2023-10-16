@@ -190,7 +190,7 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
     public void Dispose()
     {
         using var dbContext = new ApplicationDbContext(options);
-        dbContext.RemoveAll(d => d.ProductionCertificates);
+        dbContext.RemoveAll(d => d.ConsumptionCertificates);
 
         GC.SuppressFinalize(this);
     }
