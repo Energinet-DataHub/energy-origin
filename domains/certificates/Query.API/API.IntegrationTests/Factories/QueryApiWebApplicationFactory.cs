@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
+using CertificateValueObjects;
 using Contracts;
 using FluentAssertions;
 using MassTransit;
@@ -110,13 +111,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return tokenHandler.WriteToken(token);
     }
 
-    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate,
+    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate, MeteringPointType meteringPointType,
         DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn);
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType.ToString());
 
         using var client = CreateAuthenticatedClient(subject);
-        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
+        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds(), meteringPointType = meteringPointType.ToString() };
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }

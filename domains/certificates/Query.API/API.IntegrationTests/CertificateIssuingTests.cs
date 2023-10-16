@@ -8,6 +8,7 @@ using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
+using CertificateValueObjects;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using MassTransit;
@@ -77,7 +78,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
 
         var measurement = new ProductionEnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
@@ -122,7 +123,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
 
         var dateFrom = utcMidnight.ToUnixTimeSeconds();
         var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
@@ -177,7 +178,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
 
         const int measurementCount = 5;
 
