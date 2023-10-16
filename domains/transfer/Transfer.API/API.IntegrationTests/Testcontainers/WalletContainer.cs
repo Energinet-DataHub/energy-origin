@@ -20,7 +20,9 @@ public class WalletContainer : IAsyncLifetime
 
         walletContainer = new Lazy<IContainer>(() =>
         {
-            var postgresConnectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
+            var postgresConnectionString = postgresContainer.GetConnectionString()
+                .Replace($"Host={postgresContainer.Hostname}", $"Host={postgresContainer.IpAddress}")
+                .Replace($"Port={postgresContainer.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort)}", $"Port={PostgreSqlBuilder.PostgreSqlPort}");
 
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.2.1")
