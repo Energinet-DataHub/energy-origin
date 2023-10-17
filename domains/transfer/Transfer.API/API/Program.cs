@@ -29,8 +29,6 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Exporter.Prometheus;
 using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
