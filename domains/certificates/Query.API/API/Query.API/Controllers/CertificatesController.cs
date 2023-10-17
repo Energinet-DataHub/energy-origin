@@ -49,11 +49,11 @@ public class CertificatesController : ControllerBase
 
     private static CertificateType Map(GranularCertificateType type)
     {
-        if (type == GranularCertificateType.Consumption)
-            return CertificateType.Consumption;
-        if(type == GranularCertificateType.Production)
-            return CertificateType.Production;
-
-        return CertificateType.Invalid;
+        return type switch
+        {
+            GranularCertificateType.Consumption => CertificateType.Consumption,
+            GranularCertificateType.Production => CertificateType.Production,
+            _ => CertificateType.Invalid
+        };
     }
 }
