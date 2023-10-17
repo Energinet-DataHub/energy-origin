@@ -30,6 +30,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Exporter.Prometheus;
 using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
@@ -104,21 +105,13 @@ builder.Services.AddHttpClient<CvrClient>((sp, c) =>
 var resource = ResourceBuilder.CreateDefault().AddService("TransferApi");
 
 builder.Services.AddOpenTelemetry()
-    .WithTracing(providerBuilder => providerBuilder
-        .SetResourceBuilder(resource)
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        // Add other necessary instrumentation here
-        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithMetrics(provider => provider
-        .SetResourceBuilder(resource)
-        // You don't restrict to a specific meter, hence it collects all available metrics
-        .AddHttpClientInstrumentation()
-        .AddAspNetCoreInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddProcessInstrumentation()
-        // Add other necessary instrumentation here
-        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter());
 
 LoggerFactory.Create(loggingBuilder =>
 {
@@ -209,6 +202,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
