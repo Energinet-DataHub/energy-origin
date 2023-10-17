@@ -34,7 +34,7 @@ public class OidcControllerTests
     private readonly TokenOptions tokenOptions;
     private readonly IdentityProviderOptions providerOptions;
     private readonly RoleOptions roleOptions;
-    private readonly ICryptography cryptography = new Cryptography(new CryptographyOptions(){ Key = "secretsecretsecretsecret"});
+    private readonly ICryptography cryptography = new Cryptography(new CryptographyOptions() { Key = "secretsecretsecretsecret" });
     private readonly IUserService service = Substitute.For<IUserService>();
     private readonly IHttpClientFactory factory = Substitute.For<IHttpClientFactory>();
     private readonly IUserProviderService userProviderService = Substitute.For<IUserProviderService>();
@@ -110,14 +110,14 @@ public class OidcControllerTests
     [Fact]
     public void CodeNullCheck_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyCode("code", logger, null, null, "https://example.com/login?errorCode=714")));
 
-    #pragma warning disable 8625
+#pragma warning disable 8625
     public static IEnumerable<object[]> WrongDiscoveryDocumentResponse =>
         new List<object[]>
         {
             new object[] {DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") })},
             new object[] {null}
         };
-    #pragma warning restore 8625
+#pragma warning restore 8625
 
     [Theory]
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
@@ -484,7 +484,7 @@ public class OidcControllerTests
     [Fact]
     public void FetchUserAsync_ShouldCreateNewUserWithCompany_WhenProviderGroupIsProfessional()
     {
-        var newOptions = new OidcOptions(){IdGeneration = OidcOptions.Generation.Predictable};
+        var newOptions = new OidcOptions() { IdGeneration = OidcOptions.Generation.Predictable };
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
@@ -512,7 +512,7 @@ public class OidcControllerTests
     [Fact]
     public void FetchUserAsync_ShouldCreateNewUser_WhenProviderGroupIsPrivate()
     {
-        var newOptions = new OidcOptions(){IdGeneration = OidcOptions.Generation.Predictable};
+        var newOptions = new OidcOptions() { IdGeneration = OidcOptions.Generation.Predictable };
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
@@ -821,7 +821,7 @@ public class OidcControllerTests
     [MemberData(nameof(ErrorTokens))]
     public async Task MapUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(List<KeyValuePair<string, string>> documentItems, Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string expectedException, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
     {
-       var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
+        var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
 
         var document = DiscoveryDocument.Load(
             documentItems,
@@ -830,7 +830,7 @@ public class OidcControllerTests
 
         var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: identitySubject);
         var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: accessSubject, claims: accessTokenClaims);
-        var userInfoToken = TokenUsing(tokenOptions,document.Issuer, testOptions.ClientId, subject: userInfoSubject, claims: userInfoTokenClaims);
+        var userInfoToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: userInfoSubject, claims: userInfoTokenClaims);
 
         var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {

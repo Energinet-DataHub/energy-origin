@@ -78,7 +78,7 @@ public class OidcController : ControllerBase
 
     internal static class OidcHelper
     {
-          internal static string BuildRedirectionUri(OidcOptions oidcOptions, OidcState? oidcState)
+        internal static string BuildRedirectionUri(OidcOptions oidcOptions, OidcState? oidcState)
         {
             var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
             if (oidcState?.RedirectionPath != null)
