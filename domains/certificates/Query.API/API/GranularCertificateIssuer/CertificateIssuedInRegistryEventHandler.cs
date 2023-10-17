@@ -44,7 +44,7 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
 
         Certificate? certificate;
 
-        if(msg.MeteringPointType == MeteringPointType.Production)
+        if (msg.MeteringPointType == MeteringPointType.Production)
             certificate = await productionRepository.Get(msg.CertificateId);
         else if (msg.MeteringPointType == MeteringPointType.Consumption)
             certificate = await consumptionRepository.Get(msg.CertificateId);

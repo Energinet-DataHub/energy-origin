@@ -12,7 +12,7 @@ public enum IssuedState
 
 public abstract class Certificate
 {
-    protected Certificate() {}
+    protected Certificate() { }
 
     protected Certificate(string gridArea, Period period, string meteringPointOwner, string gsrn, long quantity, byte[] blindingValue)
     {
