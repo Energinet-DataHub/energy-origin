@@ -46,6 +46,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
+        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
         builder.ConfigureTestServices(s =>
         {
@@ -61,8 +62,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.User = (string)connectionStringBuilder["Username"];
                 o.Password = (string)connectionStringBuilder["Password"];
             });
-
-            s.Configure<ProjectOriginOptions>(o => o.WalletUrl = WalletUrl);
         });
     }
 
@@ -80,7 +79,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateTransferAgreementTables(dbContext);
+        await dbContext.TruncateTransferAgreementsTables();
 
         foreach (var agreement in transferAgreements)
         {
@@ -175,25 +174,16 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return tokenHandler.WriteToken(token);
     }
 
-    private static async Task TruncateTransferAgreementTables(ApplicationDbContext dbContext)
-    {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
-
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
-    }
-
     private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
     {
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection)).GetTableName();
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement)).GetTableName();
+        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         var agreementQuery =
             $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
@@ -215,7 +205,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private static async Task InsertHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
     {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry)).GetTableName();
+        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
         var historyQuery =
             $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +

@@ -35,9 +35,6 @@ internal class DataSyncSyncerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
-        logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
-
         while (!stoppingToken.IsCancellationRequested)
         {
             var syncInfos = await GetSyncInfos(stoppingToken);
@@ -126,33 +123,4 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
-}
-
-public static class ContractCleanup
-{
-    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
-
-    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDbContextFactory<ApplicationDbContext> contextFactory, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var contractsForBadMeteringPoint = await EntityFrameworkQueryableExtensions.ToListAsync(context.Contracts
-                .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment), cancellationToken);
-
-        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
-
-        if (owners.Count() == 1)
-            return (BadMeteringPointInDemoEnvironment, 0);
-
-        var deletionCount = contractsForBadMeteringPoint.Count;
-
-        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
-        {
-            context.Remove(certificateIssuingContract);
-        }
-
-        await context.SaveChangesAsync(cancellationToken);
-
-        return (BadMeteringPointInDemoEnvironment, deletionCount);
-    }
 }

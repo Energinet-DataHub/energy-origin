@@ -239,6 +239,115 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.Authentication.InvalidTokens}", query);
     }
 
+    [Theory]
+    [InlineData(OidcOptions.Generation.Predictable, true)]
+    [InlineData(OidcOptions.Generation.Random, false)]
+    public async Task CallbackAsync_ShouldReuseSubjectIdAsSubjectIdForPrivateUsers_WhenIdGenerationIs(OidcOptions.Generation idGeneration, bool expected)
+    {
+        var server = WireMockServer.Start();
+
+        var expectedId = Guid.NewGuid().ToString();
+        var oidcOptions = new OidcOptions
+        {
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com"),
+            IdGeneration = idGeneration
+        };
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<TokenOptions>();
+        var identityToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId);
+        var accessToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId, claims: new() {
+            { "mitid.uuid", Guid.NewGuid().ToString() },
+            { "mitid.identity_name", Guid.NewGuid().ToString() },
+            { "idp", ProviderName.MitId },
+            { "identity_type", ProviderGroup.Private }
+        });
+
+        server.MockConfigEndpoint().MockJwksEndpoint(KeySetUsing(tokenOptions.PublicKeyPem)).MockTokenEndpoint(accessToken, userToken, identityToken);
+
+        var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => new RoleOptions());
+            services.AddScoped(_ => oidcOptions);
+        }));
+
+        var result = await client.GetAsync($"auth/oidc/callback?code={Guid.NewGuid()}");
+
+        var uri = new Uri(result?.Headers.Location?.AbsoluteUri ?? "");
+        var query = HttpUtility.UrlDecode(uri.Query);
+        var values = HttpUtility.ParseQueryString(query ?? "");
+        var token = values["token"];
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(token ?? "").Claims;
+        Assert.Equal(
+            expected,
+            expectedId == claims.Where(x => x.Type == UserClaimName.Actor).Select(x => x.Value).FirstOrDefault()
+        );
+    }
+
+    [Theory]
+    [InlineData(OidcOptions.Generation.Predictable, true)]
+    [InlineData(OidcOptions.Generation.Random, false)]
+    public async Task CallbackAsync_ShouldReuseSubjectIdAsOrganizationIdForOrganizationUsers_WhenIdGenerationIs(OidcOptions.Generation idGeneration, bool expected)
+    {
+        var server = WireMockServer.Start();
+
+        var expectedId = Guid.NewGuid().ToString();
+        var oidcOptions = new OidcOptions
+        {
+            AuthorityUri = new Uri($"http://localhost:{server.Port}/op"),
+            ClientId = Guid.NewGuid().ToString(),
+            AuthorityCallbackUri = new Uri("https://oidcdebugger.com/debug"),
+            FrontendRedirectUri = new Uri("https://example-redirect.com"),
+            IdGeneration = idGeneration
+        };
+        var tokenOptions = factory.ServiceProvider.GetRequiredService<TokenOptions>();
+        var identityToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId);
+        var accessToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId, claims: new() {
+            { "scope", "something" },
+        });
+        var userToken = TokenUsing(tokenOptions, oidcOptions.AuthorityUri.ToString(), oidcOptions.ClientId, subject: expectedId, claims: new() {
+            { "nemlogin.name", Guid.NewGuid().ToString() },
+            { "nemlogin.cvr", Guid.NewGuid().ToString() },
+            { "nemlogin.org_name", Guid.NewGuid().ToString() },
+            { "nemlogin.nemid.rid", Guid.NewGuid().ToString() },
+            { "nemlogin.persistent_professional_id", Guid.NewGuid().ToString() },
+            { "idp", ProviderName.MitIdProfessional },
+            { "identity_type", ProviderGroup.Professional }
+        });
+
+        server.MockConfigEndpoint().MockJwksEndpoint(KeySetUsing(tokenOptions.PublicKeyPem)).MockTokenEndpoint(accessToken, userToken, identityToken);
+
+        var client = factory.CreateAnonymousClient(builder => builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped(_ => new RoleOptions());
+            services.AddScoped(_ => oidcOptions);
+        }));
+
+        var result = await client.GetAsync($"auth/oidc/callback?code={Guid.NewGuid()}");
+
+        var uri = new Uri(result?.Headers.Location?.AbsoluteUri ?? "");
+        var query = HttpUtility.UrlDecode(uri.Query);
+        var values = HttpUtility.ParseQueryString(query ?? "");
+        var token = values["token"];
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(token ?? "").Claims;
+        Assert.Equal(
+            expected,
+            expectedId == claims.Where(x => x.Type == UserClaimName.OrganizationId).Select(x => x.Value).FirstOrDefault()
+        );
+        Assert.NotEqual(
+            expectedId,
+            claims.Where(x => x.Type == UserClaimName.Actor).Select(x => x.Value).FirstOrDefault()
+        );
+        Assert.NotEqual(
+            claims.Where(x => x.Type == UserClaimName.Subject).Select(x => x.Value).FirstOrDefault(),
+            claims.Where(x => x.Type == UserClaimName.Actor).Select(x => x.Value).FirstOrDefault()
+        );
+    }
+
     private static JsonWebKeySet KeySetUsing(byte[] pem)
     {
         var rsa = RSA.Create();

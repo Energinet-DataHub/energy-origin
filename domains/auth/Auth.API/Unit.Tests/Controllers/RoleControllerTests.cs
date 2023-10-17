@@ -75,7 +75,7 @@ public class RoleControllerTests
         controller.PrepareUser();
 
         var testUserId = Guid.NewGuid();
-        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
         userService.UpsertUserAsync(testUser).Returns(dummyUser);
@@ -91,7 +91,7 @@ public class RoleControllerTests
         controller.PrepareUser();
 
         var testUserId = Guid.NewGuid();
-        var testUser = new User { Id = testUserId, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
         var dummyUser = new User();
         userService.UpsertUserAsync(testUser).Returns(dummyUser);
@@ -128,7 +128,7 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
-        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);
@@ -143,7 +143,7 @@ public class RoleControllerTests
 
         var testUserId = Guid.NewGuid();
         var userRole = new UserRole { UserId = testUserId, Role = RoleKey.Viewer, };
-        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Tin = Guid.NewGuid().ToString() } };
+        var testUser = new User { Id = testUserId, UserRoles = new List<UserRole> { userRole }, Company = new() { Id = Guid.NewGuid(), Tin = Guid.NewGuid().ToString() } };
         userService.GetUserByIdAsync(testUserId).Returns(testUser);
 
         var result = await controller.RemoveRoleFromUser(RoleKey.Viewer, testUserId, userService, logger);

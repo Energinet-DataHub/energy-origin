@@ -261,7 +261,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         getTransferAgreement.Should().NotBeNull();
 
-        getTransferAgreement.Id.Should().Be(fakeTransferAgreement.Id);
+        getTransferAgreement!.Id.Should().Be(fakeTransferAgreement.Id);
         getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
         getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
@@ -352,7 +352,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
-        transferAgreementsResponse.Result.Should().HaveCount(2);
+        transferAgreementsResponse!.Result.Should().HaveCount(2);
     }
 
     [Fact]
@@ -527,7 +527,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         updatedTransferAgreement.Should().NotBeNull();
-        updatedTransferAgreement.EndDate.Should().Be(newEndDate);
+        updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
     }
 
     [Fact]
@@ -538,7 +538,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
         var base64String = resultData?["result"];
-        Action base64Decoding = () => Encoding.UTF8.GetString(Convert.FromBase64String(base64String));
+        Action base64Decoding = () => Encoding.UTF8.GetString(Convert.FromBase64String(base64String!));
 
         result.StatusCode.Should().Be(HttpStatusCode.OK);
         resultData.Should().ContainKey("result");

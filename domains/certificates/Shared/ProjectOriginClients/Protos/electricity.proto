@@ -13,7 +13,7 @@ message IssuedEvent {
     bytes asset_id_hash = 5;
     Commitment quantity_commitment = 6;
     PublicKey owner_public_key = 7;
-    repeated Attribute Attributes = 8;
+    repeated Attribute attributes = 8;
 }
 
 message TransferredEvent{
@@ -55,8 +55,14 @@ enum GranularCertificateType {
 }
 
 message Attribute {
-    string Key = 1;
-    string Value = 2;
+    string key = 1;
+    string value = 2;
+    AttributeType type = 3;
+}
+
+enum AttributeType {
+    CLEARTEXT = 0;
+    HASHED = 1;
 }
 
 message DateInterval {
