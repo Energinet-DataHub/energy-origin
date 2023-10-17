@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -99,22 +100,35 @@ builder.Services.AddHttpClient<CvrClient>((sp, c) =>
     TimeSpan.FromSeconds(5)
 }));
 
+// Set up the shared resource information
+var resource = ResourceBuilder.CreateDefault().AddService("TransferApi");
+
 builder.Services.AddOpenTelemetry()
     .WithTracing(providerBuilder => providerBuilder
-        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("TransferApi"))
+        .SetResourceBuilder(resource)
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
+        // Add other necessary instrumentation here
         .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithMetrics(provider =>
-        provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(TransferAgreementAutomationMetrics.MetricName))
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+    .WithMetrics(provider => provider
+        .SetResourceBuilder(resource)
+        // You don't restrict to a specific meter, hence it collects all available metrics
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddProcessInstrumentation()
+        // Add other necessary instrumentation here
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
+LoggerFactory.Create(loggingBuilder =>
+{
+    loggingBuilder.AddOpenTelemetry(options =>
+    {
+        options.IncludeScopes = true;  // Include ILogger scopes
+        options.SetResourceBuilder(resource);
+        options.AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint);
+    });
+});
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
