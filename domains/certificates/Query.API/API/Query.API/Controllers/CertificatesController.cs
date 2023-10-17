@@ -43,6 +43,17 @@ public class CertificatesController : ControllerBase
             FuelCode = c.Attributes.FirstOrDefault(a => a.Key == Registry.Attributes.FuelCode)?.Value ?? "",
             TechCode = c.Attributes.FirstOrDefault(a => a.Key == Registry.Attributes.TechCode)?.Value ?? "",
             GridArea = c.GridArea,
-            Quantity = c.Quantity
+            Quantity = c.Quantity,
+            CertificateType = Map(c.Type)
         };
+
+    private static CertificateType Map(GranularCertificateType type)
+    {
+        if (type == GranularCertificateType.Consumption)
+            return CertificateType.Consumption;
+        if(type == GranularCertificateType.Production)
+            return CertificateType.Production;
+
+        return CertificateType.Invalid;
+    }
 }

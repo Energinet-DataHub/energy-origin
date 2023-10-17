@@ -256,6 +256,9 @@
           "fuelCode": {
             "type": "string",
             "description": "The energy source for the production device as specified in EECS Rules Fact Sheet 5"
+          },
+          "certificateType": {
+            "$ref": "#/components/schemas/CertificateType"
           }
         },
         "additionalProperties": false
@@ -271,6 +274,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "CertificateType": {
+        "enum": [
+          "Invalid",
+          "Consumption",
+          "Production"
+        ],
+        "type": "string"
       },
       "Contract": {
         "type": "object",

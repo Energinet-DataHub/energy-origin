@@ -3,6 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace API.Query.API.ApiModels.Responses;
 
+public enum CertificateType
+{
+    Invalid,
+    Consumption,
+    Production
+}
+
 public class Certificate
 {
     /// <summary>
@@ -46,4 +53,10 @@ public class Certificate
     /// </summary>
     public string FuelCode { get; set; } = "";
 
+    /// <summary>
+    /// The type of the certificate. Can be either Production, Consumption or Invalid
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonPropertyName("certificateType")]
+    public CertificateType CertificateType { get; set; }
 }

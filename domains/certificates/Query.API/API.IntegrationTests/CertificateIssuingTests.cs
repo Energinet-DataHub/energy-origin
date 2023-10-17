@@ -106,7 +106,8 @@ public sealed class CertificateIssuingTests :
                     FuelCode = "F00000000",
                     TechCode = "T070000",
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -151,7 +152,8 @@ public sealed class CertificateIssuingTests :
                     FuelCode = "F00000000",
                     TechCode = "T070000",
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -194,7 +196,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     Quantity = 42,
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 }
             }
         };
@@ -249,7 +252,8 @@ public sealed class CertificateIssuingTests :
                     FuelCode = "F00000000",
                     TechCode = "T070000",
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -304,7 +308,8 @@ public sealed class CertificateIssuingTests :
                     FuelCode = "F00000000",
                     TechCode = "T070000",
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -357,7 +362,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     Quantity = 42,
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 }
             }
         };
@@ -407,7 +413,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -417,7 +424,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -427,7 +435,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -437,7 +446,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -447,7 +457,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -497,7 +508,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -507,7 +519,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -517,7 +530,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -527,7 +541,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 },
                 new Certificate
                 {
@@ -537,7 +552,8 @@ public sealed class CertificateIssuingTests :
                     GridArea = "DK1",
                     GSRN = gsrn,
                     FuelCode = "F00000000",
-                    TechCode = "T070000"
+                    TechCode = "T070000",
+                    CertificateType = CertificateType.Production
                 }
             }
         };
@@ -585,7 +601,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 },
                 new Certificate
                 {
@@ -593,7 +610,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 },
                 new Certificate
                 {
@@ -601,7 +619,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 },
                 new Certificate
                 {
@@ -609,7 +628,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 },
                 new Certificate
                 {
@@ -617,7 +637,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     GridArea = "DK1",
-                    GSRN = gsrn
+                    GSRN = gsrn,
+                    CertificateType = CertificateType.Consumption
                 }
             }
         };

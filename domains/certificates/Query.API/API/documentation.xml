@@ -125,6 +125,11 @@
             The energy source for the production device as specified in EECS Rules Fact Sheet 5
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.CertificateType">
+            <summary>
+            The type of the certificate. Can be either Production, Consumption or Invalid
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
