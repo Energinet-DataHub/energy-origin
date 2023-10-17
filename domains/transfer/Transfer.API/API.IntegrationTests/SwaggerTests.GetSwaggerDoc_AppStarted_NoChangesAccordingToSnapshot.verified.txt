@@ -138,6 +138,7 @@
         ],
         "summary": "Add a new connection",
         "requestBody": {
+          "description": "The request object containing the ConnectionInvitationId for creating the connection.",
           "content": {
             "application/json": {
               "schema": {

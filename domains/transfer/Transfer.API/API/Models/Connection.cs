@@ -9,7 +9,7 @@ public class Connection
 {
     public Guid Id { get; set; }
     public Guid CompanyAId { get; set; }
-    public string CompanyATin { get; set; }
+    public string CompanyATin { get; set; } = string.Empty;
     public Guid CompanyBId { get; set; }
-    public string CompanyBTin { get; set; }
+    public string CompanyBTin { get; set; } = string.Empty;
 }
