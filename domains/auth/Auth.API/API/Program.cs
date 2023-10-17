@@ -131,7 +131,6 @@ builder.Services.AddScoped<ICompanyDataContext, DataContext>();
 builder.Services.AddScoped<IUserProviderService, UserProviderService>();
 builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
 builder.Services.AddScoped<IUserProviderDataContext, DataContext>();
-builder.Services.AddScoped<OidcHelper>();
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>

@@ -32,9 +32,7 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
     </ItemGroup>
 
-     <ItemGroup>
+    <ItemGroup>
         <InternalsVisibleTo Include="Unit.Tests" />
     </ItemGroup>
-
-
 </Project>
