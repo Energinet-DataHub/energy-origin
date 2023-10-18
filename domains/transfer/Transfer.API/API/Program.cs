@@ -26,9 +26,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Polly;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
@@ -99,27 +99,21 @@ builder.Services.AddHttpClient<CvrClient>((sp, c) =>
     TimeSpan.FromSeconds(5)
 }));
 
-// Set up the shared resource information
-var resource = ResourceBuilder.CreateDefault().AddService("TransferApi");
+var resource = ResourceBuilder.CreateDefault().AddService("Transfer");
 
 builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddPrometheusExporter());
-
-LoggerFactory.Create(loggingBuilder =>
-{
-    loggingBuilder.AddOpenTelemetry(options =>
-    {
-        options.IncludeScopes = true;  // Include ILogger scopes
-        options.SetResourceBuilder(resource);
-        options.AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint);
-    });
-});
+    .WithTracing(providerBuilder => providerBuilder
+        .SetResourceBuilder(resource)
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithMetrics(provider => provider
+        .SetResourceBuilder(resource)
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddProcessInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
@@ -200,8 +194,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
