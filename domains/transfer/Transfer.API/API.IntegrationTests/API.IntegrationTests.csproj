@@ -46,5 +46,43 @@
 		<None Update="Controllers\*.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Transfer\Api\Controllers\TransferAgreementHistoryEntriesControllerTests.Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\Controllers\TransferAgreementHistoryEntriesControllerTests.Edit_ShouldGenerateHistoryEntry_WhenEndDateIsUpdated.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\Controllers\TransferAgreementHistoryEntriesControllerTests.GetHistoryEntriesForTransferAgreement_ShouldContainActorNameField_WhenSender.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\Controllers\TransferAgreementHistoryEntriesControllerTests.GetHistoryEntriesForTransferAgreement_ShouldNotContainActorNameField_WhenReceiver.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\Controllers\TransferAgreementsControllerTests.Get_ShouldGetTransferAgreement_WhenOwnerIsValidAndReceiverInvalid.verified.txt">
+		  <ParentFile>TransferAgreementsControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementsControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Cvr\Api\Controllers\CvrControllerTests.GetCvrCompany_WhenCorrectCvrNumber_ShouldReturnCvrInfo.verified.txt">
+		  <ParentFile>CvrControllerTests</ParentFile>
+		  <DependentUpon>CvrControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Cvr\Api\Controllers\CvrControllerTests.GetCvrCompany_WhenTransientError_ShouldRetry.verified.txt">
+		  <ParentFile>CvrControllerTests</ParentFile>
+		  <DependentUpon>CvrControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Cvr\Api\Controllers\CvrControllerTests.cvr_response.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Cvr\Api\Controllers\CvrControllerTests.empty_cvr_response.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Shared\SwaggerTests.GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot.verified.txt">
+		  <ParentFile>SwaggerTests</ParentFile>
+		  <DependentUpon>SwaggerTests.cs</DependentUpon>
+		</None>
 	</ItemGroup>
 </Project>
