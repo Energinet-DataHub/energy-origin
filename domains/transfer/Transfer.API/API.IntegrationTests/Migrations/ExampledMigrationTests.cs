@@ -22,7 +22,7 @@ public class ExampledMigrationTests : IAsyncDisposable
     }
 
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
-    //These tests are to be deleted after the actual migration has happened. We only keep this class as an example for how to write the migration tests. 
+    //These tests can be commented out as they become deprecated. We keep this class as an example for how to write migration tests. 
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
         await using var dbContext = await CreateNewCleanDatabase();
