@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using API.Models.Entities;
@@ -21,6 +22,14 @@ namespace API.Controllers;
 [ApiController]
 public class OidcController : ControllerBase
 {
+    public class RedirectionFlow : Exception
+    {
+        public required string Url { get; init; }
+
+        [SetsRequiredMembers]
+        public RedirectionFlow(string url) : base("") => Url = url;
+    }
+
     [AllowAnonymous]
     [HttpGet]
     [Route("auth/oidc/callback")]
@@ -55,7 +64,7 @@ public class OidcController : ControllerBase
 
             var response = await OidcHelper.FetchTokenResponse(clientFactory, logger, oidcOptions, discoveryDocument, code!, redirectionUri);
 
-            var (descriptor, data) = await OidcHelper.MapUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
+            var (descriptor, data) = await OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, userService, providerOptions, oidcOptions, roleOptions, discoveryDocument, response, redirectionUri);
 
             var token = issuer.Issue(descriptor, data);
 
@@ -78,6 +87,8 @@ public class OidcController : ControllerBase
 
     internal static class OidcHelper
     {
+        internal record UserInfo(string Name, string? Tin, string? CompanyName, Dictionary<ProviderKeyType, string> Keys);
+
         internal static string BuildRedirectionUri(OidcOptions oidcOptions, OidcState? oidcState)
         {
             var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
@@ -138,7 +149,7 @@ public class OidcController : ControllerBase
             return response;
         }
 
-        internal static async Task<(UserDescriptor, UserData)> MapUserDescriptor(ILogger logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
+        internal static async Task<(UserDescriptor, UserData)> BuildUserDescriptor(ILogger logger, ICryptography cryptography, IUserProviderService userProviderService, IUserService userService, IdentityProviderOptions providerOptions, OidcOptions oidcOptions, RoleOptions roleOptions, DiscoveryDocumentResponse discoveryDocument, TokenResponse response, string redirectionUri)
         {
             try
             {
@@ -181,15 +192,15 @@ public class OidcController : ControllerBase
                 ArgumentException.ThrowIfNullOrEmpty(providerName, nameof(providerName));
                 ArgumentException.ThrowIfNullOrEmpty(identityType, nameof(identityType));
 
-                var providerType = GetIdentityProviderEnum(providerName!, identityType!);
+                var providerType = MatchIdentityProviderEnum(providerName, identityType);
 
                 TryVerifyProviderType(providerType, providerOptions);
 
-                var (name, tin, companyName, keys) = HandleUserInfo(userInfo, providerType, identityType);
+                var (name, tin, companyName, keys) = ExtractUserInfo(userInfo, providerType, identityType);
 
                 var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
 
-                var user = await FetchUserAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
+                var user = await FetchOrCreateUserAndUpdateUserProvidersAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
 
                 var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
                 return (descriptor, UserData.From(user));
@@ -199,8 +210,9 @@ public class OidcController : ControllerBase
                 logger.LogError(exception, "Failure occured after acquiring token.");
 
                 var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
-                response.IdentityToken,
-                QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens));
+                    response.IdentityToken,
+                    QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
+                );
                 throw new RedirectionFlow(url);
 
             }
@@ -214,7 +226,7 @@ public class OidcController : ControllerBase
             }
         }
 
-        internal static ProviderType GetIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
+        internal static ProviderType MatchIdentityProviderEnum(string providerName, string identityType) => (providerName, identityType) switch
         {
             (ProviderName.MitId, ProviderGroup.Private) => ProviderType.MitIdPrivate,
             (ProviderName.MitIdProfessional, ProviderGroup.Professional) => ProviderType.MitIdProfessional,
@@ -222,8 +234,7 @@ public class OidcController : ControllerBase
             (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
             _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
         };
-
-        internal static (string name, string? tin, string? companyName, Dictionary<ProviderKeyType, string>) HandleUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
+        internal static UserInfo ExtractUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
         {
             string? name = null;
             string? tin = null;
@@ -275,11 +286,16 @@ public class OidcController : ControllerBase
                 ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
                 ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
             }
+            else if(tin != null || companyName != null)
+            {
+                //FIXME: UPDATE TEST
+                throw new ArgumentException($"IdentityType: '{identityType}' is not allowed to have a tin or company name.");
+            }
 
-            return (name, tin, companyName, keys);
+            return new UserInfo(name, tin, companyName, keys);
         }
 
-        internal static async Task<User> FetchUserAsync(
+        internal static async Task<User> FetchOrCreateUserAndUpdateUserProvidersAsync(
             IUserService userService,
             IUserProviderService userProviderService,
             List<UserProvider> tokenUserProviders,
@@ -332,13 +348,5 @@ public class OidcController : ControllerBase
                 _ => false
             };
         }) ? role.Key : null).OfType<string>();
-    }
-    public class RedirectionFlow : Exception
-    {
-        public string Url { get; init; }
-        public RedirectionFlow(string url) : base("")
-        {
-            Url = url;
-        }
     }
 }

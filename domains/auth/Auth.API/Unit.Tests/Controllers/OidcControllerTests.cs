@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Web;
 using API.Controllers;
 using API.Models.Entities;
 using API.Options;
@@ -56,22 +57,22 @@ public class OidcControllerTests
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
     }
 
-    public static IEnumerable<object[]> BuildRedirectionUriParameters =>
-       new List<object[]>
-       {
-            new object[] {new OidcState(null,null,null), OidcOptions.Redirection.Allow,"https://test.dk/"},
-            new object[] {new OidcState(null, null, "/path/to/redirect"),OidcOptions.Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect"},
-            new object[] {new OidcState("someState", null, null), OidcOptions.Redirection.Deny, "https://test.dk/?state=someState"},
-            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Deny, "https://test.dk/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
-            new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Allow, "https://example.com/redirect?state=someState"},
-            new object[] {new OidcState(null, "https://example.com/redirect", null), OidcOptions.Redirection.Allow, "https://example.com/redirect"}
-       };
+    public static IEnumerable<object[]> BuildRedirectionUriParameters => new List<object[]>
+    {
+        new object[] {new OidcState(null,null,null), OidcOptions.Redirection.Allow,"https://localhost/"},
+        new object[] {new OidcState(null, null, "/path/to/redirect"),OidcOptions.Redirection.Deny, "https://localhost/?redirectionPath=path%2Fto%2Fredirect"},
+        new object[] {new OidcState("someState", null, null), OidcOptions.Redirection.Deny, "https://localhost/?state=someState"},
+        new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Deny, "https://localhost/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
+        new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Allow, "https://example.com/redirect?state=someState"},
+        new object[] {new OidcState(null, "https://example.com/redirect", null), OidcOptions.Redirection.Allow, "https://example.com/redirect"}
+    };
 
     [Theory]
     [MemberData(nameof(BuildRedirectionUriParameters))]
     public void BuildRedirectionUri_RerturnCorrectlyFormattedUri_WhenProvidedDifferentParamteres(OidcState? state, OidcOptions.Redirection redirection, string expectedUri)
     {
-        var options = new OidcOptions() { RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://test.dk") };
+        var options = new OidcOptions() { RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://localhost") };
+
         var result = OidcController.OidcHelper.BuildRedirectionUri(options, state);
 
         Assert.Equal(expectedUri, result);
@@ -111,19 +112,18 @@ public class OidcControllerTests
     public void CodeNullCheck_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyCode("code", logger, null, null, "https://example.com/login?errorCode=714")));
 
 #pragma warning disable 8625
-    public static IEnumerable<object[]> WrongDiscoveryDocumentResponse =>
-        new List<object[]>
-        {
-            new object[] {DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") })},
-            new object[] {null}
-        };
+    public static IEnumerable<object[]> WrongDiscoveryDocumentResponse => new List<object[]>
+    {
+        new object[] {DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") })},
+        new object[] {null}
+    };
 #pragma warning restore 8625
 
     [Theory]
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
     public void TryVerifyDiscoveryDocument_ShouldFollowRedirectionFlow_WhenGivenErrorConditions(DiscoveryDocumentResponse? document)
     {
-        var result = Assert.Throws<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://test.dk")).Url;
+        var result = Assert.Throws<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://example.com")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
@@ -137,22 +137,22 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void TryVerifyDiscoveryDocument_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", "https://test.dk") }), logger, "https://test.dk")));
-
+    public void TryVerifyDiscoveryDocument_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(DiscoveryDocument.Load(Enumerable.Empty<KeyValuePair<string, string>>()), logger, "https://example.com")));
 
     [Fact]
-    public void FetchTokenResponse_ShouldFollowRedirectionFlow_WhenRequestingTokenFails()
+    public async Task FetchTokenResponse_ShouldFollowRedirectionFlow_WhenRequestingTokenFails()
     {
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
-        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", tokenEndpoint.AbsoluteUri) });
+        var document = DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("token_endpoint", tokenEndpoint.AbsoluteUri) });
 
-        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{null}}", "id_token":"{{null}}", "userinfo_token":"{{null}}"}""");
+        http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond(HttpStatusCode.NotFound);
+
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://test.dk")).Result.Url;
+        var result = await Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com"));
 
-        Assert.NotNull(result);
-        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result);
+        Assert.NotNull(result.Url);
+        Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result.Url);
 
         logger.Received(1).Log(
            Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -163,7 +163,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void FetchTokenResponse_ShouldReturnTokenResponse_WhenProvidedWithCorrectConditions()
+    public async Task FetchTokenResponse_ShouldReturnTokenResponse_WhenProvidedWithCorrectConditions()
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
@@ -180,8 +180,7 @@ public class OidcControllerTests
             { "scope", "some_scope" },
         });
         var name = Guid.NewGuid().ToString();
-        var userInfoToken = TokenUsing(tokenOptions,
-        document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+        var userInfoToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", name },
             { "idp", ProviderName.MitId },
@@ -191,17 +190,17 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userInfoToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login").Result;
+        var result = await OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login");
 
         Assert.NotNull(result);
         Assert.IsType<TokenResponse>(result);
 
         Assert.Equal(tokenEndpoint.AbsoluteUri, result.HttpResponse.RequestMessage?.RequestUri?.AbsoluteUri);
-        Assert.True(!result.IsError);
+        Assert.False(result.IsError);
 
         Assert.Equal(accessToken, result.AccessToken);
         Assert.Equal(identityToken, result.IdentityToken);
-        Assert.Contains(userInfoToken, result.Raw);
+        Assert.Equal(userInfoToken, result.TryGet("userinfo_token"));
     }
 
     [Fact]
@@ -210,6 +209,8 @@ public class OidcControllerTests
         var newOptions = new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional } };
         Assert.Throws<NotSupportedException>(() => OidcController.OidcHelper.TryVerifyProviderType(ProviderType.NemIdPrivate, newOptions));
     }
+
+    //FIXME : MAKE ALSO THEORY
     [Fact]
     public void TryVerifyProviderType_ShouldPass_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyProviderType(ProviderType.NemIdPrivate, providerOptions)));
 
@@ -218,244 +219,254 @@ public class OidcControllerTests
     [InlineData(ProviderName.MitIdProfessional, ProviderGroup.Professional, ProviderType.MitIdProfessional)]
     [InlineData(ProviderName.NemId, ProviderGroup.Private, ProviderType.NemIdPrivate)]
     [InlineData(ProviderName.NemId, ProviderGroup.Professional, ProviderType.NemIdProfessional)]
-    public void GetIdentityProviderEnum_ShouldMatchCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected)
-    {
-        Assert.Equal(OidcController.OidcHelper.GetIdentityProviderEnum(providerName, identity), expected);
-    }
+    public void MatchIdentityProviderEnum_ShouldMatchCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected) => Assert.Equal(OidcController.OidcHelper.MatchIdentityProviderEnum(providerName, identity), expected);
 
     [Fact]
-    public void GetIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcController.OidcHelper.GetIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
+    public void MatchIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcController.OidcHelper.MatchIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
 
-    public static IEnumerable<object[]> ValidUserInfoClaims =>
-        new List<object[]>
-        {
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("nemlogin.name", Guid.NewGuid().ToString()),
-                        new("nemlogin.cvr", Guid.NewGuid().ToString()),
-                        new("nemlogin.org_name", Guid.NewGuid().ToString()),
-                        new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-                    }),
-                    ProviderType = ProviderType.MitIdProfessional,
-                    IdentityType = ProviderGroup.Professional,
-                    ExpectedName = "nemlogin.name",
-                    ExpectedTin = "nemlogin.cvr",
-                    ExpectedCompanyName = "nemlogin.org_name",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id")}
-                }
-            },
-
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("nemlogin.name", Guid.NewGuid().ToString()),
-                        new("nemlogin.cvr", Guid.NewGuid().ToString()),
-                        new("nemlogin.org_name", Guid.NewGuid().ToString()),
-                        new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-                        new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString())
-                    }),
-                    ProviderType = ProviderType.MitIdProfessional,
-                    IdentityType = ProviderGroup.Professional,
-                    ExpectedName = "nemlogin.name",
-                    ExpectedTin = "nemlogin.cvr",
-                    ExpectedCompanyName = "nemlogin.org_name",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id"), (ProviderKeyType.Rid, "nemlogin.nemid.rid"), (ProviderKeyType.Rid, "nemlogin.cvr")}
-                }
-            },
-
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("mitid.uuid", Guid.NewGuid().ToString()),
-                        new("mitid.identity_name", Guid.NewGuid().ToString()),
-                    }),
-                    ProviderType = ProviderType.MitIdPrivate,
-                    IdentityType = ProviderGroup.Private,
-                    ExpectedName = "mitid.identity_name",
-                    ExpectedTin = "NotACompany",
-                    ExpectedCompanyName = "NotACompany",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid")}
-                }
-            },
-
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("mitid.uuid", Guid.NewGuid().ToString()),
-                        new("mitid.identity_name", Guid.NewGuid().ToString()),
-                        new("nemid.pid", Guid.NewGuid().ToString()),
-                    }),
-                    ProviderType = ProviderType.MitIdPrivate,
-                    IdentityType = ProviderGroup.Private,
-                    ExpectedName = "mitid.identity_name",
-                    ExpectedTin = "NotACompany",
-                    ExpectedCompanyName = "NotACompany",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid"), (ProviderKeyType.Pid, "nemid.pid")}
-                }
-            },
-
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("nemid.common_name", Guid.NewGuid().ToString()),
-                        new("nemid.cvr", Guid.NewGuid().ToString()),
-                        new("nemid.company_name", Guid.NewGuid().ToString()),
-                        new("nemid.ssn", Guid.NewGuid().ToString()),
-                    }),
-                    ProviderType = ProviderType.NemIdProfessional,
-                    IdentityType = ProviderGroup.Professional,
-                    ExpectedName = "nemid.common_name",
-                    ExpectedTin = "nemid.cvr",
-                    ExpectedCompanyName = "nemid.company_name",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Rid, "nemid.ssn")}
-                }
-            },
-
-            new object[] {
-                new UserInfoObject()
-                {
-                    ClaimsIdentity = new ClaimsIdentity(new List<Claim>
-                    {
-                        new("nemid.common_name", Guid.NewGuid().ToString()),
-                        new("nemid.pid", Guid.NewGuid().ToString()),
-                    }),
-                    ProviderType = ProviderType.NemIdPrivate,
-                    IdentityType = ProviderGroup.Private,
-                    ExpectedName = "nemid.common_name",
-                    ExpectedCompanyName = "NotACompany",
-                    ExpectedTin = "NotACompany",
-                    ExpectedKeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Pid, "nemid.pid")}
-                }
-            }
-        };
-
-    public class UserInfoObject
+    public class UserInfo
     {
-        internal ClaimsIdentity ClaimsIdentity { get; init; } = new ClaimsIdentity();
+        internal ClaimsIdentity Identity { get; init; } = new ClaimsIdentity();
         internal ProviderType ProviderType { get; init; }
         internal string IdentityType { get; init; } = string.Empty;
-        internal string ExpectedName { get; init; } = string.Empty;
-        internal string ExpectedTin { get; init; } = string.Empty;
-        internal string ExpectedCompanyName { get; init; } = string.Empty;
-        internal List<(ProviderKeyType dictionaryKeys, string claimsKeys)> ExpectedKeyPairs { get; init; } = new List<(ProviderKeyType, string)>();
+        internal ExpectedValues Expected { get; init; } = new ExpectedValues();
 
+        public class ExpectedValues
+        {
+            internal string Name { get; init; } = string.Empty;
+            internal string? Tin { get; init; } = string.Empty;
+            internal string? CompanyName { get; init; } = string.Empty;
+            internal List<(ProviderKeyType dictionaryKeys, string claimsKeys)> KeyPairs { get; init; } = new List<(ProviderKeyType, string)>();
+        }
     }
+    public static IEnumerable<object[]> ValidUserInfoClaims => new List<object[]>
+    {
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("nemlogin.name", Guid.NewGuid().ToString()),
+                    new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                    new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                    new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+                }),
+                ProviderType = ProviderType.MitIdProfessional,
+                IdentityType = ProviderGroup.Professional,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "nemlogin.name",
+                    Tin = "nemlogin.cvr",
+                    CompanyName = "nemlogin.org_name",
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id")}
+                }
+            }
+        },
+
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("nemlogin.name", Guid.NewGuid().ToString()),
+                    new("nemlogin.cvr", Guid.NewGuid().ToString()),
+                    new("nemlogin.org_name", Guid.NewGuid().ToString()),
+                    new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+                    new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString())
+                }),
+                ProviderType = ProviderType.MitIdProfessional,
+                IdentityType = ProviderGroup.Professional,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "nemlogin.name",
+                    Tin = "nemlogin.cvr",
+                    CompanyName = "nemlogin.org_name",
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id"), (ProviderKeyType.Rid, "nemlogin.nemid.rid"), (ProviderKeyType.Rid, "nemlogin.cvr")}
+                }
+            }
+        },
+
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("mitid.uuid", Guid.NewGuid().ToString()),
+                    new("mitid.identity_name", Guid.NewGuid().ToString()),
+                }),
+                ProviderType = ProviderType.MitIdPrivate,
+                IdentityType = ProviderGroup.Private,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "mitid.identity_name",
+                    Tin = null,
+                    CompanyName = null,
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid")}
+                }
+            }
+        },
+
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("mitid.uuid", Guid.NewGuid().ToString()),
+                    new("mitid.identity_name", Guid.NewGuid().ToString()),
+                    new("nemid.pid", Guid.NewGuid().ToString()),
+                }),
+                ProviderType = ProviderType.MitIdPrivate,
+                IdentityType = ProviderGroup.Private,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "mitid.identity_name",
+                    Tin = null,
+                    CompanyName = null,
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.MitIdUuid,"mitid.uuid"), (ProviderKeyType.Pid, "nemid.pid")}
+                }
+            }
+        },
+
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("nemid.common_name", Guid.NewGuid().ToString()),
+                    new("nemid.cvr", Guid.NewGuid().ToString()),
+                    new("nemid.company_name", Guid.NewGuid().ToString()),
+                    new("nemid.ssn", Guid.NewGuid().ToString()),
+                }),
+                ProviderType = ProviderType.NemIdProfessional,
+                IdentityType = ProviderGroup.Professional,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "nemid.common_name",
+                    Tin = "nemid.cvr",
+                    CompanyName = "nemid.company_name",
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Rid, "nemid.ssn")}
+                }
+            }
+        },
+
+        new object[] {
+            new UserInfo()
+            {
+                Identity = new ClaimsIdentity(new List<Claim>
+                {
+                    new("nemid.common_name", Guid.NewGuid().ToString()),
+                    new("nemid.pid", Guid.NewGuid().ToString()),
+                }),
+                ProviderType = ProviderType.NemIdPrivate,
+                IdentityType = ProviderGroup.Private,
+                Expected = new UserInfo.ExpectedValues()
+                {
+                    Name = "nemid.common_name",
+                    Tin = null,
+                    CompanyName = null,
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Pid, "nemid.pid")}
+                }
+            }
+        }
+    };
+
     [Theory]
     [MemberData(nameof(ValidUserInfoClaims))]
-    public void HandleUserInfo_ShouldReturnCorrectUserinfo_WhenProvidedVariousParams(UserInfoObject infoObject)
+    public void ExtractUserInfo_ShouldReturnCorrectUserinfo_WhenProvidedVariousParams(UserInfo userInfo)
     {
-        var userInfoClaim = new ClaimsPrincipal();
-        userInfoClaim.AddIdentity(infoObject.ClaimsIdentity);
+        var claims = new ClaimsPrincipal(userInfo.Identity);
 
-        var (name, tin, companyName, keys) = OidcController.OidcHelper.HandleUserInfo(userInfoClaim, infoObject.ProviderType, infoObject.IdentityType);
+        var (name, tin, companyName, keys) = OidcController.OidcHelper.ExtractUserInfo(claims, userInfo.ProviderType, userInfo.IdentityType);
 
-        Assert.Equal(userInfoClaim.FindFirstValue(infoObject.ExpectedName), name);
-        Assert.Equal(userInfoClaim.FindFirstValue(infoObject.ExpectedTin), tin);
-        Assert.Equal(userInfoClaim.FindFirstValue(infoObject.ExpectedCompanyName), companyName);
+        Assert.Equal(claims.FindFirstValue(userInfo.Expected.Name), name);
+        Assert.Equal(claims.FindFirstValue(userInfo.Expected.Tin ?? string.Empty), tin);
+        Assert.Equal(claims.FindFirstValue(userInfo.Expected.CompanyName ?? string.Empty), companyName);
 
-        foreach (var (dictionaryKeys, claimsKeys) in infoObject.ExpectedKeyPairs)
+        foreach (var (dictionaryKeys, claimsKeys) in userInfo.Expected.KeyPairs)
         {
             Assert.True(keys.TryGetValue(dictionaryKeys, out string? value));
-            Assert.Contains(userInfoClaim.FindFirstValue(claimsKeys)!, value);
+            Assert.Contains(claims.FindFirstValue(claimsKeys)!, value);
         }
     }
 
-    public static IEnumerable<object[]> wrongUserClaims =>
-        new List<object[]>
-        {
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemlogin.name", Guid.NewGuid().ToString()),
-                new("nemlogin.cvr", Guid.NewGuid().ToString()),
-                new("nemlogin.org_name", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException)},
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemlogin.name", Guid.NewGuid().ToString()),
-                new("nemlogin.org_name", Guid.NewGuid().ToString()),
-                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemlogin.name", Guid.NewGuid().ToString()),
-                new("nemlogin.cvr", Guid.NewGuid().ToString()),
-                new("nemlogin.org_name",  string.Empty),
-                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemlogin.name", Guid.NewGuid().ToString()),
-                new("nemlogin.cvr", Guid.NewGuid().ToString()),
-                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
-
-             new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemlogin.name", Guid.NewGuid().ToString()),
-                new("nemlogin.cvr", string.Empty),
-                new("nemlogin.org_name", Guid.NewGuid().ToString()),
-                new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-                new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
-
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("mitid.identity_name", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException) },
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("mitid.uuid", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentNullException) },
-
-              new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("mitid.identity_name", string.Empty),
-                new("mitid.uuid", Guid.NewGuid().ToString()),
-            }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentException) },
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemid.common_name", Guid.NewGuid().ToString()),
-                new("nemid.cvr", Guid.NewGuid().ToString()),
-                new("nemid.company_name", Guid.NewGuid().ToString()),
-            }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException) },
-
-            new object[] {new ClaimsIdentity(new List<Claim>
-            {
-                new("nemid.common_name", Guid.NewGuid().ToString()),
-            }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException)},
-        };
-    [Theory]
-    [MemberData(nameof(wrongUserClaims))]
-    public void HandleUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity claims, ProviderType providerType, string identityType, Type expectedException)
+    public static IEnumerable<object[]> WrongUserClaims => new List<object[]>
     {
-        var userInfoClaim = new ClaimsPrincipal();
-        userInfoClaim.AddIdentity(claims);
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.cvr", Guid.NewGuid().ToString()),
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException)},
 
-        Assert.Throws(expectedException, () => OidcController.OidcHelper.HandleUserInfo(userInfoClaim, providerType, identityType));
-    }
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.cvr", Guid.NewGuid().ToString()),
+            new("nemlogin.org_name",  string.Empty),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.cvr", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.cvr", string.Empty),
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("mitid.identity_name", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("mitid.uuid", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("mitid.identity_name", string.Empty),
+            new("mitid.uuid", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdPrivate, ProviderGroup.Private, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", Guid.NewGuid().ToString()),
+            new("nemid.cvr", Guid.NewGuid().ToString()),
+            new("nemid.company_name", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(KeyNotFoundException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException)},
+    };
+
+    [Theory]
+    [MemberData(nameof(WrongUserClaims))]
+    public void ExtractUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity identity, ProviderType providerType, string identityType, Type expectedException) => Assert.Throws(expectedException, () => OidcController.OidcHelper.ExtractUserInfo(new ClaimsPrincipal(identity), providerType, identityType));
 
     [Fact]
-    public void FetchUserAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
+    public void FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
@@ -470,7 +481,7 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = OidcController.OidcHelper.FetchUserAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
+        var result = OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
 
         service.Received(1).UpsertUserAsync(Arg.Any<User>());
 
@@ -482,19 +493,17 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void FetchUserAsync_ShouldCreateNewUserWithCompany_WhenProviderGroupIsProfessional()
+    public async Task FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldCreateNewUserWithCompany_WhenProviderGroupIsProfessional()
     {
-        var newOptions = new OidcOptions() { IdGeneration = OidcOptions.Generation.Predictable };
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
 
-        var subjectId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
         var companyName = "Test_Company_Name";
         var tin = Guid.NewGuid().ToString();
 
-        var result = OidcController.OidcHelper.FetchUserAsync(service, userProviderService, userProviders, newOptions, subjectId, ProviderGroup.Professional, name, tin, companyName).Result;
+        var result = await OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Professional, name, tin, companyName);
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -502,151 +511,144 @@ public class OidcControllerTests
         Assert.Equal(result.Name, name);
 
         Assert.NotNull(result.Company);
-        Assert.Equal(result.Company.Id, Guid.Parse(subjectId));
         Assert.Equal(result.Company.Name, companyName);
         Assert.Equal(result.Company.Tin, tin);
 
-        service.Received(0).UpsertUserAsync(Arg.Any<User>());
+        await service.Received(0).UpsertUserAsync(Arg.Any<User>());
     }
 
     [Fact]
-    public void FetchUserAsync_ShouldCreateNewUser_WhenProviderGroupIsPrivate()
+    public async Task FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldCreateNewUser_WhenProviderGroupIsPrivate()
     {
-        var newOptions = new OidcOptions() { IdGeneration = OidcOptions.Generation.Predictable };
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
 
-        var subjectId = Guid.NewGuid().ToString();
         var name = Guid.NewGuid().ToString();
 
-        var result = OidcController.OidcHelper.FetchUserAsync(service, userProviderService, userProviders, newOptions, subjectId, ProviderGroup.Private, name, Guid.NewGuid().ToString(), "DOES_NOT_HAVE_COMPANY").Result;
+        var result = await OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Private, name, Guid.NewGuid().ToString(), "DOES_NOT_HAVE_COMPANY");
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
 
         Assert.Equal(result.Name, name);
-        Assert.Equal(result.Id, Guid.Parse(subjectId));
 
         Assert.Null(result.Company);
+
+        await service.Received(0).UpsertUserAsync(Arg.Any<User>());
     }
 
-    public static IEnumerable<object[]> RoleMatcherData =>
-        new List<object[]>
+    public static IEnumerable<object[]> RoleMatcherData => new List<object[]>
+    {
+        new object[]
         {
-             new object[] {
-                new ClaimsIdentity(new List<Claim>{new("test1","TESTADMIN")}),
-                new List<RoleConfiguration>{
-                    new (){
-                        Key = "TestRoleKeyAdmin",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new (){
-                                Property = "test1",
-                                Value = "ADMIN",
-                                Operator = "contains"},
-                        }
-                    },
-                    new (){
-                        Key = "TestRoleKeyAdmin2",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new (){
-                                Property = "test1",
-                                Value = "TESTADMIN",
-                                Operator = "equals"},
-                        }
-                    },
-                    new (){
-                        Key = "TestRoleKeyAdmin3",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new(){
-                                Property = "test1",
-                                Value = "beep_boop_test",
-                                Operator = "exists"},
-                        }
-                    },
-                    new (){
-                        Key = "TestRoleKeyAdmin4",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new (){
-                                Property = "test1",
-                                Value = "boop_beep",
-                                Operator = "equals"},
-                            new(){
-                                Property = "test1",
-                                Value = "TEST",
-                                Operator = "contains"},
-                        }
-                    },
-                    new (){
-                        Key = "WrongTestRoleKey",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new(){
-                                Property = "test1",
-                                Value = "TESTADMIN",
-                                Operator = "wrong_operator"},
-                        }
-                    },
-                },
-                new List<string>{"TestRoleKeyAdmin","TestRoleKeyAdmin2","TestRoleKeyAdmin3","TestRoleKeyAdmin4"}
-            },
-            new object[] {
-                new ClaimsIdentity(new List<Claim>{new("admin","TESTADMIN"), new("viewer","VIEWER_TO_BE_ADMIN")}),
-                new List<RoleConfiguration>{
-                    new(){
-                        Key = "TestRoleKeyAdmin1",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new (){
-                                Property = "viewer",
-                                Value = "VIEWER_TO_BE_ADMIN",
-                                Operator = "equals"},
-                            new(){
-                                Property = "admin",
-                                Value = "ADMIN",
-                                Operator = "contains"},
-                        }
+            new ClaimsIdentity(new List<Claim>{new("test1", "TESTADMIN")}),
+            new List<RoleConfiguration>{
+                new (){
+                    Key = "TestRoleKeyAdmin",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new (){
+                            Property = "test1",
+                            Value = "ADMIN",
+                            Operator = "contains"},
                     }
                 },
-                new List<string>{"TestRoleKeyAdmin1"}
-            },
-            //REVIEW: Test FindFirstValue
-            new object[] {
-                new ClaimsIdentity(new List<Claim>{new("admin","TESTADMIN"), new("admin","VIEWER_TO_BE_ADMIN")}),
-                new List<RoleConfiguration>{
-                    new(){
-                        Key = "TestRoleKeyAdmin1",
-                        Name = "TestAdmin",
-                        Matches = new List<Match>(){
-                            new (){
-                                Property = "admin",
-                                Value = "VIEWER_TO_BE_ADMIN",
-                                Operator = "equals"},
-                            new(){
-                                Property = "admin",
-                                Value = "ADMIN",
-                                Operator = "contains"},
-                        }
+                new (){
+                    Key = "TestRoleKeyAdmin2",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new (){
+                            Property = "test1",
+                            Value = "TESTADMIN",
+                            Operator = "equals"},
                     }
                 },
-                new List<string>{"TestRoleKeyAdmin1"}
-            }
-
-        };
+                new (){
+                    Key = "TestRoleKeyAdmin3",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new(){
+                            Property = "test1",
+                            Value = "beep_boop_test",
+                            Operator = "exists"},
+                    }
+                },
+                new (){
+                    Key = "TestRoleKeyAdmin4",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new (){
+                            Property = "test1",
+                            Value = "boop_beep",
+                            Operator = "equals"},
+                        new(){
+                            Property = "test1",
+                            Value = "TEST",
+                            Operator = "contains"},
+                    }
+                },
+                new (){
+                    Key = "WrongTestRoleKey",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new(){
+                            Property = "test1",
+                            Value = "TESTADMIN",
+                            Operator = "wrong_operator"},
+                    }
+                },
+            },
+            new List<string>{"TestRoleKeyAdmin", "TestRoleKeyAdmin2", "TestRoleKeyAdmin3", "TestRoleKeyAdmin4"}
+        },
+        new object[] {
+            new ClaimsIdentity(new List<Claim>{new("admin", "TESTADMIN"), new("viewer", "VIEWER_TO_BE_ADMIN")}),
+            new List<RoleConfiguration>{
+                new(){
+                    Key = "TestRoleKeyAdmin1",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new (){
+                            Property = "viewer",
+                            Value = "VIEWER_TO_BE_ADMIN",
+                            Operator = "equals"},
+                        new(){
+                            Property = "admin",
+                            Value = "ADMIN",
+                            Operator = "contains"},
+                    }
+                }
+            },
+            new List<string>{"TestRoleKeyAdmin1"}
+        },
+        new object[] {
+            new ClaimsIdentity(new List<Claim>{new("admin", "TESTADMIN"), new("admin", "VIEWER_TO_BE_ADMIN")}),
+            new List<RoleConfiguration>{
+                new(){
+                    Key = "TestRoleKeyAdmin1",
+                    Name = "TestAdmin",
+                    Matches = new List<Match>(){
+                        new (){
+                            Property = "admin",
+                            Value = "VIEWER_TO_BE_ADMIN",
+                            Operator = "equals"},
+                        new(){
+                            Property = "admin",
+                            Value = "ADMIN",
+                            Operator = "contains"},
+                    }
+                }
+            },
+            new List<string>{"TestRoleKeyAdmin1"}
+        }
+    };
 
     [Theory]
     [MemberData(nameof(RoleMatcherData))]
     public void CalculateMatchedRoles_ShouldReturnCorrectCollectionOfMatchedRoles_WhenDifferentConfigurationsIsProvided(ClaimsIdentity identity, List<RoleConfiguration> roleConfigurations, List<string> expected)
     {
-        var claims = new ClaimsPrincipal();
-        claims.AddIdentity(identity);
-
-        var options = new RoleOptions();
-        options.RoleConfigurations.AddRange(roleConfigurations);
+        var claims = new ClaimsPrincipal(identity);
+        var options = new RoleOptions(){RoleConfigurations = roleConfigurations};
 
         var result = OidcController.OidcHelper.CalculateMatchedRoles(claims, options);
 
@@ -655,7 +657,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public async Task MapUserDescriptor_ReturnsCorrectValuesBasedOfTokens_WhenOperationIsASuccess()
+    public async Task BuildUserDescriptor_ReturnsCorrectValuesBasedOnTokens_WhenOperationIsASuccess()
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
 
@@ -695,7 +697,7 @@ public class OidcControllerTests
 
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var result = await OidcController.OidcHelper.MapUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com");
+        var result = await OidcController.OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com");
 
         Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
         var (userDescriptor, _) = result;
@@ -705,124 +707,123 @@ public class OidcControllerTests
 
         Assert.Equal(cryptography.Decrypt<string>(userDescriptor.EncryptedAccessToken), accessToken);
         Assert.Equal(cryptography.Decrypt<string>(userDescriptor.EncryptedIdentityToken), identityToken);
-
     }
 
-    public static IEnumerable<object[]> ErrorTokens =>
-        new List<object[]>
-        {
-            new object[] {
+    public static IEnumerable<object[]> ErrorTokens => new List<object[]>
+    {
+        new object[] {
+            new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
+            },
+            new Dictionary<string, object?>() {
+                {"scope", "some_scope"}
+            },
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"idp", ProviderName.MitId},
+                {"identity_type", ProviderGroup.Private}
+            },
+            "The value cannot be an empty string. (Parameter 'subject')",
+            "",
+        },
+        new object[] {
+            new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
+            },
+            new Dictionary<string, object?>() {
+                {"scope", "some_scope"}
+            },
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"idp", ProviderName.MitId},
+                {"identity_type", ProviderGroup.Private}
+            },
+            "Subject mismatched found in tokens received.",
+            "subject", "IdentitySubject",
+        },
+        new object[] {
                 new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"scope", "some_scope"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"idp", ProviderName.MitId},
-                    {"identity_type", ProviderGroup.Private}
-                },
-                "The value cannot be an empty string. (Parameter 'subject')",
-                "",
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
             },
-            new object[] {
-                new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"scope", "some_scope"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"idp", ProviderName.MitId},
-                    {"identity_type", ProviderGroup.Private}
-                },
-                "Subject mismatched found in tokens received.",
-                "subject", "IdentitySubject",
+            new Dictionary<string, object?>() {
+                {"scope", "some_scope"}
             },
-            new object[] {
-                 new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"scope", "some_scope"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"idp", ProviderName.MitId},
-                    {"identity_type", ProviderGroup.Private}
-                },
-                "Subject mismatched found in tokens received.",
-                "subject", "subject", "UserInfoSubject"
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"idp", ProviderName.MitId},
+                {"identity_type", ProviderGroup.Private}
             },
+            "Subject mismatched found in tokens received.",
+            "subject", "subject", "UserInfoSubject"
+        },
 
-            new object[] {
-                new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"NOT_A_SCOPE", "NOT_A_SCOPE"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"idp", ProviderName.MitId},
-                    {"identity_type", ProviderGroup.Private}
-                },
-                "Value cannot be null. (Parameter 'scope')",
+        new object[] {
+            new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
             },
+            new Dictionary<string, object?>() {
+                {"NOT_A_SCOPE", "NOT_A_SCOPE"}
+            },
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"idp", ProviderName.MitId},
+                {"identity_type", ProviderGroup.Private}
+            },
+            "Value cannot be null. (Parameter 'scope')",
+        },
 
-            new object[] {
-                new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"scope", "some_scope"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"NOT_AN_IDP", "NOT_AN_IDP"},
-                    {"identity_type", ProviderGroup.Private}
-                },
-                "Value cannot be null. (Parameter 'providerName')",
+        new object[] {
+            new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
             },
+            new Dictionary<string, object?>() {
+                {"scope", "some_scope"}
+            },
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"NOT_AN_IDP", "NOT_AN_IDP"},
+                {"identity_type", ProviderGroup.Private}
+            },
+            "Value cannot be null. (Parameter 'providerName')",
+        },
 
-            new object[] {
-                new List<KeyValuePair<string, string>>(){
-                    new("issuer", $"https://example.com/op"),
-                    new("end_session_endpoint", $"http://example.com/connect/endsession")
-                },
-                new Dictionary<string, object?>() {
-                    {"scope", "some_scope"}
-                },
-                new Dictionary<string, object?>() {
-                    {"mitid.uuid", Guid.NewGuid().ToString()},
-                    {"mitid.identity_name", Guid.NewGuid().ToString()},
-                    {"idp", ProviderName.MitId},
-                    {"NOT_AN_IDENTITYTYPE", "NOT_AN_IDENTITYTYPE"}
-                },
-                "Value cannot be null. (Parameter 'identityType')",
+        new object[] {
+            new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
             },
-        };
+            new Dictionary<string, object?>() {
+                {"scope", "some_scope"}
+            },
+            new Dictionary<string, object?>() {
+                {"mitid.uuid", Guid.NewGuid().ToString()},
+                {"mitid.identity_name", Guid.NewGuid().ToString()},
+                {"idp", ProviderName.MitId},
+                {"NOT_AN_IDENTITYTYPE", "NOT_AN_IDENTITYTYPE"}
+            },
+            "Value cannot be null. (Parameter 'identityType')",
+        },
+    };
 
     //REVIEW: vi tester vel ikke validate token siden det er eksternt?
     //Kan ikke lave null check på subject pga. TokenUsing metoden
     [Theory]
     [MemberData(nameof(ErrorTokens))]
-    public async Task MapUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(List<KeyValuePair<string, string>> documentItems, Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string expectedException, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
+    public async Task BuildUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(List<KeyValuePair<string, string>> documentItems, Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string expectedException, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
 
+        //FIXME: REVERT TEST DATA FOR DOC TO BE EHRE :)
         var document = DiscoveryDocument.Load(
             documentItems,
             KeySetUsing(tokenOptions.PublicKeyPem)
@@ -845,7 +846,7 @@ public class OidcControllerTests
 
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var result = await Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.MapUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
+        var result = await Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
@@ -855,7 +856,11 @@ public class OidcControllerTests
             Arg.Any<Func<object, Exception?, string>>()
         );
 
-        Assert.Contains($"{ErrorCode.QueryString}%3D{ErrorCode.Authentication.InvalidTokens}", result.Url);
+        var logoutUri = HttpUtility.ParseQueryString(new Uri(result.Url).Query).Get("post_logout_redirect_uri");
+        Assert.NotNull(logoutUri);
+        var query = HttpUtility.ParseQueryString(new Uri(logoutUri).Query).Get(ErrorCode.QueryString);
+
+        Assert.Equal(ErrorCode.Authentication.InvalidTokens, query);
     }
 
     private static JsonWebKeySet KeySetUsing(byte[] pem)
