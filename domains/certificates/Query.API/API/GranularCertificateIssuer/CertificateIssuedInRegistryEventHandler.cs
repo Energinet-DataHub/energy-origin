@@ -9,14 +9,12 @@ namespace API.GranularCertificateIssuer;
 
 public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssuedInRegistryEvent>, IConsumer<Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent>
 {
-    private readonly IProductionCertificateRepository productionRepository;
-    private readonly IConsumptionCertificateRepository consumptionRepository;
+    private readonly ICertificateRepository repository;
     private readonly ILogger<CertificateIssuedInRegistryEventHandler> logger;
 
-    public CertificateIssuedInRegistryEventHandler(IProductionCertificateRepository productionRepository, IConsumptionCertificateRepository consumptionRepository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
+    public CertificateIssuedInRegistryEventHandler(ICertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
     {
-        this.productionRepository = productionRepository;
-        this.consumptionRepository = consumptionRepository;
+        this.repository = repository;
         this.logger = logger;
     }
 
@@ -25,7 +23,7 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
     {
         var msg = context.Message;
 
-        var certificate = await productionRepository.Get(msg.CertificateId);
+        var certificate = await repository.GetProductionCertificate(msg.CertificateId);
 
         if (certificate == null)
         {
@@ -35,7 +33,7 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
 
         certificate.Issue();
 
-        await productionRepository.Save(certificate);
+        await repository.Save(certificate);
     }
 
     public async Task Consume(ConsumeContext<Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent> context)
@@ -45,9 +43,9 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
         Certificate? certificate;
 
         if (msg.MeteringPointType == MeteringPointType.Production)
-            certificate = await productionRepository.Get(msg.CertificateId);
+            certificate = await repository.GetProductionCertificate(msg.CertificateId);
         else if (msg.MeteringPointType == MeteringPointType.Consumption)
-            certificate = await consumptionRepository.Get(msg.CertificateId);
+            certificate = await repository.GetConsumptionCertificate(msg.CertificateId);
         else
             throw new CertificateDomainException(msg.CertificateId, string.Format("Unsupported meteringPointType: {0}", msg.MeteringPointType));
 
@@ -60,8 +58,8 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
         certificate.Issue();
 
         if (msg.MeteringPointType == MeteringPointType.Production)
-            await productionRepository.Save((ProductionCertificate)certificate);
+            await repository.Save((ProductionCertificate)certificate);
         else
-            await consumptionRepository.Save((ConsumptionCertificate)certificate);
+            await repository.Save((ConsumptionCertificate)certificate);
     }
 }

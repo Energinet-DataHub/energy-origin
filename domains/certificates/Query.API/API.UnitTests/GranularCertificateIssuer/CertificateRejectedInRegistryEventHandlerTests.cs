@@ -19,55 +19,51 @@ public class CertificateRejectedInRegistryEventHandlerTests
     [Fact]
     public async Task ShouldRejectCertificateAndSave()
     {
-        var productionRepositoryMock = Substitute.For<IProductionCertificateRepository>();
-        var consumptionRepositoryMock = Substitute.For<IConsumptionCertificateRepository>();
+        var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
-        productionRepositoryMock.Get(default).ReturnsForAnyArgs(cert);
+        repositoryMock.GetProductionCertificate(default).ReturnsForAnyArgs(cert);
 
         var msg = new CertificateRejectedInRegistryEvent(cert.Id, "SomeReason");
-        await PublishAndConsumeMessage(msg, productionRepositoryMock, consumptionRepositoryMock);
+        await PublishAndConsumeMessage(msg, repositoryMock);
 
-        await productionRepositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
+        await repositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ShouldRejectCertificateAndSave_WhenProductionCertificate()
     {
-        var productionRepositoryMock = Substitute.For<IProductionCertificateRepository>();
-        var consumptionRepositoryMock = Substitute.For<IConsumptionCertificateRepository>();
+        var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
-        productionRepositoryMock.Get(default).ReturnsForAnyArgs(cert);
+        repositoryMock.GetProductionCertificate(default).ReturnsForAnyArgs(cert);
 
         var msg = new Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent(cert.Id, MeteringPointType.Production, "SomeReason");
-        await PublishAndConsumeMessage(msg, productionRepositoryMock, consumptionRepositoryMock);
+        await PublishAndConsumeMessage(msg, repositoryMock);
 
-        await productionRepositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
+        await repositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ShouldRejectCertificateAndSave_WhenConsumptionCertificate()
     {
-        var productionRepositoryMock = Substitute.For<IProductionCertificateRepository>();
-        var consumptionRepositoryMock = Substitute.For<IConsumptionCertificateRepository>();
+        var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var cert = new ConsumptionCertificate("SomeGridArea", new Period(123L, 124L), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
-        consumptionRepositoryMock.Get(default).ReturnsForAnyArgs(cert);
+        repositoryMock.GetConsumptionCertificate(default).ReturnsForAnyArgs(cert);
 
         var msg = new Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent(cert.Id, MeteringPointType.Consumption, "SomeReason");
-        await PublishAndConsumeMessage(msg, productionRepositoryMock, consumptionRepositoryMock);
+        await PublishAndConsumeMessage(msg, repositoryMock);
 
-        await consumptionRepositoryMock.Received(1).Save(Arg.Is<ConsumptionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
+        await repositoryMock.Received(1).Save(Arg.Is<ConsumptionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
     }
 
     private static async Task PublishAndConsumeMessage(CertificateRejectedInRegistryEvent message,
-        IProductionCertificateRepository productionRepository, IConsumptionCertificateRepository consumptionRepository)
+        ICertificateRepository repository)
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<CertificateRejectedInRegistryEventHandler>())
-            .AddSingleton(productionRepository)
-            .AddSingleton(consumptionRepository)
+            .AddSingleton(repository)
             .BuildServiceProvider(true);
 
         var harness = provider.GetRequiredService<ITestHarness>();
@@ -80,12 +76,11 @@ public class CertificateRejectedInRegistryEventHandlerTests
     }
 
     private static async Task PublishAndConsumeMessage(Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent message,
-        IProductionCertificateRepository productionRepository, IConsumptionCertificateRepository consumptionRepository)
+        ICertificateRepository repository)
     {
         await using var provider = new ServiceCollection()
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<CertificateRejectedInRegistryEventHandler>())
-            .AddSingleton(productionRepository)
-            .AddSingleton(consumptionRepository)
+            .AddSingleton(repository)
             .BuildServiceProvider(true);
 
         var harness = provider.GetRequiredService<ITestHarness>();

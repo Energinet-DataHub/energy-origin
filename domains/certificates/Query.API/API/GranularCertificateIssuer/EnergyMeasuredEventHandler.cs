@@ -14,15 +14,13 @@ namespace API.GranularCertificateIssuer;
 public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>, IConsumer<ProductionEnergyMeasuredIntegrationEvent>, IConsumer<ConsumptionEnergyMeasuredIntegrationEvent>
 {
     private readonly ILogger<EnergyMeasuredEventHandler> logger;
-    private readonly IProductionCertificateRepository productionRepository;
-    private readonly IConsumptionCertificateRepository consumptionRepository;
+    private readonly ICertificateRepository repository;
     private readonly IContractService contractService;
 
-    public EnergyMeasuredEventHandler(ILogger<EnergyMeasuredEventHandler> logger, IProductionCertificateRepository productionRepository, IConsumptionCertificateRepository consumptionRepository, IContractService contractService)
+    public EnergyMeasuredEventHandler(ILogger<EnergyMeasuredEventHandler> logger, ICertificateRepository repository, IContractService contractService)
     {
         this.logger = logger;
-        this.productionRepository = productionRepository;
-        this.consumptionRepository = consumptionRepository;
+        this.repository = repository;
         this.contractService = contractService;
     }
 
@@ -55,7 +53,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             message.Quantity,
             commitment.BlindingValue.ToArray());
 
-        await productionRepository.Save(productionCertificate, context.CancellationToken);
+        await repository.Save(productionCertificate, context.CancellationToken);
 
         //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
         await context.Publish(new ProductionCertificateCreatedEvent(
@@ -102,7 +100,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             message.Quantity,
             commitment.BlindingValue.ToArray());
 
-        await productionRepository.Save(productionCertificate, context.CancellationToken);
+        await repository.Save(productionCertificate, context.CancellationToken);
 
         //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
         await context.Publish(new ProductionCertificateCreatedEvent(
@@ -148,7 +146,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             message.Quantity,
             commitment.BlindingValue.ToArray());
 
-        await consumptionRepository.Save(consumptionCertificate, context.CancellationToken);
+        await repository.Save(consumptionCertificate, context.CancellationToken);
 
         //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
         await context.Publish(new ConsumptionCertificateCreatedEvent(
