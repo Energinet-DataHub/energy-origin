@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
+using Claim = System.Security.Claims.Claim;
 
 namespace API.Services;
 

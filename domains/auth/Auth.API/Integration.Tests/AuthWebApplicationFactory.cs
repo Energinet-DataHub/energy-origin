@@ -57,8 +57,8 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             });
             services.AddHealthChecks().AddNpgSql(testContainer.GetConnectionString());
         });
-
     }
+
     public HttpClient CreateAnonymousClient(Action<IWebHostBuilder>? config = null)
     {
         var factory = config is not null ? WithWebHostBuilder(config) : this;

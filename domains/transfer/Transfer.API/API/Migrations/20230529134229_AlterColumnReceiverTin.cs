@@ -1,3 +1,4 @@
+using API.Models;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -22,13 +23,10 @@ namespace API.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "ReceiverTin",
-                table: "TransferAgreements",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
+            var agreementsTable = "\"TransferAgreements\"";
+            var receiverTinCol = "\"ReceiverTin\"";
+
+            migrationBuilder.Sql($"ALTER TABLE {agreementsTable} ALTER COLUMN {receiverTinCol} TYPE integer USING ({receiverTinCol}::integer);");
         }
     }
 }
