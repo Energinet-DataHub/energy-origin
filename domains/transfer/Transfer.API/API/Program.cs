@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Claim;
 using API.Clients.Cvr;
 using API.Data;
 using API.Filters;
@@ -86,6 +87,8 @@ Audit.Core.Configuration.Setup()
                 }
                 return true;
             })));
+
+builder.Services.AddClaimServices();
 
 builder.Services.AddHttpClient<CvrClient>((sp, c) =>
 {
