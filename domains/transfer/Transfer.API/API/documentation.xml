@@ -194,5 +194,17 @@
         <member name="M:API.Shared.Migrations.RemovedSchemaAndRenamedInvitationsAndAddedConnection.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Shared.Migrations.AddClaimSubjects">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjects.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjects.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjects.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
