@@ -21,24 +21,12 @@ public class EnergyMeasuredEventHandlerTests
     private static readonly DateTimeOffset n = DateTimeOffset.UtcNow;
     private static readonly DateTimeOffset now = new(n.Year, n.Month, n.Day, n.Hour, n.Minute, 0, n.Offset); // Rounded to nearest minute
 
-    private readonly CertificateIssuingContract productionMockContract = new()
+    private readonly CertificateIssuingContract mockContract = new()
     {
         Id = Guid.NewGuid(),
         GSRN = "gsrn",
         GridArea = "gridArea",
         MeteringPointType = MeteringPointType.Production,
-        MeteringPointOwner = "owner",
-        StartDate = now,
-        EndDate = null,
-        Created = now.AddDays(-1)
-    };
-
-    private readonly CertificateIssuingContract consumptionMockContract = new()
-    {
-        Id = Guid.NewGuid(),
-        GSRN = "gsrn",
-        GridArea = "gridArea",
-        MeteringPointType = MeteringPointType.Consumption,
         MeteringPointOwner = "owner",
         StartDate = now,
         EndDate = null,
@@ -54,7 +42,7 @@ public class EnergyMeasuredEventHandlerTests
         contractServiceMock.GetByGSRN(string.Empty, default).ReturnsNullForAnyArgs();
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
@@ -63,42 +51,26 @@ public class EnergyMeasuredEventHandlerTests
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
         await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Consume_ConsumptionPoint_NoEventsSaved()
-    {
-        productionMockContract.MeteringPointType = MeteringPointType.Consumption;
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
-    [InlineData(MeasurementQuality.Calculated)]
-    [InlineData(MeasurementQuality.Revised)]
-    [InlineData(MeasurementQuality.Estimated)]
-    public async Task Consume_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality)
+    [InlineData(MeasurementQuality.Calculated, MeteringPointType.Production)]
+    [InlineData(MeasurementQuality.Revised, MeteringPointType.Production)]
+    [InlineData(MeasurementQuality.Estimated, MeteringPointType.Production)]
+    [InlineData(MeasurementQuality.Calculated, MeteringPointType.Consumption)]
+    [InlineData(MeasurementQuality.Revised, MeteringPointType.Consumption)]
+    [InlineData(MeasurementQuality.Estimated, MeteringPointType.Consumption)]
+    public async Task Consume_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality, MeteringPointType meteringPointType)
     {
+        mockContract.MeteringPointType = meteringPointType;
         var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
         var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
@@ -107,22 +79,26 @@ public class EnergyMeasuredEventHandlerTests
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
         await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
-    [InlineData(1, 0)]
-    [InlineData(0, 1)]
-    public async Task Consume_StartDateInTheFuture_NoEventsSaved(int days, int seconds)
+    [InlineData(1, 0, MeteringPointType.Production)]
+    [InlineData(0, 1, MeteringPointType.Production)]
+    [InlineData(1, 0, MeteringPointType.Consumption)]
+    [InlineData(0, 1, MeteringPointType.Consumption)]
+    public async Task Consume_StartDateInTheFuture_NoEventsSaved(int days, int seconds, MeteringPointType meteringPointType)
     {
-        productionMockContract.StartDate = now.AddDays(days).AddSeconds(seconds);
+        mockContract.MeteringPointType = meteringPointType;
+        mockContract.StartDate = now.AddDays(days).AddSeconds(seconds);
 
         var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
         var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
@@ -131,20 +107,24 @@ public class EnergyMeasuredEventHandlerTests
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
         await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-42)]
-    public async Task Consume_QuantityIsZeroOrNegative_NoEventsSaved(long quantity)
+    [InlineData(0, MeteringPointType.Production)]
+    [InlineData(-42, MeteringPointType.Production)]
+    [InlineData(0, MeteringPointType.Consumption)]
+    [InlineData(-42, MeteringPointType.Consumption)]
+    public async Task Consume_QuantityIsZeroOrNegative_NoEventsSaved(long quantity, MeteringPointType meteringPointType)
     {
+        mockContract.MeteringPointType = meteringPointType;
         var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
         var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: quantity,
@@ -153,20 +133,24 @@ public class EnergyMeasuredEventHandlerTests
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
         await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task Consume_MeasurementPeriodAfterIssuingMaxLimit_NoEventsSaved()
+    [Theory]
+    [InlineData(MeteringPointType.Production)]
+    [InlineData(MeteringPointType.Consumption)]
+    public async Task Consume_MeasurementPeriodAfterIssuingMaxLimit_NoEventsSaved(MeteringPointType meteringPointType)
     {
+        mockContract.MeteringPointType = meteringPointType;
         var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
         var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var startDateAfterIssuingMaxLimit = DateTimeOffset.Parse("6200-01-01T00:00:00Z");
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: startDateAfterIssuingMaxLimit.ToUnixTimeSeconds(),
             DateTo: startDateAfterIssuingMaxLimit.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
@@ -175,18 +159,22 @@ public class EnergyMeasuredEventHandlerTests
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
         await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task Consume_ValidMeasurement_EventsSaved()
+    [Theory]
+    [InlineData(MeteringPointType.Production)]
+    [InlineData(MeteringPointType.Consumption)]
+    public async Task Consume_ValidMeasurement_EventsSaved(MeteringPointType meteringPointType)
     {
+        mockContract.MeteringPointType = meteringPointType;
         var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
+        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { mockContract });
 
         var repositoryMock = Substitute.For<ICertificateRepository>();
 
         var message = new EnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
+            GSRN: mockContract.GSRN,
             DateFrom: now.ToUnixTimeSeconds(),
             DateTo: now.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
@@ -194,347 +182,14 @@ public class EnergyMeasuredEventHandlerTests
 
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeProduction_NoContract_NoEventsSaved()
-    {
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsNullForAnyArgs();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeProduction_ConsumptionPoint_NoEventsSaved()
-    {
-        productionMockContract.MeteringPointType = MeteringPointType.Consumption;
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(MeasurementQuality.Calculated)]
-    [InlineData(MeasurementQuality.Revised)]
-    [InlineData(MeasurementQuality.Estimated)]
-    public async Task ConsumeProduction_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality)
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: measurementQuality);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(1, 0)]
-    [InlineData(0, 1)]
-    public async Task ConsumeProduction_StartDateInTheFuture_NoEventsSaved(int days, int seconds)
-    {
-        productionMockContract.StartDate = now.AddDays(days).AddSeconds(seconds);
-
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-42)]
-    public async Task ConsumeProduction_QuantityIsZeroOrNegative_NoEventsSaved(long quantity)
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: quantity,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeProduction_MeasurementPeriodAfterIssuingMaxLimit_NoEventsSaved()
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var startDateAfterIssuingMaxLimit = DateTimeOffset.Parse("6200-01-01T00:00:00Z");
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: startDateAfterIssuingMaxLimit.ToUnixTimeSeconds(),
-            DateTo: startDateAfterIssuingMaxLimit.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeProduction_ValidMeasurement_EventsSaved()
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { productionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ProductionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeConsumption_NoContract_NoEventsSaved()
-    {
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsNullForAnyArgs();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeConsumption_ProductionPoint_NoEventsSaved()
-    {
-        consumptionMockContract.MeteringPointType = MeteringPointType.Production;
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(MeasurementQuality.Calculated)]
-    [InlineData(MeasurementQuality.Revised)]
-    [InlineData(MeasurementQuality.Estimated)]
-    public async Task ConsumeConsumption_MeasurementQualityNotMeasured_NoEventsSaved(MeasurementQuality measurementQuality)
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: measurementQuality);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(1, 0)]
-    [InlineData(0, 1)]
-    public async Task ConsumeConsumption_StartDateInTheFuture_NoEventsSaved(int days, int seconds)
-    {
-        consumptionMockContract.StartDate = now.AddDays(days).AddSeconds(seconds);
-
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-42)]
-    public async Task ConsumeConsumption_QuantityIsZeroOrNegative_NoEventsSaved(long quantity)
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: quantity,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeConsumption_MeasurementPeriodAfterIssuingMaxLimit_NoEventsSaved()
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var startDateAfterIssuingMaxLimit = DateTimeOffset.Parse("6200-01-01T00:00:00Z");
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: startDateAfterIssuingMaxLimit.ToUnixTimeSeconds(),
-            DateTo: startDateAfterIssuingMaxLimit.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.DidNotReceive().Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ConsumeConsumption_ValidMeasurement_EventsSaved()
-    {
-        var contractServiceMock = Substitute.For<IContractService>();
-        contractServiceMock.GetByGSRN(string.Empty, default).ReturnsForAnyArgs(new[] { consumptionMockContract });
-
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var message = new ConsumptionEnergyMeasuredIntegrationEvent(
-            GSRN: productionMockContract.GSRN,
-            DateFrom: now.ToUnixTimeSeconds(),
-            DateTo: now.AddHours(1).ToUnixTimeSeconds(),
-            Quantity: 42,
-            Quality: MeasurementQuality.Measured);
-
-        await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
-
-        await repositoryMock.Received(1).Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
-    }
-
-    private static async Task PublishAndConsumeMessage(ProductionEnergyMeasuredIntegrationEvent message,
-        ICertificateRepository repository, IContractService contractService)
-    {
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredEventHandler>())
-            .AddSingleton(repository)
-            .AddSingleton(contractService)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(message);
-
-        (await harness.Consumed.Any<ProductionEnergyMeasuredIntegrationEvent>()).Should().BeTrue();
-    }
-
-    private static async Task PublishAndConsumeMessage(ConsumptionEnergyMeasuredIntegrationEvent message,
-        ICertificateRepository repository, IContractService contractService)
-    {
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<EnergyMeasuredEventHandler>())
-            .AddSingleton(repository)
-            .AddSingleton(contractService)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(message);
-
-        (await harness.Consumed.Any<ConsumptionEnergyMeasuredIntegrationEvent>()).Should().BeTrue();
+        if(meteringPointType == MeteringPointType.Production)
+        {
+            await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
+        }
+        if (meteringPointType == MeteringPointType.Consumption)
+        {
+            await repositoryMock.Received(1).Save(Arg.Any<ConsumptionCertificate>(), Arg.Any<CancellationToken>());
+        }
     }
 
     private static async Task PublishAndConsumeMessage(EnergyMeasuredIntegrationEvent message,

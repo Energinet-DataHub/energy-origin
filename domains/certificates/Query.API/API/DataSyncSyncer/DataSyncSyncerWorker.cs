@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CertificateValueObjects;
 
 namespace API.DataSyncSyncer;
 
@@ -44,13 +43,9 @@ internal class DataSyncSyncerWorker : BackgroundService
                 var measurements = await dataSyncService.FetchMeasurements(syncInfo,
                     stoppingToken);
 
-                if (syncInfo.MeteringPointType == MeteringPointType.Production && measurements.Any())
+                if (measurements.Any())
                 {
-                    await PublishProductionIntegrationEvents(measurements, stoppingToken);
-                }
-                else if (syncInfo.MeteringPointType == MeteringPointType.Consumption && measurements.Any())
-                {
-                    await PublishConsumptionIntegrationEvents(measurements, stoppingToken);
+                    await PublishIntegrationEvents(measurements, stoppingToken);
                 }
             }
 
@@ -94,24 +89,11 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
     }
 
-    private async Task PublishProductionIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
+    private async Task PublishIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
     {
-        var integrationsEvents = MapToProductionIntegrationEvents(measurements);
+        var integrationsEvents = MapToIntegrationEvents(measurements);
         logger.LogInformation(
-            "Publishing {numberOfEnergyMeasuredIntegrationEvents} productionEnergyMeasuredIntegrationEvents to the Integration Bus",
-            integrationsEvents.Count);
-
-        foreach (var @event in integrationsEvents)
-        {
-            await bus.Publish(@event, cancellationToken);
-        }
-    }
-
-    private async Task PublishConsumptionIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
-    {
-        var integrationsEvents = MapToConsumptionIntegrationEvents(measurements);
-        logger.LogInformation(
-            "Publishing {numberOfEnergyMeasuredIntegrationEvents} consumptionEnergyMeasuredIntegrationEvents to the Integration Bus",
+            "Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
             integrationsEvents.Count);
 
         foreach (var @event in integrationsEvents)
@@ -130,9 +112,9 @@ internal class DataSyncSyncerWorker : BackgroundService
     private static int GetNumberOfOwners(IGrouping<string, CertificateIssuingContract> g) =>
         g.Select(c => c.MeteringPointOwner).Distinct().Count();
 
-    private static List<ProductionEnergyMeasuredIntegrationEvent> MapToProductionIntegrationEvents(List<DataSyncDto> measurements) =>
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements) =>
         measurements
-            .Select(it => new ProductionEnergyMeasuredIntegrationEvent(
+            .Select(it => new EnergyMeasuredIntegrationEvent(
                     GSRN: it.GSRN,
                     DateFrom: it.DateFrom,
                     DateTo: it.DateTo,
@@ -142,15 +124,4 @@ internal class DataSyncSyncerWorker : BackgroundService
             )
             .ToList();
 
-    private static List<ConsumptionEnergyMeasuredIntegrationEvent> MapToConsumptionIntegrationEvents(List<DataSyncDto> measurements) =>
-        measurements
-            .Select(it => new ConsumptionEnergyMeasuredIntegrationEvent(
-                    GSRN: it.GSRN,
-                    DateFrom: it.DateFrom,
-                    DateTo: it.DateTo,
-                    Quantity: it.Quantity,
-                    Quality: it.Quality
-                )
-            )
-            .ToList();
 }
