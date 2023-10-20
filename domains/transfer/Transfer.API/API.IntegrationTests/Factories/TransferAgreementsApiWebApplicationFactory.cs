@@ -51,7 +51,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.ConfigureTestServices(s =>
         {
-            OptionsServiceCollectionExtensions.Configure<DatabaseOptions>(s, o =>
+            s.Configure<DatabaseOptions>(o =>
             {
                 var connectionStringBuilder = new DbConnectionStringBuilder
                 {

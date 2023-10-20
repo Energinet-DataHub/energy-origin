@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.Connections.Api.Dto.Requests;
 using API.Connections.Api.Dto.Responses;
 using API.Connections.Api.Exceptions;
+using API.Connections.Api.Models;
 using API.Connections.Api.Repository;
 using API.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -34,7 +35,7 @@ public class ConnectionsController : Controller
     /// <response code="404">Connection-invitation expired or deleted</response>
     /// <response code="409">Company is already a connection</response>
     [HttpPost]
-    [ProducesResponseType(typeof(Models.Connection), 201)]
+    [ProducesResponseType(typeof(Connection), 201)]
     [ProducesResponseType(404)]
     [ProducesResponseType(409)]
     public async Task<ActionResult> Create([FromBody] CreateConnection request)
@@ -48,7 +49,7 @@ public class ConnectionsController : Controller
         var companyBId = new Guid(User.FindSubjectGuidClaim());
         var companyBTin = User.FindSubjectTinClaim();
 
-        var connection = new Models.Connection
+        var connection = new Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = connectionInvitation.SenderCompanyId,
@@ -77,12 +78,12 @@ public class ConnectionsController : Controller
 
         var connections = await connectionRepository.GetCompanyConnections(subject);
 
-        if (!connections.Any<Models.Connection>())
+        if (!connections.Any())
         {
             return NoContent();
         }
 
-        var dtos = connections.Select<Models.Connection, ConnectionDto>(x => ToDto(x, subject)).ToList();
+        var dtos = connections.Select<Connection, ConnectionDto>(x => ToDto(x, subject)).ToList();
 
         return Ok(new ConnectionsResponse { Result = dtos });
     }
@@ -106,7 +107,7 @@ public class ConnectionsController : Controller
         return NoContent();
     }
 
-    private static ConnectionDto ToDto(Models.Connection connection, Guid loggedInCompanyId)
+    private static ConnectionDto ToDto(Connection connection, Guid loggedInCompanyId)
     {
         if (loggedInCompanyId == connection.CompanyAId)
             return new ConnectionDto

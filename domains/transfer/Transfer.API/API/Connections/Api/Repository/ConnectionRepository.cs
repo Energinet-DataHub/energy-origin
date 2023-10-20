@@ -47,7 +47,7 @@ public class ConnectionRepository : IConnectionRepository
             .Where(x => x.CompanyAId == companyId || x.CompanyBId == companyId)
             .ToListAsync();
 
-    public async Task<Models.Connection?> GetConnection(Guid id)
+    public async Task<Connection?> GetConnection(Guid id)
     {
         return await context.Connections.FindAsync(id);
     }
