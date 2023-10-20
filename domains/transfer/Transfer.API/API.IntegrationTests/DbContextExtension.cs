@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Data;
-using API.Models;
+using API.Shared.Data;
+using API.Transfer.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests;
