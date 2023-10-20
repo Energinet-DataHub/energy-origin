@@ -1,13 +1,26 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using API.TransferAgreementsAutomation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace API.Claim.Automation;
 
 public class ClaimWorker : BackgroundService
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly IServiceProvider serviceProvider;
+
+    public ClaimWorker(IServiceProvider serviceProvider)
     {
-        throw new System.NotImplementedException();
+        this.serviceProvider = serviceProvider;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var claimService = scope.ServiceProvider.GetRequiredService<IClaimService>();
+
+        await claimService.Run(stoppingToken);
     }
 }
