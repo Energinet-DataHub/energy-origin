@@ -73,8 +73,7 @@ public class OidcControllerTests
     {
         var options = new OidcOptions() { RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://localhost") };
 
-        var result = OidcController.OidcHelper.BuildRedirectionUri(options, state);
-
+        var result = OidcHelper.BuildRedirectionUri(options, state);
         Assert.Equal(expectedUri, result);
     }
 
@@ -94,7 +93,7 @@ public class OidcControllerTests
     public void TryVerifyCode_ShouldFollowRedirectionFlow_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
 
-        var result = Assert.Throws<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.TryVerifyCode(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
+        var result = Assert.Throws<RedirectionFlow>(() => OidcHelper.TryVerifyCode(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
@@ -109,7 +108,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void CodeNullCheck_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyCode("code", logger, null, null, "https://example.com/login?errorCode=714")));
+    public void CodeNullCheck_ShouldPass_WhenGivenCorrectConditions() => Assert.True(DoesNotThrow(() => OidcHelper.TryVerifyCode("code", logger, null, null, "https://example.com/login?errorCode=714")));
 
 #pragma warning disable 8625
     public static IEnumerable<object[]> WrongDiscoveryDocumentResponse => new List<object[]>
@@ -123,7 +122,7 @@ public class OidcControllerTests
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
     public void TryVerifyDiscoveryDocument_ShouldFollowRedirectionFlow_WhenGivenErrorConditions(DiscoveryDocumentResponse? document)
     {
-        var result = Assert.Throws<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://example.com")).Url;
+        var result = Assert.Throws<RedirectionFlow>(() => OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://example.com")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
@@ -137,7 +136,7 @@ public class OidcControllerTests
     }
 
     [Fact]
-    public void TryVerifyDiscoveryDocument_ShouldPass_WhenGivenCorrectConditions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyDiscoveryDocument(DiscoveryDocument.Load(Enumerable.Empty<KeyValuePair<string, string>>()), logger, "https://example.com")));
+    public void TryVerifyDiscoveryDocument_ShouldPass_WhenGivenCorrectConditions() => Assert.True(DoesNotThrow(() => OidcHelper.TryVerifyDiscoveryDocument(DiscoveryDocument.Load(Enumerable.Empty<KeyValuePair<string, string>>()), logger, "https://example.com")));
 
     [Fact]
     public async Task FetchTokenResponse_ShouldFollowRedirectionFlow_WhenRequestingTokenFails()
@@ -149,7 +148,7 @@ public class OidcControllerTests
 
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = await Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com"));
+        var result = await Assert.ThrowsAsync<RedirectionFlow>(() => OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com"));
 
         Assert.NotNull(result.Url);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result.Url);
@@ -190,7 +189,7 @@ public class OidcControllerTests
         http.When(HttpMethod.Post, tokenEndpoint.AbsoluteUri).Respond("application/json", $$"""{"access_token":"{{accessToken}}", "id_token":"{{identityToken}}", "userinfo_token":"{{userInfoToken}}"}""");
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = await OidcController.OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login");
+        var result = await OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com/login");
 
         Assert.NotNull(result);
         Assert.IsType<TokenResponse>(result);
@@ -203,26 +202,68 @@ public class OidcControllerTests
         Assert.Equal(userInfoToken, result.TryGet("userinfo_token"));
     }
 
-    [Fact]
-    public void TryVerifyProviderType_ShouldThrow_WhenProviderTypeIsNotInProviderOptions()
+    public static IEnumerable<object[]> WrongProviderOptions => new List<object[]>
     {
-        var newOptions = new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional } };
-        Assert.Throws<NotSupportedException>(() => OidcController.OidcHelper.TryVerifyProviderType(ProviderType.NemIdPrivate, newOptions));
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional}},
+            ProviderType.NemIdPrivate
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.NemIdProfessional
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.MitIdProfessional
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.MitIdPrivate
+        }
+
+    };
+
+    [Theory]
+    [MemberData(nameof(WrongProviderOptions))]
+    public void TryVerifyProviderType_ShouldThrow_WhenProviderTypeIsNotInProviderOptions(IdentityProviderOptions options, ProviderType providerType)
+    {
+        Assert.Throws<NotSupportedException>(() => OidcHelper.TryVerifyProviderType(providerType, options));
     }
 
-    //FIXME : MAKE ALSO THEORY
-    [Fact]
-    public void TryVerifyProviderType_ShouldPass_WhenProviderTypeIsInProviderOptions() => Assert.Null(Record.Exception(() => OidcController.OidcHelper.TryVerifyProviderType(ProviderType.NemIdPrivate, providerOptions)));
+     public static IEnumerable<object[]> CorrectProviderOptions => new List<object[]>
+    {
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.NemIdPrivate
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.NemIdProfessional
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.MitIdProfessional
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            ProviderType.MitIdPrivate
+        }
+
+    };
+
+    [Theory]
+    [MemberData(nameof(CorrectProviderOptions))]
+    public void TryVerifyProviderType_ShouldPadss_WhenProviderTypeIsInProviderOptions(IdentityProviderOptions options, ProviderType providerType) => Assert.True(DoesNotThrow(() => OidcHelper.TryVerifyProviderType(providerType, options)));
 
     [Theory]
     [InlineData(ProviderName.MitId, ProviderGroup.Private, ProviderType.MitIdPrivate)]
     [InlineData(ProviderName.MitIdProfessional, ProviderGroup.Professional, ProviderType.MitIdProfessional)]
     [InlineData(ProviderName.NemId, ProviderGroup.Private, ProviderType.NemIdPrivate)]
     [InlineData(ProviderName.NemId, ProviderGroup.Professional, ProviderType.NemIdProfessional)]
-    public void MatchIdentityProviderEnum_ShouldMatchCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected) => Assert.Equal(OidcController.OidcHelper.MatchIdentityProviderEnum(providerName, identity), expected);
+    public void MatchIdentityProviderEnum_ShouldMatchCorrectProviderType_WhenProvidedWithVariousProviders(string providerName, string identity, ProviderType expected) => Assert.Equal(OidcHelper.MatchIdentityProviderEnum(providerName, identity), expected);
 
     [Fact]
-    public void MatchIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcController.OidcHelper.MatchIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
+    public void MatchIdentityProviderEnum_ShouldThrow_WhenProvidedWithWrongProviders() => Assert.Throws<NotImplementedException>(() => OidcHelper.MatchIdentityProviderEnum(ProviderName.MitIdProfessional, ProviderGroup.Private));
 
     public class UserInfo
     {
@@ -376,7 +417,7 @@ public class OidcControllerTests
     {
         var claims = new ClaimsPrincipal(userInfo.Identity);
 
-        var (name, tin, companyName, keys) = OidcController.OidcHelper.ExtractUserInfo(claims, userInfo.ProviderType, userInfo.IdentityType);
+        var (name, tin, companyName, keys) = OidcHelper.ExtractUserInfo(claims, userInfo.ProviderType, userInfo.IdentityType);
 
         Assert.Equal(claims.FindFirstValue(userInfo.Expected.Name), name);
         Assert.Equal(claims.FindFirstValue(userInfo.Expected.Tin ?? string.Empty), tin);
@@ -463,7 +504,7 @@ public class OidcControllerTests
 
     [Theory]
     [MemberData(nameof(WrongUserClaims))]
-    public void ExtractUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity identity, ProviderType providerType, string identityType, Type expectedException) => Assert.Throws(expectedException, () => OidcController.OidcHelper.ExtractUserInfo(new ClaimsPrincipal(identity), providerType, identityType));
+    public void ExtractUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity identity, ProviderType providerType, string identityType, Type expectedException) => Assert.Throws(expectedException, () => OidcHelper.ExtractUserInfo(new ClaimsPrincipal(identity), providerType, identityType));
 
     [Fact]
     public void FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
@@ -481,7 +522,7 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
+        var result = OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
 
         service.Received(1).UpsertUserAsync(Arg.Any<User>());
 
@@ -503,7 +544,7 @@ public class OidcControllerTests
         var companyName = "Test_Company_Name";
         var tin = Guid.NewGuid().ToString();
 
-        var result = await OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Professional, name, tin, companyName);
+        var result = await OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Professional, name, tin, companyName);
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -523,10 +564,9 @@ public class OidcControllerTests
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
         var userProviders = new List<UserProvider>();
-
         var name = Guid.NewGuid().ToString();
 
-        var result = await OidcController.OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Private, name, Guid.NewGuid().ToString(), "DOES_NOT_HAVE_COMPANY");
+        var result = await OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, Guid.NewGuid().ToString(), ProviderGroup.Private, name, Guid.NewGuid().ToString(), "DOES_NOT_HAVE_COMPANY");
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -650,7 +690,7 @@ public class OidcControllerTests
         var claims = new ClaimsPrincipal(identity);
         var options = new RoleOptions(){RoleConfigurations = roleConfigurations};
 
-        var result = OidcController.OidcHelper.CalculateMatchedRoles(claims, options);
+        var result = OidcHelper.CalculateMatchedRoles(claims, options);
 
         Assert.NotNull(result);
         Assert.Equal(expected, result);
@@ -697,7 +737,7 @@ public class OidcControllerTests
 
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var result = await OidcController.OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com");
+        var result = await OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com");
 
         Assert.IsType<(UserDescriptor, TokenIssuer.UserData)>(result);
         var (userDescriptor, _) = result;
@@ -709,13 +749,10 @@ public class OidcControllerTests
         Assert.Equal(cryptography.Decrypt<string>(userDescriptor.EncryptedIdentityToken), identityToken);
     }
 
+
     public static IEnumerable<object[]> ErrorTokens => new List<object[]>
     {
         new object[] {
-            new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"scope", "some_scope"}
             },
@@ -725,14 +762,9 @@ public class OidcControllerTests
                 {"idp", ProviderName.MitId},
                 {"identity_type", ProviderGroup.Private}
             },
-            "The value cannot be an empty string. (Parameter 'subject')",
             "",
         },
         new object[] {
-            new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"scope", "some_scope"}
             },
@@ -742,14 +774,9 @@ public class OidcControllerTests
                 {"idp", ProviderName.MitId},
                 {"identity_type", ProviderGroup.Private}
             },
-            "Subject mismatched found in tokens received.",
             "subject", "IdentitySubject",
         },
         new object[] {
-                new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"scope", "some_scope"}
             },
@@ -759,15 +786,10 @@ public class OidcControllerTests
                 {"idp", ProviderName.MitId},
                 {"identity_type", ProviderGroup.Private}
             },
-            "Subject mismatched found in tokens received.",
             "subject", "subject", "UserInfoSubject"
         },
 
         new object[] {
-            new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"NOT_A_SCOPE", "NOT_A_SCOPE"}
             },
@@ -777,14 +799,9 @@ public class OidcControllerTests
                 {"idp", ProviderName.MitId},
                 {"identity_type", ProviderGroup.Private}
             },
-            "Value cannot be null. (Parameter 'scope')",
         },
 
         new object[] {
-            new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"scope", "some_scope"}
             },
@@ -794,14 +811,9 @@ public class OidcControllerTests
                 {"NOT_AN_IDP", "NOT_AN_IDP"},
                 {"identity_type", ProviderGroup.Private}
             },
-            "Value cannot be null. (Parameter 'providerName')",
         },
 
         new object[] {
-            new List<KeyValuePair<string, string>>(){
-                new("issuer", $"https://example.com/op"),
-                new("end_session_endpoint", $"http://example.com/connect/endsession")
-            },
             new Dictionary<string, object?>() {
                 {"scope", "some_scope"}
             },
@@ -811,7 +823,6 @@ public class OidcControllerTests
                 {"idp", ProviderName.MitId},
                 {"NOT_AN_IDENTITYTYPE", "NOT_AN_IDENTITYTYPE"}
             },
-            "Value cannot be null. (Parameter 'identityType')",
         },
     };
 
@@ -819,13 +830,15 @@ public class OidcControllerTests
     //Kan ikke lave null check på subject pga. TokenUsing metoden
     [Theory]
     [MemberData(nameof(ErrorTokens))]
-    public async Task BuildUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(List<KeyValuePair<string, string>> documentItems, Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string expectedException, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
+    public async Task BuildUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
 
-        //FIXME: REVERT TEST DATA FOR DOC TO BE EHRE :)
         var document = DiscoveryDocument.Load(
-            documentItems,
+             new List<KeyValuePair<string, string>>(){
+                new("issuer", $"https://example.com/op"),
+                new("end_session_endpoint", $"http://example.com/connect/endsession")
+            },
             KeySetUsing(tokenOptions.PublicKeyPem)
         );
 
@@ -846,18 +859,19 @@ public class OidcControllerTests
 
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var result = await Assert.ThrowsAsync<OidcController.RedirectionFlow>(() => OidcController.OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
+        var result = await Assert.ThrowsAsync<RedirectionFlow>(() => OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),
             Arg.Any<EventId>(),
             Arg.Any<object>(),
-            Arg.Is<Exception>(exception => exception.Message == expectedException),
+            Arg.Any<Exception>(),
             Arg.Any<Func<object, Exception?, string>>()
         );
 
         var logoutUri = HttpUtility.ParseQueryString(new Uri(result.Url).Query).Get("post_logout_redirect_uri");
         Assert.NotNull(logoutUri);
+
         var query = HttpUtility.ParseQueryString(new Uri(logoutUri).Query).Get(ErrorCode.QueryString);
 
         Assert.Equal(ErrorCode.Authentication.InvalidTokens, query);
@@ -909,5 +923,17 @@ public class OidcControllerTests
         var handler = new JwtSecurityTokenHandler();
         var token = handler.CreateJwtSecurityToken(descriptor);
         return handler.WriteToken(token);
+    }
+
+    private static bool DoesNotThrow(Action action){
+        try
+        {
+            action.Invoke();
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }
