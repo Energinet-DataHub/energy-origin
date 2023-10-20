@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using API.IntegrationTests.Shared.Factories;
+using API.IntegrationTests.Factories;
 using API.Transfer.Api.Dto.Responses;
 using API.Transfer.TransferAgreementsAutomation;
 using Argon;

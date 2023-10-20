@@ -1,8 +1,8 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using API.Connection;
-using API.Connection.Api.Options;
+using API.Connections;
+using API.Connections.Automation.Options;
 using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;

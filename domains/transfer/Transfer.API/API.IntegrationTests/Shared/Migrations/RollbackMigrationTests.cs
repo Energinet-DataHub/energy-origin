@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using API.IntegrationTests.Shared.Testcontainers;
+using API.IntegrationTests.Testcontainers;
 using API.Shared.Data;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;

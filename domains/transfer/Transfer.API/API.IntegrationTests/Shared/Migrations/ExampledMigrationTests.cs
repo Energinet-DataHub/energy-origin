@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.IntegrationTests.Shared.Testcontainers;
+using API.IntegrationTests.Testcontainers;
 using API.Shared.Data;
 using API.Transfer.Api.Models;
 using FluentAssertions;

@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.Cvr.Api.Dto.Responses;
-using API.IntegrationTests.Shared.Factories;
+using API.IntegrationTests.Factories;
 using FluentAssertions;
 using VerifyTests;
 using VerifyXunit;

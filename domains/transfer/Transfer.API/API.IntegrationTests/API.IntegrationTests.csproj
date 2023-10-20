@@ -52,7 +52,7 @@
 		<None Update="Cvr\Api\Controllers\CvrControllerTests.empty_cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="Shared\SwaggerTests.GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot.verified.txt">
+		<None Update="SwaggerTests.GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot.verified.txt">
 		  <ParentFile>SwaggerTests</ParentFile>
 		  <DependentUpon>SwaggerTests.cs</DependentUpon>
 		</None>
