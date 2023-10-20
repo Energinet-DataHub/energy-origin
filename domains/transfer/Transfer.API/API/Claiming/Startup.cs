@@ -1,7 +1,7 @@
-using API.Claim.Automation;
+using API.Claiming.Automation;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace API.Claim
+namespace API.Claiming
 {
     public static class Startup
     {

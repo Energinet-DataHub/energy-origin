@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace API.Claim.Automation;
+namespace API.Claiming.Automation;
 
 public interface IClaimService
 {

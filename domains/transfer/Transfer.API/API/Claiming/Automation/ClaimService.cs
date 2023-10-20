@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace API.Claim.Automation;
+namespace API.Claiming.Automation;
 
 public class ClaimService : IClaimService
 {
@@ -18,7 +18,6 @@ public class ClaimService : IClaimService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-
             try
             {
             }
@@ -27,7 +26,13 @@ public class ClaimService : IClaimService
                 logger.LogWarning("Something went wrong with the ClaimService: {exception}", e);
             }
 
-            await SleepToNearestHour(stoppingToken);
+            await SleepAnHour(stoppingToken);
         }
+    }
+
+    private async Task SleepAnHour(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Sleeping for an hour.");
+        await Task.Delay(TimeSpan.FromMinutes(60), cancellationToken);
     }
 }

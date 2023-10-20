@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace API.Claim.Automation;
+namespace API.Claiming.Automation;
 
 public class ClaimWorker : BackgroundService
 {
