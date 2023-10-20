@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
-using API.Connections.Api.Repository;
+using API.Connection.Api.Models;
+using API.Connection.Api.Repository;
 using API.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Connections.Api.Controllers;
+namespace API.Connection.Api.Controllers;
 
 [Authorize]
 [ApiController]

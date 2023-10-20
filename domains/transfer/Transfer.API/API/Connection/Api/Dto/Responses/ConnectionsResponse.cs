@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace API.Connections.Api.Dto.Responses;
+namespace API.Connection.Api.Dto.Responses;
 
 public record ConnectionsResponse
 {

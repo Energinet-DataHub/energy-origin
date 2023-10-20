@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace API.Connections.Api.Services.ConnectionInvitationCleanup;
+namespace API.Connection.Api.Services.ConnectionInvitationCleanup;
 
 public class ConnectionInvitationCleanupWorker : BackgroundService
 {

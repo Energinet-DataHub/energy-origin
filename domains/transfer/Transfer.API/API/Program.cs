@@ -1,9 +1,8 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using API.Connections.Api.Options;
-using API.Connections.Api.Repository;
-using API.Connections.Api.Services.ConnectionInvitationCleanup;
+using API.Connection;
+using API.Connection.Api.Options;
 using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;
@@ -88,10 +87,7 @@ builder.Services.AddLogging();
 
 builder.Services.AddTransfer(builder.Configuration);
 builder.Services.AddCvr();
-builder.Services.AddScoped<IConnectionRepository, ConnectionRepository>();
-builder.Services.AddScoped<IConnectionInvitationRepository, ConnectionInvitationRepository>();
-builder.Services.AddScoped<IConnectionInvitationCleanupService, ConnectionInvitationCleanupService>();
-builder.Services.AddHostedService<ConnectionInvitationCleanupWorker>();
+builder.Services.AddConnection();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

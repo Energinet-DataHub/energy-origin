@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Connections.Api.Exceptions;
+namespace API.Connection.Api.Exceptions;
 
 internal class MappingException : Exception
 {

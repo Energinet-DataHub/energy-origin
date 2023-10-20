@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Connections.Api.Options;
-using API.Connections.Api.Repository;
+using API.Connection.Api.Options;
+using API.Connection.Api.Repository;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace API.Connections.Api.Services.ConnectionInvitationCleanup;
+namespace API.Connection.Api.Services.ConnectionInvitationCleanup;
 
 public class ConnectionInvitationCleanupService : IConnectionInvitationCleanupService
 {

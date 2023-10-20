@@ -1,4 +1,4 @@
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 using API.Transfer.Api.Models;
 using Audit.EntityFramework;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
-    public DbSet<Connection> Connections { get; set; }
+    public DbSet<Connection.Api.Models.Connection> Connections { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

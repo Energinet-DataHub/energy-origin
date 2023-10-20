@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Connections.Api.Dto.Requests;
-using API.Connections.Api.Dto.Responses;
-using API.Connections.Api.Models;
+using API.Connection.Api.Dto.Requests;
+using API.Connection.Api.Dto.Responses;
+using API.Connection.Api.Models;
 using API.IntegrationTests.Shared.Factories;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -109,7 +109,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     {
         var myCompanyId = Guid.NewGuid();
         var myCompanyTin = "12345678";
-        var ownedConnection1 = new Connection
+        var ownedConnection1 = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = myCompanyId,
@@ -117,7 +117,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBId = Guid.NewGuid(),
             CompanyBTin = "12345679"
         };
-        var ownedConnection2 = new Connection
+        var ownedConnection2 = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = Guid.NewGuid(),
@@ -125,7 +125,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBId = myCompanyId,
             CompanyBTin = myCompanyTin
         };
-        var notOwnedConnection = new Connection
+        var notOwnedConnection = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = Guid.NewGuid(),
@@ -134,7 +134,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBTin = "45679012"
         };
 
-        await factory.SeedConnections(new List<Connection>
+        await factory.SeedConnections(new List<Connection.Api.Models.Connection>
         {
             ownedConnection1,
             ownedConnection2,
@@ -170,7 +170,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
         var myCompanyTin = "12345678";
         var unauthorizedCompanyId = Guid.NewGuid();
 
-        var connection = new Connection
+        var connection = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = myCompanyId,
@@ -179,7 +179,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBTin = "87654321"
         };
 
-        await factory.SeedConnections(new List<Connection> { connection });
+        await factory.SeedConnections(new List<Connection.Api.Models.Connection> { connection });
 
         var unauthorizedClient = factory.CreateAuthenticatedClient(sub: unauthorizedCompanyId.ToString());
 
@@ -193,7 +193,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
     {
         var myCompanyId = Guid.NewGuid();
         var myCompanyTin = "12345678";
-        var connectionToBeDeleted = new Connection
+        var connectionToBeDeleted = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = myCompanyId,
@@ -201,7 +201,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBId = Guid.NewGuid(),
             CompanyBTin = "12345679"
         };
-        var anotherConnection = new Connection
+        var anotherConnection = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = myCompanyId,
@@ -210,7 +210,7 @@ public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWeb
             CompanyBTin = "12345680"
         };
 
-        await factory.SeedConnections(new List<Connection> { connectionToBeDeleted, anotherConnection });
+        await factory.SeedConnections(new List<Connection.Api.Models.Connection> { connectionToBeDeleted, anotherConnection });
         var client = factory.CreateAuthenticatedClient(sub: myCompanyId.ToString());
 
         var deleteResponse = await client.DeleteAsync($"api/connections/{connectionToBeDeleted.Id}");

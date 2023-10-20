@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Connections.Api.Options;
+namespace API.Connection.Api.Options;
 
 public class ConnectionInvitationCleanupServiceOptions
 {

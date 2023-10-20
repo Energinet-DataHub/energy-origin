@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Connections.Api.Models;
+namespace API.Connection.Api.Models;
 
 public class ConnectionInvitation
 {

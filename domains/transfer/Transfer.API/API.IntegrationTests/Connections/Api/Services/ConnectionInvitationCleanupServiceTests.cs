@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 using API.IntegrationTests.Shared;
 using API.IntegrationTests.Shared.Factories;
 using API.Shared.Data;

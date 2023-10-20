@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
 using API.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Connections.Api.Repository;
+namespace API.Connection.Api.Repository;
 
 public class ConnectionRepository : IConnectionRepository
 {
@@ -17,7 +16,7 @@ public class ConnectionRepository : IConnectionRepository
         this.context = context;
     }
 
-    public async Task AddConnectionAndDeleteInvitation(Connection newConnection, Guid invitationId)
+    public async Task AddConnectionAndDeleteInvitation(Models.Connection newConnection, Guid invitationId)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -42,12 +41,12 @@ public class ConnectionRepository : IConnectionRepository
         }
     }
 
-    public Task<List<Connection>> GetCompanyConnections(Guid companyId) =>
+    public Task<List<Models.Connection>> GetCompanyConnections(Guid companyId) =>
         context.Connections
             .Where(x => x.CompanyAId == companyId || x.CompanyBId == companyId)
             .ToListAsync();
 
-    public async Task<Connection?> GetConnection(Guid id)
+    public async Task<Models.Connection?> GetConnection(Guid id)
     {
         return await context.Connections.FindAsync(id);
     }
@@ -68,6 +67,6 @@ public class ConnectionRepository : IConnectionRepository
         return IsConflict(existingConnections, senderCompanyId);
     }
 
-    private static bool IsConflict(List<Connection> existingConnections, Guid senderCompanyId) =>
+    private static bool IsConflict(List<Models.Connection> existingConnections, Guid senderCompanyId) =>
         existingConnections.Any(c => c.CompanyAId == senderCompanyId || c.CompanyBId == senderCompanyId);
 }

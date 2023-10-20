@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 using API.IntegrationTests.Shared.Factories;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -107,7 +107,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
     {
         var companyAId = Guid.NewGuid();
         var companyATin = "12345678";
-        var connection = new Connection
+        var connection = new Connection.Api.Models.Connection
         {
             Id = Guid.NewGuid(),
             CompanyAId = companyAId,
@@ -125,7 +125,7 @@ public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreem
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await factory.SeedConnections(new List<Connection> { connection });
+        await factory.SeedConnections(new List<Connection.Api.Models.Connection> { connection });
         await factory.SeedConnectionInvitations(new List<ConnectionInvitation> { invitation });
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);

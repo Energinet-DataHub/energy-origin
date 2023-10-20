@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 
-namespace API.Connections.Api.Repository;
+namespace API.Connection.Api.Repository;
 
 public interface IConnectionInvitationRepository
 {

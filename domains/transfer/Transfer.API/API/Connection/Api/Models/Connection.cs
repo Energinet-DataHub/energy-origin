@@ -1,7 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Connections.Api.Models;
+namespace API.Connection.Api.Models;
 
 [Index(nameof(CompanyAId))]
 [Index(nameof(CompanyBId))]

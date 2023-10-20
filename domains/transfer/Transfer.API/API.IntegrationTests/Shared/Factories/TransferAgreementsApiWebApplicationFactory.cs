@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
@@ -97,7 +97,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SeedConnections(IEnumerable<Connection> connections)
+    public async Task SeedConnections(IEnumerable<Connection.Api.Models.Connection> connections)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -177,7 +177,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
     {
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection))!.GetTableName();
+        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection.Api.Models.Connection))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace API.Connections.Api.Services.ConnectionInvitationCleanup;
+namespace API.Connection.Api.Services.ConnectionInvitationCleanup;
 
 public interface IConnectionInvitationCleanupService
 {

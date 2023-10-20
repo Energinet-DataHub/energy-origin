@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Connections.Api.Models;
+using API.Connection.Api.Models;
 using API.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Connections.Api.Repository;
+namespace API.Connection.Api.Repository;
 
 public class ConnectionInvitationRepository : IConnectionInvitationRepository
 {
