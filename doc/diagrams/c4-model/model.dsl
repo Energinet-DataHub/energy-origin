@@ -85,6 +85,10 @@ measurementsDomain = group "Measurements Domain" {
         description "API for aggregated measurements split into production and consumption"
 
         apiGateway -> this "Forwards requests to"
+
+        measurementService = component "MeasurementService" "bla."
+        meteringPointService = component "MeteringPointService" "bla."
+
         this -> dataHubFacadeApi "Get measurements from"
     }
 }
