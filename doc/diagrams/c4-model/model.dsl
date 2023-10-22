@@ -5,12 +5,13 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-dataSyncDomain = group "Data Sync" {
-    dataSyncApi = container "Data Sync" {
-        description "Facade for DataHub 2.0"
+dataHubFacadeDomain = group "DataHubFacade Domain" {
+    dataHubFacadeApi = container "DataHubFacade" {
+        description "Facade for DataHub 2.0 and 3.0"
         technology ".NET"
 
         this -> dh2 "Forwards requests to"
+        this -> dh3 "Forwards requests to"
     }
 }
 
@@ -20,7 +21,7 @@ authDomain = group "Auth Domain" {
 
         this -> mitId "Executes UIDC callbacks"
         apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Creates relations for metering points in"
+        this -> dataHubFacadeApi "Creates relations for metering points in"
     }
 
     authDb = container "Database" {
@@ -54,7 +55,7 @@ certificatesDomain = group "Certificate Domain" {
         technology ".NET Web Api"
 
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
-            this -> dataSyncApi "Get metering point info from"
+            this -> dataHubFacadeApi "Get metering point info from"
             this -> certStorage "Stores contracts in"
             this -> poWallet "Creates Wallet Deposit Endpoints"
         }
@@ -63,7 +64,7 @@ certificatesDomain = group "Certificate Domain" {
 
             this -> certRabbitMq "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
-            this -> dataSyncApi "Pulls measurements from"
+            this -> dataHubFacadeApi "Pulls measurements from"
         }
         granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
             this -> contractService "Checks for a valid contract in"
@@ -79,22 +80,12 @@ certificatesDomain = group "Certificate Domain" {
     }
 }
 
-emissionsDomain = group "Emissions Domain" {
-    emsssionApi = container "Emissions Web Api" {
-        description "API for emissions and sources"
-
-        apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Get measurements and metering points from"
-        this -> eds "Get emission and residual mix per hour from"
-    }
-}
-
 measurementsDomain = group "Measurements Domain" {
     measurementApi = container "Measurements Web Api" {
         description "API for aggregated measurements split into production and consumption"
 
         apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Get measurements from"
+        this -> dataHubFacadeApi "Get measurements from"
     }
 }
 

@@ -23,7 +23,6 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
     }
 
-
     views {
         systemContext energyOrigin "SystemContextEO" {
             title "[System Context] Energy Origin"
@@ -37,29 +36,24 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
 
         # Specific area container views
-        container energyOrigin "DataSync" {
-            title "[Container Context] DataSync"
-            include ->dataSyncDomain->
+        container energyOrigin "DataHubFacade" {
+            title "[Container Context] DataHubFacade"
+            include ->DataHubFacadeDomain->
             autoLayout
         }
         container energyOrigin "Auth" {
             title "[Container Context] Auth"
-            include ->authDomain-> dataSyncApi->
+            include ->authDomain-> dataHubFacadeApi->
             autoLayout
         }
         container energyOrigin "Measurements" {
             title "[Container Context] Measurements"
-            include ->measurementsDomain-> dataSyncApi->
-            autolayout
-        }
-        container energyOrigin "Emissions" {
-            title "[Container Context] Emissions"
-            include ->emissionsDomain-> dataSyncApi->
+            include ->measurementsDomain-> dataHubFacadeApi->
             autolayout
         }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain-> dataSyncApi->
+            include ->certificatesDomain-> dataHubFacadeApi->
             autoLayout
         }
         component certApi "CertificateApiComponents" {
