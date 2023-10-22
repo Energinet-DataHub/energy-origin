@@ -51,9 +51,14 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->measurementsDomain-> dataHubFacadeApi->
             autolayout
         }
+        component measurementApi "MeasurementApiComponents" {
+            title "[Component Context] Measurement API"
+            include *
+            autoLayout
+        }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain-> dataHubFacadeApi->
+            include ->certificatesDomain->
             autoLayout
         }
         component certApi "CertificateApiComponents" {

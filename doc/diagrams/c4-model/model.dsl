@@ -1,5 +1,3 @@
-# TODO all diagrams should be revised to resemble Energy Origin as-is
-
 apiGateway = container "API Gateway" {
     description "Routes requests to services and forwards authentication requests"
     technology "Traefik"
@@ -33,6 +31,21 @@ authDomain = group "Auth Domain" {
     }
 }
 
+measurementsDomain = group "Measurements Domain" {
+    measurementApi = container "Measurements Web Api" {
+        description "API for aggregated measurements split into production and consumption"
+
+        apiGateway -> this "Forwards requests to"
+
+        measurementService = component "MeasurementService" "Aggregates measurements for production and consumption" {
+            this -> dataHubFacadeApi "Get measurements from"
+        }
+        meteringPointService = component "MeteringPointService" "Handles the representation for a metering point within Energy Origin" {
+            this -> dataHubFacadeApi "Get metering point info from"
+        }
+    }
+}
+
 certificatesDomain = group "Certificate Domain" {
     certRabbitMq = container "Certificate Message Broker" {
         description ""
@@ -55,7 +68,7 @@ certificatesDomain = group "Certificate Domain" {
         technology ".NET Web Api"
 
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
-            this -> dataHubFacadeApi "Get metering point info from"
+            this -> measurementApi "Get metering point info from"
             this -> certStorage "Stores contracts in"
             this -> poWallet "Creates Wallet Deposit Endpoints"
         }
@@ -64,7 +77,7 @@ certificatesDomain = group "Certificate Domain" {
 
             this -> certRabbitMq "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
-            this -> dataHubFacadeApi "Pulls measurements from"
+            this -> measurementApi "TODO: Beslut om vi gør dette eller ej. Pulls measurements from"
         }
         granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
             this -> contractService "Checks for a valid contract in"
@@ -77,19 +90,6 @@ certificatesDomain = group "Certificate Domain" {
         }
 
         apiGateway -> this "Forwards requests to"
-    }
-}
-
-measurementsDomain = group "Measurements Domain" {
-    measurementApi = container "Measurements Web Api" {
-        description "API for aggregated measurements split into production and consumption"
-
-        apiGateway -> this "Forwards requests to"
-
-        measurementService = component "MeasurementService" "bla."
-        meteringPointService = component "MeteringPointService" "bla."
-
-        this -> dataHubFacadeApi "Get measurements from"
     }
 }
 
@@ -121,5 +121,3 @@ transferDomain = group "Transfer Domain" {
     deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
     cvrProxy -> cvr "Forwards requests to"
 }
-
-apiGateway -> dataSyncApi "Forwards requests for metering point info to"
