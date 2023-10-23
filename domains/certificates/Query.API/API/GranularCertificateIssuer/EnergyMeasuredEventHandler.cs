@@ -103,18 +103,18 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}", matchingContract.MeteringPointType, message));
     }
 
-    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract, EnergyMeasuredIntegrationEvent productionEnergyMeasuredIntegrationEvent)
+    private static bool ShouldEventBeProduced(CertificateIssuingContract? contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
         if (contract is null)
             return false;
 
-        if (!contract.Contains(productionEnergyMeasuredIntegrationEvent.DateFrom, productionEnergyMeasuredIntegrationEvent.DateTo))
+        if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
             return false;
 
-        if (productionEnergyMeasuredIntegrationEvent.Quantity <= 0)
+        if (energyMeasuredIntegrationEvent.Quantity <= 0)
             return false;
 
-        if (productionEnergyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
+        if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
             return false;
 
         return true;

@@ -34,7 +34,6 @@ public class Contract
     /// Metering point type of the contract. Can be Production or Consumption
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    [JsonPropertyName("meteringPointType")]
     public MeteringPointType MeteringPointType { get; set; }
 
     public static Contract CreateFrom(CertificateIssuingContract contract) =>

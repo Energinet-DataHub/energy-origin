@@ -13,12 +13,10 @@ public class CreateContract
     /// <summary>
     /// Starting date for generation of certificates in Unix time seconds
     /// </summary>
-    [JsonPropertyName("startDate")]
     public long StartDate { get; init; }
 
     /// <summary>
     /// End date for generation of certificates in Unix time seconds. Set to null for no end date
     /// </summary>
-    [JsonPropertyName("endDate")]
     public long? EndDate { get; set; }
 }

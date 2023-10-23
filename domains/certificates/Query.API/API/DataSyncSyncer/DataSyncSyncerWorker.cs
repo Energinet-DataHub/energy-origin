@@ -68,7 +68,7 @@ internal class DataSyncSyncerWorker : BackgroundService
                 {
                     var oldestContract = g.OrderBy(c => c.StartDate).First();
                     var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner, oldestContract.MeteringPointType);
+                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner);
                 })
                 .ToList();
 

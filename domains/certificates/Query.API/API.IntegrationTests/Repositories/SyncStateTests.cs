@@ -25,8 +25,7 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
         new(
             GSRN: gsrn ?? GsrnHelper.GenerateRandom(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-            MeteringPointOwner: "SomeMeteringPointOwner",
-            MeteringPointType.Production);
+            MeteringPointOwner: "SomeMeteringPointOwner");
 
     [Fact]
     public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()

@@ -56,6 +56,5 @@ public class Certificate
     /// The type of the certificate. Can be either Production, Consumption or Invalid
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    [JsonPropertyName("certificateType")]
     public CertificateType CertificateType { get; set; }
 }
