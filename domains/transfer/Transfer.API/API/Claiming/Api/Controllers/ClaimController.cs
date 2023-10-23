@@ -39,11 +39,11 @@ public class ClaimController : ControllerBase
         try
         {
             claim = await claimRepository.AddClaimSubject(claimSubject);
-            return CreatedAtAction(nameof(GetClaimProcess), new { id = claim.SubjectId }, claim);
+            return CreatedAtAction(nameof(GetClaimProcess), null, claim);
         }
         catch (DbUpdateException)
         {
-            return CreatedAtAction(nameof(GetClaimProcess), new { id = claimSubject.SubjectId }, claimSubject);
+            return CreatedAtAction(nameof(GetClaimProcess), null, claimSubject);
         }
     }
 
