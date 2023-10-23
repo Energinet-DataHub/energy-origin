@@ -70,7 +70,7 @@ public sealed class ContractTests :
     public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption);
 
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
