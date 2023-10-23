@@ -5,7 +5,6 @@ namespace API.Query.API.ApiModels.Responses;
 
 public enum CertificateType
 {
-    Invalid,
     Consumption,
     Production
 }

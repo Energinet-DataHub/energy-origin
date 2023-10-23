@@ -277,7 +277,6 @@
       },
       "CertificateType": {
         "enum": [
-          "Invalid",
           "Consumption",
           "Production"
         ],

@@ -19,12 +19,14 @@ public class CertificatesController : ControllerBase
     [Route("api/certificates")]
     public async Task<ActionResult<CertificateList>> Get([FromServices] WalletService.WalletServiceClient client)
     {
-        var certificates = await client.QueryGranularCertificatesAsync(new QueryRequest());
+        var response = await client.QueryGranularCertificatesAsync(new QueryRequest());
 
-        return certificates.GranularCertificates.Any()
+        var certs = response.GranularCertificates.Where(x => x.Type != GranularCertificateType.Invalid).ToList();
+
+        return certs.Any()
             ? Ok(new CertificateList
             {
-                Result = certificates.GranularCertificates
+                Result = certs
                     .Select(Map)
                     .OrderByDescending(c => c.DateFrom)
                     .ThenBy(c => c.GSRN)
@@ -53,7 +55,7 @@ public class CertificatesController : ControllerBase
         {
             GranularCertificateType.Consumption => CertificateType.Consumption,
             GranularCertificateType.Production => CertificateType.Production,
-            _ => CertificateType.Invalid
+            _ => throw new ArgumentException($"Unsupported GranularCertificateType {type}")
         };
     }
 }
