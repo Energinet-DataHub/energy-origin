@@ -50,7 +50,6 @@ public class ContractsController : ControllerBase
             meteringPointOwner,
             startDate,
             endDate,
-            createContract.MeteringPointType!.Value,
             cancellationToken);
 
         return result switch

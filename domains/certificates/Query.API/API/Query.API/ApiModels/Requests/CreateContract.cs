@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using CertificateValueObjects;
 
 namespace API.Query.API.ApiModels.Requests;
 
@@ -22,11 +21,4 @@ public class CreateContract
     /// </summary>
     [JsonPropertyName("endDate")]
     public long? EndDate { get; set; }
-
-    /// <summary>
-    /// Metering point type. Can be either Production or Consumption
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    [JsonPropertyName("meteringPointType")]
-    public MeteringPointType? MeteringPointType { get; set; }
 }

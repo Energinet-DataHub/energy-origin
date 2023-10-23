@@ -29,8 +29,7 @@ internal class ContractServiceImpl : IContractService
         this.walletServiceClient = walletServiceClient;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate, MeteringPointType meteringPointType,
-        CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(string gsrn, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate, CancellationToken cancellationToken)
     {
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var matchingMeteringPoint = meteringPoints?.MeteringPoints.FirstOrDefault(mp => mp.GSRN == gsrn);
@@ -59,7 +58,7 @@ internal class ContractServiceImpl : IContractService
             contractNumber,
             gsrn,
             matchingMeteringPoint.GridArea,
-            meteringPointType,
+            Map(matchingMeteringPoint.Type),
             meteringPointOwner,
             startDate,
             endDate,
@@ -76,6 +75,14 @@ internal class ContractServiceImpl : IContractService
         {
             return new ContractAlreadyExists(null);
         }
+    }
+
+    private static MeteringPointType Map(MeterType type)
+    {
+        if(type == MeterType.Production) return MeteringPointType.Production;
+        if(type == MeterType.Consumption) return MeteringPointType.Consumption;
+
+        throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
     public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)

@@ -9,7 +9,6 @@ using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
-using CertificateValueObjects;
 using FluentAssertions;
 using Xunit;
 
@@ -53,8 +52,7 @@ public sealed class ContractTests :
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Production;
-        var body = new { gsrn, startDate, endDate, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -64,7 +62,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate, MeteringPointType = meteringPointType });
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -78,8 +76,7 @@ public sealed class ContractTests :
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Consumption;
-        var body = new { gsrn, startDate, endDate, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -89,7 +86,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate, MeteringPointType = meteringPointType });
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -102,8 +99,7 @@ public sealed class ContractTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Production;
-        var body = new { gsrn, startDate, endDate = (long?)null, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -113,7 +109,7 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null, MeteringPointType = meteringPointType });
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
@@ -129,8 +125,7 @@ public sealed class ContractTests :
         {
             gsrn,
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds(),
-            meteringPointType = "Production"
+            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
@@ -181,8 +176,8 @@ public sealed class ContractTests :
         var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
 
-        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1, meteringPointType = "Production" };
-        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2, meteringPointType = "Production" };
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
 
         using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
         using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
@@ -210,8 +205,8 @@ public sealed class ContractTests :
         var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
 
-        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1, meteringPointType = "Production" };
-        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2, meteringPointType = "Production" };
+        var contract1Body = new { gsrn, startDate = startDateContract1, endDate = endDateContract1 };
+        var contract2Body = new { gsrn, startDate = startDateContract2, endDate = endDateContract2 };
 
         using var responseContract1 = await client.PostAsJsonAsync("api/certificates/contracts", contract1Body);
         using var responseContract2 = await client.PostAsJsonAsync("api/certificates/contracts", contract2Body);
@@ -221,27 +216,6 @@ public sealed class ContractTests :
         var contracts = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
 
         contracts!.Result.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task CreateContract_MeteringPointTypeIsNotSet_BadRequest()
-    {
-        var gsrn = GsrnHelper.GenerateRandom();
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn);
-
-        var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject);
-
-        var body = new
-        {
-            gsrn,
-            startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-        };
-
-        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -280,7 +254,7 @@ public sealed class ContractTests :
 
         var tenConcurrentRequests = Enumerable
             .Range(1, 10)
-            .Select(_ => client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now, futureDate, meteringPointType = "Production" }));
+            .Select(_ => client.PostAsJsonAsync("api/certificates/contracts", new { gsrn, startDate = now, futureDate }));
 
         var responses = await Task.WhenAll(tenConcurrentRequests);
 
@@ -304,8 +278,7 @@ public sealed class ContractTests :
         {
             gsrn,
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds(),
-            meteringPointType = "Production"
+            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         await client.PostAsJsonAsync("api/certificates/contracts", body);
@@ -348,8 +321,7 @@ public sealed class ContractTests :
         {
             gsrn,
             startDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds(),
-            meteringPointType = "Production"
+            endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         using var response = await client1.PostAsJsonAsync("api/certificates/contracts", body);
@@ -375,8 +347,7 @@ public sealed class ContractTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Production;
-        var body = new { gsrn, startDate, endDate = (long?)null, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -389,7 +360,7 @@ public sealed class ContractTests :
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate, MeteringPointType = meteringPointType });
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -403,8 +374,7 @@ public sealed class ContractTests :
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Production;
-        var body = new { gsrn, startDate, endDate, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -416,7 +386,7 @@ public sealed class ContractTests :
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null, MeteringPointType = meteringPointType });
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
 
     [Fact]
@@ -429,8 +399,7 @@ public sealed class ContractTests :
         using var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var meteringPointType = MeteringPointType.Production;
-        var body = new { gsrn, startDate, endDate = (long?)null, meteringPointType = meteringPointType.ToString() };
+        var body = new { gsrn, startDate, endDate = (long?)null };
 
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
@@ -443,7 +412,7 @@ public sealed class ContractTests :
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate, MeteringPointType = meteringPointType });
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
 
     [Fact]
@@ -482,8 +451,7 @@ public sealed class ContractTests :
         {
             gsrn,
             startDate = start.ToUnixTimeSeconds(),
-            endDate = start.AddYears(1).ToUnixTimeSeconds(),
-            meteringPointType = "Production"
+            endDate = start.AddYears(1).ToUnixTimeSeconds()
         };
 
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);

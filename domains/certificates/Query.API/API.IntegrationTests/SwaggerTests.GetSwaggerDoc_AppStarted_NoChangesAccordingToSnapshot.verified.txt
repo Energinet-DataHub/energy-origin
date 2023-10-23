@@ -345,9 +345,6 @@
             "description": "End date for generation of certificates in Unix time seconds. Set to null for no end date",
             "format": "int64",
             "nullable": true
-          },
-          "meteringPointType": {
-            "$ref": "#/components/schemas/MeteringPointType"
           }
         },
         "additionalProperties": false

@@ -75,11 +75,6 @@
             End date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.CreateContract.MeteringPointType">
-            <summary>
-            Metering point type. Can be either Production or Consumption
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
             <summary>
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
