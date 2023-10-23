@@ -5,7 +5,7 @@ apiGateway = container "API Gateway" {
 
 dataHubFacadeDomain = group "DataHubFacade Domain" {
     dataHubFacadeApi = container "DataHubFacade" {
-        description "Facade for DataHub 2.0 and 3.0"
+        description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DH certificate, SOAP parsing, pagination and Danish time zone convertion"
         technology ".NET"
 
         this -> dh2 "Forwards requests to"
