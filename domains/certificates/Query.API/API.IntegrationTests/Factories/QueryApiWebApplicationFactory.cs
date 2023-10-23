@@ -114,7 +114,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate, MeteringPointType meteringPointType,
         DataSyncWireMock dataSyncWireMock)
     {
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType.ToString());
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType);
 
         using var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds(), meteringPointType = meteringPointType.ToString() };
