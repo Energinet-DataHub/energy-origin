@@ -97,6 +97,7 @@ transferDomain = group "Transfer Domain" {
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
             this -> poWallet "Transfers certificates"
         }
+        cvrProxy = component "CVR proxy" "Gets CVR data" ".NET Web Api"
     }
     tDb = container "Transfer Storage" {
         tags "Data Storage"
@@ -107,8 +108,10 @@ transferDomain = group "Transfer Domain" {
     }
     apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"
+    apiGateway -> cvrProxy "Forwards requests to"
     connectionsApi -> tDb "Stores connections"
     transferAgreementsApi -> tDb "Stores transfer agreements"
     transferAgreementAutomation -> tDb "Reads transfer agreements"
     deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
+    cvrProxy -> cvr "Forwards requests to"
 }
