@@ -19,38 +19,22 @@ public static class Registry
 
     public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, string techCode, string fuelCode, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
     {
-        var id = new ProjectOrigin.Common.V1.FederatedStreamId
-        {
-            Registry = registryName,
-            StreamId = new ProjectOrigin.Common.V1.Uuid { Value = certificateId.ToString() }
-        };
+        var issuedEvent = BuildIssuedEvent(registryName, certificateId, period, gridArea, assetId, commitment,
+            ownerPublicKey, GranularCertificateType.Production);
 
-        var issuedEvent = new IssuedEvent
-        {
-            CertificateId = id,
-            Type = GranularCertificateType.Production,
-            Period = period,
-            GridArea = gridArea,
-            QuantityCommitment = new ProjectOrigin.Electricity.V1.Commitment
-            {
-                Content = ByteString.CopyFrom(commitment.Commitment.C),
-                RangeProof = ByteString.CopyFrom(commitment.CreateRangeProof(id.StreamId.Value))
-            },
-            OwnerPublicKey = new PublicKey
-            {
-                Content = ByteString.CopyFrom(ownerPublicKey.Export()),
-                Type = KeyType.Secp256K1
-            },
-            //TODO: AssetIdHash not set. Added as non-hidden attribute instead. See https://github.com/project-origin/registry/issues/129 for more details
-        };
-
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.AssetId, Value = assetId });
         issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.TechCode, Value = techCode });
         issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.FuelCode, Value = fuelCode });
 
         return issuedEvent;
     }
     public static IssuedEvent CreateIssuedEventForConsumption(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
+    {
+        return BuildIssuedEvent(registryName, certificateId, period, gridArea, assetId, commitment, ownerPublicKey, GranularCertificateType.Consumption);
+    }
+
+    private static IssuedEvent BuildIssuedEvent(string registryName, Guid certificateId, DateInterval period,
+        string gridArea, string assetId, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey,
+        GranularCertificateType type)
     {
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
@@ -61,7 +45,7 @@ public static class Registry
         var issuedEvent = new IssuedEvent
         {
             CertificateId = id,
-            Type = GranularCertificateType.Consumption,
+            Type = type,
             Period = period,
             GridArea = gridArea,
             QuantityCommitment = new ProjectOrigin.Electricity.V1.Commitment
