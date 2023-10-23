@@ -182,7 +182,7 @@ public class EnergyMeasuredEventHandlerTests
 
         await PublishAndConsumeMessage(message, repositoryMock, contractServiceMock);
 
-        if(meteringPointType == MeteringPointType.Production)
+        if (meteringPointType == MeteringPointType.Production)
         {
             await repositoryMock.Received(1).Save(Arg.Any<ProductionCertificate>(), Arg.Any<CancellationToken>());
         }

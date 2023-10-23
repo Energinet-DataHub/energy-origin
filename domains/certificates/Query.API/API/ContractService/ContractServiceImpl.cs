@@ -79,8 +79,8 @@ internal class ContractServiceImpl : IContractService
 
     private static MeteringPointType Map(MeterType type)
     {
-        if(type == MeterType.Production) return MeteringPointType.Production;
-        if(type == MeterType.Consumption) return MeteringPointType.Consumption;
+        if (type == MeterType.Production) return MeteringPointType.Production;
+        if (type == MeterType.Consumption) return MeteringPointType.Consumption;
 
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
