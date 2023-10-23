@@ -37,10 +37,13 @@ measurementsDomain = group "Measurements Domain" {
 
         apiGateway -> this "Forwards requests to"
 
-        measurementService = component "MeasurementService" "Aggregates measurements for production and consumption" {
+        aggregatedMeasurementService = component "AggregatedMeasurementService" "Aggregates measurements for production and consumption" {
             this -> dataHubFacadeApi "Get measurements from"
         }
-        meteringPointService = component "MeteringPointService" "Handles the representation for a metering point within Energy Origin" {
+        simpleMeasurementService = component "SimpleMeasurementService" "Handles representation of measurements within Energy Origin" {
+            this -> dataHubFacadeApi "Get measurements from"
+        }
+        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Origin" {
             this -> dataHubFacadeApi "Get metering point info from"
         }
     }
