@@ -25,7 +25,7 @@ public class ClaimService : IClaimService
             logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
             try
             {
-                var claimSubjects = claimRepository.GetClaimSubjects();
+                var claimSubjects = await claimRepository.GetClaimSubjects();
                 foreach (var subjectId in claimSubjects.Select(x => x.SubjectId))
                 {
                     //Get certs

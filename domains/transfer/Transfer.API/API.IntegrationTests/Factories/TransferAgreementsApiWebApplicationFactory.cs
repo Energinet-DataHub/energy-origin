@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Claiming.Api.Models;
 using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
@@ -89,6 +90,19 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
     }
 
+    public async Task SeedClaims(IEnumerable<ClaimSubject> claimSubjects)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.TruncateClaimSubjectsTables();
+
+        foreach (var claimSubject in claimSubjects)
+        {
+            dbContext.ClaimSubjects.Add(claimSubject);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
     public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
     {
         using var scope = Services.CreateScope();
