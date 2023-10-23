@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Claiming.Api.Models;
 using API.Shared.Data;
 using API.Transfer.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -38,5 +39,12 @@ public static class DbContextExtension
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+    }
+
+    public static async Task TruncateClaimSubjectsTables(this ApplicationDbContext dbContext)
+    {
+        var claimSubjectTable = dbContext.Model.FindEntityType(typeof(ClaimSubject))!.GetTableName();
+
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimSubjectTable}\" CASCADE");
     }
 }
