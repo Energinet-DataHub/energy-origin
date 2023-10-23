@@ -5,7 +5,7 @@
     "version": "v1"
   },
   "paths": {
-    "/api/claims": {
+    "/api/claims/start-claim-process": {
       "post": {
         "tags": [
           "Claim"
@@ -31,6 +31,38 @@
               }
             }
           },
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/claims/stop-claim-process": {
+      "delete": {
+        "tags": [
+          "Claim"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -52,7 +84,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/claims/claim-process": {
       "get": {
         "tags": [
           "Claim"
