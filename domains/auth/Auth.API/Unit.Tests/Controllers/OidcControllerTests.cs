@@ -230,7 +230,7 @@ public class OidcControllerTests
         Assert.Throws<NotSupportedException>(() => OidcHelper.TryVerifyProviderType(providerType, options));
     }
 
-     public static IEnumerable<object[]> CorrectProviderOptions => new List<object[]>
+    public static IEnumerable<object[]> CorrectProviderOptions => new List<object[]>
     {
         new object[] {
             new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
@@ -765,7 +765,7 @@ public class OidcControllerTests
     public void CalculateMatchedRoles_ShouldReturnCorrectCollectionOfMatchedRoles_WhenDifferentConfigurationsIsProvided(ClaimsIdentity identity, List<RoleConfiguration> roleConfigurations, List<string> expected)
     {
         var claims = new ClaimsPrincipal(identity);
-        var options = new RoleOptions(){RoleConfigurations = roleConfigurations};
+        var options = new RoleOptions() { RoleConfigurations = roleConfigurations };
 
         var result = OidcHelper.CalculateMatchedRoles(claims, options);
 
@@ -1000,7 +1000,8 @@ public class OidcControllerTests
         return handler.WriteToken(token);
     }
 
-    private static bool DoesNotThrow(Action action){
+    private static bool DoesNotThrow(Action action)
+    {
         try
         {
             action.Invoke();

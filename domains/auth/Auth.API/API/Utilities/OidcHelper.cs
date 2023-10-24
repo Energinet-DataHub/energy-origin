@@ -225,7 +225,7 @@ internal static class OidcHelper
             ArgumentException.ThrowIfNullOrEmpty(tin, nameof(tin));
             ArgumentException.ThrowIfNullOrEmpty(companyName, nameof(companyName));
         }
-        else if(tin != null || companyName != null)
+        else if (tin != null || companyName != null)
         {
             throw new ArgumentException($"IdentityType: '{identityType}' is not allowed to have a tin or company name.");
         }
