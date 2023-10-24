@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Shared;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;

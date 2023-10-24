@@ -3,7 +3,7 @@ using API.Shared.Extensions;
 using Audit.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace API.Transfer;
+namespace API.Shared;
 
 public class AuditDotNetFilter : IAsyncActionFilter
 {
@@ -14,11 +14,13 @@ public class AuditDotNetFilter : IAsyncActionFilter
 
         var actorId = claimsPrincipal.FindActorGuidClaim();
         var actorName = claimsPrincipal.FindActorNameClaim();
+        var subjectId = claimsPrincipal.FindSubjectGuidClaim();
 
-        Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
+        Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
         {
             scope.Event.CustomFields["ActorId"] = actorId;
             scope.Event.CustomFields["ActorName"] = actorName;
+            scope.Event.CustomFields["SubjectId"] = subjectId;
         });
 
         await next();

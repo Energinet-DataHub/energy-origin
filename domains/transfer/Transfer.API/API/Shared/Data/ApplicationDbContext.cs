@@ -17,6 +17,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
     public DbSet<ClaimSubject> ClaimSubjects { get; set; }
+    public DbSet<ClaimSubjectHistory> ClaimSubjectHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,9 @@ public class ApplicationDbContext : AuditDbContext
             .IsUnique();
 
         modelBuilder.Entity<ClaimSubject>()
+            .HasKey(p => p.SubjectId);
+
+        modelBuilder.Entity<ClaimSubjectHistory>()
             .HasKey(p => p.SubjectId);
 
     }

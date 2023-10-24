@@ -206,5 +206,17 @@
         <member name="M:API.Shared.Migrations.AddClaimSubjects.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Shared.Migrations.AddClaimSubjectHistory">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjectHistory.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjectHistory.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddClaimSubjectHistory.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
