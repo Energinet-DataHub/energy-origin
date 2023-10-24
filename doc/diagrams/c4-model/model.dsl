@@ -78,7 +78,7 @@ certificatesDomain = group "Certificate Domain" {
 
             this -> certRabbitMq "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
-            this -> measurementApi "TODO: Beslut om vi gør dette eller ej. Pulls measurements from"
+            this -> measurementApi "Pulls measurements from"
         }
         granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
             this -> contractService "Checks for a valid contract in"
