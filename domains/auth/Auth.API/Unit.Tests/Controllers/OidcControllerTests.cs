@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NSubstitute.Core;
 using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
 using static API.Options.RoleConfiguration;
@@ -93,7 +94,7 @@ public class OidcControllerTests
     public void TryVerifyCode_ShouldFollowRedirectionFlow_WhenGivenErrorConditions(string? error, string? errorDescription, string expected)
     {
 
-        var result = Assert.Throws<RedirectionFlow>(() => OidcHelper.TryVerifyCode(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
+        var result = Assert.Throws<OidcHelper.RedirectionFlow>(() => OidcHelper.TryVerifyCode(null, logger, error, errorDescription, "https://example.com/login?errorCode=714")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={expected}", result);
@@ -122,7 +123,7 @@ public class OidcControllerTests
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
     public void TryVerifyDiscoveryDocument_ShouldFollowRedirectionFlow_WhenGivenErrorConditions(DiscoveryDocumentResponse? document)
     {
-        var result = Assert.Throws<RedirectionFlow>(() => OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://example.com")).Url;
+        var result = Assert.Throws<OidcHelper.RedirectionFlow>(() => OidcHelper.TryVerifyDiscoveryDocument(document, logger, "https://example.com")).Url;
 
         Assert.NotNull(result);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.DiscoveryUnavailable}", result);
@@ -148,7 +149,7 @@ public class OidcControllerTests
 
         factory.CreateClient(Arg.Any<string>()).Returns(http.ToHttpClient());
 
-        var result = await Assert.ThrowsAsync<RedirectionFlow>(() => OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com"));
+        var result = await Assert.ThrowsAsync<OidcHelper.RedirectionFlow>(() => OidcHelper.FetchTokenResponse(factory, logger, oidcOptions, document, Guid.NewGuid().ToString(), "https://example.com"));
 
         Assert.NotNull(result.Url);
         Assert.Contains($"{ErrorCode.QueryString}={ErrorCode.AuthenticationUpstream.BadResponse}", result.Url);
@@ -205,22 +206,21 @@ public class OidcControllerTests
     public static IEnumerable<object[]> WrongProviderOptions => new List<object[]>
     {
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional }},
             ProviderType.NemIdPrivate
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.NemIdProfessional
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.MitIdProfessional
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.MitIdPrivate
         }
-
     };
 
     [Theory]
@@ -233,22 +233,33 @@ public class OidcControllerTests
      public static IEnumerable<object[]> CorrectProviderOptions => new List<object[]>
     {
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.NemIdPrivate
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.NemIdProfessional
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.MitIdProfessional
         },
         new object[] {
-            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate}},
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() {  ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdProfessional, ProviderType.NemIdPrivate }},
             ProviderType.MitIdPrivate
-        }
-
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.NemIdPrivate, ProviderType.NemIdPrivate, ProviderType.NemIdPrivate, ProviderType.NemIdPrivate }},
+            ProviderType.NemIdPrivate
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.NemIdPrivate }},
+            ProviderType.NemIdPrivate
+        },
+        new object[] {
+            new IdentityProviderOptions() { Providers = new List<ProviderType>() { ProviderType.MitIdPrivate, ProviderType.MitIdPrivate, ProviderType.MitIdPrivate, ProviderType.NemIdPrivate }},
+            ProviderType.NemIdPrivate
+        },
     };
 
     [Theory]
@@ -441,11 +452,35 @@ public class OidcControllerTests
 
         new object[] {new ClaimsIdentity(new List<Claim>
         {
+            new("nemlogin.name", string.Empty),
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
             new("nemlogin.name", Guid.NewGuid().ToString()),
             new("nemlogin.org_name", Guid.NewGuid().ToString()),
             new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
             new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
         }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+         new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemlogin.name", Guid.NewGuid().ToString()),
+            new("nemlogin.cvr", string.Empty),
+            new("nemlogin.org_name", Guid.NewGuid().ToString()),
+            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
+            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
+        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
 
         new object[] {new ClaimsIdentity(new List<Claim>
         {
@@ -463,15 +498,6 @@ public class OidcControllerTests
             new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
             new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
         }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
-
-        new object[] {new ClaimsIdentity(new List<Claim>
-        {
-            new("nemlogin.name", Guid.NewGuid().ToString()),
-            new("nemlogin.cvr", string.Empty),
-            new("nemlogin.org_name", Guid.NewGuid().ToString()),
-            new("nemlogin.nemid.rid", Guid.NewGuid().ToString()),
-            new("nemlogin.persistent_professional_id", Guid.NewGuid().ToString()),
-        }), ProviderType.MitIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
 
         new object[] {new ClaimsIdentity(new List<Claim>
         {
@@ -498,8 +524,59 @@ public class OidcControllerTests
 
         new object[] {new ClaimsIdentity(new List<Claim>
         {
+            new("nemid.common_name", string.Empty),
+            new("nemid.cvr", Guid.NewGuid().ToString()),
+            new("nemid.company_name", Guid.NewGuid().ToString()),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.cvr", Guid.NewGuid().ToString()),
+            new("nemid.company_name", Guid.NewGuid().ToString()),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
             new("nemid.common_name", Guid.NewGuid().ToString()),
-        }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(KeyNotFoundException)},
+            new("nemid.cvr", string.Empty),
+            new("nemid.company_name", Guid.NewGuid().ToString()),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", Guid.NewGuid().ToString()),
+            new("nemid.company_name", Guid.NewGuid().ToString()),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", Guid.NewGuid().ToString()),
+            new("nemid.cvr", Guid.NewGuid().ToString()),
+            new("nemid.company_name", string.Empty),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", Guid.NewGuid().ToString()),
+            new("nemid.cvr", Guid.NewGuid().ToString()),
+            new("nemid.ssn", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdProfessional, ProviderGroup.Professional, typeof(ArgumentNullException) },
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.common_name", string.Empty),
+            new("nemid.pid", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(ArgumentException)},
+
+        new object[] {new ClaimsIdentity(new List<Claim>
+        {
+            new("nemid.pid", Guid.NewGuid().ToString()),
+        }), ProviderType.NemIdPrivate, ProviderGroup.Private, typeof(ArgumentNullException)},
     };
 
     [Theory]
@@ -826,8 +903,6 @@ public class OidcControllerTests
         },
     };
 
-    //REVIEW: vi tester vel ikke validate token siden det er eksternt?
-    //Kan ikke lave null check på subject pga. TokenUsing metoden
     [Theory]
     [MemberData(nameof(ErrorTokens))]
     public async Task BuildUserDescriptor_FollowsRedirectionFlow_WhenProvidedWrongTokens(Dictionary<string, object> accessTokenClaims, Dictionary<string, object> userInfoTokenClaims, string? accessSubject = "subject", string? identitySubject = "subject", string? userInfoSubject = "subject")
@@ -859,7 +934,7 @@ public class OidcControllerTests
 
         userProviderService.GetNonMatchingUserProviders(Arg.Any<List<UserProvider>>(), Arg.Any<List<UserProvider>>()).Returns(new List<UserProvider>());
 
-        var result = await Assert.ThrowsAsync<RedirectionFlow>(() => OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
+        var result = await Assert.ThrowsAsync<OidcHelper.RedirectionFlow>(() => OidcHelper.BuildUserDescriptor(logger, cryptography, userProviderService, service, providerOptions, oidcOptions, roleOptions, document, tokenResponse, "https://example.com"));
 
         logger.Received(1).Log(
             Arg.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),

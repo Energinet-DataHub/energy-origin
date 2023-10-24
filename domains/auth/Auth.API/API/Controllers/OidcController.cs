@@ -61,7 +61,7 @@ public class OidcController : ControllerBase
 
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(redirectionUri, "token", token));
         }
-        catch (RedirectionFlow redirectionUrl)
+        catch (OidcHelper.RedirectionFlow redirectionUrl)
         {
             return RedirectPreserveMethod(redirectionUrl.Url);
         }
