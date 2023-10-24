@@ -459,7 +459,7 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        //dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var patchBody = new
         {
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
@@ -468,5 +468,40 @@ public sealed class ContractTests :
         using var editResponse = await client.PatchAsJsonAsync(createdContractUri, patchBody);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task EditEndDate_UserIsNotOwnerOfMeteringPoint_Forbidden()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var start = DateTimeOffset.Now.AddDays(3);
+
+        var body = new
+        {
+            gsrn,
+            startDate = start.ToUnixTimeSeconds(),
+            endDate = start.AddYears(1).ToUnixTimeSeconds()
+        };
+
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        var createdContractUri = response.Headers.Location;
+
+        client.Dispose();
+
+        var newSubject = Guid.NewGuid().ToString();
+        using var client2 = factory.CreateAuthenticatedClient(newSubject);
+        var patchBody = new
+        {
+            endDate = start.AddDays(-1).ToUnixTimeSeconds()
+        };
+
+        using var editResponse = await client2.PatchAsJsonAsync(createdContractUri, patchBody);
+
+        editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
