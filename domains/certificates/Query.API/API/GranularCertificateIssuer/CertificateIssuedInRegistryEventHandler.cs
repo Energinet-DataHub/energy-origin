@@ -1,27 +1,29 @@
 using System.Threading.Tasks;
 using API.Data;
+using CertificateValueObjects;
 using Contracts.Certificates;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssuedInRegistryEvent>
+public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssuedInRegistryEvent>, IConsumer<Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent>
 {
-    private readonly IProductionCertificateRepository repository;
+    private readonly ICertificateRepository repository;
     private readonly ILogger<CertificateIssuedInRegistryEventHandler> logger;
 
-    public CertificateIssuedInRegistryEventHandler(IProductionCertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
+    public CertificateIssuedInRegistryEventHandler(ICertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
     {
         this.repository = repository;
         this.logger = logger;
     }
 
+    //TODO this function will be deleted after PR merge
     public async Task Consume(ConsumeContext<CertificateIssuedInRegistryEvent> context)
     {
         var msg = context.Message;
 
-        var certificate = await repository.Get(msg.CertificateId);
+        var certificate = await repository.GetProductionCertificate(msg.CertificateId);
 
         if (certificate == null)
         {
@@ -32,5 +34,32 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
         certificate.Issue();
 
         await repository.Save(certificate);
+    }
+
+    public async Task Consume(ConsumeContext<Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent> context)
+    {
+        var msg = context.Message;
+
+        Certificate? certificate;
+
+        if (msg.MeteringPointType == MeteringPointType.Production)
+            certificate = await repository.GetProductionCertificate(msg.CertificateId);
+        else if (msg.MeteringPointType == MeteringPointType.Consumption)
+            certificate = await repository.GetConsumptionCertificate(msg.CertificateId);
+        else
+            throw new CertificateDomainException(msg.CertificateId, string.Format("Unsupported meteringPointType: {0}", msg.MeteringPointType));
+
+        if (certificate == null)
+        {
+            logger.LogError("Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.", msg.CertificateId);
+            return;
+        }
+
+        certificate.Issue();
+
+        if (msg.MeteringPointType == MeteringPointType.Production)
+            await repository.Save((ProductionCertificate)certificate);
+        else
+            await repository.Save((ConsumptionCertificate)certificate);
     }
 }
