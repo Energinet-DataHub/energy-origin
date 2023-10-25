@@ -47,4 +47,18 @@ public static class DbContextExtension
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimSubjectTable}\" CASCADE");
     }
+
+    public static async Task TruncateClaimSubjectHistoryTables(this ApplicationDbContext dbContext)
+    {
+        var claimSubjectTable = dbContext.Model.FindEntityType(typeof(ClaimSubjectHistory))!.GetTableName();
+
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimSubjectTable}\" CASCADE");
+    }
+
+    public static void RemoveAll<T>(this ApplicationDbContext dbContext, Func<ApplicationDbContext, DbSet<T>> getDbSet) where T : class
+    {
+        var dbSet = getDbSet(dbContext);
+        dbSet.RemoveRange(dbSet.ToList());
+        dbContext.SaveChanges();
+    }
 }

@@ -11,4 +11,5 @@ public interface IClaimRepository
 
     Task<ClaimSubject> AddClaimSubject(ClaimSubject claimSubject);
     void DeleteClaimSubject(ClaimSubject claim);
+    Task<List<ClaimSubjectHistory>> GetHistory(string subject);
 }

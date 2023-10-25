@@ -41,4 +41,9 @@ public class ClaimRepository : IClaimRepository
         context.ClaimSubjects.Remove(claim);
         context.SaveChanges();
     }
+
+    public async Task<List<ClaimSubjectHistory>> GetHistory(string subject)
+    {
+        return await context.ClaimSubjectHistory.Where(c => c.SubjectId.ToString() == subject).ToListAsync();
+    }
 }

@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using API.Claiming.Api.Dto.Response;
 using API.Claiming.Api.Models;
 using API.Claiming.Api.Repositories;
 using API.Shared.Extensions;
@@ -61,6 +64,31 @@ public class ClaimController : ControllerBase
 
         claimRepository.DeleteClaimSubject(claim);
         return NoContent();
+    }
+
+    [HttpGet("claim-process-history")]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ClaimSubjectHistoryEntriesDto), 200)]
+    public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimProcessHistory()
+    {
+        var subject = User.FindSubjectGuidClaim();
+        var history = await claimRepository.GetHistory(subject);
+
+        if (history.Count == 0)
+        {
+            return NotFound();
+        }
+
+        var historyDto = history.Select(c =>
+                new ClaimSubjectHistoryEntryDto
+                {
+                    ActorName = c.ActorName,
+                    CreatedAt = c.CreatedAt,
+                    AuditAction = c.AuditAction
+                }
+            ).ToList();
+
+        return Ok(new ClaimSubjectHistoryEntriesDto(historyDto));
     }
 
     [HttpGet("claim-process")]
