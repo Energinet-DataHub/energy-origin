@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
 using API.Data;
 using CertificateValueObjects;
-using Contracts.Certificates;
+using Contracts.Certificates.CertificateRejectedInRegistry.V1;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace API.GranularCertificateIssuer;
 
-public class CertificateRejectedInRegistryEventHandler : IConsumer<CertificateRejectedInRegistryEvent>, IConsumer<Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent>
+public class CertificateRejectedInRegistryEventHandler : IConsumer<CertificateRejectedInRegistryEvent>
 {
     private readonly ICertificateRepository repository;
     private readonly ILogger<CertificateRejectedInRegistryEventHandler> logger;
@@ -18,25 +18,7 @@ public class CertificateRejectedInRegistryEventHandler : IConsumer<CertificateRe
         this.logger = logger;
     }
 
-    //TODO this function will be deleted after PR merge
     public async Task Consume(ConsumeContext<CertificateRejectedInRegistryEvent> context)
-    {
-        var msg = context.Message;
-
-        var certificate = await repository.GetProductionCertificate(msg.CertificateId);
-
-        if (certificate == null)
-        {
-            logger.LogError("Certificate with id {msg.CertificateId} could not be found. The certificate was not persisted before being sent to Project Origin.", msg.CertificateId);
-            return;
-        }
-
-        certificate.Reject(msg.Reason);
-
-        await repository.Save(certificate);
-    }
-
-    public async Task Consume(ConsumeContext<Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent> context)
     {
         var msg = context.Message;
 

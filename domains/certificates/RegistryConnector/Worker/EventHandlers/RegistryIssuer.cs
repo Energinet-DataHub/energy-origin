@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CertificateValueObjects;
 using Contracts.Certificates;
+using Contracts.Certificates.CertificateIssuedInRegistry.V1;
+using Contracts.Certificates.CertificateRejectedInRegistry.V1;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -127,7 +129,7 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
             if (status.Status == TransactionState.Committed)
             {
                 logger.LogInformation("Certificate {id} issued in registry", certificateId);
-                await context.Publish(new Contracts.Certificates.CertificateIssuedInRegistry.V1.CertificateIssuedInRegistryEvent(
+                await context.Publish(new CertificateIssuedInRegistryEvent(
                     certificateId,
                     projectOriginOptions.RegistryName,
                     commitment.BlindingValue.ToArray(),
@@ -142,7 +144,7 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
             if (status.Status == TransactionState.Failed)
             {
                 logger.LogInformation("Certificate {id} rejected by registry", certificateId);
-                await context.Publish(new Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent(certificateId, meteringPointType, status.Message));
+                await context.Publish(new CertificateRejectedInRegistryEvent(certificateId, meteringPointType, status.Message));
                 break;
             }
 

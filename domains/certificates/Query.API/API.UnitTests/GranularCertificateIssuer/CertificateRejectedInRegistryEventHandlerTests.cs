@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.GranularCertificateIssuer;
 using CertificateValueObjects;
-using Contracts.Certificates;
+using Contracts.Certificates.CertificateRejectedInRegistry.V1;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
@@ -16,20 +16,6 @@ namespace API.UnitTests.GranularCertificateIssuer;
 
 public class CertificateRejectedInRegistryEventHandlerTests
 {
-    [Fact]
-    public async Task ShouldRejectCertificateAndSave()
-    {
-        var repositoryMock = Substitute.For<ICertificateRepository>();
-
-        var cert = new ProductionCertificate("SomeGridArea", new Period(123L, 124L), new Technology("SomeFuelCode", "SomeTechCode"), "SomeMeteringOwner", "571234567890123456", 42, Array.Empty<byte>());
-        repositoryMock.GetProductionCertificate(default).ReturnsForAnyArgs(cert);
-
-        var msg = new CertificateRejectedInRegistryEvent(cert.Id, "SomeReason");
-        await PublishAndConsumeMessage(msg, repositoryMock);
-
-        await repositoryMock.Received(1).Save(Arg.Is<ProductionCertificate>(c => c.IsRejected == true), Arg.Any<CancellationToken>());
-    }
-
     [Fact]
     public async Task ShouldRejectCertificateAndSave_WhenProductionCertificate()
     {
@@ -59,23 +45,6 @@ public class CertificateRejectedInRegistryEventHandlerTests
     }
 
     private static async Task PublishAndConsumeMessage(CertificateRejectedInRegistryEvent message,
-        ICertificateRepository repository)
-    {
-        await using var provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<CertificateRejectedInRegistryEventHandler>())
-            .AddSingleton(repository)
-            .BuildServiceProvider(true);
-
-        var harness = provider.GetRequiredService<ITestHarness>();
-
-        await harness.Start();
-
-        await harness.Bus.Publish(message);
-
-        (await harness.Consumed.Any<CertificateRejectedInRegistryEvent>()).Should().BeTrue();
-    }
-
-    private static async Task PublishAndConsumeMessage(Contracts.Certificates.CertificateRejectedInRegistry.V1.CertificateRejectedInRegistryEvent message,
         ICertificateRepository repository)
     {
         await using var provider = new ServiceCollection()
