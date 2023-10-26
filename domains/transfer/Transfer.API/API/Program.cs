@@ -125,10 +125,10 @@ Configuration.Setup()
                         historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
                         break;
                     case "Update":
-                    {
-                        historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
-                        break;
-                    }
+                        {
+                            historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
+                            break;
+                        }
                 }
 
                 return true;

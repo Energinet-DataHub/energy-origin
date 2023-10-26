@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using API.Claiming.Api.Models;
 using API.IntegrationTests.Factories;

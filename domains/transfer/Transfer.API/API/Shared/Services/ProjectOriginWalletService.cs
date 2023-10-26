@@ -186,7 +186,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         }
 
         return certificate.Type == GranularCertificateType.Production &&
-               
+
                    certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
                    certificate.End <= Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
                ;
