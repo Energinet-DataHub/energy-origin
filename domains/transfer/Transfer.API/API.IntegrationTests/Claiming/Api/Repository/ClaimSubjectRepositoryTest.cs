@@ -7,7 +7,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace API.IntegrationTests.Claiming.Repository;
+namespace API.IntegrationTests.Claiming.Api.Repository;
 
 public class ClaimSubjectRepositoryTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IDisposable
 {

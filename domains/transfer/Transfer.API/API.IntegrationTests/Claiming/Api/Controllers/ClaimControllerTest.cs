@@ -11,7 +11,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace API.IntegrationTests.Claiming.Controllers;
+namespace API.IntegrationTests.Claiming.Api.Controllers;
 
 public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {

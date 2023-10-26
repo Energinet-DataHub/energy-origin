@@ -16,7 +16,7 @@ using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
 using Claim = System.Security.Claims.Claim;
 
-namespace API.Transfer.Api.Services;
+namespace API.Shared.Services;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
@@ -139,6 +139,25 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         metrics.SetNumberOfCertificates(certificatesCount);
     }
 
+    public async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Guid subjectId)
+    {
+        var header = SetupDummyAuthorizationHeader(subjectId.ToString());
+        return await GetGranularCertificates(header);
+    }
+
+    public async Task ClaimCertificate(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
+    {
+        var header = SetupDummyAuthorizationHeader(ownerId.ToString());
+        var request = new ClaimRequest
+        {
+            ConsumptionCertificateId = consumptionCertificate.FederatedId,
+            ProductionCertificateId = productionCertificate.FederatedId,
+            Quantity = quantity
+        };
+
+        await walletServiceClient.ClaimCertificatesAsync(request, header);
+    }
+
     private void SetTransferAttempt(string certificateId)
     {
         var attempt = cache.Cache.Get(certificateId);
@@ -167,10 +186,10 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         }
 
         return certificate.Type == GranularCertificateType.Production &&
-               (
+               
                    certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
                    certificate.End <= Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
-               );
+               ;
     }
 
     private static Metadata SetupDummyAuthorizationHeader(string owner)
