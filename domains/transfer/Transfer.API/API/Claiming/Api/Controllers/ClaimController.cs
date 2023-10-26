@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using API.Claiming.Api.Dto.Response;
 using API.Claiming.Api.Models;
 using API.Claiming.Api.Repositories;
 using API.Shared.Extensions;
@@ -27,7 +30,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StartClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
 
         if (claim != null)
         {
@@ -53,7 +56,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StopClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();
@@ -63,13 +66,38 @@ public class ClaimController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("claim-process-history")]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ClaimSubjectHistoryEntriesDto), 200)]
+    public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimProcessHistory()
+    {
+        var subject = User.FindSubjectGuidClaim();
+        var history = await claimRepository.GetHistory(Guid.Parse(subject));
+
+        if (history.Count == 0)
+        {
+            return NotFound();
+        }
+
+        var historyDto = history.Select(c =>
+                new ClaimSubjectHistoryEntryDto
+                {
+                    ActorName = c.ActorName,
+                    CreatedAt = c.CreatedAt,
+                    AuditAction = c.AuditAction
+                }
+            ).ToList();
+
+        return Ok(new ClaimSubjectHistoryEntriesDto(historyDto));
+    }
+
     [HttpGet("claim-process")]
     [ProducesResponseType(404)]
     [ProducesResponseType(200)]
     public async Task<ActionResult<ClaimSubject>> GetClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();

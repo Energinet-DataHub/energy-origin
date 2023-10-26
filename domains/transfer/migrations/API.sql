@@ -342,3 +342,37 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231024112802_AddClaimSubjectHistory') THEN
+    CREATE TABLE "ClaimSubjectHistory" (
+        "Id" uuid NOT NULL,
+        "SubjectId" uuid NOT NULL,
+        "ActorId" text NOT NULL,
+        "ActorName" text NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL,
+        "AuditAction" text NOT NULL,
+        CONSTRAINT "PK_ClaimSubjectHistory" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231024112802_AddClaimSubjectHistory') THEN
+    CREATE INDEX "IX_ClaimSubjectHistory_SubjectId" ON "ClaimSubjectHistory" ("SubjectId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231024112802_AddClaimSubjectHistory') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231024112802_AddClaimSubjectHistory', '7.0.5');
+    END IF;
+END $EF$;
+COMMIT;
+

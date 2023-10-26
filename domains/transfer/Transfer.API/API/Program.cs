@@ -1,13 +1,19 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
+using System.Text.Json.Serialization;
 using API.Claiming;
+using API.Claiming.Api.Models;
 using API.Connections;
 using API.Connections.Automation.Options;
 using API.Cvr;
+using API.Shared;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer;
+using API.Transfer.Api.Models;
+using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -86,10 +92,66 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddLogging();
 
+
 builder.Services.AddTransfer(builder.Configuration);
 builder.Services.AddCvr();
 builder.Services.AddConnection();
 builder.Services.AddClaimServices();
+
+builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+Configuration.Setup()
+    .UseEntityFramework(ef => ef
+        .AuditTypeExplicitMapper(config => config
+            .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
+            {
+                var actorId = evt.CustomFields.ContainsKey("ActorId")
+                    ? evt.CustomFields["ActorId"].ToString()
+                    : null;
+                var actorName = evt.CustomFields.ContainsKey("ActorName")
+                    ? evt.CustomFields["ActorName"].ToString()
+                    : null;
+
+                historyEntity.Id = Guid.NewGuid();
+                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
+                historyEntity.AuditAction = eventEntry.Action;
+                historyEntity.ActorId = actorId ?? string.Empty;
+                historyEntity.ActorName = actorName ?? string.Empty;
+
+                switch (eventEntry.Action)
+                {
+                    case "Insert":
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                        break;
+                    case "Update":
+                    {
+                        historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
+                        break;
+                    }
+                }
+
+                return true;
+            })
+            .Map<ClaimSubject, ClaimSubjectHistory>((evt, eventEntry, historyEntity) =>
+            {
+                var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
+                var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
+                evt.CustomFields.TryGetValue("SubjectId", out var subjectId);
+
+                historyEntity.Id = Guid.NewGuid();
+                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
+                historyEntity.AuditAction = eventEntry.Action;
+                historyEntity.ActorId = actorId ?? string.Empty;
+                historyEntity.ActorName = actorName ?? string.Empty;
+                historyEntity.SubjectId = Guid.Parse(subjectId?.ToString() ?? Guid.Empty.ToString());
+
+                return true;
+            })
+        ));
+
+
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>

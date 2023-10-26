@@ -23,9 +23,9 @@ public class ClaimRepository : IClaimRepository
         return context.ClaimSubjects.ToListAsync();
     }
 
-    public async Task<ClaimSubject?> GetClaimSubject(string subject)
+    public async Task<ClaimSubject?> GetClaimSubject(Guid subject)
     {
-        return await context.ClaimSubjects.Where(c => c.SubjectId.ToString() == subject).FirstOrDefaultAsync();
+        return await context.ClaimSubjects.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
     }
 
     public async Task<ClaimSubject> AddClaimSubject(ClaimSubject claimSubject)
@@ -40,5 +40,10 @@ public class ClaimRepository : IClaimRepository
     {
         context.ClaimSubjects.Remove(claim);
         context.SaveChanges();
+    }
+
+    public async Task<List<ClaimSubjectHistory>> GetHistory(Guid subject)
+    {
+        return await context.ClaimSubjectHistory.Where(c => c.SubjectId == subject).ToListAsync();
     }
 }

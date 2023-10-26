@@ -86,6 +86,55 @@
         }
       }
     },
+    "/api/claims/claim-process-history": {
+      "get": {
+        "tags": [
+          "Claim"
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/claims/claim-process": {
       "get": {
         "tags": [
@@ -891,6 +940,34 @@
           "subjectId": {
             "type": "string",
             "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimSubjectHistoryEntriesDto": {
+        "type": "object",
+        "properties": {
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClaimSubjectHistoryEntryDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimSubjectHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "actorName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "auditAction": {
+            "type": "string"
           }
         },
         "additionalProperties": false
