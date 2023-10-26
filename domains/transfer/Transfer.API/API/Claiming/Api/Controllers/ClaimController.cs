@@ -30,7 +30,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StartClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
 
         if (claim != null)
         {
@@ -56,7 +56,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StopClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();
@@ -72,7 +72,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimProcessHistory()
     {
         var subject = User.FindSubjectGuidClaim();
-        var history = await claimRepository.GetHistory(subject);
+        var history = await claimRepository.GetHistory(Guid.Parse(subject));
 
         if (history.Count == 0)
         {
@@ -97,7 +97,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult<ClaimSubject>> GetClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(subject);
+        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();

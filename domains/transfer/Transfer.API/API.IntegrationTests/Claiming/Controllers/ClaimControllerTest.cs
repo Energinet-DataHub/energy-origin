@@ -75,10 +75,8 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
     }
 
     [Fact]
-    public async Task GetClaimSubjectHistory_WhenHistoryNotExist_ReturnsNotFound()
+    public async Task GetClaimSubjectHistory_WhenHistoryEntryHasDifferentSubjectId_ReturnsNotFound()
     {
-
-        var subject = Guid.NewGuid();
         var historyEntry = new ClaimSubjectHistory()
         {
             ActorId = Guid.NewGuid().ToString(),
@@ -93,7 +91,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
             historyEntry
         });
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
+        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
         var result = await client.GetAsync("api/claims/claim-process-history");
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

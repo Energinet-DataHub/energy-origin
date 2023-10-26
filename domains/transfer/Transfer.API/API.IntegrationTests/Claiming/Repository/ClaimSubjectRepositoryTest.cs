@@ -23,8 +23,7 @@ public class ClaimSubjectRepositoryTest : IClassFixture<TransferAgreementsApiWeb
     [Fact]
     public void history_is_created_when_claimsubject_inserted()
     {
-        dbContext.RemoveAll(d => d.ClaimSubjects);
-        dbContext.RemoveAll(d => d.ClaimSubjectHistory);
+        TruncateDb();
 
         dbContext.ClaimSubjects.Add(new ClaimSubject(Guid.NewGuid()));
         dbContext.SaveChanges();
@@ -37,8 +36,8 @@ public class ClaimSubjectRepositoryTest : IClassFixture<TransferAgreementsApiWeb
     [Fact]
     public void history_is_created_when_claimsubject_deleted()
     {
-        dbContext.RemoveAll(d => d.ClaimSubjects);
-        dbContext.RemoveAll(d => d.ClaimSubjectHistory);
+        TruncateDb();
+
         var subject = Guid.NewGuid();
         dbContext.ClaimSubjects.Add(new ClaimSubject(subject));
         dbContext.SaveChanges();
@@ -51,6 +50,12 @@ public class ClaimSubjectRepositoryTest : IClassFixture<TransferAgreementsApiWeb
         history[1].AuditAction.Should().Be("Delete");
     }
 
+    private void TruncateDb()
+    {
+        dbContext.RemoveAll(d => d.ClaimSubjects);
+        dbContext.RemoveAll(d => d.ClaimSubjectHistory);
+        dbContext.SaveChanges();
+    }
     public void Dispose()
     {
         scope.Dispose();
