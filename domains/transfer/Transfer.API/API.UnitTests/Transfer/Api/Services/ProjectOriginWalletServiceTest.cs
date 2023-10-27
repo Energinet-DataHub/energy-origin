@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using API.Shared.Services;
 using API.Transfer.Api.Models;
+using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Google.Protobuf.WellKnownTypes;

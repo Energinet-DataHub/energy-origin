@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Claiming.Api.Repositories;
-using API.Shared.Services;
+using API.Claiming.Automation.Services;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
 

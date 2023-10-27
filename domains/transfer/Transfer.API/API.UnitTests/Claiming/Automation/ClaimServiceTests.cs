@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using API.Claiming.Api.Models;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Automation;
-using API.Shared.Services;
+using API.Claiming.Automation.Services;
 using FluentAssertions;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
