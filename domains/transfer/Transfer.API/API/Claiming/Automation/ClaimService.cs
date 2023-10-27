@@ -41,15 +41,18 @@ public class ClaimService : IClaimService
                         var productionCertificate = productionCertificates.FirstOrDefault(x =>
                             x.Start == consumptionCertificate.Start && x.End == consumptionCertificate.End &&
                             x.GridArea == consumptionCertificate.GridArea);
-                        if (productionCertificate != null)
-                        {
-                            var quantity = productionCertificate.Quantity;
+                        if (productionCertificate == null) continue;
 
-                            if (productionCertificate.Quantity > consumptionCertificate.Quantity)
-                                quantity = consumptionCertificate.Quantity;
+                        var quantity = productionCertificate.Quantity;
 
-                            await walletService.ClaimCertificate(subjectId, consumptionCertificate, productionCertificate, quantity);
-                        }
+                        if (productionCertificate.Quantity > consumptionCertificate.Quantity)
+                            quantity = consumptionCertificate.Quantity;
+
+                        await walletService.ClaimCertificate(subjectId, consumptionCertificate, productionCertificate, quantity);
+
+                        productionCertificate.Quantity -= quantity;
+                        if (productionCertificate.Quantity <= 0)
+                            productionCertificates.Remove(productionCertificate);
                     }
                 }
             }
