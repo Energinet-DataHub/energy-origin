@@ -69,10 +69,11 @@ public class ClaimServiceTests
         var claimSubject = new ClaimSubject(Guid.NewGuid());
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1));
-        uint quantity = 40;
-        var consumptionCertificate1 = BuildCertificate(start, end, GranularCertificateType.Consumption, quantity);
-        var consumptionCertificate2 = BuildCertificate(start, end, GranularCertificateType.Consumption, quantity);
-        var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, 2* quantity);
+        uint consumptionQuantity = 40;
+        uint productionQuantity = 70;
+        var consumptionCertificate1 = BuildCertificate(start, end, GranularCertificateType.Consumption, consumptionQuantity);
+        var consumptionCertificate2 = BuildCertificate(start, end, GranularCertificateType.Consumption, consumptionQuantity);
+        var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, productionQuantity);
         using var cts = new CancellationTokenSource();
 
         claimRepository.GetClaimSubjects().Returns(new List<ClaimSubject> { claimSubject });
@@ -88,8 +89,8 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, quantity);
-        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate2, productionCertificate, quantity);
+        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
     }
 
     private static GranularCertificate BuildCertificate(Timestamp start, Timestamp end, GranularCertificateType type, uint quantity)
