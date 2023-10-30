@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using API.Shared.Services;
+using API.Shared.Helpers;
 using API.Transfer.Api.Converters;
 using API.Transfer.Api.Models;
 using API.Transfer.TransferAgreementsAutomation;
@@ -15,7 +15,7 @@ using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Transfer.Api.Services;
 
-public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletService, IProjectOriginWalletService
+public class ProjectOriginWalletService : IProjectOriginWalletService
 {
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly WalletService.WalletServiceClient walletServiceClient;
@@ -97,7 +97,7 @@ public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletSer
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {
-        var header = SetupDummyAuthorizationHeader(transferAgreement.SenderId.ToString());
+        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(transferAgreement.SenderId.ToString());
         var certificates = await GetGranularCertificates(header);
 
         var certificatesCount = certificates.Count;

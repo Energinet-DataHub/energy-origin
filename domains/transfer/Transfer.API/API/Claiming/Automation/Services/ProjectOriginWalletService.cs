@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Shared.Helpers;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Claiming.Automation.Services;
 
-public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletService, IProjectOriginWalletService
+public class ProjectOriginWalletService : IProjectOriginWalletService
 {
     private readonly WalletService.WalletServiceClient walletServiceClient;
 
@@ -17,14 +18,14 @@ public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletSer
 
     public async Task<List<GranularCertificate>> GetGranularCertificates(Guid subjectId)
     {
-        var header = SetupDummyAuthorizationHeader(subjectId.ToString());
+        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(subjectId.ToString());
         var response = await walletServiceClient.QueryGranularCertificatesAsync(new QueryRequest(), header);
         return response.GranularCertificates.ToList();
     }
 
     public async Task ClaimCertificate(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
     {
-        var header = SetupDummyAuthorizationHeader(ownerId.ToString());
+        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(ownerId.ToString());
         var request = new ClaimRequest
         {
             ConsumptionCertificateId = consumptionCertificate.FederatedId,

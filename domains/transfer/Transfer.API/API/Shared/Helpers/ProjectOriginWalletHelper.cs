@@ -1,14 +1,14 @@
-using Grpc.Core;
-using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System;
+using Grpc.Core;
+using Microsoft.IdentityModel.Tokens;
 
-namespace API.Shared.Services;
+namespace API.Shared.Helpers;
 
-public abstract class ProjectOriginWalletService
+public static class ProjectOriginWalletHelper
 {
-    protected static Metadata SetupDummyAuthorizationHeader(string owner)
+    public static Metadata SetupDummyAuthorizationHeader(string owner)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor
