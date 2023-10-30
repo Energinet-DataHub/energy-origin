@@ -34,10 +34,16 @@ public class ClaimService : IClaimService
                 foreach (var subjectId in claimSubjects.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
-                    var consumptionCertificates = certificates.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
-                    var productionCertificates = certificates.Where(x => x.Type == GranularCertificateType.Production).ToList();
 
-                    await Claim(subjectId, consumptionCertificates, productionCertificates);
+                    var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
+
+                    foreach (var cert in certificatesGrouped)
+                    {
+                        var productionCerts = cert.Where(x => x.Type == GranularCertificateType.Production).ToList();
+                        var consumptionCerts = cert.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
+
+                        await Claim(subjectId, consumptionCerts, productionCerts);
+                    }
                 }
             }
             catch (Exception e)
@@ -51,20 +57,19 @@ public class ClaimService : IClaimService
 
     private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates)
     {
-        foreach (var consumptionCertificate in consumptionCertificates)
+        while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
-            var productionCertificate = productionCertificates.FirstOrDefault(x =>
-                x.Start == consumptionCertificate.Start && x.End == consumptionCertificate.End &&
-                x.GridArea == consumptionCertificate.GridArea);
-            if (productionCertificate == null) continue;
+            var productionCert = productionCertificates.FirstOrDefault(x => x.Quantity > 0);
+            if (productionCert == null) continue;
+            var consumptionCert = consumptionCertificates.FirstOrDefault(x => x.Quantity > 0);
+            if (consumptionCert == null) continue;
 
-            var quantity = Math.Min(productionCertificate.Quantity, consumptionCertificate.Quantity);
+            var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
 
-            await walletService.ClaimCertificate(subjectId, consumptionCertificate, productionCertificate, quantity);
+            await walletService.ClaimCertificate(subjectId, consumptionCert, productionCert, quantity);
 
-            productionCertificate.Quantity -= quantity;
-            if (productionCertificate.Quantity == 0)
-                productionCertificates.Remove(productionCertificate);
+            productionCert.Quantity -= quantity;
+            consumptionCert.Quantity -= quantity;
         }
     }
 
