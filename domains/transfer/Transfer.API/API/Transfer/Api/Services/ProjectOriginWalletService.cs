@@ -15,7 +15,7 @@ using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Transfer.Api.Services;
 
-public class ProjectOriginWalletService : ProjectOriginService, IProjectOriginWalletService
+public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletService, IProjectOriginWalletService
 {
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly WalletService.WalletServiceClient walletServiceClient;

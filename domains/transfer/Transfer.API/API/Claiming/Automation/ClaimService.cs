@@ -31,7 +31,7 @@ public class ClaimService : IClaimService
             try
             {
                 var claimSubjects = await claimRepository.GetClaimSubjects();
-                foreach (var subjectId in claimSubjects.Select(x => x.SubjectId))
+                foreach (var subjectId in claimSubjects.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
                     var consumptionCertificates = certificates.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
@@ -58,10 +58,7 @@ public class ClaimService : IClaimService
                 x.GridArea == consumptionCertificate.GridArea);
             if (productionCertificate == null) continue;
 
-            var quantity = productionCertificate.Quantity;
-
-            if (productionCertificate.Quantity > consumptionCertificate.Quantity)
-                quantity = consumptionCertificate.Quantity;
+            var quantity = Math.Min(productionCertificate.Quantity, consumptionCertificate.Quantity);
 
             await walletService.ClaimCertificate(subjectId, consumptionCertificate, productionCertificate, quantity);
 
