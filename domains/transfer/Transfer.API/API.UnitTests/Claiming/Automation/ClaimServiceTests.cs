@@ -7,7 +7,6 @@ using API.Claiming.Api.Repositories;
 using API.Claiming.Automation;
 using API.Claiming.Automation.Services;
 using FluentAssertions;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -44,7 +43,7 @@ public class ClaimServiceTests
         using var cts = new CancellationTokenSource();
 
         claimRepository.GetClaimSubjects().Returns(new List<ClaimSubject> { claimSubject });
-        poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new RepeatedField<GranularCertificate>
+        poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,
             consumptionCertificate2,
@@ -77,7 +76,7 @@ public class ClaimServiceTests
         using var cts = new CancellationTokenSource();
 
         claimRepository.GetClaimSubjects().Returns(new List<ClaimSubject> { claimSubject });
-        poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new RepeatedField<GranularCertificate>
+        poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,
             consumptionCertificate2,
