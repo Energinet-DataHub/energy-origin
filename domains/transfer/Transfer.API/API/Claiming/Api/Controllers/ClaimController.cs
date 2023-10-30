@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Claiming.Api.Dto.Response;
@@ -14,7 +13,7 @@ namespace API.Claiming.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/claims")]
+[Route("api/claim-automation")]
 public class ClaimController : ControllerBase
 {
     private readonly IClaimRepository claimRepository;
@@ -24,7 +23,7 @@ public class ClaimController : ControllerBase
         this.claimRepository = claimRepository;
     }
 
-    [HttpPost("start-claim-process")]
+    [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimSubject), 201)]
     [ProducesResponseType(typeof(ClaimSubject), 200)]
     public async Task<ActionResult> StartClaimProcess()
@@ -50,7 +49,7 @@ public class ClaimController : ControllerBase
         }
     }
 
-    [HttpDelete("stop-claim-process")]
+    [HttpDelete("stop")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
     public async Task<ActionResult> StopClaimProcess()
@@ -66,7 +65,7 @@ public class ClaimController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("claim-process-history")]
+    [HttpGet("history")]
     [ProducesResponseType(404)]
     [ProducesResponseType(typeof(ClaimSubjectHistoryEntriesDto), 200)]
     public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimProcessHistory()
@@ -91,7 +90,7 @@ public class ClaimController : ControllerBase
         return Ok(new ClaimSubjectHistoryEntriesDto(historyDto));
     }
 
-    [HttpGet("claim-process")]
+    [HttpGet]
     [ProducesResponseType(404)]
     [ProducesResponseType(200)]
     public async Task<ActionResult<ClaimSubject>> GetClaimProcess()

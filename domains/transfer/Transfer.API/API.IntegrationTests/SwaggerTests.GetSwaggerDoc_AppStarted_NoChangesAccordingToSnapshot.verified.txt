@@ -5,7 +5,7 @@
     "version": "v1"
   },
   "paths": {
-    "/api/claims/start-claim-process": {
+    "/api/claim-automation/start": {
       "post": {
         "tags": [
           "Claim"
@@ -54,7 +54,7 @@
         }
       }
     },
-    "/api/claims/stop-claim-process": {
+    "/api/claim-automation/stop": {
       "delete": {
         "tags": [
           "Claim"
@@ -86,7 +86,7 @@
         }
       }
     },
-    "/api/claims/claim-process-history": {
+    "/api/claim-automation/history": {
       "get": {
         "tags": [
           "Claim"
@@ -135,7 +135,7 @@
         }
       }
     },
-    "/api/claims/claim-process": {
+    "/api/claim-automation": {
       "get": {
         "tags": [
           "Claim"

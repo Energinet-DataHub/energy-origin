@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.Claiming.Api.Dto.Response;
 using API.Claiming.Api.Models;
 using API.IntegrationTests.Factories;
-using API.Shared.Data;
+using API.IntegrationTests.Shared.Extensions;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace API.IntegrationTests.Claiming.Api.Controllers;
@@ -32,7 +32,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
         });
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
-        var result = await client.DeleteAsync("api/claims/stop-claim-process");
+        var result = await client.DeleteAsync("api/claim-automation/stop");
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -43,7 +43,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
-        var result = await client.DeleteAsync("api/claims/stop-claim-process");
+        var result = await client.DeleteAsync("api/claim-automation/stop");
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -53,9 +53,8 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
         var subject = Guid.NewGuid();
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
-        var result = await client.PostAsync("api/claims/start-claim-process", null);
+        var result = await client.PostAsync("api/claim-automation/start", null);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
-
     }
 
     [Fact]
@@ -70,58 +69,37 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
-        var result = await client.PostAsync("api/claims/start-claim-process", null);
+        var result = await client.PostAsync("api/claim-automation/start", null);
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetClaimSubjectHistory_WhenHistoryEntryHasDifferentSubjectId_ReturnsNotFound()
     {
-        var historyEntry = new ClaimSubjectHistory()
-        {
-            ActorId = Guid.NewGuid().ToString(),
-            ActorName = "Peter Producent",
-            AuditAction = "Insert",
-            CreatedAt = DateTimeOffset.UtcNow,
-            Id = Guid.NewGuid(),
-            SubjectId = Guid.NewGuid()
-        };
-        await factory.SeedClaimSubjectHistory(new List<ClaimSubjectHistory>()
-        {
-            historyEntry
-        });
+        const string actor = "Peter Producent";
+        var client1 = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), actor: actor);
+        await client1.PostAsync("api/claim-automation/start", null);
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
-        var result = await client.GetAsync("api/claims/claim-process-history");
+        var result = await client.GetAsync("api/claim-automation/history");
+
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetClaimSubjectHistory_WhenHistoryExists_ReturnsOK()
     {
-        var subject = Guid.NewGuid();
-        var historyEntry = new ClaimSubjectHistory()
-        {
-            ActorId = Guid.NewGuid().ToString(),
-            ActorName = "Peter Producent",
-            AuditAction = "Insert",
-            CreatedAt = DateTimeOffset.UtcNow,
-            Id = Guid.NewGuid(),
-            SubjectId = subject
-        };
-        await factory.SeedClaimSubjectHistory(new List<ClaimSubjectHistory>()
-        {
-            historyEntry
-        });
-
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        var result = await client.GetFromJsonAsync<ClaimSubjectHistoryEntriesDto>("api/claims/claim-process-history");
+        const string actor = "Peter Producent";
+        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), actor: actor);
+        await client.PostAsync("api/claim-automation/start", null);
+        var result = await client
+            .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
+                "api/claim-automation/history",
+                res => res.History.Any()
+            );
 
         result.Should().NotBeNull();
-        result!.History.Should().HaveCount(1);
-        result.History[0].ActorName.Should().Be(historyEntry.ActorName);
-        result.History[0].CreatedAt.Should().BeSameDateAs(historyEntry.CreatedAt);
-        result.History[0].AuditAction.Should().Be(historyEntry.AuditAction);
+        result.History[0].ActorName.Should().Be(actor);
     }
 
     [Fact]
@@ -137,7 +115,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
         });
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        var result = await client.GetFromJsonAsync<ClaimSubject>("api/claims/claim-process");
+        var result = await client.GetFromJsonAsync<ClaimSubject>("api/claim-automation/");
         result.Should().Be(claimSubject);
     }
 
@@ -147,7 +125,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
         var subject = Guid.NewGuid();
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        var result = await client.GetAsync("api/claims/claim-process");
+        var result = await client.GetAsync("api/claim-automation/");
 
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
