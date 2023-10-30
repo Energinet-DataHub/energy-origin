@@ -6,7 +6,7 @@ using System;
 
 namespace API.Shared.Services;
 
-public abstract class ProjectOriginService
+public abstract class ProjectOriginWalletService
 {
     protected static Metadata SetupDummyAuthorizationHeader(string owner)
     {

@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Shared.Services;
-using Google.Protobuf.Collections;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Claiming.Automation.Services;
 
-public class ProjectOriginWalletService : ProjectOriginService, IProjectOriginWalletService
+public class ProjectOriginWalletService : Shared.Services.ProjectOriginWalletService, IProjectOriginWalletService
 {
     private readonly WalletService.WalletServiceClient walletServiceClient;
 
@@ -15,11 +16,11 @@ public class ProjectOriginWalletService : ProjectOriginService, IProjectOriginWa
         this.walletServiceClient = walletServiceClient;
     }
 
-    public async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Guid subjectId)
+    public async Task<List<GranularCertificate>> GetGranularCertificates(Guid subjectId)
     {
         var header = SetupDummyAuthorizationHeader(subjectId.ToString());
         var response = await walletServiceClient.QueryGranularCertificatesAsync(new QueryRequest(), header);
-        return response.GranularCertificates;
+        return response.GranularCertificates.ToList();
     }
 
     public async Task ClaimCertificate(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
