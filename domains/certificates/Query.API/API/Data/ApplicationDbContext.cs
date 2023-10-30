@@ -18,9 +18,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
 
         modelBuilder.Entity<SynchronizationPosition>().HasKey(s => s.GSRN);
+
+        modelBuilder.Entity<ConsumptionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ProductionCertificate> ProductionCertificates { get; set; }
     public DbSet<SynchronizationPosition> SynchronizationPositions { get; set; }
+    public DbSet<ConsumptionCertificate> ConsumptionCertificates { get; set; }
 }

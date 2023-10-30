@@ -48,6 +48,18 @@
         <member name="M:API.Migrations.Initial.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddedConsumptionCertificates">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddedConsumptionCertificates.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddedConsumptionCertificates.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddedConsumptionCertificates.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -108,6 +120,11 @@
             The energy source for the production device as specified in EECS Rules Fact Sheet 5
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Certificate.CertificateType">
+            <summary>
+            The type of the certificate. Can be either Production, Consumption or Invalid
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -126,6 +143,11 @@
         <member name="P:API.Query.API.ApiModels.Responses.Contract.Created">
             <summary>
             Creation date for the contract
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Contract.MeteringPointType">
+            <summary>
+            Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">

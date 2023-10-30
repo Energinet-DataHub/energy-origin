@@ -26,7 +26,11 @@ sequenceDiagram
     participant wal as WalletSliceSender
 
     dss->>gci: EnergyMeasured
-    gci->>reg: ProductionCertificateCreated
+    alt For production
+        gci->>reg: ProductionCertificateCreated
+    else For consumption
+        gci->>reg: ConsumptionCertificateCreated
+    end
     alt Issued in Project Origin Registry
         reg->>gci: CertificateIssuedInRegistry
         reg->>wal: CertificateIssuedInRegistry
