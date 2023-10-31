@@ -135,11 +135,11 @@ internal static class OidcHelper
 
             TryVerifyProviderType(providerType, providerOptions);
 
-            var (name, tin, companyName, keys) = ExtractUserInfo(userInfo, providerType, identityType);
+            var userRecord = ExtractUserInfo(userInfo, providerType, identityType);
 
-            var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(keys);
+            var tokenUserProviders = UserProvider.ConvertDictionaryToUserProviders(userRecord.Keys);
 
-            var user = await FetchOrCreateUserAndUpdateUserProvidersAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, name, tin, companyName);
+            var user = await FetchOrCreateUserAndUpdateUserProvidersAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, userRecord.Name, userRecord.Tin, userRecord.CompanyName);
 
             var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
             return (descriptor, UserData.From(user));
@@ -153,7 +153,6 @@ internal static class OidcHelper
                 QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );
             throw new RedirectionFlow(url);
-
         }
     }
 
@@ -173,6 +172,7 @@ internal static class OidcHelper
         (ProviderName.NemId, ProviderGroup.Professional) => ProviderType.NemIdProfessional,
         _ => throw new NotImplementedException($"Could not resolve ProviderType based on ProviderName: '{providerName}' and IdentityType: '{identityType}'")
     };
+
     internal static UserInfo ExtractUserInfo(ClaimsPrincipal userInfo, ProviderType providerType, string? identityType)
     {
         string? name = null;

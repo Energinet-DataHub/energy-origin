@@ -61,7 +61,7 @@ public class OidcControllerTests
     public static IEnumerable<object[]> BuildRedirectionUriParameters => new List<object[]>
     {
         new object[] {new OidcState(null,null,null), OidcOptions.Redirection.Allow,"https://localhost/"},
-        new object[] {new OidcState(null, null, "/path/to/redirect"),OidcOptions.Redirection.Deny, "https://localhost/?redirectionPath=path%2Fto%2Fredirect"},
+        new object[] {new OidcState(null, null, "/path/to/redirect"), OidcOptions.Redirection.Deny, "https://localhost/?redirectionPath=path%2Fto%2Fredirect"},
         new object[] {new OidcState("someState", null, null), OidcOptions.Redirection.Deny, "https://localhost/?state=someState"},
         new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Deny, "https://localhost/?redirectionPath=path%2Fto%2Fredirect&state=someState"},
         new object[] {new OidcState("someState", "https://example.com/redirect", "/path/to/redirect"), OidcOptions.Redirection.Allow, "https://example.com/redirect?state=someState"},
@@ -70,7 +70,7 @@ public class OidcControllerTests
 
     [Theory]
     [MemberData(nameof(BuildRedirectionUriParameters))]
-    public void BuildRedirectionUri_RerturnCorrectlyFormattedUri_WhenProvidedDifferentParamteres(OidcState? state, OidcOptions.Redirection redirection, string expectedUri)
+    public void BuildRedirectionUri_ReturnCorrectlyFormattedUri_WhenProvidedDifferentParameters(OidcState? state, OidcOptions.Redirection redirection, string expectedUri)
     {
         var options = new OidcOptions() { RedirectionMode = redirection, FrontendRedirectUri = new Uri("https://localhost") };
 
@@ -111,13 +111,11 @@ public class OidcControllerTests
     [Fact]
     public void CodeNullCheck_ShouldPass_WhenGivenCorrectConditions() => Assert.True(DoesNotThrow(() => OidcHelper.TryVerifyCode("code", logger, null, null, "https://example.com/login?errorCode=714")));
 
-#pragma warning disable 8625
     public static IEnumerable<object[]> WrongDiscoveryDocumentResponse => new List<object[]>
     {
         new object[] {DiscoveryDocument.Load(new List<KeyValuePair<string, string>>() { new("error", "it went all wrong") })},
-        new object[] {null}
+        new object[] {null!}
     };
-#pragma warning restore 8625
 
     [Theory]
     [MemberData(nameof(WrongDiscoveryDocumentResponse))]
@@ -333,7 +331,7 @@ public class OidcControllerTests
                     Name = "nemlogin.name",
                     Tin = "nemlogin.cvr",
                     CompanyName = "nemlogin.org_name",
-                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia,"nemlogin.persistent_professional_id"), (ProviderKeyType.Rid, "nemlogin.nemid.rid"), (ProviderKeyType.Rid, "nemlogin.cvr")}
+                    KeyPairs = new List<(ProviderKeyType, string)>(){(ProviderKeyType.Eia, "nemlogin.persistent_professional_id"), (ProviderKeyType.Rid, "nemlogin.nemid.rid"), (ProviderKeyType.Rid, "nemlogin.cvr")}
                 }
             }
         },
