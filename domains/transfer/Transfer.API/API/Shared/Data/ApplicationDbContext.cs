@@ -31,10 +31,5 @@ public class ApplicationDbContext : AuditDbContext
 
         modelBuilder.Entity<ClaimSubject>()
             .HasKey(p => p.SubjectId);
-
-        modelBuilder.Entity<ClaimSubjectHistory>()
-            .HasKey(p => p.SubjectId);
-
-        modelBuilder.Entity<ClaimSubjectHistory>().HasIndex(c => c.SubjectId);
     }
 }

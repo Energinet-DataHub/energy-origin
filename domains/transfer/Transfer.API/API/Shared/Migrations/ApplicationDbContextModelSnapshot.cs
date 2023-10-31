@@ -59,8 +59,6 @@ namespace API.Shared.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubjectId");
-
                     b.ToTable("ClaimSubjectHistory");
                 });
 
