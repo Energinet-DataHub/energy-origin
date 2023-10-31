@@ -55,7 +55,6 @@ public class ContractsController : ControllerBase
         return result switch
         {
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
-            NotProductionMeteringPoint => ValidationProblem($"GSRN {createContract.GSRN} is not a production metering point"),
             ContractAlreadyExists => Conflict(),
             CreateContractResult.Success(var createdContract) => CreatedAtRoute(
                 "GetContract",

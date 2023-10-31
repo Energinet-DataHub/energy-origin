@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using API.Data;
-using Contracts.Certificates;
+using CertificateValueObjects;
+using Contracts.Certificates.CertificateIssuedInRegistry.V1;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -8,10 +9,10 @@ namespace API.GranularCertificateIssuer;
 
 public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssuedInRegistryEvent>
 {
-    private readonly IProductionCertificateRepository repository;
+    private readonly ICertificateRepository repository;
     private readonly ILogger<CertificateIssuedInRegistryEventHandler> logger;
 
-    public CertificateIssuedInRegistryEventHandler(IProductionCertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
+    public CertificateIssuedInRegistryEventHandler(ICertificateRepository repository, ILogger<CertificateIssuedInRegistryEventHandler> logger)
     {
         this.repository = repository;
         this.logger = logger;
@@ -21,7 +22,14 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
     {
         var msg = context.Message;
 
-        var certificate = await repository.Get(msg.CertificateId);
+        Certificate? certificate;
+
+        if (msg.MeteringPointType == MeteringPointType.Production)
+            certificate = await repository.GetProductionCertificate(msg.CertificateId);
+        else if (msg.MeteringPointType == MeteringPointType.Consumption)
+            certificate = await repository.GetConsumptionCertificate(msg.CertificateId);
+        else
+            throw new CertificateDomainException(msg.CertificateId, string.Format("Unsupported meteringPointType: {0}", msg.MeteringPointType));
 
         if (certificate == null)
         {
@@ -31,6 +39,9 @@ public class CertificateIssuedInRegistryEventHandler : IConsumer<CertificateIssu
 
         certificate.Issue();
 
-        await repository.Save(certificate);
+        if (msg.MeteringPointType == MeteringPointType.Production)
+            await repository.Save((ProductionCertificate)certificate);
+        else
+            await repository.Save((ConsumptionCertificate)certificate);
     }
 }
