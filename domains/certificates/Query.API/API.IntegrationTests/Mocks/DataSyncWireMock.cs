@@ -1,4 +1,5 @@
 using System;
+using CertificateValueObjects;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -13,12 +14,12 @@ public sealed class DataSyncWireMock : IDisposable
 
     public string Url => server.Url!;
 
-    public void SetupMeteringPointsResponse(string gsrn, string type = "production")
+    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type)
     {
         server.ResetMappings();
         server
             .Given(Request.Create().WithPath("/meteringPoints"))
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn, type)));
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(BuildMeteringPointsResponse(gsrn, type.ToString())));
     }
 
     private static string BuildMeteringPointsResponse(string gsrn, string type)

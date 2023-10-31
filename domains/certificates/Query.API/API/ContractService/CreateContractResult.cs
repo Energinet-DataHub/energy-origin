@@ -6,8 +6,6 @@ public abstract record CreateContractResult
 
     public record GsrnNotFound : CreateContractResult;
 
-    public record NotProductionMeteringPoint : CreateContractResult;
-
     public record ContractAlreadyExists(CertificateIssuingContract? Existing) : CreateContractResult;
 
     private CreateContractResult() { }
