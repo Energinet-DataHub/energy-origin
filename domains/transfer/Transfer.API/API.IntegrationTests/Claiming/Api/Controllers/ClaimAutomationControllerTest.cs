@@ -98,7 +98,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
         var result = await client
             .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
                 "api/claim-automation/history",
-                res => res.History.Any()
+                res => res.Items.Any()
             );
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -119,7 +119,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
         var result = await client
             .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
                 "api/claim-automation/history",
-                res => res.History.Any()
+                res => res.Items.Any()
             );
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");

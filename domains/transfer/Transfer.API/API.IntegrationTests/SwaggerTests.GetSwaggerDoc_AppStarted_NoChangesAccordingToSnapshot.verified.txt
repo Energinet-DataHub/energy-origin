@@ -951,7 +951,7 @@
       "ClaimSubjectHistoryEntriesDto": {
         "type": "object",
         "properties": {
-          "history": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ClaimSubjectHistoryEntryDto"
