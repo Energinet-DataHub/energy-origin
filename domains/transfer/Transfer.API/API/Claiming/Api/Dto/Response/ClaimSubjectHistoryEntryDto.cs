@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using API.Claiming.Api.Models;
 using API.Shared;
 

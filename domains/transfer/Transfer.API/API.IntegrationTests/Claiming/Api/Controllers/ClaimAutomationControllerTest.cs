@@ -114,7 +114,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
         await client.PostAsync("api/claim-automation/start", null);
         await Task.Delay(5000);
         await client.DeleteAsync("api/claim-automation/stop");
-       // await client.PostAsync("api/claim-automation/start", null);
+        // await client.PostAsync("api/claim-automation/start", null);
 
         var result = await client
             .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
