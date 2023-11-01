@@ -26,6 +26,7 @@ public static class Startup
         services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
         Configuration.Setup()
             .UseEntityFramework(ef => ef
                 .AuditTypeExplicitMapper(config => config
