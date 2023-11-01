@@ -107,6 +107,25 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     }
 
     [Fact]
+    public async Task GetClaimSubjectHistory_WhenStartingStoppingAndStartingAgain_Expect3Entries()
+    {
+        const string actor = "Peter Producent";
+        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), actor: actor);
+
+        await client.PostAsync("api/claim-automation/start", null);
+        await client.DeleteAsync("api/claim-automation/stop");
+        await client.PostAsync("api/claim-automation/start", null);
+
+        var result = await client
+            .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
+                "api/claim-automation/history",
+                res => res.Items.Count() == 3
+            );
+
+        result.Items.Count.Should().Be(3);
+    }
+
+    [Fact]
     public async Task GetClaimSubjectHistory_WhenMultipleHistoryExists_ReturnsOK()
     {
         const string actor = "Peter Producent";
