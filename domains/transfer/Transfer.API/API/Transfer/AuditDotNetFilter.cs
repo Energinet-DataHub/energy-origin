@@ -3,7 +3,7 @@ using API.Shared.Extensions;
 using Audit.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace API.Shared;
+namespace API.Transfer;
 
 public class AuditDotNetFilter : IAsyncActionFilter
 {

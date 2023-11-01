@@ -25,7 +25,6 @@ using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-using Configuration = Audit.Core.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
@@ -95,22 +94,6 @@ builder.Services.AddSwaggerGen(o =>
     }
 });
 builder.Services.AddLogging();
-
-var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
-
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                .AddService(TransferAgreementAutomationMetrics.MetricName))
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
-
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
 builder.Services.AddConnection();
