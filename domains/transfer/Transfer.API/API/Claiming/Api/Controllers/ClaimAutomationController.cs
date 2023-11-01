@@ -78,9 +78,7 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        var historyDto = history.Select(c =>
-                c.ToDto()
-            ).ToList();
+        var historyDto = history.Select(c => c.ToDto()).ToList();
 
         return Ok(new ClaimSubjectHistoryEntriesDto(historyDto));
     }
