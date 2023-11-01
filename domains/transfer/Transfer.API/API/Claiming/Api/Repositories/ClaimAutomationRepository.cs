@@ -10,39 +10,48 @@ namespace API.Claiming.Api.Repositories;
 
 public class ClaimAutomationRepository : IClaimAutomationRepository
 {
-    private readonly ApplicationDbContext context;
+    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
 
-    public ClaimAutomationRepository(ApplicationDbContext context)
+    public ClaimAutomationRepository(IDbContextFactory<ApplicationDbContext> contextFactory)
     {
-        this.context = context;
+        this.contextFactory = contextFactory;
     }
 
-    Task<List<ClaimSubject>> IClaimAutomationRepository.GetClaimSubjects()
+    async Task<List<ClaimSubject>> IClaimAutomationRepository.GetClaimSubjects()
     {
-        return context.ClaimSubjects.ToListAsync();
+        await using var context = await contextFactory.CreateDbContextAsync();
+
+        return await context.ClaimSubjects.ToListAsync();
     }
 
     public async Task<ClaimSubject?> GetClaimSubject(Guid subject)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
+
         return await context.ClaimSubjects.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
     }
 
     public async Task<ClaimSubject> AddClaimSubject(ClaimSubject claimSubject)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
+
         await context.ClaimSubjects.AddAsync(claimSubject);
         await context.SaveChangesAsync();
 
         return claimSubject;
     }
 
-    public void DeleteClaimSubject(ClaimSubject claim)
+    public async void DeleteClaimSubject(ClaimSubject claim)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
+
         context.ClaimSubjects.Remove(claim);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
     public async Task<List<ClaimSubjectHistory>> GetHistory(Guid subject)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
         return await context.ClaimSubjectHistory.Where(c => c.SubjectId == subject).ToListAsync();
     }
 }
