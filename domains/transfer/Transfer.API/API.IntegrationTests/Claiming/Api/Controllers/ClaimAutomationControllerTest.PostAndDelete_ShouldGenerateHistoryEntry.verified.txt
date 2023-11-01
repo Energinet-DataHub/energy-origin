@@ -7,7 +7,7 @@
     },
     {
       CreatedAt: {Scrubbed},
-      Action: Created,
+      Action: Deleted,
       ActorName: Peter Producent
     }
   ]

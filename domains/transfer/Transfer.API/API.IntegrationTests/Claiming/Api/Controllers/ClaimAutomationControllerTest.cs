@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using API.Claiming.Api.Dto.Response;
 using API.Claiming.Api.Models;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Shared;
 using API.IntegrationTests.Shared.Extensions;
 using FluentAssertions;
 using VerifyTests;
@@ -95,37 +96,31 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     {
         const string actor = "Peter Producent";
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), actor: actor);
+
         await client.PostAsync("api/claim-automation/start", null);
-        var result = await client
-            .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
-                "api/claim-automation/history",
-                res => res.History.Any()
-            );
+
+        var historyEntries = await client.GetFromJsonAsync<ClaimSubjectHistoryEntriesDto>("api/claim-automation/history", JsonDefault.Options);
+
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
-
-        await Verifier.Verify(result, settings);
+        await Verifier.Verify(historyEntries, settings);
     }
 
     [Fact]
-    public async Task GetClaimSubjectHistory_WhenMultipleHistoryExists_ReturnsOK()
+    public async Task PostAndDelete_ShouldGenerateHistoryEntry()
     {
         const string actor = "Peter Producent";
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), actor: actor);
-        await client.PostAsync("api/claim-automation/start", null);
-        await Task.Delay(5000);
-        await client.DeleteAsync("api/claim-automation/stop");
-       // await client.PostAsync("api/claim-automation/start", null);
 
-        var result = await client
-            .RepeatedlyGetUntil<ClaimSubjectHistoryEntriesDto>(
-                "api/claim-automation/history",
-                res => res.History.Any()
-            );
+        await client.PostAsync("api/claim-automation/start", null);
+
+        await client.DeleteAsync("api/claim-automation/stop");
+
+        var historyEntries = await client.GetFromJsonAsync<ClaimSubjectHistoryEntriesDto>("api/claim-automation/history", JsonDefault.Options);
+
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
-
-        await Verifier.Verify(result, settings);
+        await Verifier.Verify(historyEntries, settings);
     }
 
     [Fact]

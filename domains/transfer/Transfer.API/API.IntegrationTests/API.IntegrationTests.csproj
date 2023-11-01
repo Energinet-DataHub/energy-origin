@@ -52,11 +52,5 @@
 		<None Update="Cvr\Api\Controllers\CvrControllerTests.empty_cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="Claiming\Api\Controllers\ClaimControllerTest.GetClaimSubjectHistory_WhenHistoryExists_ReturnsOK.verified.txt">
-		  <DependentUpon>ClaimAutomationControllerTest.cs</DependentUpon>
-		</None>
-		<None Update="Claiming\Api\Controllers\ClaimControllerTest.GetClaimSubjectHistory_WhenMultipleHistoryExists_ReturnsOK.verified.txt">
-		  <DependentUpon>ClaimAutomationControllerTest.cs</DependentUpon>
-		</None>
 	</ItemGroup>
 </Project>
