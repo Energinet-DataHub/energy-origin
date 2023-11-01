@@ -13,20 +13,26 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer;
 using API.Transfer.Api.Models;
+using API.Transfer.Api.Options;
+using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Audit.Core;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Configuration = Audit.Core.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
@@ -91,11 +97,24 @@ builder.Services.AddSwaggerGen(o =>
         });
     }
 });
-
 builder.Services.AddLogging();
 
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.Services.AddTransfer(builder.Configuration);
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService(TransferAgreementAutomationMetrics.MetricName))
+            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
+builder.Services.AddTransfer();
 builder.Services.AddCvr();
 builder.Services.AddConnection();
 builder.Services.AddClaimServices();
