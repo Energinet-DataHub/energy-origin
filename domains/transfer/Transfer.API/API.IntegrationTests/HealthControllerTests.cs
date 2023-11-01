@@ -5,6 +5,7 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
+[Collection("HealthControllerTests")]
 public class HealthControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

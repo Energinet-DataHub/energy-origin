@@ -13,6 +13,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
+[Collection("ExampledMigrationTests")]
 public class ExampledMigrationTests : IAsyncDisposable
 {
     private PostgresContainer container;

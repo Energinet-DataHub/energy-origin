@@ -16,6 +16,7 @@ using Xunit;
 namespace API.IntegrationTests.Claiming.Api.Controllers;
 
 [UsesVerify]
+[Collection("ClaimAutomationControllerTest")]
 public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

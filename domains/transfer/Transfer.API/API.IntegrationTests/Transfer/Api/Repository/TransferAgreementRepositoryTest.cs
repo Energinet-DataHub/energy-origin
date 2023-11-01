@@ -8,6 +8,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Repository;
 
+[Collection("TransferAgreementRepositoryTest")]
 public class TransferAgreementRepositoryTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

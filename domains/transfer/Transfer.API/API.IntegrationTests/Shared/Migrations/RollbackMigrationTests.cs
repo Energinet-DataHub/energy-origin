@@ -10,6 +10,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
+[Collection("RollbackMigrationTests")]
 public class RollbackMigrationTests : IAsyncDisposable
 {
     private PostgresContainer container;

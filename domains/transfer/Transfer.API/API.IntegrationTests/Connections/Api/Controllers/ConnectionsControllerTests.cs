@@ -14,6 +14,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Connections.Api.Controllers;
 
+[Collection("ConnectionsControllerTests")]
 public class ConnectionsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

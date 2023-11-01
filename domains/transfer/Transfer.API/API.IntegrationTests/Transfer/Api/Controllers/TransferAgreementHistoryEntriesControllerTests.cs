@@ -16,6 +16,8 @@ using Xunit;
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
 [UsesVerify]
+
+[Collection("TransferAgreementHistoryEntriesControllerTests")]
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

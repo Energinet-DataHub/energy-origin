@@ -13,6 +13,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Connections.Api.Controllers;
 
+[Collection("ConnectionInvitationsControllerTests")]
 public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

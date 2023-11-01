@@ -12,6 +12,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
+[Collection("TransferAgreementAutomationControllerTest")]
 public class TransferAgreementAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly HttpClient authenticatedClient;

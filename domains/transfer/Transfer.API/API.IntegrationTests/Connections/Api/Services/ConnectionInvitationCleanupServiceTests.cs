@@ -11,6 +11,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Connections.Api.Services;
 
+[Collection("ConnectionInvitationCleanupServiceTests")]
 public class ConnectionInvitationCleanupServiceTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
