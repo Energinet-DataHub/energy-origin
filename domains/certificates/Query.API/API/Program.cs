@@ -20,6 +20,7 @@ using Serilog.Formatting.Json;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,9 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddPrometheusExporter());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),

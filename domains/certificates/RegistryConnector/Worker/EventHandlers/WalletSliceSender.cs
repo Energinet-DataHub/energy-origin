@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Contracts.Certificates;
+using Contracts.Certificates.CertificateIssuedInRegistry.V1;
 using Google.Protobuf;
 using Grpc.Net.Client;
 using MassTransit;

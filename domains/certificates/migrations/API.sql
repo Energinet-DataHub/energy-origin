@@ -82,3 +82,41 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231017070514_AddedConsumptionCertificates') THEN
+    CREATE TABLE "ConsumptionCertificates" (
+        "Id" uuid NOT NULL,
+        "IssuedState" integer NOT NULL,
+        "GridArea" text NOT NULL,
+        "DateFrom" bigint NOT NULL,
+        "DateTo" bigint NOT NULL,
+        "MeteringPointOwner" text NOT NULL,
+        "Gsrn" text NOT NULL,
+        "Quantity" bigint NOT NULL,
+        "BlindingValue" bytea NOT NULL,
+        "RejectionReason" text NULL,
+        CONSTRAINT "PK_ConsumptionCertificates" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231017070514_AddedConsumptionCertificates') THEN
+    CREATE UNIQUE INDEX "IX_ConsumptionCertificates_Gsrn_DateFrom_DateTo" ON "ConsumptionCertificates" ("Gsrn", "DateFrom", "DateTo");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231017070514_AddedConsumptionCertificates') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231017070514_AddedConsumptionCertificates', '7.0.10');
+    END IF;
+END $EF$;
+COMMIT;
+

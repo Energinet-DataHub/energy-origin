@@ -1,5 +1,5 @@
 name: eo-auth
-version: 1.0.13
+version: 1.0.14
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/auth/base/deployment.yaml
