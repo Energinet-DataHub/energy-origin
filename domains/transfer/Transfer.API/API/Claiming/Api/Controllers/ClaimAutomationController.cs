@@ -86,7 +86,7 @@ public class ClaimAutomationController : ControllerBase
     [HttpGet]
     [ProducesResponseType(404)]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<ClaimSubject>> GetClaimAutomation()
+    public async Task<ActionResult<ClaimSubjectDto>> GetClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
         var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
@@ -95,6 +95,8 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        return Ok(claim);
+        var claimSubjectDto = new ClaimSubjectDto(claim.SubjectId, claim.CreatedAt);
+
+        return Ok(claimSubjectDto);
     }
 }

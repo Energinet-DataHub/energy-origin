@@ -1,9 +1,0 @@
-﻿{
-  History: [
-    {
-      CreatedAt: {Scrubbed},
-      Action: Created,
-      ActorName: Peter Producent
-    }
-  ]
-}

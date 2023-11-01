@@ -166,17 +166,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimSubject"
+                  "$ref": "#/components/schemas/ClaimSubjectDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimSubject"
+                  "$ref": "#/components/schemas/ClaimSubjectDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimSubject"
+                  "$ref": "#/components/schemas/ClaimSubjectDto"
                 }
               }
             }
@@ -935,6 +935,20 @@
         "type": "string"
       },
       "ClaimSubject": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimSubjectDto": {
         "type": "object",
         "properties": {
           "subjectId": {
