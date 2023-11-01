@@ -13,13 +13,13 @@ namespace API.Claiming.Automation;
 public class ClaimService : IClaimService
 {
     private readonly ILogger<ClaimService> logger;
-    private readonly IClaimRepository claimRepository;
+    private readonly IClaimAutomationRepository claimAutomationRepository;
     private readonly IProjectOriginWalletService walletService;
 
-    public ClaimService(ILogger<ClaimService> logger, IClaimRepository claimRepository, IProjectOriginWalletService walletService)
+    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService)
     {
         this.logger = logger;
-        this.claimRepository = claimRepository;
+        this.claimAutomationRepository = claimAutomationRepository;
         this.walletService = walletService;
     }
 
@@ -30,7 +30,7 @@ public class ClaimService : IClaimService
             logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
             try
             {
-                var claimSubjects = await claimRepository.GetClaimSubjects();
+                var claimSubjects = await claimAutomationRepository.GetClaimSubjects();
                 foreach (var subjectId in claimSubjects.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
@@ -60,13 +60,11 @@ public class ClaimService : IClaimService
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
             var productionCert = productionCertificates.FirstOrDefault(x => x.Quantity > 0);
-            if (productionCert == null) continue;
             var consumptionCert = consumptionCertificates.FirstOrDefault(x => x.Quantity > 0);
-            if (consumptionCert == null) continue;
 
-            var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
+            var quantity = Math.Min(productionCert!.Quantity, consumptionCert!.Quantity);
 
-            await walletService.ClaimCertificate(subjectId, consumptionCert, productionCert, quantity);
+            await walletService.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
 
             productionCert.Quantity -= quantity;
             consumptionCert.Quantity -= quantity;

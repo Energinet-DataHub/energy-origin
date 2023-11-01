@@ -8,5 +8,5 @@ namespace API.Claiming.Automation.Services;
 public interface IProjectOriginWalletService
 {
     Task<List<GranularCertificate>> GetGranularCertificates(Guid subjectId);
-    Task ClaimCertificate(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity);
+    Task ClaimCertificates(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity);
 }

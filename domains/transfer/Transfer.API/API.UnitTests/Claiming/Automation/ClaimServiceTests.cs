@@ -19,21 +19,15 @@ namespace API.UnitTests.Claiming.Automation;
 
 public class ClaimServiceTests
 {
-    private static class Attributes
-    {
-        public const string AssetId = "AssetId";
-        public const string TechCode = "TechCode";
-        public const string FuelCode = "FuelCode";
-    }
 
     [Fact]
     public async Task WhenClaimingFullProductionCertificate_CannotClaimProductionCertificateAgain()
     {
         var logger = Substitute.For<ILogger<ClaimService>>();
-        var claimRepository = Substitute.For<IClaimRepository>();
+        var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid());
+        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.Now);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1));
         uint quantity = 40;
@@ -55,17 +49,17 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, quantity);
+        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, quantity);
     }
 
     [Fact]
     public async Task WhenClaimingSomeOfTheProductionCertificate_CanClaimTheRestAfterwards()
     {
         var logger = Substitute.For<ILogger<ClaimService>>();
-        var claimRepository = Substitute.For<IClaimRepository>();
+        var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid());
+        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.Now);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1));
         uint consumptionQuantity = 40;
@@ -88,8 +82,8 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
-        await poWalletService.Received(1).ClaimCertificate(claimSubject.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
     }
 
     private static GranularCertificate BuildCertificate(Timestamp start, Timestamp end, GranularCertificateType type, uint quantity)
@@ -114,7 +108,7 @@ public class ClaimServiceTests
             Attributes = {
                 new Attribute
                 {
-                    Key = Attributes.AssetId,
+                    Key = "AssetId",
                     Value = Some.Gsrn()
                 }
             }
@@ -122,8 +116,8 @@ public class ClaimServiceTests
 
         if (type == GranularCertificateType.Production)
         {
-            certificate.Attributes.Add(new Attribute { Key = Attributes.TechCode, Value = Some.TechCode });
-            certificate.Attributes.Add(new Attribute { Key = Attributes.FuelCode, Value = Some.FuelCode });
+            certificate.Attributes.Add(new Attribute { Key = "TechCode", Value = Some.TechCode });
+            certificate.Attributes.Add(new Attribute { Key = "FuelCode", Value = Some.FuelCode });
         }
 
         return certificate;

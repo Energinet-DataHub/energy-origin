@@ -23,7 +23,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         return response.GranularCertificates.ToList();
     }
 
-    public async Task ClaimCertificate(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
+    public async Task ClaimCertificates(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
     {
         var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(ownerId.ToString());
         var request = new ClaimRequest

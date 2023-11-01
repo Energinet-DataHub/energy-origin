@@ -8,17 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Claiming.Api.Repositories;
 
-public class ClaimRepository : IClaimRepository
+public class ClaimAutomationRepository : IClaimAutomationRepository
 {
     private readonly ApplicationDbContext context;
 
-    public ClaimRepository(ApplicationDbContext context)
+    public ClaimAutomationRepository(ApplicationDbContext context)
     {
         this.context = context;
     }
 
-
-    Task<List<ClaimSubject>> IClaimRepository.GetClaimSubjects()
+    Task<List<ClaimSubject>> IClaimAutomationRepository.GetClaimSubjects()
     {
         return context.ClaimSubjects.ToListAsync();
     }

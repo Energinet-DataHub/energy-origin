@@ -9,7 +9,7 @@ public static class Startup
 {
     public static void AddClaimServices(this IServiceCollection services)
     {
-        services.AddScoped<IClaimRepository, ClaimRepository>();
+        services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
 
         services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();

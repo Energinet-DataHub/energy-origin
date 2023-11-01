@@ -28,7 +28,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
         var subject = Guid.NewGuid();
         await factory.SeedClaims(new List<ClaimSubject>()
         {
-            new(subject)
+            new(subject, DateTimeOffset.Now)
         });
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
@@ -64,7 +64,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
 
         await factory.SeedClaims(new List<ClaimSubject>()
         {
-            new(subject)
+            new(subject, DateTimeOffset.Now)
         });
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
@@ -107,7 +107,7 @@ public class ClaimControllerTest : IClassFixture<TransferAgreementsApiWebApplica
     {
         var subject = Guid.NewGuid();
 
-        var claimSubject = new ClaimSubject(subject);
+        var claimSubject = new ClaimSubject(subject, DateTimeOffset.Now);
 
         await factory.SeedClaims(new List<ClaimSubject>()
         {

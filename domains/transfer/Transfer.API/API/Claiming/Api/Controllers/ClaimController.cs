@@ -16,11 +16,11 @@ namespace API.Claiming.Api.Controllers;
 [Route("api/claim-automation")]
 public class ClaimController : ControllerBase
 {
-    private readonly IClaimRepository claimRepository;
+    private readonly IClaimAutomationRepository claimAutomationRepository;
 
-    public ClaimController(IClaimRepository claimRepository)
+    public ClaimController(IClaimAutomationRepository claimAutomationRepository)
     {
-        this.claimRepository = claimRepository;
+        this.claimAutomationRepository = claimAutomationRepository;
     }
 
     [HttpPost("start")]
@@ -29,18 +29,18 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StartClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
 
         if (claim != null)
         {
             return Ok(claim);
         }
 
-        var claimSubject = new ClaimSubject(Guid.Parse(subject));
+        var claimSubject = new ClaimSubject(Guid.Parse(subject), DateTimeOffset.Now);
 
         try
         {
-            claim = await claimRepository.AddClaimSubject(claimSubject);
+            claim = await claimAutomationRepository.AddClaimSubject(claimSubject);
             return CreatedAtAction(nameof(GetClaimProcess), null, claim);
         }
         catch (DbUpdateException)
@@ -55,13 +55,13 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult> StopClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();
         }
 
-        claimRepository.DeleteClaimSubject(claim);
+        claimAutomationRepository.DeleteClaimSubject(claim);
         return NoContent();
     }
 
@@ -71,7 +71,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimProcessHistory()
     {
         var subject = User.FindSubjectGuidClaim();
-        var history = await claimRepository.GetHistory(Guid.Parse(subject));
+        var history = await claimAutomationRepository.GetHistory(Guid.Parse(subject));
 
         if (history.Count == 0)
         {
@@ -96,7 +96,7 @@ public class ClaimController : ControllerBase
     public async Task<ActionResult<ClaimSubject>> GetClaimProcess()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();

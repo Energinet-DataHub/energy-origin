@@ -5,7 +5,7 @@ using API.Claiming.Api.Models;
 
 namespace API.Claiming.Api.Repositories;
 
-public interface IClaimRepository
+public interface IClaimAutomationRepository
 {
     Task<List<ClaimSubject>> GetClaimSubjects();
     Task<ClaimSubject?> GetClaimSubject(Guid subject);
