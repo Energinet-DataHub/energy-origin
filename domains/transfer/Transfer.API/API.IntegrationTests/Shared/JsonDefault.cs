@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace API.IntegrationTests.Transfer.Api.Controllers;
+namespace API.IntegrationTests.Shared;
 
 public static class JsonDefault
 {

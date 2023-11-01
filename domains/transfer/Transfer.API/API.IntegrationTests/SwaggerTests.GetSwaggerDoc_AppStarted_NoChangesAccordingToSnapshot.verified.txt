@@ -8,7 +8,7 @@
     "/api/claim-automation/start": {
       "post": {
         "tags": [
-          "Claim"
+          "ClaimAutomation"
         ],
         "responses": {
           "201": {
@@ -57,7 +57,7 @@
     "/api/claim-automation/stop": {
       "delete": {
         "tags": [
-          "Claim"
+          "ClaimAutomation"
         ],
         "responses": {
           "204": {
@@ -89,7 +89,7 @@
     "/api/claim-automation/history": {
       "get": {
         "tags": [
-          "Claim"
+          "ClaimAutomation"
         ],
         "responses": {
           "404": {
@@ -138,7 +138,7 @@
     "/api/claim-automation": {
       "get": {
         "tags": [
-          "Claim"
+          "ClaimAutomation"
         ],
         "responses": {
           "404": {
@@ -940,6 +940,10 @@
           "subjectId": {
             "type": "string",
             "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -959,15 +963,16 @@
       "ClaimSubjectHistoryEntryDto": {
         "type": "object",
         "properties": {
-          "actorName": {
-            "type": "string"
-          },
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           },
-          "auditAction": {
-            "type": "string"
+          "action": {
+            "$ref": "#/components/schemas/ChangeAction"
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

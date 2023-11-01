@@ -25,7 +25,7 @@ public static class HttpClientExtensions
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    var content = await response.Content.ReadFromJsonAsync<T>();
+                    var content = await response.Content.ReadFromJsonAsync<T>(JsonDefault.Options);
                     if (content != null && condition(content))
                         return content;
                 }

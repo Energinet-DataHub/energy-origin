@@ -27,9 +27,9 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.Now);
-        var start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now);
-        var end = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1));
+        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
+        var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint quantity = 40;
         var consumptionCertificate1 = BuildCertificate(start, end, GranularCertificateType.Consumption, quantity);
         var consumptionCertificate2 = BuildCertificate(start, end, GranularCertificateType.Consumption, quantity);
@@ -59,9 +59,9 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.Now);
-        var start = Timestamp.FromDateTimeOffset(DateTimeOffset.Now);
-        var end = Timestamp.FromDateTimeOffset(DateTimeOffset.Now.AddHours(1));
+        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
+        var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint consumptionQuantity = 40;
         uint productionQuantity = 70;
         var consumptionCertificate1 = BuildCertificate(start, end, GranularCertificateType.Consumption, consumptionQuantity);

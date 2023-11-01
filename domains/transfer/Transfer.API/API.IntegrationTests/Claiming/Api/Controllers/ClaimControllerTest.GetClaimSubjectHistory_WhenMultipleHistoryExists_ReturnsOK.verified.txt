@@ -1,0 +1,14 @@
+﻿{
+  History: [
+    {
+      CreatedAt: {Scrubbed},
+      Action: Created,
+      ActorName: Peter Producent
+    },
+    {
+      CreatedAt: {Scrubbed},
+      Action: Created,
+      ActorName: Peter Producent
+    }
+  ]
+}
