@@ -104,18 +104,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SeedClaimSubjectHistory(IEnumerable<ClaimSubjectHistory> claimSubjectHistory)
-    {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateClaimSubjectHistoryTables();
-        foreach (var history in claimSubjectHistory)
-        {
-            dbContext.ClaimSubjectHistory.Add(history);
-        }
-        await dbContext.SaveChangesAsync();
-    }
-
 
     public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
     {

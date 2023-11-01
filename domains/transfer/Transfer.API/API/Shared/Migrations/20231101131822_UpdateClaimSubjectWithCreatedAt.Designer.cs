@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Shared.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231024112802_AddClaimSubjectHistory")]
-    partial class AddClaimSubjectHistory
+    [Migration("20231101131822_UpdateClaimSubjectWithCreatedAt")]
+    partial class UpdateClaimSubjectWithCreatedAt
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,40 +31,12 @@ namespace API.Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.HasKey("SubjectId");
-
-                    b.ToTable("ClaimSubjects");
-                });
-
-            modelBuilder.Entity("API.Claiming.Api.Models.ClaimSubjectHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ActorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ActorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AuditAction")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid");
+                    b.HasKey("SubjectId");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubjectId");
-
-                    b.ToTable("ClaimSubjectHistory");
+                    b.ToTable("ClaimSubjects");
                 });
 
             modelBuilder.Entity("API.Connections.Api.Models.Connection", b =>

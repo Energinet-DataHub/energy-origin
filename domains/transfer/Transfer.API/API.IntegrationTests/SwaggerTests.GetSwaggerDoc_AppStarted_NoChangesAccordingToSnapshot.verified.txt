@@ -86,55 +86,6 @@
         }
       }
     },
-    "/api/claim-automation/history": {
-      "get": {
-        "tags": [
-          "ClaimAutomation"
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClaimSubjectHistoryEntriesDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/claim-automation": {
       "get": {
         "tags": [
@@ -958,35 +909,6 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClaimSubjectHistoryEntriesDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClaimSubjectHistoryEntryDto"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClaimSubjectHistoryEntryDto": {
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "action": {
-            "$ref": "#/components/schemas/ChangeAction"
-          },
-          "actorName": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

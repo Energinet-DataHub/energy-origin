@@ -36,37 +36,6 @@ namespace API.Shared.Migrations
                     b.ToTable("ClaimSubjects");
                 });
 
-            modelBuilder.Entity("API.Claiming.Api.Models.ClaimSubjectHistory", b =>
-                {
-                    b.Property<Guid>("SubjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ActorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ActorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AuditAction")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("SubjectId");
-
-                    b.HasIndex("SubjectId");
-
-                    b.ToTable("ClaimSubjectHistory");
-                });
-
             modelBuilder.Entity("API.Connections.Api.Models.Connection", b =>
                 {
                     b.Property<Guid>("Id")

@@ -48,10 +48,4 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
         context.ClaimSubjects.Remove(claim);
         await context.SaveChangesAsync();
     }
-
-    public async Task<List<ClaimSubjectHistory>> GetHistory(Guid subject)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync();
-        return await context.ClaimSubjectHistory.Where(c => c.SubjectId == subject).ToListAsync();
-    }
 }

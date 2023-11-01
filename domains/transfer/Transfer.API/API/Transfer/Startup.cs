@@ -25,24 +25,44 @@ public static class Startup
     {
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
-        services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
-            .ValidateOnStart();
 
+        services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        Configuration.Setup()
+            .UseEntityFramework(ef => ef
+                .AuditTypeExplicitMapper(config => config
+                    .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
+                    {
+                        var actorId = evt.CustomFields.ContainsKey("ActorId")
+                            ? evt.CustomFields["ActorId"].ToString()
+                            : null;
+                        var actorName = evt.CustomFields.ContainsKey("ActorName")
+                            ? evt.CustomFields["ActorName"].ToString()
+                            : null;
 
-        var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
-        var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+                        historyEntity.Id = Guid.NewGuid();
+                        historyEntity.CreatedAt = DateTimeOffset.UtcNow;
+                        historyEntity.AuditAction = eventEntry.Action;
+                        historyEntity.ActorId = actorId ?? string.Empty;
+                        historyEntity.ActorName = actorName ?? string.Empty;
 
-        services.AddOpenTelemetry()
-            .WithMetrics(provider =>
-                provider
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService(TransferAgreementAutomationMetrics.MetricName))
-                    .AddMeter(TransferAgreementAutomationMetrics.MetricName)
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation()
-                    .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+                        switch (eventEntry.Action)
+                        {
+                            case "Insert":
+                                historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
+                                break;
+                            case "Update":
+                            {
+                                historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
+                                break;
+                            }
+                        }
+
+                        return true;
+                    })
+                ));
+
 
         services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();

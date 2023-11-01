@@ -1,29 +1,27 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using System.Linq;
-using System.Text.Json.Serialization;
 using API.Claiming;
-using API.Claiming.Api.Models;
 using API.Connections;
 using API.Connections.Automation.Options;
 using API.Cvr;
-using API.Shared;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer;
-using API.Transfer.Api.Models;
-using Audit.Core;
+using API.Transfer.TransferAgreementsAutomation.Metrics;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -41,9 +39,12 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>().BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>()
+    .BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddDbContext<ApplicationDbContext>(
+    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -73,7 +74,8 @@ builder.Services.AddSwaggerGen(o =>
             Scheme = "Bearer",
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
+            Description =
+                "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
         });
         o.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
@@ -94,66 +96,28 @@ builder.Services.AddSwaggerGen(o =>
 
 builder.Services.AddLogging();
 
-
 builder.Services.AddTransfer(builder.Configuration);
 builder.Services.AddCvr();
 builder.Services.AddConnection();
 builder.Services.AddClaimServices();
 
-builder.Services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
-    .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-Configuration.Setup()
-    .UseEntityFramework(ef => ef
-        .AuditTypeExplicitMapper(config => config
-            .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
-            {
-                var actorId = evt.CustomFields.ContainsKey("ActorId")
-                    ? evt.CustomFields["ActorId"].ToString()
-                    : null;
-                var actorName = evt.CustomFields.ContainsKey("ActorName")
-                    ? evt.CustomFields["ActorName"].ToString()
-                    : null;
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
-                historyEntity.Id = Guid.NewGuid();
-                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
-                historyEntity.AuditAction = eventEntry.Action;
-                historyEntity.ActorId = actorId ?? string.Empty;
-                historyEntity.ActorName = actorName ?? string.Empty;
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-                switch (eventEntry.Action)
-                {
-                    case "Insert":
-                        historyEntity.TransferAgreementId = (Guid)eventEntry.ColumnValues["Id"];
-                        break;
-                    case "Update":
-                        {
-                            historyEntity.TransferAgreementId = (Guid)eventEntry.PrimaryKey.Values.First();
-                            break;
-                        }
-                }
-
-                return true;
-            })
-            .Map<ClaimSubject, ClaimSubjectHistory>((evt, eventEntry, historyEntity) =>
-            {
-                var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
-                var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
-                evt.CustomFields.TryGetValue("SubjectId", out var subjectId);
-
-                historyEntity.Id = Guid.NewGuid();
-                historyEntity.CreatedAt = DateTimeOffset.UtcNow;
-                historyEntity.AuditAction = eventEntry.Action;
-                historyEntity.ActorId = actorId ?? string.Empty;
-                historyEntity.ActorName = actorName ?? string.Empty;
-                historyEntity.SubjectId = Guid.Parse(subjectId?.ToString() ?? Guid.Empty.ToString());
-
-                return true;
-            })
-        ));
-
-
-
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService(TransferAgreementAutomationMetrics.MetricName))
+            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -174,7 +138,8 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
 
 app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

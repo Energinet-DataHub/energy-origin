@@ -65,24 +65,6 @@ public class ClaimAutomationController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("history")]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(typeof(ClaimSubjectHistoryEntriesDto), 200)]
-    public async Task<ActionResult<ClaimSubjectHistoryEntriesDto>> GetClaimAutomationHistory()
-    {
-        var subject = User.FindSubjectGuidClaim();
-        var history = await claimAutomationRepository.GetHistory(Guid.Parse(subject));
-
-        if (history.Count == 0)
-        {
-            return NotFound();
-        }
-
-        var historyDto = history.Select(c => c.ToDto()).ToList();
-
-        return Ok(new ClaimSubjectHistoryEntriesDto(historyDto));
-    }
-
     [HttpGet]
     [ProducesResponseType(404)]
     [ProducesResponseType(200)]
