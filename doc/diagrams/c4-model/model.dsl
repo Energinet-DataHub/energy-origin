@@ -122,5 +122,3 @@ transferDomain = group "Transfer Domain" {
     deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
     cvrProxy -> cvr "Forwards requests to"
 }
-
-apiGateway -> dataSyncApi "Forwards requests for metering point info to"
