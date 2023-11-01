@@ -1,1 +1,9 @@
-﻿
+﻿{
+  Items: [
+    {
+      CreatedAt: {Scrubbed},
+      Action: Created,
+      ActorName: Peter Producent
+    }
+  ]
+}
