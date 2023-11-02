@@ -47,8 +47,10 @@ public class ClaimAutomationController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            var claimSubjectDto = new ClaimAutomationArgumentDto(claimSubject.CreatedAt);
-            return CreatedAtAction(nameof(GetClaimAutomation), null, claimSubjectDto);
+            var claimAutomation = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
+
+            var claimSubjectDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt);
+            return Ok(claimSubjectDto);
         }
     }
 
