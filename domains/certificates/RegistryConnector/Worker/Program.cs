@@ -37,11 +37,11 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-//builder.Services.AddProjectOriginOptions(); //TODO: Add this again
+builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddHostedService<WorkerBackgroundTester>();
+//builder.Services.AddHostedService<WorkerBackgroundTester>();
 
 builder.Services.AddMassTransit(o =>
 {
