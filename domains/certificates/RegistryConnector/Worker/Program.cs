@@ -53,8 +53,10 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<WorkerConsumer>();
 
-    o.AddExecuteActivity<IssueToRegistryActivity, IssueToRegistryArguments>();
-    o.AddExecuteActivity<SendToWalletActivity, SendToWalletArguments>();
+    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
+
+    //o.AddExecuteActivity<IssueToRegistryActivity, IssueToRegistryArguments>();
+    //o.AddExecuteActivity<SendToWalletActivity, SendToWalletArguments>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
