@@ -21,14 +21,14 @@ public class ExceptionMiddlewareTests
 
         await exceptionMiddleware.InvokeAsync(httpContext);
 
-        logger.Received(0);
+        logger.Received(0).Log(LogLevel.Error, Arg.Any<EventId>(), Arg.Any<object>(), Arg.Any<Exception>(), Arg.Any<Func<object, Exception?, string>>());
         Assert.Equal((int)HttpStatusCode.OK, httpContext.Response.StatusCode);
     }
     [Fact]
     public async Task InvokeAsync_ShouldLogErrorAndChangeResposnseStatusCodeToErrorCode500_WhenInvokeNextFails()
     {
         var exception = new Exception("Something went wrong");
-        next.Invoke(httpContext).Throws(exception);
+        next.Invoke(httpContext).ThrowsAsync(exception);
 
         await exceptionMiddleware.InvokeAsync(httpContext);
 

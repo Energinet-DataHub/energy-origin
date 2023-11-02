@@ -80,11 +80,22 @@ certificatesDomain = group "Certificate Domain" {
 }
 
 emissionsDomain = group "Emissions Domain" {
+    emsssionApi = container "Emissions Web Api" {
+        description "API for emissions and sources"
 
+        apiGateway -> this "Forwards requests to"
+        this -> dataSyncApi "Get measurements and metering points from"
+        this -> eds "Get emission and residual mix per hour from"
+    }
 }
 
 measurementsDomain = group "Measurements Domain" {
+    measurementApi = container "Measurements Web Api" {
+        description "API for aggregated measurements split into production and consumption"
 
+        apiGateway -> this "Forwards requests to"
+        this -> dataSyncApi "Get measurements from"
+    }
 }
 
 transferDomain = group "Transfer Domain" {
@@ -122,3 +133,5 @@ transferDomain = group "Transfer Domain" {
     claimAutomation -> tDb "Reads owner ids"
     claimAutomationApi -> tDb "Creates, deletes and reads owner ids"
 }
+
+apiGateway -> dataSyncApi "Forwards requests for metering point info to"
