@@ -1,3 +1,5 @@
+using DataContext;
+
 namespace API.ContractService;
 
 public abstract record CreateContractResult

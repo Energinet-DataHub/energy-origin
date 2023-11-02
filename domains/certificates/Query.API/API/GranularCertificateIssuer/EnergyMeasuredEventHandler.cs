@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Data;
 using CertificateValueObjects;
 using Contracts.Certificates;
+using DataContext;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;

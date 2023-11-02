@@ -1,7 +1,7 @@
-using CertificateValueObjects;
 using System;
+using CertificateValueObjects;
 
-namespace API.Data;
+namespace DataContext;
 
 public enum IssuedState
 {

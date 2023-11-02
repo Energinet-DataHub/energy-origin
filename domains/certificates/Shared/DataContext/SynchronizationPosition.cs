@@ -1,4 +1,4 @@
-namespace API.DataSyncSyncer.Persistence;
+namespace DataContext;
 
 public class SynchronizationPosition
 {

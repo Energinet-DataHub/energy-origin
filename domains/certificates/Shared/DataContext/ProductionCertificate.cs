@@ -1,6 +1,6 @@
 using CertificateValueObjects;
 
-namespace API.Data;
+namespace DataContext;
 
 public class ProductionCertificate : Certificate
 {

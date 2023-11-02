@@ -2,7 +2,7 @@ using System;
 using CertificateValueObjects;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 
-namespace API.ContractService;
+namespace DataContext;
 
 public class CertificateIssuingContract
 {

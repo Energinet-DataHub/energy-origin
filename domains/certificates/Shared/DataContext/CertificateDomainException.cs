@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace API.Data;
+namespace DataContext;
 
 [Serializable]
 public class CertificateDomainException : Exception

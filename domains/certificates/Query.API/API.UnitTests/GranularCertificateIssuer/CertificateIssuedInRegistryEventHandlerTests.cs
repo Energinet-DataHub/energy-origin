@@ -1,5 +1,4 @@
 using System;
-using API.Data;
 using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using CertificateValueObjects;
 using NSubstitute;
 using System.Threading;
 using Contracts.Certificates.CertificateIssuedInRegistry.V1;
+using DataContext;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;

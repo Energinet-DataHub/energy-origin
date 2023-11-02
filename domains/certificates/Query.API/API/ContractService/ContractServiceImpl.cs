@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DataContext;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 

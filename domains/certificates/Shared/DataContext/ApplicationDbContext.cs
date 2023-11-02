@@ -1,8 +1,6 @@
-using API.ContractService;
-using API.DataSyncSyncer.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Data;
+namespace DataContext;
 
 public class ApplicationDbContext : DbContext
 {

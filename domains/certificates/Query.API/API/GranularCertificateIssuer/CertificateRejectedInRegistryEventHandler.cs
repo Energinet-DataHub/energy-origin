@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using API.Data;
 using CertificateValueObjects;
 using Contracts.Certificates.CertificateRejectedInRegistry.V1;
+using DataContext;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 

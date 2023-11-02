@@ -1,6 +1,7 @@
 using System;
 using API.ContractService;
 using CertificateValueObjects;
+using DataContext;
 using FluentAssertions;
 using Xunit;
 

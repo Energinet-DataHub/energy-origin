@@ -1,4 +1,3 @@
-using API.Data;
 using API.IntegrationTests.Testcontainers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,6 +7,7 @@ using API.IntegrationTests.Helpers;
 using CertificateValueObjects;
 using FluentAssertions;
 using System.Linq;
+using DataContext;
 
 namespace API.IntegrationTests.Repositories;
 
