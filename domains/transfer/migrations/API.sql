@@ -325,38 +325,20 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231020091449_AddClaimSubjects') THEN
-    CREATE TABLE "ClaimSubjects" (
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231102084120_AddClaimAutomationArgument') THEN
+    CREATE TABLE "ClaimAutomationArguments" (
         "SubjectId" uuid NOT NULL,
-        CONSTRAINT "PK_ClaimSubjects" PRIMARY KEY ("SubjectId")
+        "CreatedAt" timestamp with time zone NOT NULL,
+        CONSTRAINT "PK_ClaimAutomationArguments" PRIMARY KEY ("SubjectId")
     );
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231020091449_AddClaimSubjects') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231102084120_AddClaimAutomationArgument') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231020091449_AddClaimSubjects', '7.0.5');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231101131822_UpdateClaimSubjectWithCreatedAt') THEN
-    ALTER TABLE "ClaimSubjects" ADD "CreatedAt" timestamp with time zone NOT NULL DEFAULT TIMESTAMPTZ '-infinity';
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231101131822_UpdateClaimSubjectWithCreatedAt') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231101131822_UpdateClaimSubjectWithCreatedAt', '7.0.5');
+    VALUES ('20231102084120_AddClaimAutomationArgument', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;
