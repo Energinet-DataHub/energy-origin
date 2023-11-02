@@ -4,30 +4,6 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="T:API.Migrations.Initial">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Initial.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Initial.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Initial.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:API.Migrations.AddedConsumptionCertificates">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddedConsumptionCertificates.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddedConsumptionCertificates.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddedConsumptionCertificates.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
