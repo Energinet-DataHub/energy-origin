@@ -59,10 +59,10 @@ public class ClaimService : IClaimService
     {
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
-            var productionCert = productionCertificates.FirstOrDefault(x => x.Quantity > 0);
-            var consumptionCert = consumptionCertificates.FirstOrDefault(x => x.Quantity > 0);
+            var productionCert = productionCertificates.First(x => x.Quantity > 0);
+            var consumptionCert = consumptionCertificates.First(x => x.Quantity > 0);
 
-            var quantity = Math.Min(productionCert!.Quantity, consumptionCert!.Quantity);
+            var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
 
             await walletService.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
 
