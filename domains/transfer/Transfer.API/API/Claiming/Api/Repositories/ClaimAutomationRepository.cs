@@ -17,21 +17,21 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
         this.contextFactory = contextFactory;
     }
 
-    async Task<List<ClaimAutomationArgument>> IClaimAutomationRepository.GetClaimSubjects()
+    public async Task<List<ClaimAutomationArgument>> GetClaimAutomationArguments()
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
         return await context.ClaimAutomationArguments.ToListAsync();
     }
 
-    public async Task<ClaimAutomationArgument?> GetClaimSubject(Guid subject)
+    public async Task<ClaimAutomationArgument?> GetClaimAutomationArgument(Guid subject)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
         return await context.ClaimAutomationArguments.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
     }
 
-    public async Task<ClaimAutomationArgument> AddClaimSubject(ClaimAutomationArgument claimAutomationArgument)
+    public async Task<ClaimAutomationArgument> AddClaimAutomationArgument(ClaimAutomationArgument claimAutomationArgument)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
@@ -41,7 +41,7 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
         return claimAutomationArgument;
     }
 
-    public async void DeleteClaimSubject(ClaimAutomationArgument claim)
+    public async void DeleteClaimAutomationArgument(ClaimAutomationArgument claim)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 

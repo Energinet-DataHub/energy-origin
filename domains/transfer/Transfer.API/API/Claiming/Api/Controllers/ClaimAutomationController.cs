@@ -28,29 +28,29 @@ public class ClaimAutomationController : ControllerBase
     public async Task<ActionResult> StartClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
         if (claim != null)
         {
-            var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
 
-            return Ok(claimSubjectDto);
+            return Ok(claimAutomationArgumentDto);
         }
 
-        var claimSubject = new ClaimAutomationArgument(Guid.Parse(subject), DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(Guid.Parse(subject), DateTimeOffset.UtcNow);
 
         try
         {
-            claim = await claimAutomationRepository.AddClaimSubject(claimSubject);
-            var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+            claim = await claimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
 
-            return CreatedAtAction(nameof(GetClaimAutomation), null, claimSubjectDto);
+            return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
         }
         catch (DbUpdateException)
         {
-            var claimAutomation = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
+            var claimAutomation = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
 
-            var claimSubjectDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt);
-            return Ok(claimSubjectDto);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt);
+            return Ok(claimAutomationArgumentDto);
         }
     }
 
@@ -60,13 +60,13 @@ public class ClaimAutomationController : ControllerBase
     public async Task<ActionResult> StopClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();
         }
 
-        claimAutomationRepository.DeleteClaimSubject(claim);
+        claimAutomationRepository.DeleteClaimAutomationArgument(claim);
         return NoContent();
     }
 
@@ -76,14 +76,14 @@ public class ClaimAutomationController : ControllerBase
     public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
         if (claim == null)
         {
             return NotFound();
         }
 
-        var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+        var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
 
-        return Ok(claimSubjectDto);
+        return Ok(claimAutomationArgumentDto);
     }
 }

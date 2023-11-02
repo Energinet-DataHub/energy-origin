@@ -41,10 +41,10 @@ public static class DbContextExtension
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
     }
 
-    public static async Task TruncateClaimSubjectsTables(this ApplicationDbContext dbContext)
+    public static async Task TruncateClaimAutomationArgumentsTables(this ApplicationDbContext dbContext)
     {
-        var claimSubjectTable = dbContext.Model.FindEntityType(typeof(ClaimAutomationArgument))!.GetTableName();
+        var claimAutomationArgumentTable = dbContext.Model.FindEntityType(typeof(ClaimAutomationArgument))!.GetTableName();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimSubjectTable}\" CASCADE");
+        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimAutomationArgumentTable}\" CASCADE");
     }
 }
