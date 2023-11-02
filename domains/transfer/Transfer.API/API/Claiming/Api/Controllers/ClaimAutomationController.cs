@@ -31,7 +31,7 @@ public class ClaimAutomationController : ControllerBase
         var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
         if (claim != null)
         {
-            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
             return Ok(claimAutomationArgumentDto);
         }
@@ -41,7 +41,7 @@ public class ClaimAutomationController : ControllerBase
         try
         {
             claim = await claimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
-            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
             return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
         }
@@ -49,7 +49,7 @@ public class ClaimAutomationController : ControllerBase
         {
             var claimAutomation = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
 
-            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt);
+            var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt.ToUnixTimeSeconds());
             return Ok(claimAutomationArgumentDto);
         }
     }
@@ -82,7 +82,7 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+        var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
         return Ok(claimAutomationArgumentDto);
     }
