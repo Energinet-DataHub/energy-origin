@@ -84,7 +84,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
         var result = await client.GetAsync("api/claim-automation/");
-        result.EnsureSuccessStatusCode();
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
