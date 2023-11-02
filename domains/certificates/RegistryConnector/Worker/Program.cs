@@ -37,9 +37,11 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter());
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.AddProjectOriginOptions();
+//builder.Services.AddProjectOriginOptions(); //TODO: Add this again
 
 builder.Services.AddHealthChecks();
+
+builder.Services.AddHostedService<WorkerBackgroundTester>();
 
 builder.Services.AddMassTransit(o =>
 {
@@ -48,6 +50,11 @@ builder.Services.AddMassTransit(o =>
     o.AddConsumer<RegistryIssuer>();
 
     o.AddConsumer<WalletSliceSender>();
+
+    o.AddConsumer<WorkerConsumer>();
+
+    o.AddExecuteActivity<IssueToRegistryActivity, IssueToRegistryArguments>();
+    o.AddExecuteActivity<SendToWalletActivity, SendToWalletArguments>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
