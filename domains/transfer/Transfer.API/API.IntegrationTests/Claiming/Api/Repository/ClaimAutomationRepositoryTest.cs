@@ -23,7 +23,7 @@ public class ClaimAutomationRepositoryTest : IClassFixture<PostgresContainer>
     [Fact]
     public async Task exception_is_thrown_when_duplicated_claim_automation_argument()
     {
-        await using var dbContext =  await CreateNewCleanDatabase();
+        await using var dbContext = await CreateNewCleanDatabase();
         await dbContext.Database.MigrateAsync();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
