@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using API.Claiming.Api.Dto.Response;
 using API.Claiming.Api.Models;
@@ -24,16 +23,17 @@ public class ClaimAutomationController : ControllerBase
     }
 
     [HttpPost("start")]
-    [ProducesResponseType(typeof(ClaimAutomationArgument), 201)]
-    [ProducesResponseType(typeof(ClaimAutomationArgument), 200)]
+    [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
+    [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult> StartClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
         var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
-
         if (claim != null)
         {
-            return Ok(claim);
+            var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+
+            return Ok(claimSubjectDto);
         }
 
         var claimSubject = new ClaimAutomationArgument(Guid.Parse(subject), DateTimeOffset.UtcNow);
@@ -41,17 +41,20 @@ public class ClaimAutomationController : ControllerBase
         try
         {
             claim = await claimAutomationRepository.AddClaimSubject(claimSubject);
-            return CreatedAtAction(nameof(GetClaimAutomation), null, claim);
+            var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
+
+            return CreatedAtAction(nameof(GetClaimAutomation), null, claimSubjectDto);
         }
         catch (DbUpdateException)
         {
-            return CreatedAtAction(nameof(GetClaimAutomation), null, claimSubject);
+            var claimSubjectDto = new ClaimAutomationArgumentDto(claimSubject.CreatedAt);
+            return CreatedAtAction(nameof(GetClaimAutomation), null, claimSubjectDto);
         }
     }
 
     [HttpDelete("stop")]
     [ProducesResponseType(204)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> StopClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
@@ -66,8 +69,8 @@ public class ClaimAutomationController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
@@ -77,7 +80,7 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        var claimSubjectDto = new ClaimAutomationArgumentDto(claim.SubjectId, claim.CreatedAt);
+        var claimSubjectDto = new ClaimAutomationArgumentDto(claim.CreatedAt);
 
         return Ok(claimSubjectDto);
     }

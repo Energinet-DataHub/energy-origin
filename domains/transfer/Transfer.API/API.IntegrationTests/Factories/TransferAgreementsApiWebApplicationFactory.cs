@@ -90,15 +90,15 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         }
     }
 
-    public async Task SeedClaims(IEnumerable<ClaimSubject> claimSubjects)
+    public async Task SeedClaims(IEnumerable<ClaimAutomationArgument> claimAutomationArguments)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await dbContext.TruncateClaimSubjectsTables();
 
-        foreach (var claimSubject in claimSubjects)
+        foreach (var claimSubject in claimAutomationArguments)
         {
-            dbContext.ClaimSubjects.Add(claimSubject);
+            dbContext.ClaimAutomationArguments.Add(claimSubject);
         }
 
         await dbContext.SaveChangesAsync();
