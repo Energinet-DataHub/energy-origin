@@ -41,7 +41,7 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
         return claimAutomationArgument;
     }
 
-    public async void DeleteClaimAutomationArgument(ClaimAutomationArgument claim)
+    public async Task DeleteClaimAutomationArgument(ClaimAutomationArgument claim)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
