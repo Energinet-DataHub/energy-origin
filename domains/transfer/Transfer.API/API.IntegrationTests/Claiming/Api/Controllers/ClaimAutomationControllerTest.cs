@@ -23,7 +23,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     public async Task StopProcess_WhenClaimProcessExists_ReturnsNoContent()
     {
         var subject = Guid.NewGuid();
-        await factory.SeedClaims(new List<ClaimSubject>()
+        await factory.SeedClaims(new List<ClaimAutomationArgument>()
         {
             new(subject, DateTimeOffset.UtcNow)
         });
@@ -59,7 +59,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     {
         var subject = Guid.NewGuid();
 
-        await factory.SeedClaims(new List<ClaimSubject>()
+        await factory.SeedClaims(new List<ClaimAutomationArgument>()
         {
             new(subject, DateTimeOffset.UtcNow)
         });
@@ -75,15 +75,15 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     {
         var subject = Guid.NewGuid();
 
-        var claimSubject = new ClaimSubject(subject, DateTimeOffset.UtcNow);
+        var claimSubject = new ClaimAutomationArgument(subject, DateTimeOffset.UtcNow);
 
-        await factory.SeedClaims(new List<ClaimSubject>()
+        await factory.SeedClaims(new List<ClaimAutomationArgument>()
         {
             claimSubject
         });
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        var result = await client.GetFromJsonAsync<ClaimSubject>("api/claim-automation/");
+        var result = await client.GetFromJsonAsync<ClaimAutomationArgument>("api/claim-automation/");
         result!.SubjectId.Should().Be(claimSubject.SubjectId);
     }
 

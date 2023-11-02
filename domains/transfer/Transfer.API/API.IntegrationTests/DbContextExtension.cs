@@ -43,7 +43,7 @@ public static class DbContextExtension
 
     public static async Task TruncateClaimSubjectsTables(this ApplicationDbContext dbContext)
     {
-        var claimSubjectTable = dbContext.Model.FindEntityType(typeof(ClaimSubject))!.GetTableName();
+        var claimSubjectTable = dbContext.Model.FindEntityType(typeof(ClaimAutomationArgument))!.GetTableName();
 
         await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{claimSubjectTable}\" CASCADE");
     }

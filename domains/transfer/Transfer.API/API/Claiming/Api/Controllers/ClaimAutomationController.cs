@@ -24,8 +24,8 @@ public class ClaimAutomationController : ControllerBase
     }
 
     [HttpPost("start")]
-    [ProducesResponseType(typeof(ClaimSubject), 201)]
-    [ProducesResponseType(typeof(ClaimSubject), 200)]
+    [ProducesResponseType(typeof(ClaimAutomationArgument), 201)]
+    [ProducesResponseType(typeof(ClaimAutomationArgument), 200)]
     public async Task<ActionResult> StartClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
@@ -36,7 +36,7 @@ public class ClaimAutomationController : ControllerBase
             return Ok(claim);
         }
 
-        var claimSubject = new ClaimSubject(Guid.Parse(subject), DateTimeOffset.UtcNow);
+        var claimSubject = new ClaimAutomationArgument(Guid.Parse(subject), DateTimeOffset.UtcNow);
 
         try
         {
@@ -68,7 +68,7 @@ public class ClaimAutomationController : ControllerBase
     [HttpGet]
     [ProducesResponseType(404)]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<ClaimSubjectDto>> GetClaimAutomation()
+    public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation()
     {
         var subject = User.FindSubjectGuidClaim();
         var claim = await claimAutomationRepository.GetClaimSubject(Guid.Parse(subject));
@@ -77,7 +77,7 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        var claimSubjectDto = new ClaimSubjectDto(claim.SubjectId, claim.CreatedAt);
+        var claimSubjectDto = new ClaimAutomationArgumentDto(claim.SubjectId, claim.CreatedAt);
 
         return Ok(claimSubjectDto);
     }

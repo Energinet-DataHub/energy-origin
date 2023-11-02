@@ -16,7 +16,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
-    public DbSet<ClaimSubject> ClaimSubjects { get; set; }
+    public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,7 +28,7 @@ public class ApplicationDbContext : AuditDbContext
             .HasIndex(nameof(TransferAgreement.SenderId), nameof(TransferAgreement.TransferAgreementNumber))
             .IsUnique();
 
-        modelBuilder.Entity<ClaimSubject>()
+        modelBuilder.Entity<ClaimAutomationArgument>()
             .HasKey(p => p.SubjectId);
 
     }

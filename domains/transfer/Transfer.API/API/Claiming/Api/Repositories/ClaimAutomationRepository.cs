@@ -17,35 +17,35 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
         this.contextFactory = contextFactory;
     }
 
-    async Task<List<ClaimSubject>> IClaimAutomationRepository.GetClaimSubjects()
+    async Task<List<ClaimAutomationArgument>> IClaimAutomationRepository.GetClaimSubjects()
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        return await context.ClaimSubjects.ToListAsync();
+        return await context.ClaimAutomationArguments.ToListAsync();
     }
 
-    public async Task<ClaimSubject?> GetClaimSubject(Guid subject)
+    public async Task<ClaimAutomationArgument?> GetClaimSubject(Guid subject)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        return await context.ClaimSubjects.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
+        return await context.ClaimAutomationArguments.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
     }
 
-    public async Task<ClaimSubject> AddClaimSubject(ClaimSubject claimSubject)
+    public async Task<ClaimAutomationArgument> AddClaimSubject(ClaimAutomationArgument claimAutomationArgument)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        await context.ClaimSubjects.AddAsync(claimSubject);
+        await context.ClaimAutomationArguments.AddAsync(claimAutomationArgument);
         await context.SaveChangesAsync();
 
-        return claimSubject;
+        return claimAutomationArgument;
     }
 
-    public async void DeleteClaimSubject(ClaimSubject claim)
+    public async void DeleteClaimSubject(ClaimAutomationArgument claim)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        context.ClaimSubjects.Remove(claim);
+        context.ClaimAutomationArguments.Remove(claim);
         await context.SaveChangesAsync();
     }
 }

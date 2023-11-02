@@ -27,7 +27,7 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var claimSubject = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint quantity = 40;
@@ -36,7 +36,7 @@ public class ClaimServiceTests
         var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, quantity);
         using var cts = new CancellationTokenSource();
 
-        claimRepository.GetClaimSubjects().Returns(new List<ClaimSubject> { claimSubject });
+        claimRepository.GetClaimSubjects().Returns(new List<ClaimAutomationArgument> { claimSubject });
         poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,
@@ -59,7 +59,7 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimSubject(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var claimSubject = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint consumptionQuantity = 40;
@@ -69,7 +69,7 @@ public class ClaimServiceTests
         var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, productionQuantity);
         using var cts = new CancellationTokenSource();
 
-        claimRepository.GetClaimSubjects().Returns(new List<ClaimSubject> { claimSubject });
+        claimRepository.GetClaimSubjects().Returns(new List<ClaimAutomationArgument> { claimSubject });
         poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,

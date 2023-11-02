@@ -7,9 +7,9 @@ namespace API.Claiming.Api.Repositories;
 
 public interface IClaimAutomationRepository
 {
-    Task<List<ClaimSubject>> GetClaimSubjects();
-    Task<ClaimSubject?> GetClaimSubject(Guid subject);
+    Task<List<ClaimAutomationArgument>> GetClaimSubjects();
+    Task<ClaimAutomationArgument?> GetClaimSubject(Guid subject);
 
-    Task<ClaimSubject> AddClaimSubject(ClaimSubject claimSubject);
-    void DeleteClaimSubject(ClaimSubject claim);
+    Task<ClaimAutomationArgument> AddClaimSubject(ClaimAutomationArgument claimAutomationArgument);
+    void DeleteClaimSubject(ClaimAutomationArgument claim);
 }
