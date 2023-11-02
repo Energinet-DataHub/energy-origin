@@ -66,7 +66,7 @@ public class ClaimAutomationController : ControllerBase
             return NotFound();
         }
 
-        claimAutomationRepository.DeleteClaimAutomationArgument(claim);
+        await claimAutomationRepository.DeleteClaimAutomationArgument(claim);
         return NoContent();
     }
 

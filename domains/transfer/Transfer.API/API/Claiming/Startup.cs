@@ -1,7 +1,7 @@
-using System;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Automation;
 using API.Claiming.Automation.Services;
+using API.Shared.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Claiming;
@@ -14,7 +14,7 @@ public static class Startup
 
         services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
-        services.AddScoped<Random>();
+        services.AddScoped<IShuffler, Shuffler>();
 
         services.AddHostedService<ClaimWorker>();
     }

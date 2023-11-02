@@ -6,6 +6,7 @@ using API.Claiming.Api.Models;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Automation;
 using API.Claiming.Automation.Services;
+using API.Shared.Helpers;
 using FluentAssertions;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,7 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Random(1));
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1));
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
@@ -77,7 +78,7 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Random(1));
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1));
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();

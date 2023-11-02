@@ -16,14 +16,14 @@ public class ClaimService : IClaimService
     private readonly ILogger<ClaimService> logger;
     private readonly IClaimAutomationRepository claimAutomationRepository;
     private readonly IProjectOriginWalletService walletService;
-    private readonly Random random;
+    private readonly IShuffler shuffle;
 
-    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService, Random random)
+    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService, IShuffler shuffle)
     {
         this.logger = logger;
         this.claimAutomationRepository = claimAutomationRepository;
         this.walletService = walletService;
-        this.random = random;
+        this.shuffle = shuffle;
     }
 
     public async Task Run(CancellationToken stoppingToken)
@@ -38,7 +38,7 @@ public class ClaimService : IClaimService
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
 
-                    certificates = certificates.OrderBy(x => random.Next()).ToList();
+                    certificates = certificates.OrderBy(x => shuffle.Next()).ToList();
 
                     var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
 
