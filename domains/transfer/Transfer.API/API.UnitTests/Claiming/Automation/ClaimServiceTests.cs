@@ -44,12 +44,12 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService);
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Random(1));
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, quantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, quantity);
     }
 
     [Fact]
@@ -77,13 +77,13 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService);
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Random(1));
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
-        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, productionQuantity - consumptionQuantity);
     }
 
     private static GranularCertificate BuildCertificate(Timestamp start, Timestamp end, GranularCertificateType type, uint quantity)

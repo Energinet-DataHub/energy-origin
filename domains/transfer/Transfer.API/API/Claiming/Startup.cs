@@ -1,3 +1,4 @@
+using System;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Automation;
 using API.Claiming.Automation.Services;
@@ -13,6 +14,7 @@ public static class Startup
 
         services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
+        services.AddScoped<Random>();
 
         services.AddHostedService<ClaimWorker>();
     }

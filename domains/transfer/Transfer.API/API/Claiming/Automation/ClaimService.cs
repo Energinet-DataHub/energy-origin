@@ -16,12 +16,14 @@ public class ClaimService : IClaimService
     private readonly ILogger<ClaimService> logger;
     private readonly IClaimAutomationRepository claimAutomationRepository;
     private readonly IProjectOriginWalletService walletService;
+    private readonly Random random;
 
-    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService)
+    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService, Random random)
     {
         this.logger = logger;
         this.claimAutomationRepository = claimAutomationRepository;
         this.walletService = walletService;
+        this.random = random;
     }
 
     public async Task Run(CancellationToken stoppingToken)
@@ -32,7 +34,6 @@ public class ClaimService : IClaimService
             try
             {
                 var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
-                var random = new Random();
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
