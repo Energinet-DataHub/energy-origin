@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Claiming.Api.Models;
 using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
@@ -34,7 +35,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public string WalletUrl { get; set; } = "http://foo";
 
-    public string OtlpReceiverEndpoint { get; set; } = "http://foo";
+    private string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
@@ -85,9 +86,24 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         foreach (var agreement in transferAgreements)
         {
             await InsertTransferAgreement(dbContext, agreement);
-            await InsertHistoryEntry(dbContext, agreement);
+            await InsertTransferAgreementHistoryEntry(dbContext, agreement);
         }
     }
+
+    public async Task SeedClaims(IEnumerable<ClaimAutomationArgument> claimAutomationArguments)
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.TruncateClaimAutomationArgumentsTables();
+
+        foreach (var claimAutomationArgument in claimAutomationArguments)
+        {
+            dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
 
     public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
     {
@@ -204,7 +220,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
 
-    private static async Task InsertHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
+    private static async Task InsertTransferAgreementHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 

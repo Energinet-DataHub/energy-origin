@@ -1,3 +1,4 @@
+using API.Claiming.Api.Models;
 using API.Connections.Api.Models;
 using API.Transfer.Api.Models;
 using Audit.EntityFramework;
@@ -15,6 +16,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
+    public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,5 +27,9 @@ public class ApplicationDbContext : AuditDbContext
         modelBuilder.Entity<TransferAgreement>()
             .HasIndex(nameof(TransferAgreement.SenderId), nameof(TransferAgreement.TransferAgreementNumber))
             .IsUnique();
+
+        modelBuilder.Entity<ClaimAutomationArgument>()
+            .HasKey(p => p.SubjectId);
+
     }
 }

@@ -5,6 +5,102 @@
     "version": "v1"
   },
   "paths": {
+    "/api/claim-automation/start": {
+      "post": {
+        "tags": [
+          "ClaimAutomation"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/claim-automation/stop": {
+      "delete": {
+        "tags": [
+          "ClaimAutomation"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/claim-automation": {
+      "get": {
+        "tags": [
+          "ClaimAutomation"
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimAutomationArgumentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/connection-invitations": {
       "post": {
         "tags": [
@@ -754,6 +850,16 @@
           "Deleted"
         ],
         "type": "string"
+      },
+      "ClaimAutomationArgumentDto": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
       },
       "Connection": {
         "type": "object",
