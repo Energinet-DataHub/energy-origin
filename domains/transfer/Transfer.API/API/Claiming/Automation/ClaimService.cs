@@ -80,7 +80,7 @@ public class ClaimService : IClaimService
     {
         var minutesToNextHalfHour = TimeSpanHelper.GetMinutesToNextHalfHour(DateTimeOffset.Now.Minute);
 
-        logger.LogInformation("Sleeping until next half past {minutesToNextHour}", minutesToNextHalfHour);
+        logger.LogInformation("Sleeping until next half past {minutesToNextHalfHour}", minutesToNextHalfHour);
         await Task.Delay(TimeSpan.FromMinutes(minutesToNextHalfHour), cancellationToken);
     }
 }

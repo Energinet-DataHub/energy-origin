@@ -10,7 +10,7 @@ public class TimeSpanHelperTests
     [Theory]
     [InlineData(0, 30)]
     [InlineData(15, 15)]
-    [InlineData(30, 0)]
+    [InlineData(30, 60)]
     [InlineData(45, 45)]
     [InlineData(60, 30)]
     public void GetMinutesToNextHalfHour_Success(int startMinute, int expected)
