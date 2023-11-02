@@ -2,4 +2,4 @@ using System;
 
 namespace API.Claiming.Api.Dto.Response;
 
-public record ClaimAutomationArgumentDto(DateTimeOffset CreatedAt);
+public record ClaimAutomationArgumentDto(long CreatedAt);

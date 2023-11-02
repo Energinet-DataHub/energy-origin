@@ -94,11 +94,11 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateClaimSubjectsTables();
+        await dbContext.TruncateClaimAutomationArgumentsTables();
 
-        foreach (var claimSubject in claimAutomationArguments)
+        foreach (var claimAutomationArgument in claimAutomationArguments)
         {
-            dbContext.ClaimAutomationArguments.Add(claimSubject);
+            dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
         }
 
         await dbContext.SaveChangesAsync();

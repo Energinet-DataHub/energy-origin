@@ -71,15 +71,15 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     }
 
     [Fact]
-    public async Task GetClaimSubjects_WhenClaimSubjectsExists_ReturnsOK()
+    public async Task GetClaimAutomationArguments_WhenClaimAutomationArgumentsExists_ReturnsOK()
     {
         var subject = Guid.NewGuid();
 
-        var claimSubject = new ClaimAutomationArgument(subject, DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(subject, DateTimeOffset.UtcNow);
 
         await factory.SeedClaims(new List<ClaimAutomationArgument>()
         {
-            claimSubject
+            claimAutomationArgument
         });
 
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
@@ -88,7 +88,7 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     }
 
     [Fact]
-    public async Task GetClaimSubjects_WhenClaimSubjectsDoesNotExists_ReturnsNotFound()
+    public async Task GetClaimAutomationArguments_WhenClaimAutomationArgumentsDoesNotExists_ReturnsNotFound()
     {
         var subject = Guid.NewGuid();
 

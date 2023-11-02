@@ -27,7 +27,7 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint quantity = 40;
@@ -36,7 +36,7 @@ public class ClaimServiceTests
         var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, quantity);
         using var cts = new CancellationTokenSource();
 
-        claimRepository.GetClaimSubjects().Returns(new List<ClaimAutomationArgument> { claimSubject });
+        claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
         poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,
@@ -49,7 +49,7 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, quantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, quantity);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class ClaimServiceTests
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
 
-        var claimSubject = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
         var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
         uint consumptionQuantity = 40;
@@ -69,7 +69,7 @@ public class ClaimServiceTests
         var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, productionQuantity);
         using var cts = new CancellationTokenSource();
 
-        claimRepository.GetClaimSubjects().Returns(new List<ClaimAutomationArgument> { claimSubject });
+        claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
         poWalletService.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
         {
             consumptionCertificate1,
@@ -82,8 +82,8 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
-        await poWalletService.Received(1).ClaimCertificates(claimSubject.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, consumptionQuantity);
+        await poWalletService.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, productionQuantity - consumptionQuantity);
     }
 
     private static GranularCertificate BuildCertificate(Timestamp start, Timestamp end, GranularCertificateType type, uint quantity)

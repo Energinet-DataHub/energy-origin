@@ -855,8 +855,8 @@
         "type": "object",
         "properties": {
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false

@@ -31,9 +31,9 @@ public class ClaimService : IClaimService
             logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
             try
             {
-                var claimSubjects = await claimAutomationRepository.GetClaimSubjects();
+                var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
                 var random = new Random();
-                foreach (var subjectId in claimSubjects.Select(x => x.SubjectId).Distinct())
+                foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
 
