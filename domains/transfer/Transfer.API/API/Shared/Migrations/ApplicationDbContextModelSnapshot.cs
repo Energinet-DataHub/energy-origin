@@ -22,20 +22,6 @@ namespace API.Shared.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("API.Claiming.Api.Models.ClaimSubject", b =>
-                {
-                    b.Property<Guid>("SubjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("SubjectId");
-
-                    b.ToTable("ClaimSubjects");
-                });
-
             modelBuilder.Entity("API.Connections.Api.Models.Connection", b =>
                 {
                     b.Property<Guid>("Id")
