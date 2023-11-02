@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Automation.Services;
+using API.Shared.Helpers;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
 
@@ -76,7 +77,9 @@ public class ClaimService : IClaimService
 
     private async Task SleepAnHour(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sleeping for an hour.");
-        await Task.Delay(TimeSpan.FromMinutes(60), cancellationToken);
+        var minutesToNextHalfHour = TimeSpanHelper.GetMinutesToNextHalfHour(DateTimeOffset.Now.Minute);
+
+        logger.LogInformation("Sleeping until next half past {minutesToNextHour}", minutesToNextHalfHour);
+        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHalfHour), cancellationToken);
     }
 }
