@@ -1,7 +1,10 @@
 using System;
 using Contracts;
+using DataContext;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -36,10 +39,13 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddPrometheusExporter());
 
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddProjectOriginOptions();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
 
 builder.Services.AddMassTransit(o =>
 {

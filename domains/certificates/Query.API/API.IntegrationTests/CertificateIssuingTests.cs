@@ -45,6 +45,7 @@ public sealed class CertificateIssuingTests :
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
+        registryConnectorFactory.ConnectionString = dbContainer.ConnectionString;
         registryConnectorFactory.Start();
     }
 
