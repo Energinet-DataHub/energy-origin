@@ -36,13 +36,13 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigration --project Query.API/API
+dotnet ef migrations add NameOfMigration --project Shared/DataContext
 ```
 
-Updating your local database can be done using this command:
+Updating your local database started with Docker Compose can be done using this command:
 
 ```shell
-dotnet ef database update --project Query.API/API
+dotnet ef database update --project Shared/DataContext
 ```
 
 The `--project` argument can be omitted if the working directory is changed to the project folder.
@@ -64,7 +64,7 @@ You must manually remember to generate the complete SQL migration script after a
 This is the command for generating the migration SQL script for the API project:
 
 ```shell
-dotnet ef migrations script --idempotent --project Query.API/API/API.csproj --output migrations/API.sql
+dotnet ef migrations script --idempotent --project Shared/DataContext --output migrations/API.sql
 ```
 
 ## Domain decisions / DDR (Domain-decision-records)
