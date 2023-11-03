@@ -57,15 +57,15 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet format --verify-no-changes -v diag
 
-    # - name: Test
-    #   shell: bash
-    #   working-directory: ${{ inputs.solution-file-folder }}
-    #   run: dotnet test --no-restore --verbosity normal -warnaserror
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet test --no-restore --verbosity normal -warnaserror
 
-    # - name: Build
-    #   shell: bash
-    #   working-directory: ${{ inputs.solution-file-folder }}
-    #   run: dotnet build --no-restore --configuration Release
+    - name: Build
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet build --no-restore --configuration Release
 
     - name: Migration
       shell: bash
