@@ -6,7 +6,6 @@
 
 START TRANSACTION;
 
-diff
 
 DO $EF$
 BEGIN
@@ -78,7 +77,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230911185804_Initial', '7.0.10');
+    VALUES ('20230911185804_Initial', '7.0.11');
     END IF;
 END $EF$;
 COMMIT;
@@ -116,7 +115,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231017070514_AddedConsumptionCertificates') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231017070514_AddedConsumptionCertificates', '7.0.10');
+    VALUES ('20231017070514_AddedConsumptionCertificates', '7.0.11');
     END IF;
 END $EF$;
 COMMIT;
