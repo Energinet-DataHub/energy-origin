@@ -58,10 +58,15 @@ runs:
     #   working-directory: ${{ inputs.solution-file-folder }}
     #   run: dotnet test --no-restore --verbosity normal -warnaserror
 
+    # - name: Build
+    #   shell: bash
+    #   working-directory: ${{ inputs.solution-file-folder }}
+    #   run: dotnet build --no-restore --configuration Release
+
     - name: Build
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build --no-restore --configuration Debug
 
     - name: Migration
       shell: bash
