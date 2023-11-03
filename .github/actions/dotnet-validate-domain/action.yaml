@@ -75,7 +75,7 @@ runs:
         ls -l
         for service in $(find . -name "*.csproj"); do
           echo Service $service
-          dotnet list "$service" package
+          dotnet list "$service" package --include-transitive
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
           echo Generating $name
