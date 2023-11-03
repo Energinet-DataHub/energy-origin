@@ -79,7 +79,7 @@ runs:
           name=$(basename "$service" .csproj)
           echo Generating $name
           dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
-          dotnet ef migrations script -i  --no-build --project "$service" -o "/tmp/${name}.sql"
+          dotnet ef migrations script -i --project "$service" -o "/tmp/${name}.sql"
         done
 
         for tmp in $(find /tmp/ -maxdepth 1 -name "*.sql"); do
