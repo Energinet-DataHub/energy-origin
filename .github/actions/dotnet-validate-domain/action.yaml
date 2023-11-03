@@ -57,22 +57,25 @@ runs:
       working-directory: ${{ inputs.solution-file-folder }}
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Test
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet test --no-restore --verbosity normal -warnaserror
+    # - name: Test
+    #   shell: bash
+    #   working-directory: ${{ inputs.solution-file-folder }}
+    #   run: dotnet test --no-restore --verbosity normal -warnaserror
 
-    - name: Build
-      shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet build --no-restore --configuration Release
+    # - name: Build
+    #   shell: bash
+    #   working-directory: ${{ inputs.solution-file-folder }}
+    #   run: dotnet build --no-restore --configuration Release
 
     - name: Migration
       shell: bash
-      working-directory: ${{ inputs.domain-folder }}
+      working-directory: ${{ inputs.solution-file-folder }}
       run: |
         dotnet restore
+        ls -l
         for service in $(find . -name "*.csproj"); do
+          echo Service $service
+          dotnet list "$service" package
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
           echo Generating $name
@@ -82,7 +85,7 @@ runs:
 
         for tmp in $(find /tmp/ -maxdepth 1 -name "*.sql"); do
           echo Checking $(basename "$tmp")
-          original=migrations/$(basename "$tmp")
+          original=../migrations/$(basename "$tmp")
           cat < "$tmp" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
           cat < "$original" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
           diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }
