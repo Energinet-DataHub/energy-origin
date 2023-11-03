@@ -7,10 +7,6 @@ inputs:
     description: The folder of the project and tests to build from
     required: true
 
-  domain-folder:
-    description: The folder of the domain
-    required: true
-
   dotnet-version:
     description: The version of dotnet to use
     default: 7.0.x
@@ -71,16 +67,12 @@ runs:
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
       run: |
-        dotnet restore
-        ls -l
         for service in $(find . -name "*.csproj"); do
-          echo Service $service
-          dotnet list "$service" package --include-transitive
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
           name=$(basename "$service" .csproj)
           echo Generating $name
           dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
-          dotnet ef migrations script -i --project "$service" -o "/tmp/${name}.sql"
+          dotnet ef migrations script -i --no-build --project Query.API/API "$service" -o "/tmp/${name}.sql"
         done
 
         for tmp in $(find /tmp/ -maxdepth 1 -name "*.sql"); do
