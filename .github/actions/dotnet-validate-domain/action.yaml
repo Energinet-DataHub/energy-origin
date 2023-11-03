@@ -7,6 +7,10 @@ inputs:
     description: The folder of the project and tests to build from
     required: true
 
+  domain-folder:
+    description: The folder of the domain
+    required: true
+
   dotnet-version:
     description: The version of dotnet to use
     default: 7.0.x
@@ -65,7 +69,7 @@ runs:
 
     - name: Migration
       shell: bash
-      working-directory: ${{ inputs.solution-file-folder }}
+      working-directory: ${{ inputs.domain-folder }}
       run: |
         for service in $(find . -name "*.csproj"); do
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
@@ -77,7 +81,7 @@ runs:
 
         for tmp in $(find /tmp/ -maxdepth 1 -name "*.sql"); do
           echo Checking $(basename "$tmp")
-          original=../migrations/$(basename "$tmp")
+          original=migrations/$(basename "$tmp")
           cat < "$tmp" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
           cat < "$original" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
           diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }

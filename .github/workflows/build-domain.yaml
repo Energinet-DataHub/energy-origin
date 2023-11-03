@@ -118,6 +118,7 @@ jobs:
         uses: ./.github/actions/dotnet-validate-domain
         with:
           solution-file-folder: ${{ steps.resolver.outputs.service }}
+          domain-folder: ${{ steps.resolver.outputs.domain }}
           dotnet-version: ${{ matrix.build.dotnetVersion }}
 
       - name: Build image
