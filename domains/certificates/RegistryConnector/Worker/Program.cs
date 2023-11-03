@@ -41,8 +41,6 @@ builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddHealthChecks();
 
-//builder.Services.AddHostedService<WorkerBackgroundTester>();
-
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
@@ -50,13 +48,6 @@ builder.Services.AddMassTransit(o =>
     o.AddConsumer<RegistryIssuer>();
 
     o.AddConsumer<WalletSliceSender>();
-
-    o.AddConsumer<WorkerConsumer>();
-
-    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
-
-    //o.AddExecuteActivity<IssueToRegistryActivity, IssueToRegistryArguments>();
-    //o.AddExecuteActivity<SendToWalletActivity, SendToWalletArguments>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
