@@ -71,6 +71,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.domain-folder }}
       run: |
+        dotnet restore
         for service in $(find . -name "*.csproj"); do
           dotnet list "$service" package
           dotnet list "$service" package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || continue
