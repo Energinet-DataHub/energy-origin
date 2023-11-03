@@ -6,6 +6,7 @@
 
 START TRANSACTION;
 
+diff
 
 DO $EF$
 BEGIN
