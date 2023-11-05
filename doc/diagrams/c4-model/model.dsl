@@ -109,6 +109,10 @@ transferDomain = group "Transfer Domain" {
             this -> poWallet "Transfers certificates"
         }
         cvrProxy = component "CVR proxy" "Gets CVR data" ".NET Web Api"
+        claimAutomation = component "Claim Automation" "Claims certificates" ".NET BackgroundService" {
+            this -> poWallet "Claims certificates"
+        }
+        claimAutomationApi = component "Claim Automation Api" "Allows users to start, stop and see status of claim automation for the company" ".NET Web Api"
     }
     tDb = container "Transfer Storage" {
         tags "Data Storage"
@@ -120,11 +124,14 @@ transferDomain = group "Transfer Domain" {
     apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"
     apiGateway -> cvrProxy "Forwards requests to"
+    apiGateway -> claimAutomationApi "Forwards requests to"
     connectionsApi -> tDb "Stores connections"
     transferAgreementsApi -> tDb "Stores transfer agreements"
     transferAgreementAutomation -> tDb "Reads transfer agreements"
     deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
     cvrProxy -> cvr "Forwards requests to"
+    claimAutomation -> tDb "Reads owner ids"
+    claimAutomationApi -> tDb "Creates, deletes and reads owner ids"
 }
 
 apiGateway -> dataSyncApi "Forwards requests for metering point info to"

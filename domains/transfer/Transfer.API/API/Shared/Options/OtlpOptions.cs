@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Transfer.Api.Options;
+namespace API.Shared.Options;
 
 public class OtlpOptions
 {

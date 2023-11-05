@@ -114,8 +114,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         Assert.Contains(dbUser.UserRoles, x => x.Role == role);
     }
 
-    [Fact]
-    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateUserWithCompanyWithPredictedId_WhenIdGenerationIsPredictable()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AcceptUserTermsAsync_ShouldReturnOkAndCreateNewUserWithCompanyWithPredictedId_WhenIdGenerationIsPredictable(bool existingCompany)
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
@@ -136,6 +138,13 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             CompanyId = companyId,
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
+
+        if (existingCompany)
+        {
+            var dbContext = factory.DataContext;
+            dbContext.Companies.Add(user.Company);
+            await dbContext.SaveChangesAsync();
+        }
 
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", nameof(OidcOptions.Generation.Predictable)));
 
