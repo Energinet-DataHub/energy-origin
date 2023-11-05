@@ -1,6 +1,4 @@
 using System;
-using API.ContractService;
-using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
