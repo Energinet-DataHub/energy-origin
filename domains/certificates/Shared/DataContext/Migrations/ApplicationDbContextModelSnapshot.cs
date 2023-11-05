@@ -22,7 +22,7 @@ namespace API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DataContext.CertificateIssuingContract", b =>
+            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,7 +71,7 @@ namespace API.Migrations
                     b.ToTable("Contracts");
                 });
 
-            modelBuilder.Entity("DataContext.ConsumptionCertificate", b =>
+            modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -116,7 +116,7 @@ namespace API.Migrations
                     b.ToTable("ConsumptionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.ProductionCertificate", b =>
+            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +161,7 @@ namespace API.Migrations
                     b.ToTable("ProductionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.SynchronizationPosition", b =>
+            modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
                 {
                     b.Property<string>("GSRN")
                         .HasColumnType("text");
@@ -174,7 +174,7 @@ namespace API.Migrations
                     b.ToTable("SynchronizationPositions");
                 });
 
-            modelBuilder.Entity("DataContext.ProductionCertificate", b =>
+            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
                     b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
                         {

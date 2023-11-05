@@ -5,6 +5,7 @@ using API.GranularCertificateIssuer;
 using CertificateValueObjects;
 using Contracts.Certificates.CertificateRejectedInRegistry.V1;
 using DataContext;
+using DataContext.Models;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;

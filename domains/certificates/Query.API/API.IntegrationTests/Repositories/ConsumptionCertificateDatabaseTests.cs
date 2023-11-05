@@ -8,6 +8,7 @@ using CertificateValueObjects;
 using FluentAssertions;
 using System.Linq;
 using DataContext;
+using DataContext.Models;
 
 namespace API.IntegrationTests.Repositories;
 

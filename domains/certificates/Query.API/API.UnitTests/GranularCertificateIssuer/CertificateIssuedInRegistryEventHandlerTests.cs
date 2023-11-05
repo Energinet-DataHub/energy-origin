@@ -10,6 +10,7 @@ using NSubstitute;
 using System.Threading;
 using Contracts.Certificates.CertificateIssuedInRegistry.V1;
 using DataContext;
+using DataContext.Models;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;

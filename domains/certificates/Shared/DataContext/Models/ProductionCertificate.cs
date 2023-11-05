@@ -1,6 +1,6 @@
 using CertificateValueObjects;
 
-namespace DataContext;
+namespace DataContext.Models;
 
 public class ProductionCertificate : Certificate
 {

@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using API.IntegrationTests.Extensions;
 using DataContext;
+using DataContext.Models;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

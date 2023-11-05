@@ -1,4 +1,4 @@
-namespace DataContext;
+namespace DataContext.Models;
 
 public class SynchronizationPosition
 {

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using CertificateValueObjects;
 using Contracts.Certificates.CertificateIssuedInRegistry.V1;
 using DataContext;
+using DataContext.Models;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 

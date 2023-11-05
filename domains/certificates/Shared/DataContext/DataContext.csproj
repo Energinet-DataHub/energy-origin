@@ -22,4 +22,8 @@
     <ProjectReference Include="..\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

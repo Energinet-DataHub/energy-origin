@@ -10,6 +10,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
 using System.Threading.Tasks;
+using DataContext.Models;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

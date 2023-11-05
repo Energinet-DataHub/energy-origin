@@ -5,6 +5,7 @@ using API.ContractService;
 using API.GranularCertificateIssuer;
 using CertificateValueObjects;
 using DataContext;
+using DataContext.Models;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;

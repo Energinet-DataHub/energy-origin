@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using DataContext;
+using DataContext.Models;
 
 namespace API.DataSyncSyncer.Persistence;
 

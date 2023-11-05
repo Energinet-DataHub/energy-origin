@@ -1,4 +1,5 @@
 using DataContext;
+using DataContext.Models;
 
 namespace API.ContractService;
 

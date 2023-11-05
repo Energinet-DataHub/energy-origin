@@ -1,7 +1,7 @@
 using System;
 using CertificateValueObjects;
 
-namespace DataContext;
+namespace DataContext.Models;
 
 public enum IssuedState
 {

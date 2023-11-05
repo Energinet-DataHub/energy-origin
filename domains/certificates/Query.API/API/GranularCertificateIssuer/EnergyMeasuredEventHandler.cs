@@ -4,6 +4,7 @@ using API.ContractService;
 using CertificateValueObjects;
 using Contracts.Certificates;
 using DataContext;
+using DataContext.Models;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;

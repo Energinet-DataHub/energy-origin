@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
+using DataContext.Models;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
