@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace CertificateValueObjects;
+namespace DataContext.ValueObjects;
 
 public partial class Gsrn : ValueObject
 {

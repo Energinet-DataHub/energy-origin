@@ -1,8 +1,7 @@
-using CertificateValueObjects;
-using DataContext;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using System;
 using System.Text.Json.Serialization;
-using DataContext.Models;
 
 namespace API.Query.API.ApiModels.Responses;
 

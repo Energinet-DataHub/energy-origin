@@ -1,5 +1,5 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 
 namespace DataContext.Models;

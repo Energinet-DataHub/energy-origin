@@ -1,7 +1,7 @@
 using System;
-using CertificateValueObjects;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Xunit;
 

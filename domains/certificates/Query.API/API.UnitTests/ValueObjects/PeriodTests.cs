@@ -1,9 +1,9 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Xunit;
 
-namespace API.UnitTests.CertificateValueObjects;
+namespace API.UnitTests.ValueObjects;
 
 public class PeriodTests
 {

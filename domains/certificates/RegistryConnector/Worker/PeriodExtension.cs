@@ -1,5 +1,5 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using Google.Protobuf.WellKnownTypes;
 using ProjectOrigin.Electricity.V1;
 

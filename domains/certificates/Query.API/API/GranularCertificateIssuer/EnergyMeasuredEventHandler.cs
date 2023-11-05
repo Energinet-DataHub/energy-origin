@@ -1,10 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
-using CertificateValueObjects;
 using Contracts.Certificates;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;

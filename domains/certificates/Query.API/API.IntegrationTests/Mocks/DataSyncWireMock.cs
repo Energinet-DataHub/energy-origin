@@ -1,5 +1,5 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;

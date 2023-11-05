@@ -1,4 +1,4 @@
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 
 namespace DataContext.Models;
 

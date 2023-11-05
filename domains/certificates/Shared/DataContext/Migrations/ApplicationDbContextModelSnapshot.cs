@@ -176,7 +176,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");

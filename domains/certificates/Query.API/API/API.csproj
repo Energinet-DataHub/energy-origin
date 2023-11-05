@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <ProjectReference Include="..\..\Shared\CertificateValueObjects\CertificateValueObjects.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
     <ProjectReference Include="..\..\Shared\MeasurementEvents\MeasurementEvents.csproj" />

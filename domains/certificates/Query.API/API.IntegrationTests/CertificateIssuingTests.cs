@@ -4,7 +4,7 @@ using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using MassTransit;

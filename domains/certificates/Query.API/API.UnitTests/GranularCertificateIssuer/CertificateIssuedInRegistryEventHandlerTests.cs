@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using API.GranularCertificateIssuer;
 using FluentAssertions;
 using MassTransit;
-using CertificateValueObjects;
 using NSubstitute;
 using System.Threading;
 using Contracts.Certificates.CertificateIssuedInRegistry.V1;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using Xunit;
 
 namespace API.UnitTests.GranularCertificateIssuer;

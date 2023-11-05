@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CertificateValueObjects;
+namespace DataContext.ValueObjects;
 
 /// <summary>
 /// Time period where the energy was produced.

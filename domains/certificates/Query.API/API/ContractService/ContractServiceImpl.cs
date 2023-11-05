@@ -1,6 +1,7 @@
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using CertificateValueObjects;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using ProjectOrigin.WalletSystem.V1;
 using System;
@@ -8,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DataContext;
-using DataContext.Models;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 

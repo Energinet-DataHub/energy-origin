@@ -1,13 +1,13 @@
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Testcontainers;
-using CertificateValueObjects;
+using DataContext;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using API.IntegrationTests.Extensions;
-using DataContext;
-using DataContext.Models;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

@@ -1,4 +1,4 @@
-namespace CertificateValueObjects;
+namespace DataContext.ValueObjects;
 
 public enum MeteringPointType
 {
