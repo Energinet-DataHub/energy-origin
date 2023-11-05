@@ -51,7 +51,7 @@ Please refer to the official documentation for more details on the CLI tools for
 
 ### Updating the database with the migrations
 
-For local development against your Postgres database running using [Docker Compose](#docker-compose), you must update the database by running e.g. `dotnet ef database update`.
+For local development against your Postgres database running using Docker Compose, you must update the database by running e.g. `dotnet ef database update`.
 
 For the integration test project, the migrations are automatically applied as part of the `WebApplicationFactory`.
 
