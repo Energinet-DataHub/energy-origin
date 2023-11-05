@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace DataContext;
 
@@ -33,8 +34,14 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.Development.json", false)
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("Postgres");
+
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        optionsBuilder.UseNpgsql("host=localhost;Port=5432;Database=Database;username=postgres;password=postgres;");
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }
