@@ -54,7 +54,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
             });
         });
     }
-    
+
     // Accessing the Server property ensures that the server is running
     public void Start() => Server.Should().NotBeNull();
 }
