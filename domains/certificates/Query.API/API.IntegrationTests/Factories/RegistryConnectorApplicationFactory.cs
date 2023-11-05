@@ -54,22 +54,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
             });
         });
     }
-
-    //TODO: Not sure if this should be done here...
-    //protected override IHost CreateHost(IHostBuilder builder)
-    //{
-    //    var host = base.CreateHost(builder);
-    //    if (string.IsNullOrWhiteSpace(ConnectionString))
-    //        return host;
-
-    //    var factory = host.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-
-    //    using var dbContext = factory.CreateDbContext();
-    //    dbContext.Database.Migrate();
-
-    //    return host;
-    //}
-
+    
     // Accessing the Server property ensures that the server is running
     public void Start() => Server.Should().NotBeNull();
 }
