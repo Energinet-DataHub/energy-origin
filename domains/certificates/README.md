@@ -36,16 +36,16 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigration --project Shared/DataContext
+dotnet ef migrations add NameOfMigration --project Query.API/API
 ```
 
 Updating your local database started with Docker Compose can be done using this command:
 
 ```shell
-dotnet ef database update --project Shared/DataContext
+dotnet ef database update --project Query.API/API
 ```
 
-The `--project` argument can be omitted if the working directory is changed to the project folder.
+The `--project` argument can be omitted if the working directory is changed to the project folder. Both the API project and the Worker project can be used.
 
 Please refer to the official documentation for more details on the CLI tools for EF Core.
 
@@ -64,11 +64,6 @@ You must manually remember to generate the complete SQL migration script after a
 This is the command for generating the migration SQL script for the API project:
 
 ```shell
-dotnet ef migrations script --idempotent --project Shared/DataContext --output migrations/DataContext.sql
+dotnet ef migrations script --idempotent --project Query.API/API --output migrations/API.sql
+cp migrations/API.sql migrations/Worker.sql
 ```
-
-## Domain decisions / DDR (Domain-decision-records)
-
-* Use MassTransit to have an abstraction on top of message transports such as RabbitMQ. It can also use Marten for saga persistence. For now it is used as in-memory bus for integration events.
-* Use MartenDB for event store.
-* FluentValidation to make assertions in test more readable. Furthermore, FluentAssertions has support for "BeEquivalentTo", see https://fluentassertions.com/objectgraphs/.
