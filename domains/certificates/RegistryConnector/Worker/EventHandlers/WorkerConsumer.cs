@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.Common.V1;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
@@ -67,6 +66,7 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         if (matchingContract.MeteringPointType == MeteringPointType.Production)
         {
             var technology = new Technology(FuelCode: "F00000000", TechCode: "T070000");
+
             var productionCertificate = new ProductionCertificate(
                 matchingContract.GridArea,
                 period,
@@ -94,23 +94,7 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
             var transaction = issuedEvent.CreateTransaction(issuerKey);
             
-            AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction));
-            AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder, new WaitForCommittedTransactionArguments(transaction.ToShaId()));
-            AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder, new MarkAsIssuedArguments(productionCertificate.Id, MeteringPointType.Production));
-
-            var receiveRequest = new ReceiveRequest
-            {
-                CertificateId = new FederatedStreamId
-                {
-                    Registry = projectOriginOptions.RegistryName,
-                    StreamId = new Uuid { Value = productionCertificate.Id.ToString() }
-                },
-                Quantity = (uint)message.Quantity,
-                RandomR = ByteString.CopyFrom(commitment.BlindingValue),
-                WalletDepositEndpointPublicKey = ByteString.CopyFrom(matchingContract.WalletPublicKey),
-                WalletDepositEndpointPosition = walletDepositEndpointPosition.Value
-            };
-            AddActivity<SendToWalletActivity, SendToWalletArguments>(builder, new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
+            AddActivities(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created production certificate for {Message}", message);
         }
@@ -126,27 +110,26 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
             dbContext.Add(consumptionCertificate);
             await dbContext.SaveChangesAsync(context.CancellationToken);
-            //await repository.Save(consumptionCertificate, context.CancellationToken);
 
-            //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
-            //await context.Publish(new ConsumptionCertificateCreatedEvent(
-            //    consumptionCertificate.Id,
-            //    matchingContract.GridArea,
-            //    period,
-            //    matchingContract.MeteringPointOwner,
-            //    new Gsrn(message.GSRN),
-            //    commitment.BlindingValue.ToArray(),
-            //    message.Quantity,
-            //    matchingContract.WalletPublicKey,
-            //    matchingContract.WalletUrl,
-            //    walletDepositEndpointPosition.Value));
+            var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
+
+            var issuedEvent = Registry.CreateIssuedEventForConsumption(
+                projectOriginOptions.RegistryName,
+                consumptionCertificate.Id,
+                period.ToDateInterval(),
+                matchingContract.GridArea,
+                message.GSRN,
+                commitment,
+                ownerPublicKey);
+
+            var transaction = issuedEvent.CreateTransaction(issuerKey);
+
+            AddActivities(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created consumption certificate for {Message}", message);
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}", matchingContract.MeteringPointType, message));
-
-
         
         var routingSlip = builder.Build();
 
@@ -178,6 +161,32 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         var issuerKey = projectOriginOptions.GetIssuerKey(gridArea);
 
         return (ownerPublicKey, issuerKey);
+    }
+
+    private void AddActivities(RoutingSlipBuilder builder,
+        Transaction transaction,
+        SecretCommitmentInfo commitment,
+        CertificateIssuingContract matchingContract,
+        uint walletDepositEndpointPosition)
+    {
+        AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction));
+
+        AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder,
+            new WaitForCommittedTransactionArguments(transaction.ToShaId()));
+        
+        AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder,
+            new MarkAsIssuedArguments(Guid.Parse(transaction.Header.FederatedStreamId.StreamId.Value), matchingContract.MeteringPointType));
+        
+        var receiveRequest = new ReceiveRequest
+        {
+            CertificateId = transaction.Header.FederatedStreamId,
+            Quantity = commitment.Message,
+            RandomR = ByteString.CopyFrom(commitment.BlindingValue),
+            WalletDepositEndpointPublicKey = ByteString.CopyFrom(matchingContract.WalletPublicKey),
+            WalletDepositEndpointPosition = walletDepositEndpointPosition
+        };
+        AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
+            new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
     }
 
     private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)
