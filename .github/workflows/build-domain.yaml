@@ -100,7 +100,7 @@ jobs:
           name=$(yq '.name' "$CONFIGURATION")
           dotnet=${{ matrix.build.dotnetVersion }}
 
-          paths=$(for item in $(echo "$PROJECT"* "$PROJECT"/../../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          paths=$(for item in $(echo "$service/"* "$service"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
 
           EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
