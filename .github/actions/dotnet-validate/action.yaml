@@ -39,7 +39,6 @@ runs:
         rm -f *.sln || true
         dotnet new sln
         echo "$PATHS" | while read item; do
-          printf 'Adding %s to validation...' "$item"
           dotnet sln add "$item"
         done
 
