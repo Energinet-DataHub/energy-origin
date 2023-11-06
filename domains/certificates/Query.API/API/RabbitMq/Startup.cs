@@ -19,9 +19,9 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            o.AddConsumer<EnergyMeasuredEventHandler>();
-            o.AddConsumer<CertificateIssuedInRegistryEventHandler>();
-            o.AddConsumer<CertificateRejectedInRegistryEventHandler>();
+            //o.AddConsumer<EnergyMeasuredEventHandler>();
+            //o.AddConsumer<CertificateIssuedInRegistryEventHandler>();
+            //o.AddConsumer<CertificateRejectedInRegistryEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

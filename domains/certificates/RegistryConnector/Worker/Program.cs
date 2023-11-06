@@ -55,6 +55,10 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<WalletSliceSender>();
 
+    o.AddConsumer<WorkerConsumer>();
+
+    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
+
     o.UsingRabbitMq((context, cfg) =>
     {
         var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
