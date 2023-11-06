@@ -69,7 +69,15 @@ builder.Services.AddMassTransit(o =>
             h.Username(options.Username);
             h.Password(options.Password);
         });
+
         cfg.ConfigureEndpoints(context);
+
+        cfg.ConfigureJsonSerializerOptions(options =>
+        {
+            options.Converters.Add(new TransactionConverter());
+            options.Converters.Add(new ReceiveRequestConverter());
+            return options;
+        });
     });
 });
 
