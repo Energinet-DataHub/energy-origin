@@ -1,0 +1,56 @@
+name: Dotnet Validate
+
+description: Lints and tests a domain.
+
+# FIXME: datasync repo
+
+inputs:
+  paths:
+    description: The paths of all projects and tests to validate
+    required: true
+
+  dotnet-version:
+    description: The version of dotnet to use
+    default: 7.0.x
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Print dotnet information
+      shell: bash
+      run: dotnet --info
+
+    - name: Print dotnet version
+      shell: bash
+      run: dotnet --version
+
+    - name: Create solution from projects
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+      run: |
+        rm -f *.sln || true
+        dotnet new sln
+        echo "$PATHS" | while read item; do
+          printf 'Adding %s to validation...' "$item"
+          dotnet sln add "$item"
+        done
+
+    - name: Restore
+      shell: bash
+      run: dotnet restore
+
+    - name: Lint
+      shell: bash
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      shell: bash
+      run: dotnet test --no-restore --verbosity normal -warnaserror
