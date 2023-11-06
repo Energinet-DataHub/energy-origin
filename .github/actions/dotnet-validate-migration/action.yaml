@@ -43,6 +43,8 @@ runs:
 
     - name: Create solution from projects
       shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
       run: |
         rm -f *.sln || true
         dotnet new sln
