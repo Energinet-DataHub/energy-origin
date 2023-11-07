@@ -45,7 +45,6 @@ public sealed class ContractTests :
     [Fact]
     public async Task CreateContract_ActivateWithEndDate_Created()
     {
-
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -73,7 +72,6 @@ public sealed class ContractTests :
 
         createdContract.Should().BeEquivalentTo(expectedContract);
     }
-
 
     [Fact]
     public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
