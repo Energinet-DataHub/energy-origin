@@ -1,6 +1,6 @@
 namespace CertificateValueObjects;
 
 public record Technology(
-    string FuelCode, // stamdata
-    string TechCode  // stamdata
+    string FuelCode,
+    string TechCode
 );
