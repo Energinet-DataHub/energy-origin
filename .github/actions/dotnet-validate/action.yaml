@@ -4,7 +4,7 @@ description: Lints and tests a domain.
 
 inputs:
   paths:
-    description: The paths of all projects and tests to validate
+    description: The paths of all projects and tests to validate. Note that the first path given is expected to be the project defining the database schema, if any is defined.
     required: true
 
   dotnet-version:
@@ -17,11 +17,16 @@ inputs:
     default: "false"
     required: false
 
+  sql-file:
+    description: The path of a commited sql file, that needs must be validated against.
+    default: ""
+    required: false
+
 runs:
   using: composite
 
   steps:
-    - name: Setup .NET
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
@@ -34,7 +39,7 @@ runs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: Create solution from projects
+    - name: Create solution
       shell: bash
       env:
         PATHS: ${{ inputs.paths }}
@@ -46,20 +51,20 @@ runs:
           dotnet sln add "$item"
         done
 
-    - name: Pin version ${{ inputs.dotnet-version }}
+    - name: Pin version
       shell: bash
       env:
         VERSION: ${{ inputs.dotnet-version }}
       if: ${{ inputs.pin-version }}
       run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "$VERSION" > global.json
 
-    - name: Print dotnet information
-      shell: bash
-      run: dotnet --info
-
     - name: Print dotnet version
       shell: bash
       run: dotnet --version
+
+    - name: Print dotnet information
+      shell: bash
+      run: dotnet --info
 
     - name: Restore
       shell: bash
@@ -72,3 +77,20 @@ runs:
     - name: Test
       shell: bash
       run: dotnet test --no-restore --verbosity normal -warnaserror
+
+    - name: Validate migration
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+        COMMITED_SQL_FILE: ${{ inputs.sql-file }}
+      if: ${{ '' != inputs.sql-file }}
+      run: |
+        PROJECT=$(echo "$PATHS" | head -n1)
+        GENERATED_SQL_FILE=/tmp/current.sql
+        dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
+        dotnet tool install --global dotnet-ef >/dev/null
+        dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
+
+        cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
+        cat < "$COMMITED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
+        diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }
