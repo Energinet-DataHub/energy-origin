@@ -2,8 +2,6 @@ name: Dotnet Validate
 
 description: Lints and tests a domain.
 
-# FIXME: datasync repo
-
 inputs:
   paths:
     description: The paths of all projects and tests to validate
@@ -13,6 +11,11 @@ inputs:
     description: The version of dotnet to use
     default: 7.0.x
     required: true
+
+  pin-version:
+    description: Pin dotnet version
+    default: "false"
+    required: false
 
 runs:
   using: composite
@@ -31,14 +34,6 @@ runs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: Print dotnet information
-      shell: bash
-      run: dotnet --info
-
-    - name: Print dotnet version
-      shell: bash
-      run: dotnet --version
-
     - name: Create solution from projects
       shell: bash
       env:
@@ -49,6 +44,21 @@ runs:
         echo "$PATHS" | while read item; do
           dotnet sln add "$item"
         done
+
+    - name: Pin version ${{ inputs.dotnet-version }}
+      shell: bash
+      env:
+        VERSION: ${{ inputs.dotnet-version }}
+      if: ${{ inputs.pin-version }}
+      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "$VERSION" > global.json
+
+    - name: Print dotnet information
+      shell: bash
+      run: dotnet --info
+
+    - name: Print dotnet version
+      shell: bash
+      run: dotnet --version
 
     - name: Restore
       shell: bash
