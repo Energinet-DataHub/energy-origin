@@ -45,12 +45,10 @@ runs:
           dotnet sln add "$item"
         done
 
-    - name: Pin version ${{ inputs.dotnet-version }}
+    - name: Pin version
       shell: bash
-      env:
-        VERSION: ${{ inputs.dotnet-version }}
       # if: ${{ inputs.pin-version }}
-      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "$VERSION" > global.json
+      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "${{ inputs.dotnet-version }}" > global.json
 
     - name: Print dotnet information
       shell: bash
