@@ -102,6 +102,9 @@ jobs:
 
           paths=$(for item in $(echo "$service/"* "$service"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
+          if [ ! -f "$migration" ]; then
+            migration=""
+          fi
 
           EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
           {
@@ -124,14 +127,9 @@ jobs:
       - name: Validate project
         uses: ./.github/actions/dotnet-validate
         with:
-          paths: ${{ env.paths }}
           dotnet-version: ${{ matrix.build.dotnetVersion }}
-
-      - name: Validate migrations
-        uses: ./.github/actions/dotnet-validate-migration
-        with:
+          pin-version: true
           paths: ${{ env.paths }}
-          dotnet-version: ${{ matrix.build.dotnetVersion }}
           sql-file: ${{ env.migration }}
 
       - name: Build image
