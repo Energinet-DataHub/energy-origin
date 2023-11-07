@@ -49,7 +49,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             var productionCertificate = new ProductionCertificate(
                 matchingContract.GridArea,
                 period,
-                matchingContract.Technology ?? throw new InvalidOperationException("Technology must be set on production metering point"),
+                matchingContract.Technology,
                 matchingContract.MeteringPointOwner,
                 message.GSRN,
                 message.Quantity,
@@ -62,7 +62,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 productionCertificate.Id,
                 matchingContract.GridArea,
                 period,
-                matchingContract.Technology ?? throw new InvalidOperationException("Technology must be set on production metering point"),
+                matchingContract.Technology,
                 matchingContract.MeteringPointOwner,
                 new Gsrn(message.GSRN),
                 commitment.BlindingValue.ToArray(),

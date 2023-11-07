@@ -45,6 +45,7 @@ public sealed class ContractTests :
     [Fact]
     public async Task CreateContract_ActivateWithEndDate_Created()
     {
+
         var gsrn = GsrnHelper.GenerateRandom();
         dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -63,8 +64,16 @@ public sealed class ContractTests :
 
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+        var expectedContract = new
+        {
+            GSRN = gsrn,
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
+        createdContract.Should().BeEquivalentTo(expectedContract);
     }
+
 
     [Fact]
     public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
