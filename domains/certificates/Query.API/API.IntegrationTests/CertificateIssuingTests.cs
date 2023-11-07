@@ -84,7 +84,7 @@ public sealed class CertificateIssuingTests :
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock, technology);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
@@ -286,7 +286,7 @@ public sealed class CertificateIssuingTests :
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock, technology);
 
         const int measurementCount = 5;
 

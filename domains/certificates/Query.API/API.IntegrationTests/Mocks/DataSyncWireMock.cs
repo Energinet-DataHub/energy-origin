@@ -20,7 +20,7 @@ public sealed class DataSyncWireMock : IDisposable
 
     public string Url => server.Url!;
 
-    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, Technology technology = null!)
+    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, Technology? technology = null)
     {
         server.ResetMappings();
         var responseJson = BuildMeteringPointsResponse(gsrn, type, technology ?? defaultTechnology);
