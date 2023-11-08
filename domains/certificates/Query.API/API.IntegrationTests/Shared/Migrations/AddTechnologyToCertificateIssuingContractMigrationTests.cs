@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
@@ -37,12 +37,12 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
         contractsInDb.Count.Should().Be(2);
     }
 
-private static async Task InsertOldContract(ApplicationDbContext dbContext, Guid id, string gsrn, string gridArea)
-{
-    var contractsTable = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))!.GetTableName();
+    private static async Task InsertOldContract(ApplicationDbContext dbContext, Guid id, string gsrn, string gridArea)
+    {
+        var contractsTable = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))!.GetTableName();
 
-    var contractQuery =
-        $@"INSERT INTO ""{contractsTable}"" (
+        var contractQuery =
+            $@"INSERT INTO ""{contractsTable}"" (
             ""Id"",
             ""GSRN"",
             ""GridArea"",
@@ -65,7 +65,7 @@ private static async Task InsertOldContract(ApplicationDbContext dbContext, Guid
             @WalletPublicKey,
             @ContractNumber)";
 
-    object[] contractFields = {
+        object[] contractFields = {
         new NpgsqlParameter("Id", id),
         new NpgsqlParameter("GSRN", gsrn),
         new NpgsqlParameter("GridArea", gridArea),
@@ -78,8 +78,8 @@ private static async Task InsertOldContract(ApplicationDbContext dbContext, Guid
         new NpgsqlParameter("ContractNumber", 1)
     };
 
-    await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
-}
+        await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
+    }
 
     private async Task<ApplicationDbContext> CreateNewCleanDatabase()
     {
