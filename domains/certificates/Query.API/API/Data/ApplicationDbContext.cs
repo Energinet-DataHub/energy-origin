@@ -13,7 +13,14 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CertificateIssuingContract>().HasIndex(c => new { c.GSRN, c.ContractNumber }).IsUnique();
-        modelBuilder.Entity<CertificateIssuingContract>().OwnsOne(c => c.Technology);
+        modelBuilder.Entity<CertificateIssuingContract>(entity =>
+        {
+            entity.OwnsOne(e => e.Technology, tech =>
+            {
+                tech.Property(t => t.FuelCode).HasDefaultValue("F00000000");
+                tech.Property(t => t.TechCode).HasDefaultValue("T070000");
+            });
+        });
 
         modelBuilder.Entity<ProductionCertificate>().OwnsOne(c => c.Technology);
         modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
