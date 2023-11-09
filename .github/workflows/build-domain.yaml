@@ -118,10 +118,6 @@ jobs:
             echo "dotnet=${dotnet::${#dotnet}-2}"
           } >> $GITHUB_ENV
 
-      - name: Pin dotnet version
-        shell: bash
-        run: echo '{"sdk":{"rollForward":"disable","version":"${{ matrix.build.dotnetVersion }}"}}' > "${{ env.domain }}/global.json"
-
       - name: Validate project
         uses: ./.github/actions/dotnet-validate
         with:
