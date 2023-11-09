@@ -68,7 +68,7 @@ namespace API.Migrations
                     b.HasIndex("GSRN", "ContractNumber")
                         .IsUnique();
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", (string)null);
                 });
 
             modelBuilder.Entity("API.Data.ConsumptionCertificate", b =>
@@ -113,7 +113,7 @@ namespace API.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ConsumptionCertificates");
+                    b.ToTable("ConsumptionCertificates", (string)null);
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
@@ -158,7 +158,7 @@ namespace API.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ProductionCertificates");
+                    b.ToTable("ProductionCertificates", (string)null);
                 });
 
             modelBuilder.Entity("API.DataSyncSyncer.Persistence.SynchronizationPosition", b =>
@@ -171,31 +171,27 @@ namespace API.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("SynchronizationPositions");
+                    b.ToTable("SynchronizationPositions", (string)null);
                 });
 
             modelBuilder.Entity("API.ContractService.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("API.ContractService.CertificateIssuingContract.Technology#CertificateValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("FuelCode")
                                 .IsRequired()
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("text")
-                                .HasDefaultValue("F00000000");
+                                .HasColumnType("text");
 
                             b1.Property<string>("TechCode")
                                 .IsRequired()
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("text")
-                                .HasDefaultValue("T070000");
+                                .HasColumnType("text");
 
                             b1.HasKey("CertificateIssuingContractId");
 
-                            b1.ToTable("Contracts");
+                            b1.ToTable("Contracts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("CertificateIssuingContractId");
@@ -207,7 +203,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("API.Data.ProductionCertificate.Technology#CertificateValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");
@@ -222,7 +218,7 @@ namespace API.Migrations
 
                             b1.HasKey("ProductionCertificateId");
 
-                            b1.ToTable("ProductionCertificates");
+                            b1.ToTable("ProductionCertificates", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProductionCertificateId");

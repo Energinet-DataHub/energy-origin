@@ -17,7 +17,7 @@ public class CertificateIssuingContract
     public DateTimeOffset Created { get; set; }
     public string WalletUrl { get; set; } = "";
     public byte[] WalletPublicKey { get; set; } = Array.Empty<byte>();
-    public Technology Technology { get; set; } = new("F00000000", "T070000");
+    public Technology? Technology { get; set; }
 
     public static CertificateIssuingContract Create(int contractNumber,
         string gsrn,
@@ -28,7 +28,7 @@ public class CertificateIssuingContract
         DateTimeOffset? endDate,
         string walletUrl,
         byte[] walletPublicKey,
-        Technology technology)
+        Technology? technology)
     {
         var contract = new CertificateIssuingContract
         {

@@ -146,29 +146,3 @@ BEGIN
 END $EF$;
 COMMIT;
 
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231109103130_ChangeDefaultValueForTechnologyInContractsTable') THEN
-    ALTER TABLE "Contracts" ALTER COLUMN "Technology_TechCode" SET DEFAULT 'T070000';
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231109103130_ChangeDefaultValueForTechnologyInContractsTable') THEN
-    ALTER TABLE "Contracts" ALTER COLUMN "Technology_FuelCode" SET DEFAULT 'F00000000';
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231109103130_ChangeDefaultValueForTechnologyInContractsTable') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231109103130_ChangeDefaultValueForTechnologyInContractsTable', '7.0.10');
-    END IF;
-END $EF$;
-COMMIT;
-
