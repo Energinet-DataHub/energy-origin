@@ -44,8 +44,8 @@ public class RegistryIssuer : IConsumer<ProductionCertificateCreatedEvent>, ICon
             message.Period.ToDateInterval(),
             message.GridArea,
             message.Gsrn.Value,
-            message.Technology.TechCode,
-            message.Technology.FuelCode,
+            message.Technology?.TechCode,
+            message.Technology?.FuelCode,
             commitment,
             ownerPublicKey);
 

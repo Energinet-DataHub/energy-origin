@@ -8,7 +8,7 @@ public class ProductionCertificate : Certificate
     {
     }
 
-    public ProductionCertificate(string gridArea, Period period, Technology? technology, string meteringPointOwner, string gsrn, long quantity, byte[] blindingValue)
+    public ProductionCertificate(string gridArea, Period period, Technology technology, string meteringPointOwner, string gsrn, long quantity, byte[] blindingValue)
         : base(gridArea, period, meteringPointOwner, gsrn, quantity, blindingValue)
     {
         Technology = technology;
