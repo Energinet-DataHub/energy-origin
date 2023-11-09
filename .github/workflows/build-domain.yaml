@@ -95,12 +95,12 @@ jobs:
           CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
           docker="$PROJECT/Dockerfile"
-          service=$(dirname "$PROJECT")
+          projects=$(dirname "$PROJECT")
           domain=$(dirname "$service")
           name=$(yq '.name' "$CONFIGURATION")
           dotnet=${{ matrix.build.dotnetVersion }}
 
-          paths=$(for item in $(echo "$service/"* "$service"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
             migration=""
@@ -112,8 +112,6 @@ jobs:
             printf "%s\n" "$paths"
             printf "%s\n" "$EOF"
             echo "migration=${migration}"
-            echo "service=${service}"
-            echo "project=${PROJECT}"
             echo "docker=${docker}"
             echo "domain=${domain}"
             echo "name=${name}"
