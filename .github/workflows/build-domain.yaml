@@ -96,7 +96,7 @@ jobs:
         run: |
           docker="$PROJECT/Dockerfile"
           projects=$(dirname "$PROJECT")
-          domain=$(dirname "$service")
+          domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
           dotnet=${{ matrix.build.dotnetVersion }}
 
