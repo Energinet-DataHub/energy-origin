@@ -80,18 +80,20 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
-        using var client = factory.CreateUnauthenticatedClient();
+        using var client = factory.CreateClient();
         var provider = factory.GetApiVersionDescriptionProvider();
 
-        var versions = provider.ApiVersionDescriptions.Select(v => v.GroupName);
-
-        foreach (var version in versions)
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
-            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
 
-            Assert.True(swaggerDocResponse.IsSuccessStatusCode, $"Swagger documentation for {version} should be accessible.");
-            var json = await swaggerDocResponse.Content.ReadAsStringAsync();
-            await Verifier.Verify(json).UseParameters(version);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            await Verifier.Verify(json)
+                .UseParameters(version)
+                .UseMethodName($"GetSwaggerDocs_v{version}");
         }
     }
 }

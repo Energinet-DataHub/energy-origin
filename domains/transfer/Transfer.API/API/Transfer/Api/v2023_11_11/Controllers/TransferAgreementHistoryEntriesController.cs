@@ -8,11 +8,11 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Transfer.Api.v2023_01_01.Controllers;
+namespace API.Transfer.Api.v2023_11_11.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion( "20230101", Deprecated = true )]
+[ApiVersion("20231111")]
 [Route("api/history/transfer-agreements")]
 public class TransferAgreementHistoryEntriesController : ControllerBase
 {

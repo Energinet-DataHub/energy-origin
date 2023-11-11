@@ -1,14 +1,26 @@
 ﻿{
   "openapi": "3.0.1",
   "info": {
-    "title": "Transfer API",
-    "version": "v1"
+    "title": "Transfer API 20230101",
+    "description": "This API version has been deprecated.",
+    "version": "20230101"
   },
   "paths": {
     "/api/claim-automation/start": {
       "post": {
         "tags": [
           "ClaimAutomation"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "201": {
@@ -51,13 +63,25 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/claim-automation/stop": {
       "delete": {
         "tags": [
           "ClaimAutomation"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "204": {
@@ -66,13 +90,25 @@
           "404": {
             "description": "Not Found"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/claim-automation": {
       "get": {
         "tags": [
           "ClaimAutomation"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "404": {
@@ -98,13 +134,25 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/connection-invitations": {
       "post": {
         "tags": [
           "ConnectionInvitations"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "201": {
@@ -130,7 +178,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/connection-invitations/{id}": {
@@ -148,6 +197,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -198,7 +256,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       },
       "delete": {
         "tags": [
@@ -215,6 +274,15 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
           }
         ],
         "responses": {
@@ -224,7 +292,8 @@
           "404": {
             "description": "Connection-invitation not found"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/connections": {
@@ -233,6 +302,17 @@
           "Connections"
         ],
         "summary": "Add a new connection",
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
+        ],
         "requestBody": {
           "description": "The request object containing the ConnectionInvitationId for creating the connection.",
           "content": {
@@ -314,11 +394,23 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       },
       "get": {
         "tags": [
           "Connections"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -344,7 +436,8 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/connections/{id}": {
@@ -360,6 +453,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -387,7 +489,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/cvr/{cvrNumber}": {
@@ -404,6 +507,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -431,13 +543,25 @@
           "404": {
             "description": "CVR company not found"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/transfer-automation/status": {
       "get": {
         "tags": [
           "TransferAgreementAutomation"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -460,7 +584,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/history/transfer-agreements/{transferAgreementId}": {
@@ -476,6 +601,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -503,13 +637,25 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/transfer-agreements": {
       "post": {
         "tags": [
           "TransferAgreements"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -574,11 +720,23 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       },
       "get": {
         "tags": [
           "TransferAgreements"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -604,7 +762,8 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/transfer-agreements/{id}": {
@@ -620,6 +779,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -647,7 +815,8 @@
           "404": {
             "description": "Not Found"
           }
-        }
+        },
+        "deprecated": true
       },
       "patch": {
         "tags": [
@@ -661,6 +830,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
             }
           }
         ],
@@ -730,13 +908,25 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/transfer-agreements/wallet-deposit-endpoint": {
       "post": {
         "tags": [
           "TransferAgreements"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "schema": {
+              "type": "string",
+              "default": "20230101"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -759,7 +949,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     }
   },
@@ -873,14 +1064,16 @@
             "format": "uuid"
           },
           "companyATin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "companyBId": {
             "type": "string",
             "format": "uuid"
           },
           "companyBTin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -900,7 +1093,8 @@
           },
           "companyTin": {
             "type": "string",
-            "description": "Company TIN (e.g. CVR)"
+            "description": "Company TIN (e.g. CVR)",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -917,7 +1111,8 @@
             "format": "uuid"
           },
           "senderCompanyTin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -934,7 +1129,8 @@
             "items": {
               "$ref": "#/components/schemas/ConnectionDto"
             },
-            "description": "List of connections"
+            "description": "List of connections",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -962,10 +1158,12 @@
             "nullable": true
           },
           "receiverTin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "base64EncodedWalletDepositEndpoint": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -975,7 +1173,8 @@
         "properties": {
           "companyCvr": {
             "type": "string",
-            "description": "Company CVR number"
+            "description": "Company CVR number",
+            "nullable": true
           },
           "companyName": {
             "type": "string",
@@ -1058,13 +1257,16 @@
             "nullable": true
           },
           "senderName": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "senderTin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "receiverTin": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1076,7 +1278,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferAgreementHistoryEntryDto"
-            }
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1108,7 +1311,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"
-            }
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
