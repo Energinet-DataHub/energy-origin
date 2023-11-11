@@ -158,7 +158,7 @@ if (app.Environment.IsDevelopment())
 
                 options.SwaggerEndpoint(
                     $"/api-docs/transfer/{description.GroupName}/swagger.json",
-                    description.GroupName );
+                    $"API v{description.GroupName}");
             }
         });
 
