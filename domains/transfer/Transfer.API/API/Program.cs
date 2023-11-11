@@ -157,7 +157,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(
         options =>
         {
-            foreach (var description in app.DescribeApiVersions() )
+            foreach (var description in app.DescribeApiVersions())
             {
 
                 options.SwaggerEndpoint(
