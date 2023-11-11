@@ -18,7 +18,7 @@ namespace API.Transfer.Api.v2023_11_11.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/transfer-agreements")]
-[ApiVersion("20231111")]
+[ApiVersion("20230607")]
 public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;

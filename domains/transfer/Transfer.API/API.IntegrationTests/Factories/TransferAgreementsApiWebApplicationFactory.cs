@@ -12,6 +12,7 @@ using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -40,6 +41,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
+
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

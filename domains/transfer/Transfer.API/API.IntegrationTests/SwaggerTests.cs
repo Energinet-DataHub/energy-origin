@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -69,23 +70,22 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     }
 
     [Fact]
-    public async Task GetSwaggerDocs_ForAllKnownVersions()
+    public async Task GetSwaggerDocs_ForAllApiVersions()
     {
-        using var client = factory.CreateUnauthenticatedClient();
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
 
-        var expectedVersions = new List<string>
-            { "20230101", "20230201" };
+        var versions = provider.ApiVersionDescriptions.Select(v => v.GroupName);
 
-        foreach (var version in expectedVersions)
+        foreach (var version in versions)
         {
             var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
             var swaggerDocResponse = await client.GetAsync(swaggerDocUrl);
 
-            Assert.True(swaggerDocResponse.IsSuccessStatusCode,
-                $"Swagger documentation for {version} should be accessible.");
+            Assert.True(swaggerDocResponse.IsSuccessStatusCode, $"Swagger documentation for {version} should be accessible.");
 
             var json = await swaggerDocResponse.Content.ReadAsStringAsync();
-            await Verifier.Verify(json).UseParameters(version);
+            await Verifier.Verify(json).UseParameters(version); // Verify each version
         }
     }
 }

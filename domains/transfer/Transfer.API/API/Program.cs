@@ -61,7 +61,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = true;
-        options.DefaultApiVersion = new ApiVersion(1, 0, "20230101");
+        options.DefaultApiVersion = new ApiVersion(20230101, 0);
         options.ReportApiVersions = true;
         options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
     })
