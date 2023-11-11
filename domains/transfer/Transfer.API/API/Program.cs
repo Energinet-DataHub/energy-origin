@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using API;
 using API.Claiming;
 using API.Connections;
 using API.Connections.Automation.Options;
@@ -9,6 +10,7 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
+using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -25,6 +27,7 @@ using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
@@ -55,15 +58,25 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.DefaultApiVersion = new ApiVersion(1, 0, "20230101");
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
+
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen(o =>
 {
-    o.SupportNonNullableReferenceTypes();
-    o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
-    o.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "Transfer API"
-    });
+    o.OperationFilter<SwaggerDefaultValues>();
+
+    var fileName = $"{typeof(Program).Assembly.GetName().Name}.xml";
+    var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+    o.IncludeXmlComments(filePath);
 
     if (builder.Environment.IsDevelopment())
     {
@@ -135,9 +148,18 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment())
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    var descriptions = app.DescribeApiVersions();
+
+    foreach (var description in descriptions)
+    {
+        var url = $"/swagger/{description.GroupName}/swagger.json";
+        var name = description.GroupName.ToUpperInvariant();
+        options.SwaggerEndpoint(url, name);
+    }
+});
 
 app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

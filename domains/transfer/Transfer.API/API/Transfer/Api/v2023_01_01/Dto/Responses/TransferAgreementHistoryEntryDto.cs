@@ -2,7 +2,7 @@ using System;
 using API.Shared;
 using API.Transfer.Api.Models;
 
-namespace API.Transfer.Api.Dto.Responses;
+namespace API.Transfer.Api.v2023_01_01.Dto.Responses;
 
 public record TransferAgreementHistoryEntryDto(
     TransferAgreementDto TransferAgreement,

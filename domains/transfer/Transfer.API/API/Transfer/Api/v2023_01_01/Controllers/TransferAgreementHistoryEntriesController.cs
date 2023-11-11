@@ -2,15 +2,17 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Shared.Extensions;
-using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Repository;
+using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Transfer.Api.Controllers;
+namespace API.Transfer.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20230101")]
 [Route("api/history/transfer-agreements")]
 public class TransferAgreementHistoryEntriesController : ControllerBase
 {

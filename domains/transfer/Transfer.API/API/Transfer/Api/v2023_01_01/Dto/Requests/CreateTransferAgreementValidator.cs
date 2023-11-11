@@ -3,7 +3,7 @@ using API.Shared.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
-namespace API.Transfer.Api.Dto.Requests;
+namespace API.Transfer.Api.v2023_01_01.Dto.Requests;
 
 public class CreateTransferAgreementValidator : AbstractValidator<CreateTransferAgreement>
 {

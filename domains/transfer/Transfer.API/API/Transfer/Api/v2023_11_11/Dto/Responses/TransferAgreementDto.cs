@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Transfer.Api.Dto.Responses;
+namespace API.Transfer.Api.v2023_11_11.Dto.Responses;
 
 public record TransferAgreementDto(
     Guid Id,

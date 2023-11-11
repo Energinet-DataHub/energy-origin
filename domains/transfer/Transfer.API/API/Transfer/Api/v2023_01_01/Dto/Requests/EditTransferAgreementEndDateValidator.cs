@@ -1,7 +1,7 @@
 using System;
 using FluentValidation;
 
-namespace API.Transfer.Api.Dto.Requests;
+namespace API.Transfer.Api.v2023_01_01.Dto.Requests;
 
 public class EditTransferAgreementEndDateValidator : AbstractValidator<EditTransferAgreementEndDate>
 {

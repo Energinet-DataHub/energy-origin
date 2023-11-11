@@ -1,7 +1,7 @@
 using API.Transfer.Api.Converters;
 using FluentValidation;
 
-namespace API.Transfer.Api.Dto.Requests;
+namespace API.Transfer.Api.v2023_11_11.Dto.Requests;
 
 public static class RuleExtensions
 {

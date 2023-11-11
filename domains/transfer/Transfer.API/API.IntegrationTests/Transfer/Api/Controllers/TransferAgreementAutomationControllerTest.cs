@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.Dto.Responses;
+using API.Transfer.Api.v2023_01_01.Dto.Responses;
 using API.Transfer.TransferAgreementsAutomation;
 using Argon;
 using FluentAssertions;

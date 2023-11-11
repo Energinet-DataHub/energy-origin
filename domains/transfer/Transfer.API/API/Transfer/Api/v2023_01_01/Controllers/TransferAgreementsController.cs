@@ -3,11 +3,12 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Shared.Extensions;
-using API.Transfer.Api.Dto.Requests;
-using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.Transfer.Api.v2023_01_01.Dto.Requests;
+using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -15,10 +16,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Transfer.Api.Controllers;
+namespace API.Transfer.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20230101")]
 [Route("api/transfer-agreements")]
 public class TransferAgreementsController : ControllerBase
 {
