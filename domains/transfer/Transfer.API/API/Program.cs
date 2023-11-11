@@ -72,11 +72,11 @@ builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwa
 builder.Services.AddSwaggerGen(o =>
 {
     o.OperationFilter<SwaggerDefaultValues>();
-
-    var fileName = $"{typeof(Program).Assembly.GetName().Name}.xml";
-    var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
-
-    o.IncludeXmlComments(filePath);
+    var xmlFilePath = Path.Combine(AppContext.BaseDirectory, "documentation.xml");
+    if (File.Exists(xmlFilePath))
+    {
+        o.IncludeXmlComments(xmlFilePath);
+    }
 
     if (builder.Environment.IsDevelopment())
     {
@@ -149,15 +149,15 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseSwagger();
-app.UseSwaggerUI(options =>
+app.UseSwaggerUI(
+    options =>
 {
-    var descriptions = app.DescribeApiVersions();
-
-    foreach (var description in descriptions)
+    foreach (var description in app.DescribeApiVersions() )
     {
-        var url = $"/api-docs/transfer/{description.GroupName}/swagger.json";
-        var name = description.GroupName.ToUpperInvariant();
-        options.SwaggerEndpoint(url, name);
+
+        options.SwaggerEndpoint(
+            $"/api-docs/transfer/{description.GroupName}/swagger.json",
+            description.GroupName );
     }
 });
 

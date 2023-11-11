@@ -72,7 +72,7 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerDocs_ForAllApiVersions()
     {
-        using var client = factory.CreateClient();
+        using var client = factory.CreateUnauthenticatedClient();
         var provider = factory.GetApiVersionDescriptionProvider();
 
         var versions = provider.ApiVersionDescriptions.Select(v => v.GroupName);
