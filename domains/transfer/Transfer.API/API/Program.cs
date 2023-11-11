@@ -149,17 +149,18 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
-app.UseSwaggerUI(
-    options =>
-{
-    foreach (var description in app.DescribeApiVersions() )
-    {
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions() )
+            {
 
-        options.SwaggerEndpoint(
-            $"/api-docs/transfer/{description.GroupName}/swagger.json",
-            description.GroupName );
-    }
-});
+                options.SwaggerEndpoint(
+                    $"/api-docs/transfer/{description.GroupName}/swagger.json",
+                    description.GroupName );
+            }
+        });
 
 app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
