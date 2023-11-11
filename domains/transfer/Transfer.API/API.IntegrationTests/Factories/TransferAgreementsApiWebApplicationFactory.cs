@@ -49,6 +49,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return provider;
     }
 
+    private HttpClient AddDefaultHeaders(HttpClient client)
+    {
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231111");
+        return client;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
@@ -148,7 +154,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
+    public HttpClient CreateUnauthenticatedClient()
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231111");
+        return client;
+    }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
@@ -156,7 +167,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231111");
         return client;
     }
 
