@@ -66,9 +66,4 @@
       <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Transfer\Api\Dto\Requests\" />
-      <Folder Include="Transfer\Api\Dto\Responses\" />
-    </ItemGroup>
-
 </Project>
