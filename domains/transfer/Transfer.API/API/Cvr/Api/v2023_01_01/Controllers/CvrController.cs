@@ -1,15 +1,17 @@
 using System.Linq;
 using System.Threading.Tasks;
 using API.Cvr.Api.Clients.Cvr;
-using API.Cvr.Api.Dto.Responses;
 using API.Cvr.Api.Models;
+using API.Cvr.Api.v2023_01_01.Dto.Responses;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Cvr.Api.Controllers;
+namespace API.Cvr.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20230101", Deprecated = true)]
 [Route("api/cvr")]
 public class CvrController : Controller
 {

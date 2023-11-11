@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Connections.Api.Dto.Responses;
+namespace API.Connections.Api.v2023_01_01.Dto.Responses;
 
 public record ConnectionDto
 {

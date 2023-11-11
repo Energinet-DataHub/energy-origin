@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -39,38 +38,47 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     }
 
     [Fact]
-    public async Task GetSwaggerUI_AppEnvironmentIsProduction_ReturnsNotFound()
+    public async Task GetSwaggerUI_Production_ReturnsNotFound()
     {
         using var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        using var swaggerUiResponse = await client.GetAsync("swagger");
 
-        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var swaggerUiResponse = await client.GetAsync("swagger");
+        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
     }
 
     [Fact]
-    public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
+    public async Task GetSwaggerDocs_AllVersions_ReturnsOk()
     {
         using var client = factory.CreateUnauthenticatedClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/transfer/v1/swagger.json");
+        var provider = factory.GetApiVersionDescriptionProvider();
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible.");
+        }
     }
 
     [Fact]
-    public async Task GetSwaggerDoc_AppEnvironmentIsProduction_ReturnsOk()
+    public async Task GetSwaggerDocs_ForAllVersions_Production_ReturnsOk()
     {
         using var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/transfer/v1/swagger.json");
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible in production.");
+        }
     }
 
     [Fact]
-    public async Task GetSwaggerDocs_ForAllApiVersions()
+    public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
         using var client = factory.CreateUnauthenticatedClient();
         var provider = factory.GetApiVersionDescriptionProvider();
@@ -79,13 +87,11 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
 
         foreach (var version in versions)
         {
-            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
-            var swaggerDocResponse = await client.GetAsync(swaggerDocUrl);
+            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
 
             Assert.True(swaggerDocResponse.IsSuccessStatusCode, $"Swagger documentation for {version} should be accessible.");
-
             var json = await swaggerDocResponse.Content.ReadAsStringAsync();
-            await Verifier.Verify(json).UseParameters(version); // Verify each version
+            await Verifier.Verify(json).UseParameters(version);
         }
     }
 }

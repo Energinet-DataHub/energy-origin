@@ -3,13 +3,15 @@ using System.Threading.Tasks;
 using API.Connections.Api.Models;
 using API.Connections.Api.Repository;
 using API.Shared.Extensions;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Connections.Api.Controllers;
+namespace API.Connections.Api.v2023_11_11.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20231111")]
 [Route("api/connection-invitations")]
 public class ConnectionInvitationsController : ControllerBase
 {

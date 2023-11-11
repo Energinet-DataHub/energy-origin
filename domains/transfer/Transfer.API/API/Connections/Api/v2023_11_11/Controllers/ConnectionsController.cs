@@ -1,19 +1,21 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Connections.Api.Dto.Requests;
-using API.Connections.Api.Dto.Responses;
 using API.Connections.Api.Exceptions;
 using API.Connections.Api.Models;
 using API.Connections.Api.Repository;
+using API.Connections.Api.v2023_11_11.Dto.Requests;
+using API.Connections.Api.v2023_11_11.Dto.Responses;
 using API.Shared.Extensions;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Connections.Api.Controllers;
+namespace API.Connections.Api.v2023_11_11.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20231111")]
 [Route("api/connections")]
 public class ConnectionsController : Controller
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Connections.Api.Dto.Requests;
+namespace API.Connections.Api.v2023_11_11.Dto.Requests;
 
 public class CreateConnection
 {

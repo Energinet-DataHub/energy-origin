@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Cvr.Api.Dto.Responses;
+using API.Cvr.Api.v2023_01_01.Dto.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using VerifyTests;

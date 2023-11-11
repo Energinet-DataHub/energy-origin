@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Cvr.Api.Dto.Responses;
+namespace API.Cvr.Api.v2023_11_11.Dto.Responses;
 
 public record CvrCompanyDto
 {
