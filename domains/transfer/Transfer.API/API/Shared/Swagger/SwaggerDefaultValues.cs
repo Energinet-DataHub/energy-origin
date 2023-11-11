@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace API;
+namespace API.Shared.Swagger;
 
 public class SwaggerDefaultValues : IOperationFilter
 {

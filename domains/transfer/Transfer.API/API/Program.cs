@@ -1,13 +1,13 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using API;
 using API.Claiming;
 using API.Connections;
 using API.Connections.Automation.Options;
 using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;
+using API.Shared.Swagger;
 using API.Transfer;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
