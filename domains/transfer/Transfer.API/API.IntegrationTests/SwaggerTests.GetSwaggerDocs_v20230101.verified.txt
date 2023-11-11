@@ -16,6 +16,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -77,6 +78,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -104,6 +106,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -148,6 +151,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -203,6 +207,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -279,6 +284,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -307,6 +313,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -406,6 +413,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -459,6 +467,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -513,6 +522,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -557,6 +567,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -607,6 +618,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -651,6 +663,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -732,6 +745,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -785,6 +799,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -836,6 +851,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"
@@ -922,6 +938,7 @@
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
+            "required": true,
             "schema": {
               "type": "string",
               "default": "20230101"

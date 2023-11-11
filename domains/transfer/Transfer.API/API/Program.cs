@@ -14,9 +14,11 @@ using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -58,10 +60,17 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddLogging();
+builder.Services.AddTransfer();
+builder.Services.AddCvr();
+builder.Services.AddConnection();
+builder.Services.AddClaimServices();
+builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ErrorObjectWriter>());
+builder.Services.AddProblemDetails();
 builder.Services.AddApiVersioning(options =>
     {
-        options.AssumeDefaultVersionWhenUnspecified = true;
-        options.DefaultApiVersion = new ApiVersion(20230101, 0);
+        options.AssumeDefaultVersionWhenUnspecified = false;
         options.ReportApiVersions = true;
         options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
     })
@@ -106,11 +115,6 @@ builder.Services.AddSwaggerGen(o =>
         });
     }
 });
-builder.Services.AddLogging();
-builder.Services.AddTransfer();
-builder.Services.AddCvr();
-builder.Services.AddConnection();
-builder.Services.AddClaimServices();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
