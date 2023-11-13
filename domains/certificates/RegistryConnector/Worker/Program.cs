@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
+using RegistryConnector.Worker.Activities;
 using RegistryConnector.Worker.EventHandlers;
 using Serilog;
 using Serilog.Enrichers.Span;

@@ -2,7 +2,6 @@ using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Google.Protobuf;
-using Grpc.Net.Client;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,6 @@ using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -24,6 +22,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using RegistryConnector.Worker.Activities;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
@@ -235,158 +234,6 @@ public class WalletException : Exception
     {
     }
 }
-
-public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments>
-{
-    private readonly ProjectOriginOptions projectOriginOptions;
-    private readonly ILogger<IssueToRegistryActivity> logger;
-
-    public IssueToRegistryActivity(IOptions<ProjectOriginOptions> projectOriginOptions, ILogger<IssueToRegistryActivity> logger)
-    {
-        this.projectOriginOptions = projectOriginOptions.Value;
-        this.logger = logger;
-    }
-
-    public async Task<ExecutionResult> Execute(ExecuteContext<IssueToRegistryArguments> context)
-    {
-        logger.LogInformation("Registry. TrackingNumber: {trackingNumber}. Arguments: {args}. Retry {r1} {r2} {r3}", context.TrackingNumber, context.Arguments, context.GetRetryAttempt(), context.GetRetryCount(), context.GetRedeliveryCount());
-
-        var request = new SendTransactionsRequest();
-        request.Transactions.Add(context.Arguments.Transaction);
-
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
-        var client = new RegistryService.RegistryServiceClient(channel);
-
-        await client.SendTransactionsAsync(request);
-
-        return context.Completed();
-    }
-}
-
-public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<IssueToRegistryActivity, IssueToRegistryArguments>
-{
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<IssueToRegistryActivity, IssueToRegistryArguments> executeActivityConfigurator)
-    {
-        endpointConfigurator.UseMessageRetry(r => r.Interval(3, TimeSpan.FromMilliseconds(500)));
-    }
-}
-
-public record IssueToRegistryArguments(Transaction Transaction);
-
-public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommittedTransactionArguments>
-{
-    private readonly ProjectOriginOptions projectOriginOptions;
-
-    public WaitForCommittedTransactionActivity(IOptions<ProjectOriginOptions> projectOriginOptions)
-    {
-        this.projectOriginOptions = projectOriginOptions.Value;
-    }
-
-    public async Task<ExecutionResult> Execute(ExecuteContext<WaitForCommittedTransactionArguments> context)
-    {
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
-        var client = new RegistryService.RegistryServiceClient(channel);
-        var statusRequest = new GetTransactionStatusRequest
-        {
-            Id = context.Arguments.ShaId
-        };
-        
-        var stopWatch = new Stopwatch();
-        stopWatch.Start();
-        while (true)
-        {
-            var status = await client.GetTransactionStatusAsync(statusRequest);
-
-            if (status.Status == TransactionState.Committed)
-            {
-                return context.Completed();
-                //logger.LogInformation("Certificate {id} issued in registry", certificateId);
-                //await context.Publish(new CertificateIssuedInRegistryEvent(
-                //    certificateId,
-                //    projectOriginOptions.RegistryName,
-                //    commitment.BlindingValue.ToArray(),
-                //    commitment.Message,
-                //    meteringPointType,
-                //    walletPublicKey,
-                //    walletUrl,
-                //    walletDepositEndpointPosition));
-                break;
-            }
-
-            if (status.Status == TransactionState.Failed)
-            {
-                //TODO:
-                return context.Completed();
-                //logger.LogInformation("Certificate {id} rejected by registry", certificateId);
-                //await context.Publish(new CertificateRejectedInRegistryEvent(certificateId, meteringPointType, status.Message));
-                //break;
-            }
-
-            await Task.Delay(1000);
-
-            if (stopWatch.Elapsed > TimeSpan.FromMinutes(5))
-                throw new TimeoutException($"Timed out waiting for transaction to commit for certificate");
-        }
-    }
-}
-
-public record WaitForCommittedTransactionArguments(string ShaId);
-
-public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
-{
-    private readonly ApplicationDbContext dbContext;
-
-    public MarkAsIssuedActivity(ApplicationDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
-
-    public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
-    {
-        Certificate? certificate = context.Arguments.MeteringPointType == MeteringPointType.Production
-            ? await dbContext.ProductionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
-                context.CancellationToken)
-            : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
-                context.CancellationToken);
-
-        certificate.Issue();
-
-        await dbContext.SaveChangesAsync(context.CancellationToken);
-
-        return context.Completed();
-    }
-}
-
-public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType MeteringPointType);
-
-public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
-{
-    private readonly ILogger<SendToWalletActivity> logger;
-
-    public SendToWalletActivity(ILogger<SendToWalletActivity> logger)
-    {
-        this.logger = logger;
-    }
-
-    public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
-    {
-        logger.LogInformation("Wallet. TrackingNumber: {trackingNumber}. Arguments: {args}", context.TrackingNumber, context.Arguments);
-
-        // TODO: Think this should be handled earlier - in the routing slip builder
-        //if (message.Quantity > uint.MaxValue)
-        //    throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
-
-        using var channel = GrpcChannel.ForAddress(context.Arguments.WalletUrl);
-        var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
-
-        await client.ReceiveSliceAsync(context.Arguments.ReceiveRequest);
-
-        return context.Completed();
-    }
-}
-
-public record SendToWalletArguments(string WalletUrl, ReceiveRequest ReceiveRequest);
 
 public class WorkerBackgroundTester : BackgroundService
 {
