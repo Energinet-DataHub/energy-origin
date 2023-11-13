@@ -16,7 +16,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             # IMPORTANT:
             # The order by which models are included is important for how the system-to-system relationships are specified.
             # A system-to-system relationship should be specified in the "client" of a "client->server" dependency, and
-            # hence domains that doesn't depend on others, should be listed first.
+            # hence systems that doesn't depend on others, should be listed first.
 
             !include model.dsl
         }
