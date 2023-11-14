@@ -24,7 +24,6 @@ namespace API.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Code to reverse the migration, if necessary
         }
     }
 }
