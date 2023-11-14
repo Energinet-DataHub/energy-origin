@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.ContractService;
 
@@ -87,7 +88,7 @@ internal class ContractServiceImpl : IContractService
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static CertificateValueObjects.Technology Map(Clients.Technology technology)
+    private static Technology Map(Clients.Technology technology)
         => new(technology.AibFuelCode, technology.AibTechCode);
 
     public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
