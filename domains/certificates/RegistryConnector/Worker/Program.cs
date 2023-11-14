@@ -57,6 +57,7 @@ builder.Services.AddMassTransit(o =>
     o.AddConsumer<WalletSliceSender>();
 
     o.AddConsumer<WorkerConsumer>();
+    o.AddConsumer<IssueCertificateNotCompletedConsumer>();
 
     o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -46,8 +47,10 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
             if (status.Status == TransactionState.Failed)
             {
                 //logger.LogInformation("Certificate {id} rejected by registry", certificateId);
-                //TODO: Should this terminate or just fault? Will terminate invoke "Compensate" for the previous activities?
-                return context.Terminate();
+                return context.Terminate(new List<KeyValuePair<string, object>>
+                {
+                    new("Reason", "Transaction failed in Registry")
+                });
             }
 
             const string message = "Transaction is still processing on registry.";

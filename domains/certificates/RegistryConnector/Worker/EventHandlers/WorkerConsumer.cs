@@ -3,6 +3,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using Google.Protobuf;
 using MassTransit;
+using MassTransit.Courier.Contracts;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +15,7 @@ using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
+using RegistryConnector.Worker.Activities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -22,7 +24,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using RegistryConnector.Worker.Activities;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
@@ -93,7 +94,7 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
             var transaction = issuedEvent.CreateTransaction(issuerKey);
             
-            AddActivities(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
+            BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created production certificate for {Message}", message);
         }
@@ -123,7 +124,7 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
             var transaction = issuedEvent.CreateTransaction(issuerKey);
 
-            AddActivities(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
+            BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created consumption certificate for {Message}", message);
         }
@@ -162,19 +163,21 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         return (ownerPublicKey, issuerKey);
     }
 
-    private void AddActivities(RoutingSlipBuilder builder,
+    private void BuildRoutingSlip(RoutingSlipBuilder builder,
         Transaction transaction,
         SecretCommitmentInfo commitment,
         CertificateIssuingContract matchingContract,
         uint walletDepositEndpointPosition)
     {
+        var certificateId = Guid.Parse(transaction.Header.FederatedStreamId.StreamId.Value);
+
         AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction));
 
         AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder,
             new WaitForCommittedTransactionArguments(transaction.ToShaId()));
-        
+
         AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder,
-            new MarkAsIssuedArguments(Guid.Parse(transaction.Header.FederatedStreamId.StreamId.Value), matchingContract.MeteringPointType));
+            new MarkAsIssuedArguments(certificateId, matchingContract.MeteringPointType));
         
         var receiveRequest = new ReceiveRequest
         {
@@ -186,6 +189,20 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
         };
         AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
             new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
+
+        var issueCertificateFailedConsumerEndpoint = new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
+        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
+            x => x.Send(new IssueCertificateTerminated
+            {
+                CertificateId = certificateId,
+                MeteringPointType = matchingContract.MeteringPointType
+            }));
+        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Faulted,
+            x => x.Send(new IssueCertificateFaulted
+            {
+                CertificateId = certificateId,
+                MeteringPointType = matchingContract.MeteringPointType
+            }));
     }
 
     private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)
