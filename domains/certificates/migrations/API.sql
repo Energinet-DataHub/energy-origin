@@ -146,3 +146,33 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231114121811_UpdateEmptyTechnologyCodes') THEN
+
+        UPDATE "Contracts"
+        SET
+            "Technology_FuelCode" = CASE
+                WHEN "Technology_FuelCode" = '' THEN 'F00000000'
+                ELSE "Technology_FuelCode"
+            END,
+            "Technology_TechCode" = CASE
+                WHEN "Technology_TechCode" = '' THEN 'T070000'
+                ELSE "Technology_TechCode"
+            END
+        WHERE "Technology_FuelCode" = '' OR "Technology_TechCode" = '';
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231114121811_UpdateEmptyTechnologyCodes') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231114121811_UpdateEmptyTechnologyCodes', '7.0.10');
+    END IF;
+END $EF$;
+COMMIT;
+
