@@ -1,14 +1,14 @@
-using System;
-using System.Threading.Tasks;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
+using System;
+using System.Threading.Tasks;
 
 namespace RegistryConnector.Worker.Activities;
 
-public record IssueToRegistryArguments(Transaction Transaction);
+public record IssueToRegistryArguments(Transaction Transaction, Guid CertificateId);
 
 public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments>
 {
@@ -20,18 +20,18 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
         this.projectOriginOptions = projectOriginOptions.Value;
         this.logger = logger;
     }
-
     
     public async Task<ExecutionResult> Execute(ExecuteContext<IssueToRegistryArguments> context)
     {
-        logger.LogInformation("Registry. TrackingNumber: {trackingNumber}. Arguments: {args}. Retry {r1} {r2} {r3}", context.TrackingNumber, context.Arguments, context.GetRetryAttempt(), context.GetRetryCount(), context.GetRedeliveryCount());
+        logger.LogInformation("Issuing to Registry for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
+            context.Arguments.CertificateId, context.TrackingNumber);
 
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
         var client = new RegistryService.RegistryServiceClient(channel);
 
-        // The Registry is idempotent wrt. the sending the same Transaction. Re-sending the transaction
+        // The Registry is idempotent wrt. sending the same Transaction. Re-sending the transaction
         // after it has been committed, will not change the status of the initial transaction
-
+            
         var request = new SendTransactionsRequest();
         request.Transactions.Add(context.Arguments.Transaction);
 

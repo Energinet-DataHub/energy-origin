@@ -139,10 +139,14 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
+        //TODO: Would be nice to return the reason for not issuing a certificate
         if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
             return false;
 
         if (energyMeasuredIntegrationEvent.Quantity <= 0)
+            return false;
+
+        if (energyMeasuredIntegrationEvent.Quantity > uint.MaxValue) //TODO: Add test
             return false;
 
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)
@@ -171,7 +175,7 @@ public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var certificateId = Guid.Parse(transaction.Header.FederatedStreamId.StreamId.Value);
 
-        AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction));
+        AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction, certificateId));
 
         AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder,
             new WaitForCommittedTransactionArguments(transaction.ToShaId()));

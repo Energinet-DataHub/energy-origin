@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
+using System.Threading.Tasks;
 
 namespace RegistryConnector.Worker.Activities;
 
@@ -19,14 +19,13 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
 
     public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
     {
-        logger.LogInformation("Wallet. TrackingNumber: {trackingNumber}. Arguments: {args}", context.TrackingNumber, context.Arguments);
-
-        // TODO: Think this should be handled earlier - in the routing slip builder
-        //if (message.Quantity > uint.MaxValue)
-        //    throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
+        logger.LogInformation("Sending slice to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
+            context.Arguments.ReceiveRequest.CertificateId.StreamId.Value, context.TrackingNumber);
 
         using var channel = GrpcChannel.ForAddress(context.Arguments.WalletUrl);
         var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
+
+        // The Wallet is idempotent wrt. sending the same ReceiveRequest.
 
         await client.ReceiveSliceAsync(context.Arguments.ReceiveRequest);
 
