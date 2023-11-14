@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -7,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Grpc.Core;
 
 namespace RegistryConnector.Worker.Activities;
 
@@ -28,10 +28,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
     {
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
         var client = new RegistryService.RegistryServiceClient(channel);
-        var statusRequest = new GetTransactionStatusRequest
-        {
-            Id = context.Arguments.ShaId
-        };
+        var statusRequest = new GetTransactionStatusRequest { Id = context.Arguments.ShaId };
 
         try
         {

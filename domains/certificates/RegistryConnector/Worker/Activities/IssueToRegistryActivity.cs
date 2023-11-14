@@ -21,15 +21,19 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
         this.logger = logger;
     }
 
+    
     public async Task<ExecutionResult> Execute(ExecuteContext<IssueToRegistryArguments> context)
     {
         logger.LogInformation("Registry. TrackingNumber: {trackingNumber}. Arguments: {args}. Retry {r1} {r2} {r3}", context.TrackingNumber, context.Arguments, context.GetRetryAttempt(), context.GetRetryCount(), context.GetRedeliveryCount());
 
-        var request = new SendTransactionsRequest();
-        request.Transactions.Add(context.Arguments.Transaction);
-
         using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
         var client = new RegistryService.RegistryServiceClient(channel);
+
+        // The Registry is idempotent wrt. the sending the same Transaction. Re-sending the transaction
+        // after it has been committed, will not change the status of the initial transaction
+
+        var request = new SendTransactionsRequest();
+        request.Transactions.Add(context.Arguments.Transaction);
 
         await client.SendTransactionsAsync(request);
 
