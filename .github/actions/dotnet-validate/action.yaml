@@ -88,7 +88,7 @@ runs:
         PROJECT=$(echo "$PATHS" | head -n1)
         GENERATED_SQL_FILE=/tmp/current.sql
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
-        dotnet tool install --global dotnet-ef >/dev/null
+        dotnet tool list -g | grep dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef >/dev/null
         dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
 
         cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
