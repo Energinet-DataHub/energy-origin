@@ -24,7 +24,7 @@ public class TransferAgreementInvitationsController : ControllerBase
     }
 
     /// <summary>
-    /// Create transfer agreement invitation
+    /// Create TransferAgreementInvitation
     /// </summary>
     /// <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
     /// <response code="201">Created</response>
@@ -60,9 +60,9 @@ public class TransferAgreementInvitationsController : ControllerBase
     }
 
     /// <summary>
-    /// Get transfer-agreement-invitation by Id
+    /// Get TransferAgreementInvitation by Id
     /// </summary>
-    /// <param name="id">Id of transfer-agreement-invitation</param>
+    /// <param name="id">Id of TransferAgreementInvitation</param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementInvitation</response>
     /// <response code="404">TransferAgreementInvitation expired or deleted</response>
