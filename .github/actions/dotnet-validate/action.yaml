@@ -88,8 +88,6 @@ runs:
         PROJECT=$(echo "$PATHS" | head -n1)
         GENERATED_SQL_FILE=/tmp/current.sql
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
-        dotnet tool list -g
-        dotnet tool search dotnet-ef
         dotnet tool install --global --version 7.0.11 dotnet-ef >/dev/null
         dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
 
