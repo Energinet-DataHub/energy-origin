@@ -30,9 +30,15 @@ public class TransferAgreementInvitationRepository : ITransferAgreementInvitatio
         await context.SaveChangesAsync();
     }
 
-    public Task DeleteTransferAgreementInvitation(Guid id)
+    public async Task DeleteTransferAgreementInvitation(Guid id)
     {
-        throw new NotImplementedException();
+        var invitation = await context.TransferAgreementInvitations.FindAsync(id);
+
+        if (invitation != null)
+        {
+            context.TransferAgreementInvitations.Remove(invitation);
+            await context.SaveChangesAsync();
+        }
     }
 
     public Task DeleteOldTransferAgreementInvitations(DateTimeOffset olderThan)

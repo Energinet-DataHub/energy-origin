@@ -6,6 +6,8 @@ using API.Shared.Extensions;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Repository;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -15,11 +17,15 @@ namespace API.Transfer.Api.Controllers;
 public class TransferAgreementInvitationsController : ControllerBase
 {
     private readonly ITransferAgreementInvitationRepository repository;
+    private readonly IValidator<CreateTransferAgreementInvitation> createTransferAgreementInvitationValidator;
     private readonly ITransferAgreementRepository transferAgreementRepository;
 
-    public TransferAgreementInvitationsController(ITransferAgreementInvitationRepository repository, ITransferAgreementRepository transferAgreementRepository)
+    public TransferAgreementInvitationsController(ITransferAgreementInvitationRepository repository,
+        IValidator<CreateTransferAgreementInvitation> createTransferAgreementInvitationValidator,
+        ITransferAgreementRepository transferAgreementRepository)
     {
         this.repository = repository;
+        this.createTransferAgreementInvitationValidator = createTransferAgreementInvitationValidator;
         this.transferAgreementRepository = transferAgreementRepository;
     }
 
@@ -36,6 +42,13 @@ public class TransferAgreementInvitationsController : ControllerBase
     {
         var companySenderId = Guid.Parse(User.FindSubjectGuidClaim());
         var companySenderTin = User.FindSubjectTinClaim();
+
+        var validateResult = await createTransferAgreementInvitationValidator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
 
         var newInvitation = new TransferAgreementInvitation
         {
@@ -87,5 +100,28 @@ public class TransferAgreementInvitationsController : ControllerBase
         }
 
         return Ok(invitation);
+    }
+
+    /// <summary>
+    /// Delete TransferAgreementInvitation
+    /// </summary>
+    /// <param name="id">Id of TransferAgreementInvitation</param>
+    /// <response code="204">Successful operation</response>
+    /// <response code="404">TransferAgreementInvitation not found</response>
+    [ProducesResponseType(typeof(void), 204)]
+    [ProducesResponseType(typeof(void), 404)]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteTransferAgreementInvitation(Guid id)
+    {
+        var invitation = await repository.GetNonExpiredTransferAgreementInvitation(id);
+
+        if (invitation == null)
+        {
+            return NotFound("TransferAgreementInvitation not found");
+        }
+
+        await repository.DeleteTransferAgreementInvitation(id);
+
+        return NoContent();
     }
 }
