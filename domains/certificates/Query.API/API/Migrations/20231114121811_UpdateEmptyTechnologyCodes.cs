@@ -9,15 +9,9 @@ namespace API.Migrations
             var sql = @"
     UPDATE ""Contracts""
     SET
-        ""Technology_FuelCode"" = CASE
-            WHEN ""Technology_FuelCode"" = '' THEN 'F00000000'
-            ELSE ""Technology_FuelCode""
-        END,
-        ""Technology_TechCode"" = CASE
-            WHEN ""Technology_TechCode"" = '' THEN 'T070000'
-            ELSE ""Technology_TechCode""
-        END
-    WHERE ""Technology_FuelCode"" = '' OR ""Technology_TechCode"" = '';";
+        ""Technology_FuelCode"" = 'F00000000',
+        ""Technology_TechCode"" = 'T070000'
+    WHERE ""Technology_FuelCode"" = '' AND ""Technology_TechCode"" = '' AND ""MeteringPointType"" = 0;";
 
             migrationBuilder.Sql(sql);
         }

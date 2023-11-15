@@ -7,7 +7,7 @@ public record ProductionCertificateCreatedEvent(
     Guid CertificateId,
     string GridArea,
     Period Period,
-    Technology? Technology,
+    Technology Technology,
     string MeteringPointOwner,
     Gsrn Gsrn,
     byte[] BlindingValue,

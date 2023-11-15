@@ -76,7 +76,7 @@ public class UpdateTechnologyCodesMigrationTests : IAsyncDisposable
             new NpgsqlParameter("Id", id),
             new NpgsqlParameter("GSRN", gsrn),
             new NpgsqlParameter("GridArea", gridArea),
-            new NpgsqlParameter("MeteringPointType", 1),
+            new NpgsqlParameter("MeteringPointType", (object?)0),
             new NpgsqlParameter("MeteringPointOwner", "DummyOwner"),
             new NpgsqlParameter("StartDate", DateTimeOffset.UtcNow),
             new NpgsqlParameter("Created", DateTimeOffset.UtcNow),

@@ -17,7 +17,7 @@ public static class Registry
         public const string FuelCode = "FuelCode";
     }
 
-    public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, string? techCode, string? fuelCode, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
+    public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, string techCode, string fuelCode, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
     {
         var issuedEvent = BuildIssuedEvent(registryName, certificateId, period, gridArea, assetId, commitment,
             ownerPublicKey, GranularCertificateType.Production);
