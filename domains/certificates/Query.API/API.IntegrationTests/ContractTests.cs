@@ -187,8 +187,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract?.Technology?.FuelCode.Should().BeNullOrWhiteSpace();
-        createdContract?.Technology?.TechCode.Should().BeNullOrWhiteSpace();
+        createdContract?.Technology.Should().BeNull();
     }
 
     [Fact]

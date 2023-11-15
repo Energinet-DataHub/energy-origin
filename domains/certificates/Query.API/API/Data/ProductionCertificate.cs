@@ -13,6 +13,5 @@ public class ProductionCertificate : Certificate
     {
         Technology = technology;
     }
-    public Technology? Technology { get; private set; } = new("unknown", "unknown");
+    public Technology Technology { get; private set; } = new("unknown", "unknown");
 }
-
