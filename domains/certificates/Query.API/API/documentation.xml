@@ -72,7 +72,16 @@
         <member name="M:API.Migrations.AddTechnologyToCertificateIssuingContract.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.UpdateEmptyTechnologyCodes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:API.Migrations.RemoveTechnologyColumnsFromContracts.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTechnologyToContractsTable">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTechnologyToContractsTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTechnologyToContractsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">

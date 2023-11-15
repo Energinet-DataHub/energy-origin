@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231114121811_UpdateEmptyTechnologyCodes")]
-    partial class UpdateEmptyTechnologyCodes
+    [Migration("20231115153942_AddTechnologyToContractsTable")]
+    partial class AddTechnologyToContractsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -200,8 +200,7 @@ namespace API.Migrations
                                 .HasForeignKey("CertificateIssuingContractId");
                         });
 
-                    b.Navigation("Technology")
-                        .IsRequired();
+                    b.Navigation("Technology");
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
@@ -227,7 +226,8 @@ namespace API.Migrations
                                 .HasForeignKey("ProductionCertificateId");
                         });
 
-                    b.Navigation("Technology");
+                    b.Navigation("Technology")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

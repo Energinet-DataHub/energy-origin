@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231115153157_RemoveTechnologyColumnsFromContracts")]
+    partial class RemoveTechnologyColumnsFromContracts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace API.Migrations
                     b.HasIndex("GSRN", "ContractNumber")
                         .IsUnique();
 
-                    b.ToTable("Contracts", (string)null);
+                    b.ToTable("Contracts");
                 });
 
             modelBuilder.Entity("API.Data.ConsumptionCertificate", b =>
@@ -113,7 +116,7 @@ namespace API.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ConsumptionCertificates", (string)null);
+                    b.ToTable("ConsumptionCertificates");
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
@@ -158,7 +161,7 @@ namespace API.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ProductionCertificates", (string)null);
+                    b.ToTable("ProductionCertificates");
                 });
 
             modelBuilder.Entity("API.DataSyncSyncer.Persistence.SynchronizationPosition", b =>
@@ -171,12 +174,12 @@ namespace API.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("SynchronizationPositions", (string)null);
+                    b.ToTable("SynchronizationPositions");
                 });
 
             modelBuilder.Entity("API.ContractService.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("API.ContractService.CertificateIssuingContract.Technology#CertificateValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
@@ -191,7 +194,7 @@ namespace API.Migrations
 
                             b1.HasKey("CertificateIssuingContractId");
 
-                            b1.ToTable("Contracts", (string)null);
+                            b1.ToTable("Contracts");
 
                             b1.WithOwner()
                                 .HasForeignKey("CertificateIssuingContractId");
@@ -202,7 +205,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("API.Data.ProductionCertificate.Technology#CertificateValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");
@@ -217,7 +220,7 @@ namespace API.Migrations
 
                             b1.HasKey("ProductionCertificateId");
 
-                            b1.ToTable("ProductionCertificates", (string)null);
+                            b1.ToTable("ProductionCertificates");
 
                             b1.WithOwner()
                                 .HasForeignKey("ProductionCertificateId");
