@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace API.Migrations
+namespace DataContext.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20231107095405_AddTechnologyToCertificateIssuingContract")]
