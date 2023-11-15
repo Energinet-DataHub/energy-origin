@@ -115,7 +115,7 @@ jobs:
             echo "docker=${docker}"
             echo "domain=${domain}"
             echo "name=${name}"
-            echo "dotnet=${dotnet::${#dotnet}-3}"
+            echo "dotnet=${dotnet::${#dotnet}-4}"
           } >> $GITHUB_ENV
 
       - name: Validate project
