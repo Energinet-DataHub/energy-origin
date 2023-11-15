@@ -1,5 +1,5 @@
 name: eo-emissions
-version: 2.0.4
+version: 2.0.3
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/emissions/base/deployment.yaml
