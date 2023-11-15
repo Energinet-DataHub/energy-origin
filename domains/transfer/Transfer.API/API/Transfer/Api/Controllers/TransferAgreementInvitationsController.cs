@@ -65,7 +65,7 @@ public class TransferAgreementInvitationsController : ControllerBase
     /// <param name="id">Id of transfer-agreement-invitation</param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementInvitation</response>
-    /// <response code="404">Transfer-agreement-invitation expired or deleted</response>
+    /// <response code="404">TransferAgreementInvitation expired or deleted</response>
     [ProducesResponseType(typeof(TransferAgreementInvitation), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
