@@ -90,7 +90,7 @@ runs:
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
         dotnet tool list -g
         dotnet tool search dotnet-ef
-        dotnet tool install --global dotnet-ef >/dev/null
+        dotnet tool install --global --version 7.0.11 dotnet-ef >/dev/null
         dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
 
         cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
