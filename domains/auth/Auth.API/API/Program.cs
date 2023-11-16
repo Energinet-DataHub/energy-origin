@@ -26,8 +26,8 @@ using Serilog.Formatting.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 var log = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    // .Filter.ByExcluding("RequestPath like '/health%'")
+    // .Filter.ByExcluding("RequestPath like '/metrics%'")
     .Enrich.WithSpan();
 
 var console = builder.Environment.IsDevelopment()
