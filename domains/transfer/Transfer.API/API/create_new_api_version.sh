@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Base directory where the API version folders are located
+# Base directory where the feature folders are located
 BASE_DIR="domains/transfer/Transfer.API/API"
 
 # Current date for the new version
@@ -13,17 +13,20 @@ update_namespaces() {
     local old_version=$2
     local new_version=$3
 
+    echo "Updating namespaces in $new_version_path from $old_version to $new_version"
+
     # Recursively find and update C# files
     find "$new_version_path" -type f -name "*.cs" | while read -r file; do
-        # Replace namespace and using statements
+        echo "Updating file: $file"
         sed -i "s/$old_version/$new_version/g" "$file"
     done
 }
 
 # Function to create a new version directory and copy contents
 create_new_version() {
-    local feature_dir=$1
-    local api_dir="$feature_dir/Api"
+    local api_dir=$1
+
+    echo "Checking: $api_dir"
 
     if [ -d "$api_dir" ]; then
         local highest_version=""
@@ -44,15 +47,15 @@ create_new_version() {
         mkdir -p "$new_version_path"
         cp -r "$highest_version_path/." "$new_version_path/"
 
-        # Update namespaces and using statements
         update_namespaces "$new_version_path" "$highest_version" "$NEW_VERSION_SHORT"
     else
-        echo "No Api directory found in $feature_dir"
+        echo "No Api directory found in $api_dir"
     fi
 }
 
-# Process each feature directory
-for feature_dir in "$BASE_DIR"/*; do
+# Process each feature's Api directory
+for feature_dir in "$BASE_DIR"/*/Api; do
+    echo "Processing Api directory: $feature_dir"
     if [ -d "$feature_dir" ]; then
         create_new_version "$feature_dir"
     fi
