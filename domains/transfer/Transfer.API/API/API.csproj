@@ -66,9 +66,4 @@
       <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Cvr\Api\Controllers\" />
-      <Folder Include="Cvr\Api\Dto\Responses\" />
-    </ItemGroup>
-
 </Project>
