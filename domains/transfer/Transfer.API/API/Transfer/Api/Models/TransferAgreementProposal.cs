@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Transfer.Api.Models;
 
-public class TransferAgreementInvitation
+public class TransferAgreementProposal
 {
     public Guid Id { get; set; }
     public Guid SenderCompanyId { get; set; }

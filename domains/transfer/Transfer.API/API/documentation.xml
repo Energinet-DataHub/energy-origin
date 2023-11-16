@@ -6,21 +6,21 @@
     <members>
         <member name="M:API.Connections.Api.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
             <summary>
-            Get connection-invitation by Id
+            Get connection-proposal by Id
             </summary>
-            <param name="id">Id of connection-invitation</param>
+            <param name="id">Id of connection-proposal</param>
             <response code="200">Successful operation</response>
             <response code="400">You cannot Accept/Deny your own ConnectionInvitation</response>
-            <response code="404">Connection-invitation expired or deleted</response>
+            <response code="404">Connection-proposal expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>
         <member name="M:API.Connections.Api.Controllers.ConnectionInvitationsController.DeleteConnectionInvitation(System.Guid)">
             <summary>
-            Delete connection-invitation
+            Delete connection-proposal
             </summary>
-            <param name="id">Id of connection-invitation</param>
+            <param name="id">Id of connection-proposal</param>
             <response code="204">Successful operation</response>
-            <response code="404">Connection-invitation not found</response>
+            <response code="404">Connection-proposal not found</response>
         </member>
         <member name="M:API.Connections.Api.Controllers.ConnectionsController.Create(API.Connections.Api.Dto.Requests.CreateConnection)">
             <summary>
@@ -28,7 +28,7 @@
             </summary>
             <param name="request">The request object containing the ConnectionInvitationId for creating the connection.</param>
             <response code="201">Successful operation</response>
-            <response code="404">Connection-invitation expired or deleted</response>
+            <response code="404">Connection-proposal expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>
         <member name="P:API.Connections.Api.Dto.Responses.ConnectionDto.Id">
@@ -205,6 +205,31 @@
         </member>
         <member name="M:API.Shared.Migrations.AddClaimAutomationArgument.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
+        </member>
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementInvitationsController.CreateTransferAgreementProposal(API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal)">
+            <summary>
+            Create TransferAgreementProposal
+            </summary>
+            <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
+            <response code="201">Created</response>
+            <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
+        </member>
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementInvitationsController.GetTransferAgreementInvitation(System.Guid)">
+            <summary>
+            Get TransferAgreementProposal by Id
+            </summary>
+            <param name="id">Id of TransferAgreementProposal</param>
+            <response code="200">Successful operation</response>
+            <response code="400">You cannot Accept/Deny your own TransferAgreementProposal</response>
+            <response code="404">TransferAgreementProposal expired or deleted</response>
+        </member>
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementInvitationsController.DeleteTransferAgreementProposal(System.Guid)">
+            <summary>
+            Delete TransferAgreementProposal
+            </summary>
+            <param name="id">Id of TransferAgreementProposal</param>
+            <response code="204">Successful operation</response>
+            <response code="404">TransferAgreementProposal not found</response>
         </member>
     </members>
 </doc>

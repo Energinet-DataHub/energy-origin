@@ -65,6 +65,7 @@ public static class Startup
         services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
         services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+        services.AddScoped<ITransferAgreementProposalRepository, TransferAgreementProposalRepository>();
         services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;

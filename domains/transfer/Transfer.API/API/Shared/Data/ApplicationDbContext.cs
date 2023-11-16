@@ -17,7 +17,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<ConnectionInvitation> ConnectionInvitations { get; set; }
     public DbSet<Connection> Connections { get; set; }
     public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
-    public DbSet<TransferAgreementInvitation> TransferAgreementInvitations { get; set; }
+    public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,7 +32,7 @@ public class ApplicationDbContext : AuditDbContext
         modelBuilder.Entity<ClaimAutomationArgument>()
             .HasKey(p => p.SubjectId);
 
-        modelBuilder.Entity<TransferAgreementInvitation>()
+        modelBuilder.Entity<TransferAgreementProposal>()
             .Property(b => b.CreatedAt)
             .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
     }

@@ -5,13 +5,13 @@ using API.Shared.Extensions;
 
 namespace API.Transfer.Api.Dto.Requests;
 
-public record CreateTransferAgreementInvitation(long StartDate,
+public record CreateTransferAgreementProposal(long StartDate,
     long? EndDate,
     string ReceiverTin);
 
-public class CreateTransferAgreementInvitationValidator : AbstractValidator<CreateTransferAgreementInvitation>
+public class CreateTransferAgreementProposalValidator : AbstractValidator<CreateTransferAgreementProposal>
 {
-    public CreateTransferAgreementInvitationValidator(IHttpContextAccessor context)
+    public CreateTransferAgreementProposalValidator(IHttpContextAccessor context)
     {
         var now = DateTimeOffset.UtcNow;
 

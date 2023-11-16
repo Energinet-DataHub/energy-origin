@@ -13,24 +13,24 @@ namespace API.Transfer.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/transfer-agreement-invitations")]
-public class TransferAgreementInvitationsController : ControllerBase
+[Route("api/transfer-agreement-proposals")]
+public class TransferAgreementProposalController : ControllerBase
 {
-    private readonly ITransferAgreementInvitationRepository repository;
-    private readonly IValidator<CreateTransferAgreementInvitation> createTransferAgreementInvitationValidator;
+    private readonly ITransferAgreementProposalRepository repository;
+    private readonly IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator;
     private readonly ITransferAgreementRepository transferAgreementRepository;
 
-    public TransferAgreementInvitationsController(ITransferAgreementInvitationRepository repository,
-        IValidator<CreateTransferAgreementInvitation> createTransferAgreementInvitationValidator,
+    public TransferAgreementProposalController(ITransferAgreementProposalRepository repository,
+        IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
         ITransferAgreementRepository transferAgreementRepository)
     {
         this.repository = repository;
-        this.createTransferAgreementInvitationValidator = createTransferAgreementInvitationValidator;
+        this.createTransferAgreementProposalValidator = createTransferAgreementProposalValidator;
         this.transferAgreementRepository = transferAgreementRepository;
     }
 
     /// <summary>
-    /// Create TransferAgreementInvitation
+    /// Create TransferAgreementProposal
     /// </summary>
     /// <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
     /// <response code="201">Created</response>
@@ -38,19 +38,19 @@ public class TransferAgreementInvitationsController : ControllerBase
     [ProducesResponseType(typeof(Guid), 201)]
     [ProducesResponseType(typeof(string), 409)]
     [HttpPost]
-    public async Task<ActionResult> CreateTransferAgreementInvitation(CreateTransferAgreementInvitation request)
+    public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
         var companySenderId = Guid.Parse(User.FindSubjectGuidClaim());
         var companySenderTin = User.FindSubjectTinClaim();
 
-        var validateResult = await createTransferAgreementInvitationValidator.ValidateAsync(request);
+        var validateResult = await createTransferAgreementProposalValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
             validateResult.AddToModelState(ModelState);
             return ValidationProblem(ModelState);
         }
 
-        var newInvitation = new TransferAgreementInvitation
+        var newProposal = new TransferAgreementProposal
         {
             SenderCompanyId = companySenderId,
             SenderCompanyTin = companySenderTin,
@@ -60,67 +60,67 @@ public class TransferAgreementInvitationsController : ControllerBase
             EndDate = request.EndDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
         };
 
-        var hasConflict = await transferAgreementRepository.HasDateOverlap(newInvitation);
+        var hasConflict = await transferAgreementRepository.HasDateOverlap(newProposal);
 
         if (hasConflict)
         {
             return Conflict("There is already a Transfer Agreement with this company tin within the selected date range");
         }
 
-        await repository.AddTransferAgreementInvitation(newInvitation);
+        await repository.AddTransferAgreementProposal(newProposal);
 
-        return CreatedAtAction(nameof(GetTransferAgreementInvitation), new { id = newInvitation.Id }, newInvitation);
+        return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = newProposal.Id }, newProposal);
     }
 
     /// <summary>
-    /// Get TransferAgreementInvitation by Id
+    /// Get TransferAgreementProposal by Id
     /// </summary>
-    /// <param name="id">Id of TransferAgreementInvitation</param>
+    /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="200">Successful operation</response>
-    /// <response code="400">You cannot Accept/Deny your own TransferAgreementInvitation</response>
-    /// <response code="404">TransferAgreementInvitation expired or deleted</response>
-    [ProducesResponseType(typeof(TransferAgreementInvitation), 200)]
+    /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal</response>
+    /// <response code="404">TransferAgreementProposal expired or deleted</response>
+    [ProducesResponseType(typeof(TransferAgreementProposal), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
-    public async Task<ActionResult<TransferAgreementInvitation>> GetTransferAgreementInvitation(Guid id)
+    public async Task<ActionResult<TransferAgreementProposal>> GetTransferAgreementProposal(Guid id)
     {
-        var invitation = await repository.GetNonExpiredTransferAgreementInvitation(id);
+        var proposal = await repository.GetNonExpiredTransferAgreementProposal(id);
 
-        if (invitation == null)
+        if (proposal == null)
         {
-            return NotFound("TransferAgreementInvitation expired or deleted");
+            return NotFound("TransferAgreementProposal expired or deleted");
         }
 
         var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
 
-        if (currentCompanyId == invitation.SenderCompanyId)
+        if (currentCompanyId == proposal.SenderCompanyId)
         {
-            return BadRequest("You cannot Accept/Deny your own TransferAgreementInvitation");
+            return BadRequest("You cannot Accept/Deny your own TransferAgreementProposal");
         }
 
-        return Ok(invitation);
+        return Ok(proposal);
     }
 
     /// <summary>
-    /// Delete TransferAgreementInvitation
+    /// Delete TransferAgreementProposal
     /// </summary>
-    /// <param name="id">Id of TransferAgreementInvitation</param>
+    /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="204">Successful operation</response>
-    /// <response code="404">TransferAgreementInvitation not found</response>
+    /// <response code="404">TransferAgreementProposal not found</response>
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteTransferAgreementInvitation(Guid id)
+    public async Task<ActionResult> DeleteTransferAgreementProposal(Guid id)
     {
-        var invitation = await repository.GetNonExpiredTransferAgreementInvitation(id);
+        var proposal = await repository.GetNonExpiredTransferAgreementProposal(id);
 
-        if (invitation == null)
+        if (proposal == null)
         {
-            return NotFound("TransferAgreementInvitation not found");
+            return NotFound("TransferAgreementProposal not found");
         }
 
-        await repository.DeleteTransferAgreementInvitation(id);
+        await repository.DeleteTransferAgreementProposal(id);
 
         return NoContent();
     }
