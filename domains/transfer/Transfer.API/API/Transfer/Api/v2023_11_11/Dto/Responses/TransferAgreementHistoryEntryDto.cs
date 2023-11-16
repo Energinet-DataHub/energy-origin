@@ -5,7 +5,7 @@ using API.Transfer.Api.Models;
 namespace API.Transfer.Api.v2023_11_11.Dto.Responses;
 
 public record TransferAgreementHistoryEntryDto(
-    v2023_01_01.Dto.Responses.TransferAgreementDto TransferAgreement,
+    TransferAgreementDto TransferAgreement,
     long CreatedAt,
     ChangeAction Action,
     string? ActorName
@@ -22,7 +22,7 @@ public static class TransferAgreementHistoryEntryMapper
             changeAction = ChangeAction.Created;
         }
 
-        var transferAgreementDto = new v2023_01_01.Dto.Responses.TransferAgreementDto(
+        var transferAgreementDto = new TransferAgreementDto(
             historyEntry.Id,
             historyEntry.StartDate.ToUnixTimeSeconds(),
             historyEntry.EndDate?.ToUnixTimeSeconds(),
