@@ -1,34 +1,36 @@
-#!/bin/bash
+#!/bin/sh
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 NEW_VERSION="v$(date +%Y_%m_%d)"
 NEW_VERSION_SHORT="v$(date +%Y_%m_%d)"
 API_VERSION_DATE="$(date +%Y%m%d)"
 
-# Function to update namespaces, using statements, and ApiVersion Annotation in files
 update_files() {
-    local new_version_path=$1
-    local new_version=$2
-    local api_version_date=$3
+    new_version_path=$1
+    new_version=$2
+    api_version_date=$3
 
     echo "Updating namespaces in $new_version_path to $new_version"
 
-    find "$new_version_path" -type f -name "*.cs" | while read -r file; do
+    find "$new_version_path" -type f -name "*.cs" | while IFS= read -r file; do
         echo "Updating file: $file"
-        sed -i "s/v[0-9]\{4\}_[0-9]\{2\}_[0-9]\{2\}/$new_version/g" "$file"
-        sed -i "s/\[ApiVersion(\"[0-9]\{8\}\")\]/\[ApiVersion(\"$api_version_date\")\]/g" "$file"
+
+        # Use a temporary file for sed operation
+        tmp_file=$(mktemp)
+
+        # Replace namespace and using statements, including the "v" prefix
+        sed "s/v[0-9]\{4\}_[0-9]\{2\}_[0-9]\{2\}/$new_version/g" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
+
+        # Update ApiVersion attribute
+        sed "s/\[ApiVersion(\"[0-9]\{8\}\")\]/\[ApiVersion(\"$api_version_date\")\]/g" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
     done
 }
 
-# Function to create a new version directory and copy contents
 create_new_version() {
-    local api_dir=$1
+    api_dir=$1
 
     if [ -d "$api_dir" ]; then
-
-        local highest_version
-
         highest_version=$(find "$api_dir" -type d -name "v20*" | sort | tail -n 1 | xargs basename)
 
         if [ -z "$highest_version" ]; then
@@ -36,8 +38,8 @@ create_new_version() {
             return 1
         fi
 
-        local highest_version_path="$api_dir/$highest_version"
-        local new_version_path="$api_dir/$NEW_VERSION"
+        highest_version_path="$api_dir/$highest_version"
+        new_version_path="$api_dir/$NEW_VERSION"
 
         echo "Creating new version in $api_dir: $NEW_VERSION"
 
