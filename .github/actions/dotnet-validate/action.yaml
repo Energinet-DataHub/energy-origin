@@ -81,14 +81,21 @@ runs:
     - name: Validate migration
       shell: bash
       env:
+        VERSION: ${{ inputs.dotnet-version }}
         PATHS: ${{ inputs.paths }}
         COMMITED_SQL_FILE: ${{ inputs.sql-file }}
       if: ${{ '' != inputs.sql-file }}
       run: |
         PROJECT=$(echo "$PATHS" | head -n1)
         GENERATED_SQL_FILE=/tmp/current.sql
+        version=$(echo $VERSION | cut -c 1)
+        if [ "$version" = "6" ]; then
+          argument="--version 6.0.25"
+        elif [ "$version" = "7" ]; then
+          argument="--version 7.0.14"
+        fi
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
-        dotnet tool install --global dotnet-ef >/dev/null
+        dotnet tool install --global $argument dotnet-ef >/dev/null
         dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
 
         cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ContractService;
@@ -49,7 +48,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
             var productionCertificate = new ProductionCertificate(
                 matchingContract.GridArea,
                 period,
-                matchingContract.Technology,
+                matchingContract.Technology!,
                 matchingContract.MeteringPointOwner,
                 message.GSRN,
                 message.Quantity,
@@ -62,7 +61,7 @@ public class EnergyMeasuredEventHandler : IConsumer<EnergyMeasuredIntegrationEve
                 productionCertificate.Id,
                 matchingContract.GridArea,
                 period,
-                matchingContract.Technology,
+                matchingContract.Technology!,
                 matchingContract.MeteringPointOwner,
                 new Gsrn(message.GSRN),
                 commitment.BlindingValue.ToArray(),
