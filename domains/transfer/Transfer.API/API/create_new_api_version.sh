@@ -14,7 +14,7 @@ update_namespaces() {
     local new_version=$3
 
     # Recursively find and update C# files
-    find "$new_version_path" -type f -name "*.cs" | while read file; do
+    find "$new_version_path" -type f -name "*.cs" | while read -r file; do
         # Replace namespace and using statements
         sed -i "s/$old_version/$new_version/g" "$file"
     done
