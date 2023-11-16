@@ -51,8 +51,9 @@ jobs:
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            aspnetRuntime=$(printf '%s' "$settings" | jq -rce '.aspnetRuntime.version')
             csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
-            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","dotnetVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk"; done <<< $csprojects | jq -sc '.')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","aspnetRuntimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$aspnetRuntime"; done <<< $csprojects | jq -sc '.')
             printf '{"projects":%s}' "$projects"
           done <<< $LIST | jq -sc '.')
 
@@ -98,7 +99,6 @@ jobs:
           projects=$(dirname "$PROJECT")
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
-          dotnet=${{ matrix.build.dotnetVersion }}
 
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
@@ -115,13 +115,12 @@ jobs:
             echo "docker=${docker}"
             echo "domain=${domain}"
             echo "name=${name}"
-            echo "dotnet=${dotnet::${#dotnet}-2}"
           } >> $GITHUB_ENV
 
       - name: Validate project
         uses: ./.github/actions/dotnet-validate
         with:
-          dotnet-version: ${{ matrix.build.dotnetVersion }}
+          dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
@@ -135,8 +134,8 @@ jobs:
           docker-context: ${{ env.domain }}
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
-            SDK_VERSION=${{ matrix.build.dotnetVersion }}
-            RUNTIME_VERSION=${{ env.dotnet }}
+            SDK_VERSION=${{ matrix.build.sdkVersion }}
+            RUNTIME_VERSION=${{ matrix.build.aspnetRuntimeVersion }}
 
   update-environment:
     name: Update environment
