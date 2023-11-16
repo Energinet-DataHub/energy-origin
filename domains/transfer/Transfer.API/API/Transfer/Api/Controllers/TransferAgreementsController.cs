@@ -99,16 +99,29 @@ public class TransferAgreementsController : ControllerBase
     /// </summary>
     /// <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
     /// <response code="201">Successful operation</response>
+    /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="404">TransferAgreementProposal expired or deleted</response>
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
-    [ProducesResponseType(typeof(void),404)]
+    [ProducesResponseType(typeof(void), 400)]
+    [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> CreateFromTransferAgreementProposal(CreateTransferAgreementFromProposal request)
     {
         var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound("TransferAgreementProposal expired or deleted");
+        }
+
+        var subjectTin = User.FindSubjectTinClaim();
+        if (proposal.ReceiverCompanyTin != subjectTin)
+        {
+            return BadRequest("Only the receiver company can accept this Transfer Agreement Proposal");
+        }
+
+        if (proposal.EndDate < DateTimeOffset.UtcNow)
+        {
+            return BadRequest("This proposal has run out");
         }
 
         var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();

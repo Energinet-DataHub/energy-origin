@@ -79,7 +79,7 @@ public class TransferAgreementProposalController : ControllerBase
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="200">Successful operation</response>
-    /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal</response>
+    /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
     /// <response code="404">TransferAgreementProposal expired or deleted</response>
     [ProducesResponseType(typeof(TransferAgreementProposal), 200)]
     [ProducesResponseType(typeof(void), 400)]
@@ -95,10 +95,19 @@ public class TransferAgreementProposalController : ControllerBase
         }
 
         var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
+        var currentCompanyTin = User.FindSubjectTinClaim();
 
         if (currentCompanyId == proposal.SenderCompanyId)
         {
             return BadRequest("You cannot Accept/Deny your own TransferAgreementProposal");
+        }
+        if (currentCompanyTin != proposal.ReceiverCompanyTin)
+        {
+            return BadRequest("You cannot Accept/Deny a TransferAgreementProposal for another company");
+        }
+        if (proposal.EndDate < DateTimeOffset.UtcNow)
+        {
+            return BadRequest("This proposal has run out");
         }
 
         return Ok(proposal);
