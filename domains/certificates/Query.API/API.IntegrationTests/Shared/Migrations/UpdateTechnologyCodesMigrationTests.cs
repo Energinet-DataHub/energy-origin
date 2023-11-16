@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using API.ContractService;
 using API.Data;
 using API.IntegrationTests.Testcontainers;
+using CertificateValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -19,27 +20,38 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
     [Fact]
     public async Task ApplyMigration_WhenContractsHaveEmptyTechnologyCodes_UpdatesFieldsCorrectly()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = await CreateDbContext();
 
         var migrator = dbContext.GetService<IMigrator>();
-        await migrator.MigrateAsync("20231115153942_AddTechnologyToContractsTable");
+        await migrator.MigrateAsync("20231107095405_AddTechnologyToCertificateIssuingContract");
 
-        var contractId = Guid.NewGuid();
-        await InsertContractWithEmptyTechnologyFields(dbContext, contractId, "123456789", "DK1");
+        var productionContractId = Guid.NewGuid();
+        var consumptionContractId = Guid.NewGuid();
+        await InsertContractWithEmptyTechnologyFields(dbContext, productionContractId, "123456789", "DK1", MeteringPointType.Production);
+        await InsertContractWithEmptyTechnologyFields(dbContext, consumptionContractId, "369236923", "DK1", MeteringPointType.Consumption);
 
-        var contractBeforeMigration = await dbContext.Contracts.FindAsync(contractId);
-        contractBeforeMigration!.Technology.Should().BeNull();
+        var productionContractBeforeMigration = await dbContext.Contracts.FindAsync(productionContractId);
+        productionContractBeforeMigration!.Technology!.FuelCode.Should().Be("");
+        productionContractBeforeMigration!.Technology.TechCode.Should().Be("");
+
+        var consumptionContractBeforeMigration = await dbContext.Contracts.FindAsync(consumptionContractId);
+        consumptionContractBeforeMigration!.Technology!.FuelCode.Should().Be("");
+        consumptionContractBeforeMigration!.Technology!.TechCode.Should().Be("");
 
         var applyMigration = () => migrator.MigrateAsync("20231115155411_UpdateNullTechnologyCodes");
         await applyMigration.Should().NotThrowAsync();
 
-        await using var newDbContext = await CreateNewCleanDatabase();
-        var updatedContract = await newDbContext.Contracts.FindAsync(contractId);
-        updatedContract!.Technology!.FuelCode.Should().Be("F00000000");
-        updatedContract.Technology.TechCode.Should().Be("T070000");
+        await using var newDbContext = await CreateDbContext();
+
+        var productionContractAfterMigration = await newDbContext.Contracts.FindAsync(productionContractId);
+        productionContractAfterMigration!.Technology!.FuelCode.Should().Be("F00000000");
+        productionContractAfterMigration.Technology.TechCode.Should().Be("T070000");
+
+        var consumptionContractAfterMigration = await newDbContext.Contracts.FindAsync(consumptionContractId);
+        consumptionContractAfterMigration!.Technology.Should().BeNull();
     }
 
-    private static async Task InsertContractWithEmptyTechnologyFields(ApplicationDbContext dbContext, Guid id, string gsrn, string gridArea)
+    private static async Task InsertContractWithEmptyTechnologyFields(ApplicationDbContext dbContext, Guid id, string gsrn, string gridArea, MeteringPointType meteringPointType)
     {
         var contractsTable = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))!.GetTableName();
 
@@ -53,7 +65,9 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
                         ""Created"",
                         ""WalletUrl"",
                         ""WalletPublicKey"",
-                        ""ContractNumber"")
+                        ""ContractNumber"",
+                        ""Technology_FuelCode"",
+                        ""Technology_TechCode"")
                     VALUES (
                         @Id,
                         @GSRN,
@@ -64,7 +78,9 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
                         @Created,
                         @WalletUrl,
                         @WalletPublicKey,
-                        @ContractNumber
+                        @ContractNumber,
+                        @Technology_FuelCode,
+                        @Technology_TechCode
                     )";
 
         object[] contractFields =
@@ -72,19 +88,21 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
             new NpgsqlParameter("Id", id),
             new NpgsqlParameter("GSRN", gsrn),
             new NpgsqlParameter("GridArea", gridArea),
-            new NpgsqlParameter("MeteringPointType", (object?)0),
+            new NpgsqlParameter("MeteringPointType", (int)meteringPointType),
             new NpgsqlParameter("MeteringPointOwner", "DummyOwner"),
             new NpgsqlParameter("StartDate", DateTimeOffset.UtcNow),
             new NpgsqlParameter("Created", DateTimeOffset.UtcNow),
             new NpgsqlParameter("WalletUrl", "DummyUrl"),
             new NpgsqlParameter("WalletPublicKey", new byte[] { }),
-            new NpgsqlParameter("ContractNumber", 1)
+            new NpgsqlParameter("ContractNumber", 1),
+            new NpgsqlParameter("Technology_FuelCode", ""),
+            new NpgsqlParameter("Technology_TechCode", "")
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private async Task<ApplicationDbContext> CreateDbContext()
     {
         await container.InitializeAsync();
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
