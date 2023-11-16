@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Shared.Extensions;
+using API.Shared.Helpers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Models;
@@ -26,17 +27,20 @@ public class TransferAgreementsController : ControllerBase
     private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ITransferAgreementProposalRepository transferAgreementProposalRepository;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IValidator<CreateTransferAgreement> createTransferAgreementValidator,
         IProjectOriginWalletService projectOriginWalletService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ITransferAgreementProposalRepository transferAgreementProposalRepository)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.projectOriginWalletService = projectOriginWalletService;
         this.httpContextAccessor = httpContextAccessor;
+        this.transferAgreementProposalRepository = transferAgreementProposalRepository;
     }
 
     [ProducesResponseType(201)]
@@ -88,6 +92,49 @@ public class TransferAgreementsController : ControllerBase
         {
             return Conflict();
         }
+    }
+
+    /// <summary>
+    /// Add a new Transfer Agreement
+    /// </summary>
+    /// <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
+    /// <response code="201">Successful operation</response>
+    /// <response code="404">TransferAgreementProposal expired or deleted</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(TransferAgreement), 201)]
+    [ProducesResponseType(typeof(void),404)]
+    public async Task<ActionResult> CreateFromTransferAgreementProposal(CreateTransferAgreementFromProposal request)
+    {
+        var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
+        if (proposal == null)
+        {
+            return NotFound("TransferAgreementProposal expired or deleted");
+        }
+
+        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
+        var receiverWdeBase64String = await projectOriginWalletService.CreateWalletDepositEndpoint(receiverBearerToken);
+
+        var senderBearerToken = ProjectOriginWalletHelper.GenerateBearerToken(proposal.SenderCompanyId.ToString());
+
+        var receiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
+            senderBearerToken,
+            receiverWdeBase64String,
+            proposal.ReceiverCompanyTin);
+
+        var transferAgreement = new TransferAgreement
+        {
+            StartDate = proposal.StartDate,
+            EndDate = proposal.EndDate,
+            SenderId = proposal.SenderCompanyId,
+            SenderName = proposal.SenderCompanyName,
+            SenderTin = proposal.SenderCompanyTin,
+            ReceiverTin = proposal.ReceiverCompanyTin,
+            ReceiverReference = receiverReference
+        };
+
+        var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
+
+        return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
 
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]

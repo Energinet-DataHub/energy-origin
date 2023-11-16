@@ -42,6 +42,7 @@ public class TransferAgreementProposalController : ControllerBase
     {
         var companySenderId = Guid.Parse(User.FindSubjectGuidClaim());
         var companySenderTin = User.FindSubjectTinClaim();
+        var companySenderName = User.FindSubjectNameClaim();
 
         var validateResult = await createTransferAgreementProposalValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -54,6 +55,7 @@ public class TransferAgreementProposalController : ControllerBase
         {
             SenderCompanyId = companySenderId,
             SenderCompanyTin = companySenderTin,
+            SenderCompanyName = companySenderName,
             Id = Guid.NewGuid(),
             ReceiverCompanyTin = request.ReceiverTin,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),

@@ -1,3 +1,5 @@
+using System;
+
 namespace API.Transfer.Api.Dto.Requests;
 
 public record CreateTransferAgreement(
@@ -5,3 +7,6 @@ public record CreateTransferAgreement(
     long? EndDate,
     string ReceiverTin,
     string Base64EncodedWalletDepositEndpoint);
+
+public record CreateTransferAgreementFromProposal(
+    Guid TransferAgreementProposalId);
