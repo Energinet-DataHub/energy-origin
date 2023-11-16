@@ -1,24 +1,23 @@
 #!/bin/bash
 
-# Base directory where the feature folders are located
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Current date for the new version
 NEW_VERSION="v$(date +%Y_%m_%d)"
-NEW_VERSION_SHORT="v$(date +%Y_%m_%d)" # Used in namespace and using statements
+NEW_VERSION_SHORT="v$(date +%Y_%m_%d)"
+API_VERSION_DATE="$(date +%Y%m%d)"
 
-# Function to update namespaces and using statements in files
-update_namespaces() {
+# Function to update namespaces, using statements, and ApiVersion Annotation in files
+update_files() {
     local new_version_path=$1
     local new_version=$2
+    local api_version_date=$3
 
     echo "Updating namespaces in $new_version_path to $new_version"
 
-    # Recursively find and update C# files in the new version directory
     find "$new_version_path" -type f -name "*.cs" | while read -r file; do
         echo "Updating file: $file"
-        # Replace namespace and using statements, including the "v" prefix
         sed -i "s/v[0-9]\{4\}_[0-9]\{2\}_[0-9]\{2\}/$new_version/g" "$file"
+        sed -i "s/\[ApiVersion(\"[0-9]\{8\}\")\]/\[ApiVersion(\"$api_version_date\")\]/g" "$file"
     done
 }
 
@@ -27,13 +26,11 @@ create_new_version() {
     local api_dir=$1
 
     if [ -d "$api_dir" ]; then
-        # Declare the variable first
+
         local highest_version
 
-        # Assign the value in a separate line
         highest_version=$(find "$api_dir" -type d -name "v20*" | sort | tail -n 1 | xargs basename)
 
-        # Check if the variable is set
         if [ -z "$highest_version" ]; then
             echo "Error finding the highest version in $api_dir"
             return 1
@@ -47,13 +44,12 @@ create_new_version() {
         mkdir -p "$new_version_path"
         cp -r "$highest_version_path/." "$new_version_path/"
 
-        update_namespaces "$new_version_path" "$NEW_VERSION_SHORT"
+        update_files "$new_version_path" "$NEW_VERSION_SHORT" "$API_VERSION_DATE"
     else
         echo "No Api directory found in $api_dir"
     fi
 }
 
-# Process each feature's Api directory
 for feature_dir in "$BASE_DIR"/*/Api; do
     echo "Processing Api directory: $feature_dir"
     if [ -d "$feature_dir" ]; then
