@@ -151,27 +151,75 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231114121811_UpdateEmptyTechnologyCodes') THEN
-
-        UPDATE "Contracts"
-        SET
-            "Technology_FuelCode" = CASE
-                WHEN "Technology_FuelCode" = '' THEN 'F00000000'
-                ELSE "Technology_FuelCode"
-            END,
-            "Technology_TechCode" = CASE
-                WHEN "Technology_TechCode" = '' THEN 'T070000'
-                ELSE "Technology_TechCode"
-            END
-        WHERE "Technology_FuelCode" = '' OR "Technology_TechCode" = '';
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153157_RemoveTechnologyColumnsFromContracts') THEN
+    ALTER TABLE "Contracts" DROP COLUMN "Technology_FuelCode";
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231114121811_UpdateEmptyTechnologyCodes') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153157_RemoveTechnologyColumnsFromContracts') THEN
+    ALTER TABLE "Contracts" DROP COLUMN "Technology_TechCode";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153157_RemoveTechnologyColumnsFromContracts') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231114121811_UpdateEmptyTechnologyCodes', '7.0.10');
+    VALUES ('20231115153157_RemoveTechnologyColumnsFromContracts', '7.0.10');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153942_AddTechnologyToContractsTable') THEN
+    ALTER TABLE "Contracts" ADD "Technology_FuelCode" text NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153942_AddTechnologyToContractsTable') THEN
+    ALTER TABLE "Contracts" ADD "Technology_TechCode" text NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153942_AddTechnologyToContractsTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231115153942_AddTechnologyToContractsTable', '7.0.10');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115155411_UpdateNullTechnologyCodes') THEN
+
+        UPDATE "Contracts"
+        SET
+            "Technology_FuelCode" = 'F00000000',
+            "Technology_TechCode" = 'T070000'
+        WHERE "Technology_FuelCode" IS NULL
+          AND "Technology_TechCode" IS NULL
+          AND "MeteringPointType" = 0;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115155411_UpdateNullTechnologyCodes') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231115155411_UpdateNullTechnologyCodes', '7.0.10');
     END IF;
 END $EF$;
 COMMIT;
