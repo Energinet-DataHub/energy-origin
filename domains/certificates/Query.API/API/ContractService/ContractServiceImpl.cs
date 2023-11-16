@@ -66,7 +66,7 @@ internal class ContractServiceImpl : IContractService
             endDate,
             walletDepositEndpoint.Endpoint,
             walletDepositEndpoint.PublicKey.ToByteArray(),
-            Map(matchingMeteringPoint.Technology));
+            Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
         try
         {
@@ -88,8 +88,15 @@ internal class ContractServiceImpl : IContractService
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static Technology Map(Clients.Technology technology)
-        => new(technology.AibFuelCode, technology.AibTechCode);
+    private static CertificateValueObjects.Technology? Map(MeterType meterType, Clients.Technology technology)
+    {
+        if (meterType == MeterType.Production)
+        {
+            return new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+        }
+
+        return null;
+    }
 
     public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
     {

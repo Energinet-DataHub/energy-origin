@@ -36,6 +36,8 @@ public class Contract
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public MeteringPointType MeteringPointType { get; set; }
 
+    public Technology? Technology { get; set; }
+
     public static Contract CreateFrom(CertificateIssuingContract contract) =>
         new()
         {
@@ -44,6 +46,7 @@ public class Contract
             StartDate = contract.StartDate.ToUnixTimeSeconds(),
             EndDate = contract.EndDate?.ToUnixTimeSeconds(),
             Created = contract.Created.ToUnixTimeSeconds(),
-            MeteringPointType = contract.MeteringPointType
+            MeteringPointType = contract.MeteringPointType,
+            Technology = contract.Technology
         };
 }

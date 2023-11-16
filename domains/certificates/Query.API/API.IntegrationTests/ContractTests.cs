@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
+using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests;
 
@@ -164,6 +165,54 @@ public sealed class ContractTests :
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateContract_WithConsumptionMeteringPoint_TechnologyNull()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContractUri = response.Headers.Location;
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        createdContract?.Technology.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateContract_WithProductionMeteringPoint_TechnologyExists()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContractUri = response.Headers.Location;
+        var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        var expectedTechnology = new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+
+        createdContract!.Technology.Should().Be(expectedTechnology);
     }
 
     [Fact]
