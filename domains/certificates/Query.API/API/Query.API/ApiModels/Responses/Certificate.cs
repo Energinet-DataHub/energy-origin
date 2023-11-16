@@ -45,12 +45,12 @@ public class Certificate
     /// <summary>
     /// The technology of the production device as specified in EECS Rules Fact Sheet 5
     /// </summary>
-    public string TechCode { get; set; } = "";
+    public string? TechCode { get; set; } = "";
 
     /// <summary>
     /// The energy source for the production device as specified in EECS Rules Fact Sheet 5
     /// </summary>
-    public string FuelCode { get; set; } = "";
+    public string? FuelCode { get; set; } = "";
 
     /// <summary>
     /// The type of the certificate. Can be either Production, Consumption or Invalid
