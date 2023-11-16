@@ -167,7 +167,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153157_RemoveTechnologyColumnsFromContracts') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115153157_RemoveTechnologyColumnsFromContracts', '7.0.10');
+    VALUES ('20231115153157_RemoveTechnologyColumnsFromContracts', '7.0.11');
     END IF;
 END $EF$;
 COMMIT;
@@ -193,7 +193,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153942_AddTechnologyToContractsTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115153942_AddTechnologyToContractsTable', '7.0.10');
+    VALUES ('20231115153942_AddTechnologyToContractsTable', '7.0.11');
     END IF;
 END $EF$;
 COMMIT;
@@ -219,7 +219,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115155411_UpdateNullTechnologyCodes') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115155411_UpdateNullTechnologyCodes', '7.0.10');
+    VALUES ('20231115155411_UpdateNullTechnologyCodes', '7.0.11');
     END IF;
 END $EF$;
 COMMIT;

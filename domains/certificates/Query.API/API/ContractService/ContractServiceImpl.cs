@@ -88,11 +88,11 @@ internal class ContractServiceImpl : IContractService
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static CertificateValueObjects.Technology? Map(MeterType meterType, Clients.Technology technology)
+    private static Technology? Map(MeterType meterType, Clients.Technology technology)
     {
         if (meterType == MeterType.Production)
         {
-            return new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+            return new Technology(technology.AibFuelCode, technology.AibTechCode);
         }
 
         return null;

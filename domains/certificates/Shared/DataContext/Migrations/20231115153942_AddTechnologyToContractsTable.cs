@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace API.Migrations
+namespace DataContext.Migrations
 {
     /// <inheritdoc />
     public partial class AddTechnologyToContractsTable : Migration

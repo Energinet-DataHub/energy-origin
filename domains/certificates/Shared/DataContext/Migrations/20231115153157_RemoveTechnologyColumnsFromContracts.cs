@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace API.Migrations
+namespace DataContext.Migrations
 {
     public partial class RemoveTechnologyColumnsFromContracts : Migration
     {

@@ -210,7 +210,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        var expectedTechnology = new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+        var expectedTechnology = new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
 
         createdContract!.Technology.Should().Be(expectedTechnology);
     }
