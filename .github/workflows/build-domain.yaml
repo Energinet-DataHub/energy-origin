@@ -51,9 +51,9 @@ jobs:
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
-            aspnetRuntime=$(printf '%s' "$settings" | jq -rce '.aspnetRuntime.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
             csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
-            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","aspnetRuntimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$aspnetRuntime"; done <<< $csprojects | jq -sc '.')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
             printf '{"projects":%s}' "$projects"
           done <<< $LIST | jq -sc '.')
 
@@ -135,7 +135,7 @@ jobs:
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
             SDK_VERSION=${{ matrix.build.sdkVersion }}
-            RUNTIME_VERSION=${{ matrix.build.aspnetRuntimeVersion }}
+            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
   update-environment:
     name: Update environment

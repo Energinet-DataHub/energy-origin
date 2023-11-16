@@ -3,7 +3,7 @@
         "version": "7.0.201",
         "rollForward": "feature"
     },
-    "aspnetRuntime": {
+    "runtime": {
         "version": "7.0.3"
     }
 }
