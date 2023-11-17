@@ -19,7 +19,6 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 FROM base AS final
 
 RUN apk add --no-cache tzdata
-RUN apk add --no-cache wget
 
 WORKDIR /app
 COPY --from=publish /app/publish .
