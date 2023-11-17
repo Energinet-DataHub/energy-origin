@@ -18,7 +18,7 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 
 FROM base AS final
 
-RUN apk add --no-cache tzdata
+RUN apt-get -y update && apt-get -y install wget && apt-get clean
 
 WORKDIR /app
 COPY --from=publish /app/publish .
