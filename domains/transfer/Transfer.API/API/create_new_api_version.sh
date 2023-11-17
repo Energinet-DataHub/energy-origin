@@ -16,13 +16,10 @@ update_files() {
     find "$new_version_path" -type f -name "*.cs" | while IFS= read -r file; do
         echo "Updating file: $file"
 
-        # Use a temporary file for sed operation
         tmp_file=$(mktemp)
 
-        # Replace namespace and using statements, including the "v" prefix
         sed "s/v[0-9]\{4\}_[0-9]\{2\}_[0-9]\{2\}/$new_version/g" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
 
-        # Update ApiVersion attribute
         sed "s/\[ApiVersion(\"[0-9]\{8\}\")\]/\[ApiVersion(\"$api_version_date\")\]/g" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
     done
 }
