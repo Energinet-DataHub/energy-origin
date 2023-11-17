@@ -1,11 +1,11 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine3.18 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine3.18 AS build
 WORKDIR /src
 COPY ["Auth.API/API/API.csproj", "Auth.API/API/"]
 RUN dotnet restore "Auth.API/API/API.csproj"
@@ -18,7 +18,8 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 
 FROM base AS final
 
-RUN apt-get -y update && apt-get -y install wget && apt-get clean
+RUN apk add --no-cache tzdata
+RUN apk add --no-cache wget
 
 WORKDIR /app
 COPY --from=publish /app/publish .
