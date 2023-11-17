@@ -64,7 +64,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/claim-automation/stop": {
@@ -91,7 +92,8 @@
           "404": {
             "description": "Not Found"
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/claim-automation": {
@@ -135,7 +137,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/connection-invitations": {
