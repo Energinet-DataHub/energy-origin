@@ -9,12 +9,10 @@ using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -24,74 +22,20 @@ namespace API.Transfer.Api.Controllers;
 public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
-    private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ITransferAgreementProposalRepository transferAgreementProposalRepository;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
-        IValidator<CreateTransferAgreement> createTransferAgreementValidator,
         IProjectOriginWalletService projectOriginWalletService,
         IHttpContextAccessor httpContextAccessor,
         ITransferAgreementProposalRepository transferAgreementProposalRepository)
     {
         this.transferAgreementRepository = transferAgreementRepository;
-        this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.projectOriginWalletService = projectOriginWalletService;
         this.httpContextAccessor = httpContextAccessor;
         this.transferAgreementProposalRepository = transferAgreementProposalRepository;
-    }
-
-    [ProducesResponseType(201)]
-    [ProducesResponseType(409)]
-    [ProducesResponseType(400)]
-    [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
-    {
-        var subject = User.FindSubjectGuidClaim();
-        var subjectName = User.FindSubjectNameClaim();
-        var subjectTin = User.FindSubjectTinClaim();
-
-        var validateResult = await createTransferAgreementValidator.ValidateAsync(request);
-        if (!validateResult.IsValid)
-        {
-            validateResult.AddToModelState(ModelState);
-            return ValidationProblem(ModelState);
-        }
-
-        var transferAgreement = new TransferAgreement
-        {
-            StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
-            EndDate = request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null,
-            SenderId = Guid.Parse(subject),
-            SenderName = subjectName,
-            SenderTin = subjectTin,
-            ReceiverTin = request.ReceiverTin
-        };
-
-        if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
-        {
-            return Conflict();
-        }
-
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
-
-        transferAgreement.ReceiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
-            bearerToken,
-            request.Base64EncodedWalletDepositEndpoint,
-            request.ReceiverTin);
-
-        try
-        {
-            var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
-
-            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
-        }
-        catch (DbUpdateException)
-        {
-            return Conflict();
-        }
     }
 
     /// <summary>
@@ -101,11 +45,13 @@ public class TransferAgreementsController : ControllerBase
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="404">TransferAgreementProposal expired or deleted</response>
+    /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateFromTransferAgreementProposal(CreateTransferAgreementFromProposal request)
+    [ProducesResponseType(typeof(void), 409)]
+    public async Task<ActionResult> Create(CreateTransferAgreement request)
     {
         var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
         if (proposal == null)
@@ -122,6 +68,12 @@ public class TransferAgreementsController : ControllerBase
         if (proposal.EndDate < DateTimeOffset.UtcNow)
         {
             return BadRequest("This proposal has run out");
+        }
+
+        var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
+        if (hasConflict)
+        {
+            return Conflict("There is already a Transfer Agreement with proposals company tin within the selected date range");
         }
 
         var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
@@ -145,7 +97,7 @@ public class TransferAgreementsController : ControllerBase
             ReceiverReference = receiverReference
         };
 
-        var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
+        var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement, request.TransferAgreementProposalId);
 
         return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
     }
@@ -248,16 +200,6 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin: transferAgreement.ReceiverTin);
 
         return Ok(response);
-    }
-
-    [ProducesResponseType(typeof(string), 200)]
-    [HttpPost("wallet-deposit-endpoint")]
-    public async Task<ActionResult> CreateWalletDepositEndpoint()
-    {
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
-
-        var base64String = await projectOriginWalletService.CreateWalletDepositEndpoint(bearerToken);
-        return Ok(new { result = base64String });
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>

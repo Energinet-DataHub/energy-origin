@@ -10,7 +10,6 @@ public interface ITransferAgreementProposalRepository
 {
     Task AddTransferAgreementProposal(TransferAgreementProposal proposal);
     Task DeleteTransferAgreementProposal(Guid id);
-    Task DeleteOldTransferAgreementProposals(DateTimeOffset olderThan);
     Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id);
 }
 
@@ -38,11 +37,6 @@ public class TransferAgreementProposalRepository : ITransferAgreementProposalRep
             context.TransferAgreementProposals.Remove(invitation);
             await context.SaveChangesAsync();
         }
-    }
-
-    public Task DeleteOldTransferAgreementProposals(DateTimeOffset olderThan)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id)

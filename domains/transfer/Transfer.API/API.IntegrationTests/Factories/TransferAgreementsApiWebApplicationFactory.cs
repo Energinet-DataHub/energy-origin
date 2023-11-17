@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
-using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
@@ -113,28 +112,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SeedConnections(IEnumerable<Connection> connections)
-    {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateConnectionTable(dbContext);
-
-        foreach (var connection in connections)
-        {
-            dbContext.Connections.Add(connection);
-        }
-
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task SeedConnectionInvitations(IEnumerable<ConnectionInvitation> invitations)
+    public async Task SeedTransferAgreementProposals(IEnumerable<TransferAgreementProposal> proposals)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        foreach (var invitation in invitations)
+        foreach (var proposal in proposals)
         {
-            dbContext.ConnectionInvitations.Add(invitation);
+            dbContext.TransferAgreementProposals.Add(proposal);
         }
 
         await dbContext.SaveChangesAsync();
@@ -189,13 +174,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
-    }
-
-    private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
-    {
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection))!.GetTableName();
-
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)

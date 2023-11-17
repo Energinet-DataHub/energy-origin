@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.Shared;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using API.Transfer.TransferAgreementsAutomation.Service;
@@ -72,6 +72,8 @@ public static class Startup
             o.Address = new Uri(options.WalletUrl);
         });
         services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
+        services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
+        services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementsAutomationWorker>();
         services.AddSingleton<AutomationCache>();
         services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();

@@ -506,73 +506,205 @@
         }
       }
     },
-    "/api/transfer-agreements": {
+    "/api/transfer-agreement-proposals": {
       "post": {
         "tags": [
-          "TransferAgreements"
+          "TransferAgreementProposal"
         ],
+        "summary": "Create TransferAgreementProposal",
         "requestBody": {
+          "description": "The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreement"
+                "$ref": "#/components/schemas/CreateTransferAgreementProposal"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreement"
+                "$ref": "#/components/schemas/CreateTransferAgreementProposal"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreement"
+                "$ref": "#/components/schemas/CreateTransferAgreementProposal"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created"
-          },
-          "409": {
-            "description": "Conflict",
+            "description": "Created",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string",
+                  "format": "uuid"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string",
+                  "format": "uuid"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "There is already a Transfer Agreement with this company tin within the selected date range",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transfer-agreement-proposals/{id}": {
+      "get": {
+        "tags": [
+          "TransferAgreementProposal"
+        ],
+        "summary": "Get TransferAgreementProposal by Id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of TransferAgreementProposal",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposal"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposal"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposal"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "You cannot Accept/Deny your own TransferAgreementProposal"
+          },
+          "404": {
+            "description": "TransferAgreementProposal expired or deleted"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TransferAgreementProposal"
+        ],
+        "summary": "Delete TransferAgreementProposal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of TransferAgreementProposal",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful operation"
+          },
+          "404": {
+            "description": "TransferAgreementProposal not found"
+          }
+        }
+      }
+    },
+    "/api/transfer-agreements": {
+      "post": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "summary": "Add a new Transfer Agreement",
+        "requestBody": {
+          "description": "The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful operation",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/TransferAgreement"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/TransferAgreement"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/TransferAgreement"
                 }
               }
             }
+          },
+          "404": {
+            "description": "TransferAgreementProposal expired or deleted"
+          },
+          "409": {
+            "description": "There is already a Transfer Agreement with this company tin within the selected date range"
           }
         }
       },
@@ -949,7 +1081,17 @@
         },
         "additionalProperties": false
       },
-      "CreateTransferAgreement": {
+      "CreateTransferAgreementFromProposal": {
+        "type": "object",
+        "properties": {
+          "transferAgreementProposalId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTransferAgreementProposal": {
         "type": "object",
         "properties": {
           "startDate": {
@@ -962,9 +1104,6 @@
             "nullable": true
           },
           "receiverTin": {
-            "type": "string"
-          },
-          "base64EncodedWalletDepositEndpoint": {
             "type": "string"
           }
         },
@@ -1041,6 +1180,46 @@
         },
         "additionalProperties": { }
       },
+      "TransferAgreement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "senderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "senderTin": {
+            "type": "string"
+          },
+          "receiverTin": {
+            "type": "string"
+          },
+          "receiverReference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transferAgreementNumber": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "TransferAgreementDto": {
         "type": "object",
         "properties": {
@@ -1097,6 +1276,39 @@
           "actorName": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementProposal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderCompanyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderCompanyTin": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "receiverCompanyTin": {
+            "type": "string"
           }
         },
         "additionalProperties": false
