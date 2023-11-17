@@ -43,7 +43,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
-        builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);

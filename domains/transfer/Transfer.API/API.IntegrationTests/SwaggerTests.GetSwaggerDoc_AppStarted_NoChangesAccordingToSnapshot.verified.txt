@@ -101,295 +101,6 @@
         }
       }
     },
-    "/api/connection-invitations": {
-      "post": {
-        "tags": [
-          "ConnectionInvitations"
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/connection-invitations/{id}": {
-      "get": {
-        "tags": [
-          "ConnectionInvitations"
-        ],
-        "summary": "Get connection-invitation by Id",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Id of connection-invitation",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionInvitation"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionInvitation"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionInvitation"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "You cannot Accept/Deny your own ConnectionInvitation"
-          },
-          "404": {
-            "description": "Connection-invitation expired or deleted"
-          },
-          "409": {
-            "description": "Company is already a connection",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "ConnectionInvitations"
-        ],
-        "summary": "Delete connection-invitation",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Id of connection-invitation",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful operation"
-          },
-          "404": {
-            "description": "Connection-invitation not found"
-          }
-        }
-      }
-    },
-    "/api/connections": {
-      "post": {
-        "tags": [
-          "Connections"
-        ],
-        "summary": "Add a new connection",
-        "requestBody": {
-          "description": "The request object containing the ConnectionInvitationId for creating the connection.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConnection"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConnection"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConnection"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful operation",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Connection"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Connection"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Connection"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Connection-invitation expired or deleted",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Company is already a connection",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Connections"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionsResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionsResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectionsResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/api/connections/{id}": {
-      "delete": {
-        "tags": [
-          "Connections"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/cvr/{cvrNumber}": {
       "get": {
         "tags": [
@@ -619,7 +330,7 @@
             }
           },
           "400": {
-            "description": "You cannot Accept/Deny your own TransferAgreementProposal"
+            "description": "You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out"
           },
           "404": {
             "description": "TransferAgreementProposal expired or deleted"
@@ -664,17 +375,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+                "$ref": "#/components/schemas/CreateTransferAgreement"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+                "$ref": "#/components/schemas/CreateTransferAgreement"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTransferAgreementFromProposal"
+                "$ref": "#/components/schemas/CreateTransferAgreement"
               }
             }
           }
@@ -700,11 +411,14 @@
               }
             }
           },
+          "400": {
+            "description": "Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out"
+          },
           "404": {
             "description": "TransferAgreementProposal expired or deleted"
           },
           "409": {
-            "description": "There is already a Transfer Agreement with this company tin within the selected date range"
+            "description": "There is already a Transfer Agreement with proposals company tin within the selected date range"
           }
         }
       },
@@ -864,35 +578,6 @@
           }
         }
       }
-    },
-    "/api/transfer-agreements/wallet-deposit-endpoint": {
-      "post": {
-        "tags": [
-          "TransferAgreements"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -993,95 +678,7 @@
         },
         "additionalProperties": false
       },
-      "Connection": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "companyAId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "companyATin": {
-            "type": "string"
-          },
-          "companyBId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "companyBTin": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ConnectionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Connection ID",
-            "format": "uuid"
-          },
-          "companyId": {
-            "type": "string",
-            "description": "ID of the company",
-            "format": "uuid"
-          },
-          "companyTin": {
-            "type": "string",
-            "description": "Company TIN (e.g. CVR)"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ConnectionInvitation": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "senderCompanyId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "senderCompanyTin": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ConnectionsResponse": {
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConnectionDto"
-            },
-            "description": "List of connections"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateConnection": {
-        "type": "object",
-        "properties": {
-          "connectionInvitationId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateTransferAgreementFromProposal": {
+      "CreateTransferAgreement": {
         "type": "object",
         "properties": {
           "transferAgreementProposalId": {
@@ -1292,6 +889,9 @@
             "format": "uuid"
           },
           "senderCompanyTin": {
+            "type": "string"
+          },
+          "senderCompanyName": {
             "type": "string"
           },
           "createdAt": {

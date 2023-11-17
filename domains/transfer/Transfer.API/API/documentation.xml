@@ -159,6 +159,18 @@
         <member name="M:API.Shared.Migrations.AddClaimAutomationArgument.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Shared.Migrations.AddTransferAgreementProposalsAndDeleteConnections">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddTransferAgreementProposalsAndDeleteConnections.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddTransferAgreementProposalsAndDeleteConnections.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Shared.Migrations.AddTransferAgreementProposalsAndDeleteConnections.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal)">
             <summary>
             Create TransferAgreementProposal
