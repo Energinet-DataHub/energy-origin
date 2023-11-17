@@ -13,6 +13,14 @@ public class LoginController : ControllerBase
 {
     [AllowAnonymous]
     [HttpGet]
+    [Route("auth/testmethod")]
+    public IActionResult TestMethod()
+    {
+        return Ok("Hello");
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
     [Route("auth/login")]
     public async Task<IActionResult> LoginAsync(
         IDiscoveryCache discoveryCache,
