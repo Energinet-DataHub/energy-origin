@@ -6,7 +6,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Shared;
 using API.IntegrationTests.Testcontainers;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
@@ -17,7 +16,7 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.Controllers;
+namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
 
 [UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>

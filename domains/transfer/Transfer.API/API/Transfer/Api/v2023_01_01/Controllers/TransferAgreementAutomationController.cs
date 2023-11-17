@@ -9,7 +9,7 @@ namespace API.Transfer.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20230101", Deprecated = true)]
+[ApiVersion("20230101")]
 public class TransferAgreementAutomationController : ControllerBase
 {
     private readonly AutomationCache cache;

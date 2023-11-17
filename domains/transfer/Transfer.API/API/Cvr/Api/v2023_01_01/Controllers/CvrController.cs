@@ -11,7 +11,7 @@ namespace API.Cvr.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20230101", Deprecated = true)]
+[ApiVersion("20230101")]
 [Route("api/cvr")]
 public class CvrController : Controller
 {

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Xunit;
 
-namespace API.IntegrationTests.Claiming.Api.Controllers;
+namespace API.IntegrationTests.Claiming.Api.v2023_01_01.Controllers;
 
 public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {

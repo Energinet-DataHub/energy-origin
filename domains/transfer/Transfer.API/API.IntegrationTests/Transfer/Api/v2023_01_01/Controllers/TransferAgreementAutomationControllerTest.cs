@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.Controllers;
+namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
 
 public class TransferAgreementAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {

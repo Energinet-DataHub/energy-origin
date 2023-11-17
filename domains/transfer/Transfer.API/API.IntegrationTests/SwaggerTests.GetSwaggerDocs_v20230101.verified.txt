@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Transfer API 20230101",
-    "description": "This API version has been deprecated.",
+    "description": "",
     "version": "20230101"
   },
   "paths": {
@@ -64,8 +64,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/claim-automation/stop": {
@@ -92,8 +91,7 @@
           "404": {
             "description": "Not Found"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/claim-automation": {
@@ -137,8 +135,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/connection-invitations": {
@@ -182,8 +179,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/connection-invitations/{id}": {
@@ -261,8 +257,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       },
       "delete": {
         "tags": [
@@ -298,8 +293,7 @@
           "404": {
             "description": "Connection-invitation not found"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/connections": {
@@ -401,8 +395,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       },
       "get": {
         "tags": [
@@ -444,8 +437,7 @@
           "204": {
             "description": "No Content"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/connections/{id}": {
@@ -498,8 +490,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/cvr/{cvrNumber}": {
@@ -553,8 +544,7 @@
           "404": {
             "description": "CVR company not found"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/transfer-automation/status": {
@@ -595,8 +585,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/history/transfer-agreements/{transferAgreementId}": {
@@ -649,8 +638,7 @@
           "204": {
             "description": "No Content"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/transfer-agreements": {
@@ -733,8 +721,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       },
       "get": {
         "tags": [
@@ -776,8 +763,7 @@
           "204": {
             "description": "No Content"
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/transfer-agreements/{id}": {
@@ -830,8 +816,7 @@
           "404": {
             "description": "Not Found"
           }
-        },
-        "deprecated": true
+        }
       },
       "patch": {
         "tags": [
@@ -924,8 +909,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/api/transfer-agreements/wallet-deposit-endpoint": {
@@ -966,8 +950,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     }
   },

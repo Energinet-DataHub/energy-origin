@@ -11,7 +11,7 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace API.IntegrationTests.Connections.Api.Controllers;
+namespace API.IntegrationTests.Connections.Api.v2023_01_01.Controllers;
 
 public class ConnectionInvitationsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {

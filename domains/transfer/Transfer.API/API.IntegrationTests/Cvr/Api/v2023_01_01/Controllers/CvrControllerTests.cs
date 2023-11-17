@@ -12,7 +12,7 @@ using WireMock.ResponseBuilders;
 using WireMock.Server;
 using Xunit;
 
-namespace API.IntegrationTests.Cvr.Api.Controllers;
+namespace API.IntegrationTests.Cvr.Api.v2023_01_01.Controllers;
 
 [UsesVerify]
 public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
@@ -36,7 +36,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
-                .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.cvr_response.json")
+                .WithBodyFromFile("Cvr/Api/v2023_01_01/Controllers/CvrControllerTests.cvr_response.json")
             );
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
@@ -59,7 +59,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
-                .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.empty_cvr_response.json")
+                .WithBodyFromFile("Cvr/Api/v2023_01_01/Controllers/CvrControllerTests.empty_cvr_response.json")
             );
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
@@ -84,7 +84,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
             .WhenStateIs("FirstCallDone")
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.OK)
-                .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.cvr_response.json"));
+                .WithBodyFromFile("Cvr/Api/v2023_01_01/Controllers/CvrControllerTests.cvr_response.json"));
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString());
 
