@@ -21,10 +21,6 @@ This folder will contain documentation for working with the APIs and developing 
 
 - GET [/api/meteringpoints](meteringpoint.md#get-meteringpoints)
 
-### Emissions Domains
-
-- GET [/api/emissions](emissions.md#get-emissions)
-- GET [/api/sources](emissions.md#get-sources-of-energy)
 
 ### Measurements Domains
 
