@@ -251,11 +251,13 @@
           },
           "techCode": {
             "type": "string",
-            "description": "The technology of the production device as specified in EECS Rules Fact Sheet 5"
+            "description": "The technology of the production device as specified in EECS Rules Fact Sheet 5",
+            "nullable": true
           },
           "fuelCode": {
             "type": "string",
-            "description": "The energy source for the production device as specified in EECS Rules Fact Sheet 5"
+            "description": "The energy source for the production device as specified in EECS Rules Fact Sheet 5",
+            "nullable": true
           },
           "certificateType": {
             "$ref": "#/components/schemas/CertificateType"
@@ -311,6 +313,9 @@
           },
           "meteringPointType": {
             "$ref": "#/components/schemas/MeteringPointType"
+          },
+          "technology": {
+            "$ref": "#/components/schemas/Technology"
           }
         },
         "additionalProperties": false
@@ -366,6 +371,18 @@
           "Consumption"
         ],
         "type": "string"
+      },
+      "Technology": {
+        "type": "object",
+        "properties": {
+          "fuelCode": {
+            "type": "string"
+          },
+          "techCode": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "ValidationProblemDetails": {
         "type": "object",

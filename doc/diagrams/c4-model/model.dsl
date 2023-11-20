@@ -1,11 +1,9 @@
-# TODO all diagrams should be revised to resemble Energy Origin as-is
-
 apiGateway = container "API Gateway" {
     description "Routes requests to services and forwards authentication requests"
     technology "Traefik"
 }
 
-dataSyncDomain = group "Data Sync" {
+dataSyncSubsystem = group "Data Sync" {
     dataSyncApi = container "Data Sync" {
         description "Facade for DataHub 2.0"
         technology ".NET"
@@ -14,7 +12,7 @@ dataSyncDomain = group "Data Sync" {
     }
 }
 
-authDomain = group "Auth Domain" {
+authSubsystem = group "Auth Subsystem" {
     authApi = container "Auth Web Api" {
         description "API For authentication and authorization"
 
@@ -32,7 +30,7 @@ authDomain = group "Auth Domain" {
     }
 }
 
-certificatesDomain = group "Certificate Domain" {
+certificatesSubsystem = group "Certificate Subsystem" {
     certRabbitMq = container "Certificate Message Broker" {
         description ""
         technology "RabbitMQ"
@@ -79,17 +77,7 @@ certificatesDomain = group "Certificate Domain" {
     }
 }
 
-emissionsDomain = group "Emissions Domain" {
-    emsssionApi = container "Emissions Web Api" {
-        description "API for emissions and sources"
-
-        apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Get measurements and metering points from"
-        this -> eds "Get emission and residual mix per hour from"
-    }
-}
-
-measurementsDomain = group "Measurements Domain" {
+measurementsSubsystem = group "Measurements Subsystem" {
     measurementApi = container "Measurements Web Api" {
         description "API for aggregated measurements split into production and consumption"
 
@@ -98,8 +86,8 @@ measurementsDomain = group "Measurements Domain" {
     }
 }
 
-transferDomain = group "Transfer Domain" {
-    tApi = container "Transfer API" "" ".NET Web Api" {
+transferSubsystem = group "Transfer Subsystem" {
+    transferApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> poWallet "Creates wallet deposit endpoint"
@@ -119,7 +107,7 @@ transferDomain = group "Transfer Domain" {
         description ""
         technology "Postgres SQL"
 
-        tApi -> this "Saves and reads transfer agreement and connections data"
+        transferApi -> this "Saves and reads transfer agreement and connections data"
     }
     apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"

@@ -15,6 +15,7 @@ using FluentAssertions.Equivalency;
 using MassTransit;
 using MeasurementEvents;
 using Xunit;
+using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests;
 
@@ -82,7 +83,8 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock, technology);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
@@ -107,8 +109,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     Quantity = 42,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     GridArea = "DK1",
                     GSRN = gsrn,
                     CertificateType = CertificateType.Production
@@ -172,7 +174,8 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock, technology);
 
         var dateFrom = utcMidnight.ToUnixTimeSeconds();
         var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
@@ -207,8 +210,8 @@ public sealed class CertificateIssuingTests :
                     DateFrom = utcMidnight.ToUnixTimeSeconds(),
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     Quantity = 42,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     GridArea = "DK1",
                     GSRN = gsrn,
                     CertificateType = CertificateType.Production
@@ -282,7 +285,8 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock, technology);
 
         const int measurementCount = 5;
 
@@ -314,8 +318,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(5).ToUnixTimeSeconds(),
                     GridArea = "DK1",
                     GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     CertificateType = CertificateType.Production
                 },
                 new Certificate
@@ -325,8 +329,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(4).ToUnixTimeSeconds(),
                     GridArea = "DK1",
                     GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     CertificateType = CertificateType.Production
                 },
                 new Certificate
@@ -336,8 +340,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(3).ToUnixTimeSeconds(),
                     GridArea = "DK1",
                     GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     CertificateType = CertificateType.Production
                 },
                 new Certificate
@@ -347,8 +351,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(2).ToUnixTimeSeconds(),
                     GridArea = "DK1",
                     GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     CertificateType = CertificateType.Production
                 },
                 new Certificate
@@ -358,8 +362,8 @@ public sealed class CertificateIssuingTests :
                     DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
                     GridArea = "DK1",
                     GSRN = gsrn,
-                    FuelCode = "F00000000",
-                    TechCode = "T070000",
+                    FuelCode = technology.AibFuelCode,
+                    TechCode = technology.AibTechCode,
                     CertificateType = CertificateType.Production
                 }
             }
