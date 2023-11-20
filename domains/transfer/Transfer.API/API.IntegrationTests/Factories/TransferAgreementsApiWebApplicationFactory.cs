@@ -34,7 +34,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
-    public string WalletUrl { get; set; } = "http://foo";
+    private string WalletUrl { get; set; } = "http://foo";
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
