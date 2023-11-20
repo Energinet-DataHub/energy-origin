@@ -17,8 +17,18 @@ public class CertificateIssuingContract
     public DateTimeOffset Created { get; set; }
     public string WalletUrl { get; set; } = "";
     public byte[] WalletPublicKey { get; set; } = Array.Empty<byte>();
+    public Technology? Technology { get; set; }
 
-    public static CertificateIssuingContract Create(int contractNumber, string gsrn, string gridArea, MeteringPointType meteringPointType, string meteringPointOwner, DateTimeOffset startDate, DateTimeOffset? endDate, string walletUrl, byte[] walletPublicKey)
+    public static CertificateIssuingContract Create(int contractNumber,
+        string gsrn,
+        string gridArea,
+        MeteringPointType meteringPointType,
+        string meteringPointOwner,
+        DateTimeOffset startDate,
+        DateTimeOffset? endDate,
+        string walletUrl,
+        byte[] walletPublicKey,
+        Technology? technology)
     {
         var contract = new CertificateIssuingContract
         {
@@ -32,7 +42,8 @@ public class CertificateIssuingContract
             EndDate = endDate,
             Created = DateTimeOffset.UtcNow,
             WalletUrl = walletUrl,
-            WalletPublicKey = walletPublicKey
+            WalletPublicKey = walletPublicKey,
+            Technology = technology
         };
 
         // Validate key

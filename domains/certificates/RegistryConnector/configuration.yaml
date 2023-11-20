@@ -1,5 +1,5 @@
 name: eo-certificates-registry-connector
-version: 2.0.10
+version: 2.0.14
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/certificates/base/registry-connector-deployment.yaml

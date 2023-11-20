@@ -15,4 +15,3 @@ public class ProductionCertificate : Certificate
     }
     public Technology Technology { get; private set; } = new("unknown", "unknown");
 }
-
