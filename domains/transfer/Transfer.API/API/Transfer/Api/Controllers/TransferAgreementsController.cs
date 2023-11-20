@@ -148,7 +148,6 @@ public class TransferAgreementsController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
-
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
 

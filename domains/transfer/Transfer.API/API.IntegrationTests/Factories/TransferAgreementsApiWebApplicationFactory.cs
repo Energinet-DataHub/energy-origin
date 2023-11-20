@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -11,6 +12,7 @@ using API.Claiming.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
+using API.Transfer.Api.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -131,6 +133,23 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
     {
         var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+
+        return client;
+    }
+
+    public HttpClient CreateAuthenticatedClient(IProjectOriginWalletService poWalletServiceMock, string sub, string tin = "11223344", string name = "Peter Producent",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+    {
+        var client = WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.Remove(services.First(s => s.ImplementationType == typeof(ProjectOriginWalletService)));
+                services.AddScoped(_ => poWalletServiceMock);
+            });
+        }).CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
 

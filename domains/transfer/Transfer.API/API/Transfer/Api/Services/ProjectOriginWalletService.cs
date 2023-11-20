@@ -46,7 +46,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
         {
-            { "Authorization", bearerToken }
+            { "Authorization", bearerToken.Contains("Bearer ") ? bearerToken : "Bearer " + bearerToken }
         };
         try
         {
@@ -61,12 +61,11 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         }
     }
 
-    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint,
-        string receiverTin)
+    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
     {
         var headers = new Metadata
         {
-            { "Authorization", bearerToken }
+            { "Authorization", bearerToken.Contains("Bearer ") ? bearerToken : "Bearer " + bearerToken  }
         };
 
         var wde = Base64Converter.ConvertToWalletDepositEndpoint(base64EncodedWalletDepositEndpoint);
@@ -93,7 +92,6 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             throw;
         }
     }
-
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {
