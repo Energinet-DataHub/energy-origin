@@ -34,9 +34,6 @@ jobs:
           if [ ! -s /tmp/list ]; then
             exit 0
           fi
-          echo '::group::List'
-          cat /tmp/list
-          echo '::endgroup::'
 
           matrix=$(jq --raw-input -sc 'split("\n") | .[0:-1]' < /tmp/list)
           echo "matrix=$matrix" >> "$GITHUB_ENV"

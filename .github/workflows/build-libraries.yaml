@@ -37,12 +37,10 @@ jobs:
         run: |
           find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | egrep "$PATTERN" > /tmp/list || true
 
-          if [ -s /tmp/list ]; then
+          if [ ! -s /tmp/list ]; then
             exit 0
           fi
-          echo '::group::List'
-          cat /tmp/list
-          echo '::endgroup::'
+
           csprojects=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
           echo "csprojects=$csprojects" >> "$GITHUB_ENV"
 
@@ -61,9 +59,6 @@ jobs:
           if [ ! -s /tmp/json ]; then
             exit 0
           fi
-          echo '::group::Json'
-          cat /tmp/json; echo
-          echo '::endgroup::'
 
           dockerfiles=$(jq -sc '.' < /tmp/json)
           echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"

@@ -61,9 +61,6 @@ jobs:
           if [ ! -s /tmp/json ]; then
             exit 0
           fi
-          echo '::group::Json'
-          cat /tmp/json
-          echo '::endgroup::'
 
           matrix=$(jq -sc '.' < /tmp/json)
           echo '::group::Matrix'

@@ -35,9 +35,6 @@ jobs:
           if [ ! -s /tmp/list ]; then
             exit 0
           fi
-          echo '::group::List'
-          cat /tmp/list
-          echo '::endgroup::'
 
           matrix=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
           echo "matrix=$matrix" >> "$GITHUB_ENV"
