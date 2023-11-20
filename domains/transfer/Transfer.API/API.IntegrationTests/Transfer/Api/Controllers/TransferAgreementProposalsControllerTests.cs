@@ -233,20 +233,24 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenProposalHasRunOut()
     {
         var receiverTin = "11223345";
-        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.ToUnixTimeSeconds(), receiverTin);
+        var taProposal = new TransferAgreementProposal
+        {
+            CreatedAt = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow,
+            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            SenderCompanyName = "SomeCompany",
+            ReceiverCompanyTin = receiverTin,
+            SenderCompanyId = new Guid(sub),
+            SenderCompanyTin = "11223344"
+        };
 
-        var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        var createResponseBody = await createResponse.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
+        var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{taProposal.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -302,10 +306,10 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "32132132");
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "32132132");
         var postResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
-
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposal>();
 
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
