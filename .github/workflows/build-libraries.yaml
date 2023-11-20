@@ -40,6 +40,9 @@ jobs:
           if [ -s /tmp/list ]; then
             exit 0
           fi
+          echo '::group::List'
+          cat /tmp/list
+          echo '::endgroup::'
           csprojects=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
           echo "csprojects=$csprojects" >> "$GITHUB_ENV"
 
@@ -53,13 +56,13 @@ jobs:
         env:
           LIST: ${{ steps.docker.outputs.list }}
         run: |
-          while read directory; do [ -d "$directory" ] || continue; printf '{"path": "%s"}' "$directory"; done <<< $LIST > /tmp/json
+          while read directory; do [ -d "$directory" ] || continue; printf '{"path": "%s"}\n' "$directory"; done <<< $LIST > /tmp/json
 
           if [ ! -s /tmp/json ]; then
             exit 0
           fi
           echo '::group::Json'
-          cat /tmp/json
+          cat /tmp/json; echo
           echo '::endgroup::'
 
           dockerfiles=$(jq -sc '.' < /tmp/json)

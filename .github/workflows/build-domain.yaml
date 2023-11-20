@@ -55,7 +55,7 @@ jobs:
             runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
             csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
             projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
-            printf '{"projects":%s}' "$projects"
+            printf '{"projects":%s}\n' "$projects"
           done <<< $LIST > /tmp/json
 
           if [ ! -s /tmp/json ]; then
