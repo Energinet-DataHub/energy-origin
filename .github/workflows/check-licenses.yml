@@ -32,7 +32,7 @@ jobs:
           # TODO: re-enable checking Tests projects
           find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' > /tmp/list || true
 
-          if [ -s /tmp/list ]; then
+          if [ ! -s /tmp/list ]; then
             exit 0
           fi
           echo '::group::List'

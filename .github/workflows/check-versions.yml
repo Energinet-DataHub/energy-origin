@@ -31,7 +31,7 @@ jobs:
         run: |
           find domains libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" > /tmp/list || true
 
-          if [ -s /tmp/list ]; then
+          if [ ! -s /tmp/list ]; then
             exit 0
           fi
           echo '::group::List'

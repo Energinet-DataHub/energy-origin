@@ -58,7 +58,7 @@ jobs:
             printf '{"projects":%s}' "$projects"
           done <<< $LIST > /tmp/json
 
-          if [ -s /tmp/json ]; then
+          if [ ! -s /tmp/json ]; then
             exit 0
           fi
           echo '::group::Json'
