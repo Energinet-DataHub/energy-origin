@@ -53,6 +53,11 @@ public class TransferAgreementsController : ControllerBase
     [ProducesResponseType(typeof(void), 409)]
     public async Task<ActionResult> Create(CreateTransferAgreement request)
     {
+        if (request.TransferAgreementProposalId == Guid.Empty)
+        {
+            return BadRequest("Must set TransferAgreementProposalId");
+        }
+
         var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
         if (proposal == null)
         {
