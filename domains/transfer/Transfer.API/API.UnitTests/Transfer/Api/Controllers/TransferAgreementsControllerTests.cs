@@ -75,12 +75,25 @@ public class TransferAgreementsControllerTests
         };
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(Arg.Any<Guid>())
             .Returns(taProposal);
+        mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)
+            .Returns(new TransferAgreement
+            {
+                EndDate = taProposal.EndDate,
+                Id = Guid.NewGuid(),
+                ReceiverReference = Guid.NewGuid(),
+                ReceiverTin = tin,
+                SenderId = taProposal.SenderCompanyId,
+                SenderName = taProposal.SenderCompanyName,
+                SenderTin = taProposal.SenderCompanyTin,
+                StartDate = taProposal.StartDate,
+                TransferAgreementNumber = 1
+            });
 
         var request = new CreateTransferAgreement(taProposal.Id);
 
         await controller.Create(request);
 
-        await mockTransferAgreementRepository.Received(1).AddTransferAgreementToDb(Arg.Any<TransferAgreement>());
+        await mockTransferAgreementRepository.Received(1).AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id);
     }
 
     [Fact]
