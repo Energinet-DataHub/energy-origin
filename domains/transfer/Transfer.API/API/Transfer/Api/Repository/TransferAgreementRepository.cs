@@ -33,7 +33,7 @@ public class TransferAgreementRepository : ITransferAgreementRepository
             .ToListAsync();
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
         newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
-        
+
         await context.TransferAgreements.AddAsync(newTransferAgreement);
 
         var proposal = await context.TransferAgreementProposals.FindAsync(proposalId);
