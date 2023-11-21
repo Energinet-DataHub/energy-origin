@@ -28,33 +28,23 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     public async Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
         var agreements = await context.TransferAgreements.Where(t =>
                 t.SenderId == newTransferAgreement.SenderId)
             .ToListAsync();
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
         newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
-        try
+        
+        await context.TransferAgreements.AddAsync(newTransferAgreement);
+
+        var proposal = await context.TransferAgreementProposals.FindAsync(proposalId);
+        if (proposal != null)
         {
-            await context.TransferAgreements.AddAsync(newTransferAgreement);
-
-            var proposal = await context.TransferAgreementProposals.FindAsync(proposalId);
-            if (proposal != null)
-            {
-                context.TransferAgreementProposals.Remove(proposal);
-            }
-
-            await context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-            return newTransferAgreement;
+            context.TransferAgreementProposals.Remove(proposal);
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        await context.SaveChangesAsync();
+
+        return newTransferAgreement;
     }
 
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin) =>
