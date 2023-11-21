@@ -6,6 +6,7 @@ using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
+using API.Transfer.TransferAgreementProposalCleanup.Options;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using API.Transfer.TransferAgreementsAutomation.Service;
@@ -20,6 +21,8 @@ public static class Startup
 {
     public static void AddTransfer(this IServiceCollection services)
     {
+        services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
+            .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
 

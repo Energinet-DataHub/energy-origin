@@ -6,7 +6,6 @@ using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer;
-using API.Transfer.TransferAgreementProposalCleanup.Options;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,8 +39,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
-    .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>(
     (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
