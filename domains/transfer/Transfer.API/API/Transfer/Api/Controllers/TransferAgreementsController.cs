@@ -81,13 +81,13 @@ public class TransferAgreementsController : ControllerBase
             return Conflict("There is already a Transfer Agreement with proposals company tin within the selected date range");
         }
 
-        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
+        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]);
         var receiverWdeBase64String = await projectOriginWalletService.CreateWalletDepositEndpoint(receiverBearerToken);
 
         var senderBearerToken = ProjectOriginWalletHelper.GenerateBearerToken(proposal.SenderCompanyId.ToString());
 
         var receiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
-            senderBearerToken,
+            new AuthenticationHeaderValue("Bearer", senderBearerToken),
             receiverWdeBase64String,
             proposal.ReceiverCompanyTin);
 
