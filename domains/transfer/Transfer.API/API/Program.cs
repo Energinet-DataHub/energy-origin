@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
 using API.Claiming;
 using API.Connections;
 using API.Connections.Automation.Options;
@@ -26,6 +27,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using ProjectOrigin.PedersenCommitment.Ristretto;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -117,7 +119,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(
         options =>
         {
-            foreach (var description in app.DescribeApiVersions())
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
             {
                 options.SwaggerEndpoint(
                     $"/api-docs/transfer/{description.GroupName}/swagger.json",
