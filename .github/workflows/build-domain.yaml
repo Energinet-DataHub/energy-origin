@@ -47,16 +47,22 @@ jobs:
         env:
           LIST: ${{ steps.diff.outputs.list }}
         run: |
-          matrix=$(while read domain; do
+          while read domain; do
+            [ -d "$domain" ] || continue
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
             runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
             csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
             projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
-            printf '{"projects":%s}' "$projects"
-          done <<< $LIST | jq -sc '.')
+            printf '{"projects":%s}\n' "$projects"
+          done <<< $LIST > /tmp/json
 
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
+
+          matrix=$(jq -sc '.' < /tmp/json)
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'

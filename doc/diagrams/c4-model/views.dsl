@@ -51,11 +51,6 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->measurementsSubsystem-> dataSyncApi->
             autolayout
         }
-        container energyOrigin "Emissions" {
-            title "[Container] Emissions"
-            include ->emissionsSubsystem-> dataSyncApi->
-            autolayout
-        }
         container energyOrigin "Certificate" {
             title "[Container] Certificates"
             include ->certificatesSubsystem-> dataSyncApi->
