@@ -46,7 +46,7 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
                 logger.LogWarning("Something went wrong with the TransferAgreementProposalCleanupService: {Exception}", e);
             }
 
-            await SleepToNearestHour(stoppingToken);
+            await Sleep(stoppingToken);
         }
     }
 
@@ -62,7 +62,7 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task SleepToNearestHour(CancellationToken cancellationToken)
+    private async Task Sleep(CancellationToken cancellationToken)
     {
         logger.LogInformation("Sleep for {SleepTime}", options.SleepTime);
         try

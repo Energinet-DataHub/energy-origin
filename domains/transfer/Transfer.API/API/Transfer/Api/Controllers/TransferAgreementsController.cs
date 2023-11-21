@@ -13,6 +13,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -102,9 +103,16 @@ public class TransferAgreementsController : ControllerBase
             ReceiverReference = receiverReference
         };
 
-        var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement, request.TransferAgreementProposalId);
+        try
+        {
+            var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement, request.TransferAgreementProposalId);
 
-        return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+        }
+        catch (DbUpdateException)
+        {
+            return ValidationProblem(statusCode: 409);
+        }
     }
 
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
