@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -509,8 +510,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     private IProjectOriginWalletService SetupPoWalletServiceMock()
     {
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<string>()).Returns("SomeToken");
-        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
+        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
+        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
 
         return poWalletServiceMock;
     }
