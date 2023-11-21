@@ -15,21 +15,21 @@ public class CreateTransferAgreementProposalValidator : AbstractValidator<Create
     {
         var now = DateTimeOffset.UtcNow;
 
-        RuleFor(createInvitation => createInvitation.StartDate)
+        RuleFor(createProposal => createProposal.StartDate)
             .NotEmpty()
             .WithMessage("Start Date cannot be empty.")
             .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
             .WithMessage("Start Date cannot be in the past.")
             .MustBeBeforeYear10000();
 
-        RuleFor(createInvitation => createInvitation.EndDate)
+        RuleFor(createProposal => createProposal.EndDate)
             .Cascade(CascadeMode.Stop)
-            .Must((createInvitation, endDate) => endDate == null || endDate > createInvitation.StartDate)
+            .Must((createProposal, endDate) => endDate == null || endDate > createProposal.StartDate)
             .WithMessage("End Date must be null or later than Start Date.")
             .MustBeBeforeYear10000()
             .When(t => t.EndDate != null);
 
-        RuleFor(createInvitation => createInvitation.ReceiverTin)
+        RuleFor(createProposal => createProposal.ReceiverTin)
             .NotEmpty()
             .WithMessage("ReceiverTin cannot be empty")
             .Length(8)

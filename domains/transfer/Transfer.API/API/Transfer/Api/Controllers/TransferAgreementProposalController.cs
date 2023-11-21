@@ -34,8 +34,10 @@ public class TransferAgreementProposalController : ControllerBase
     /// </summary>
     /// <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
     /// <response code="201">Created</response>
+    /// <response code="400">Bad request</response>
     /// <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
     [ProducesResponseType(typeof(Guid), 201)]
+    [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(string), 409)]
     [HttpPost]
     public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
@@ -66,7 +68,7 @@ public class TransferAgreementProposalController : ControllerBase
 
         if (hasConflict)
         {
-            return Conflict("There is already a Transfer Agreement with this company tin within the selected date range");
+            return ValidationProblem("There is already a Transfer Agreement with this company tin within the selected date range", statusCode: 409);
         }
 
         await repository.AddTransferAgreementProposal(newProposal);
@@ -91,7 +93,7 @@ public class TransferAgreementProposalController : ControllerBase
 
         if (proposal == null)
         {
-            return NotFound("TransferAgreementProposal expired or deleted");
+            return NotFound();
         }
 
         var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
@@ -99,15 +101,15 @@ public class TransferAgreementProposalController : ControllerBase
 
         if (currentCompanyId == proposal.SenderCompanyId)
         {
-            return BadRequest("You cannot Accept/Deny your own TransferAgreementProposal");
+            return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
         if (currentCompanyTin != proposal.ReceiverCompanyTin)
         {
-            return BadRequest("You cannot Accept/Deny a TransferAgreementProposal for another company");
+            return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
         if (proposal.EndDate < DateTimeOffset.UtcNow)
         {
-            return BadRequest("This proposal has run out");
+            return ValidationProblem("This proposal has run out");
         }
 
         return Ok(proposal);
@@ -128,7 +130,7 @@ public class TransferAgreementProposalController : ControllerBase
 
         if (proposal == null)
         {
-            return NotFound("TransferAgreementProposal not found");
+            return NotFound();
         }
 
         await repository.DeleteTransferAgreementProposal(id);

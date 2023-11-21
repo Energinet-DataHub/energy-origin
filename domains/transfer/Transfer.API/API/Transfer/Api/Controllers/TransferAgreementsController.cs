@@ -55,30 +55,30 @@ public class TransferAgreementsController : ControllerBase
     {
         if (request.TransferAgreementProposalId == Guid.Empty)
         {
-            return BadRequest("Must set TransferAgreementProposalId");
+            return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
         var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
         if (proposal == null)
         {
-            return NotFound("TransferAgreementProposal expired or deleted");
+            return NotFound();
         }
 
         var subjectTin = User.FindSubjectTinClaim();
         if (proposal.ReceiverCompanyTin != subjectTin)
         {
-            return BadRequest("Only the receiver company can accept this Transfer Agreement Proposal");
+            return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
 
         if (proposal.EndDate < DateTimeOffset.UtcNow)
         {
-            return BadRequest("This proposal has run out");
+            return ValidationProblem("This proposal has run out");
         }
 
         var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
         if (hasConflict)
         {
-            return Conflict("There is already a Transfer Agreement with proposals company tin within the selected date range");
+            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range", statusCode: 409);
         }
 
         var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]);

@@ -197,10 +197,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var response = await client.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var responseBody = await response.Content.ReadAsStringAsync();
-
-        responseBody.Should().Be("You cannot Accept/Deny your own TransferAgreementProposal");
     }
 
     [Fact]
@@ -223,10 +219,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
-
-        getResponseBody.Should().Be("You cannot Accept/Deny a TransferAgreementProposal for another company");
     }
 
     [Fact]
@@ -253,10 +245,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{taProposal.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var getResponseBody = await getResponse.Content.ReadAsStringAsync();
-
-        getResponseBody.Should().Be("This proposal has run out");
     }
 
     [Fact]
@@ -268,9 +256,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var response = await client.GetAsync($"api/transfer-agreement-proposals/{nonExistentInvitationId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var responseBody = await response.Content.ReadAsStringAsync();
-        responseBody.Should().Be("TransferAgreementProposal expired or deleted");
     }
 
     [Fact]
@@ -298,8 +283,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var response = await client.GetAsync($"api/transfer-agreement-proposals/{invitationId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        responseBody.Should().Be("TransferAgreementProposal expired or deleted");
     }
 
     [Fact]

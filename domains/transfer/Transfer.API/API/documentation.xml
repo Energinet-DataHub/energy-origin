@@ -177,6 +177,7 @@
             </summary>
             <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
             <response code="201">Created</response>
+            <response code="400">Bad request</response>
             <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
         </member>
         <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid)">

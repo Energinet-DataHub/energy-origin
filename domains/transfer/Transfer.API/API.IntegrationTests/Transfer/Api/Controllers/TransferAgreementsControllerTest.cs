@@ -156,9 +156,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var getProposalResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposalId}");
 
         getProposalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var responseBody = await getProposalResponse.Content.ReadAsStringAsync();
-        responseBody.Should().Be("TransferAgreementProposal expired or deleted");
     }
 
     [Fact]

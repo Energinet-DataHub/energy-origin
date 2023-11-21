@@ -267,6 +267,9 @@
               }
             }
           },
+          "400": {
+            "description": "Bad request"
+          },
           "409": {
             "description": "There is already a Transfer Agreement with this company tin within the selected date range",
             "content": {

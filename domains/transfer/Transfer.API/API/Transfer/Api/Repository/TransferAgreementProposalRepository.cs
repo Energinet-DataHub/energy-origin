@@ -30,20 +30,20 @@ public class TransferAgreementProposalRepository : ITransferAgreementProposalRep
 
     public async Task DeleteTransferAgreementProposal(Guid id)
     {
-        var invitation = await context.TransferAgreementProposals.FindAsync(id);
+        var proposal = await context.TransferAgreementProposals.FindAsync(id);
 
-        if (invitation != null)
+        if (proposal != null)
         {
-            context.TransferAgreementProposals.Remove(invitation);
+            context.TransferAgreementProposals.Remove(proposal);
             await context.SaveChangesAsync();
         }
     }
 
     public async Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id)
     {
-        var invitation = await context.TransferAgreementProposals
+        var proposal = await context.TransferAgreementProposals
             .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
 
-        return invitation;
+        return proposal;
     }
 }
