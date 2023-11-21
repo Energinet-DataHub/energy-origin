@@ -66,8 +66,6 @@ builder.Services.AddTransfer();
 builder.Services.AddCvr();
 builder.Services.AddConnection();
 builder.Services.AddClaimServices();
-builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ErrorObjectWriter>());
-builder.Services.AddProblemDetails();
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
@@ -78,44 +76,7 @@ builder.Services.AddApiVersioning(options =>
     .AddApiExplorer();
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen(o =>
-{
-    o.OperationFilter<SwaggerDefaultValues>();
-    var xmlFilePath = Path.Combine(AppContext.BaseDirectory, "documentation.xml");
-    if (File.Exists(xmlFilePath))
-    {
-        o.IncludeXmlComments(xmlFilePath);
-    }
-
-    if (builder.Environment.IsDevelopment())
-    {
-        o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description =
-                "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
-        });
-        o.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                new string[] { }
-            }
-        });
-    }
-});
-
+builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
@@ -147,7 +108,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
-
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -159,7 +119,6 @@ if (app.Environment.IsDevelopment())
         {
             foreach (var description in app.DescribeApiVersions())
             {
-
                 options.SwaggerEndpoint(
                     $"/api-docs/transfer/{description.GroupName}/swagger.json",
                     $"API v{description.GroupName}");

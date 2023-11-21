@@ -44,7 +44,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
     {
-        var scope = Services.CreateScope();
+        using var scope = Services.CreateScope();
         var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
         return provider;
     }
@@ -156,12 +156,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20230101");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
         return client;
     }
 
