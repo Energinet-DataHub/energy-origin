@@ -8,9 +8,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace API.Shared.Swagger;
 
 /*
- * API explorers for versioning lack automatic handling of certain details in OpenAPI and Swashbuckle.
- * Swashbuckle's extensibility model can easily bridge this gap using IOperationFilter implementations,
- * leveraging API explorer metadata to fill in missing information.
+ * Mark endpoints as deprecated
+ * Set default values for parameters
+ * Set description for parameters
  */
 public class SwaggerDefaultValues : IOperationFilter
 {
