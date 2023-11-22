@@ -77,16 +77,6 @@ certificatesSubsystem = group "Certificate Subsystem" {
     }
 }
 
-emissionsSubsystem = group "Emissions Subsystem" {
-    emsssionApi = container "Emissions Web Api" {
-        description "API for emissions and sources"
-
-        apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Get measurements and metering points from"
-        this -> eds "Get emission and residual mix per hour from"
-    }
-}
-
 measurementsSubsystem = group "Measurements Subsystem" {
     measurementApi = container "Measurements Web Api" {
         description "API for aggregated measurements split into production and consumption"
