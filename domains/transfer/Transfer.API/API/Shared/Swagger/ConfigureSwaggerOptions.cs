@@ -24,6 +24,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     public void Configure(SwaggerGenOptions options)
     {
         options.OperationFilter<SwaggerDefaultValues>();
+        options.SupportNonNullableReferenceTypes();
         var xmlFilePath = Path.Combine(AppContext.BaseDirectory, "documentation.xml");
         options.IncludeXmlComments(xmlFilePath);
 

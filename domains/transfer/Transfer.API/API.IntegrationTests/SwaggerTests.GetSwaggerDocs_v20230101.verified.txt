@@ -1064,16 +1064,14 @@
             "format": "uuid"
           },
           "companyATin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "companyBId": {
             "type": "string",
             "format": "uuid"
           },
           "companyBTin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1093,8 +1091,7 @@
           },
           "companyTin": {
             "type": "string",
-            "description": "Company TIN (e.g. CVR)",
-            "nullable": true
+            "description": "Company TIN (e.g. CVR)"
           }
         },
         "additionalProperties": false
@@ -1111,8 +1108,7 @@
             "format": "uuid"
           },
           "senderCompanyTin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -1129,8 +1125,7 @@
             "items": {
               "$ref": "#/components/schemas/ConnectionDto"
             },
-            "description": "List of connections",
-            "nullable": true
+            "description": "List of connections"
           }
         },
         "additionalProperties": false
@@ -1158,12 +1153,10 @@
             "nullable": true
           },
           "receiverTin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "base64EncodedWalletDepositEndpoint": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1173,8 +1166,7 @@
         "properties": {
           "companyCvr": {
             "type": "string",
-            "description": "Company CVR number",
-            "nullable": true
+            "description": "Company CVR number"
           },
           "companyName": {
             "type": "string",
@@ -1257,16 +1249,13 @@
             "nullable": true
           },
           "senderName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "senderTin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "receiverTin": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1278,8 +1267,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferAgreementHistoryEntryDto"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
@@ -1311,8 +1299,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": false
