@@ -8,9 +8,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace API.Shared.Swagger;
 
 /*
- * Mark endpoints as deprecated
- * Set default values for parameters
- * Set description for parameters
+ * Swagger understands the deprecated mark on controllers and marks these endpoints in swagger as deprecated
+ * Sets default value for the EO_API_VERSION paramter to 20230101
+ * Sets description for parameters, meaning EO_API_VERSION
  */
 public class SwaggerDefaultValues : IOperationFilter
 {
