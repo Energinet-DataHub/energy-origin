@@ -64,11 +64,14 @@ public class TransferAgreementProposalController : ControllerBase
             EndDate = request.EndDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
         };
 
-        var hasConflict = await transferAgreementRepository.HasDateOverlap(newProposal);
-
-        if (hasConflict)
+        if (request.ReceiverTin != null)
         {
-            return ValidationProblem("There is already a Transfer Agreement with this company tin within the selected date range", statusCode: 409);
+            var hasConflict = await transferAgreementRepository.HasDateOverlap(newProposal);
+
+            if (hasConflict)
+            {
+                return ValidationProblem("There is already a Transfer Agreement with this company tin within the selected date range", statusCode: 409);
+            }
         }
 
         await repository.AddTransferAgreementProposal(newProposal);

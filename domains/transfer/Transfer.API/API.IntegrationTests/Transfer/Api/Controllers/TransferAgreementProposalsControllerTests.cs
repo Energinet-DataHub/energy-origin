@@ -100,6 +100,38 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [Fact]
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
+        var receiverTin = "12345678";
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var id = Guid.NewGuid();
+        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        {
+            new()
+            {
+                Id = id,
+                StartDate = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                SenderId = Guid.Parse(sub),
+                SenderName = "nrgi A/S",
+                SenderTin = "44332211",
+                ReceiverTin = receiverTin,
+                ReceiverReference = Guid.NewGuid()
+            }
+        });
+
+        var overlappingRequest = new CreateTransferAgreementProposal(
+            StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
+            ReceiverTin: receiverTin
+        );
+
+        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Create_ShouldSucceed_WhenStartDateOrEndDateCauseOverlapAndReceiverTinIsNull()
+    {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var id = Guid.NewGuid();
         await factory.SeedTransferAgreements(new List<TransferAgreement>()
@@ -120,16 +152,16 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var overlappingRequest = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678"
+            ReceiverTin: null
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Theory]
-    [InlineData("", "ReceiverTin cannot be empty")]
+    [InlineData("", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("1234567", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
@@ -151,6 +183,23 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
 
         validationProblemContent.Should().Contain(expectedContent);
         validationProblemContent.Should().Contain("ReceiverTin");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("12345678")]
+    public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? tin)
+    {
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        var request = new CreateTransferAgreementProposal(
+            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            ReceiverTin: tin
+        );
+
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]

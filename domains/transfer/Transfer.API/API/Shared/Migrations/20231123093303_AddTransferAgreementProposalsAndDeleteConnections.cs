@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -28,7 +28,7 @@ namespace API.Shared.Migrations
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp at time zone 'UTC'"),
                     StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ReceiverCompanyTin = table.Column<string>(type: "text", nullable: false)
+                    ReceiverCompanyTin = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

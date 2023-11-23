@@ -144,7 +144,6 @@ namespace API.Shared.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReceiverCompanyTin")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("SenderCompanyId")

@@ -11,6 +11,7 @@ public interface ITransferAgreementProposalRepository
     Task AddTransferAgreementProposal(TransferAgreementProposal proposal);
     Task DeleteTransferAgreementProposal(Guid id);
     Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id);
+    Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposalAsNoTracking(Guid id);
 }
 
 public class TransferAgreementProposalRepository : ITransferAgreementProposalRepository
@@ -42,6 +43,15 @@ public class TransferAgreementProposalRepository : ITransferAgreementProposalRep
     public async Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id)
     {
         var proposal = await context.TransferAgreementProposals
+            .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
+
+        return proposal;
+    }
+
+    public async Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposalAsNoTracking(Guid id)
+    {
+        var proposal = await context.TransferAgreementProposals
+            .AsNoTracking()
             .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
 
         return proposal;

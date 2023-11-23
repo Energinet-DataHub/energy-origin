@@ -59,14 +59,14 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
-        var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(request.TransferAgreementProposalId);
+        var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();
         }
 
         var subjectTin = User.FindSubjectTinClaim();
-        if (proposal.ReceiverCompanyTin != subjectTin)
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != subjectTin)
         {
             return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
@@ -75,6 +75,8 @@ public class TransferAgreementsController : ControllerBase
         {
             return ValidationProblem("This proposal has run out");
         }
+
+        proposal.ReceiverCompanyTin ??= subjectTin;
 
         var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
         if (hasConflict)

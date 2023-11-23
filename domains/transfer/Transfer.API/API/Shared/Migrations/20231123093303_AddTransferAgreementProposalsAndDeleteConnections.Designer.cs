@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Shared.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231117141438_AddTransferAgreementProposalsAndDeleteConnections")]
+    [Migration("20231123093303_AddTransferAgreementProposalsAndDeleteConnections")]
     partial class AddTransferAgreementProposalsAndDeleteConnections
     {
         /// <inheritdoc />
@@ -147,7 +147,6 @@ namespace API.Shared.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReceiverCompanyTin")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("SenderCompanyId")

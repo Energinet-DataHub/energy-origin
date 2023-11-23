@@ -7,7 +7,7 @@ namespace API.Transfer.Api.Dto.Requests;
 
 public record CreateTransferAgreementProposal(long StartDate,
     long? EndDate,
-    string ReceiverTin);
+    string? ReceiverTin);
 
 public class CreateTransferAgreementProposalValidator : AbstractValidator<CreateTransferAgreementProposal>
 {
@@ -30,8 +30,6 @@ public class CreateTransferAgreementProposalValidator : AbstractValidator<Create
             .When(t => t.EndDate != null);
 
         RuleFor(createProposal => createProposal.ReceiverTin)
-            .NotEmpty()
-            .WithMessage("ReceiverTin cannot be empty")
             .Length(8)
             .Matches("^[0-9]{8}$")
             .WithMessage("ReceiverTin must be 8 digits without any spaces.")

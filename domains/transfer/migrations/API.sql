@@ -348,21 +348,21 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231117141438_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
     DROP TABLE "ConnectionInvitations";
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231117141438_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
     DROP TABLE "Connections";
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231117141438_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
     CREATE TABLE "TransferAgreementProposals" (
         "Id" uuid NOT NULL,
         "SenderCompanyId" uuid NOT NULL,
@@ -371,7 +371,7 @@ BEGIN
         "CreatedAt" timestamp with time zone NOT NULL DEFAULT (current_timestamp at time zone 'UTC'),
         "StartDate" timestamp with time zone NOT NULL,
         "EndDate" timestamp with time zone NULL,
-        "ReceiverCompanyTin" text NOT NULL,
+        "ReceiverCompanyTin" text NULL,
         CONSTRAINT "PK_TransferAgreementProposals" PRIMARY KEY ("Id")
     );
     END IF;
@@ -379,9 +379,9 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231117141438_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231117141438_AddTransferAgreementProposalsAndDeleteConnections', '7.0.5');
+    VALUES ('20231123093303_AddTransferAgreementProposalsAndDeleteConnections', '7.0.5');
     END IF;
 END $EF$;
 COMMIT;

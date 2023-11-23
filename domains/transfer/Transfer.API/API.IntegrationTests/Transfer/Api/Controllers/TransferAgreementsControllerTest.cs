@@ -52,6 +52,31 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
+    public async Task Create_ShouldCreateTransferAgreementWithSubjectTin_WhenProposalReceiverTinIsNull()
+    {
+        var subjectTin = "12334455";
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
+        var createdProposalId = await CreateTransferAgreementProposal(request);
+
+        var poWalletServiceMock = SetupPoWalletServiceMock();
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: subjectTin);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var taStr = await response.Content.ReadAsStringAsync();
+        var taDto = JsonConvert.DeserializeObject<TransferAgreementDto>(taStr);
+
+        var get = await receiverClient.GetAsync($"api/transfer-agreements/{taDto!.Id}");
+        var taByIdStr = await get.Content.ReadAsStringAsync();
+        var taById = JsonConvert.DeserializeObject<TransferAgreementDto>(taByIdStr);
+
+        taById!.ReceiverTin.Should().Be(subjectTin);
+    }
+
+    [Fact]
     public async Task Create_ShouldReturnNotFound_WhenProposalNotFound()
     {
         var transferAgreement = new CreateTransferAgreement(Guid.NewGuid());

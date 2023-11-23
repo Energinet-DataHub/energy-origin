@@ -13,5 +13,5 @@ public class TransferAgreementProposal
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
-    public string ReceiverCompanyTin { get; set; } = string.Empty;
+    public string? ReceiverCompanyTin { get; set; }
 }
