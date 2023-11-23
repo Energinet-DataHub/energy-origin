@@ -4,7 +4,7 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Connections.Api.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
+        <member name="M:API.Connections.Api.v2023_01_01.Controllers.ConnectionInvitationsController.GetConnectionInvitation(System.Guid)">
             <summary>
             Get connection-invitation by Id
             </summary>
@@ -14,7 +14,7 @@
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>
-        <member name="M:API.Connections.Api.Controllers.ConnectionInvitationsController.DeleteConnectionInvitation(System.Guid)">
+        <member name="M:API.Connections.Api.v2023_01_01.Controllers.ConnectionInvitationsController.DeleteConnectionInvitation(System.Guid)">
             <summary>
             Delete connection-invitation
             </summary>
@@ -22,7 +22,7 @@
             <response code="204">Successful operation</response>
             <response code="404">Connection-invitation not found</response>
         </member>
-        <member name="M:API.Connections.Api.Controllers.ConnectionsController.Create(API.Connections.Api.Dto.Requests.CreateConnection)">
+        <member name="M:API.Connections.Api.v2023_01_01.Controllers.ConnectionsController.Create(API.Connections.Api.v2023_01_01.Dto.Requests.CreateConnection)">
             <summary>
             Add a new connection
             </summary>
@@ -31,27 +31,27 @@
             <response code="404">Connection-invitation expired or deleted</response>
             <response code="409">Company is already a connection</response>
         </member>
-        <member name="P:API.Connections.Api.Dto.Responses.ConnectionDto.Id">
+        <member name="P:API.Connections.Api.v2023_01_01.Dto.Responses.ConnectionDto.Id">
             <summary>
             Connection ID
             </summary>
         </member>
-        <member name="P:API.Connections.Api.Dto.Responses.ConnectionDto.CompanyId">
+        <member name="P:API.Connections.Api.v2023_01_01.Dto.Responses.ConnectionDto.CompanyId">
             <summary>
             ID of the company
             </summary>
         </member>
-        <member name="P:API.Connections.Api.Dto.Responses.ConnectionDto.CompanyTin">
+        <member name="P:API.Connections.Api.v2023_01_01.Dto.Responses.ConnectionDto.CompanyTin">
             <summary>
             Company TIN (e.g. CVR)
             </summary>
         </member>
-        <member name="P:API.Connections.Api.Dto.Responses.ConnectionsResponse.Result">
+        <member name="P:API.Connections.Api.v2023_01_01.Dto.Responses.ConnectionsResponse.Result">
             <summary>
             List of connections
             </summary>
         </member>
-        <member name="M:API.Cvr.Api.Controllers.CvrController.GetCvrCompany(System.String)">
+        <member name="M:API.Cvr.Api.v2023_01_01.Controllers.CvrController.GetCvrCompany(System.String)">
             <summary>
             Get CVR registered company information
             </summary>
@@ -59,17 +59,17 @@
             <response code="200">Successful operation</response>
             <response code="404">CVR company not found</response>
         </member>
-        <member name="P:API.Cvr.Api.Dto.Responses.CvrCompanyDto.CompanyCvr">
+        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.CompanyCvr">
             <summary>
             Company CVR number
             </summary>
         </member>
-        <member name="P:API.Cvr.Api.Dto.Responses.CvrCompanyDto.CompanyName">
+        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.CompanyName">
             <summary>
             Company name
             </summary>
         </member>
-        <member name="P:API.Cvr.Api.Dto.Responses.CvrCompanyDto.Address">
+        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.Address">
             <summary>
             Company address
             </summary>

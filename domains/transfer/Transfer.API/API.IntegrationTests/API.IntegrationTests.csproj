@@ -43,14 +43,12 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<None Update="Controllers\*.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Cvr\Api\Controllers\CvrControllerTests.cvr_response.json">
+		<None Update="Cvr\Api\v2023_01_01\Controllers\CvrControllerTests.cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="Cvr\Api\Controllers\CvrControllerTests.empty_cvr_response.json">
+		<None Update="Cvr\Api\v2023_01_01\Controllers\CvrControllerTests.empty_cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+
 	</ItemGroup>
 </Project>
