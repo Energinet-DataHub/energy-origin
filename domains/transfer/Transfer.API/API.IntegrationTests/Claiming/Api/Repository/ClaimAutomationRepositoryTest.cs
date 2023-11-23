@@ -1,12 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
-using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
 using API.Shared.Data;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace API.IntegrationTests.Claiming.Api.Repository;

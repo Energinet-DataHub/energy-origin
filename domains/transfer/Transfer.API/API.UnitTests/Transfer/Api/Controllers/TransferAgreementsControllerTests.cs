@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Transfer.Api.Controllers;
-using API.Transfer.Api.Dto.Requests;
-using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.Transfer.Api.v2023_01_01.Controllers;
+using API.Transfer.Api.v2023_01_01.Dto.Requests;
+using API.Transfer.Api.v2023_01_01.Dto.Responses;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +73,7 @@ public class TransferAgreementsControllerTests
             SenderCompanyName = "SomeCompany",
             SenderCompanyTin = "32132132"
         };
-        mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposal(Arg.Any<Guid>())
+        mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
             .Returns(taProposal);
         mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)
             .Returns(new TransferAgreement
