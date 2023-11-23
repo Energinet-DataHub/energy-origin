@@ -49,6 +49,22 @@
 		<None Update="Cvr\Api\v2023_01_01\Controllers\CvrControllerTests.empty_cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Transfer\Api\v2023_11_23\Controllers\TransferAgreementHistoryEntriesControllerTests.Create_ShouldGenerateHistoryEntry_WhenTransferAgreementIsCreated.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\v2023_11_23\Controllers\TransferAgreementHistoryEntriesControllerTests.Edit_ShouldGenerateHistoryEntry_WhenEndDateIsUpdated.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\v2023_11_23\Controllers\TransferAgreementHistoryEntriesControllerTests.GetHistoryEntriesForTransferAgreement_ShouldContainActorNameField_WhenSender.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
+		<None Update="Transfer\Api\v2023_11_23\Controllers\TransferAgreementHistoryEntriesControllerTests.GetHistoryEntriesForTransferAgreement_ShouldNotContainActorNameField_WhenReceiver.verified.txt">
+		  <ParentFile>TransferAgreementHistoryEntriesControllerTests</ParentFile>
+		  <DependentUpon>TransferAgreementHistoryEntriesControllerTests.cs</DependentUpon>
+		</None>
 
 	</ItemGroup>
 </Project>
