@@ -21,7 +21,7 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
                                 (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .ToListAsync();
 
-    public async Task<TransferAgreementHistoryDto> GetHistoryEntriesForTransferAgreementPaginated(
+    public async Task<TransferAgreementHistoryPaginated> GetHistoryEntriesForTransferAgreementPaginated(
         Guid transferAgreementId, string subject, string tin, int offset,
         int limit)
     {
@@ -48,6 +48,6 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
             .Count(agreement => agreement.TransferAgreementId == transferAgreementId &&
                                 (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)));
 
-        return new TransferAgreementHistoryDto(totalCount, history);
+        return new TransferAgreementHistoryPaginated(totalCount, history);
     }
 }
