@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Shared.Extensions;
+using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
@@ -27,7 +28,7 @@ public class TransferAgreementHistoryEntriesController : ControllerBase
     {
         var subject = User.FindSubjectGuidClaim();
         var tin = User.FindSubjectTinClaim();
-        var histories = await historyEntryRepository.GetHistoryEntriesForTransferAgreementPaginated(transferAgreementId, subject, tin, offset, limit);
+        var histories = await historyEntryRepository.GetHistoryEntriesForTransferAgreementPaginated(transferAgreementId, subject, tin, new Pagination(offset, limit));
 
         if (!histories.items.Any())
         {

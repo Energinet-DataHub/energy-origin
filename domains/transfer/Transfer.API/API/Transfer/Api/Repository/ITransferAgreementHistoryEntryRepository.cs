@@ -9,5 +9,5 @@ namespace API.Transfer.Api.Repository;
 public interface ITransferAgreementHistoryEntryRepository
 {
     Task<List<TransferAgreementHistoryEntry>> GetHistoryEntriesForTransferAgreement(Guid transferAgreementId, string subject, string tin);
-    Task<TransferAgreementHistoryPaginated> GetHistoryEntriesForTransferAgreementPaginated(Guid transferAgreementId, string subject, string tin, int offset, int limit);
+    Task<TransferAgreementHistoryResult> GetHistoryEntriesForTransferAgreementPaginated(Guid transferAgreementId, string subject, string tin, Pagination pagination);
 }

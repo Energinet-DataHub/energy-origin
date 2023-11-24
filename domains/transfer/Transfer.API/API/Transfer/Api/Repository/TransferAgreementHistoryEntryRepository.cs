@@ -21,12 +21,11 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
                                 (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .ToListAsync();
 
-    public async Task<TransferAgreementHistoryPaginated> GetHistoryEntriesForTransferAgreementPaginated(
-        Guid transferAgreementId, string subject, string tin, int offset,
-        int limit)
+    public async Task<TransferAgreementHistoryResult> GetHistoryEntriesForTransferAgreementPaginated(
+        Guid transferAgreementId, string subject, string tin, Pagination pagination)
     {
         List<TransferAgreementHistoryEntry> history;
-        if (offset == 0 && limit == 0)
+        if (pagination.offset == 0 && pagination.limit == 0)
         {
             history = await context.TransferAgreementHistoryEntries
                 .Where(agreement => agreement.TransferAgreementId == transferAgreementId &&
@@ -38,8 +37,8 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
             history = await context.TransferAgreementHistoryEntries
                 .Where(agreement => agreement.TransferAgreementId == transferAgreementId &&
                                     (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
-                .Skip(offset)
-                .Take(limit)
+                .Skip(pagination.offset)
+                .Take(pagination.limit)
                 .ToListAsync();
         }
 
@@ -48,6 +47,6 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
             .Count(agreement => agreement.TransferAgreementId == transferAgreementId &&
                                 (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)));
 
-        return new TransferAgreementHistoryPaginated(totalCount, history);
+        return new TransferAgreementHistoryResult(totalCount, history);
     }
 }
