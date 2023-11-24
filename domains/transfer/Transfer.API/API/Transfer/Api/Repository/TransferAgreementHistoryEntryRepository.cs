@@ -21,7 +21,7 @@ public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistory
                                 (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .ToListAsync();
 
-    public async Task<TransferAgreementHistoryResult> GetHistoryEntriesForTransferAgreementPaginated(
+    public async Task<TransferAgreementHistoryResult> GetHistoryEntriesForTransferAgreement(
         Guid transferAgreementId, string subject, string tin, Pagination pagination)
     {
         List<TransferAgreementHistoryEntry> history;

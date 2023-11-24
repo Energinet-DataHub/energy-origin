@@ -28,7 +28,7 @@ public class TransferAgreementHistoryEntriesController : ControllerBase
     {
         var subject = User.FindSubjectGuidClaim();
         var tin = User.FindSubjectTinClaim();
-        var histories = await historyEntryRepository.GetHistoryEntriesForTransferAgreementPaginated(transferAgreementId, subject, tin, new Pagination(offset, limit));
+        var histories = await historyEntryRepository.GetHistoryEntriesForTransferAgreement(transferAgreementId, subject, tin, new Pagination(offset, limit));
 
         if (!histories.items.Any())
         {
