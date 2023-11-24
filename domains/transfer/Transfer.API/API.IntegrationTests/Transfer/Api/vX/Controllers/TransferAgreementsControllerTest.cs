@@ -7,9 +7,9 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Models;
+using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using API.Transfer.Api.v2023_01_01.Dto.Responses;
-using API.Transfer.Api.Services;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -17,7 +17,7 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
+namespace API.IntegrationTests.Transfer.Api.vX.Controllers;
 
 [UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>

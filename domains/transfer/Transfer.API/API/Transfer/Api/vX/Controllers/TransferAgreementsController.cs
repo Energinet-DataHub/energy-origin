@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Transfer.Api.v2023_01_01.Controllers;
+namespace API.Transfer.Api.vX.Controllers;
 
 [Authorize]
 [ApiController]

@@ -17,7 +17,7 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
+namespace API.IntegrationTests.Transfer.Api.vX.Controllers;
 
 [UsesVerify]
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
