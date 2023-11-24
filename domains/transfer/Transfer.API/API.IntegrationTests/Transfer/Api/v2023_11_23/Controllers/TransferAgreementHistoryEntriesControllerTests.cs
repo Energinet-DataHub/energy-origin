@@ -8,8 +8,8 @@ using API.IntegrationTests.Factories;
 using API.IntegrationTests.Shared;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using API.Transfer.Api.v2023_11_23.Dto.Requests;
+using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -17,7 +17,7 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.vX.Controllers;
+namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 
 [UsesVerify]
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
@@ -30,7 +30,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     {
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
-        senderClient = factory.CreateAuthenticatedClient(sub);
+        senderClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
     }
 
     [Fact]
@@ -41,13 +41,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         createRequest.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var auditsResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
+            ($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -64,7 +64,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
         var createResponse = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createResponse.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
@@ -73,7 +73,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         await senderClient.PatchAsync($"api/transfer-agreements/{createdTransferAgreement!.Id}", JsonContent.Create(editRequest));
 
         var auditsResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement.Id}", JsonDefault.Options);
+            ($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -88,14 +88,14 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
         var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "66332211");
-        var response = await newAuthenticatedClient.GetAsync($"api/history/transfer-agreements/{createdTransferAgreement!.Id}");
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "66332211", apiVersion: "20231123");
+        var response = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -105,15 +105,15 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
         var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var otherActor = Guid.NewGuid();
-        var otherActorClient = factory.CreateAuthenticatedClient(sub: sub, actor: otherActor.ToString());
+        var otherActorClient = factory.CreateAuthenticatedClient(sub: sub, actor: otherActor.ToString(), apiVersion: "20231123");
 
         var senderResponse = await otherActorClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
+            ($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");
@@ -128,12 +128,12 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
         var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
         var receiverResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/history/transfer-agreements/{createdTransferAgreement!.Id}", JsonDefault.Options);
+            ($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");

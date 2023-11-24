@@ -8,7 +8,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Transfer.Api.vX.Controllers;
+namespace API.Transfer.Api.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]

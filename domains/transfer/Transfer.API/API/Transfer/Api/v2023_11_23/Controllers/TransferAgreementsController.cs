@@ -7,8 +7,8 @@ using API.Shared.Helpers;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using API.Transfer.Api.v2023_11_23.Dto.Requests;
+using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -16,11 +16,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Transfer.Api.vX.Controllers;
+namespace API.Transfer.Api.v2023_11_23.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20230101")]
+[ApiVersion("20231123")]
 [Route("api/transfer-agreements")]
 public class TransferAgreementsController : ControllerBase
 {
@@ -138,7 +138,7 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    [ProducesResponseType(204)]
+    [ProducesResponseType(typeof(void), 404)]
     [HttpGet]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
@@ -149,7 +149,7 @@ public class TransferAgreementsController : ControllerBase
 
         if (!transferAgreements.Any())
         {
-            return NoContent();
+            return NotFound();
         }
 
         var listResponse = transferAgreements.Select(ToTransferAgreementDto)
@@ -158,11 +158,11 @@ public class TransferAgreementsController : ControllerBase
         return Ok(new TransferAgreementsResponse(listResponse));
     }
 
-    [ProducesResponseType(204)]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(409)]
-    [HttpPatch("{id}")]
+    [HttpPut("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
         var subject = User.FindSubjectGuidClaim();
@@ -189,7 +189,7 @@ public class TransferAgreementsController : ControllerBase
         }
 
         if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
-            return ValidationProblem("Transfer agreement has expired", statusCode: 400);
+            return ValidationProblem("Transfer agreement has expired");
 
         if (await transferAgreementRepository.HasDateOverlap(new TransferAgreement
         {
@@ -200,7 +200,7 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin = transferAgreement.ReceiverTin
         }))
         {
-            return Conflict("Transfer agreement date overlap");
+            return ValidationProblem("Transfer agreement date overlap", statusCode: 409);
         }
 
         transferAgreement.EndDate = endDate;
