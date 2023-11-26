@@ -1,8 +1,8 @@
-using API.Data;
 using API.DataSyncSyncer;
 using API.DataSyncSyncer.Persistence;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
+using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
 using System.Threading.Tasks;
-using CertificateValueObjects;
+using DataContext.Models;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

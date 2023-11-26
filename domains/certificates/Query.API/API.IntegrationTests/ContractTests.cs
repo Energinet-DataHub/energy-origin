@@ -1,16 +1,16 @@
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using Xunit;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -210,7 +210,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        var expectedTechnology = new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+        var expectedTechnology = new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
 
         createdContract!.Technology.Should().Be(expectedTechnology);
     }

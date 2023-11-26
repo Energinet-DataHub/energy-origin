@@ -51,6 +51,13 @@ message ReceiveRequest {
     project_origin.common.v1.FederatedStreamId certificate_id = 3;
     uint32 quantity = 4;
     bytes random_r = 5;
+    repeated HashedAttribute hashed_attributes = 6;
+
+    message HashedAttribute {
+        string key = 1;
+        string value = 2;
+        bytes salt = 3;
+    }
 }
 
 message ReceiveResponse {} // not yet sure what to return
@@ -74,6 +81,7 @@ message TransferRequest {
     project_origin.common.v1.FederatedStreamId certificate_id = 1; // The certificate to transfer from
     uint32 quantity = 2; // The quantity, either the total or a part of it, will be sliced implicitly by the wallet
     project_origin.common.v1.Uuid receiver_id = 3;
+    repeated string hashed_attributes = 4; // the hashed attribute keys to transfer
 }
 
 message TransferResponse {} // not yet sure what to return

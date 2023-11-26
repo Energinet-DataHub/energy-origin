@@ -1,5 +1,5 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Google.Protobuf.WellKnownTypes;
 using Xunit;

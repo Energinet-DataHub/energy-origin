@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 
 namespace API.GranularCertificateIssuer;
 

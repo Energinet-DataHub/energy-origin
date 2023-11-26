@@ -20,6 +20,6 @@ FROM base AS final
 RUN apt-get -y update && apt-get -y install wget && apt-get clean
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY migrations /migrations
+COPY migrations/API.sql /migrations/API.sql
 
 ENTRYPOINT ["dotnet", "API.dll"]

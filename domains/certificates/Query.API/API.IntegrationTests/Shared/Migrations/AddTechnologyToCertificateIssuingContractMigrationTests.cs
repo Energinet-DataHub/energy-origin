@@ -1,14 +1,14 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using API.ContractService;
-using API.Data;
 using API.IntegrationTests.Testcontainers;
+using DataContext;
+using DataContext.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
