@@ -12,6 +12,7 @@ using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -40,6 +41,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
+
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -140,15 +148,20 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
+    public HttpClient CreateUnauthenticatedClient()
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20230101");
+        return client;
+    }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
         return client;
     }
 
