@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Shared.Data;
+using API.Transfer.Api.Models;
+using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
-using API.Transfer.TransferAgreementsAutomation.Service;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,9 +16,10 @@ namespace API.Transfer.TransferAgreementsAutomation;
 public class TransferAgreementsAutomationWorker : BackgroundService
 {
     private readonly ILogger<TransferAgreementsAutomationWorker> logger;
-    private readonly IServiceProvider serviceProvider;
     private readonly ITransferAgreementAutomationMetrics metrics;
     private readonly AutomationCache memoryCache;
+    private readonly IProjectOriginWalletService projectOriginWalletService;
+    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
@@ -24,15 +28,17 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
     public TransferAgreementsAutomationWorker(
         ILogger<TransferAgreementsAutomationWorker> logger,
-        IServiceProvider serviceProvider,
         ITransferAgreementAutomationMetrics metrics,
-        AutomationCache memoryCache
+        AutomationCache memoryCache,
+        IProjectOriginWalletService projectOriginWalletService,
+        IDbContextFactory<ApplicationDbContext> contextFactory
     )
     {
         this.logger = logger;
-        this.serviceProvider = serviceProvider;
         this.metrics = metrics;
         this.memoryCache = memoryCache;
+        this.projectOriginWalletService = projectOriginWalletService;
+        this.contextFactory = contextFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,12 +50,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
             metrics.ResetTransferErrors();
             memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
 
-            using var scope = serviceProvider.CreateScope();
-            var transferAgreementsAutomationService = scope.ServiceProvider.GetRequiredService<ITransferAgreementsAutomationService>();
-
             try
             {
-                await transferAgreementsAutomationService.Run(stoppingToken);
+                var tas = await GetAllTransferAgreements(stoppingToken);
+                metrics.SetNumberOfTransferAgreements(tas.Count);
+
+                foreach (var transferAgreement in tas)
+                {
+                    await projectOriginWalletService.TransferCertificates(transferAgreement);
+                }
             }
             catch (Exception ex)
             {
@@ -57,9 +66,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
-            scope.Dispose();
             await SleepToNearestHour(stoppingToken);
         }
+    }
+
+    private async Task<List<TransferAgreement>> GetAllTransferAgreements(CancellationToken stoppingToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(stoppingToken);
+
+        return await context.TransferAgreements.ToListAsync(stoppingToken);
     }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
