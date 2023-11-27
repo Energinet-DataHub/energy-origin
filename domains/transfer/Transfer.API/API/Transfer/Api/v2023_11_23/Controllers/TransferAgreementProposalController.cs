@@ -87,7 +87,6 @@ public class TransferAgreementProposalController : ControllerBase
     /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-    /// <response code="404">TransferAgreementProposal expired or deleted</response>
     [ProducesResponseType(typeof(TransferAgreementProposal), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -125,7 +124,6 @@ public class TransferAgreementProposalController : ControllerBase
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="204">Successful operation</response>
-    /// <response code="404">TransferAgreementProposal not found</response>
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpDelete("{id}")]

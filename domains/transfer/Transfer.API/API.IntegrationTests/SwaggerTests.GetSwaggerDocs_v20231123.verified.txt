@@ -443,7 +443,7 @@
             "description": "You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out"
           },
           "404": {
-            "description": "TransferAgreementProposal expired or deleted"
+            "description": "Not Found"
           }
         }
       },
@@ -479,7 +479,7 @@
             "description": "Successful operation"
           },
           "404": {
-            "description": "TransferAgreementProposal not found"
+            "description": "Not Found"
           }
         }
       }
@@ -547,7 +547,7 @@
             "description": "Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out"
           },
           "404": {
-            "description": "TransferAgreementProposal expired or deleted"
+            "description": "Not Found"
           },
           "409": {
             "description": "There is already a Transfer Agreement with proposals company tin within the selected date range"

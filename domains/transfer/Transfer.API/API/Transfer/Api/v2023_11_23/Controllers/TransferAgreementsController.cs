@@ -47,7 +47,6 @@ public class TransferAgreementsController : ControllerBase
     /// <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
-    /// <response code="404">TransferAgreementProposal expired or deleted</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
