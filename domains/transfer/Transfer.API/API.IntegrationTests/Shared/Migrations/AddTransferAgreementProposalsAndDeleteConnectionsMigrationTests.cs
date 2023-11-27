@@ -22,6 +22,7 @@ public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests : M
         await migrator.MigrateAsync("20231102084120_AddClaimAutomationArgument");
 
         await InsertOldConnection(dbContext, Guid.NewGuid(), Guid.NewGuid(), "12345678", Guid.NewGuid(), "11223344");
+        await InsertOldConnectionInvitation(dbContext, Guid.NewGuid(), Guid.NewGuid(), "12345678", DateTimeOffset.UtcNow);
 
         var applyMigration = () => migrator.Migrate("20231123093303_AddTransferAgreementProposalsAndDeleteConnections");
         applyMigration.Should().NotThrow();
@@ -45,19 +46,18 @@ public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests : M
         await dbContext.Database.ExecuteSqlRawAsync(connectionsQuery, connectionsFields);
     }
 
-    private static async Task InsertOldConnectionInvitation(ApplicationDbContext dbContext, Guid id, Guid companyAId, string companyATin, Guid companyBId, string companyBTin)
+    private static async Task InsertOldConnectionInvitation(ApplicationDbContext dbContext, Guid id, Guid senderCompanyId, string senderCompanyTin, DateTimeOffset createdAt)
     {
         var table = "ConnectionInvitations";
 
         var query =
-            $"INSERT INTO \"{table}\" (\"Id\", \"CompanyAId\", \"CompanyATin\", \"CompanyBId\", \"CompanyBTin\") VALUES (@Id, @CompanyAId, @CompanyATin, @CompanyBId, @CompanyBTin)";
+            $"INSERT INTO \"{table}\" (\"Id\", \"SenderCompanyId\", \"SenderCompanyTin\", \"CreatedAt\") VALUES (@Id, @SenderCompanyId, @SenderCompanyTin, @CreatedAt)";
         var fields = new[]
         {
             new NpgsqlParameter("Id", id),
-            new NpgsqlParameter("CompanyAId", companyAId),
-            new NpgsqlParameter("CompanyATin", companyATin),
-            new NpgsqlParameter("CompanyBId", companyBId),
-            new NpgsqlParameter("CompanyBTin", companyBTin)
+            new NpgsqlParameter("SenderCompanyId", senderCompanyId),
+            new NpgsqlParameter("SenderCompanyTin", senderCompanyTin),
+            new NpgsqlParameter("CreatedAt", createdAt)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(query, fields);
