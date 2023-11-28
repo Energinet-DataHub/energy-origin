@@ -52,10 +52,10 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
             try
             {
-                var tas = await GetAllTransferAgreements(stoppingToken);
-                metrics.SetNumberOfTransferAgreements(tas.Count);
+                var transferAgreements = await GetAllTransferAgreements(stoppingToken);
+                metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
-                foreach (var transferAgreement in tas)
+                foreach (var transferAgreement in transferAgreements)
                 {
                     await projectOriginWalletService.TransferCertificates(transferAgreement);
                 }
