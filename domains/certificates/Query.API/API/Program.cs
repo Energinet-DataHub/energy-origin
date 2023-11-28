@@ -92,9 +92,6 @@ app.MapHealthChecks("/health");
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
-if (app.Environment.IsDevelopment())
-
-
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {

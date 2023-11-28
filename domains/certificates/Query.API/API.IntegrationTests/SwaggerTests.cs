@@ -17,7 +17,6 @@ public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactor
     public SwaggerTests(QueryApiWebApplicationFactory factory)
     {
         this.factory = factory;
-
     }
 
     [Fact]

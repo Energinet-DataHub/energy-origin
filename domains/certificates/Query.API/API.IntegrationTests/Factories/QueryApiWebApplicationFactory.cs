@@ -81,11 +81,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string subject)
+    public HttpClient CreateAuthenticatedClient(string subject, string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
     }
