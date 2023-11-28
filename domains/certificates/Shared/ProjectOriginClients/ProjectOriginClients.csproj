@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<WalletVersion>0.2.1</WalletVersion>
+		<WalletVersion>0.4.0</WalletVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="ProjectOriginClients.WalletVersionAttribute">

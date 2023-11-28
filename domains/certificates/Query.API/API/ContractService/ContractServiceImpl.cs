@@ -1,6 +1,7 @@
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using CertificateValueObjects;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using ProjectOrigin.WalletSystem.V1;
 using System;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.ContractService;
 
@@ -86,11 +88,11 @@ internal class ContractServiceImpl : IContractService
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static CertificateValueObjects.Technology? Map(MeterType meterType, Clients.Technology technology)
+    private static Technology? Map(MeterType meterType, Clients.Technology technology)
     {
         if (meterType == MeterType.Production)
         {
-            return new CertificateValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+            return new Technology(technology.AibFuelCode, technology.AibTechCode);
         }
 
         return null;
