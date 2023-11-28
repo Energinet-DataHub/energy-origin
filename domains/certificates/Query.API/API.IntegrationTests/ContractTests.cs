@@ -411,9 +411,9 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var patchBody = new { endDate };
+        var putBody = new { endDate };
 
-        using var editResponse = await client.PutAsJsonAsync(createdContractUri, patchBody);
+        using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
@@ -437,9 +437,9 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        var patchBody = new { endDate = (long?)null };
+        var putBody = new { endDate = (long?)null };
 
-        using var editResponse = await client.PutAsJsonAsync(createdContractUri, patchBody);
+        using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
@@ -463,9 +463,9 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
-        var patchBody = new { endDate };
+        var putBody = new { endDate };
 
-        using var editResponse = await client.PutAsJsonAsync(createdContractUri, patchBody);
+        using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
@@ -481,14 +481,14 @@ public sealed class ContractTests :
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        var patchBody = new
+        var putBody = new
         {
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
         var nonExistingContractId = Guid.NewGuid();
 
-        using var response = await client.PutAsJsonAsync($"api/certificates/contracts/{nonExistingContractId}", patchBody);
+        using var response = await client.PutAsJsonAsync($"api/certificates/contracts/{nonExistingContractId}", putBody);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -516,12 +516,12 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         //dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
-        var patchBody = new
+        var putBody = new
         {
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
-        using var editResponse = await client.PutAsJsonAsync(createdContractUri, patchBody);
+        using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -551,12 +551,12 @@ public sealed class ContractTests :
 
         var newSubject = Guid.NewGuid().ToString();
         using var client2 = factory.CreateAuthenticatedClient(newSubject);
-        var patchBody = new
+        var putBody = new
         {
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
-        using var editResponse = await client2.PutAsJsonAsync(createdContractUri, patchBody);
+        using var editResponse = await client2.PutAsJsonAsync(createdContractUri, putBody);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
