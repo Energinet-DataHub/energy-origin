@@ -8,6 +8,7 @@ using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -18,8 +19,8 @@ public class TransferAgreementsAutomationWorker : BackgroundService
     private readonly ILogger<TransferAgreementsAutomationWorker> logger;
     private readonly ITransferAgreementAutomationMetrics metrics;
     private readonly AutomationCache memoryCache;
-    private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
+    private readonly IServiceProvider serviceProvider;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
@@ -30,15 +31,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         ILogger<TransferAgreementsAutomationWorker> logger,
         ITransferAgreementAutomationMetrics metrics,
         AutomationCache memoryCache,
-        IProjectOriginWalletService projectOriginWalletService,
-        IDbContextFactory<ApplicationDbContext> contextFactory
+        IDbContextFactory<ApplicationDbContext> contextFactory,
+        IServiceProvider serviceProvider
     )
     {
         this.logger = logger;
         this.metrics = metrics;
         this.memoryCache = memoryCache;
-        this.projectOriginWalletService = projectOriginWalletService;
         this.contextFactory = contextFactory;
+        this.serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,6 +50,9 @@ public class TransferAgreementsAutomationWorker : BackgroundService
             metrics.ResetCertificatesTransferred();
             metrics.ResetTransferErrors();
             memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
+
+            using var scope = serviceProvider.CreateScope();
+            var projectOriginWalletService = scope.ServiceProvider.GetRequiredService<IProjectOriginWalletService>();
 
             try
             {
@@ -66,6 +70,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
+            scope.Dispose();
             await SleepToNearestHour(stoppingToken);
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Shared.Data;
@@ -6,9 +7,11 @@ using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
+using API.Transfer.TransferAgreementsAutomation.Service;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -58,8 +61,9 @@ public class TransferAgreementsAutomationWorkerTests
                 cts.Cancel();
                 throw new Exception();
             });
+        var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
 
-        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, poWalletServiceMock, dbContextFactoryMock);
+        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, dbContextFactoryMock, serviceProviderMock);
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
@@ -107,12 +111,26 @@ public class TransferAgreementsAutomationWorkerTests
             {
                 cts.Cancel();
             });
+        var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
 
-        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, poWalletServiceMock, dbContextFactoryMock);
+        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, dbContextFactoryMock, serviceProviderMock);
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
+    }
+
+    private static IServiceProvider SetupIServiceProviderMock(IProjectOriginWalletService poWalletServiceMock)
+    {
+        var serviceProviderMock = Substitute.For<IServiceProvider>();
+        serviceProviderMock.GetService(typeof(IProjectOriginWalletService)).Returns(poWalletServiceMock);
+        var serviceScope = Substitute.For<IServiceScope>();
+        serviceScope.ServiceProvider.Returns(serviceProviderMock);
+        var serviceScopeFactoryMock = Substitute.For<IServiceScopeFactory>();
+        serviceScopeFactoryMock.CreateScope().Returns(serviceScope);
+        serviceProviderMock.GetService(typeof(IServiceScopeFactory)).Returns(serviceScopeFactoryMock);
+
+        return serviceProviderMock;
     }
 }
