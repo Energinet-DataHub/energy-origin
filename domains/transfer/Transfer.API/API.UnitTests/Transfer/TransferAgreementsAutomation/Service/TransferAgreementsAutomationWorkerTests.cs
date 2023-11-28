@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Shared.Data;
@@ -7,7 +6,6 @@ using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
-using API.Transfer.TransferAgreementsAutomation.Service;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
