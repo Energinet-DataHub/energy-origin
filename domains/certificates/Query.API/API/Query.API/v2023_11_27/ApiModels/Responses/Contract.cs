@@ -1,9 +1,9 @@
-using DataContext.Models;
-using DataContext.ValueObjects;
 using System;
 using System.Text.Json.Serialization;
+using DataContext.Models;
+using DataContext.ValueObjects;
 
-namespace API.Query.API.ApiModels.Responses;
+namespace API.Query.API.v2023_11_27.ApiModels.Responses;
 
 public class Contract
 {

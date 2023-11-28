@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
+using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
@@ -55,6 +56,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             // Remove DataSyncSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
         });
+    }
+
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

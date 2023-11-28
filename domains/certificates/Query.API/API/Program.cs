@@ -20,6 +20,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using DataContext;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +63,14 @@ builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddGranularCertificateIssuer();
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -83,10 +92,23 @@ app.MapHealthChecks("/health");
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
+if (app.Environment.IsDevelopment())
+
+
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/certificates/v1/swagger.json", "API v1"));
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
+            {
+                options.SwaggerEndpoint(
+                    $"/api-docs/certificates/{description.GroupName}/swagger.json",
+                    $"API v{description.GroupName}");
+            }
+        });
+
 }
 
 app.UseHttpsRedirection();

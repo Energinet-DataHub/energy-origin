@@ -4,8 +4,9 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Query.API.ApiModels.Requests;
-using API.Query.API.ApiModels.Responses;
+using API.Query.API.v2023_11_27.ApiModels.Requests;
+using API.Query.API.v2023_11_27.ApiModels.Responses;
+using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,11 @@ using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
-namespace API.Query.API.Controllers;
+namespace API.Query.API.v2023_11_27.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20231127")]
 public class ContractsController : ControllerBase
 {
     /// <summary>

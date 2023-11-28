@@ -1,4 +1,4 @@
-namespace API.Query.API.ApiModels.Requests;
+namespace API.Query.API.v2023_11_27.ApiModels.Requests;
 
 public class EditContractEndDate
 {

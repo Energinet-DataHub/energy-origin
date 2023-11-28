@@ -1,16 +1,18 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Query.API.ApiModels.Responses;
+using API.Query.API.v2023_11_27.ApiModels.Responses;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
 
-namespace API.Query.API.Controllers;
+namespace API.Query.API.v2023_11_27.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20231127")]
 public class CertificatesController : ControllerBase
 {
     [HttpGet]
