@@ -10,7 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.Query.API.v2023_11_27.ApiModels.Responses;
+using API.Query.API.v2023_01_01.ApiModels.Responses;
 using Xunit;
 using Technology = API.ContractService.Clients.Technology;
 

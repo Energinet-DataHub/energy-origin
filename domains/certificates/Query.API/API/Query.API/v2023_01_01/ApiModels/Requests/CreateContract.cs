@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.Query.API.v2023_11_27.ApiModels.Requests;
+namespace API.Query.API.v2023_01_01.ApiModels.Requests;
 
 public class CreateContract
 {

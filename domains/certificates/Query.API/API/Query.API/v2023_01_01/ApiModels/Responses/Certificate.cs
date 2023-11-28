@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace API.Query.API.v2023_11_27.ApiModels.Responses;
+namespace API.Query.API.v2023_01_01.ApiModels.Responses;
 
 public enum CertificateType
 {

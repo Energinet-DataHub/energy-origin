@@ -4,8 +4,8 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Query.API.v2023_11_27.ApiModels.Requests;
-using API.Query.API.v2023_11_27.ApiModels.Responses;
+using API.Query.API.v2023_01_01.ApiModels.Requests;
+using API.Query.API.v2023_01_01.ApiModels.Responses;
 using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
-namespace API.Query.API.v2023_11_27.Controllers;
+namespace API.Query.API.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
