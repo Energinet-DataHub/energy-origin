@@ -1,9 +1,9 @@
 name: CodeQL Analysis
 
 on:
-  workflow_dispatch: {}
-  schedule:
-    - cron: "30 5,17 * * *"
+  push:
+    branches:
+      - 2085-codeql-fails
 
 jobs:
   setup:
