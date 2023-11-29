@@ -27,10 +27,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Deprecation warning
-      shell: bash
-      run: echo "::warning::Using deprecated action, use docker-build-and-push instead"
-
     - uses: actions/download-artifact@v3
       name: Download available artifacts # this supports use of artifacts (currently only frontends)
       with:

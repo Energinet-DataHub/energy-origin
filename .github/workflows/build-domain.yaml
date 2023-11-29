@@ -143,6 +143,13 @@ jobs:
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
+      - name: Scan image
+        uses: ./.github/actions/docker-scan
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
   update-environment:
     name: Update environment
     runs-on: ubuntu-latest
