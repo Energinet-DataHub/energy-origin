@@ -132,7 +132,7 @@ jobs:
           sql-file: ${{ env.migration }}
 
       - name: Build image
-        uses: ./.github/actions/build-and-push-container
+        uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
