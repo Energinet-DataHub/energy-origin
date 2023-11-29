@@ -49,21 +49,16 @@ jobs:
         with:
           sparse-checkout: ${{ matrix.path }}
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Restore NuGet packages
-        run: dotnet restore
-
-      - name: Build with .NET
-        run: dotnet build --no-restore
+      - name: Dotnet Info
+        run: dotnet --info
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
           languages: csharp
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
 
       - name: CodeQL Analysis
         uses: github/codeql-action/analyze@v2
