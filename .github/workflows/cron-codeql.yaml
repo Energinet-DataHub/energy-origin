@@ -40,6 +40,9 @@ jobs:
     name: Run codeql
     runs-on: ubuntu-latest
     needs: setup
+    defaults:
+      run:
+        working-directory: domains/auth/Auth.API/API
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +53,6 @@ jobs:
           sparse-checkout: ${{ matrix.path }}
 
       - name: Dotnet Info
-        working-directory: auth/Auth.API/API
         run: dotnet --info
 
       - name: Initialize CodeQL
