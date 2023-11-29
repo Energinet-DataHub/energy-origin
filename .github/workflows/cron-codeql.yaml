@@ -50,6 +50,7 @@ jobs:
           sparse-checkout: ${{ matrix.path }}
 
       - name: Dotnet Info
+        working-directory: auth/Auth.API/API
         run: dotnet --info
 
       - name: Initialize CodeQL
