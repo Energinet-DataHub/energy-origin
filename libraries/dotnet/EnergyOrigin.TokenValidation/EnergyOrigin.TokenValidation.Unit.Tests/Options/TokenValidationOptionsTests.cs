@@ -54,5 +54,4 @@ public class TokenValidationOptionsTests
         Assert.False(isValid);
         Assert.NotEmpty(validationResults);
     }
-
 }
