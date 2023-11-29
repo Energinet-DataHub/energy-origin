@@ -36,7 +36,7 @@ runs:
         fail-build: false
 
     - name: Upload sarif report
-      if: ${{ inputs.upload-sarif }}
+      if: ${{ inputs.upload-sarif }} == 'true'
       uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
