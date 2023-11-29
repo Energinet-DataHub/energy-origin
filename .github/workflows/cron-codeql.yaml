@@ -50,7 +50,7 @@ jobs:
           sparse-checkout: ${{ matrix.path }}
 
       - name: Replace global.json
-        run: cp "domains/auth/global.json" "./global.json"
+        run: cp "${{ matrix.path }}/global.json" "./global.json" || true
 
       - name: Dotnet Info
         run: dotnet --info
