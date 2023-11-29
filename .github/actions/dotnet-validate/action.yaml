@@ -55,7 +55,7 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.dotnet-version }}
-      if: ${{ inputs.pin-version }}
+      if: ${{ inputs.pin-version == 'true' }}
       run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "$VERSION" > global.json
 
     - name: Print dotnet version
