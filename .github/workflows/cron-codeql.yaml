@@ -1,9 +1,9 @@
 name: CodeQL Analysis
 
 on:
-  push:
-    branches:
-      - 2085-codeql-fails
+  workflow_dispatch: {}
+  schedule:
+    - cron: "30 5,17 * * *"
 
 jobs:
   setup:
@@ -51,9 +51,6 @@ jobs:
 
       - name: Replace global.json
         run: cp "${{ matrix.path }}/global.json" "./global.json" || true
-
-      - name: Dotnet Info
-        run: dotnet --info
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
