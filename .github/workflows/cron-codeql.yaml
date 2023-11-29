@@ -49,10 +49,11 @@ jobs:
         with:
           sparse-checkout: ${{ matrix.path }}
 
-      - name: Change directory
-        run: cd "domains/auth/Auth.API/API"
+      - name: Replace global.json
+        run: cp "domains/auth/global.json" "./global.json"
 
       - name: Dotnet Info
+        working-directory: auth/Auth.API/API
         run: dotnet --info
 
       - name: Initialize CodeQL
