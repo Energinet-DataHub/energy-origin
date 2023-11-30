@@ -18,8 +18,6 @@ var options = new TokenValidationOptions(byteArrayOfPublicKeyPem) {
 builder.AddTokenValidation(options);
 ```
 
-You can duplicate and use the same sealed secret, from auth.
-
 For more further configuration, see [configuring token validation](#configuring-token-validation).
 
 2. Done - you can move on to [reading token values](#reading-token-values) or [restricting access](#restricting-access)
