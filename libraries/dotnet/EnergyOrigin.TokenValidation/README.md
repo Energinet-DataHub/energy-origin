@@ -6,14 +6,30 @@ For our specific use cases, see [restricting access](#restricting-access).
 
 ## Quick Start
 
-1. Register token validation during start up:
+1. Apply token validation package for a subsystem:
+
+```bash
 
 ```csharp
-builder.AddTokenValidation(new ValidationParameters(byteArrayOfPublicKeyPem) {
-    ValidAudience = audience,
-    ValidIssuer = issuer
-});
+var tokenValidationConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
+var tokenValidationOptions = tokenValidationConfiguration.Get<TokenValidationOptions>()!;
+
+builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 ```
+
+Add secrets for the Token, in eo-base environemnt. Example shows if transfer is the subsystem, where it is applied.:
+
+```
+          envFrom:
+            - configMapRef:
+                name: transfer-cm
+            - secretRef:
+                name: transfer-token-secret
+```
+
+You can duplicate and use the same sealed secret, from auth.
 
 For more further configuration, see [configuring token validation](#configuring-token-validation).
 
