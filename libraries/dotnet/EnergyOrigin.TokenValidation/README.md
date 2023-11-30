@@ -9,7 +9,7 @@ For our specific use cases, see [restricting access](#restricting-access).
 1. Register token validation during start up:
 
 ```csharp
-var options = new TokenValidationOptions(byteArrayOfPublicKeyPem) {
+var options = new TokenValidationOptions {
     PublicKey = byteArrayOfPublicKeyPem,
     Audience = audience,
     Issuer = issuer
