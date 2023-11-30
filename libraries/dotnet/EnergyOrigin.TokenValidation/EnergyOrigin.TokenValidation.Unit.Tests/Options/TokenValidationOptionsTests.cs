@@ -38,20 +38,27 @@ public class TokenValidationOptionsTests
     [InlineData(null, "TestIssuer", "TestAudience")]
     [InlineData(new byte[0], null, "TestAudience")]
     [InlineData(new byte[0], "TestIssuer", null)]
-    public void Properties_ShouldFailValidation_WhenRequiredPropertyIsNull(byte[] publicKey, string issuer, string audience)
+    public void Properties_ShouldFailValidation_WhenRequiredPropertyIsNull(byte[] testPublicKey, string testIssuer, string testAudience)
     {
         var options = new TokenValidationOptions
         {
-            PublicKey = publicKey,
-            Issuer = issuer,
-            Audience = audience
+            PublicKey = testPublicKey,
+            Issuer = testIssuer,
+            Audience = testAudience
         };
 
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(options, null, null);
-        var isValid = Validator.TryValidateObject(options, validationContext, validationResults, true);
 
-        Assert.False(isValid);
-        Assert.NotEmpty(validationResults);
+        var isValidationSuccessful = Validator.TryValidateObject(options, validationContext, validationResults, true);
+
+        Assert.False(isValidationSuccessful);
+
+        Assert.Contains(validationResults,
+            v =>
+                v.MemberNames.Contains(nameof(
+                    TokenValidationOptions.PublicKey)) ||
+                                                v.MemberNames.Contains(nameof(TokenValidationOptions.Issuer)) ||
+                                                v.MemberNames.Contains(nameof(TokenValidationOptions.Audience)));
     }
 }
