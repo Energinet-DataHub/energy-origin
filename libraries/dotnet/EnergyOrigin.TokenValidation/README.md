@@ -9,15 +9,10 @@ For our specific use cases, see [restricting access](#restricting-access).
 1. Register token validation during start up:
 
 ```csharp
-var tokenValidationOptions = new TokenValidationOptions
-{
-    PublicKey = byteArrayOfPublicKeyPem,
-    Issuer = issuer,
-    Audience = audience
-};
-
-builder.Services.AddTokenValidation(tokenValidationOptions);
-
+builder.AddTokenValidation(new ValidationParameters(byteArrayOfPublicKeyPem) {
+    ValidAudience = audience,
+    ValidIssuer = issuer
+});
 ```
 
 For more further configuration, see [configuring token validation](#configuring-token-validation).
@@ -70,33 +65,42 @@ public async IActionResult Get()
 
 The user descriptor can be consider to be mostly a simple object with the values readily available. The most common values being:
 
- - Id
- - Name
- - Organization (if present):
+- Id
+- Name
+- Organization (if present):
     - Id
     - Name
     - Tin
 
 ## Configuring Token Validation
 
-Configure token validation by creating an instance of TokenValidationOptions and passing it to the AddTokenValidation extension method on WebApplicationBuilder.
-```csharp
-var tokenValidationOptions = new TokenValidationOptions
-{
-    PublicKey = Convert.FromBase64String(configuration["TokenValidation:PublicKey"]), // Convert from Base64 string to byte array
-    Issuer = configuration["TokenValidation:Issuer"],
-    Audience = configuration["TokenValidation:Audience"]
-};
+There is an extension available on `WebApplicationBuilder` to register token validation that takes an argument of the type `ValidationParameters`.
 
-builder.Services.AddTokenValidation(tokenValidationOptions);
+```csharp
+builder.AddTokenValidation(validationParameters);
 ```
 
-TokenValidationOptions requires the following parameters:
+Creating an instance of `ValidationParameters` requires a byte array argument containing a public key to verify signage by a specific private key. Token validation only works with tokens signed by a private key.
 
-PublicKey: A byte array containing the public key to verify the signature of a JWT token.
-Issuer: The valid issuer of the token.
-Audience: The valid audience of the token.
-These parameters can be configured directly or loaded from configuration sources like appsettings.json.
+> Currently only public/private key sets using RSA encryption is supported
+
+```csharp
+new ValidationParameters(byteArrayOfPublicKeyPem);
+```
+
+`ValidationParameters` inherits from the class [TokenValidationParameters](https://learn.microsoft.com/en-us/dotnet/api/microsoft.identitymodel.tokens.tokenvalidationparameters?view=msal-web-dotnet-latest). This means you can adjust any setting normally controlled by `TokenValidationParameters`, like for instance setting clock skew tolerance:
+
+```csharp
+new ValidationParameters(byteArrayOfPublicKeyPem) {
+    ClockSkew = TimeSpan.Zero
+};
+```
+
+The purpose of `ValidationParameters` to configure a number of settings for `TokenValidationParameters` consistently.
+
+### Notable validation parameters
+
+While `ValidationParameters` takes care of setting up validation of the signage, if no other settings are specified a given token is likely to be considered invalid. It is very likely that the following parameters should be configured too.
 
 #### ValidAudience
 By default the audience encoded into a token should match this property.
