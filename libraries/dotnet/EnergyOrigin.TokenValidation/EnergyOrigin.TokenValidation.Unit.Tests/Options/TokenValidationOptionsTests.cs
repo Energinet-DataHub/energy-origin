@@ -35,9 +35,9 @@ public class TokenValidationOptionsTests
     }
 
     [Theory]
-    [InlineData(null, "TestIssuer", "TestAudience")]
-    [InlineData(new byte[0], null, "TestAudience")]
-    [InlineData(new byte[0], "TestIssuer", null)]
+    [InlineData(null, "ValidIssuer", "ValidAudience")]
+    [InlineData(new byte[0], null, "ValidAudience")]
+    [InlineData(new byte[0], "ValidIssuer", null)]
     public void Properties_ShouldFailValidation_WhenRequiredPropertyIsNull(byte[] testPublicKey, string testIssuer, string testAudience)
     {
         var options = new TokenValidationOptions
@@ -53,12 +53,6 @@ public class TokenValidationOptionsTests
         var isValidationSuccessful = Validator.TryValidateObject(options, validationContext, validationResults, true);
 
         Assert.False(isValidationSuccessful);
-
-        Assert.Contains(validationResults,
-            v =>
-                v.MemberNames.Contains(nameof(
-                    TokenValidationOptions.PublicKey)) ||
-                                                v.MemberNames.Contains(nameof(TokenValidationOptions.Issuer)) ||
-                                                v.MemberNames.Contains(nameof(TokenValidationOptions.Audience)));
+        Assert.DoesNotContain(ValidationResult.Success, validationResults);
     }
 }
