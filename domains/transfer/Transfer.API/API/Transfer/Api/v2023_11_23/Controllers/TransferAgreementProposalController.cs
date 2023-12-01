@@ -39,9 +39,9 @@ public class TransferAgreementProposalController : ControllerBase
     /// <response code="201">Created</response>
     /// <response code="400">Bad request</response>
     /// <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
-    [ProducesResponseType(typeof(Guid), 201)]
+    [ProducesResponseType(typeof(TransferAgreementProposalResponse), 201)]
     [ProducesResponseType(typeof(void), 400)]
-    [ProducesResponseType(typeof(string), 409)]
+    [ProducesResponseType(typeof(void), 409)]
     [HttpPost]
     public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
@@ -96,11 +96,11 @@ public class TransferAgreementProposalController : ControllerBase
     /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-    [ProducesResponseType(typeof(TransferAgreementProposal), 200)]
+    [ProducesResponseType(typeof(TransferAgreementProposalResponse), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
-    public async Task<ActionResult<TransferAgreementProposal>> GetTransferAgreementProposal(Guid id)
+    public async Task<ActionResult<TransferAgreementProposalResponse>> GetTransferAgreementProposal(Guid id)
     {
         var proposal = await repository.GetNonExpiredTransferAgreementProposal(id);
 

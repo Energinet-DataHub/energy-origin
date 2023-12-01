@@ -346,20 +346,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               }
             }
@@ -368,24 +365,7 @@
             "description": "Bad request"
           },
           "409": {
-            "description": "There is already a Transfer Agreement with this company tin within the selected date range",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
+            "description": "There is already a Transfer Agreement with this company tin within the selected date range"
           }
         }
       }
@@ -424,17 +404,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementProposal"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementProposal"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementProposal"
+                  "$ref": "#/components/schemas/TransferAgreementProposalResponse"
                 }
               }
             }
@@ -1063,38 +1043,23 @@
         },
         "additionalProperties": false
       },
-      "TransferAgreementProposal": {
+      "TransferAgreementProposalResponse": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid"
           },
-          "senderCompanyId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "senderCompanyTin": {
-            "type": "string"
-          },
           "senderCompanyName": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
           "startDate": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           },
           "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "receiverCompanyTin": {
-            "type": "string",
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           }
         },
