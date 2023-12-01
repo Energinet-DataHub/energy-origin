@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
+using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
@@ -215,7 +216,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
 
@@ -224,7 +225,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getResponseBody = await getResponse.Content.ReadAsStringAsync();
-        var returnedProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(getResponseBody);
+        var returnedProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(getResponseBody);
 
         returnedProposal.Should().BeEquivalentTo(createdProposal);
     }
@@ -241,7 +242,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         var response = await client.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
 
@@ -261,7 +262,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "12345679", apiVersion: "20231123");
 
@@ -368,7 +369,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "32132132");
         var postResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposal>();
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
 
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
 

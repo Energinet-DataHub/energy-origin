@@ -9,13 +9,15 @@ using API.IntegrationTests.Factories;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using TransferAgreementDto = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementDto;
+using TransferAgreementsResponse = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementsResponse;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 
@@ -520,7 +522,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         return createdProposal!.Id;
     }

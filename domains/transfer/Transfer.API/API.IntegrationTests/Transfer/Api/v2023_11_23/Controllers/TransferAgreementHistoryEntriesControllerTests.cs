@@ -151,7 +151,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var result = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", body);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         return createdProposal!.Id;
     }

@@ -4,6 +4,7 @@ using API.Shared.Extensions;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.v2023_11_23.Dto.Requests;
+using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -72,13 +73,21 @@ public class TransferAgreementProposalController : ControllerBase
 
             if (hasConflict)
             {
-                return ValidationProblem("There is already a Transfer Agreement with this company tin within the selected date range", statusCode: 409);
+                return ValidationProblem(
+                    "There is already a Transfer Agreement with this company tin within the selected date range",
+                    statusCode: 409);
             }
         }
 
         await repository.AddTransferAgreementProposal(newProposal);
 
-        return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = newProposal.Id }, newProposal);
+        var response = new TransferAgreementProposalResponse(
+            newProposal.Id,
+            newProposal.SenderCompanyName,
+            newProposal.StartDate.ToUnixTimeSeconds(),
+            newProposal.EndDate?.ToUnixTimeSeconds()
+        );
+        return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = newProposal.Id }, response);
     }
 
     /// <summary>
@@ -107,16 +116,25 @@ public class TransferAgreementProposalController : ControllerBase
         {
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
+
         if (proposal.ReceiverCompanyTin != null && currentCompanyTin != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
+
         if (proposal.EndDate < DateTimeOffset.UtcNow)
         {
             return ValidationProblem("This proposal has run out");
         }
 
-        return Ok(proposal);
+        return Ok(
+            new TransferAgreementProposalResponse(
+                proposal.Id,
+                proposal.SenderCompanyName,
+                proposal.StartDate.ToUnixTimeSeconds(),
+                proposal.EndDate?.ToUnixTimeSeconds()
+            )
+        );
     }
 
     /// <summary>
