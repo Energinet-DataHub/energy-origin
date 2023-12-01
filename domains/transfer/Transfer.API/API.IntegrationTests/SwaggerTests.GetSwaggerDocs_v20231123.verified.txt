@@ -1053,6 +1053,10 @@
           "senderCompanyName": {
             "type": "string"
           },
+          "receiverTin": {
+            "type": "string",
+            "nullable": true
+          },
           "startDate": {
             "type": "integer",
             "format": "int64"

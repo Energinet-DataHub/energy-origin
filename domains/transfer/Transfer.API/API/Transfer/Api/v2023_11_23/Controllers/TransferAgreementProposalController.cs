@@ -84,6 +84,7 @@ public class TransferAgreementProposalController : ControllerBase
         var response = new TransferAgreementProposalResponse(
             newProposal.Id,
             newProposal.SenderCompanyName,
+            newProposal.ReceiverCompanyTin,
             newProposal.StartDate.ToUnixTimeSeconds(),
             newProposal.EndDate?.ToUnixTimeSeconds()
         );
@@ -131,6 +132,7 @@ public class TransferAgreementProposalController : ControllerBase
             new TransferAgreementProposalResponse(
                 proposal.Id,
                 proposal.SenderCompanyName,
+                proposal.ReceiverCompanyTin,
                 proposal.StartDate.ToUnixTimeSeconds(),
                 proposal.EndDate?.ToUnixTimeSeconds()
             )
