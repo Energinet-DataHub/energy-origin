@@ -307,6 +307,32 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+
+    [Fact]
+    public async Task GetTransferAgreementProposal_ShouldReturnOk_WhenProposalWithReceiverTinIsNull()
+    {
+
+        var taProposal = new TransferAgreementProposal
+        {
+            CreatedAt = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(1),
+            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            SenderCompanyName = "SomeCompany",
+            ReceiverCompanyTin = null,
+            SenderCompanyId = Guid.NewGuid(),
+            SenderCompanyTin = "11223344"
+        };
+
+        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+
+        var response = await client.GetAsync($"api/transfer-agreement-proposals/{taProposal.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     [Fact]
     public async Task GetTransferAgreementProposal_ShouldReturnNotFound_WhenTransferAgreementProposalExpired()
     {

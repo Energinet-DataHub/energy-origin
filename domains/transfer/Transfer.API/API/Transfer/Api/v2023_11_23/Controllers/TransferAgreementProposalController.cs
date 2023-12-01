@@ -107,7 +107,7 @@ public class TransferAgreementProposalController : ControllerBase
         {
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
-        if (currentCompanyTin != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && currentCompanyTin != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
