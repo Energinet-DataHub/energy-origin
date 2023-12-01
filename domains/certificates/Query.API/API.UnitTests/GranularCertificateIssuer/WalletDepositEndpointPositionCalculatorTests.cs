@@ -1,6 +1,6 @@
 using System;
 using API.GranularCertificateIssuer;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Xunit;
 

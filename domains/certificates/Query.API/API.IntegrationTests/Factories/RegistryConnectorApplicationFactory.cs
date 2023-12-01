@@ -1,6 +1,4 @@
 extern alias registryConnector;
-using System;
-using System.Text;
 using Contracts;
 using FluentAssertions;
 using MassTransit;
@@ -11,11 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.HierarchicalDeterministicKeys;
 using registryConnector::RegistryConnector.Worker;
+using System;
+using System.Text;
 
 namespace API.IntegrationTests.Factories;
 
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
 {
+    public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
     {
@@ -28,6 +29,8 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
+
         if (ProjectOriginOptions != null)
         {
             builder.UseSetting("ProjectOrigin:WalletUrl", ProjectOriginOptions.WalletUrl);

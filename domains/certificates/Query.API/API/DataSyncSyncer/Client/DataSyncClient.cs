@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 

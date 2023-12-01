@@ -1,6 +1,6 @@
 using System;
-using API.ContractService;
-using CertificateValueObjects;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Xunit;
 

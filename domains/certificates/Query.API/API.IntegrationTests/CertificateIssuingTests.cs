@@ -1,25 +1,23 @@
-using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.ApiModels.Responses;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using MassTransit;
 using MeasurementEvents;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests;
 
-[TestCaseOrderer(PriorityOrderer.TypeName, "API.IntegrationTests")]
 public sealed class CertificateIssuingTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
@@ -48,6 +46,7 @@ public sealed class CertificateIssuingTests :
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
+        registryConnectorFactory.ConnectionString = dbContainer.ConnectionString;
         registryConnectorFactory.Start();
     }
 
@@ -72,8 +71,6 @@ public sealed class CertificateIssuingTests :
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    //FiveMeasurements tests cannot be run first, then they fail, so this is set to run first.
-    [TestPriority(1)]
     [Fact]
     public async Task GetList_MeasurementFromProductionMeteringPointAddedToBus_ReturnsList()
     {

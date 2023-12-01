@@ -9,14 +9,16 @@ namespace API.IntegrationTests;
 public class RegistryConnectorHealthTests :
     TestBase,
     IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<RabbitMqContainer>
+    IClassFixture<RabbitMqContainer>,
+    IClassFixture<PostgresContainer>
 {
     private readonly RegistryConnectorApplicationFactory factory;
 
-    public RegistryConnectorHealthTests(RegistryConnectorApplicationFactory factory, RabbitMqContainer rabbitMqContainer)
+    public RegistryConnectorHealthTests(RegistryConnectorApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
     }
 
     [Fact]

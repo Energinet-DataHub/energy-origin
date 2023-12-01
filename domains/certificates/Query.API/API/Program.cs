@@ -1,5 +1,4 @@
 using API.ContractService;
-using API.Data;
 using API.DataSyncSyncer;
 using API.GranularCertificateIssuer;
 using API.Query.API;
@@ -21,6 +20,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json.Serialization;
+using DataContext;
 
 var builder = WebApplication.CreateBuilder(args);
 

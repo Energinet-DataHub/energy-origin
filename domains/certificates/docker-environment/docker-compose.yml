@@ -1,19 +1,5 @@
 version: "3.8"
 services:
-  martendb:
-    image: sibedge/postgres-plv8
-    container_name: marten
-    restart: unless-stopped
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./postgres-init-data/001-plv8.sql:/docker-entrypoint-initdb.d/001-plv8.sql
-      - ./sql:/sql
-    environment:
-      POSTGRES_DB: marten
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
   db:
     image: postgres:15.2
     container_name: postgres
@@ -56,6 +42,5 @@ services:
       - pgadmin:/var/lib/pgadmin
 
 volumes:
-  martendb:
   postgres:
   pgadmin:
