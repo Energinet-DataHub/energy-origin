@@ -10,5 +10,5 @@ public interface ITokenSigner
         DateTime? issueAt = null,
         int duration = 120,
         IDictionary<string, object>? claims = null
-    );
+        );
 }

@@ -10,7 +10,6 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class TokenSigner(byte[] privateKeyPem) : ITokenSigner
 {
-
     public string Sign(
         string subject,
         string name,

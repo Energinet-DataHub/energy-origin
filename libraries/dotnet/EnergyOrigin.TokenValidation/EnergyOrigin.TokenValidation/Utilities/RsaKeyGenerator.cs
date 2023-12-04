@@ -5,7 +5,6 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class RsaKeyGenerator
 {
-
     public static string GenerateTestKey()
     {
         var csp = new RSACryptoServiceProvider();
