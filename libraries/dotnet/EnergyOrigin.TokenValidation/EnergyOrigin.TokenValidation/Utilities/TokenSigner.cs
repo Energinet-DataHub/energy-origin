@@ -23,9 +23,7 @@ public class TokenSigner(byte[] privateKeyPem) : ITokenSigner
     {
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(privateKeyPem));
-
         var key = new RsaSecurityKey(rsa);
-
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
 
         var identity = new List<Claim>
