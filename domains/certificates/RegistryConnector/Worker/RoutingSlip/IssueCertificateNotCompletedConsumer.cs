@@ -64,7 +64,7 @@ public class IssueCertificateNotCompletedConsumer :
 
         await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
     }
-    
+
     private async Task Reject(MeteringPointType meteringPointType, Guid certificateId, string rejectionReason)
     {
         if (meteringPointType == MeteringPointType.Production)

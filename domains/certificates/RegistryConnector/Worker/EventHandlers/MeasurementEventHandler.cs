@@ -46,7 +46,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
-        
+
         var contracts = await dbContext.Contracts.Where(c => c.GSRN == message.GSRN).ToListAsync(context.CancellationToken);
         var matchingContract = contracts.FirstOrDefault(c => ShouldEventBeProduced(c, message));
         if (matchingContract == null)
@@ -79,7 +79,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
             dbContext.Add(productionCertificate);
             await dbContext.SaveChangesAsync(context.CancellationToken);
-            
+
             var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
             var issuedEvent = Registry.CreateIssuedEventForProduction(
@@ -94,7 +94,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 ownerPublicKey);
 
             var transaction = issuedEvent.CreateTransaction(issuerKey);
-            
+
             BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created production certificate for {Message}", message);
@@ -131,7 +131,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}", matchingContract.MeteringPointType, message));
-        
+
         var routingSlip = builder.Build();
 
         //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
@@ -183,7 +183,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder,
             new MarkAsIssuedArguments(certificateId, matchingContract.MeteringPointType));
-        
+
         var receiveRequest = new ReceiveRequest
         {
             CertificateId = transaction.Header.FederatedStreamId,

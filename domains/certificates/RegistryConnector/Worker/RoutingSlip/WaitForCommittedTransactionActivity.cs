@@ -33,7 +33,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
         try
         {
             var status = await client.GetTransactionStatusAsync(statusRequest);
-            
+
             if (status.Status == TransactionState.Committed)
             {
                 //TODO: Log

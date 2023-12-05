@@ -20,7 +20,7 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
         this.projectOriginOptions = projectOriginOptions.Value;
         this.logger = logger;
     }
-    
+
     public async Task<ExecutionResult> Execute(ExecuteContext<IssueToRegistryArguments> context)
     {
         logger.LogInformation("Issuing to Registry for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
@@ -31,7 +31,7 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
 
         // The Registry is idempotent wrt. sending the same Transaction. Re-sending the transaction
         // after it has been committed, will not change the status of the initial transaction
-            
+
         var request = new SendTransactionsRequest();
         request.Transactions.Add(context.Arguments.Transaction);
 
