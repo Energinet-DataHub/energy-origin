@@ -111,7 +111,7 @@ By default the audience encoded into a token should match this property.
 #### ValidIssuer
 By default the issuer encoded into a token should match this property.
 
-## Generating Tokens for Testing Purposes
+## Generating Tokens for Tests
 
 You can generate JWT tokens using the `TokenSigner` class. This class allows for the creation of signed JWT tokens.
 
