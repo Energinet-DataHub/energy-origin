@@ -19,6 +19,7 @@ public static class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
+            //TODO: Make it possible to switch to using these instead
             //o.AddConsumer<EnergyMeasuredEventHandler>();
             //o.AddConsumer<CertificateIssuedInRegistryEventHandler>();
             //o.AddConsumer<CertificateRejectedInRegistryEventHandler>();

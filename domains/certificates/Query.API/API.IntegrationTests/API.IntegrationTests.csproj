@@ -39,6 +39,7 @@
     <ProjectReference Include="..\..\RegistryConnector\Worker\Worker.csproj">
       <Aliases>registryConnector</Aliases>
     </ProjectReference>
+    <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 

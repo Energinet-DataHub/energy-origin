@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using API.Configurations;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
 using Asp.Versioning.ApiExplorer;
@@ -14,6 +15,8 @@ using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
 using FluentAssertions;
+using Grpc.Core;
+using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -21,7 +24,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ProjectOrigin.WalletSystem.V1;
+using Claim = System.Security.Claims.Claim;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
@@ -89,6 +95,17 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
+    }
+
+    public (WalletService.WalletServiceClient, Metadata metadata) CreateWalletClient(string subject)
+    {
+        var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
+
+        var options = Services.GetRequiredService<IOptions<WalletOptions>>().Value;
+        var channel = GrpcChannel.ForAddress(options.Url); //TODO: Channel should be disposed
+
+        return (new WalletService.WalletServiceClient(channel), metadata);
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
