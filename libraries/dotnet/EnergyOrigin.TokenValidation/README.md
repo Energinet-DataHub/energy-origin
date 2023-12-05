@@ -123,7 +123,7 @@ You can use `TokenSigner` with a randomly generated private key from `RsaKeyGene
 var signer = new TokenSigner(Encoding.UTF8.GetBytes(RsaKeyGenerator.GenerateTestKey()));
 ```
 
-Once initialized, you can use the `Sign` method to generate a token.
+Once initialized you can use the `Sign` method to generate a token.
 
 ### Example Usage with Additional Claims
 
