@@ -140,8 +140,6 @@ string token = signer.Sign(
     name: "TestName",
     issuer: "TestIssuer",
     audience: "TestAudience",
-    issueAt: null,
-    duration: 120,
     claims: additionalClaims
 );
 ```
