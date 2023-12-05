@@ -7,11 +7,10 @@
         EndDate: 4867877044,
         SenderName: Producent A/S,
         SenderTin: 11223344,
-        ReceiverTin: 12345678
+        ReceiverTin: 12334455
       },
       CreatedAt: {Scrubbed},
-      Action: Created,
-      ActorName: Peter Producent
+      Action: Created
     },
     {
       TransferAgreement: {
@@ -20,11 +19,10 @@
         EndDate: 4902095105,
         SenderName: Producent A/S,
         SenderTin: 11223344,
-        ReceiverTin: 12345678
+        ReceiverTin: 12334455
       },
       CreatedAt: {Scrubbed},
-      Action: Updated,
-      ActorName: Peter Producent
+      Action: Updated
     }
   ]
 }

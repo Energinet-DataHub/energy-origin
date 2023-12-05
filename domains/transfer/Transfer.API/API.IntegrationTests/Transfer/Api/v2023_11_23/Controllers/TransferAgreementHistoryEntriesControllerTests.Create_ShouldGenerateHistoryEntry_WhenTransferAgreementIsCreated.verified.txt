@@ -8,11 +8,10 @@
         EndDate: 4867877044,
         SenderName: Producent A/S,
         SenderTin: 11223344,
-        ReceiverTin: 12345456
+        ReceiverTin: 12334455
       },
       CreatedAt: {Scrubbed},
-      Action: Created,
-      ActorName: Peter Producent
+      Action: Created
     }
   ]
 }
