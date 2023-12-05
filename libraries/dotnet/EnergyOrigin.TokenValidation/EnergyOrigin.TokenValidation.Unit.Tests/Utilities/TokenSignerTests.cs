@@ -59,7 +59,7 @@ public class TokenSignerTests
         var issuedAtClaim = token.Claims.First(c => c.Type == JwtRegisteredClaimNames.Iat).Value;
         var issuedAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(issuedAtClaim)).UtcDateTime;
 
-        Assert.True((DateTime.UtcNow - issuedAt).TotalSeconds <= 5);
+        Assert.Equal(DateTime.UtcNow, issuedAt, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
