@@ -127,7 +127,7 @@ Once initialized, you can use the `Sign` method to generate a token.
 
 ### Example Usage with Additional Claims
 
-Here's an example of how to use the `Sign` method of `TokenSigner` to generate a JWT token with additional claims:
+Here is an example of how to use the `Sign` method of `TokenSigner` to generate a JWT token with additional claims:
 
 ```csharp
 var additionalClaims = new Dictionary<string, object>
