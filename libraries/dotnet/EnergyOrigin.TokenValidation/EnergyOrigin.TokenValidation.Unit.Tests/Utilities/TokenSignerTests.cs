@@ -66,17 +66,18 @@ public class TokenSignerTests
     public void Sign_ShouldIncludeAdditionalClaims_WhenProvided()
     {
         var signer = new TokenSigner(_privateKeyPem);
-
+        const string claimType = "customClaim";
+        const string claimValue = "customValue";
         var additionalClaims = new Dictionary<string, object>
         {
-            { "customClaim", "customValue" }
+            { claimType, claimValue }
         };
 
         var tokenString = signer.Sign("subject", "name", "issuer", "audience", null, 120, additionalClaims);
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(tokenString);
 
-        Assert.Equal("customValue", token.Claims.First(c => c.Type == "customClaim").Value);
+        Assert.Equal(claimValue, token.Claims.First(c => c.Type == claimType).Value);
     }
 }
 
