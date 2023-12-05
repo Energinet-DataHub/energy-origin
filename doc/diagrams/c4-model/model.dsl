@@ -88,11 +88,10 @@ measurementsSubsystem = group "Measurements Subsystem" {
 
 transferSubsystem = group "Transfer Subsystem" {
     transferApi = container "Transfer API" "" ".NET Web Api" {
-        connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> poWallet "Creates wallet deposit endpoint"
         }
-        deleteConnectionInvitationsWorker = component "Delete Connection Invitations Worker" "Deletes expired connection invitations" ".NET BackgroundService"
+        deleteTransferAgreementProposalsWorker = component "Delete Transfer Agreement Proposals Worker" "Deletes expired Transfer Agreement Proposals" ".NET BackgroundService"
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
             this -> poWallet "Transfers certificates"
         }
@@ -107,16 +106,14 @@ transferSubsystem = group "Transfer Subsystem" {
         description ""
         technology "Postgres SQL"
 
-        transferApi -> this "Saves and reads transfer agreement and connections data"
+        transferApi -> this "Saves and reads transfer agreement data"
     }
-    apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"
     apiGateway -> cvrProxy "Forwards requests to"
     apiGateway -> claimAutomationApi "Forwards requests to"
-    connectionsApi -> tDb "Stores connections"
     transferAgreementsApi -> tDb "Stores transfer agreements"
     transferAgreementAutomation -> tDb "Reads transfer agreements"
-    deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
+    deleteTransferAgreementProposalsWorker -> tDb "Deletes transfer agreement proposals"
     cvrProxy -> cvr "Forwards requests to"
     claimAutomation -> tDb "Reads owner ids"
     claimAutomationApi -> tDb "Creates, deletes and reads owner ids"
