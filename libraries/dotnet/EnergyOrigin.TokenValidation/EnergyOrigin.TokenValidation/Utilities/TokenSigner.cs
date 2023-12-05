@@ -8,8 +8,15 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
-public class TokenSigner(byte[] privateKeyPem) : ITokenSigner
+public class TokenSigner : ITokenSigner
 {
+    private readonly byte[] _privateKeyPem;
+
+    public TokenSigner(byte[] privateKeyPem)
+    {
+        _privateKeyPem = privateKeyPem;
+    }
+
     public string Sign(
         string subject,
         string name,
@@ -22,7 +29,7 @@ public class TokenSigner(byte[] privateKeyPem) : ITokenSigner
 
     {
         var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(privateKeyPem));
+        rsa.ImportFromPem(Encoding.UTF8.GetString(_privateKeyPem));
         var key = new RsaSecurityKey(rsa);
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
 
