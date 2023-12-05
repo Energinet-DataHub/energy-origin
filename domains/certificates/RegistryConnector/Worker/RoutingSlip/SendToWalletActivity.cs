@@ -1,10 +1,10 @@
+using System.Threading.Tasks;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
-using System.Threading.Tasks;
 
-namespace RegistryConnector.Worker.Activities;
+namespace RegistryConnector.Worker.RoutingSlip;
 
 public record SendToWalletArguments(string WalletUrl, ReceiveRequest ReceiveRequest);
 

@@ -15,7 +15,6 @@ using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
-using RegistryConnector.Worker.Activities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -24,17 +23,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using RegistryConnector.Worker.RoutingSlip;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-public class WorkerConsumer : IConsumer<EnergyMeasuredIntegrationEvent>
+//TODO: Consider different name for class
+public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly IEndpointNameFormatter endpointNameFormatter;
     private readonly ProjectOriginOptions projectOriginOptions;
     private readonly ApplicationDbContext dbContext;
-    private readonly ILogger<WorkerConsumer> logger;
+    private readonly ILogger<MeasurementEventHandler> logger;
 
-    public WorkerConsumer(IEndpointNameFormatter endpointNameFormatter, IOptions<ProjectOriginOptions> projectOriginOptions, ApplicationDbContext dbContext, ILogger<WorkerConsumer> logger)
+    public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter, IOptions<ProjectOriginOptions> projectOriginOptions, ApplicationDbContext dbContext, ILogger<MeasurementEventHandler> logger)
     {
         this.endpointNameFormatter = endpointNameFormatter;
         this.projectOriginOptions = projectOriginOptions.Value;

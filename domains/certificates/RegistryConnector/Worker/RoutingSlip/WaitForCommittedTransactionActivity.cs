@@ -1,15 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
-using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 
-namespace RegistryConnector.Worker.Activities;
+namespace RegistryConnector.Worker.RoutingSlip;
 
 public record WaitForCommittedTransactionArguments(string ShaId);
 

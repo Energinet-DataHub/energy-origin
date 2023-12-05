@@ -5,7 +5,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
 
-namespace RegistryConnector.Worker.Activities;
+namespace RegistryConnector.Worker.RoutingSlip;
 
 public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType MeteringPointType);
 
@@ -25,6 +25,9 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
                 context.CancellationToken)
             : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
                 context.CancellationToken);
+
+        if (certificate.IsIssued)
+            return context.Completed();
 
         certificate.Issue();
 

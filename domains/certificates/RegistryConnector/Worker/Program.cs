@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using RegistryConnector.Worker;
-using RegistryConnector.Worker.Activities;
 using RegistryConnector.Worker.EventHandlers;
+using RegistryConnector.Worker.RoutingSlip;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -56,7 +56,7 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<WalletSliceSender>();
 
-    o.AddConsumer<WorkerConsumer>();
+    o.AddConsumer<MeasurementEventHandler>();
     o.AddConsumer<IssueCertificateNotCompletedConsumer>();
 
     o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
