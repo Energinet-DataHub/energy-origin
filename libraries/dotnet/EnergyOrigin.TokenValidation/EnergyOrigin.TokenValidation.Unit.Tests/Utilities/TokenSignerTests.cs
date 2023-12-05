@@ -40,10 +40,12 @@ public class TokenSignerTests
         var duration = 120;
         var issueAt = DateTime.UtcNow;
         var expectedExpiry = issueAt.AddSeconds(duration);
+
         var tokenString = signer.Sign("subject", "name", "issuer", "audience", issueAt, duration);
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(tokenString);
-        Assert.True((expectedExpiry - token.ValidTo).TotalSeconds < 1);
+
+        Assert.Equal(expectedExpiry, token.ValidTo, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
