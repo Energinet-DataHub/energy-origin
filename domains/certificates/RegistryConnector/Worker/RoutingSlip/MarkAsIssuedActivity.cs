@@ -26,7 +26,7 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
             : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
                 context.CancellationToken);
 
-        if (certificate.IsIssued)
+        if (certificate!.IsIssued)  //TODO: Handle if not found
             return context.Completed();
 
         certificate.Issue();

@@ -70,12 +70,12 @@ public class IssueCertificateNotCompletedConsumer :
         if (meteringPointType == MeteringPointType.Production)
         {
             var productionCertificate = await dbContext.ProductionCertificates.FindAsync(certificateId);
-            productionCertificate.Reject(rejectionReason);
+            productionCertificate!.Reject(rejectionReason); //TODO: Handle if not found
         }
         else
         {
             var consumptionCertificate = await dbContext.ConsumptionCertificates.FindAsync(certificateId);
-            consumptionCertificate.Reject(rejectionReason);
+            consumptionCertificate!.Reject(rejectionReason); //TODO: Handle if not found
         }
 
         var changed = await dbContext.SaveChangesAsync();
