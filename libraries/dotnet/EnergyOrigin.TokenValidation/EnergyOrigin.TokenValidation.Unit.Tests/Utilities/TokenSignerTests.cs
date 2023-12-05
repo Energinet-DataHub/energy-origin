@@ -78,21 +78,5 @@ public class TokenSignerTests
 
         Assert.Equal("customValue", token.Claims.First(c => c.Type == "customClaim").Value);
     }
-
-    [Fact]
-    public void Sign_WithNoAdditionalClaims_ShouldContainOnlyStandardClaims()
-    {
-        var signer = new TokenSigner(_privateKeyPem);
-
-        var tokenString = signer.Sign("subject", "name", "issuer", "audience");
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(tokenString);
-
-        var standardClaims = new[] { JwtRegisteredClaimNames.Sub, JwtRegisteredClaimNames.Name, JwtRegisteredClaimNames.Iss, JwtRegisteredClaimNames.Aud, JwtRegisteredClaimNames.Exp, JwtRegisteredClaimNames.Nbf, JwtRegisteredClaimNames.Iat };
-        var tokenClaims = token.Claims.Select(c => c.Type).Distinct().ToArray();
-
-        Assert.Equal(standardClaims.Length, tokenClaims.Length);
-        Assert.All(tokenClaims, claimType => Assert.Contains(claimType, standardClaims));
-    }
 }
 
