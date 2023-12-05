@@ -268,7 +268,7 @@ public sealed class CertificateIssuingTests :
             }
         });
     }
-    
+
     [Fact]
     public async Task GetList_FiveMeasurementsFromProductionMeteringPointAddedToBus_ReturnsList()
     {
