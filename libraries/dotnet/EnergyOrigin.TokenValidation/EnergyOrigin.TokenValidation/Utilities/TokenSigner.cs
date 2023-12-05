@@ -26,7 +26,6 @@ public class TokenSigner : ITokenSigner
         int duration = 120,
         IDictionary<string, object>? claims = null
     )
-
     {
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(_privateKeyPem));

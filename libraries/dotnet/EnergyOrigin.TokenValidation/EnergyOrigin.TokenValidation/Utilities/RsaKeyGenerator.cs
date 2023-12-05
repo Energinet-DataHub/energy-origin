@@ -12,6 +12,7 @@ public class RsaKeyGenerator
         var privateKeyPem = ExportPrivateKey(csp);
         return Encoding.ASCII.GetString(privateKeyPem);
     }
+
     private static byte[] ExportPrivateKey(RSACryptoServiceProvider csp)
     {
         if (csp.PublicOnly) throw new ArgumentException("CSP does not contain a private key", nameof(csp));
