@@ -111,13 +111,13 @@ By default the audience encoded into a token should match this property.
 #### ValidIssuer
 By default the issuer encoded into a token should match this property.
 
-## Generating Tokens for Testing Purposes
+## Generating Tokens for Tests
 
 You can generate JWT tokens using the `TokenSigner` class. This class allows for the creation of signed JWT tokens.
 
 You have the option to either provide your own private key or use the `RsaKeyGenerator` to create a random private key.
 
-To use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator`, initialize it as follows:
+You can use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator` as follows:
 
 ```csharp
 var signer = new TokenSigner(Encoding.UTF8.GetBytes(RsaKeyGenerator.GenerateTestKey()));
@@ -127,7 +127,7 @@ Once initialized, you can use the `Sign` method to generate a token.
 
 ### Example Usage with Additional Claims
 
-Here's an example of how to use the `Sign` method of `TokenSigner` to generate a JWT token with additional claims:
+Here is an example of how to use the `Sign` method of `TokenSigner` to generate a JWT token with additional claims:
 
 ```csharp
 var additionalClaims = new Dictionary<string, object>
@@ -142,8 +142,6 @@ string token = signer.Sign(
     name: "TestName",
     issuer: "TestIssuer",
     audience: "TestAudience",
-    issueAt: null,
-    duration: 120,
     claims: additionalClaims
 );
 ```
