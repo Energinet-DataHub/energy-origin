@@ -132,7 +132,9 @@ Here's an example of how to use the `Sign` method of `TokenSigner` to generate a
 ```csharp
 var additionalClaims = new Dictionary<string, object>
 {
-    { "tin", 12345678 }
+    { JwtClaimNames.Tin, 12345678 },
+    { "foo", "fooValue" },
+    { "bar", "barValue" }
 };
 
 string token = signer.Sign(
