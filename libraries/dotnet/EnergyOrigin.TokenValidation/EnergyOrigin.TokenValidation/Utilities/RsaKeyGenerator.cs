@@ -20,22 +20,22 @@ public class RsaKeyGenerator
         using var stream = new MemoryStream();
         var writer = new BinaryWriter(stream);
         writer.Write((byte)0x30);
-        using (var innerStream = new MemoryStream())
-        {
-            var innerWriter = new BinaryWriter(innerStream);
-            EncodeIntegerBigEndian(innerWriter, new byte[] { 0x00 });
-            EncodeIntegerBigEndian(innerWriter, parameters.Modulus!);
-            EncodeIntegerBigEndian(innerWriter, parameters.Exponent!);
-            EncodeIntegerBigEndian(innerWriter, parameters.D!);
-            EncodeIntegerBigEndian(innerWriter, parameters.P!);
-            EncodeIntegerBigEndian(innerWriter, parameters.Q!);
-            EncodeIntegerBigEndian(innerWriter, parameters.DP!);
-            EncodeIntegerBigEndian(innerWriter, parameters.DQ!);
-            EncodeIntegerBigEndian(innerWriter, parameters.InverseQ!);
-            var length = (int)innerStream.Length;
-            EncodeLength(writer, length);
-            writer.Write(innerStream.GetBuffer(), 0, length);
-        }
+        using var innerStream = new MemoryStream();
+
+        var innerWriter = new BinaryWriter(innerStream);
+        EncodeIntegerBigEndian(innerWriter, new byte[] { 0x00 });
+        EncodeIntegerBigEndian(innerWriter, parameters.Modulus!);
+        EncodeIntegerBigEndian(innerWriter, parameters.Exponent!);
+        EncodeIntegerBigEndian(innerWriter, parameters.D!);
+        EncodeIntegerBigEndian(innerWriter, parameters.P!);
+        EncodeIntegerBigEndian(innerWriter, parameters.Q!);
+        EncodeIntegerBigEndian(innerWriter, parameters.DP!);
+        EncodeIntegerBigEndian(innerWriter, parameters.DQ!);
+        EncodeIntegerBigEndian(innerWriter, parameters.InverseQ!);
+        var length = (int)innerStream.Length;
+        EncodeLength(writer, length);
+        writer.Write(innerStream.GetBuffer(), 0, length);
+
 
         var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
         var sb = new StringBuilder();
