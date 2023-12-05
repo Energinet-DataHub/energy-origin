@@ -3,8 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using API.Claiming;
-using API.Connections;
-using API.Connections.Automation.Options;
 using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;
@@ -48,8 +46,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>()
-    .BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>(
     (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
@@ -66,7 +62,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddConnection();
 builder.Services.AddClaimServices();
 builder.Services.AddApiVersioning(options =>
     {

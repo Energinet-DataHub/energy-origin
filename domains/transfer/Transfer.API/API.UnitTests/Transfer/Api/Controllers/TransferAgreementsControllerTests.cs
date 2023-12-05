@@ -21,6 +21,7 @@ public class TransferAgreementsControllerTests
 {
     private readonly TransferAgreementsController controller;
     private readonly ITransferAgreementRepository mockTransferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
+    private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
     private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
 
     private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
@@ -30,12 +31,8 @@ public class TransferAgreementsControllerTests
 
     public TransferAgreementsControllerTests()
     {
-        var mockValidator = Substitute.For<IValidator<CreateTransferAgreement>>();
         var mockHttpContextAccessor = Substitute.For<IHttpContextAccessor>();
         mockTransferAgreementRepository.AddTransferAgreementToDb(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(new TransferAgreement()));
-
-        mockValidator.ValidateAsync(Arg.Any<CreateTransferAgreement>())
-            .Returns(Task.FromResult(new FluentValidation.Results.ValidationResult()));
 
         var mockContext = new DefaultHttpContext
         {
@@ -54,9 +51,9 @@ public class TransferAgreementsControllerTests
 
         controller = new TransferAgreementsController(
             mockTransferAgreementRepository,
-            mockValidator,
             mockProjectOriginWalletDepositEndpointService,
-            mockHttpContextAccessor)
+            mockHttpContextAccessor,
+            mockTransferAgreementProposalRepository)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }
         };
@@ -65,15 +62,38 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCallRepositoryOnce()
     {
-        var request = new CreateTransferAgreement(
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            "13371337",
-            Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint);
+        var taProposal = new TransferAgreementProposal
+        {
+            ReceiverCompanyTin = tin,
+            CreatedAt = DateTimeOffset.UtcNow,
+            SenderCompanyId = Guid.NewGuid(),
+            EndDate = DateTimeOffset.UtcNow.AddDays(1),
+            Id = Guid.NewGuid(),
+            StartDate = DateTimeOffset.UtcNow,
+            SenderCompanyName = "SomeCompany",
+            SenderCompanyTin = "32132132"
+        };
+        mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
+            .Returns(taProposal);
+        mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)
+            .Returns(new TransferAgreement
+            {
+                EndDate = taProposal.EndDate,
+                Id = Guid.NewGuid(),
+                ReceiverReference = Guid.NewGuid(),
+                ReceiverTin = tin,
+                SenderId = taProposal.SenderCompanyId,
+                SenderName = taProposal.SenderCompanyName,
+                SenderTin = taProposal.SenderCompanyTin,
+                StartDate = taProposal.StartDate,
+                TransferAgreementNumber = 1
+            });
+
+        var request = new CreateTransferAgreement(taProposal.Id);
 
         await controller.Create(request);
 
-        await mockTransferAgreementRepository.Received(1).AddTransferAgreementToDb(Arg.Any<TransferAgreement>());
+        await mockTransferAgreementRepository.Received(1).AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id);
     }
 
     [Fact]
@@ -237,20 +257,5 @@ public class TransferAgreementsControllerTests
         await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
         await mockTransferAgreementRepository.Received(1).Save();
-    }
-
-    [Fact]
-    public async Task CreateWalletDepositEndpoint_ShouldPassTokenWithoutBearerPrefix()
-    {
-        const string expectedJwtToken = "Bearer sample.jwt.token";
-
-        string passedToken = null!;
-        mockProjectOriginWalletDepositEndpointService
-            .When(x => x.CreateWalletDepositEndpoint(Arg.Any<string>()))
-            .Do(x => passedToken = x.Arg<string>());
-
-        await controller.CreateWalletDepositEndpoint();
-
-        passedToken.Should().Be(expectedJwtToken);
     }
 }

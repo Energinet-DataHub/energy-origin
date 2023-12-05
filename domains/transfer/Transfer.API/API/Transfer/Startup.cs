@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.Shared;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.Transfer.TransferAgreementProposalCleanup;
+using API.Transfer.TransferAgreementProposalCleanup.Options;
 using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using API.Transfer.TransferAgreementsAutomation.Service;
@@ -20,6 +21,8 @@ public static class Startup
 {
     public static void AddTransfer(this IServiceCollection services)
     {
+        services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
+            .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
 
@@ -65,12 +68,15 @@ public static class Startup
         services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
         services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+        services.AddScoped<ITransferAgreementProposalRepository, TransferAgreementProposalRepository>();
         services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             o.Address = new Uri(options.WalletUrl);
         });
         services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
+        services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
+        services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementsAutomationWorker>();
         services.AddSingleton<AutomationCache>();
         services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
