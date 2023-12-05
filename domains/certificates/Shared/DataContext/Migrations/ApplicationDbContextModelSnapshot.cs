@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace API.Migrations
+namespace DataContext.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "7.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -172,6 +172,32 @@ namespace API.Migrations
                     b.HasKey("GSRN");
 
                     b.ToTable("SynchronizationPositions");
+                });
+
+            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
+                {
+                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                        {
+                            b1.Property<Guid>("CertificateIssuingContractId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("FuelCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("TechCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("CertificateIssuingContractId");
+
+                            b1.ToTable("Contracts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CertificateIssuingContractId");
+                        });
+
+                    b.Navigation("Technology");
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>

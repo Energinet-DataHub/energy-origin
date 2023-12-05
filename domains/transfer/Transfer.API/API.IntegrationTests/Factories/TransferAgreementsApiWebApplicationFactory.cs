@@ -2,16 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
-using API.Connections.Api.Models;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Transfer.Api.Models;
+using Asp.Versioning.ApiExplorer;
+using API.Transfer.Api.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -33,7 +35,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
 
-    public string WalletUrl { get; set; } = "http://foo";
+    private string WalletUrl { get; set; } = "http://foo";
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
@@ -41,10 +43,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
 
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
-        builder.UseSetting("ConnectionInvitationCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
@@ -113,42 +122,51 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SeedConnections(IEnumerable<Connection> connections)
+    public async Task SeedTransferAgreementProposals(IEnumerable<TransferAgreementProposal> proposals)
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await TruncateConnectionTable(dbContext);
 
-        foreach (var connection in connections)
+        foreach (var proposal in proposals)
         {
-            dbContext.Connections.Add(connection);
+            dbContext.TransferAgreementProposals.Add(proposal);
         }
 
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SeedConnectionInvitations(IEnumerable<ConnectionInvitation> invitations)
+    public HttpClient CreateUnauthenticatedClient()
     {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        foreach (var invitation in invitations)
-        {
-            dbContext.ConnectionInvitations.Add(invitation);
-        }
-
-        await dbContext.SaveChangesAsync();
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20230101");
+        return client;
     }
-
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
+        return client;
+    }
+
+    public HttpClient CreateAuthenticatedClient(IProjectOriginWalletService poWalletServiceMock, string sub, string tin = "11223344", string name = "Peter Producent",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
+    {
+        var client = WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.Remove(services.First(s => s.ImplementationType == typeof(ProjectOriginWalletService)));
+                services.AddScoped(_ => poWalletServiceMock);
+            });
+        }).CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
         return client;
     }
 
@@ -189,13 +207,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
-    }
-
-    private static async Task TruncateConnectionTable(ApplicationDbContext dbContext)
-    {
-        var connectionsTable = dbContext.Model.FindEntityType(typeof(Connection))!.GetTableName();
-
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{connectionsTable}\"");
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)

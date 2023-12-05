@@ -9,10 +9,13 @@ For our specific use cases, see [restricting access](#restricting-access).
 1. Register token validation during start up:
 
 ```csharp
-builder.AddTokenValidation(new ValidationParameters(byteArrayOfPublicKeyPem) {
-    ValidAudience = audience,
-    ValidIssuer = issuer
-});
+var options = new TokenValidationOptions {
+    PublicKey = byteArrayOfPublicKeyPem,
+    Audience = audience,
+    Issuer = issuer
+}
+
+builder.AddTokenValidation(options);
 ```
 
 For more further configuration, see [configuring token validation](#configuring-token-validation).
@@ -65,9 +68,9 @@ public async IActionResult Get()
 
 The user descriptor can be consider to be mostly a simple object with the values readily available. The most common values being:
 
- - Id
- - Name
- - Organization (if present):
+- Id
+- Name
+- Organization (if present):
     - Id
     - Name
     - Tin

@@ -36,16 +36,16 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigration --project Query.API/API
+dotnet ef migrations add NameOfMigration --project Shared/DataContext
 ```
 
 Updating your local database started with Docker Compose can be done using this command:
 
 ```shell
-dotnet ef database update --project Query.API/API
+dotnet ef database update --project Shared/DataContext
 ```
 
-The `--project` argument can be omitted if the working directory is changed to the project folder. Both the API project and the Worker project can be used.
+The `--project` argument can be omitted if the working directory is changed to the folder containing the DbContext. The API project and the Worker project folder can be used for some commands, but not all (e.g. adding a migration).
 
 Please refer to the official documentation for more details on the CLI tools for EF Core.
 
@@ -61,7 +61,7 @@ When running in k8s migrations are applied in an initContainer before the actual
 
 You must manually remember to generate the complete SQL migration script after adding a migration. The complete SQL migration script is used to migrate the database when running in k8s.
 
-This is the command for generating the migration SQL script for the API project:
+This is the commands for generating the migration SQL script for the API project and Worker project:
 
 ```shell
 dotnet ef migrations script --idempotent --project Query.API/API --output migrations/API.sql

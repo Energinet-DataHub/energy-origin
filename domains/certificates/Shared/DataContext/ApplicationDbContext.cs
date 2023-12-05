@@ -1,7 +1,6 @@
 using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace DataContext;
 
@@ -14,6 +13,7 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CertificateIssuingContract>().HasIndex(c => new { c.GSRN, c.ContractNumber }).IsUnique();
+        modelBuilder.Entity<CertificateIssuingContract>().OwnsOne(c => c.Technology);
 
         modelBuilder.Entity<ProductionCertificate>().OwnsOne(c => c.Technology);
         modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
@@ -35,11 +35,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json", false)
-            .Build();
-
-        var connectionString = configuration.GetConnectionString("Postgres");
+        const string connectionString = "host=localhost;Port=5432;Database=Database;username=postgres;password=postgres;";
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         optionsBuilder.UseNpgsql(connectionString);

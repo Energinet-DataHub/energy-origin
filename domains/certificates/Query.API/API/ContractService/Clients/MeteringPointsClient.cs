@@ -58,9 +58,11 @@ public class MeteringPointsClient : IMeteringPointsClient
 
 public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address);
+public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address, Technology Technology);
 
 public enum MeterType { Consumption, Production, Child }
+
+public record Technology(string AibFuelCode, string AibTechCode);
 
 public record Address(string Address1, string? Address2, string? Locality, string City, string PostalCode,
     string Country);

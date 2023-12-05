@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
+using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
@@ -21,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
 
@@ -56,6 +58,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
@@ -72,11 +81,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string subject)
+    public HttpClient CreateAuthenticatedClient(string subject, string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
     }
@@ -111,10 +121,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return tokenHandler.WriteToken(token);
     }
 
-    public async Task AddContract(string subject, string gsrn, DateTimeOffset startDate, MeteringPointType meteringPointType,
-        DataSyncWireMock dataSyncWireMock)
+    public async Task AddContract(string subject,
+        string gsrn,
+        DateTimeOffset startDate,
+        MeteringPointType meteringPointType,
+        DataSyncWireMock dataSyncWireMock,
+        Technology technology = null!)
     {
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType);
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
 
         using var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
@@ -122,6 +136,5 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
-    // Accessing the Server property ensures that the server is running
     public void Start() => Server.Should().NotBeNull();
 }
