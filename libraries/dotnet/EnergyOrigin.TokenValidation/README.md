@@ -117,7 +117,7 @@ You can generate JWT tokens using the `TokenSigner` class. This class allows for
 
 You have the option to either provide your own private key or use the `RsaKeyGenerator` to create a random private key.
 
-To use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator`, initialize it as follows:
+You can use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator` as follows:
 
 ```csharp
 var signer = new TokenSigner(Encoding.UTF8.GetBytes(RsaKeyGenerator.GenerateTestKey()));
