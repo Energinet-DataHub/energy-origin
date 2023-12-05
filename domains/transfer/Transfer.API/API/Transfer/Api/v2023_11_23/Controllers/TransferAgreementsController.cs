@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -137,7 +138,6 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    [ProducesResponseType(typeof(void), 404)]
     [HttpGet]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
@@ -148,7 +148,7 @@ public class TransferAgreementsController : ControllerBase
 
         if (!transferAgreements.Any())
         {
-            return NotFound();
+            return Ok(new TransferAgreementsResponse(new List<TransferAgreementDto>()));
         }
 
         var listResponse = transferAgreements.Select(ToTransferAgreementDto)
