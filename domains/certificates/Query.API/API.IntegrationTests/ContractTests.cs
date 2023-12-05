@@ -345,13 +345,13 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_NotFound()
+    public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_Ok()
     {
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
 
-        using var response = await client.GetAsync("api/certificates/contracts");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var response = await client.GetFromJsonAsync<ContractList>("api/certificates/contracts");
+        response!.Result.Should().BeEmpty();
     }
 
     [Fact]

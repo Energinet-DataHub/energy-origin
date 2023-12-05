@@ -92,7 +92,6 @@ public class ContractsController : ControllerBase
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ContractList), 200)]
-    [ProducesResponseType(typeof(void), 404)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult<ContractList>> GetAllContracts(
         [FromServices] IContractService service,
@@ -104,7 +103,7 @@ public class ContractsController : ControllerBase
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
-            : NotFound();
+            : Ok(new ContractList());
     }
 
     /// <summary>
