@@ -1,17 +1,11 @@
 using EnergyOrigin.TokenValidation.Utilities;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 
 namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
 public class TokenSignerTests
 {
-    private readonly byte[] privateKeyPem;
-
-    public TokenSignerTests()
-    {
-        this.privateKeyPem = RsaKeyGenerator.GenerateTestKey();
-    }
+    private readonly byte[] privateKeyPem = RsaKeyGenerator.GenerateTestKey();
 
     [Fact]
     public void Sign_ShouldGenerateToken_WithCorrectClaims()
