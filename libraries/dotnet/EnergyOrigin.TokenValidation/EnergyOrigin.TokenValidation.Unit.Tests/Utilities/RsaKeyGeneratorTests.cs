@@ -13,6 +13,7 @@ public class RsaKeyGeneratorTests
         var keyAsString = Encoding.UTF8.GetString(keyAsByteArray);
 
         Assert.NotNull(keyAsByteArray);
+        Assert.NotNull(keyAsString);
         Assert.StartsWith("-----BEGIN RSA PRIVATE KEY-----", keyAsString);
         Assert.EndsWith("-----END RSA PRIVATE KEY-----", keyAsString.Trim());
     }
