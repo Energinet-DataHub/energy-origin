@@ -9,10 +9,8 @@ public class RsaKeyGeneratorTests
     [Fact]
     public void GenerateTestKey_ShouldGenerateValidPrivateKey()
     {
-        var keyAsByteArray = RsaKeyGenerator.GenerateTestKey();
-        var keyAsString = Encoding.UTF8.GetString(keyAsByteArray);
+        var keyAsString = Encoding.UTF8.GetString(RsaKeyGenerator.GenerateTestKey());
 
-        Assert.NotNull(keyAsByteArray);
         Assert.NotNull(keyAsString);
         Assert.StartsWith("-----BEGIN RSA PRIVATE KEY-----", keyAsString);
         Assert.EndsWith("-----END RSA PRIVATE KEY-----", keyAsString.Trim());
@@ -30,8 +28,7 @@ public class RsaKeyGeneratorTests
     [Fact]
     public void GenerateTestKey_ShouldGenerateKeyWithValidFormat()
     {
-        var keyAsByteArray = RsaKeyGenerator.GenerateTestKey();
-        var keyAsString = Encoding.UTF8.GetString(keyAsByteArray);
+        var keyAsString = Encoding.UTF8.GetString(RsaKeyGenerator.GenerateTestKey());
 
         var rsa = RSA.Create();
         var exception = Record.Exception(() => rsa.ImportFromPem(keyAsString))!;
