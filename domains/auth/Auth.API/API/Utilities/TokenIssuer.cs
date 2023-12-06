@@ -17,6 +17,7 @@ public class TokenIssuer : ITokenIssuer
     private readonly TokenOptions tokenOptions;
     private readonly RoleOptions roleOptions;
     private readonly bool companyTermsFeatureFlag;
+    private readonly TokenSigner tokenSigner;
 
     public TokenIssuer(TermsOptions termsOptions, TokenOptions tokenOptions, RoleOptions roleOptions, IFeatureManager? featureManager = null)
     {
@@ -24,6 +25,7 @@ public class TokenIssuer : ITokenIssuer
         this.tokenOptions = tokenOptions;
         this.roleOptions = roleOptions;
         this.companyTermsFeatureFlag = featureManager.IsEnabled(FeatureFlag.CompanyTerms);
+        this.tokenSigner = new TokenSigner(tokenOptions.PrivateKeyPem);
     }
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
@@ -68,7 +70,7 @@ public class TokenIssuer : ITokenIssuer
         return null;
     }
 
-    private static string CreateToken(TokenOptions tokenOptions, RoleOptions roleOptions, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
+    private string CreateToken(TokenOptions tokenOptions, RoleOptions roleOptions, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
@@ -89,7 +91,7 @@ public class TokenIssuer : ITokenIssuer
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
         var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
         var roles = AddInheritedRoles(roleOptions.RoleConfigurations
-            .ToDictionary(x => x.Key), allottedRoles)
+                .ToDictionary(x => x.Key), allottedRoles)
             .Distinct()
             .Where(x => validRoles.Contains(x));
 
@@ -102,7 +104,7 @@ public class TokenIssuer : ITokenIssuer
             claims.Add(UserClaimName.OrganizationName, descriptor.Organization.Name);
         }
 
-        return new TokenSigner(tokenOptions.PrivateKeyPem).Sign(
+        return tokenSigner.Sign(
             descriptor.Subject.ToString(),
             descriptor.Name,
             tokenOptions.Issuer,
@@ -110,7 +112,7 @@ public class TokenIssuer : ITokenIssuer
             issueAt,
             (int)tokenOptions.Duration.TotalSeconds,
             claims
-            );
+        );
     }
 
     private static IEnumerable<string> AddInheritedRoles(Dictionary<string, RoleConfiguration> configurations, IEnumerable<string> roles)
