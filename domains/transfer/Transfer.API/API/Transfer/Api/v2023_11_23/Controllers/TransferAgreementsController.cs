@@ -1,16 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Shared.Extensions;
+using API.Shared.Helpers;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_11_23.Dto.Requests;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,64 +26,90 @@ namespace API.Transfer.Api.v2023_11_23.Controllers;
 public class TransferAgreementsController : ControllerBase
 {
     private readonly ITransferAgreementRepository transferAgreementRepository;
-    private readonly IValidator<CreateTransferAgreement> createTransferAgreementValidator;
     private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ITransferAgreementProposalRepository transferAgreementProposalRepository;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
-        IValidator<CreateTransferAgreement> createTransferAgreementValidator,
         IProjectOriginWalletService projectOriginWalletService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ITransferAgreementProposalRepository transferAgreementProposalRepository)
     {
         this.transferAgreementRepository = transferAgreementRepository;
-        this.createTransferAgreementValidator = createTransferAgreementValidator;
         this.projectOriginWalletService = projectOriginWalletService;
         this.httpContextAccessor = httpContextAccessor;
+        this.transferAgreementProposalRepository = transferAgreementProposalRepository;
     }
 
-    [ProducesResponseType(201)]
-    [ProducesResponseType(409)]
-    [ProducesResponseType(400)]
+    /// <summary>
+    /// Add a new Transfer Agreement
+    /// </summary>
+    /// <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
+    /// <response code="201">Successful operation</response>
+    /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
+    /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateTransferAgreement request)
+    [ProducesResponseType(typeof(TransferAgreement), 201)]
+    [ProducesResponseType(typeof(void), 400)]
+    [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 409)]
+    public async Task<ActionResult> Create(CreateTransferAgreement request)
     {
-        var subject = User.FindSubjectGuidClaim();
-        var subjectName = User.FindSubjectNameClaim();
-        var subjectTin = User.FindSubjectTinClaim();
-
-        var validateResult = await createTransferAgreementValidator.ValidateAsync(request);
-        if (!validateResult.IsValid)
+        if (request.TransferAgreementProposalId == Guid.Empty)
         {
-            validateResult.AddToModelState(ModelState);
-            return ValidationProblem(ModelState);
+            return ValidationProblem("Must set TransferAgreementProposalId");
         }
+
+        var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+        if (proposal == null)
+        {
+            return NotFound();
+        }
+
+        var subjectTin = User.FindSubjectTinClaim();
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != subjectTin)
+        {
+            return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
+        }
+
+        if (proposal.EndDate < DateTimeOffset.UtcNow)
+        {
+            return ValidationProblem("This proposal has run out");
+        }
+
+        proposal.ReceiverCompanyTin ??= subjectTin;
+
+        var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
+        if (hasConflict)
+        {
+            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range", statusCode: 409);
+        }
+
+        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]);
+        var receiverWdeBase64String = await projectOriginWalletService.CreateWalletDepositEndpoint(receiverBearerToken);
+
+        var senderBearerToken = ProjectOriginWalletHelper.GenerateBearerToken(proposal.SenderCompanyId.ToString());
+
+        var receiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
+            new AuthenticationHeaderValue("Bearer", senderBearerToken),
+            receiverWdeBase64String,
+            proposal.ReceiverCompanyTin);
 
         var transferAgreement = new TransferAgreement
         {
-            StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
-            EndDate = request.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value) : null,
-            SenderId = Guid.Parse(subject),
-            SenderName = subjectName,
-            SenderTin = subjectTin,
-            ReceiverTin = request.ReceiverTin
+            StartDate = proposal.StartDate,
+            EndDate = proposal.EndDate,
+            SenderId = proposal.SenderCompanyId,
+            SenderName = proposal.SenderCompanyName,
+            SenderTin = proposal.SenderCompanyTin,
+            ReceiverTin = proposal.ReceiverCompanyTin,
+            ReceiverReference = receiverReference
         };
-
-        if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
-        {
-            return ValidationProblem(statusCode: 409);
-        }
-
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
-
-        transferAgreement.ReceiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
-            bearerToken,
-            request.Base64EncodedWalletDepositEndpoint,
-            request.ReceiverTin);
 
         try
         {
-            var result = await transferAgreementRepository.AddTransferAgreementToDb(transferAgreement);
+            var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement, request.TransferAgreementProposalId);
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -112,7 +138,6 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    [ProducesResponseType(typeof(void), 404)]
     [HttpGet]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
@@ -123,7 +148,7 @@ public class TransferAgreementsController : ControllerBase
 
         if (!transferAgreements.Any())
         {
-            return NotFound();
+            return Ok(new TransferAgreementsResponse(new List<TransferAgreementDto>()));
         }
 
         var listResponse = transferAgreements.Select(ToTransferAgreementDto)
@@ -139,7 +164,6 @@ public class TransferAgreementsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
-
         var subject = User.FindSubjectGuidClaim();
         var userTin = User.FindSubjectTinClaim();
 
@@ -191,16 +215,6 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin: transferAgreement.ReceiverTin);
 
         return Ok(response);
-    }
-
-    [ProducesResponseType(typeof(string), 200)]
-    [HttpPost("wallet-deposit-endpoint")]
-    public async Task<ActionResult> CreateWalletDepositEndpoint()
-    {
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]).ToString();
-
-        var base64String = await projectOriginWalletService.CreateWalletDepositEndpoint(bearerToken);
-        return Ok(new { result = base64String });
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
