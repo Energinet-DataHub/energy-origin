@@ -120,7 +120,7 @@ You have the option to either provide your own private key or use the `RsaKeyGen
 You can use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator` as follows:
 
 ```csharp
-var signer = new TokenSigner(Encoding.UTF8.GetBytes(RsaKeyGenerator.GenerateTestKey()));
+var signer = new TokenSigner(RsaKeyGenerator.GenerateTestKey());
 ```
 
 Once initialized you can use the `Sign` method to generate a token.

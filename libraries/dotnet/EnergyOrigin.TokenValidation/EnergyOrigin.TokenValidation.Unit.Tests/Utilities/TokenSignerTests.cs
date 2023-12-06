@@ -6,18 +6,17 @@ namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 
 public class TokenSignerTests
 {
-    private readonly byte[] _privateKeyPem;
+    private readonly byte[] privateKeyPem;
 
     public TokenSignerTests()
     {
-        var privateKeyString = RsaKeyGenerator.GenerateTestKey();
-        _privateKeyPem = Encoding.UTF8.GetBytes(privateKeyString);
+        this.privateKeyPem = RsaKeyGenerator.GenerateTestKey();
     }
 
     [Fact]
     public void Sign_ShouldGenerateToken_WithCorrectClaims()
     {
-        var signer = new TokenSigner(_privateKeyPem);
+        var signer = new TokenSigner(privateKeyPem);
         var subject = "TestSubject";
         var name = "TestName";
         var issuer = "TestIssuer";
@@ -36,7 +35,7 @@ public class TokenSignerTests
     [Fact]
     public void Sign_ShouldSetCorrectExpiry_WhenDurationIsProvided()
     {
-        var signer = new TokenSigner(_privateKeyPem);
+        var signer = new TokenSigner(privateKeyPem);
         var duration = 120;
         var issueAt = DateTime.UtcNow;
         var expectedExpiry = issueAt.AddSeconds(duration);
@@ -51,7 +50,7 @@ public class TokenSignerTests
     [Fact]
     public void Sign_WithNullIssueAt_ShouldDefaultToCurrentUtcTime()
     {
-        var signer = new TokenSigner(_privateKeyPem);
+        var signer = new TokenSigner(privateKeyPem);
         var tokenString = signer.Sign("subject", "name", "issuer", "audience");
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(tokenString);
@@ -65,7 +64,7 @@ public class TokenSignerTests
     [Fact]
     public void Sign_ShouldIncludeAdditionalClaims_WhenProvided()
     {
-        var signer = new TokenSigner(_privateKeyPem);
+        var signer = new TokenSigner(privateKeyPem);
         const string claimType = "customClaim";
         const string claimValue = "customValue";
         var additionalClaims = new Dictionary<string, object>

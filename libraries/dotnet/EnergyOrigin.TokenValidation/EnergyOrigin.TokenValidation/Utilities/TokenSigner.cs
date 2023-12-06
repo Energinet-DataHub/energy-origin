@@ -10,11 +10,11 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class TokenSigner : ITokenSigner
 {
-    private readonly byte[] _privateKeyPem;
+    private readonly byte[] privateKeyPem;
 
     public TokenSigner(byte[] privateKeyPem)
     {
-        _privateKeyPem = privateKeyPem;
+        this.privateKeyPem = privateKeyPem;
     }
 
     public string Sign(
@@ -28,7 +28,7 @@ public class TokenSigner : ITokenSigner
     )
     {
         var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(_privateKeyPem));
+        rsa.ImportFromPem(Encoding.UTF8.GetString(privateKeyPem));
         var key = new RsaSecurityKey(rsa);
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
 

@@ -5,12 +5,12 @@ namespace EnergyOrigin.TokenValidation.Utilities;
 
 public class RsaKeyGenerator
 {
-    public static string GenerateTestKey()
+    public static byte[] GenerateTestKey()
     {
         var csp = new RSACryptoServiceProvider();
         csp.ImportParameters(csp.ExportParameters(true));
         var privateKeyPem = ExportPrivateKey(csp);
-        return Encoding.ASCII.GetString(privateKeyPem);
+        return privateKeyPem;
     }
 
     private static byte[] ExportPrivateKey(RSACryptoServiceProvider csp)
