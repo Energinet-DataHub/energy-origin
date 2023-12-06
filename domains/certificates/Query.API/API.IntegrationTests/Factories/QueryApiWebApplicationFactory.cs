@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
@@ -34,6 +35,8 @@ namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly List<GrpcChannel> disposableChannels = new();
+
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
@@ -103,7 +106,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
 
         var options = Services.GetRequiredService<IOptions<WalletOptions>>().Value;
-        var channel = GrpcChannel.ForAddress(options.Url); //TODO: Channel should be disposed
+        var channel = GrpcChannel.ForAddress(options.Url);
+        disposableChannels.Add(channel);
 
         return (new WalletService.WalletServiceClient(channel), metadata);
     }
@@ -154,4 +158,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public void Start() => Server.Should().NotBeNull();
+
+    protected override void Dispose(bool disposing)
+    {
+        foreach (var disposableChannel in disposableChannels)
+        {
+            disposableChannel.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
 }

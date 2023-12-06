@@ -56,9 +56,9 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var response = await client.QueryGranularCertificatesAsync(new QueryRequest(), metadata);
+        var queryResponse = await client.QueryGranularCertificatesAsync(new QueryRequest(), metadata);
 
-        response.GranularCertificates.Should().BeEmpty();
+        queryResponse.GranularCertificates.Should().BeEmpty();
     }
 
     [Fact]
@@ -83,10 +83,10 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
 
-        certificateList.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = certificateList.GranularCertificates.Single();
+        queryResponse.GranularCertificates.Should().HaveCount(1);
+        var granularCertificate = queryResponse.GranularCertificates.Single();
 
         granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
         granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
@@ -135,10 +135,10 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
 
-        certificateList.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = certificateList.GranularCertificates.Single();
+        queryResponse.GranularCertificates.Should().HaveCount(1);
+        var granularCertificate = queryResponse.GranularCertificates.Single();
 
         granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
         granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
@@ -187,10 +187,10 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
 
-        certificateList.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = certificateList.GranularCertificates.Single();
+        queryResponse.GranularCertificates.Should().HaveCount(1);
+        var granularCertificate = queryResponse.GranularCertificates.Single();
 
         granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
         granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
@@ -249,10 +249,10 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
 
-        certificateList.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = certificateList.GranularCertificates.Single();
+        queryResponse.GranularCertificates.Should().HaveCount(1);
+        var granularCertificate = queryResponse.GranularCertificates.Single();
 
         granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
         granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
@@ -295,9 +295,9 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
 
-        var granularCertificates = certificateList.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
+        var granularCertificates = queryResponse.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
 
         granularCertificates[0].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(0)));
         granularCertificates[0].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
@@ -387,9 +387,9 @@ public sealed class CertificateIssuingTests :
 
         var (client, metadata) = factory.CreateWalletClient(subject);
 
-        var certificateList = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
 
-        var granularCertificates = certificateList.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
+        var granularCertificates = queryResponse.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
 
         granularCertificates[0].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(0)));
         granularCertificates[0].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));

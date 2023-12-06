@@ -74,13 +74,11 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
         IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator)
     {
         //endpointConfigurator.UseDelayedRedelivery(r => r.Incremental());
-        //TODO: Configurable values
+        //TODO: Configurable values for the retries, which can be overwritten in the integration tests
         endpointConfigurator.UseMessageRetry(r => r
             .Interval(100, TimeSpan.FromSeconds(1))
             .Handle(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
         //TODO: Define what to do for e.g. other exceptions. Should they be retried - or will they be redelivered?
-
-        base.ConfigureExecuteActivity(endpointConfigurator, executeActivityConfigurator);
     }
 }
 
