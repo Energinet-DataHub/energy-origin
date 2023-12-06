@@ -76,14 +76,12 @@ else
     builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 }
 
-var options = new TokenValidationOptions
+builder.AddTokenValidation(new TokenValidationOptions
 {
     PublicKey = tokenOptions.PublicKeyPem,
     Audience = tokenOptions.Audience,
     Issuer = tokenOptions.Issuer
-};
-
-builder.AddTokenValidation(options);
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
