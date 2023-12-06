@@ -1,8 +1,3 @@
-using System.Collections;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using API.Models.Entities;
 using API.Options;
 using API.Utilities.Interfaces;
@@ -33,21 +28,11 @@ public class TokenIssuer : ITokenIssuer
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
-        var credentials = CreateSigningCredentials(tokenOptions);
+
 
         var state = ResolveState(termsOptions, data, versionBypass, companyTermsFeatureFlag);
 
-        return CreateToken(CreateTokenDescriptor(tokenOptions, roleOptions, credentials, descriptor, data, state, issueAt ?? DateTime.UtcNow));
-    }
-
-    private static SigningCredentials CreateSigningCredentials(TokenOptions options)
-    {
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(options.PrivateKeyPem));
-
-        var key = new RsaSecurityKey(rsa);
-
-        return new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+        return CreateToken(tokenOptions, roleOptions, descriptor, data, state, issueAt ?? DateTime.UtcNow);
     }
 
     private static UserState ResolveState(TermsOptions options, UserData data, bool versionBypass, bool companyTermsFeatureFlag)
@@ -83,7 +68,7 @@ public class TokenIssuer : ITokenIssuer
         return null;
     }
 
-    private static SecurityTokenDescriptor CreateTokenDescriptor(TokenOptions tokenOptions, RoleOptions roleOptions, SigningCredentials credentials, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
+    private static string CreateToken(TokenOptions tokenOptions, RoleOptions roleOptions, UserDescriptor descriptor, UserData data, UserState state, DateTime issueAt)
     {
         var claims = new Dictionary<string, object>
         {
@@ -117,22 +102,15 @@ public class TokenIssuer : ITokenIssuer
             claims.Add(UserClaimName.OrganizationName, descriptor.Organization.Name);
         }
 
-        var identity = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Name, descriptor.Name),
-            new(JwtRegisteredClaimNames.Sub, descriptor.Subject.ToString())
-        };
-
-        return new()
-        {
-            Subject = new ClaimsIdentity(identity),
-            NotBefore = issueAt,
-            Expires = issueAt.Add(tokenOptions.Duration),
-            Issuer = tokenOptions.Issuer,
-            Audience = tokenOptions.Audience,
-            SigningCredentials = credentials,
-            Claims = claims
-        };
+        return new TokenSigner(tokenOptions.PrivateKeyPem).Sign(
+            descriptor.Subject.ToString(),
+            descriptor.Name,
+            tokenOptions.Issuer,
+            tokenOptions.Audience,
+            issueAt,
+            (int)tokenOptions.Duration.TotalSeconds,
+            claims
+            );
     }
 
     private static IEnumerable<string> AddInheritedRoles(Dictionary<string, RoleConfiguration> configurations, IEnumerable<string> roles)
@@ -143,13 +121,6 @@ public class TokenIssuer : ITokenIssuer
         }
         var inherited = roles.Where(x => configurations[x].Inherits.IsNullOrEmpty() == false).SelectMany(x => configurations[x].Inherits);
         return roles.Concat(inherited).Concat(AddInheritedRoles(configurations, inherited));
-    }
-
-    private static string CreateToken(SecurityTokenDescriptor descriptor)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.CreateJwtSecurityToken(descriptor);
-        return handler.WriteToken(token);
     }
 
     public record UserData(int PrivacyPolicyVersion, int TermsOfServiceVersion, IEnumerable<string>? AssignedRoles = default)
