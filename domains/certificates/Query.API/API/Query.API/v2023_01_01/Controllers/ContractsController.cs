@@ -4,8 +4,9 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
-using API.Query.API.ApiModels.Requests;
-using API.Query.API.ApiModels.Responses;
+using API.Query.API.v2023_01_01.ApiModels.Requests;
+using API.Query.API.v2023_01_01.ApiModels.Responses;
+using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,11 @@ using Microsoft.AspNetCore.Mvc;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
-namespace API.Query.API.Controllers;
+namespace API.Query.API.v2023_01_01.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20230101")]
 public class ContractsController : ControllerBase
 {
     /// <summary>
@@ -55,7 +57,7 @@ public class ContractsController : ControllerBase
         return result switch
         {
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
-            ContractAlreadyExists => Conflict(),
+            ContractAlreadyExists => ValidationProblem(statusCode: 409),
             CreateContractResult.Success(var createdContract) => CreatedAtRoute(
                 "GetContract",
                 new { id = createdContract.Id },
@@ -90,7 +92,6 @@ public class ContractsController : ControllerBase
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ContractList), 200)]
-    [ProducesResponseType(204)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult<ContractList>> GetAllContracts(
         [FromServices] IContractService service,
@@ -102,18 +103,18 @@ public class ContractsController : ControllerBase
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
-            : NoContent();
+            : Ok(new ContractList());
     }
 
     /// <summary>
     /// Edit the end date for contract
     /// </summary>
-    [HttpPatch]
+    [HttpPut]
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
     [Route("api/certificates/contracts/{id}")]
-    public async Task<ActionResult> PatchEndDate(
+    public async Task<ActionResult> UpdateEndDate(
         [FromRoute] Guid id,
         [FromBody] EditContractEndDate editContractEndDate,
         [FromServices] IValidator<EditContractEndDate> validator,
@@ -139,7 +140,7 @@ public class ContractsController : ControllerBase
 
         return result switch
         {
-            NonExistingContract => NotFound($"No contract with id {id} found"),
+            NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
             SetEndDateResult.Success => Ok(),
