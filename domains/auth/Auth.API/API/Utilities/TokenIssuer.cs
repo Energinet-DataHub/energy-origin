@@ -91,7 +91,7 @@ public class TokenIssuer : ITokenIssuer
         var matchedRoles = descriptor.MatchedRoles.Split(" ") ?? Array.Empty<string>();
         var allottedRoles = assignedRoles.Concat(matchedRoles).Distinct().Where(x => !x.IsNullOrEmpty());
         var roles = AddInheritedRoles(roleOptions.RoleConfigurations
-                .ToDictionary(x => x.Key), allottedRoles)
+            .ToDictionary(x => x.Key), allottedRoles)
             .Distinct()
             .Where(x => validRoles.Contains(x));
 
