@@ -98,12 +98,12 @@ public sealed class CertificateIssuingTests :
             new Attribute
             {
                 Key = "FuelCode",
-                Value = "F00000000"
+                Value = "F01040100"
             },
             new Attribute
             {
                 Key = "TechCode",
-                Value = "T070000"
+                Value = "T010000"
             },
             new Attribute
             {
@@ -202,12 +202,12 @@ public sealed class CertificateIssuingTests :
             new Attribute
             {
                 Key = "FuelCode",
-                Value = "F00000000"
+                Value = "F01040100"
             },
             new Attribute
             {
                 Key = "TechCode",
-                Value = "T070000"
+                Value = "T010000"
             },
             new Attribute
             {
@@ -306,8 +306,8 @@ public sealed class CertificateIssuingTests :
         granularCertificates[0].Type.Should().Be(GranularCertificateType.Production);
         granularCertificates[0].Attributes.Should().BeEquivalentTo(new[]
         {
-            new Attribute { Key = "FuelCode", Value = "F00000000" },
-            new Attribute { Key = "TechCode", Value = "T070000" },
+            new Attribute { Key = "FuelCode", Value = "F01040100" },
+            new Attribute { Key = "TechCode", Value = "T010000" },
             new Attribute { Key = "AssetId", Value = gsrn }
         });
 
@@ -318,8 +318,8 @@ public sealed class CertificateIssuingTests :
         granularCertificates[1].Type.Should().Be(GranularCertificateType.Production);
         granularCertificates[1].Attributes.Should().BeEquivalentTo(new[]
         {
-            new Attribute { Key = "FuelCode", Value = "F00000000" },
-            new Attribute { Key = "TechCode", Value = "T070000" },
+            new Attribute { Key = "FuelCode", Value = "F01040100" },
+            new Attribute { Key = "TechCode", Value = "T010000" },
             new Attribute { Key = "AssetId", Value = gsrn }
         });
 
@@ -330,8 +330,8 @@ public sealed class CertificateIssuingTests :
         granularCertificates[2].Type.Should().Be(GranularCertificateType.Production);
         granularCertificates[2].Attributes.Should().BeEquivalentTo(new[]
         {
-            new Attribute { Key = "FuelCode", Value = "F00000000" },
-            new Attribute { Key = "TechCode", Value = "T070000" },
+            new Attribute { Key = "FuelCode", Value = "F01040100" },
+            new Attribute { Key = "TechCode", Value = "T010000" },
             new Attribute { Key = "AssetId", Value = gsrn }
         });
 
@@ -342,8 +342,8 @@ public sealed class CertificateIssuingTests :
         granularCertificates[3].Type.Should().Be(GranularCertificateType.Production);
         granularCertificates[3].Attributes.Should().BeEquivalentTo(new[]
         {
-            new Attribute { Key = "FuelCode", Value = "F00000000" },
-            new Attribute { Key = "TechCode", Value = "T070000" },
+            new Attribute { Key = "FuelCode", Value = "F01040100" },
+            new Attribute { Key = "TechCode", Value = "T010000" },
             new Attribute { Key = "AssetId", Value = gsrn }
         });
 
@@ -354,8 +354,8 @@ public sealed class CertificateIssuingTests :
         granularCertificates[4].Type.Should().Be(GranularCertificateType.Production);
         granularCertificates[4].Attributes.Should().BeEquivalentTo(new[]
         {
-            new Attribute { Key = "FuelCode", Value = "F00000000" },
-            new Attribute { Key = "TechCode", Value = "T070000" },
+            new Attribute { Key = "FuelCode", Value = "F01040100" },
+            new Attribute { Key = "TechCode", Value = "T010000" },
             new Attribute { Key = "AssetId", Value = gsrn }
         });
     }

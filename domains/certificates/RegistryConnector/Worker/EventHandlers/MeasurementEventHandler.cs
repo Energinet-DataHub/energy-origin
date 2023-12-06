@@ -66,7 +66,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         if (matchingContract.MeteringPointType == MeteringPointType.Production)
         {
-            var technology = new Technology(FuelCode: "F00000000", TechCode: "T070000");
+            var technology = matchingContract.Technology!;
 
             var productionCertificate = new ProductionCertificate(
                 matchingContract.GridArea,
