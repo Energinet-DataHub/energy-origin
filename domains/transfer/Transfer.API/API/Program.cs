@@ -1,6 +1,4 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
 using API.Claiming;
 using API.Cvr;
@@ -13,19 +11,16 @@ using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
-using ProjectOrigin.PedersenCommitment.Ristretto;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -44,24 +39,28 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix)
+    .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<ApplicationDbContext>(
-    (sp, options) =>
-    {
-        var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-        options.UseNpgsql(
-            dbOptions.ToConnectionString(),
-            npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorCodesToAdd: null)
-        );
-    },
-    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddSingleton<NpgsqlDataSourceBuilder>(sp =>
+{
+    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    return new NpgsqlDataSourceBuilder(dbOptions.ToConnectionString());
+});
 
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+{
+    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    options.UseNpgsql(dbOptions.ToConnectionString());
+});
+
+builder.Services.AddSingleton<IDbContextFactory<ApplicationDbContext>>(sp =>
+{
+    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    return new ApplicationDbContextFactory(dbOptions.ToConnectionString());
+});
+
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
