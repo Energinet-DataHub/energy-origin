@@ -11,10 +11,10 @@ public class ApplicationDbContext : AuditDbContext
     {
     }
 
-    public DbSet<TransferAgreement> TransferAgreements { get; set; }
-    public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
-    public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
-    public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
+    public DbSet<TransferAgreement> TransferAgreements { get; set; } = null!;
+    public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; } = null!;
+    public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; } = null!;
+    public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
