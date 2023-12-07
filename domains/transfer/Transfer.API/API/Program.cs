@@ -46,9 +46,21 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
+
 builder.Services.AddDbContext<ApplicationDbContext>(
-    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    (sp, options) =>
+    {
+        var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+        options.UseNpgsql(
+            dbOptions.ToConnectionString(),
+            npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null)
+        );
+    },
     optionsLifetime: ServiceLifetime.Singleton);
+
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
