@@ -86,7 +86,7 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range", statusCode: 409);
         }
 
-        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]);
+        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
         var receiverWdeBase64String = await projectOriginWalletService.CreateWalletDepositEndpoint(receiverBearerToken);
 
         var senderBearerToken = ProjectOriginWalletHelper.GenerateBearerToken(proposal.SenderCompanyId.ToString());
