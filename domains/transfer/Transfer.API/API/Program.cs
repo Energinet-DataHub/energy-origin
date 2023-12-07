@@ -1,6 +1,4 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
 using API.Claiming;
 using API.Cvr;
@@ -8,24 +6,18 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using API.Transfer;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using ProjectOrigin.PedersenCommitment.Ristretto;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -83,9 +75,6 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                .AddService(TransferAgreementAutomationMetrics.MetricName))
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()

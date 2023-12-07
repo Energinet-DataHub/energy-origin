@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using API.Transfer;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -18,16 +18,14 @@ public class ProjectOriginWalletServiceTest
 {
     private readonly ProjectOriginWalletService service;
     private readonly WalletService.WalletServiceClient fakeWalletServiceClient;
-    private readonly ITransferAgreementAutomationMetrics fakeMetrics;
 
     public ProjectOriginWalletServiceTest()
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
         fakeWalletServiceClient = Substitute.For<WalletService.WalletServiceClient>();
-        fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
         var fakeCache = new AutomationCache();
 
-        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics, fakeCache);
+        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeCache);
     }
 
     [Fact]

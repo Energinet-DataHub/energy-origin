@@ -7,9 +7,6 @@ using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
-using API.Transfer.TransferAgreementsAutomation;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
-using API.Transfer.TransferAgreementsAutomation.Service;
 using Audit.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -74,11 +71,8 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             o.Address = new Uri(options.WalletUrl);
         });
-        services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
-        services.AddHostedService<TransferAgreementsAutomationWorker>();
         services.AddSingleton<AutomationCache>();
-        services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
     }
 }

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace API.Transfer.TransferAgreementsAutomation.Service;
+namespace TransferAgreementAutomation.Worker.Service;
 
 public interface ITransferAgreementsAutomationService
 {

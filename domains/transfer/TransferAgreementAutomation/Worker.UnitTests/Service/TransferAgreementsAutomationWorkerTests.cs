@@ -1,20 +1,14 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
-using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Xunit;
+using TransferAgreementAutomation.Worker;
+using TransferAgreementAutomation.Worker.Service;
+using TransferAgreementAutomation.Worker.Metrics;
+using AutomationCache = API.Transfer.AutomationCache;
 
-namespace API.UnitTests.Transfer.TransferAgreementsAutomation.Service;
+namespace Worker.UnitTests.Service;
 
 public class TransferAgreementsAutomationWorkerTests
 {

@@ -4,15 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Shared.Data;
 using API.Transfer.Api.Models;
-using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TransferAgreementAutomation.Worker.Metrics;
+using IProjectOriginWalletService = TransferAgreementAutomation.Worker.Service.IProjectOriginWalletService;
+using TransferAgreement = TransferAgreementAutomation.Worker.Models.TransferAgreement;
 
-namespace API.Transfer.TransferAgreementsAutomation;
+namespace TransferAgreementAutomation.Worker;
 
 public class TransferAgreementsAutomationWorker : BackgroundService
 {

@@ -1,4 +1,4 @@
-namespace API.Transfer.TransferAgreementsAutomation.Metrics
+namespace TransferAgreementAutomation.Worker.Metrics
 {
     public interface ITransferAgreementAutomationMetrics
     {

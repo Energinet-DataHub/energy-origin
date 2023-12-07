@@ -1,10 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
-using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
+using TransferAgreementAutomation.Worker.Metrics;
 
-namespace API.Transfer.TransferAgreementsAutomation.Service;
+namespace TransferAgreementAutomation.Worker.Service;
 
 public class TransferAgreementsAutomationService : ITransferAgreementsAutomationService
 {
