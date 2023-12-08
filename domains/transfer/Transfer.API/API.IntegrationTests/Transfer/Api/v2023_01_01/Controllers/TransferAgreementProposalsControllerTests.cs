@@ -251,11 +251,11 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [Fact]
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenCurrentUserIsNotTheIntendedForTheProposal()
     {
-        var receiverTin = "11223345";
+        var receiverTin = "1553878";
         var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(), receiverTin);
 
         var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
