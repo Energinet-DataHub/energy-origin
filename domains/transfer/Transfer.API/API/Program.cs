@@ -39,28 +39,12 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-
-builder.Services.AddSingleton<NpgsqlDataSourceBuilder>(sp =>
-{
-    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-    return new NpgsqlDataSourceBuilder(dbOptions.ToConnectionString());
-});
-
-builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
-{
-    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-    options.UseNpgsql(dbOptions.ToConnectionString());
-});
-
-builder.Services.AddSingleton<IDbContextFactory<ApplicationDbContext>>(sp =>
-{
-    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-    return new ApplicationDbContextFactory(dbOptions.ToConnectionString());
-});
-
+builder.Services.AddDbContext<ApplicationDbContext>(
+    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
