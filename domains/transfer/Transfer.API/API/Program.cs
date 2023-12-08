@@ -56,10 +56,7 @@ builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
 });
 
 builder.Services.AddSingleton<IDbContextFactory<ApplicationDbContext>>(sp =>
-{
-    var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-    return new ApplicationDbContextFactory(dbOptions.ToConnectionString());
-});
+    new ApplicationDbContextFactory(sp.GetRequiredService<IOptions<DatabaseOptions>>()));
 
 
 builder.Services.AddHealthChecks()
