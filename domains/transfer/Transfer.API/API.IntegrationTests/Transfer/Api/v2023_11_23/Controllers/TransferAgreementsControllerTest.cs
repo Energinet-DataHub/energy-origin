@@ -16,6 +16,7 @@ using NSubstitute;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using Xunit.Abstractions;
 using TransferAgreementDto = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementDto;
 using TransferAgreementsResponse = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementsResponse;
 
@@ -25,12 +26,14 @@ namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly ITestOutputHelper output;
     private readonly HttpClient authenticatedClient;
     private readonly string sub;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
     {
         this.factory = factory;
+        this.output = output;
 
         sub = Guid.NewGuid().ToString();
         authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
@@ -173,7 +176,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var receiverTin = "12334455";
 
-        var proposalRequest = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), null, receiverTin);
+        var proposalRequest = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
@@ -520,6 +523,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     private async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
         var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        Console.WriteLine(result);
+        output.WriteLine(await result.Content.ReadAsStringAsync());
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
