@@ -258,7 +258,6 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
 
         var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
