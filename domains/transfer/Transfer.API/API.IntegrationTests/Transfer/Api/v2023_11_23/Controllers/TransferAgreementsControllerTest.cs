@@ -523,7 +523,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     private async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
         var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
-        Console.WriteLine(result);
         output.WriteLine(await result.Content.ReadAsStringAsync());
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
