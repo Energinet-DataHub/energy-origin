@@ -8,6 +8,8 @@ using API.Shared.Swagger;
 using API.Transfer;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -87,19 +89,15 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = false,
-            ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            ValidateLifetime = false,
-            SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-    });
+var tokenValidationConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
+var tokenValidationOptions = tokenValidationConfiguration.Get<TokenValidationOptions>()!;
+
+builder.Services.AddOptions<TokenValidationOptions>()
+    .Bind(builder.Configuration.GetSection(TokenValidationOptions.Prefix))
+    .ValidateDataAnnotations();
+
+builder.AddTokenValidation(tokenValidationOptions);
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");

@@ -58,6 +58,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+        builder.UseSetting("Token:Issuer", "TokenIssuer");
+        builder.UseSetting("Token:Audience", "TokenAudience");
+        builder.UseSetting("Token:PublicKeyPem", "");
 
         builder.ConfigureTestServices(s =>
         {
