@@ -4,6 +4,7 @@ using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -12,10 +13,12 @@ public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType Meteri
 public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 {
     private readonly ApplicationDbContext dbContext;
+    private readonly ILogger<MarkAsIssuedActivity> logger;
 
-    public MarkAsIssuedActivity(ApplicationDbContext dbContext)
+    public MarkAsIssuedActivity(ApplicationDbContext dbContext, ILogger<MarkAsIssuedActivity> logger)
     {
         this.dbContext = dbContext;
+        this.logger = logger;
     }
 
     public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
@@ -26,7 +29,13 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
             : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
                 context.CancellationToken);
 
-        if (certificate!.IsIssued)  //TODO: Handle if not found
+        if (certificate == null)
+        {
+            logger.LogWarning($"Certificate with certificateId {context.Arguments.CertificateId} and meteringPointType {context.Arguments.MeteringPointType} not found.");
+            return context.Completed();
+        }
+
+        if (certificate.IsIssued)
             return context.Completed();
 
         certificate.Issue();

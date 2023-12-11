@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Google.Protobuf;
+using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NSubstitute;
+using ProjectOrigin.Common.V1;
+using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker.RoutingSlips;
 using Xunit;
 
@@ -13,18 +12,38 @@ namespace RegistryConnector.Worker.UnitTests.RoutingSlips;
 
 public class IssueToRegistryActivityTests
 {
-    public IssueToRegistryActivityTests()
-    {
-
-    }
-
     [Fact]
     public void ShouldIssueToRegistry()
     {
-        var optionsMock = Substitute.For<IOptions<ProjectOriginOptions>>();
+        var clientMock = Substitute.For<RegistryService.RegistryServiceClient>();
         var loggerMock = Substitute.For<ILogger<IssueToRegistryActivity>>();
+        var contextMock = Substitute.For<ExecuteContext<IssueToRegistryArguments>>();
 
-        //var slip = new IssueToRegistryActivity(optionsMock, loggerMock);
+        contextMock.Arguments.Returns(new IssueToRegistryArguments(new Transaction
+            {
+                Header = new TransactionHeader
+                {
+                    FederatedStreamId = new FederatedStreamId
+                    {
+                        Registry = "SomeRegistry",
+                        StreamId = new Uuid
+                        {
+                            Value = Guid.NewGuid().ToString()
+                        }
+                    },
+                    Nonce = "Dunno what this is",
+                    PayloadSha512 = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
+                    PayloadType = "Dunno"
+                },
+                HeaderSignature = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
+                Payload = ByteString.CopyFrom(new ReadOnlySpan<byte>())
+            },
+            Guid.NewGuid()));
 
+        var slip = new IssueToRegistryActivity(clientMock, loggerMock);
+
+        slip.Execute(contextMock);
+
+        clientMock.Received(1).SendTransactionsAsync(Arg.Any<SendTransactionsRequest>());
     }
 }
