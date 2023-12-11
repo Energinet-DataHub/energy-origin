@@ -208,7 +208,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var receiverTin = "11223345";
         var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
 
         var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
@@ -235,7 +235,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var receiverTin = "11223345";
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
         var createResponse = await client.PostAsJsonAsync("api/transfer-agreement-proposals", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -254,7 +254,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
         var receiverTin = "11223345";
         var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
 
         var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
@@ -338,7 +338,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "32132132");
         var postResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
