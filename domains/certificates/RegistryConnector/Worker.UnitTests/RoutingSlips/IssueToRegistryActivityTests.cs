@@ -20,24 +20,24 @@ public class IssueToRegistryActivityTests
         var contextMock = Substitute.For<ExecuteContext<IssueToRegistryArguments>>();
 
         contextMock.Arguments.Returns(new IssueToRegistryArguments(new Transaction
+        {
+            Header = new TransactionHeader
             {
-                Header = new TransactionHeader
+                FederatedStreamId = new FederatedStreamId
                 {
-                    FederatedStreamId = new FederatedStreamId
+                    Registry = "SomeRegistry",
+                    StreamId = new Uuid
                     {
-                        Registry = "SomeRegistry",
-                        StreamId = new Uuid
-                        {
-                            Value = Guid.NewGuid().ToString()
-                        }
-                    },
-                    Nonce = "Dunno what this is",
-                    PayloadSha512 = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
-                    PayloadType = "Dunno"
+                        Value = Guid.NewGuid().ToString()
+                    }
                 },
-                HeaderSignature = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
-                Payload = ByteString.CopyFrom(new ReadOnlySpan<byte>())
+                Nonce = "Dunno what this is",
+                PayloadSha512 = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
+                PayloadType = "Dunno"
             },
+            HeaderSignature = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
+            Payload = ByteString.CopyFrom(new ReadOnlySpan<byte>())
+        },
             Guid.NewGuid()));
 
         var slip = new IssueToRegistryActivity(clientMock, loggerMock);
