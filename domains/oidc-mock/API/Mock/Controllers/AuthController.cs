@@ -51,7 +51,7 @@ public class AuthController : Controller
     [Route("Connect/Token")]
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
-        var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
+        var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
         logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
         logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
 
@@ -72,7 +72,7 @@ public class AuthController : Controller
             return BadRequest(validationError);
         }
 
-        var user = users.FirstOrDefault(u => string.Equals(u.Name?.ToMd5(), code));
+        var user = users.FirstOrDefault(u => string.Equals(u.Name.ToMd5(), code));
         if (user == null)
         {
             logger.LogDebug("connect/token: Invalid code - no matching user");

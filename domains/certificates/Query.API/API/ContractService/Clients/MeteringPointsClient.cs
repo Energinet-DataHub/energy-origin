@@ -45,7 +45,7 @@ public class MeteringPointsClient : IMeteringPointsClient
         if (httpContext == null)
             throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
 
-        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization);
+        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization!);
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)

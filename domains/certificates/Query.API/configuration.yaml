@@ -1,5 +1,5 @@
 name: eo-certificates-api
-version: 2.0.18
+version: 2.0.19
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/certificates/base/api-deployment.yaml
