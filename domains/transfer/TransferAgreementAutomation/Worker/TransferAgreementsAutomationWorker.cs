@@ -1,17 +1,22 @@
 using System;
-using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using TransferAgreementAutomation.Worker.Metrics;
+using TransferAgreementAutomation.Worker.Models;
 using IProjectOriginWalletService = TransferAgreementAutomation.Worker.Service.IProjectOriginWalletService;
-using TransferAgreement = TransferAgreementAutomation.Worker.Models.TransferAgreement;
 
 namespace TransferAgreementAutomation.Worker;
 
@@ -20,8 +25,8 @@ public class TransferAgreementsAutomationWorker : BackgroundService
     private readonly ILogger<TransferAgreementsAutomationWorker> logger;
     private readonly ITransferAgreementAutomationMetrics metrics;
     private readonly AutomationCache memoryCache;
-    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly IServiceProvider serviceProvider;
+    private readonly HttpClient httpClient;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
@@ -32,15 +37,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         ILogger<TransferAgreementsAutomationWorker> logger,
         ITransferAgreementAutomationMetrics metrics,
         AutomationCache memoryCache,
-        IDbContextFactory<ApplicationDbContext> contextFactory,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        HttpClient httpClient
     )
     {
         this.logger = logger;
         this.metrics = metrics;
         this.memoryCache = memoryCache;
-        this.contextFactory = contextFactory;
         this.serviceProvider = serviceProvider;
+        this.httpClient = httpClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,9 +63,9 @@ public class TransferAgreementsAutomationWorker : BackgroundService
             try
             {
                 var transferAgreements = await GetAllTransferAgreements(stoppingToken);
-                metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
+                metrics.SetNumberOfTransferAgreements(transferAgreements.Result.Count);
 
-                foreach (var transferAgreement in transferAgreements)
+                foreach (var transferAgreement in transferAgreements.Result)
                 {
                     await projectOriginWalletService.TransferCertificates(transferAgreement);
                 }
@@ -71,16 +76,24 @@ public class TransferAgreementsAutomationWorker : BackgroundService
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
-            scope.Dispose();
             await SleepToNearestHour(stoppingToken);
         }
     }
 
-    private async Task<List<TransferAgreement>> GetAllTransferAgreements(CancellationToken stoppingToken)
+    private async Task<TransferAgreementsDto> GetAllTransferAgreements(CancellationToken stoppingToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(stoppingToken);
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateToken());
+        var response = await httpClient.GetAsync("api/transfer-agreements", stoppingToken);
 
-        return await context.TransferAgreements.ToListAsync(stoppingToken);
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+        };
+
+        return (await response.Content
+            .ReadFromJsonAsync<TransferAgreementsDto>(jsonSerializerOptions, cancellationToken: stoppingToken))!;
     }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
@@ -88,5 +101,28 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
         logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
         await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
+    }
+
+    private static string GenerateToken()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var expires = now.AddMinutes(3);
+
+        var claims = new Claim[]
+        {
+            new("issued", now.ToString("o")),
+            new("expires", expires.ToString("o")),
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires.DateTime,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

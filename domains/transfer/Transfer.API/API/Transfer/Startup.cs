@@ -73,6 +73,5 @@ public static class Startup
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
-        services.AddSingleton<AutomationCache>();
     }
 }

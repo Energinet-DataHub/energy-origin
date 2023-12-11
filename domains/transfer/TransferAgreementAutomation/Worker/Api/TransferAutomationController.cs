@@ -1,19 +1,13 @@
-using System.Threading.Tasks;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
-using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Transfer.Api.v2023_01_01.Controllers;
+namespace TransferAgreementAutomation.Worker.Api;
 
-[Authorize]
-[ApiController]
-[ApiVersion("20230101")]
-public class TransferAgreementAutomationController : ControllerBase
+public class TransferAutomationController : ControllerBase
 {
     private readonly AutomationCache cache;
 
-    public TransferAgreementAutomationController(AutomationCache cache)
+    public TransferAutomationController(AutomationCache cache)
     {
         this.cache = cache;
     }

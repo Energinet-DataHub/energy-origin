@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace TransferAgreementAutomation.Worker;
+namespace TransferAgreementAutomation.Worker.Options;
 
 public class OtlpOptions
 {

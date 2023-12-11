@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using API.Shared.Helpers;
-using API.Transfer.Api.Models;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
 using TransferAgreementAutomation.Worker.Metrics;
-using TransferAgreement = TransferAgreementAutomation.Worker.Models.TransferAgreement;
+using TransferAgreementAutomation.Worker.Models;
 
 namespace TransferAgreementAutomation.Worker.Service;
 
@@ -34,9 +33,9 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         this.cache = cache;
     }
 
-    public async Task TransferCertificates(TransferAgreement transferAgreement)
+    public async Task TransferCertificates(TransferAgreementDto transferAgreement)
     {
-        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(transferAgreement.SenderId.ToString());
+        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(transferAgreement.SenderId);
         var certificates = await GetGranularCertificates(header);
 
         var certificatesCount = certificates.Count;
@@ -58,7 +57,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             {
                 ReceiverId = new Uuid
                 {
-                    Value = transferAgreement.ReceiverReference.ToString()
+                    Value = transferAgreement.ReceiverReference
                 },
                 CertificateId = certificate.FederatedId,
                 Quantity = certificate.Quantity
@@ -94,18 +93,20 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         return response.GranularCertificates;
     }
 
-    private static bool IsPeriodMatching(TransferAgreement transferAgreement, GranularCertificate certificate)
+    private static bool IsPeriodMatching(TransferAgreementDto transferAgreement, GranularCertificate certificate)
     {
         if (transferAgreement.EndDate == null)
         {
             return certificate.Type == GranularCertificateType.Production &&
-                   certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate);
+                   certificate.Start >=
+                   Timestamp.FromDateTimeOffset(DateTimeOffset.FromUnixTimeSeconds(transferAgreement.StartDate));
         }
 
         return certificate.Type == GranularCertificateType.Production &&
-
-                   certificate.Start >= Timestamp.FromDateTimeOffset(transferAgreement.StartDate) &&
-                   certificate.End <= Timestamp.FromDateTimeOffset(transferAgreement.EndDate!.Value)
-               ;
+               certificate.Start >=
+               Timestamp.FromDateTimeOffset(DateTimeOffset.FromUnixTimeSeconds(transferAgreement.StartDate)) &&
+               certificate.End <=
+               Timestamp.FromDateTimeOffset(DateTimeOffset.FromUnixTimeSeconds(transferAgreement.EndDate!.Value))
+            ;
     }
 }

@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using TransferAgreement = TransferAgreementAutomation.Worker.Models.TransferAgreement;
+using TransferAgreementAutomation.Worker.Models;
 
 namespace TransferAgreementAutomation.Worker.Service;
 
 public interface IProjectOriginWalletService
 {
 
-    Task TransferCertificates(TransferAgreement transferAgreement);
+    Task TransferCertificates(TransferAgreementDto transferAgreement);
 }
