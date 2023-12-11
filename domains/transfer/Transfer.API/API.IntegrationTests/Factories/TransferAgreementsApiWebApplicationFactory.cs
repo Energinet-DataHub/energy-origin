@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
@@ -14,6 +16,7 @@ using API.Shared.Options;
 using API.Transfer.Api.Models;
 using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -37,6 +40,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     private string WalletUrl { get; set; } = "http://foo";
 
+    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
+
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
     private const string CvrUser = "SomeUser";
@@ -52,6 +57,18 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        byte[] publicKeyBytes;
+
+        using (var rsa = RSA.Create())
+        {
+            rsa.ImportRSAPrivateKey(PrivateKey, out _);
+
+            using (var tempCert = new CertificateRequest("CN=DummyCN", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)
+                       .CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(3)))
+            {
+                publicKeyBytes = tempCert.GetPublicKey();
+            }
+        }
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
@@ -60,7 +77,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
         builder.UseSetting("Token:Issuer", "TokenIssuer");
         builder.UseSetting("Token:Audience", "TokenAudience");
-        builder.UseSetting("Token:PublicKeyPem", "");
+        builder.UseSetting("Token:PublicKeyPem", Convert.ToBase64String(publicKeyBytes));
 
         builder.ConfigureTestServices(s =>
         {
