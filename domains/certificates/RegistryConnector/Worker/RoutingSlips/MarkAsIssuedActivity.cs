@@ -5,7 +5,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
 
-namespace RegistryConnector.Worker.RoutingSlip;
+namespace RegistryConnector.Worker.RoutingSlips;
 
 public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType MeteringPointType);
 

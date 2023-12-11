@@ -4,7 +4,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
 
-namespace RegistryConnector.Worker.RoutingSlip;
+namespace RegistryConnector.Worker.RoutingSlips;
 
 public record SendToWalletArguments(string WalletUrl, ReceiveRequest ReceiveRequest);
 

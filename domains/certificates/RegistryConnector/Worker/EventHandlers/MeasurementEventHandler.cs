@@ -23,7 +23,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using RegistryConnector.Worker.RoutingSlip;
+using RegistryConnector.Worker.RoutingSlips;
 
 namespace RegistryConnector.Worker.EventHandlers;
 

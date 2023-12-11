@@ -1,23 +1,21 @@
 using System;
 using System.Threading.Tasks;
-using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
 
-namespace RegistryConnector.Worker.RoutingSlip;
+namespace RegistryConnector.Worker.RoutingSlips;
 
 public record IssueToRegistryArguments(Transaction Transaction, Guid CertificateId);
 
 public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments>
 {
-    private readonly ProjectOriginOptions projectOriginOptions;
+    private readonly RegistryService.RegistryServiceClient client;
     private readonly ILogger<IssueToRegistryActivity> logger;
 
-    public IssueToRegistryActivity(IOptions<ProjectOriginOptions> projectOriginOptions, ILogger<IssueToRegistryActivity> logger)
+    public IssueToRegistryActivity(RegistryService.RegistryServiceClient client, ILogger<IssueToRegistryActivity> logger)
     {
-        this.projectOriginOptions = projectOriginOptions.Value;
+        this.client = client;
         this.logger = logger;
     }
 
@@ -25,9 +23,6 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
     {
         logger.LogInformation("Issuing to Registry for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
             context.Arguments.CertificateId, context.TrackingNumber);
-
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
-        var client = new RegistryService.RegistryServiceClient(channel);
 
         // The Registry is idempotent wrt. sending the same Transaction. Re-sending the transaction
         // after it has been committed, will not change the status of the initial transaction

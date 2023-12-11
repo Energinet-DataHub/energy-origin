@@ -1,33 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
 
-namespace RegistryConnector.Worker.RoutingSlip;
+namespace RegistryConnector.Worker.RoutingSlips;
 
 public record WaitForCommittedTransactionArguments(string ShaId);
 
 public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommittedTransactionArguments>
 {
+    private readonly RegistryService.RegistryServiceClient client;
     private readonly ILogger<WaitForCommittedTransactionActivity> logger;
-    private readonly ProjectOriginOptions projectOriginOptions;
 
-    public WaitForCommittedTransactionActivity(IOptions<ProjectOriginOptions> projectOriginOptions, ILogger<WaitForCommittedTransactionActivity> logger)
+    public WaitForCommittedTransactionActivity(RegistryService.RegistryServiceClient client, ILogger<WaitForCommittedTransactionActivity> logger)
     {
+        this.client = client;
         this.logger = logger;
-        this.projectOriginOptions = projectOriginOptions.Value;
     }
 
     public async Task<ExecutionResult> Execute(ExecuteContext<WaitForCommittedTransactionArguments> context)
     {
-        using var channel = GrpcChannel.ForAddress(projectOriginOptions.RegistryUrl); //TODO: Is this bad practice? Should the channel be re-used?
-        var client = new RegistryService.RegistryServiceClient(channel);
         var statusRequest = new GetTransactionStatusRequest { Id = context.Arguments.ShaId };
 
         try

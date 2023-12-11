@@ -8,7 +8,7 @@ using MassTransit;
 using MassTransit.Courier.Contracts;
 using Microsoft.Extensions.Logging;
 
-namespace RegistryConnector.Worker.RoutingSlip;
+namespace RegistryConnector.Worker.RoutingSlips;
 
 public class IssueCertificateTerminated
 {

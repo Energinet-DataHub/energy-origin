@@ -10,9 +10,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using ProjectOrigin.Registry.V1;
+using ProjectOrigin.WalletSystem.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.EventHandlers;
-using RegistryConnector.Worker.RoutingSlip;
+using RegistryConnector.Worker.RoutingSlips;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -47,6 +49,12 @@ builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
+
+builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
+{
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    o.Address = new Uri(options.RegistryUrl);
+});
 
 builder.Services.AddMassTransit(o =>
 {
