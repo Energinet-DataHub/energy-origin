@@ -32,7 +32,7 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
         if (certificate == null)
         {
             logger.LogWarning($"Certificate with certificateId {context.Arguments.CertificateId} and meteringPointType {context.Arguments.MeteringPointType} not found.");
-            return context.Completed();
+            return context.Terminate();
         }
 
         if (certificate.IsIssued)

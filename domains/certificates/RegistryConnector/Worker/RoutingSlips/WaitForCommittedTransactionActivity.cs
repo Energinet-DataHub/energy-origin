@@ -8,7 +8,7 @@ using ProjectOrigin.Registry.V1;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
-public record WaitForCommittedTransactionArguments(string ShaId);
+public record WaitForCommittedTransactionArguments(string ShaId, Guid CertificateId);
 
 public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommittedTransactionArguments>
 {
@@ -31,14 +31,13 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
 
             if (status.Status == TransactionState.Committed)
             {
-                //TODO: Log
-                //logger.LogInformation("Certificate {id} issued in registry", certificateId);
+                logger.LogInformation("Transaction {id} with certificate {certificateId} completed.", context.Arguments.ShaId, context.Arguments.CertificateId);
                 return context.Completed();
             }
 
             if (status.Status == TransactionState.Failed)
             {
-                //logger.LogInformation("Certificate {id} rejected by registry", certificateId);
+                logger.LogWarning("Transaction {id} with certificate {certificateId} failed in registry.", context.Arguments.ShaId, context.Arguments.CertificateId);
                 return context.Terminate(new List<KeyValuePair<string, object>>
                 {
                     new("Reason", "Transaction failed in Registry")

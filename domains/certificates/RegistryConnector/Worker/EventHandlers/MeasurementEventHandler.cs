@@ -179,7 +179,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder, new IssueToRegistryArguments(transaction, certificateId));
 
         AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder,
-            new WaitForCommittedTransactionArguments(transaction.ToShaId()));
+            new WaitForCommittedTransactionArguments(transaction.ToShaId(), certificateId));
 
         AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder,
             new MarkAsIssuedArguments(certificateId, matchingContract.MeteringPointType));

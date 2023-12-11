@@ -70,12 +70,25 @@ public class IssueCertificateNotCompletedConsumer :
         if (meteringPointType == MeteringPointType.Production)
         {
             var productionCertificate = await dbContext.ProductionCertificates.FindAsync(certificateId);
-            productionCertificate!.Reject(rejectionReason); //TODO: Handle if not found
+
+            if (productionCertificate == null)
+            {
+                logger.LogWarning($"Production certificate with certificateId {certificateId} not found.");
+                return;
+            }
+
+            productionCertificate.Reject(rejectionReason);
         }
         else
         {
             var consumptionCertificate = await dbContext.ConsumptionCertificates.FindAsync(certificateId);
-            consumptionCertificate!.Reject(rejectionReason); //TODO: Handle if not found
+
+            if (consumptionCertificate == null)
+            {
+                logger.LogWarning($"Consumption certificate with certificateId {certificateId} not found.");
+                return;
+            }
+            consumptionCertificate.Reject(rejectionReason);
         }
 
         var changed = await dbContext.SaveChangesAsync();
