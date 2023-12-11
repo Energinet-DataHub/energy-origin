@@ -251,10 +251,6 @@ public class WalletException : Exception
     public WalletException(string message) : base(message)
     {
     }
-
-    protected WalletException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
 }
 
 public class WorkerBackgroundTester : BackgroundService

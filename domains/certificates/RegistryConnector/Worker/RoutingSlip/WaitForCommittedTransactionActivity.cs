@@ -88,10 +88,6 @@ public class RegistryTransactionStillProcessingException : Exception
     public RegistryTransactionStillProcessingException(string message) : base(message)
     {
     }
-
-    protected RegistryTransactionStillProcessingException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
 }
 
 
@@ -99,10 +95,6 @@ public class RegistryTransactionStillProcessingException : Exception
 public class TransientException : Exception
 {
     public TransientException(string message, Exception ex) : base(message, ex)
-    {
-    }
-
-    protected TransientException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
 }
