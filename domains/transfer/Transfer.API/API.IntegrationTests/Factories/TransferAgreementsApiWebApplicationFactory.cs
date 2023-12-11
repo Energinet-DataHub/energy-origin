@@ -55,17 +55,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         byte[] publicKeyBytes;
-        string privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
+        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
 
         using (RSA rsa = RSA.Create())
         {
             rsa.ImportFromPem(privateKeyPem);
-
-            using (var tempCert = new CertificateRequest("CN=DummyCN", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)
-                       .CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(3)))
-            {
-                publicKeyBytes = tempCert.GetPublicKey();
-            }
+            publicKeyBytes = rsa.ExportRSAPublicKey();
         }
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
