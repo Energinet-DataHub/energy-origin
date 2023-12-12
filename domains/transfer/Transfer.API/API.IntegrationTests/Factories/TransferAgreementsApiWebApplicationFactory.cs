@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
@@ -60,15 +58,16 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
 
-        var pemReader = new PemReader(new StringReader(privateKeyPem));
-        AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
+        using var sr = new StringReader(privateKeyPem);
+        var pemReader = new PemReader(sr);
+        var keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
 
-        RsaKeyParameters publicKey = (RsaKeyParameters)keyPair.Public;
+        var publicKey = (RsaKeyParameters)keyPair.Public;
 
-        var pemWriter = new StringWriter();
-        var writer = new PemWriter(pemWriter);
-        writer.WriteObject(publicKey);
-        string publicKeyPem = pemWriter.ToString();
+        using var swWriter = new StringWriter();
+        var pemWriter = new PemWriter(swWriter);
+        pemWriter.WriteObject(publicKey);
+        var publicKeyPem = swWriter.ToString();
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
