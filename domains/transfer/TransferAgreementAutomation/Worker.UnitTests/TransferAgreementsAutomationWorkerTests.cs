@@ -42,13 +42,13 @@ public class TransferAgreementsAutomationWorkerTests
         mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
-        using var cts = new CancellationTokenSource();
-
+        var cts = new CancellationTokenSource();
         poWalletServiceMock
-            .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ =>
+            .TransferCertificates(Arg.Any<TransferAgreementDto>())
+            .Returns(x =>
             {
                 cts.Cancel();
+                cts.Dispose();
                 throw new Exception();
             });
 
@@ -60,9 +60,10 @@ public class TransferAgreementsAutomationWorkerTests
         var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
             httpClient);
 
+        //await worker.StartAsync(cts.Token);
         var act = async () => await worker.StartAsync(cts.Token);
-        await act.Invoke();
-        // await act.Should().ThrowAsync<TaskCanceledException>();
+        //await act.Invoke();
+        await act.Should().ThrowAsync<TaskCanceledException>();
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
@@ -73,7 +74,7 @@ public class TransferAgreementsAutomationWorkerTests
         var loggerMock = Substitute.For<ILogger<TransferAgreementsAutomationWorker>>();
         var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-        var mockHttpMessageHandler = new MockHttpMessageHandler();
+        using var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
         var agreements = new List<TransferAgreementDto>
@@ -98,10 +99,7 @@ public class TransferAgreementsAutomationWorkerTests
 
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ =>
-            {
-                cts.Cancel();
-            });
+            .Do(_ => { cts.Cancel(); });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
         var httpClient = mockHttpMessageHandler.ToHttpClient();
@@ -113,7 +111,6 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
-        // await act.Should().ThrowAsync<TaskCanceledException>();
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
@@ -122,9 +119,11 @@ public class TransferAgreementsAutomationWorkerTests
     {
         var serviceProviderMock = Substitute.For<IServiceProvider>();
         serviceProviderMock.GetService(typeof(IProjectOriginWalletService)).Returns(poWalletServiceMock);
+
         var serviceScope = Substitute.For<IServiceScope>();
         serviceScope.ServiceProvider.Returns(serviceProviderMock);
         var serviceScopeFactoryMock = Substitute.For<IServiceScopeFactory>();
+
         serviceScopeFactoryMock.CreateScope().Returns(serviceScope);
         serviceProviderMock.GetService(typeof(IServiceScopeFactory)).Returns(serviceScopeFactoryMock);
 

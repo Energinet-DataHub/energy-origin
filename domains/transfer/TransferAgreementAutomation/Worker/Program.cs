@@ -6,9 +6,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using ProjectOrigin.WalletSystem.V1;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
+using TransferAgreementAutomation.Worker.Service;
+using ProjectOriginOptions = TransferAgreementAutomation.Worker.Options.ProjectOriginOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,9 +39,15 @@ builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>((sp, client) 
     client.BaseAddress = new Uri(options.Url);
     client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
 });
+builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+{
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    o.Address = new Uri(options.WalletUrl);
+});
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
+builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
 
 var app = builder.Build();
 

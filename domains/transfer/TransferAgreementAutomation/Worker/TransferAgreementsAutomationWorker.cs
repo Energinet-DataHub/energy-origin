@@ -38,8 +38,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         ITransferAgreementAutomationMetrics metrics,
         AutomationCache memoryCache,
         IServiceProvider serviceProvider,
-        HttpClient httpClient
-    )
+        HttpClient httpClient)
     {
         this.logger = logger;
         this.metrics = metrics;
