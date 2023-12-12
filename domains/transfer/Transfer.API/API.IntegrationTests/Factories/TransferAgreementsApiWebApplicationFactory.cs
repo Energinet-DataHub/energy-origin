@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,6 +23,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.OpenSsl;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -54,14 +58,18 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        byte[] publicKeyBytes;
         var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
 
-        using (RSA rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(privateKeyPem);
-            publicKeyBytes = rsa.ExportRSAPublicKey();
-        }
+        var pemReader = new PemReader(new StringReader(privateKeyPem));
+        AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
+
+        RsaKeyParameters publicKey = (RsaKeyParameters)keyPair.Public;
+
+        var pemWriter = new StringWriter();
+        var writer = new PemWriter(pemWriter);
+        writer.WriteObject(publicKey);
+        string publicKeyPem = pemWriter.ToString();
+
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
@@ -70,7 +78,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
         builder.UseSetting("TokenValidation:Issuer", "TokenIssuer");
         builder.UseSetting("TokenValidation:Audience", "TokenAudience");
-        builder.UseSetting("TokenValidation:PublicKeyPem", Convert.ToBase64String(publicKeyBytes));
+        builder.UseSetting("TokenValidation:PublicKey", Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem)));
 
         builder.ConfigureTestServices(s =>
         {
