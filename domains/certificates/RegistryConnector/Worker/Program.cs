@@ -45,6 +45,7 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
+builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddHealthChecks()

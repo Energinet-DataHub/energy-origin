@@ -71,7 +71,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
         endpointConfigurator.UseMessageRetry(r => r
             .Interval(100, TimeSpan.FromSeconds(1))
             .Handle(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
-        endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
         //TODO: Define what to do for e.g. other exceptions. Should they be retried - or will they be redelivered?
     }
 }

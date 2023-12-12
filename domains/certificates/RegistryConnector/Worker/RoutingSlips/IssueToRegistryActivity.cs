@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
 
 namespace RegistryConnector.Worker.RoutingSlips;
@@ -38,9 +39,16 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
 
 public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<IssueToRegistryActivity, IssueToRegistryArguments>
 {
+    private readonly RetryOptions retryOptions;
+    public IssueToRegistryActivityDefinition(IOptions<RetryOptions> options)
+    {
+        retryOptions = options.Value;
+    }
+
     protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
         IExecuteActivityConfigurator<IssueToRegistryActivity, IssueToRegistryArguments> executeActivityConfigurator)
     {
-        endpointConfigurator.UseMessageRetry(r => r.Interval(3, TimeSpan.FromMilliseconds(500)));
+        endpointConfigurator.UseMessageRetry(r => r.Interval(retryOptions.IssueToRegistryActivityRetryCount, TimeSpan.FromMilliseconds(500)));
+        endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
     }
 }
