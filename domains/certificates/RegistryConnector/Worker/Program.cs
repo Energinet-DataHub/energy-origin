@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using ProjectOrigin.Registry.V1;
-using ProjectOrigin.WalletSystem.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.EventHandlers;
 using RegistryConnector.Worker.RoutingSlips;

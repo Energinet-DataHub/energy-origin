@@ -78,7 +78,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 commitment.BlindingValue.ToArray());
 
             dbContext.Add(productionCertificate);
-            await dbContext.SaveChangesAsync(context.CancellationToken);
 
             var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
@@ -110,7 +109,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 commitment.BlindingValue.ToArray());
 
             dbContext.Add(consumptionCertificate);
-            await dbContext.SaveChangesAsync(context.CancellationToken);
 
             var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
@@ -134,8 +132,8 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         var routingSlip = builder.Build();
 
-        //TODO Save to eventstore and publish event must happen in same transaction. See issue https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/1518
         await context.Execute(routingSlip);
+        await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
