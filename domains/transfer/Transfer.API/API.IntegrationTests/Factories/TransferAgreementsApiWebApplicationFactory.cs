@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
 using API.Shared.Data;
@@ -21,9 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.OpenSsl;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -56,18 +51,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
-
-        using var sr = new StringReader(privateKeyPem);
-        var pemReader = new PemReader(sr);
-        var keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
-
-        var publicKey = (RsaKeyParameters)keyPair.Public;
-
-        using var swWriter = new StringWriter();
-        var pemWriter = new PemWriter(swWriter);
-        pemWriter.WriteObject(publicKey);
-        var publicKeyPem = swWriter.ToString();
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
@@ -75,9 +58,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
-        builder.UseSetting("TokenValidation:Issuer", "TokenIssuer");
-        builder.UseSetting("TokenValidation:Audience", "TokenAudience");
-        builder.UseSetting("TokenValidation:PublicKey", Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem)));
 
         builder.ConfigureTestServices(s =>
         {

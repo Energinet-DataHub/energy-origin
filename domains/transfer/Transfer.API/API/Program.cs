@@ -8,8 +8,6 @@ using API.Shared.Swagger;
 using API.Transfer;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
-using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -20,7 +18,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using Serilog;
@@ -89,15 +86,19 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-var tokenValidationConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
-var tokenValidationOptions = tokenValidationConfiguration.Get<TokenValidationOptions>()!;
-
-builder.Services.AddOptions<TokenValidationOptions>()
-    .Bind(builder.Configuration.GetSection(TokenValidationOptions.Prefix))
-    .ValidateDataAnnotations();
-
-builder.AddTokenValidation(tokenValidationOptions);
-
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = false,
+            ValidateAudience = false,
+            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
+            ValidateLifetime = false,
+            SignatureValidator = (token, _) => new JwtSecurityToken(token)
+        };
+    });
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
