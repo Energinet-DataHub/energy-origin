@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using DataContext;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,9 +40,11 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
 
 public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<IssueToRegistryActivity, IssueToRegistryArguments>
 {
+    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
-    public IssueToRegistryActivityDefinition(IOptions<RetryOptions> options)
+    public IssueToRegistryActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
     {
+        this.provider = provider;
         retryOptions = options.Value;
     }
 
@@ -50,5 +53,7 @@ public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<Issue
     {
         endpointConfigurator.UseMessageRetry(r => r.Interval(retryOptions.IssueToRegistryActivityRetryCount, TimeSpan.FromMilliseconds(500)));
         endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
     }
 }

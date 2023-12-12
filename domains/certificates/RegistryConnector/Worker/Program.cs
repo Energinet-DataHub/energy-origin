@@ -90,6 +90,13 @@ builder.Services.AddMassTransit(o =>
             return options;
         });
     });
+
+    o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
+    {
+        outboxConfigurator.UsePostgres();
+
+        outboxConfigurator.UseBusOutbox();
+    });
 });
 
 var app = builder.Build();

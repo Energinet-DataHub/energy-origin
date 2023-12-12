@@ -1,4 +1,5 @@
 using DataContext.Models;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -21,6 +22,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SynchronizationPosition>().HasKey(s => s.GSRN);
 
         modelBuilder.Entity<ConsumptionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
