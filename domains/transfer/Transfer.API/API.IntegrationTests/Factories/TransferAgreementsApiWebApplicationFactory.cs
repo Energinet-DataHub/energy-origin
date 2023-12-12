@@ -191,7 +191,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { "name", name }
         };
 
-        var superToken = new TokenSigner(PrivateKey).Sign(
+        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
             sub,
             name,
             issuer,
@@ -201,7 +201,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             claims
         );
 
-        return superToken;
+        return signedJwtToken;
     }
 
     private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
