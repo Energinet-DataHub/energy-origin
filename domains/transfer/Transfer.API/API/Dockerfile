@@ -1,11 +1,11 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM cgr.dev/chainguard/dotnet-runtime:${RUNTIME_VERSION} AS base
+FROM cgr.dev/chainguard/dotnet-runtime AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM cgr.dev/chainguard/dotnet-sdk:${SDK_VERSION} AS build
+FROM cgr.dev/chainguard/dotnet-sdk AS build
 WORKDIR /src
 
 RUN addgroup -S app && adduser -S app -G app
