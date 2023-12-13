@@ -33,7 +33,7 @@ WORKDIR /src/Transfer.API/API
 RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Final Stage
-FROM cgr.dev/chainguard/dotnet:latest-dev@sha256:21c79e93ad81e41a63b8b04ade4f145138febb04dd78da7b0b1ddbfc1356d3f9 AS final
+FROM cgr.dev/chainguard/dotnet:latest AS final
 WORKDIR /app
 
 # Copy from publish stage and set permissions
