@@ -6,15 +6,12 @@ EXPOSE 443
 FROM cgr.dev/chainguard/dotnet-sdk AS build
 WORKDIR /src
 
-# Switch to root to copy the project files and set permissions
 USER root
 COPY . .
-# Set permissions for all project files
 RUN chown -R nonroot:nonroot /src
+RUN chown -R nonroot:nonroot /app
 
-# Switch back to app user
 USER nonroot
-
 WORKDIR "/src/Transfer.API/API"
 RUN dotnet restore
 RUN dotnet build -c Release -o /app/build
@@ -23,7 +20,7 @@ FROM build AS publish
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-
+USER nonroot
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY migrations /migrations
