@@ -10,7 +10,7 @@ WORKDIR /app
 COPY ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
 RUN dotnet restore "Transfer.API/API/API.csproj"
 COPY . .
-WORKDIR "/src/Transfer.API/API"
+WORKDIR "/app/Transfer.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
 FROM build AS publish
