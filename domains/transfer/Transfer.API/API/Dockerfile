@@ -1,10 +1,10 @@
-FROM cgr.dev/chainguard/dotnet:latest-dev AS base
+FROM cgr.dev/chainguard/dotnet:latest-dev@sha256:21c79e93ad81e41a63b8b04ade4f145138febb04dd78da7b0b1ddbfc1356d3f9 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
 # Use the .NET SDK image to build the application
-FROM cgr.dev/chainguard/dotnet-sdk:latest-dev AS build
+FROM cgr.dev/chainguard/dotnet-sdk:latest-dev@sha256:eea6f712550c360fe65b0047b786257b2aa40119957e6bea8f018a086c73dcb5 AS build
 WORKDIR /src
 
 # Copy the CSPROJ file and restore any dependencies (via NuGet)
