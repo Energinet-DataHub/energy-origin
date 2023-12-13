@@ -4,6 +4,8 @@ using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using API.Claiming.Api.Models;
 using API.Shared.Data;
@@ -51,6 +53,16 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
+        string publicKeyPem;
+
+        using (RSA rsa = RSA.Create())
+        {
+            rsa.ImportFromPem(privateKeyPem);
+            publicKeyPem = rsa.ExportRSAPublicKeyPem();
+        }
+
+        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
@@ -58,6 +70,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
+        builder.UseSetting("TokenValidation:Issuer", "Issuer");
+        builder.UseSetting("TokenValidation:Audience", "Audience");
 
         builder.ConfigureTestServices(s =>
         {
@@ -177,8 +192,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "TokenIssuer",
-        string audience = "TokenAudience")
+        string issuer = "Issuer",
+        string audience = "Audience")
     {
 
         var claims = new Dictionary<string, object>()
