@@ -4,7 +4,7 @@ WORKDIR /source
 
 # Copy csproj and restore as distinct layers
 COPY ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
-RUN dotnet restore -a
+RUN dotnet restore -a Transfer.API/API/API.csproj
 
 # Copy and publish app and libraries
 COPY . .
