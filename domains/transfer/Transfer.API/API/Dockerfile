@@ -4,7 +4,7 @@ ARG TARGETARCH
 WORKDIR /source
 
 # Copy csproj and restore as distinct layers
-COPY *.csproj .
+COPY ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
 RUN dotnet restore -a $TARGETARCH
 
 # Copy and publish app and libraries
