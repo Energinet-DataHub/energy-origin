@@ -5,7 +5,7 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
+FROM cgr.dev/chainguard/dotnet-sdk:${SDK_VERSION} AS build
 WORKDIR /src
 COPY ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
 RUN dotnet restore "Transfer.API/API/API.csproj"
