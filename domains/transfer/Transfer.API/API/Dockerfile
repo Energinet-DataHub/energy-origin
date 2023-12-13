@@ -9,7 +9,7 @@ WORKDIR /src
 # Temporarily switch back to root to create directories and set permissions
 USER root
 RUN mkdir -p /src/Transfer.API/API && \
-    chown -R nonroot:nonroot /src/Transfer.API
+    chown -R nonroot:nonroot /src
 
 # Switch back to app user
 USER nonroot
