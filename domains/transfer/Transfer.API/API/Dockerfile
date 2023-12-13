@@ -3,6 +3,7 @@ WORKDIR /app
 EXPOSE 8080 443
 
 FROM cgr.dev/chainguard/dotnet-sdk AS build
+USER root
 WORKDIR /src
 COPY . .
 WORKDIR "/src/Transfer.API/API"
