@@ -1,6 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
+FROM cgr.dev/chainguard/dotnet-runtime:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
