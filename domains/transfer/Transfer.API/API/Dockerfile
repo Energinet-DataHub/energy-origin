@@ -1,6 +1,5 @@
 # Build stage
 FROM --platform=$BUILDPLATFORM cgr.dev/chainguard/dotnet-sdk AS build
-ARG TARGETARCH
 WORKDIR /source
 
 # Copy csproj and restore as distinct layers
@@ -9,7 +8,7 @@ RUN dotnet restore -a $TARGETARCH
 
 # Copy and publish app and libraries
 COPY . .
-RUN dotnet publish -a $TARGETARCH --no-restore -o /app
+RUN dotnet publish -a --no-restore -o /app
 
 # Final stage/image
 FROM cgr.dev/chainguard/dotnet-runtime
