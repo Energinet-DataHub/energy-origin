@@ -4,11 +4,11 @@ WORKDIR /source
 
 # Copy csproj and restore as distinct layers
 COPY ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
-RUN dotnet restore -a Transfer.API/API/API.csproj
+RUN dotnet restore Transfer.API/API/API.csproj
 
 # Copy and publish app and libraries
 COPY . .
-RUN dotnet publish -a --no-restore -o /app
+RUN dotnet publish --no-restore -o /app
 
 # Final stage/image
 FROM cgr.dev/chainguard/dotnet-runtime
