@@ -1,5 +1,12 @@
-# Use the .NET SDK image to build the application
-FROM cgr.dev/chainguard/dotnet-sdk:latest AS build
+ARG SDK_VERSION
+ARG RUNTIME_VERSION
+FROM cgr.dev/chainguard/dotnet-runtime AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
+
+FROM cgr.dev/chainguard/dotnet-sdk AS build
 WORKDIR /src
 
 # Create directories and set permissions
