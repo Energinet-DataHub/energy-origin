@@ -17,7 +17,7 @@ COPY --chown=nonroot:nonroot ["Transfer.API/API/API.csproj", "Transfer.API/API/"
 RUN dotnet restore "Transfer.API/API/API.csproj"
 
 COPY . .
-WORKDIR "/app/Transfer.API/API"
+WORKDIR "/src/Transfer.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
 FROM build AS publish
