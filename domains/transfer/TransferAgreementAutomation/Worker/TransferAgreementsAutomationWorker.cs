@@ -61,7 +61,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
             try
             {
-                var transferAgreements = await GetAllTransferAgreements(stoppingToken);
+               var transferAgreements = await GetAllTransferAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Result.Count);
 
                 foreach (var transferAgreement in transferAgreements.Result)

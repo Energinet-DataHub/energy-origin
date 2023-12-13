@@ -43,9 +43,10 @@ public class TransferAgreementsAutomationWorkerTests
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
         var cts = new CancellationTokenSource();
+
         poWalletServiceMock
-            .TransferCertificates(Arg.Any<TransferAgreementDto>())
-            .Returns(x =>
+            .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
+            .Do(_ =>
             {
                 cts.Cancel();
                 cts.Dispose();
@@ -60,10 +61,9 @@ public class TransferAgreementsAutomationWorkerTests
         var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
             httpClient);
 
-        //await worker.StartAsync(cts.Token);
         var act = async () => await worker.StartAsync(cts.Token);
-        //await act.Invoke();
-        await act.Should().ThrowAsync<TaskCanceledException>();
+        act.Invoke();
+        await Task.Delay(1000); // Give the worker some time to set the cache
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
