@@ -1,46 +1,38 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM cgr.dev/chainguard/dotnet-runtime AS base
+FROM cgr.dev/chainguard/dotnet-runtime:${RUNTIME_VERSION} AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-
-FROM cgr.dev/chainguard/dotnet-sdk AS build
+FROM cgr.dev/chainguard/dotnet-sdk:${SDK_VERSION} AS build
 WORKDIR /src
 
-# Create directories and set permissions
+RUN addgroup -S app && adduser -S app -G app
+
 RUN mkdir -p /src/Transfer.API/API \
     && chown -R app:app /src/Transfer.API
 
-# Switch to non-root user
 USER app
 
-# Copy the CSPROJ file and restore any dependencies (via NuGet)
 COPY --chown=app:app ["Transfer.API/API/API.csproj", "Transfer.API/API/"]
 RUN dotnet restore "Transfer.API/API/API.csproj"
 
-# Copy the rest of the source code
 COPY --chown=app:app . .
 
-# Set the working directory to the project directory and build the application
 WORKDIR "/src/Transfer.API/API"
 RUN dotnet build "API.csproj" -c Release -o /app/build
 
-# Publish Stage
 FROM build AS publish
 WORKDIR /src/Transfer.API/API
 RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Final Stage
-FROM base As final
+FROM base AS final
 WORKDIR /app
 
-# Copy from publish stage and set permissions
 COPY --from=publish --chown=app:app /app/publish .
 COPY --chown=app:app migrations /migrations
 
-# Use non-root user
 USER app
 
 ENV ASPNETCORE_HTTP_PORTS=8080
