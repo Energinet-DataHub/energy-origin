@@ -9,7 +9,7 @@ WORKDIR /src
 USER root
 COPY . .
 RUN chown -R nonroot:nonroot /src
-RUN chown -R nonroot:nonroot /app
+RUN mkdir -p /app/build && chown -R nonroot:nonroot /app/build
 
 USER nonroot
 WORKDIR "/src/Transfer.API/API"
