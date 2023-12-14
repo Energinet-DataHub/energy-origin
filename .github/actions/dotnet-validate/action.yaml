@@ -66,6 +66,8 @@ runs:
 
     - name: Restore
       shell: bash
+      env:
+        version: ""
       run: dotnet restore
 
     - name: Lint
