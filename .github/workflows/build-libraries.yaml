@@ -120,12 +120,12 @@ jobs:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Resolve version
-        uses: ./.github/actions/yaml-semver
-        with:
-          yaml-file: ${{ matrix.item.path }}/configuration.yaml
-          yaml-path: version
+      # FIXME
+      # - name: Resolve version
+      #   uses: ./.github/actions/yaml-semver
+      #   with:
+      #     yaml-file: ${{ matrix.item.path }}/configuration.yaml
+      #     yaml-path: version
 
       - name: Prepare variables
         shell: bash
