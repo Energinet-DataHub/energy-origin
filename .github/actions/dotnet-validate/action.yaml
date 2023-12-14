@@ -26,10 +26,6 @@ runs:
   using: composite
 
   steps:
-    - name: Set version env for dotnet
-      shell: bash
-      run: echo "version=" >> $GITHUB_ENV
-
     - name: Setup dotnet
       uses: actions/setup-dotnet@v3
       with:
@@ -70,14 +66,20 @@ runs:
 
     - name: Restore
       shell: bash
+      env:
+        version: ""
       run: dotnet restore
 
     - name: Lint
       shell: bash
+      env:
+        version: ""
       run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       shell: bash
+      env:
+        version: ""
       run: dotnet test --no-restore --verbosity normal -warnaserror
 
     - name: Validate migration
