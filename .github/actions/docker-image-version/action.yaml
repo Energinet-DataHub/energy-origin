@@ -20,13 +20,13 @@ runs:
     - uses: actions/checkout@v3
       with:
         path: yaml
-        ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
+        ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/2182-pipeline-sha-version') && github.ref || github.head_ref }}
 
     - name: Generate version
       id: output
       shell: bash
       run: |
-        if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
+        if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = '2182-pipeline-sha-version' ]; then
           version="$(git rev-parse --short $GITHUB_SHA)"
         elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
           version="$(git rev-parse $GITHUB_SHA)-pr.${{ github.event.pull_request.number }}"
