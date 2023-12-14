@@ -72,6 +72,8 @@ runs:
 
     - name: Lint
       shell: bash
+      env:
+        version: ""
       run: dotnet format --verify-no-changes -v diag
 
     - name: Test
