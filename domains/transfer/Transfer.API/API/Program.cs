@@ -1,10 +1,6 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
 using API.Claiming;
-using API.Connections;
-using API.Connections.Automation.Options;
 using API.Cvr;
 using API.Shared.Data;
 using API.Shared.Options;
@@ -15,19 +11,16 @@ using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
-using ProjectOrigin.PedersenCommitment.Ristretto;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -48,8 +41,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>()
-    .BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddDbContext<ApplicationDbContext>(
     (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
@@ -66,7 +57,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddConnection();
 builder.Services.AddClaimServices();
 builder.Services.AddApiVersioning(options =>
     {

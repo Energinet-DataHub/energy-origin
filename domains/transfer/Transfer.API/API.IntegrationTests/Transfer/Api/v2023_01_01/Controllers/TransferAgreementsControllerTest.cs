@@ -2,46 +2,188 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using API.Transfer.Api.Models;
+using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using API.Transfer.Api.v2023_01_01.Dto.Responses;
 using FluentAssertions;
 using Newtonsoft.Json;
+using NSubstitute;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
 
 [UsesVerify]
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>, IClassFixture<WalletContainer>
+public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly ITestOutputHelper output;
     private readonly HttpClient authenticatedClient;
     private readonly string sub;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory,
-        WalletContainer wallet)
+    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
     {
         this.factory = factory;
+        this.output = output;
 
         sub = Guid.NewGuid().ToString();
-        factory.WalletUrl = wallet.WalletUrl;
         authenticatedClient = factory.CreateAuthenticatedClient(sub);
     }
 
     [Fact]
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
-        var transferAgreement = CreateTransferAgreement();
+        var receiverTin = "12334455";
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await CreateTransferAgreementProposal(request);
+
+        var poWalletServiceMock = SetupPoWalletServiceMock();
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task Create_ShouldCreateTransferAgreementWithSubjectTin_WhenProposalReceiverTinIsNull()
+    {
+        var subjectTin = "12334455";
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
+        var createdProposalId = await CreateTransferAgreementProposal(request);
+
+        var poWalletServiceMock = SetupPoWalletServiceMock();
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: subjectTin);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var taStr = await response.Content.ReadAsStringAsync();
+        var taDto = JsonConvert.DeserializeObject<TransferAgreementDto>(taStr);
+
+        var get = await receiverClient.GetAsync($"api/transfer-agreements/{taDto!.Id}");
+        var taByIdStr = await get.Content.ReadAsStringAsync();
+        var taById = JsonConvert.DeserializeObject<TransferAgreementDto>(taByIdStr);
+
+        taById!.ReceiverTin.Should().Be(subjectTin);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnNotFound_WhenProposalNotFound()
+    {
+        var transferAgreement = new CreateTransferAgreement(Guid.NewGuid());
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
-        response.EnsureSuccessStatusCode();
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnBadRequest_WhenProposalIsMentForAnotherCompany()
+    {
+        var proposalRequest = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12341234");
+        var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
+
+        var someCompanyId = Guid.NewGuid();
+        var someClient = factory.CreateAuthenticatedClient(sub: someCompanyId.ToString(), tin: "32132132");
+
+        var request = new CreateTransferAgreement(createdProposalId);
+        var response = await someClient.PostAsJsonAsync("api/transfer-agreements", request);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnBadRequest_WhenProposalHasRunOut()
+    {
+        var receiverTin = "12334455";
+        var taProposal = new TransferAgreementProposal
+        {
+            CreatedAt = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = DateTimeOffset.UtcNow.AddDays(-2),
+            Id = Guid.NewGuid(),
+            ReceiverCompanyTin = receiverTin,
+            SenderCompanyName = "SomeCompany",
+            SenderCompanyId = new Guid(sub),
+            SenderCompanyTin = "12345678"
+        };
+
+        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
+
+        var createRequest = new CreateTransferAgreement(taProposal.Id);
+        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", createRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnConflict_WhenTransferAgreementAlreadyExists()
+    {
+        var receiverTin = "12334455";
+
+        var ta = new TransferAgreement
+        {
+            EndDate = DateTimeOffset.UtcNow.AddDays(5),
+            StartDate = DateTimeOffset.UtcNow,
+            Id = Guid.NewGuid(),
+            ReceiverReference = Guid.NewGuid(),
+            ReceiverTin = receiverTin,
+            SenderId = new Guid(sub),
+            SenderName = "SomeOrg",
+            SenderTin = "11223344",
+            TransferAgreementNumber = 1
+        };
+
+        await factory.SeedTransferAgreements(new List<TransferAgreement> { ta });
+
+        var secondTaProposal = new TransferAgreementProposal
+        {
+            CreatedAt = DateTimeOffset.UtcNow,
+            EndDate = DateTimeOffset.UtcNow.AddDays(5),
+            Id = Guid.NewGuid(),
+            StartDate = DateTimeOffset.UtcNow,
+            SenderCompanyName = "SomeOrg",
+            ReceiverCompanyTin = receiverTin,
+            SenderCompanyId = new Guid(sub),
+            SenderCompanyTin = "11223344"
+        };
+
+        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { secondTaProposal });
+
+        var poWalletServiceMock = SetupPoWalletServiceMock();
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+
+        var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(secondTaProposal.Id));
+
+        createSecondConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Create_ShouldDeleteProposal_WhenSuccess()
+    {
+        var receiverTin = "12334455";
+
+        var proposalRequest = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
+
+        var poWalletServiceMock = SetupPoWalletServiceMock();
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
+
+        var getProposalResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposalId}");
+
+        getProposalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -49,150 +191,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
-    {
-        var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
-        {
-            new()
-            {
-                Id = id,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = Guid.Parse(sub),
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
-                ReceiverReference = Guid.NewGuid()
-            }
-        });
-
-        var overlappingRequest = new CreateTransferAgreement(
-            StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678",
-            Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(overlappingRequest));
-
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-    }
-
-    [Theory]
-    [InlineData(-1, null, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
-    [InlineData(-1, 4, HttpStatusCode.BadRequest, "Start Date cannot be in the past")]
-    [InlineData(3, 1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
-    [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
-    public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
-        var endDate = endDayOffset.HasValue ? now.AddDays(endDayOffset.Value).ToUnixTimeSeconds() : (long?)null;
-
-        var request = new CreateTransferAgreement(
-            StartDate: startDate,
-            EndDate: endDate,
-            ReceiverTin: "12345678",
-            Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
-
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
-
-        response.StatusCode.Should().Be(expectedStatusCode);
-        validationProblemContent.Should().Contain(expectedContent);
-    }
-
-    [Theory]
-    [InlineData(253402300800L, null, "StartDate")]
-    [InlineData(221860025546L, 253402300800L, "EndDate")]
-    public async Task CreateTransferAgreement_ShouldFail_WhenDateInvalid(long start, long? end, string property)
-    {
-        var receiverTin = "12345678";
-
-        var request = new CreateTransferAgreement(
-            StartDate: start,
-            EndDate: end,
-            ReceiverTin: receiverTin,
-            Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
-
-        validationProblemContent.Should().Contain("too high! Please make sure the format is UTC in seconds.");
-        validationProblemContent.Should().Contain(property);
-    }
-
-    [Theory]
-    [InlineData("", "ReceiverTin cannot be empty")]
-    [InlineData("1234567", "ReceiverTin must be 8 digits without any spaces.")]
-    [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
-    [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
-    [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
-    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
-    {
-        var request = new CreateTransferAgreement(
-            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin,
-            Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
-
-        validationProblemContent.Should().Contain(expectedContent);
-        validationProblemContent.Should().Contain("ReceiverTin");
-    }
-
-    [Fact]
-    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeValidBase64()
-    {
-        var request = new CreateTransferAgreement(
-            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678",
-            Base64EncodedWalletDepositEndpoint: Some.Base64EncodedWalletDepositEndpoint
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
-
-        response.StatusCode.Should().NotBe(HttpStatusCode.BadRequest);
-    }
-
-    [Theory]
-    [InlineData("This is not a valid Base64 string", "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("=", "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("12345", "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("W3sibmFtZSI6ICJKb2huIn0sIHsibmFtZSI6ICJKYW5lIn1d", "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    [InlineData("eyJwZXJzb24iOiB7Im5hbWUiOiAiSm9obiIsICJhZGRyZXNzIjogeyJjaXR5IjogIk5ldyBZb3JrIiwgInppcGNvZGUiOiAiMTAwMDEifX19", "Base64-encoded Wallet Deposit Endpoint is not valid")]
-    public async Task Create_ShouldValidate_WalletDepositEndpoint_ToBeInvalidBase64(string base64String, string expectedMessage)
-    {
-        var request = new CreateTransferAgreement(
-            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: "12345678",
-            Base64EncodedWalletDepositEndpoint: base64String
-        );
-
-        var response = await authenticatedClient.PostAsync("api/transfer-agreements", JsonContent.Create(request));
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
-        validationProblemContent.Should().Contain(expectedMessage);
     }
 
     [Fact]
@@ -307,12 +305,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var response = await authenticatedClient.GetAsync($"api/transfer-agreements/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    private static CreateTransferAgreement CreateTransferAgreement()
-    {
-        return new CreateTransferAgreement(DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(), "12345678", Some.Base64EncodedWalletDepositEndpoint);
     }
 
     [Fact]
@@ -530,27 +522,23 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
     }
 
-    [Fact]
-    public async Task CreateWalletDepositEndpoint_ShouldReturnBase64StringOkResponse_WhenAuthorized()
+    private async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
-        var result = await authenticatedClient
-            .PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+        var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        output.WriteLine(await result.Content.ReadAsStringAsync());
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createResponseBody = await result.Content.ReadAsStringAsync();
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
 
-        var resultData = JsonConvert.DeserializeObject<Dictionary<string, string>>(await result.Content.ReadAsStringAsync());
-        var base64String = resultData?["result"];
-        Action base64Decoding = () => Encoding.UTF8.GetString(Convert.FromBase64String(base64String!));
-
-        result.StatusCode.Should().Be(HttpStatusCode.OK);
-        resultData.Should().ContainKey("result");
-        base64Decoding.Should().NotThrow<FormatException>("because result should be a valid base64 string");
+        return createdProposal!.Id;
     }
 
-    [Fact]
-    public async Task CreateWalletDepositEndpoint_ShouldReturnUnauthorized_WhenUnauthenticated()
+    private IProjectOriginWalletService SetupPoWalletServiceMock()
     {
-        var client = factory.CreateUnauthenticatedClient();
-        var result = await client.PostAsync("api/transfer-agreements/wallet-deposit-endpoint", null);
+        var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
+        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
+        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
 
-        result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        return poWalletServiceMock;
     }
 }

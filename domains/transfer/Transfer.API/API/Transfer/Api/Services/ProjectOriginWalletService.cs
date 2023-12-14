@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Shared.Helpers;
 using API.Transfer.Api.Converters;
@@ -35,18 +36,18 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         this.cache = cache;
     }
 
-    public async Task<string> CreateWalletDepositEndpoint(string bearerToken)
+    public async Task<string> CreateWalletDepositEndpoint(AuthenticationHeaderValue bearerToken)
     {
         var walletDepositEndpoint = await GetWalletDepositEndpoint(bearerToken);
         return Base64Converter.ConvertWalletDepositEndpointToBase64(walletDepositEndpoint);
     }
 
-    private async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(string bearerToken)
+    private async Task<WalletDepositEndpoint> GetWalletDepositEndpoint(AuthenticationHeaderValue bearerToken)
     {
         var request = new CreateWalletDepositEndpointRequest();
         var headers = new Metadata
         {
-            { "Authorization", bearerToken }
+            { "Authorization", bearerToken.ToString() }
         };
         try
         {
@@ -61,12 +62,11 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         }
     }
 
-    public async Task<Guid> CreateReceiverDepositEndpoint(string bearerToken, string base64EncodedWalletDepositEndpoint,
-        string receiverTin)
+    public async Task<Guid> CreateReceiverDepositEndpoint(AuthenticationHeaderValue bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin)
     {
         var headers = new Metadata
         {
-            { "Authorization", bearerToken }
+            { "Authorization", bearerToken.ToString() }
         };
 
         var wde = Base64Converter.ConvertToWalletDepositEndpoint(base64EncodedWalletDepositEndpoint);
@@ -93,7 +93,6 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             throw;
         }
     }
-
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {

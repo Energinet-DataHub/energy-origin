@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
-namespace Integration.Tests.Controllers;
+namespace Tests;
 
 public class HealthControllerTests
 {

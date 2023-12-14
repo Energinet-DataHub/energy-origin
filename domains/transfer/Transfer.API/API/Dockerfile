@@ -24,4 +24,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 COPY migrations /migrations
 
+ENV ASPNETCORE_HTTP_PORTS=80
+
 ENTRYPOINT ["dotnet", "API.dll"]

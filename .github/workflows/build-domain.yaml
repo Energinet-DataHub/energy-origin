@@ -129,7 +129,7 @@ jobs:
           sql-file: ${{ env.migration }}
 
       - name: Build image
-        uses: ./.github/actions/build-and-push-container
+        uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
@@ -139,6 +139,13 @@ jobs:
           build-args: |
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
+
+      - name: Scan image
+        uses: ./.github/actions/docker-scan
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
   update-environment:
     name: Update environment

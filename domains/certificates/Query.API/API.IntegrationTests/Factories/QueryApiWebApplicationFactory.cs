@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
+using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
@@ -57,6 +58,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
@@ -73,11 +81,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string subject)
+    public HttpClient CreateAuthenticatedClient(string subject, string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
     }

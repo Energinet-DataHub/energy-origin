@@ -110,7 +110,7 @@ public class TermsController : ControllerBase
             var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{relationUri}/relations", new()
             {
                 { "ssn", null },
-                { "tin", descriptor.Organization?.Id }
+                { "tin", descriptor.Organization?.Tin }
             });
 
             if (result.IsSuccessStatusCode == false)

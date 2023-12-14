@@ -36,58 +36,6 @@ namespace API.Shared.Migrations
                     b.ToTable("ClaimAutomationArguments");
                 });
 
-            modelBuilder.Entity("API.Connections.Api.Models.Connection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyAId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CompanyATin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CompanyBId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CompanyBTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyAId");
-
-                    b.HasIndex("CompanyBId");
-
-                    b.ToTable("Connections");
-                });
-
-            modelBuilder.Entity("API.Connections.Api.Models.ConnectionInvitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
-
-                    b.Property<Guid>("SenderCompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SenderCompanyTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ConnectionInvitations");
-                });
-
             modelBuilder.Entity("API.Transfer.Api.Models.TransferAgreement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -179,6 +127,42 @@ namespace API.Shared.Migrations
                     b.HasIndex("TransferAgreementId");
 
                     b.ToTable("TransferAgreementHistoryEntries");
+                });
+
+            modelBuilder.Entity("API.Transfer.Api.Models.TransferAgreementProposal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
+                    b.Property<DateTimeOffset?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReceiverCompanyTin")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SenderCompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SenderCompanyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderCompanyTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransferAgreementProposals");
                 });
 
             modelBuilder.Entity("API.Transfer.Api.Models.TransferAgreementHistoryEntry", b =>

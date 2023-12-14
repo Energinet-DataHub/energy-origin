@@ -26,6 +26,27 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         return transferAgreement;
     }
 
+    public async Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId)
+    {
+        var agreements = await context.TransferAgreements.Where(t =>
+                t.SenderId == newTransferAgreement.SenderId)
+            .ToListAsync();
+        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
+        newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
+
+        await context.TransferAgreements.AddAsync(newTransferAgreement);
+
+        var proposal = await context.TransferAgreementProposals.FindAsync(proposalId);
+        if (proposal != null)
+        {
+            context.TransferAgreementProposals.Remove(proposal);
+        }
+
+        await context.SaveChangesAsync();
+
+        return newTransferAgreement;
+    }
+
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin) =>
         await context.TransferAgreements
             .Where(ta => ta.SenderId == subjectId
@@ -57,4 +78,16 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate) =>
         !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
+
+    public async Task<bool> HasDateOverlap(TransferAgreementProposal proposal)
+    {
+        var overlappingAgreements = await context.TransferAgreements
+            .Where(t => t.SenderId == proposal.SenderCompanyId &&
+                        t.ReceiverTin == proposal.ReceiverCompanyTin)
+            .ToListAsync();
+
+        return overlappingAgreements.Any(a =>
+            IsOverlappingTransferAgreement(a, proposal.StartDate, proposal.EndDate)
+        );
+    }
 }
