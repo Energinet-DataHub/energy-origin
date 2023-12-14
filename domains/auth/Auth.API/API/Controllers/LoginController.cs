@@ -29,7 +29,7 @@ public class LoginController : ControllerBase
             logger.LogError("Unable to fetch discovery document: {Error}", discoveryDocument?.Error);
             return RedirectPreserveMethod(QueryHelpers.AddQueryString(oidcOptions.FrontendRedirectUri.AbsoluteUri, ErrorCode.QueryString, ErrorCode.AuthenticationUpstream.DiscoveryUnavailable));
         }
-//Test push 2
+//Test push 3
         var (scope, arguments) = providerOptions.GetIdentityProviderArguments();
 
         var oidcState = new OidcState(
