@@ -126,20 +126,13 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
             BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created consumption certificate for {Message}", message);
-
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}", matchingContract.MeteringPointType, message));
 
         var routingSlip = builder.Build();
-        try
-        {
-            await context.Execute(routingSlip);
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
+
+        await context.Execute(routingSlip);
         await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
