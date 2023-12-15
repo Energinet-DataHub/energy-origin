@@ -41,11 +41,15 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddPrometheusExporter());
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
+
+builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);

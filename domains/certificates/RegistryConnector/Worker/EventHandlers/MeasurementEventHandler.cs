@@ -9,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
@@ -18,7 +16,6 @@ using ProjectOriginClients;
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -34,13 +31,15 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     private readonly ProjectOriginOptions projectOriginOptions;
     private readonly ApplicationDbContext dbContext;
     private readonly ILogger<MeasurementEventHandler> logger;
+    private readonly IKeyGenerator keyGenerator;
 
-    public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter, IOptions<ProjectOriginOptions> projectOriginOptions, ApplicationDbContext dbContext, ILogger<MeasurementEventHandler> logger)
+    public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter, IOptions<ProjectOriginOptions> projectOriginOptions, ApplicationDbContext dbContext, ILogger<MeasurementEventHandler> logger, IKeyGenerator keyGenerator)
     {
         this.endpointNameFormatter = endpointNameFormatter;
         this.projectOriginOptions = projectOriginOptions.Value;
         this.dbContext = dbContext;
         this.logger = logger;
+        this.keyGenerator = keyGenerator;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
@@ -79,7 +78,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
             dbContext.Add(productionCertificate);
 
-            var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
+            var (ownerPublicKey, issuerKey) = keyGenerator.GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
             var issuedEvent = Registry.CreateIssuedEventForProduction(
                 projectOriginOptions.RegistryName,
@@ -110,7 +109,8 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
             dbContext.Add(consumptionCertificate);
 
-            var (ownerPublicKey, issuerKey) = GenerateKeyInfo(message.Quantity, matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
+            var (ownerPublicKey, issuerKey) = keyGenerator.GenerateKeyInfo(message.Quantity,
+                matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
             var issuedEvent = Registry.CreateIssuedEventForConsumption(
                 projectOriginOptions.RegistryName,
@@ -126,13 +126,20 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
             BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
             logger.LogInformation("Created consumption certificate for {Message}", message);
+
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}", matchingContract.MeteringPointType, message));
 
         var routingSlip = builder.Build();
-
-        await context.Execute(routingSlip);
+        try
+        {
+            await context.Execute(routingSlip);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
         await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -152,18 +159,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
             return false;
 
         return true;
-    }
-
-    private (IPublicKey, IPrivateKey) GenerateKeyInfo(long quantity, byte[] walletPublicKey, uint walletDepositEndpointPosition, string gridArea)
-    {
-        if (quantity > uint.MaxValue)
-            throw new ArgumentOutOfRangeException($"Cannot cast quantity {quantity} to uint");
-
-        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(walletPublicKey);
-        var ownerPublicKey = hdPublicKey.Derive((int)walletDepositEndpointPosition).GetPublicKey();
-        var issuerKey = projectOriginOptions.GetIssuerKey(gridArea);
-
-        return (ownerPublicKey, issuerKey);
     }
 
     private void BuildRoutingSlip(RoutingSlipBuilder builder,

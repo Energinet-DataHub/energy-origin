@@ -1,6 +1,5 @@
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using DataContext.ValueObjects;
@@ -12,6 +11,8 @@ using ProjectOrigin.WalletSystem.V1;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Testing.Helpers;
+using Testing.Testcontainers;
 using Xunit;
 using Attribute = ProjectOrigin.WalletSystem.V1.Attribute;
 
