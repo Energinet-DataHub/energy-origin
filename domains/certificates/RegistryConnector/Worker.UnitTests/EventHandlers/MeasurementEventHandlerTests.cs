@@ -57,7 +57,7 @@ public class MeasurementEventHandlerTests :
             DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
-        
+
         using (var scope = factory.ServiceScope())
         {
             using (var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>())
