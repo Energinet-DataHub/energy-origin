@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using API.DataSyncSyncer;
@@ -13,6 +14,7 @@ using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -32,9 +34,22 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
+    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
+        string publicKeyPem;
+
+        using (RSA rsa = RSA.Create())
+        {
+            rsa.ImportFromPem(privateKeyPem);
+            publicKeyPem = rsa.ExportRSAPublicKeyPem();
+        }
+
+        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
+
+
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Wallet:Url", WalletUrl);
@@ -42,6 +57,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
+        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
+        builder.UseSetting("TokenValidation:Issuer", "Issuer");
+        builder.UseSetting("TokenValidation:Audience", "Audience");
 
         builder.ConfigureTestServices(services =>
         {
