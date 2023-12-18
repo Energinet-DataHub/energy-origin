@@ -43,6 +43,7 @@ public class TransferAgreementsController : ControllerBase
     }
 
     [HttpGet("all")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<ActionResult> GetAll()
     {
         var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
