@@ -1,0 +1,38 @@
+name: Yaml - Generate docker-image-version
+description: |
+  Generate docker image version to GITHUB_SHA and if pr add more values
+
+outputs:
+  version:
+    description: The resulting version
+    value: ${{ steps.output.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Guard against non-supported events
+      if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "::error:: Only "push" and "pull_request" events are supported by this action."
+        exit 1
+
+    - uses: actions/checkout@v3
+      with:
+        path: yaml
+        ref: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && github.ref || github.head_ref }}
+
+    - name: Generate version
+      id: output
+      shell: bash
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
+          version="$(git rev-parse --short $GITHUB_SHA)"
+        elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+          version="$(git rev-parse $GITHUB_SHA)-pr.${{ github.event.pull_request.number }}"
+        else
+          >&2 echo "::error:: Not supported on push to branches other than main"
+          exit 1
+        fi
+        echo "version=${version}" >> $GITHUB_OUTPUT
+        echo "version=${version}" >> $GITHUB_ENV
