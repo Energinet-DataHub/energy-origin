@@ -5,6 +5,7 @@ using API.Claiming.Api.Repositories;
 using API.Claiming.Api.v2023_01_01.Dto.Response;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ public class ClaimAutomationController : ControllerBase
         this.claimAutomationRepository = claimAutomationRepository;
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
@@ -58,6 +60,7 @@ public class ClaimAutomationController : ControllerBase
         }
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpDelete("stop")]
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(void), 404)]
@@ -76,6 +79,7 @@ public class ClaimAutomationController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpGet]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
