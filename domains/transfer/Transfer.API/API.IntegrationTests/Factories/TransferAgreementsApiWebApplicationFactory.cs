@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,6 +15,7 @@ using API.Transfer.Api.Models;
 using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -198,12 +200,21 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         var claims = new Dictionary<string, object>()
         {
-            { "scope", scope },
-            { "actor", actor },
-            { "atr", actor },
-            { "tin", tin },
-            { "cpn", cpn },
-            { "name", name }
+            { UserClaimName.Scope, scope },
+            { UserClaimName.ActorLegacy, actor },
+            { UserClaimName.Actor, actor },
+            { UserClaimName.Tin, tin },
+            { UserClaimName.OrganizationName, cpn },
+            { JwtRegisteredClaimNames.Name, name },
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.AllowCprLookup, "false"},
+            { UserClaimName.AccessToken, ""},
+            { UserClaimName.IdentityToken, ""},
+            { UserClaimName.ProviderKeys, ""},
+            { UserClaimName.OrganizationId, sub},
+            { UserClaimName.MatchedRoles, ""},
+            { UserClaimName.Roles, ""},
+            { UserClaimName.AssignedRoles, ""}
         };
 
         var signedJwtToken = new TokenSigner(PrivateKey).Sign(

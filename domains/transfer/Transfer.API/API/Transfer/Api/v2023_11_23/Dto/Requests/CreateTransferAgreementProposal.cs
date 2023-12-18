@@ -1,5 +1,5 @@
 using System;
-using API.Shared.Extensions;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
@@ -13,6 +13,7 @@ public class CreateTransferAgreementProposalValidator : AbstractValidator<Create
 {
     public CreateTransferAgreementProposalValidator(IHttpContextAccessor context)
     {
+        var user = new UserDescriptor(context.HttpContext!.User);
         var now = DateTimeOffset.UtcNow;
 
         RuleFor(createProposal => createProposal.StartDate)
@@ -33,7 +34,7 @@ public class CreateTransferAgreementProposalValidator : AbstractValidator<Create
             .Length(8)
             .Matches("^[0-9]{8}$")
             .WithMessage("ReceiverTin must be 8 digits without any spaces.")
-            .NotEqual(context.HttpContext!.User.FindSubjectTinClaim())
+            .NotEqual(user.Organization!.Tin)
             .WithMessage("ReceiverTin cannot be the same as SenderTin.");
     }
 }

@@ -67,4 +67,8 @@
       <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Shared\Extensions\" />
+    </ItemGroup>
+
 </Project>
