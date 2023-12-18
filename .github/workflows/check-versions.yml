@@ -13,7 +13,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains/*/ libraries/*/*/
+          paths: libraries/*/*/
 
       - name: Set default matrix
         shell: bash
@@ -29,7 +29,7 @@ jobs:
         env:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          find domains libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" > /tmp/list || true
+          find libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" > /tmp/list || true
 
           if [ ! -s /tmp/list ]; then
             exit 0
