@@ -6,7 +6,6 @@ using MassTransit;
 using MassTransit.Courier.Contracts;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.PedersenCommitment;
@@ -18,8 +17,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
+using RegistryConnector.Worker.Exceptions;
 using RegistryConnector.Worker.RoutingSlips;
 
 namespace RegistryConnector.Worker.EventHandlers;
@@ -220,40 +219,6 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
-    }
-}
-
-//TODO: Duplicated
-
-public static class WalletDepositEndpointPositionCalculator
-{
-    private static readonly long startDate = DateTimeOffset.Parse("2022-01-01T00:00:00Z", CultureInfo.InvariantCulture).ToUnixTimeSeconds();
-
-    public static uint? CalculateWalletDepositEndpointPosition(this Period period)
-    {
-        var secondsElapsed = period.DateFrom - startDate;
-
-        if (secondsElapsed < 0)
-            return null;
-
-        if (secondsElapsed % 60 != 0)
-            return null;
-
-        var minutesElapsed = secondsElapsed / 60;
-        if (minutesElapsed > int.MaxValue)
-            return null;
-
-        return Convert.ToUInt32(minutesElapsed);
-    }
-}
-
-//TODO: Duplicated
-
-[Serializable]
-public class WalletException : Exception
-{
-    public WalletException(string message) : base(message)
-    {
     }
 }
 
