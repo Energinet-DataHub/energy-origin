@@ -13,10 +13,7 @@ using ProjectOrigin.Registry.V1;
 using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using RegistryConnector.Worker.Exceptions;
 using RegistryConnector.Worker.RoutingSlips;
@@ -220,22 +217,4 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
     }
-}
-
-public class TransactionConverter : JsonConverter<Transaction>
-{
-    public override Transaction? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        => Transaction.Parser.ParseFrom(reader.GetBytesFromBase64());
-
-    public override void Write(Utf8JsonWriter writer, Transaction value, JsonSerializerOptions options)
-        => writer.WriteBase64StringValue(value.ToByteArray());
-}
-
-public class ReceiveRequestConverter : JsonConverter<ReceiveRequest>
-{
-    public override ReceiveRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        => ReceiveRequest.Parser.ParseFrom(reader.GetBytesFromBase64());
-
-    public override void Write(Utf8JsonWriter writer, ReceiveRequest value, JsonSerializerOptions options)
-        => writer.WriteBase64StringValue(value.ToByteArray());
 }

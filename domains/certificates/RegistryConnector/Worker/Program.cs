@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
+using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
 using RegistryConnector.Worker.RoutingSlips;
 using Serilog;
