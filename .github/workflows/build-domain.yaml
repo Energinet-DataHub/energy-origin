@@ -135,7 +135,7 @@ jobs:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
           docker-context: ${{ env.domain }}
-          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == '2182-pipeline-sha-version' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
@@ -145,7 +145,7 @@ jobs:
         with:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == '2182-pipeline-sha-version' }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
   update-environment:
     name: Update environment
@@ -166,4 +166,4 @@ jobs:
         with:
           configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == '2182-pipeline-sha-version' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
