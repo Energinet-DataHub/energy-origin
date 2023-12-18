@@ -38,7 +38,6 @@ public class TransferAgreementsAutomationWorkerTests
             )
         };
 
-
         mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
@@ -62,7 +61,7 @@ public class TransferAgreementsAutomationWorkerTests
             httpClient);
 
         var act = async () => await worker.StartAsync(cts.Token);
-        act.Invoke();
+        await act.Invoke();
         await Task.Delay(1000); // Give the worker some time to set the cache
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
@@ -90,7 +89,6 @@ public class TransferAgreementsAutomationWorkerTests
                 StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
             )
         };
-
 
         mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));

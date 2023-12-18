@@ -1,8 +1,11 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TransferAgreementAutomation.Worker.Api;
 
+[Authorize]
+[ApiController]
 public class TransferAutomationController : ControllerBase
 {
     private readonly AutomationCache cache;
