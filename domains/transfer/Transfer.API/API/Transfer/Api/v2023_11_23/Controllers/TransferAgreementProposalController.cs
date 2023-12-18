@@ -1,11 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using API.Shared.Extensions;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.v2023_11_23.Dto.Requests;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -39,15 +40,14 @@ public class TransferAgreementProposalController : ControllerBase
     /// <response code="201">Created</response>
     /// <response code="400">Bad request</response>
     /// <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementProposalResponse), 201)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 409)]
     [HttpPost]
     public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
-        var companySenderId = Guid.Parse(User.FindSubjectGuidClaim());
-        var companySenderTin = User.FindSubjectTinClaim();
-        var companySenderName = User.FindSubjectNameClaim();
+        var user = new UserDescriptor(User);
 
         var validateResult = await createTransferAgreementProposalValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -58,9 +58,9 @@ public class TransferAgreementProposalController : ControllerBase
 
         var newProposal = new TransferAgreementProposal
         {
-            SenderCompanyId = companySenderId,
-            SenderCompanyTin = companySenderTin,
-            SenderCompanyName = companySenderName,
+            SenderCompanyId = user.Subject,
+            SenderCompanyTin = user.Organization!.Tin,
+            SenderCompanyName = user.Organization.Name,
             Id = Guid.NewGuid(),
             ReceiverCompanyTin = request.ReceiverTin,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
@@ -97,6 +97,7 @@ public class TransferAgreementProposalController : ControllerBase
     /// <param name="id">Id of TransferAgreementProposal</param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementProposalResponse), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -110,15 +111,14 @@ public class TransferAgreementProposalController : ControllerBase
             return NotFound();
         }
 
-        var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
-        var currentCompanyTin = User.FindSubjectTinClaim();
+        var user = new UserDescriptor(User);
 
-        if (currentCompanyId == proposal.SenderCompanyId)
+        if (user.Subject == proposal.SenderCompanyId)
         {
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
 
-        if (proposal.ReceiverCompanyTin != null && currentCompanyTin != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
@@ -128,8 +128,7 @@ public class TransferAgreementProposalController : ControllerBase
             return ValidationProblem("This proposal has run out");
         }
 
-        return Ok(
-            new TransferAgreementProposalResponse(
+        return Ok(new TransferAgreementProposalResponse(
                 proposal.Id,
                 proposal.SenderCompanyName,
                 proposal.ReceiverCompanyTin,
