@@ -1,7 +1,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -67,7 +66,6 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();

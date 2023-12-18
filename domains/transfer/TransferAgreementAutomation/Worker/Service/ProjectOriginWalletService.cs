@@ -1,15 +1,18 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Shared.Helpers;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace TransferAgreementAutomation.Worker.Service;
 
@@ -35,7 +38,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
     public async Task TransferCertificates(TransferAgreementDto transferAgreement)
     {
-        var header = ProjectOriginWalletHelper.SetupDummyAuthorizationHeader(transferAgreement.SenderId);
+        var header = SetupDummyAuthorizationHeader(transferAgreement.SenderId);
         var certificates = await GetGranularCertificates(header);
 
         var certificatesCount = certificates.Count;
@@ -85,6 +88,27 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         {
             metrics.AddTransferError();
         }
+    }
+
+    private static Metadata SetupDummyAuthorizationHeader(string owner)
+    {
+        return new Metadata
+        {
+            { "Authorization", $"Bearer {GenerateBearerToken(owner)}" }
+        };
+    }
+
+    private static string GenerateBearerToken(string owner)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[] { new Claim("sub", owner) }),
+            Expires = DateTime.UtcNow.AddDays(7),
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
     }
 
     private async Task<RepeatedField<GranularCertificate>> GetGranularCertificates(Metadata headers)
