@@ -30,7 +30,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<Program
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
-        builder.UseSetting("Retry:IssueToRegistryActivityRetryCount", "3");
+        builder.UseSetting("Retry:DefaultFirstLevelRetryCount", "3");
 
         if (ProjectOriginOptions != null)
         {

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DataContext;
 using Grpc.Core;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
+using RegistryConnector.Worker.Exceptions;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -64,15 +67,29 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
 
 public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefinition<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>
 {
+    private readonly IServiceProvider provider;
+    private readonly RetryOptions retryOptions;
+
+    public WaitForCommittedTransactionActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    {
+        this.provider = provider;
+        retryOptions = options.Value;
+    }
+
     protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
         IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator)
     {
-        //TODO: Configurable values for the retries, which can be overwritten in the integration tests
+        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+
         endpointConfigurator.UseMessageRetry(r => r
-            .Interval(100, TimeSpan.FromSeconds(1))
+            .Interval(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1))
             .Handle(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
-        //endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
-        //TODO: Define what to do for e.g. other exceptions. Should they be retried - or will they be redelivered?
+
+        endpointConfigurator.UseMessageRetry(r => r
+            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
+            .Ignore(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
+
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
     }
 }
 
@@ -84,11 +101,3 @@ public class RegistryTransactionStillProcessingException : Exception
     }
 }
 
-
-[Serializable]
-public class TransientException : Exception
-{
-    public TransientException(string message, Exception ex) : base(message, ex)
-    {
-    }
-}

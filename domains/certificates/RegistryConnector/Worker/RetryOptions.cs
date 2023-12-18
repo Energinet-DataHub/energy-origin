@@ -7,5 +7,11 @@ public class RetryOptions
     public const string Retry = nameof(Retry);
 
     [Required]
-    public int IssueToRegistryActivityRetryCount { get; set; }
+    public int DefaultFirstLevelRetryCount { get; set; }
+
+    [Required]
+    public int DefaultSecondLevelRetryCount { get; set; }
+
+    [Required]
+    public int RegistryTransactionStillProcessingRetryCount { get; set; }
 }

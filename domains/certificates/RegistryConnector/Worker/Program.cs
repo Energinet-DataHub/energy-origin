@@ -46,7 +46,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateOnStart();
+builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
@@ -69,7 +69,7 @@ builder.Services.AddMassTransit(o =>
     o.AddConsumer<WalletSliceSender>();
 
     o.AddConsumer<MeasurementEventHandler>();
-    o.AddConsumer<IssueCertificateNotCompletedConsumer>();
+    o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
 
     o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
 

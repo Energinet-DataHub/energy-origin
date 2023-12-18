@@ -7,6 +7,7 @@ using DataContext.ValueObjects;
 using MassTransit;
 using MassTransit.Courier.Contracts;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -93,5 +94,27 @@ public class IssueCertificateNotCompletedConsumer :
 
         var changed = await dbContext.SaveChangesAsync();
         logger.LogInformation("{changed}", changed);
+    }
+}
+
+public class IssueCertificateNotCompletedConsumerDefinition : ConsumerDefinition<IssueCertificateNotCompletedConsumer>
+{
+    private readonly IServiceProvider provider;
+    private readonly RetryOptions retryOptions;
+
+    public IssueCertificateNotCompletedConsumerDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    {
+        this.provider = provider;
+        retryOptions = options.Value;
+    }
+
+    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<IssueCertificateNotCompletedConsumer> consumerConfigurator)
+    {
+        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+
+        endpointConfigurator.UseMessageRetry(r => r
+            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
     }
 }
