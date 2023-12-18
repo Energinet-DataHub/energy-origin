@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using API.Shared.Extensions;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -38,15 +39,14 @@ public class TransferAgreementProposalController : ControllerBase
     /// <response code="201">Created</response>
     /// <response code="400">Bad request</response>
     /// <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(Guid), 201)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(string), 409)]
     [HttpPost]
     public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
-        var companySenderId = Guid.Parse(User.FindSubjectGuidClaim());
-        var companySenderTin = User.FindSubjectTinClaim();
-        var companySenderName = User.FindSubjectNameClaim();
+        var user = new UserDescriptor(HttpContext.User);
 
         var validateResult = await createTransferAgreementProposalValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -57,9 +57,9 @@ public class TransferAgreementProposalController : ControllerBase
 
         var newProposal = new TransferAgreementProposal
         {
-            SenderCompanyId = companySenderId,
-            SenderCompanyTin = companySenderTin,
-            SenderCompanyName = companySenderName,
+            SenderCompanyId = user.Subject,
+            SenderCompanyTin = user.Organization!.Tin,
+            SenderCompanyName = user.Organization.Name,
             Id = Guid.NewGuid(),
             ReceiverCompanyTin = request.ReceiverTin,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
@@ -88,6 +88,7 @@ public class TransferAgreementProposalController : ControllerBase
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
     /// <response code="404">TransferAgreementProposal expired or deleted</response>
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementProposal), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -101,17 +102,18 @@ public class TransferAgreementProposalController : ControllerBase
             return NotFound();
         }
 
-        var currentCompanyId = Guid.Parse(User.FindSubjectGuidClaim());
-        var currentCompanyTin = User.FindSubjectTinClaim();
+        var user = new UserDescriptor(HttpContext.User);
 
-        if (currentCompanyId == proposal.SenderCompanyId)
+        if (user.Subject == proposal.SenderCompanyId)
         {
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
-        if (currentCompanyTin != proposal.ReceiverCompanyTin)
+
+        if (user.Organization!.Tin != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
+
         if (proposal.EndDate < DateTimeOffset.UtcNow)
         {
             return ValidationProblem("This proposal has run out");
