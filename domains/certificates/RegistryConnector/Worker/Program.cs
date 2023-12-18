@@ -68,7 +68,7 @@ builder.Services.AddMassTransit(o =>
 
     o.AddConsumer<WalletSliceSender>();
 
-    o.AddConsumer<MeasurementEventHandler>();
+    o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
     o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
 
     o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();

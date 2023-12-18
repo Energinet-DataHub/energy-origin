@@ -205,6 +205,24 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     }
 }
 
+public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementEventHandler>
+{
+    private readonly RetryOptions retryOptions;
+
+    public MeasurementEventHandlerDefinition(IOptions<RetryOptions> options)
+    {
+        retryOptions = options.Value;
+    }
+
+    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<MeasurementEventHandler> consumerConfigurator)
+    {
+        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+
+        endpointConfigurator.UseMessageRetry(r => r
+            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+    }
+}
+
 //TODO: Duplicated
 
 public static class WalletDepositEndpointPositionCalculator
@@ -236,25 +254,6 @@ public class WalletException : Exception
 {
     public WalletException(string message) : base(message)
     {
-    }
-}
-
-public class WorkerBackgroundTester : BackgroundService
-{
-    private readonly IBus bus;
-
-    public WorkerBackgroundTester(IBus bus)
-    {
-        this.bus = bus;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await bus.Publish(new EnergyMeasuredIntegrationEvent("123456", 42, 43, 44, MeasurementQuality.Measured), stoppingToken);
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-        }
     }
 }
 
