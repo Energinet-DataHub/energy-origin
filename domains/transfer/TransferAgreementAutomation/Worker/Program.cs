@@ -20,7 +20,6 @@ using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
-using ProjectOriginOptions = TransferAgreementAutomation.Worker.Options.ProjectOriginOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()

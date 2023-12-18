@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
-using IProjectOriginWalletService = TransferAgreementAutomation.Worker.Service.IProjectOriginWalletService;
+using TransferAgreementAutomation.Worker.Service;
 
 namespace TransferAgreementAutomation.Worker;
 
@@ -61,7 +61,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
             try
             {
-               var transferAgreements = await GetAllTransferAgreements(stoppingToken);
+                var transferAgreements = await GetAllTransferAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Result.Count);
 
                 foreach (var transferAgreement in transferAgreements.Result)
@@ -83,7 +83,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
     {
         httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken());
-        var response = await httpClient.GetAsync("api/transfer-agreements", stoppingToken);
+        var response = await httpClient.GetAsync("api/transfer-agreements/all", stoppingToken);
 
         var jsonSerializerOptions = new JsonSerializerOptions
         {
@@ -119,7 +119,8 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires.DateTime,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);

@@ -34,12 +34,9 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = new TransferAgreementDto(
             EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
-            Id: Guid.NewGuid(),
             ReceiverReference: Guid.NewGuid().ToString(),
             ReceiverTin: "12345678",
             SenderId: Guid.NewGuid().ToString(),
-            SenderName: "Peter Producent",
-            SenderTin: "11223344",
             StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         );
 
@@ -71,12 +68,9 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = new TransferAgreementDto(
             EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
-            Id: Guid.NewGuid(),
             ReceiverReference: Guid.NewGuid().ToString(),
             ReceiverTin: "12345678",
             SenderId: Guid.NewGuid().ToString(),
-            SenderName: "Peter Producent",
-            SenderTin: "11223344",
             StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         );
 
@@ -112,12 +106,9 @@ public class ProjectOriginWalletServiceTest
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = new TransferAgreementDto(
             EndDate: now.AddHours(3).ToUnixTimeSeconds(),
-            Id: Guid.NewGuid(),
             ReceiverReference: Guid.NewGuid().ToString(),
             ReceiverTin: "12345678",
             SenderId: Guid.NewGuid().ToString(),
-            SenderName: "Peter Producent",
-            SenderTin: "11223344",
             StartDate: now.ToUnixTimeSeconds()
         );
 
@@ -149,12 +140,9 @@ public class ProjectOriginWalletServiceTest
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = new TransferAgreementDto(
             EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
-            Id: Guid.NewGuid(),
             ReceiverReference: Guid.NewGuid().ToString(),
             ReceiverTin: "12345678",
             SenderId: Guid.NewGuid().ToString(),
-            SenderName: "Peter Producent",
-            SenderTin: "11223344",
             StartDate: now.ToUnixTimeSeconds()
         );
 
@@ -184,12 +172,9 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = new TransferAgreementDto(
             EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
-            Id: Guid.NewGuid(),
             ReceiverReference: Guid.NewGuid().ToString(),
             ReceiverTin: "12345678",
             SenderId: Guid.NewGuid().ToString(),
-            SenderName: "Peter Producent",
-            SenderTin: "11223344",
             StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         );
 

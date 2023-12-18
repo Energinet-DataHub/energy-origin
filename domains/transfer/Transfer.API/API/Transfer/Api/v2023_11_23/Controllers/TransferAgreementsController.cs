@@ -42,6 +42,20 @@ public class TransferAgreementsController : ControllerBase
         this.transferAgreementProposalRepository = transferAgreementProposalRepository;
     }
 
+    [HttpGet("all")]
+    public async Task<ActionResult> GetAll()
+    {
+        var transferAgreements = await transferAgreementRepository.GetAllTransferAgreements();
+
+        return Ok(new InternalTransferAgreementsDto(transferAgreements.Select(ta => new InternalTransferAgreementDto(
+            StartDate: ta.StartDate.ToUnixTimeSeconds(),
+            EndDate: ta.EndDate?.ToUnixTimeSeconds(),
+            SenderId: ta.SenderId.ToString(),
+            ReceiverTin: ta.ReceiverTin,
+            ReceiverReference: ta.ReceiverReference
+        )).ToList()));
+    }
+
     /// <summary>
     /// Add a new Transfer Agreement
     /// </summary>

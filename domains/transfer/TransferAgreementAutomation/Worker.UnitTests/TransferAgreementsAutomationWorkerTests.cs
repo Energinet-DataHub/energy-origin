@@ -28,12 +28,9 @@ public class TransferAgreementsAutomationWorkerTests
         {
             new(
                 EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
-                Id: Guid.NewGuid(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                SenderName: "Peter Producent",
-                SenderTin: "11223344",
                 StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
             )
         };
@@ -80,17 +77,14 @@ public class TransferAgreementsAutomationWorkerTests
         {
             new(
                 EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
-                Id: Guid.NewGuid(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                SenderName: "Peter Producent",
-                SenderTin: "11223344",
                 StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
             )
         };
 
-        mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
+        mockHttpMessageHandler.Expect("/api/all-transfer-agreements").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
         using var cts = new CancellationTokenSource();
