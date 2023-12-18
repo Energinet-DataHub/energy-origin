@@ -20,14 +20,4 @@
     <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\.dockerignore">
-      <Link>.dockerignore</Link>
-    </Content>
-  </ItemGroup>
 </Project>
