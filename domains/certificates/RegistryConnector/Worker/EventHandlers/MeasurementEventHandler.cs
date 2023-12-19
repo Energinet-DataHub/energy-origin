@@ -139,7 +139,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         if (energyMeasuredIntegrationEvent.Quantity <= 0)
             return false;
 
-        if (energyMeasuredIntegrationEvent.Quantity > uint.MaxValue) //TODO: Add test
+        if (energyMeasuredIntegrationEvent.Quantity > uint.MaxValue)
             return false;
 
         if (energyMeasuredIntegrationEvent.Quality != MeasurementQuality.Measured)

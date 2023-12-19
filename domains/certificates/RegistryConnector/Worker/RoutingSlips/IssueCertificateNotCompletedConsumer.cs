@@ -52,7 +52,7 @@ public class IssueCertificateNotCompletedConsumer :
     public async Task Consume(ConsumeContext<IssueCertificateTerminated> context)
     {
         var message = context.Message;
-        var rejectionReason = $"Terminated: {message.Variables["Reason"]}"; //TODO: Constant
+        var rejectionReason = $"Terminated: {message.Variables["Reason"]}";
 
         await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
     }
