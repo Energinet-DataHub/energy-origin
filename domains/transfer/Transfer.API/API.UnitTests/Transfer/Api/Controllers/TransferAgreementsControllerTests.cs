@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Transfer.Api.Models;
@@ -8,8 +9,8 @@ using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Controllers;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
-using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -24,10 +25,21 @@ public class TransferAgreementsControllerTests
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
     private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
 
-    private const string subject = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
-    private const string atr = "d4f32241-442c-4043-8795-a4e6bf574e7f";
-    private const string tin = "11223344";
-    private const string cpn = "Company A/S";
+    private const string UserClaimNameScope = "userScope";
+    private const string UserClaimNameActorLegacy = "d4f32241-442c-4043-8795-a4e6bf574e7f";
+    private const string UserClaimNameActor = "d4f32241-442c-4043-8795-a4e6bf574e7f";
+    private const string UserClaimNameTin = "11223344";
+    private const string UserClaimNameOrganizationName = "Company A/S";
+    private const string JwtRegisteredClaimNamesName = "Charlie Company";
+    private const int UserClaimNameProviderType = 3;
+    private const string UserClaimNameAllowCprLookup = "false";
+    private const string UserClaimNameAccessToken = "";
+    private const string UserClaimNameIdentityToken = "";
+    private const string UserClaimNameProviderKeys = "";
+    private const string UserClaimNameOrganizationId = "03bad0af-caeb-46e8-809c-1d35a5863bc7";
+    private const string UserClaimNameMatchedRoles = "";
+    private const string UserClaimNameRoles = "";
+    private const string UserClaimNameAssignedRoles = "";
 
     public TransferAgreementsControllerTests()
     {
@@ -38,10 +50,21 @@ public class TransferAgreementsControllerTests
         {
             User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
-                new("sub", subject),
-                new("atr", atr),
-                new("cpn", cpn),
-                new("tin", tin)
+                new(UserClaimName.Scope, UserClaimNameScope),
+                new(UserClaimName.ActorLegacy, UserClaimNameActorLegacy),
+                new(UserClaimName.Actor, UserClaimNameActor),
+                new(UserClaimName.Tin, UserClaimNameTin),
+                new(UserClaimName.OrganizationName, UserClaimNameOrganizationName),
+                new(JwtRegisteredClaimNames.Name, JwtRegisteredClaimNamesName),
+                new(UserClaimName.ProviderType, UserClaimNameProviderType.ToString()),
+                new(UserClaimName.AllowCprLookup, UserClaimNameAllowCprLookup),
+                new(UserClaimName.AccessToken, UserClaimNameAccessToken),
+                new(UserClaimName.IdentityToken, UserClaimNameIdentityToken),
+                new(UserClaimName.ProviderKeys, UserClaimNameProviderKeys),
+                new(UserClaimName.OrganizationId, UserClaimNameOrganizationId),
+                new(UserClaimName.MatchedRoles, UserClaimNameMatchedRoles),
+                new(UserClaimName.Roles, UserClaimNameRoles),
+                new(UserClaimName.AssignedRoles, UserClaimNameAssignedRoles)
             }, "mock"))
         };
 
@@ -64,7 +87,7 @@ public class TransferAgreementsControllerTests
     {
         var taProposal = new TransferAgreementProposal
         {
-            ReceiverCompanyTin = tin,
+            ReceiverCompanyTin = UserClaimNameTin,
             CreatedAt = DateTimeOffset.UtcNow,
             SenderCompanyId = Guid.NewGuid(),
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
@@ -81,7 +104,7 @@ public class TransferAgreementsControllerTests
                 EndDate = taProposal.EndDate,
                 Id = Guid.NewGuid(),
                 ReceiverReference = Guid.NewGuid(),
-                ReceiverTin = tin,
+                ReceiverTin = UserClaimNameTin,
                 SenderId = taProposal.SenderCompanyId,
                 SenderName = taProposal.SenderCompanyName,
                 SenderTin = taProposal.SenderCompanyTin,
@@ -102,18 +125,18 @@ public class TransferAgreementsControllerTests
         var id = Guid.NewGuid();
         await controller.Get(id);
 
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(id, UserClaimNameOrganizationId, UserClaimNameTin);
     }
 
     [Fact]
     public async Task List_ShouldCallRepositoryOnce()
     {
         mockTransferAgreementRepository
-            .GetTransferAgreementsList(Guid.Parse(subject), tin).Returns(Task.FromResult(new List<TransferAgreement>()));
+            .GetTransferAgreementsList(Guid.Parse(UserClaimNameOrganizationId), UserClaimNameTin).Returns(Task.FromResult(new List<TransferAgreement>()));
 
         await controller.GetTransferAgreements();
 
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreementsList(Guid.Parse(subject), tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreementsList(Guid.Parse(UserClaimNameOrganizationId), UserClaimNameTin);
     }
 
     [Fact]
@@ -133,7 +156,7 @@ public class TransferAgreementsControllerTests
             },
         };
 
-        mockTransferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), tin).Returns(Task.FromResult(transferAgreements));
+        mockTransferAgreementRepository.GetTransferAgreementsList(Guid.Parse(UserClaimNameOrganizationId), UserClaimNameTin).Returns(Task.FromResult(transferAgreements));
 
         var result = await controller.GetTransferAgreements();
 
@@ -141,7 +164,7 @@ public class TransferAgreementsControllerTests
         var agreements = okResult?.Value as TransferAgreementsResponse;
 
         agreements!.Result.Count.Should().Be(transferAgreements.Count);
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreementsList(Guid.Parse(subject), tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreementsList(Guid.Parse(UserClaimNameOrganizationId), UserClaimNameTin);
     }
 
     [Fact]
@@ -155,12 +178,12 @@ public class TransferAgreementsControllerTests
             EndDate = DateTimeOffset.UtcNow.AddDays(10)
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin)!.Returns(Task.FromResult(transferAgreement));
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
         result.Result.Should().BeOfType<NotFoundResult>();
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
     }
 
     [Fact]
@@ -169,16 +192,16 @@ public class TransferAgreementsControllerTests
         var transferAgreement = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            SenderId = Guid.Parse(subject),
+            SenderId = Guid.Parse(UserClaimNameOrganizationId),
             EndDate = DateTimeOffset.UtcNow.AddDays(-1)
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin)!.Returns(Task.FromResult(transferAgreement));
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
         result.Result.Should().BeOfType<BadRequestObjectResult>();
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
     }
 
     [Fact]
@@ -187,12 +210,12 @@ public class TransferAgreementsControllerTests
         var transferAgreement = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            SenderId = Guid.Parse(subject),
+            SenderId = Guid.Parse(UserClaimNameOrganizationId),
             EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ReceiverTin = tin
+            ReceiverTin = UserClaimNameTin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin)!.Returns(Task.FromResult(transferAgreement));
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(true));
 
@@ -200,7 +223,7 @@ public class TransferAgreementsControllerTests
 
         result.Result.Should().BeOfType<ConflictObjectResult>();
 
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
     }
 
@@ -210,12 +233,12 @@ public class TransferAgreementsControllerTests
         var transferAgreement = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            SenderId = Guid.Parse(subject),
+            SenderId = Guid.Parse(UserClaimNameOrganizationId),
             EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ReceiverTin = tin
+            ReceiverTin = UserClaimNameTin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin)!.Returns(Task.FromResult(transferAgreement));
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(false));
 
@@ -226,7 +249,7 @@ public class TransferAgreementsControllerTests
 
         result.Result.Should().BeOfType<OkObjectResult>();
         transferAgreement.EndDate.Should().BeCloseTo(DateTimeOffset.FromUnixTimeSeconds(newEndDate), TimeSpan.FromSeconds(1));
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
         await mockTransferAgreementRepository.Received(1).Save();
     }
@@ -237,12 +260,12 @@ public class TransferAgreementsControllerTests
         var transferAgreement = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            SenderId = Guid.Parse(subject),
+            SenderId = Guid.Parse(UserClaimNameOrganizationId),
             EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            ReceiverTin = tin
+            ReceiverTin = UserClaimNameTin
         };
 
-        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, subject, tin)!.Returns(Task.FromResult(transferAgreement));
+        mockTransferAgreementRepository.GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin)!.Returns(Task.FromResult(transferAgreement));
 
 
         mockTransferAgreementRepository.HasDateOverlap(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(false));
@@ -254,7 +277,7 @@ public class TransferAgreementsControllerTests
 
         result.Result.Should().BeOfType<OkObjectResult>();
         transferAgreement.EndDate.Should().BeNull();
-        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, subject, tin);
+        await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
         await mockTransferAgreementRepository.Received(1).Save();
     }

@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using API.Claiming.Api.Models;
 using API.Claiming.Api.Repositories;
 using API.Claiming.Api.v2023_01_01.Dto.Response;
-using API.Shared.Extensions;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +25,16 @@ public class ClaimAutomationController : ControllerBase
         this.claimAutomationRepository = claimAutomationRepository;
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult> StartClaimAutomation()
     {
-        var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
+        var user = new UserDescriptor(User);
+
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+
         if (claim != null)
         {
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
@@ -38,7 +42,7 @@ public class ClaimAutomationController : ControllerBase
             return Ok(claimAutomationArgumentDto);
         }
 
-        var claimAutomationArgument = new ClaimAutomationArgument(Guid.Parse(subject), DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(user.Subject, DateTimeOffset.UtcNow);
 
         try
         {
@@ -49,20 +53,23 @@ public class ClaimAutomationController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            var claimAutomation = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
+            var claimAutomation = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
 
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt.ToUnixTimeSeconds());
             return Ok(claimAutomationArgumentDto);
         }
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpDelete("stop")]
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> StopClaimAutomation()
     {
-        var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
+        var user = new UserDescriptor(User);
+
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+
         if (claim == null)
         {
             return NotFound();
@@ -72,13 +79,16 @@ public class ClaimAutomationController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpGet]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation()
     {
-        var subject = User.FindSubjectGuidClaim();
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(Guid.Parse(subject));
+        var user = new UserDescriptor(User);
+
+        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+
         if (claim == null)
         {
             return NotFound();
