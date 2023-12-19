@@ -3,10 +3,10 @@ name: CI orchestrator
 on:
   pull_request:
     branches:
-      - 2182-pipeline-sha-version
+      - main
   push:
     branches:
-      - 2182-pipeline-sha-version
+      - main
 
 jobs:
   run-sonar:

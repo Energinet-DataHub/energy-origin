@@ -24,7 +24,6 @@ runs:
         if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
           version="$(git rev-parse --short $GITHUB_SHA)"
         elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
-
           version="${GITHUB_SHA}-pr.${{ github.event.pull_request.number }}"
         else
           >&2 echo "::error:: Not supported on push to branches other than main"
