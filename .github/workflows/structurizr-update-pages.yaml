@@ -67,7 +67,7 @@ jobs:
           set -e
           rm -rf */
           npm i puppeteer
-          curl https://raw.githubusercontent.com/structurizr/puppeteer/cf6f70da15fb18c038e052c9335970eecd77025a/export-diagrams.js --output export-diagrams.js
+          curl https://raw.githubusercontent.com/structurizr/puppeteer/master/export-diagrams.js --output export-diagrams.js
 
       - name: Render diagrams png images
         run: |

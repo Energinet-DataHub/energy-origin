@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using API.Shared.Extensions;
 using API.Shared.Helpers;
 using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
@@ -11,6 +10,8 @@ using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_11_23.Dto.Requests;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -64,6 +65,7 @@ public class TransferAgreementsController : ControllerBase
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(void), 400)]
@@ -82,8 +84,9 @@ public class TransferAgreementsController : ControllerBase
             return NotFound();
         }
 
-        var subjectTin = User.FindSubjectTinClaim();
-        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != subjectTin)
+        var user = new UserDescriptor(HttpContext.User);
+
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != user.Organization!.Tin)
         {
             return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
@@ -93,7 +96,7 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem("This proposal has run out");
         }
 
-        proposal.ReceiverCompanyTin ??= subjectTin;
+        proposal.ReceiverCompanyTin ??= user.Organization!.Tin;
 
         var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
         if (hasConflict)
@@ -134,15 +137,15 @@ public class TransferAgreementsController : ControllerBase
         }
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [HttpGet("{id}")]
     public async Task<ActionResult> Get([FromRoute] Guid id)
     {
-        var tin = User.FindSubjectTinClaim();
-        var subject = User.FindSubjectGuidClaim();
+        var user = new UserDescriptor(User);
 
-        var result = await transferAgreementRepository.GetTransferAgreement(id, subject, tin);
+        var result = await transferAgreementRepository.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
 
         if (result == null)
         {
@@ -152,14 +155,14 @@ public class TransferAgreementsController : ControllerBase
         return Ok(ToTransferAgreementDto(result));
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
     [HttpGet]
     public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
     {
-        var subject = User.FindSubjectGuidClaim();
-        var userTin = User.FindSubjectTinClaim();
+        var user = new UserDescriptor(User);
 
-        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(Guid.Parse(subject), userTin);
+        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
 
         if (!transferAgreements.Any())
         {
@@ -172,6 +175,7 @@ public class TransferAgreementsController : ControllerBase
         return Ok(new TransferAgreementsResponse(listResponse));
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -179,8 +183,7 @@ public class TransferAgreementsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
-        var subject = User.FindSubjectGuidClaim();
-        var userTin = User.FindSubjectTinClaim();
+        var user = new UserDescriptor(User);
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -194,10 +197,10 @@ public class TransferAgreementsController : ControllerBase
         var endDate = request.EndDate.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
             : (DateTimeOffset?)null;
-        var senderId = Guid.Parse(User.FindSubjectGuidClaim());
-        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, subject, userTin);
 
-        if (transferAgreement == null || transferAgreement.SenderId != senderId)
+        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
+
+        if (transferAgreement == null || transferAgreement.SenderId != user.Subject)
         {
             return NotFound();
         }

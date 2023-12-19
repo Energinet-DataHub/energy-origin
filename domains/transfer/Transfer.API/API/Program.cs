@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using API.Claiming;
 using API.Cvr;
@@ -104,7 +103,6 @@ if (app.Environment.IsDevelopment())
         });
 
 app.UseHttpsRedirection();
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 
