@@ -20,7 +20,6 @@ using RegistryConnector.Worker.RoutingSlips;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
-//TODO: Consider different name for class
 public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly IEndpointNameFormatter endpointNameFormatter;
@@ -134,7 +133,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
     private static bool ShouldEventBeProduced(CertificateIssuingContract contract, EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
-        //TODO: Would be nice to return the reason for not issuing a certificate
         if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
             return false;
 
@@ -212,9 +210,12 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
 
     protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<MeasurementEventHandler> consumerConfigurator)
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        endpointConfigurator.UseDelayedRedelivery(r => r
+            .Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1))
+            .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
 
         endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
+            .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
     }
 }
