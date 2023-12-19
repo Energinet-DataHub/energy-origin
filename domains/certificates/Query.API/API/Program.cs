@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using DataContext;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,19 +74,10 @@ builder.Services.AddApiVersioning(options =>
     .AddMvc()
     .AddApiExplorer();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = false,
-            ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            ValidateLifetime = false,
-            SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-    });
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
@@ -109,23 +102,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// Middleware to change authentication schema from "Bearer:" to "Bearer"
-// This is a hack/work-around to handle how the auth service sets the Authorization header
-app.Use(async (context, next) =>
-{
-    if (context.Request.Headers.ContainsKey("Authorization"))
-    {
-        var authorizationHeader = context.Request.Headers.Authorization;
-        var cleanedValues = authorizationHeader
-            .Select(s => s?.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
-            .ToArray();
-
-        context.Request.Headers.Authorization = new StringValues(cleanedValues);
-    }
-
-    await next();
-});
 
 app.UseAuthentication();
 app.UseAuthorization();
