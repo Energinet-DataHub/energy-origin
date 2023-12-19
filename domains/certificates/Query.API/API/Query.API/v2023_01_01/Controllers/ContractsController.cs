@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.Query.API.v2023_01_01.ApiModels.Requests;
 using API.Query.API.v2023_01_01.ApiModels.Responses;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +35,8 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject")!;
+        var user = new UserDescriptor(User);
+        var meteringPointOwner = user.Subject.ToString();
 
         var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
         if (!validationResult.IsValid)
@@ -78,7 +79,8 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject")!;
+        var user = new UserDescriptor(User);
+        var meteringPointOwner = user.Subject.ToString();
 
         var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
 
@@ -97,7 +99,8 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject")!;
+        var user = new UserDescriptor(User);
+        var meteringPointOwner = user.Subject.ToString();
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
@@ -121,7 +124,8 @@ public class ContractsController : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var meteringPointOwner = User.FindFirstValue("subject")!;
+        var user = new UserDescriptor(User);
+        var meteringPointOwner = user.Subject.ToString();
 
         var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
         if (!validationResult.IsValid)

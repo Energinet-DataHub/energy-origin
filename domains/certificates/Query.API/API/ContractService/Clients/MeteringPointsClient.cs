@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace API.ContractService.Clients;
@@ -50,7 +50,8 @@ public class MeteringPointsClient : IMeteringPointsClient
 
     private void ValidateOwnerAndSubjectMatch(string owner)
     {
-        var subject = httpContextAccessor.HttpContext?.User.FindFirstValue("subject") ?? string.Empty;
+        var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
+        var subject = user.Subject.ToString();
         if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
             throw new HttpRequestException("Owner must match subject");
     }
