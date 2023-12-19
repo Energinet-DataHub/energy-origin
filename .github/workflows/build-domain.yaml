@@ -90,10 +90,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Resolve version
-        uses: ./.github/actions/yaml-semver
-        with:
-          yaml-file: ${{ matrix.build.configuration }}
-          yaml-path: version
+        uses: ./.github/actions/docker-image-version
 
       - name: Resolve
         shell: bash
