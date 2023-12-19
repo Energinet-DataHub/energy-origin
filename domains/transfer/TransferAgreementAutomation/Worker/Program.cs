@@ -20,6 +20,7 @@ using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 
+
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
@@ -30,10 +31,15 @@ loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddOptions<TransferApiOptions>().BindConfiguration(TransferApiOptions.TransferApi)
+    .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
+    .ValidateDataAnnotations().ValidateOnStart();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -50,8 +56,6 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
-    .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>((sp, client) =>
 {
     var options = sp.GetRequiredService<IOptions<TransferApiOptions>>().Value;
