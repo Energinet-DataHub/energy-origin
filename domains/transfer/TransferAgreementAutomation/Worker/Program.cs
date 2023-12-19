@@ -56,17 +56,6 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>((sp, client) =>
-{
-    var options = sp.GetRequiredService<IOptions<TransferApiOptions>>().Value;
-    client.BaseAddress = new Uri(options.Url);
-    client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
-});
-builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
-{
-    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    o.Address = new Uri(options.WalletUrl);
-});
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -93,6 +82,13 @@ builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
 builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
+
+builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
+builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+{
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    o.Address = new Uri(options.WalletUrl);
+});
 
 var app = builder.Build();
 app.MapHealthChecks("/health");

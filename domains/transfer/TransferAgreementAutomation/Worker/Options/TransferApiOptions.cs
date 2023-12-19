@@ -8,4 +8,6 @@ public class TransferApiOptions
 
     [Required]
     public string Url { get; set; } = string.Empty;
+    [Required]
+    public string Version { get; set; } = string.Empty;
 }

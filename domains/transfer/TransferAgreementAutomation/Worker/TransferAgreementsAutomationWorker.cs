@@ -13,9 +13,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
+using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 
 namespace TransferAgreementAutomation.Worker;
@@ -26,7 +28,8 @@ public class TransferAgreementsAutomationWorker : BackgroundService
     private readonly ITransferAgreementAutomationMetrics metrics;
     private readonly AutomationCache memoryCache;
     private readonly IServiceProvider serviceProvider;
-    private readonly HttpClient httpClient;
+    private readonly IHttpClientFactory httpClient;
+    private readonly TransferApiOptions options;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
@@ -38,13 +41,15 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         ITransferAgreementAutomationMetrics metrics,
         AutomationCache memoryCache,
         IServiceProvider serviceProvider,
-        HttpClient httpClient)
+        IHttpClientFactory httpClient,
+        IOptions<TransferApiOptions> options)
     {
         this.logger = logger;
         this.metrics = metrics;
         this.memoryCache = memoryCache;
         this.serviceProvider = serviceProvider;
         this.httpClient = httpClient;
+        this.options = options.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -81,9 +86,14 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
     private async Task<TransferAgreementsDto> GetAllTransferAgreements(CancellationToken stoppingToken)
     {
-        httpClient.DefaultRequestHeaders.Authorization =
+        var client = httpClient.CreateClient();
+
+        client.BaseAddress = new Uri(options.Url);
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", options.Version);
+        client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken());
-        var response = await httpClient.GetAsync("api/transfer-agreements/all", stoppingToken);
+
+        var response = await client.GetAsync("api/transfer-agreements/all", stoppingToken);
 
         var jsonSerializerOptions = new JsonSerializerOptions
         {
