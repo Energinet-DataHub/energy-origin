@@ -120,7 +120,7 @@ jobs:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
     steps:
       - uses: actions/checkout@v3
-      
+            
       - name: Resolve version
         uses: ./.github/actions/yaml-semver
         with:
