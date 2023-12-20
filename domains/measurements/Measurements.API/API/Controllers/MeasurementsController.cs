@@ -10,7 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Authorize]
-public class MeasurementsController : AuthorizationController
+public class MeasurementsController : ControllerBase
 {
     [HttpGet]
     [Route("api/measurements/consumption")]
