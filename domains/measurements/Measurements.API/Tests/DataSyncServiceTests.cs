@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using System.Net.Http.Headers;
 using API.Models;
 using API.Services;
-using EnergyOriginAuthorization;
 using Tests.Helpers;
 using Xunit;
 
@@ -15,11 +15,12 @@ namespace Tests
         {
             // Arrange
             var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
-
             var datasync = new DataSyncService(mockClient);
+            var token = "dummyBearerToken";
+            var authHeader = new AuthenticationHeaderValue("Bearer", token);
 
             // Act
-            var res = await datasync.GetListOfMeteringPoints(new AuthorizationContext("", "", ""));
+            var res = await datasync.GetListOfMeteringPoints(authHeader);
 
             // Assert
             Assert.NotEmpty(res);
@@ -40,8 +41,11 @@ namespace Tests
 
             var datasync = new DataSyncService(mockClient);
 
+            var token = "dummyBearerToken";
+            var authHeader = new AuthenticationHeaderValue("Bearer", token);
+
             // Act
-            var res = await datasync.GetMeasurements(new AuthorizationContext("", "", ""), "571313121223234323", dateFrom, dateTo);
+            var res = await datasync.GetMeasurements(authHeader, "571313121223234323", dateFrom, dateTo);
 
             // Assert
             Assert.NotEmpty(res);

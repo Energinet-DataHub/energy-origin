@@ -1,5 +1,5 @@
+using System.Net.Http.Headers;
 using API.Models;
-using EnergyOriginAuthorization;
 
 namespace API.Services;
 
@@ -7,13 +7,17 @@ public class DataSyncService : IDataSyncService
 {
     private readonly HttpClient httpClient;
 
-    public DataSyncService(HttpClient httpClient) => this.httpClient = httpClient;
+    public DataSyncService(HttpClient httpClient)
+    {
+        this.httpClient = httpClient;
+    }
 
-    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo)
+    public async Task<IEnumerable<Measurement>> GetMeasurements(AuthenticationHeaderValue bearerToken, string gsrn,
+        DateTimeOffset dateFrom, DateTimeOffset dateTo)
     {
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTimeSeconds()}&dateTo={dateTo.ToUnixTimeSeconds()}";
 
-        httpClient.AddAuthorizationToken(context);
+        httpClient.DefaultRequestHeaders.Authorization = bearerToken;
 
         var reponse = await httpClient.GetAsync(url);
         if (reponse == null || !reponse.IsSuccessStatusCode)
@@ -25,10 +29,11 @@ public class DataSyncService : IDataSyncService
         return result ?? throw new Exception($"Parsing of meteringpoints failed. Content: {reponse.Content}");
     }
 
-    public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context)
+    public async Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthenticationHeaderValue bearerToken)
     {
         var uri = "meteringpoints";
-        httpClient.AddAuthorizationToken(context);
+
+        httpClient.DefaultRequestHeaders.Authorization = bearerToken;
 
         var response = await httpClient.GetAsync(uri);
         if (response == null || !response.IsSuccessStatusCode)

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Models;
 using API.Services;
 using AutoFixture;
-using EnergyOriginAuthorization;
 using NSubstitute;
 using Tests.Helpers;
 using Xunit;
@@ -21,7 +21,8 @@ public sealed class MeasurementsServiceTest
     {
         //Arrange
 
-        var context = new AuthorizationContext("subject", "actor", "token");
+        var token = "dummyBearerToken";
+        var authHeader = new AuthenticationHeaderValue("Bearer", token);
         var dateFrom = new DateTime(2021, 1, 1);
         var dateTo = new DateTime(2021, 1, 2);
         var meteringPoints = new Fixture().Create<List<MeteringPoint>>();
@@ -30,7 +31,7 @@ public sealed class MeasurementsServiceTest
         var mockDataSyncService = Substitute.For<IDataSyncService>();
 
         mockDataSyncService.GetMeasurements(
-            Arg.Any<AuthorizationContext>(),
+            Arg.Any<AuthenticationHeaderValue>(),
             Arg.Any<string>(),
             Arg.Any<DateTimeOffset>(),
             Arg.Any<DateTimeOffset>()
@@ -41,7 +42,7 @@ public sealed class MeasurementsServiceTest
         //Act
 
         var timeSeries = await sut.GetTimeSeries(
-            context,
+            authHeader,
             dateFrom,
             dateTo,
             meteringPoints

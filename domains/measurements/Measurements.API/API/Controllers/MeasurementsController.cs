@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using API.Models;
 using API.Models.Request;
 using API.Services;
@@ -12,10 +13,19 @@ namespace API.Controllers;
 [Authorize]
 public class MeasurementsController : ControllerBase
 {
+    private readonly IHttpContextAccessor httpContextAccessor;
+
+    public MeasurementsController(IHttpContextAccessor httpContextAccessor)
+    {
+        this.httpContextAccessor = httpContextAccessor;
+    }
+
     [HttpGet]
     [Route("api/measurements/consumption")]
     public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
+
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
@@ -24,7 +34,7 @@ public class MeasurementsController : ControllerBase
         }
 
         return Ok(await measurementsService.GetMeasurements(
-            Context,
+            bearerToken,
             request.TimeZoneInfo,
             DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
             DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
@@ -36,6 +46,8 @@ public class MeasurementsController : ControllerBase
     [Route("api/measurements/production")]
     public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
     {
+        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
+
         var validateResult = await validator.ValidateAsync(request);
         if (!validateResult.IsValid)
         {
@@ -44,7 +56,7 @@ public class MeasurementsController : ControllerBase
         }
 
         return Ok(await measurementsService.GetMeasurements(
-            Context,
+            bearerToken,
             request.TimeZoneInfo,
             DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
             DateTimeOffset.FromUnixTimeSeconds(request.DateTo),

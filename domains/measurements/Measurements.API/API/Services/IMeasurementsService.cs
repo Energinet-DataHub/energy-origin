@@ -1,12 +1,12 @@
+using System.Net.Http.Headers;
 using API.Models;
-using EnergyOriginAuthorization;
 
 namespace API.Services;
 
 public interface IMeasurementsService
 {
     Task<MeasurementResponse> GetMeasurements(
-        AuthorizationContext context,
+        AuthenticationHeaderValue context,
         TimeZoneInfo timeZone,
         DateTimeOffset dateFrom,
         DateTimeOffset dateTo,

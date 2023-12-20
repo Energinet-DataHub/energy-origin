@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using API.Models;
 using EnergyOriginAuthorization;
 
@@ -5,7 +6,8 @@ namespace API.Services;
 
 public interface IDataSyncService
 {
-    Task<IEnumerable<Measurement>> GetMeasurements(AuthorizationContext context, string gsrn, DateTimeOffset dateFrom, DateTimeOffset dateTo);
+    Task<IEnumerable<Measurement>> GetMeasurements(AuthenticationHeaderValue bearerToken, string gsrn,
+        DateTimeOffset dateFrom, DateTimeOffset dateTo);
 
-    Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthorizationContext context);
+    Task<IEnumerable<MeteringPoint>> GetListOfMeteringPoints(AuthenticationHeaderValue bearerToken);
 }

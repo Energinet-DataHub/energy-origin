@@ -1,5 +1,5 @@
 using API.Models;
-using EnergyOriginAuthorization;
+using System.Net.Http.Headers;
 
 namespace API.Services;
 
@@ -15,7 +15,7 @@ public class MeasurementsService : IMeasurementsService
     }
 
     public async Task<MeasurementResponse> GetMeasurements(
-        AuthorizationContext context,
+        AuthenticationHeaderValue context,
         TimeZoneInfo timeZone,
         DateTimeOffset dateFrom,
         DateTimeOffset dateTo,
@@ -31,7 +31,7 @@ public class MeasurementsService : IMeasurementsService
         return aggregator.CalculateAggregation(measurements, timeZone, aggregation);
     }
 
-    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthorizationContext context, DateTimeOffset dateFrom, DateTimeOffset dateTo, IEnumerable<MeteringPoint> meteringPoints)
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeries(AuthenticationHeaderValue context, DateTimeOffset dateFrom, DateTimeOffset dateTo, IEnumerable<MeteringPoint> meteringPoints)
     {
         var timeSeries = new List<TimeSeries>();
         foreach (var meteringPoint in meteringPoints)
