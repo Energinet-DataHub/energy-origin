@@ -41,7 +41,10 @@ internal class DataSyncSyncerWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (options.Disabled)
+        {
+            logger.LogInformation("DataSyncSyncer is disabled!");
             return;
+        }
 
         while (!stoppingToken.IsCancellationRequested)
         {
