@@ -60,7 +60,7 @@ public class IssueCertificateNotCompletedConsumer :
     public async Task Consume(ConsumeContext<IssueCertificateFaulted> context)
     {
         var message = context.Message;
-        var exceptionInfo = message.ActivityExceptions.First().ExceptionInfo;
+        var exceptionInfo = message.ActivityExceptions[0].ExceptionInfo;
         var rejectionReason = $"Faulted: {exceptionInfo.ExceptionType} - {exceptionInfo.Message}";
 
         await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
@@ -74,7 +74,7 @@ public class IssueCertificateNotCompletedConsumer :
 
             if (productionCertificate == null)
             {
-                logger.LogWarning($"Production certificate with certificateId {certificateId} not found.");
+                logger.LogWarning("Production certificate with certificateId {certificateId} not found.", certificateId);
                 return;
             }
 
@@ -86,7 +86,7 @@ public class IssueCertificateNotCompletedConsumer :
 
             if (consumptionCertificate == null)
             {
-                logger.LogWarning($"Consumption certificate with certificateId {certificateId} not found.");
+                logger.LogWarning("Consumption certificate with certificateId {certificateId} not found.", certificateId);
                 return;
             }
             consumptionCertificate.Reject(rejectionReason);

@@ -42,7 +42,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         var message = context.Message;
 
         var contracts = await dbContext.Contracts.Where(c => c.GSRN == message.GSRN).ToListAsync(context.CancellationToken);
-        var matchingContract = contracts.FirstOrDefault(c => ShouldEventBeProduced(c, message));
+        var matchingContract = contracts.Find(c => ShouldEventBeProduced(c, message));
         if (matchingContract == null)
         {
             logger.LogInformation("No certificate created for {Message}", message);

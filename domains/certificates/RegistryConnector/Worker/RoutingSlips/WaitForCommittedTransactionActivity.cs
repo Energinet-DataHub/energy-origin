@@ -54,7 +54,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
         catch (RpcException ex)
         {
             var transientException = new TransientException("Registry communication error", ex);
-            logger.LogWarning(transientException, null);
+            logger.LogWarning("Registry communication error. Exception: {ex}", ex);
             return context.Faulted(transientException);
         }
         catch (Exception ex)
