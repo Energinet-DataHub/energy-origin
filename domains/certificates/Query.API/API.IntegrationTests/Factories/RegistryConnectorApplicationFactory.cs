@@ -27,12 +27,19 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
     };
 
+    public RetryOptions RetryOptions { get; set; } = new()
+    {
+        DefaultFirstLevelRetryCount = 5,
+        DefaultSecondLevelRetryCount = 4,
+        RegistryTransactionStillProcessingRetryCount = 100
+    };
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
-        builder.UseSetting("Retry:DefaultFirstLevelRetryCount", "5");
-        builder.UseSetting("Retry:DefaultSecondLevelRetryCount", "4");
-        builder.UseSetting("Retry:RegistryTransactionStillProcessingRetryCount", "100");
+        builder.UseSetting("Retry:DefaultFirstLevelRetryCount", RetryOptions.DefaultFirstLevelRetryCount.ToString());
+        builder.UseSetting("Retry:DefaultSecondLevelRetryCount", RetryOptions.DefaultSecondLevelRetryCount.ToString());
+        builder.UseSetting("Retry:RegistryTransactionStillProcessingRetryCount", RetryOptions.RegistryTransactionStillProcessingRetryCount.ToString());
 
         if (ProjectOriginOptions != null)
         {

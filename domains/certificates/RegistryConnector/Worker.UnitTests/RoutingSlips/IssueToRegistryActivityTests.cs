@@ -31,7 +31,7 @@ public class IssueToRegistryActivityTests
                         Value = Guid.NewGuid().ToString()
                     }
                 },
-                Nonce = "Dunno what this is",
+                Nonce = "RandomHash",
                 PayloadSha512 = ByteString.CopyFrom(new ReadOnlySpan<byte>()),
                 PayloadType = "Dunno"
             },
