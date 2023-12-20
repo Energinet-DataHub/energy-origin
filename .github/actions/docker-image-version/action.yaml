@@ -1,0 +1,33 @@
+name: Docker - Generate image version
+description: |
+  Release versions use short hashes. All other versions are generated using long hashes and have a pr number appended.
+
+outputs:
+  version:
+    description: The resulting version
+    value: ${{ steps.output.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Guard against non-supported events
+      if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "::error:: Only "push" and "pull_request" events are supported by this action."
+        exit 1
+
+    - name: Generate version
+      id: output
+      shell: bash
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = 'push' ] && [ "$GITHUB_REF_NAME" = 'main' ]; then
+          version="$(git rev-parse --short $GITHUB_SHA)"
+        elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+          version="${GITHUB_SHA}-pr.${{ github.event.pull_request.number }}"
+        else
+          >&2 echo "::error:: Not supported on push to branches other than main"
+          exit 1
+        fi
+        echo "version=${version}" >> $GITHUB_OUTPUT
+        echo "version=${version}" >> $GITHUB_ENV

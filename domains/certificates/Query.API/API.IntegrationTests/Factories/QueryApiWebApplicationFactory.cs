@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using API.Configurations;
@@ -15,6 +15,8 @@ using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -26,9 +28,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.WalletSystem.V1;
-using Claim = System.Security.Claims.Claim;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
@@ -41,9 +41,22 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
+    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
+        string publicKeyPem;
+
+        using (RSA rsa = RSA.Create())
+        {
+            rsa.ImportFromPem(privateKeyPem);
+            publicKeyPem = rsa.ExportRSAPublicKeyPem();
+        }
+
+        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
+
+
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Wallet:Url", WalletUrl);
@@ -51,6 +64,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
+        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
+        builder.UseSetting("TokenValidation:Issuer", "Issuer");
+        builder.UseSetting("TokenValidation:Audience", "Audience");
 
         builder.ConfigureTestServices(services =>
         {
@@ -90,11 +106,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
-    public HttpClient CreateAuthenticatedClient(string subject, string apiVersion = "20230101")
+    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
@@ -102,7 +119,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public (WalletService.WalletServiceClient, Metadata metadata) CreateWalletClient(string subject)
     {
-        var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(subject: subject));
+        var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(sub: subject));
         var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
 
         var options = Services.GetRequiredService<IOptions<WalletOptions>>().Value;
@@ -114,32 +131,47 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
 
-    private static string GenerateToken(
+    private string GenerateToken(
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string subject = "bdcb3287-3dd3-44cd-8423-1f94437648cc")
+        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string tin = "11223344",
+        string cpn = "Producent A/S",
+        string name = "Peter Producent",
+        string issuer = "Issuer",
+        string audience = "Audience")
     {
-        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
 
-        var claims = new[]
+        var claims = new Dictionary<string, object>()
         {
-            new Claim("subject", subject),
-            new Claim("sub", subject),
-            new Claim("scope", scope),
-            new Claim("actor", actor)
+            { UserClaimName.Scope, scope },
+            { UserClaimName.ActorLegacy, actor },
+            { UserClaimName.Actor, actor },
+            { UserClaimName.Tin, tin },
+            { UserClaimName.OrganizationName, cpn },
+            { JwtRegisteredClaimNames.Name, name },
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.AllowCprLookup, "false"},
+            { UserClaimName.AccessToken, ""},
+            { UserClaimName.IdentityToken, ""},
+            { UserClaimName.ProviderKeys, ""},
+            { UserClaimName.OrganizationId, sub},
+            { UserClaimName.MatchedRoles, ""},
+            { UserClaimName.Roles, ""},
+            { UserClaimName.AssignedRoles, ""}
         };
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(1),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
+        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
+            sub,
+            name,
+            issuer,
+            audience,
+            null,
+            60,
+            claims
+        );
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return signedJwtToken;
     }
 
     public async Task AddContract(string subject,
