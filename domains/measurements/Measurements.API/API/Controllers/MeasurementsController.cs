@@ -1,9 +1,9 @@
 using API.Models;
 using API.Models.Request;
 using API.Services;
-using EnergyOriginAuthorization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
