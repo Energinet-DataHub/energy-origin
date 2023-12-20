@@ -1,6 +1,8 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -64,19 +66,6 @@ builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = false,
-            ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            ValidateLifetime = false,
-            SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-    });
 
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddSingleton<AutomationCache>();
@@ -90,14 +79,22 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
     o.Address = new Uri(options.WalletUrl);
 });
 
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
+
 var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}
