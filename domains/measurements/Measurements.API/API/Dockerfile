@@ -2,7 +2,7 @@ ARG SDK_VERSION
 ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION} AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 8080
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION} AS build
@@ -23,6 +23,6 @@ RUN apt-get -y update && apt-get -y install wget && apt-get clean
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_HTTP_PORTS=80
+ENV ASPNETCORE_HTTP_PORTS=8080
 
 ENTRYPOINT ["dotnet", "API.dll"]
