@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API.Configurations;
 using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
 using Asp.Versioning.ApiExplorer;
@@ -27,7 +26,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using ProjectOrigin.WalletSystem.V1;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -122,8 +120,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(sub: subject));
         var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
 
-        var options = Services.GetRequiredService<IOptions<WalletOptions>>().Value;
-        var channel = GrpcChannel.ForAddress(options.Url);
+        var channel = GrpcChannel.ForAddress(WalletUrl);
         disposableChannels.Add(channel);
 
         return (new WalletService.WalletServiceClient(channel), metadata);

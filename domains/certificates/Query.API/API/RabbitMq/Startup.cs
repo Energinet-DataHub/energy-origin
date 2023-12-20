@@ -1,5 +1,4 @@
 using System;
-using API.GranularCertificateIssuer;
 using Contracts;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -18,11 +17,6 @@ public static class Startup
         services.AddMassTransit(o =>
         {
             o.SetKebabCaseEndpointNameFormatter();
-
-            //TODO: Delete these
-            //o.AddConsumer<EnergyMeasuredEventHandler>();
-            //o.AddConsumer<CertificateIssuedInRegistryEventHandler>();
-            //o.AddConsumer<CertificateRejectedInRegistryEventHandler>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

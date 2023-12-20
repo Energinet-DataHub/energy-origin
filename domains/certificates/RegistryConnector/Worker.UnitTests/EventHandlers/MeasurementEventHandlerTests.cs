@@ -88,10 +88,10 @@ public class MeasurementEventHandlerTests :
             }
         }
 
-        (await QueryUntilConsumptionCertificateFound(gsrn)).Should().Be(true);
+        (await IsConsumptionCertificateSaved(gsrn)).Should().Be(true);
     }
 
-    private async Task<bool> QueryUntilConsumptionCertificateFound(string gsrn)
+    private async Task<bool> IsConsumptionCertificateSaved(string gsrn)
     {
         var limit = TimeSpan.FromSeconds(30);
 
