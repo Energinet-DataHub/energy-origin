@@ -4,17 +4,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
 using TransferAgreementAutomation.Worker.Options;
@@ -114,35 +115,25 @@ public class TransferAgreementsAutomationWorker : BackgroundService
 
     private static string GenerateToken()
     {
-        var claims = new Dictionary<string, object>()
+        var now = DateTimeOffset.UtcNow;
+        var expires = now.AddMinutes(3);
+
+        var claims = new Claim[]
         {
-            { UserClaimName.Scope, scope },
-            { UserClaimName.ActorLegacy, actor },
-            { UserClaimName.Actor, actor },
-            { UserClaimName.Tin, tin },
-            { UserClaimName.OrganizationName, cpn },
-            { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-            { UserClaimName.AllowCprLookup, "false"},
-            { UserClaimName.AccessToken, ""},
-            { UserClaimName.IdentityToken, ""},
-            { UserClaimName.ProviderKeys, ""},
-            { UserClaimName.OrganizationId, sub},
-            { UserClaimName.MatchedRoles, ""},
-            { UserClaimName.Roles, ""},
-            { UserClaimName.AssignedRoles, ""}
+            new("issued", now.ToString("o")),
+            new("expires", expires.ToString("o")),
         };
 
-        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
-            sub,
-            name,
-            issuer,
-            audience,
-            null,
-            60,
-            claims
-        );
-
-        return signedJwtToken;
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires.DateTime,
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }
