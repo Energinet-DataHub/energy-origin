@@ -3,11 +3,13 @@ using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using RichardSzalay.MockHttp;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
+using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 using Xunit;
 
@@ -21,6 +23,7 @@ public class TransferAgreementsAutomationWorkerTests
         var loggerMock = Substitute.For<ILogger<TransferAgreementsAutomationWorker>>();
         var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
+        var httpFactoryMock = Substitute.For<IHttpClientFactory>();
         var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
@@ -50,12 +53,15 @@ public class TransferAgreementsAutomationWorkerTests
             });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
-        var httpClient = mockHttpMessageHandler.ToHttpClient();
-        httpClient.BaseAddress = new Uri("http://localhost:8080");
-        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
+        httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
+        var options = new TransferApiOptions();
+        options.Url = "http://localhost:8080";
+        options.Version = "20231123";
+        var transferOptions = Options.Create(options);
+
 
         var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-            httpClient);
+            httpFactoryMock, transferOptions);
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
@@ -70,6 +76,7 @@ public class TransferAgreementsAutomationWorkerTests
         var loggerMock = Substitute.For<ILogger<TransferAgreementsAutomationWorker>>();
         var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
+        var httpFactoryMock = Substitute.For<IHttpClientFactory>();
         using var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
@@ -94,12 +101,15 @@ public class TransferAgreementsAutomationWorkerTests
             .Do(_ => { cts.Cancel(); });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
-        var httpClient = mockHttpMessageHandler.ToHttpClient();
-        httpClient.BaseAddress = new Uri("http://localhost:8080");
-        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
+        httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
+        var transferOptions = Options.Create(new TransferApiOptions
+        {
+            Url = "http://localhost:8080",
+            Version = "20231123"
+        });
 
         var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-            httpClient);
+            httpFactoryMock, transferOptions);
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
