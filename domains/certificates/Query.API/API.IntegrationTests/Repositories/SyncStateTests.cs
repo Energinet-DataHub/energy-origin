@@ -1,6 +1,5 @@
 using API.DataSyncSyncer;
 using API.DataSyncSyncer.Persistence;
-using API.IntegrationTests.Helpers;
 using API.IntegrationTests.Mocks;
 using DataContext;
 using FluentAssertions;
@@ -11,6 +10,7 @@ using NSubstitute.ExceptionExtensions;
 using System;
 using System.Threading.Tasks;
 using DataContext.Models;
+using Testing.Helpers;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;

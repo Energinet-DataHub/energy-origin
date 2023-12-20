@@ -9,6 +9,9 @@ public class DatasyncOptions
 
     [Required]
     public string Url { get; set; } = string.Empty;
+
+    [Required]
+    public bool Disabled { get; set; } = false;
 }
 
 public static partial class OptionsExtensions

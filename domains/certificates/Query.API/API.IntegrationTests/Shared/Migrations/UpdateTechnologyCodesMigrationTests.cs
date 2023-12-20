@@ -1,4 +1,3 @@
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
@@ -9,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using System;
 using System.Threading.Tasks;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
