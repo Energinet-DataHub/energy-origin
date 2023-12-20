@@ -1,10 +1,9 @@
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Contracts;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-namespace API.IntegrationTests.Testcontainers;
+namespace Testing.Testcontainers;
 
 public partial class RabbitMqContainer : IAsyncLifetime
 {
@@ -36,6 +35,8 @@ public partial class RabbitMqContainer : IAsyncLifetime
     }
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
+
+    public async Task StopAsync() => await testContainer.StopAsync();
 
     public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
 }

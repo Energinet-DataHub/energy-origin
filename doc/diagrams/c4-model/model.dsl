@@ -41,14 +41,14 @@ certificatesSubsystem = group "Certificate Subsystem" {
         technology "Postgres"
     }
     certRegistryConnector = container "Registry Connector" {
-        description "Coordinates issurance between registry and wallet"
+        description "Handles the issuence flow"
 
         this -> poRegistry "Sends issued events to"
         this -> poWallet "Sends slices to"
-        this -> certRabbitMq "Produces and consumes messages using"
+        this -> certRabbitMq "Produces and consumes messages"
     }
     certApi = container "Certificate API" {
-        description "Contains background workers for fetching measurements and issuing a certificate and provides an API for queries related to certificates and contracts"
+        description "Contains background workers for fetching measurements and provides an API for queries related to contracts"
         technology ".NET Web Api"
 
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
@@ -62,11 +62,6 @@ certificatesSubsystem = group "Certificate Subsystem" {
             this -> certRabbitMq "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
             this -> dataSyncApi "Pulls measurements from"
-        }
-        granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
-            this -> contractService "Checks for a valid contract in"
-            this -> certRabbitMq "Subscribes to measurement event from"
-            this -> certStorage "Saves information about issued certificate in"
         }
         certQueryAPI = component "Query API" "API for issuing contracts and proxies requests to Wallet" "ASP.NET Core WebAPI" {
             this -> contractService "Reads contracts from"

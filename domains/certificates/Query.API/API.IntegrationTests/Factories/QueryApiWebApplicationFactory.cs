@@ -17,6 +17,8 @@ using DataContext.ValueObjects;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
+using Grpc.Core;
+using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -24,12 +26,15 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProjectOrigin.WalletSystem.V1;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly List<GrpcChannel> disposableChannels = new();
+
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
@@ -110,6 +115,17 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
+    public (WalletService.WalletServiceClient, Metadata metadata) CreateWalletClient(string subject)
+    {
+        var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(sub: subject));
+        var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
+
+        var channel = GrpcChannel.ForAddress(WalletUrl);
+        disposableChannels.Add(channel);
+
+        return (new WalletService.WalletServiceClient(channel), metadata);
+    }
+
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
 
     private string GenerateToken(
@@ -171,4 +187,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public void Start() => Server.Should().NotBeNull();
+
+    protected override void Dispose(bool disposing)
+    {
+        foreach (var disposableChannel in disposableChannels)
+        {
+            disposableChannel.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
 }

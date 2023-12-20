@@ -1,5 +1,4 @@
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;
