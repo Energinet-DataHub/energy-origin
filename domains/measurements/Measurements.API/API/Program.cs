@@ -61,7 +61,6 @@ builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseSwagger(o => o.RouteTemplate = "api-docs/measurements/{documentName}/swagger.json");
 if (builder.Environment.IsDevelopment())
 {
