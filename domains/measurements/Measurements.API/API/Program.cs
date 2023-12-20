@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Options;
 using API.Services;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
@@ -52,6 +54,11 @@ builder.Services.AddLogging();
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => builder.Services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
+
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
