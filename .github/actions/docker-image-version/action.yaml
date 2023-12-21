@@ -25,6 +25,8 @@ runs:
           version="$(git rev-parse --short $GITHUB_SHA)"
         elif [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
           version="${GITHUB_SHA}-pr.${{ github.event.pull_request.number }}"
+        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          version="${GITHUB_SHA}.$${{ github.ref_name }}"
         else
           >&2 echo "::error:: Not supported on push to branches other than main"
           exit 1
