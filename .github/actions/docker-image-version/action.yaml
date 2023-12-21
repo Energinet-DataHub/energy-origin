@@ -16,13 +16,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Guard against non-supported events
-      if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
-      shell: bash
-      run: |
-        echo "::error:: Only "push" and "pull_request" events are supported by this action."
-        exit 1
-
     - name: Generate version
       id: output
       shell: bash
@@ -39,7 +32,7 @@ runs:
             version="${{ github.sha }}.${sanitized_branch}"
           fi
         else
-          >&2 echo "::error:: Not supported on push to branches other than main"
+          >&2 echo "::error:: Unsupported invocation: ${{ github.event_name }}"
           exit 1
         fi
         echo "version=${version}" >> $GITHUB_OUTPUT
