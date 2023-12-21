@@ -65,9 +65,10 @@ builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
 
-    o.AddConsumer<RegistryIssuer>();
+    o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
+    o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
 
-    o.AddConsumer<WalletSliceSender>();
+    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
 
     o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
     o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();

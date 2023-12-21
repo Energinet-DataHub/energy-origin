@@ -1,23 +1,17 @@
 using API.ContractService;
 using API.DataSyncSyncer;
-using API.GranularCertificateIssuer;
 using API.Query.API;
 using API.RabbitMq;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
@@ -64,7 +58,6 @@ builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer();
-builder.Services.AddGranularCertificateIssuer();
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
