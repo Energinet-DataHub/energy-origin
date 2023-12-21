@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -23,35 +22,21 @@ using TransferAgreementAutomation.Worker.Service;
 
 namespace TransferAgreementAutomation.Worker;
 
-public class TransferAgreementsAutomationWorker : BackgroundService
+public class TransferAgreementsAutomationWorker(
+    ILogger<TransferAgreementsAutomationWorker> logger,
+    ITransferAgreementAutomationMetrics metrics,
+    AutomationCache cache,
+    IServiceProvider provider,
+    IHttpClientFactory httpClient,
+    IOptions<TransferApiOptions> options)
+    : BackgroundService
 {
-    private readonly ILogger<TransferAgreementsAutomationWorker> logger;
-    private readonly ITransferAgreementAutomationMetrics metrics;
-    private readonly AutomationCache memoryCache;
-    private readonly IServiceProvider serviceProvider;
-    private readonly IHttpClientFactory httpClient;
-    private readonly TransferApiOptions options;
+    private readonly TransferApiOptions options = options.Value;
 
     private readonly MemoryCacheEntryOptions cacheOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
     };
-
-    public TransferAgreementsAutomationWorker(
-        ILogger<TransferAgreementsAutomationWorker> logger,
-        ITransferAgreementAutomationMetrics metrics,
-        AutomationCache memoryCache,
-        IServiceProvider serviceProvider,
-        IHttpClientFactory httpClient,
-        IOptions<TransferApiOptions> options)
-    {
-        this.logger = logger;
-        this.metrics = metrics;
-        this.memoryCache = memoryCache;
-        this.serviceProvider = serviceProvider;
-        this.httpClient = httpClient;
-        this.options = options.Value;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -60,9 +45,9 @@ public class TransferAgreementsAutomationWorker : BackgroundService
             logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
             metrics.ResetTransferErrors();
-            memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
+            cache.Cache.Set(HealthEntries.Key, HealthEntries.Healthy, cacheOptions);
 
-            using var scope = serviceProvider.CreateScope();
+            using var scope = provider.CreateScope();
             var projectOriginWalletService = scope.ServiceProvider.GetRequiredService<IProjectOriginWalletService>();
 
             try
@@ -77,7 +62,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
             }
             catch (Exception ex)
             {
-                memoryCache.Cache.Set(HealthEntries.Key, HealthEntries.Unhealthy, cacheOptions);
+                cache.Cache.Set(HealthEntries.Key, HealthEntries.Unhealthy, cacheOptions);
                 logger.LogWarning("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
@@ -94,7 +79,7 @@ public class TransferAgreementsAutomationWorker : BackgroundService
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken());
 
-        var response = await client.GetAsync("api/transfer-agreements/all", stoppingToken);
+        var response = await client.GetAsync("api/internal-transfer-agreements/all", stoppingToken);
 
         var jsonSerializerOptions = new JsonSerializerOptions
         {

@@ -40,12 +40,6 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     }
 
     [Fact]
-    public void GetAll_ShouldReturnAllTransferAgreements()
-    {
-        authenticatedClient.GetAsync("api/transfer-agreements/all").Result.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Fact]
     public async Task Create_ShouldCreateTransferAgreement_WhenModelIsValid()
     {
         var receiverTin = "12334455";

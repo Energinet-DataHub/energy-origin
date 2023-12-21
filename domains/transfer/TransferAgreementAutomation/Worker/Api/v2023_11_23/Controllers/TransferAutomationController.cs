@@ -1,20 +1,16 @@
 using System.Threading.Tasks;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TransferAgreementAutomation.Worker.Api.v2023_12_21.Dto;
 
-namespace TransferAgreementAutomation.Worker.Api;
+namespace TransferAgreementAutomation.Worker.Api.v2023_12_21.Controllers;
 
 [Authorize]
 [ApiController]
-public class TransferAutomationController : ControllerBase
+[ApiVersion("20231123")]
+public class TransferAutomationController(AutomationCache cache) : ControllerBase
 {
-    private readonly AutomationCache cache;
-
-    public TransferAutomationController(AutomationCache cache)
-    {
-        this.cache = cache;
-    }
-
     [ProducesResponseType(typeof(TransferAutomationStatus), 200)]
     [HttpGet("api/transfer-automation/status")]
     public async Task<ActionResult<TransferAutomationStatus>> GetStatus()

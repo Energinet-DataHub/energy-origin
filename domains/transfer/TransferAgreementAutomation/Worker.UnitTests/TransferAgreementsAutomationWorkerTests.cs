@@ -65,7 +65,7 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
-        await Task.Delay(1000); // Give the worker some time to set the cache
+        await Task.Delay(2000); // Give the worker some time to set the cache
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }

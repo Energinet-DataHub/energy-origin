@@ -1,26 +1,26 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
+using TransferAgreementAutomation.Worker.Swagger;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,6 +78,17 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     o.Address = new Uri(options.WalletUrl);
 });
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
+
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+builder.Services.AddSwaggerGen();
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
