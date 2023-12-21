@@ -11,6 +11,7 @@ namespace API.Transfer.Api.v2023_11_23.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
 [ApiVersion("20231123")]
+[ApiController]
 [AllowAnonymous]
 public class InternalTransferAgreementsController(ITransferAgreementRepository agreementRepository, ILogger<InternalTransferAgreementsController> logger)
     : ControllerBase
