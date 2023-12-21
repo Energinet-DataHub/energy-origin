@@ -16,7 +16,7 @@ public class MeasurementsController : ControllerBase
 
     [HttpGet]
     [Route("api/measurements/consumption")]
-    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, IHttpContextAccessor httpContextAccessor)
+    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, [FromServices] IHttpContextAccessor httpContextAccessor)
     {
         var authenticationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
         var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
@@ -37,7 +37,7 @@ public class MeasurementsController : ControllerBase
 
     [HttpGet]
     [Route("api/measurements/production")]
-    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, IHttpContextAccessor httpContextAccessor)
+    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, [FromServices] IHttpContextAccessor httpContextAccessor)
     {
         var authenticationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
         var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
