@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.UnitTests", "Transfe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker", "TransferAgreementAutomation\Worker\Worker.csproj", "{B1E21F07-75F9-4333-8800-9ED52EAE4163}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.IntegrationTest", "TransferAgreementAutomation\Worker.IntegrationTest\Worker.IntegrationTest.csproj", "{B4B84535-A114-4D5E-934B-BE66450A59DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.IntegrationTests", "TransferAgreementAutomation\Worker.IntegrationTests\Worker.IntegrationTests.csproj", "{B4B84535-A114-4D5E-934B-BE66450A59DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
