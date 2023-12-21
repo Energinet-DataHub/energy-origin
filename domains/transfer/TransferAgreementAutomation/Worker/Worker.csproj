@@ -9,6 +9,7 @@
     <DocumentationFile>documentation.xml</DocumentationFile>
     <RootNamespace>TransferAgreementAutomation.Worker</RootNamespace>
     <AssemblyName>TransferAgreementAutomation.Worker</AssemblyName>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
   <ItemGroup>
