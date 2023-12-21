@@ -37,6 +37,7 @@ runs:
           else
             sanitized_branch=$(printf '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9]//g') 
             version="${{ github.sha }}.${sanitized_branch}"
+          fi
         else
           >&2 echo "::error:: Not supported on push to branches other than main"
           exit 1
