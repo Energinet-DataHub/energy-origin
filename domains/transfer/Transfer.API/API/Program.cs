@@ -6,6 +6,7 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using API.Transfer;
+using API.Transfer.Api.Metrics;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
@@ -34,6 +35,9 @@ var loggerConfiguration = new LoggerConfiguration()
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
     : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+
+builder.Services.AddScoped<TransferMetrics>();
+
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
