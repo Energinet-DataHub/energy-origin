@@ -24,7 +24,7 @@ public class AuditDotNetFilter : IAsyncActionFilter
 
         }
 
-        Configuration.AddCustomAction(ActionType.OnEventSaved, scope =>
+        Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
         {
             scope.Event.CustomFields["ActorId"] = actorId;
             scope.Event.CustomFields["ActorName"] = actorName;
