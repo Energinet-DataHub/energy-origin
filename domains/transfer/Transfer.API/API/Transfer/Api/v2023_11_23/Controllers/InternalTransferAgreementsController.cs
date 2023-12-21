@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +11,7 @@ namespace API.Transfer.Api.v2023_11_23.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
 [ApiVersion("20231123")]
+[AllowAnonymous]
 public class InternalTransferAgreementsController(ITransferAgreementRepository agreementRepository, ILogger<InternalTransferAgreementsController> logger)
     : ControllerBase
 {
