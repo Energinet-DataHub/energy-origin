@@ -17,12 +17,12 @@ namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 public class InternalTransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly HttpClient authenticatedClient;
+    private readonly HttpClient unauthenticatedClient;
 
     public InternalTransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
         this.factory = factory;
-        authenticatedClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: "20231123");
+        unauthenticatedClient = factory.CreateUnauthenticatedClient();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class InternalTransferAgreementsControllerTests : IClassFixture<TransferA
 
         await factory.SeedTransferAgreements(new List<TransferAgreement> { ta });
 
-        var response = await authenticatedClient.GetFromJsonAsync<InternalTransferAgreementsDto>("api/internal-transfer-agreements/all");
+        var response = await unauthenticatedClient.GetFromJsonAsync<InternalTransferAgreementsDto>("api/internal-transfer-agreements/all");
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(long));

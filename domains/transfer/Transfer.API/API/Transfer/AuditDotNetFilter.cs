@@ -15,7 +15,7 @@ public class AuditDotNetFilter : IAsyncActionFilter
         var actorName = "system";
         var subjectId = Guid.Empty;
 
-        if (context.HttpContext?.User != null)
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true)
         {
             var user = new UserDescriptor(context.HttpContext.User);
             actorId = user.Id;

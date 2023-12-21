@@ -155,7 +155,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20230101");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
         return client;
     }
 
