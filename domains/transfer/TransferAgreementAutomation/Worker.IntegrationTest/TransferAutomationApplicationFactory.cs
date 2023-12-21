@@ -4,16 +4,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using Asp.Versioning.ApiExplorer;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Worker.IntegrationTest;
 
-public class TransferAgreementApplicationFactory : WebApplicationFactory<Program>
+public class TransferAutomationApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
@@ -25,6 +27,19 @@ public class TransferAgreementApplicationFactory : WebApplicationFactory<Program
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
+    }
+    public HttpClient CreateUnauthenticatedClient()
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
+        return client;
+    }
+
+    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        return provider;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -40,10 +55,13 @@ public class TransferAgreementApplicationFactory : WebApplicationFactory<Program
 
         var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
 
-        builder.UseSetting("Wallet:Url", "https://localhost:5000");
+        builder.UseSetting("ProjectOrigin:WalletUrl", "http://localhost:5000");
+        builder.UseSetting("Otlp:ReceiverEndpoint", "http://foobar");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
         builder.UseSetting("TokenValidation:Issuer", "Us");
         builder.UseSetting("TokenValidation:Audience", "Users");
+        builder.UseSetting("TransferApi:Url", "localhost:5001");
+        builder.UseSetting("TransferApi:Version", "20231123");
     }
 
     private string GenerateToken(

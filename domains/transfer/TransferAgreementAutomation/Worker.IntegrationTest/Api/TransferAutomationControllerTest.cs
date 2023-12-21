@@ -11,10 +11,12 @@ using Xunit;
 
 namespace Worker.IntegrationTest.Api;
 
-public class TransferAutomationControllerTest(TransferAgreementApplicationFactory factory)
-    : IClassFixture<TransferAgreementApplicationFactory>
+public class TransferAutomationControllerTest(TransferAutomationApplicationFactory factory)
+    : IClassFixture<TransferAutomationApplicationFactory>
 {
-    private readonly HttpClient authenticatedClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+    private readonly HttpClient authenticatedClient =
+        factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: "20231123");
+
     private readonly AutomationCache cache = factory.Services.GetService<AutomationCache>()!;
 
     [Fact]
@@ -25,7 +27,8 @@ public class TransferAutomationControllerTest(TransferAgreementApplicationFactor
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
         });
 
-        var response = await authenticatedClient.GetFromJsonAsync<TransferAutomationStatus>("/api/transfer-automation/status");
+        var response =
+            await authenticatedClient.GetFromJsonAsync<TransferAutomationStatus>("/api/transfer-automation/status");
 
         response.Should().BeEquivalentTo(new TransferAutomationStatus(HealthEntries.Healthy));
     }
@@ -38,7 +41,8 @@ public class TransferAutomationControllerTest(TransferAgreementApplicationFactor
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
         });
 
-        var response = await authenticatedClient.GetFromJsonAsync<TransferAutomationStatus>("/api/transfer-automation/status");
+        var response =
+            await authenticatedClient.GetFromJsonAsync<TransferAutomationStatus>("/api/transfer-automation/status");
 
         response.Should().BeEquivalentTo(new TransferAutomationStatus(HealthEntries.Unhealthy));
     }

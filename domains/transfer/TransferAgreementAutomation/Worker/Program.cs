@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
@@ -96,7 +97,21 @@ builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenVal
 builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
+
 app.MapHealthChecks("/health");
+
+app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer-automation/{documentName}/swagger.json");
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
+            {
+                options.SwaggerEndpoint(
+                    $"/api-docs/transfer/{description.GroupName}/swagger.json",
+                    $"API v{description.GroupName}");
+            }
+        });
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
