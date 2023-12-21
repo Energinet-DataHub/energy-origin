@@ -6,7 +6,7 @@ namespace API.Services;
 public interface IMeasurementsService
 {
     Task<MeasurementResponse> GetMeasurements(
-        AuthenticationHeaderValue context,
+        AuthenticationHeaderValue bearerToken,
         TimeZoneInfo timeZone,
         DateTimeOffset dateFrom,
         DateTimeOffset dateTo,
