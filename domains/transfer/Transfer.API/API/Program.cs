@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using API.Claiming;
 using API.Cvr;
@@ -77,12 +78,15 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
             .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                .AddService(TransferAgreementAutomationMetrics.MetricName))
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
+                .AddService(TransferAgreementAutomationMetrics.MetricName, "Transfer.Api"))
+            .AddMeter(TransferAgreementAutomationMetrics.MetricName, builder.Configuration.GetValue<string>("TransferAgreementMeterName"))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
+            .AddView(
+                instrumentName: "TransferAgreement-number-of-Days",
+                new ExplicitBucketHistogramConfiguration { Boundaries = [1, 2, 5] })
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;

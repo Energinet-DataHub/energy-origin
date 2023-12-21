@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Shared.Data;
+using API.Transfer.Api.Metrics;
 using API.Transfer.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,13 @@ namespace API.Transfer.Api.Repository;
 public class TransferAgreementRepository : ITransferAgreementRepository
 {
     private readonly ApplicationDbContext context;
-    public TransferAgreementRepository(ApplicationDbContext context) => this.context = context;
+    private readonly TransferMetrics transferMeter;
+
+    public TransferAgreementRepository(ApplicationDbContext context, TransferMetrics transferMeter)
+    {
+        this.context = context;
+        this.transferMeter = transferMeter;
+    }
 
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {
@@ -23,6 +30,10 @@ public class TransferAgreementRepository : ITransferAgreementRepository
         context.TransferAgreements.Add(transferAgreement);
 
         await context.SaveChangesAsync();
+
+        transferMeter.IncreaseTransfers();
+        transferMeter.IncreaseTotalTransfers();
+
         return transferAgreement;
     }
 
@@ -44,6 +55,9 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
         await context.SaveChangesAsync();
 
+        transferMeter.IncreaseTransfers();
+        transferMeter.IncreaseTotalTransfers();
+
         return newTransferAgreement;
     }
 
@@ -61,7 +75,12 @@ public class TransferAgreementRepository : ITransferAgreementRepository
             .Where(agreement => agreement.Id == id && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .FirstOrDefaultAsync();
 
-    public async Task Save() => await context.SaveChangesAsync();
+    public async Task Save()
+    {
+        await context.SaveChangesAsync();
+
+        transferMeter.UpdateTransfer();
+    }
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {
