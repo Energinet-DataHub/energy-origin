@@ -4,7 +4,7 @@ description: |
 
 inputs:
   allow-dispatch:
-    description: "Is workflow dispatch allowed to generate a docker image version"
+    description: Is workflow dispatch allowed to generate a docker image version
     required: true
     default: false
 
