@@ -13,54 +13,45 @@ namespace API.Controllers;
 [Authorize]
 public class MeasurementsController : ControllerBase
 {
-    private readonly IHttpContextAccessor httpContextAccessor;
-
-    public MeasurementsController(IHttpContextAccessor httpContextAccessor)
-    {
-        this.httpContextAccessor = httpContextAccessor;
-    }
 
     [HttpGet]
     [Route("api/measurements/consumption")]
-    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
+    public async Task<ActionResult<MeasurementResponse>> GetConsumptionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, IHttpContextAccessor httpContextAccessor)
     {
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
+        var authenticationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
+        var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
 
         var validateResult = await validator.ValidateAsync(request);
-        if (!validateResult.IsValid)
-        {
-            validateResult.AddToModelState(ModelState);
-            return ValidationProblem(ModelState);
-        }
+        if (validateResult.IsValid)
+            return Ok(await measurementsService.GetMeasurements(
+                bearerToken,
+                request.TimeZoneInfo,
+                DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+                DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+                request.Aggregation,
+                MeterType.Consumption));
+        validateResult.AddToModelState(ModelState);
+        return ValidationProblem(ModelState);
 
-        return Ok(await measurementsService.GetMeasurements(
-            bearerToken,
-            request.TimeZoneInfo,
-            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
-            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
-            request.Aggregation,
-            MeterType.Consumption));
     }
 
     [HttpGet]
     [Route("api/measurements/production")]
-    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator)
+    public async Task<ActionResult<MeasurementResponse>> GetProductionMeasurements([FromQuery] MeasurementsRequest request, IMeasurementsService measurementsService, IValidator<MeasurementsRequest> validator, IHttpContextAccessor httpContextAccessor)
     {
-        var bearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
+        var authenticationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
+        var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
 
         var validateResult = await validator.ValidateAsync(request);
-        if (!validateResult.IsValid)
-        {
-            validateResult.AddToModelState(ModelState);
-            return ValidationProblem(ModelState);
-        }
-
-        return Ok(await measurementsService.GetMeasurements(
-            bearerToken,
-            request.TimeZoneInfo,
-            DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
-            DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
-            request.Aggregation,
-            MeterType.Production));
+        if (validateResult.IsValid)
+            return Ok(await measurementsService.GetMeasurements(
+                bearerToken,
+                request.TimeZoneInfo,
+                DateTimeOffset.FromUnixTimeSeconds(request.DateFrom),
+                DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
+                request.Aggregation,
+                MeterType.Production));
+        validateResult.AddToModelState(ModelState);
+        return ValidationProblem(ModelState);
     }
 }
