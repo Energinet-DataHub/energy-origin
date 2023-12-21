@@ -76,8 +76,7 @@ public class TransferAgreementsAutomationWorker(
 
         client.BaseAddress = new Uri(options.Url);
         client.DefaultRequestHeaders.Add("EO_API_VERSION", options.Version);
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken());
+
 
         var response = await client.GetAsync("api/internal-transfer-agreements/all", stoppingToken);
 
@@ -96,29 +95,5 @@ public class TransferAgreementsAutomationWorker(
         var minutesToNextHour = 60 - DateTimeOffset.Now.Minute;
         logger.LogInformation("Sleeping until next full hour {minutesToNextHour}", minutesToNextHour);
         await Task.Delay(TimeSpan.FromMinutes(minutesToNextHour), cancellationToken);
-    }
-
-    private static string GenerateToken()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var expires = now.AddMinutes(3);
-
-        var claims = new Claim[]
-        {
-            new("issued", now.ToString("o")),
-            new("expires", expires.ToString("o")),
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = expires.DateTime,
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
     }
 }
