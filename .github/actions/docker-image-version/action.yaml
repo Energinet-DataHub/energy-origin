@@ -44,3 +44,4 @@ runs:
         fi
         echo "version=${version}" >> $GITHUB_OUTPUT
         echo "version=${version}" >> $GITHUB_ENV
+        echo "version: $version"
