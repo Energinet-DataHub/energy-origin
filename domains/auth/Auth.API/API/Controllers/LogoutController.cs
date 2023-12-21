@@ -21,6 +21,7 @@ public class LogoutController : ControllerBase
         if (oidcOptions.AllowRedirection && overrideRedirectionUri != null)
         {
             redirectionUri = overrideRedirectionUri;
+            //TEST
         }
 
         var discoveryDocument = await discoveryCache.GetAsync();
