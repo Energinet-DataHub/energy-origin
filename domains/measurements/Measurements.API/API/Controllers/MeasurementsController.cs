@@ -22,6 +22,7 @@ public class MeasurementsController : ControllerBase
         var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
 
         var validateResult = await validator.ValidateAsync(request);
+
         if (validateResult.IsValid)
             return Ok(await measurementsService.GetMeasurements(
                 bearerToken,
@@ -30,9 +31,9 @@ public class MeasurementsController : ControllerBase
                 DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
                 request.Aggregation,
                 MeterType.Consumption));
+
         validateResult.AddToModelState(ModelState);
         return ValidationProblem(ModelState);
-
     }
 
     [HttpGet]
@@ -43,6 +44,7 @@ public class MeasurementsController : ControllerBase
         var bearerToken = AuthenticationHeaderValue.Parse(authenticationHeader ?? throw new InvalidOperationException("Bearer token not found"));
 
         var validateResult = await validator.ValidateAsync(request);
+
         if (validateResult.IsValid)
             return Ok(await measurementsService.GetMeasurements(
                 bearerToken,
@@ -51,6 +53,7 @@ public class MeasurementsController : ControllerBase
                 DateTimeOffset.FromUnixTimeSeconds(request.DateTo),
                 request.Aggregation,
                 MeterType.Production));
+
         validateResult.AddToModelState(ModelState);
         return ValidationProblem(ModelState);
     }

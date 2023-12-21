@@ -13,16 +13,13 @@ namespace Tests
         [Fact]
         public async void DataSync_GetListOfMeteringPoints_success()
         {
-            // Arrange
             var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_meteringpoints.json");
             var datasync = new DataSyncService(mockClient);
             var token = "dummyBearerToken";
             var authHeader = new AuthenticationHeaderValue("Bearer", token);
 
-            // Act
             var res = await datasync.GetListOfMeteringPoints(authHeader);
 
-            // Assert
             Assert.NotEmpty(res);
             Assert.Equal(3, res.Count());
             Assert.Equal("571313121223234323", res.First().GSRN);
@@ -33,7 +30,6 @@ namespace Tests
         [Fact]
         public async void DataSync_GetMeasurements_success()
         {
-            // Arrange
             var mockClient = MockHttpClientFactory.SetupHttpClientFromFile("datasync_measurements.json");
 
             var dateFrom = new DateTime(2021, 1, 1);
@@ -44,10 +40,8 @@ namespace Tests
             var token = "dummyBearerToken";
             var authHeader = new AuthenticationHeaderValue("Bearer", token);
 
-            // Act
             var res = await datasync.GetMeasurements(authHeader, "571313121223234323", dateFrom, dateTo);
 
-            // Assert
             Assert.NotEmpty(res);
             Assert.Equal(2, res.Count());
             Assert.Equal("571313121223234323", res.First().GSRN);

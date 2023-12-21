@@ -19,7 +19,6 @@ public sealed class MeasurementsServiceTest
     [Fact]
     public async void ListOfMeteringPoints_GetTimeSeries_Measurements()
     {
-        //Arrange
         var token = "dummyBearerToken";
         var authHeader = new AuthenticationHeaderValue("Bearer", token);
         var dateFrom = new DateTime(2021, 1, 1);
@@ -38,7 +37,6 @@ public sealed class MeasurementsServiceTest
 
         var sut = new MeasurementsService(mockDataSyncService, Substitute.For<IAggregator>());
 
-        //Act
         var timeSeries = await sut.GetTimeSeries(
             authHeader,
             dateFrom,
@@ -48,7 +46,6 @@ public sealed class MeasurementsServiceTest
 
         timeSeries = timeSeries.ToArray();
 
-        //Assert
         Assert.NotNull(timeSeries);
         Assert.NotEmpty(timeSeries);
         Assert.Equal(measurements.Count, timeSeries.First().Measurements.Count());
