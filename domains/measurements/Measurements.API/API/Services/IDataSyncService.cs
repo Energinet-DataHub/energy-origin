@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using API.Models;
-using EnergyOriginAuthorization;
 
 namespace API.Services;
 
