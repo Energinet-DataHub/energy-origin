@@ -6,9 +6,9 @@ namespace API.Transfer.Api.Metrics;
 
 public class TransferMetrics
 {
-    private  Counter<int> TransfersCreatedCounter { get; }
-    private  Counter<int> TransfersEditedCounter { get; }
-    private  UpDownCounter<int> TotalTransfersUpDownCounter { get; }
+    private Counter<int> TransfersCreatedCounter { get; }
+    private Counter<int> TransfersEditedCounter { get; }
+    private UpDownCounter<int> TotalTransfersUpDownCounter { get; }
 
     public TransferMetrics(IMeterFactory meterFactory, IConfiguration configuration)
     {
