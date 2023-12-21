@@ -54,10 +54,17 @@ builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => buil
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
 
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+var tokenValidationOptions = builder.Configuration.GetSection(
+    TokenValidationOptions.Prefix)
+    .Get<TokenValidationOptions>() ?? throw new PropertyMissingException(nameof(TokenValidationOptions));
+
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(
+    TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.AddTokenValidation(tokenValidationOptions);
+
 
 var app = builder.Build();
 
