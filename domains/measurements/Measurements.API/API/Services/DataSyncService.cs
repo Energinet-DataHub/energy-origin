@@ -3,26 +3,19 @@ using API.Models;
 
 namespace API.Services;
 
-public class DataSyncService : IDataSyncService
+public class DataSyncService(HttpClient client) : IDataSyncService
 {
-    private readonly HttpClient httpClient;
-
-    public DataSyncService(HttpClient httpClient)
-    {
-        this.httpClient = httpClient;
-    }
-
     public async Task<IEnumerable<Measurement>> GetMeasurements(AuthenticationHeaderValue bearerToken, string gsrn,
         DateTimeOffset dateFrom, DateTimeOffset dateTo)
     {
         var url = $"measurements?gsrn={gsrn}&dateFrom={dateFrom.ToUnixTimeSeconds()}&dateTo={dateTo.ToUnixTimeSeconds()}";
 
-        httpClient.DefaultRequestHeaders.Authorization = bearerToken;
+        client.DefaultRequestHeaders.Authorization = bearerToken;
 
-        var reponse = await httpClient.GetAsync(url);
+        var reponse = await client.GetAsync(url);
         if (reponse == null || !reponse.IsSuccessStatusCode)
         {
-            throw new Exception($"Fetch of measurements failed, base: {httpClient.BaseAddress} url: {url}");
+            throw new Exception($"Fetch of measurements failed, base: {client.BaseAddress} url: {url}");
         }
 
         var result = await reponse.Content.ReadFromJsonAsync<List<Measurement>>();
@@ -33,12 +26,12 @@ public class DataSyncService : IDataSyncService
     {
         var uri = "meteringpoints";
 
-        httpClient.DefaultRequestHeaders.Authorization = bearerToken;
+        client.DefaultRequestHeaders.Authorization = bearerToken;
 
-        var response = await httpClient.GetAsync(uri);
+        var response = await client.GetAsync(uri);
         if (response == null || !response.IsSuccessStatusCode)
         {
-            throw new Exception($"Fetch of meteringpoints failed, base: {httpClient.BaseAddress} url: {uri}");
+            throw new Exception($"Fetch of meteringpoints failed, base: {client.BaseAddress} url: {uri}");
         }
 
         var result = await response.Content.ReadFromJsonAsync<MeteringPointsResponse>();

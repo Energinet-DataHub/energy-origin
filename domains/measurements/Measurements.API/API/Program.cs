@@ -65,7 +65,6 @@ builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(
 
 builder.AddTokenValidation(tokenValidationOptions);
 
-
 var app = builder.Build();
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/measurements/{documentName}/swagger.json");
