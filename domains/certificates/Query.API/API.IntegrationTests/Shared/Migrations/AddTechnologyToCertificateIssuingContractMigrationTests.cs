@@ -1,4 +1,3 @@
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using FluentAssertions;
@@ -9,6 +8,7 @@ using Npgsql;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;

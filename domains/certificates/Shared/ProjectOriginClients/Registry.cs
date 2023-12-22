@@ -66,6 +66,7 @@ public static class Registry
         return issuedEvent;
     }
 
+    // TODO: Can be deleted
     public static SendTransactionsRequest CreateSendTransactionRequest(this IssuedEvent issuedEvent, IPrivateKey issuerKey)
     {
         var header = new TransactionHeader
@@ -91,6 +92,32 @@ public static class Registry
         return request;
     }
 
+    public static Transaction CreateTransaction(this IssuedEvent issuedEvent, IPrivateKey issuerKey)
+    {
+        var header = new TransactionHeader
+        {
+            FederatedStreamId = issuedEvent.CertificateId,
+            PayloadType = IssuedEvent.Descriptor.FullName,
+            PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
+            Nonce = Guid.NewGuid().ToString(),
+        };
+
+        var headerSignature = issuerKey.Sign(header.ToByteArray()).ToArray();
+
+        var transaction = new Transaction
+        {
+            Header = header,
+            HeaderSignature = ByteString.CopyFrom(headerSignature),
+            Payload = issuedEvent.ToByteString()
+        };
+
+        return transaction;
+    }
+
+    // TODO: Can be deleted
     public static GetTransactionStatusRequest CreateStatusRequest(this Transaction transaction) =>
         new() { Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray())) };
+
+    public static string ToShaId(this Transaction transaction) =>
+         Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray()));
 }

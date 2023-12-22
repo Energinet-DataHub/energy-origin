@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectOriginClients", "Sha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Shared\Testing\Testing.csproj", "{057A53B3-330F-43B2-99BF-94E2D3043F92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +89,7 @@ Global
 		{741B4018-7BB1-46EF-A285-87EC11418FC5} = {C500AE25-2567-4855-863B-7B51BC59F806}
 		{D2A36747-5FD5-4F32-90C7-CDEC098DCAA3} = {50B52CB7-AA59-483B-8C89-46A681B3E01F}
 		{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2} = {50B52CB7-AA59-483B-8C89-46A681B3E01F}
+		{057A53B3-330F-43B2-99BF-94E2D3043F92} = {50B52CB7-AA59-483B-8C89-46A681B3E01F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8710F924-9EE6-4142-A232-456121E239B0}

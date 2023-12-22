@@ -1,10 +1,9 @@
 using System;
-using API.GranularCertificateIssuer;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Xunit;
 
-namespace API.UnitTests.GranularCertificateIssuer;
+namespace RegistryConnector.Worker.UnitTests;
 
 public class WalletDepositEndpointPositionCalculatorTests
 {

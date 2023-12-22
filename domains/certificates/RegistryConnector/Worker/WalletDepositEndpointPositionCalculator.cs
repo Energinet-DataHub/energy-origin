@@ -1,8 +1,8 @@
-using System;
-using System.Globalization;
 using DataContext.ValueObjects;
+using System.Globalization;
+using System;
 
-namespace API.GranularCertificateIssuer;
+namespace RegistryConnector.Worker;
 
 public static class WalletDepositEndpointPositionCalculator
 {

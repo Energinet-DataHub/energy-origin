@@ -1,28 +1,28 @@
-extern alias registryConnector;
+using System;
+using System.Text;
 using Contracts;
+using DataContext;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.HierarchicalDeterministicKeys;
-using registryConnector::RegistryConnector.Worker;
-using System;
-using System.Text;
 
-namespace API.IntegrationTests.Factories;
+namespace RegistryConnector.Worker.UnitTests.Factories;
 
-public class RegistryConnectorApplicationFactory : WebApplicationFactory<registryConnector::Program>
+public class RegistryConnectorApplicationFactory : WebApplicationFactory<Program>
 {
     public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
     {
         RegistryName = "foo",
-        RegistryUrl = "bar",
-        WalletUrl = "baz",
+        RegistryUrl = "http://exampleRegistry.com",
+        WalletUrl = "http://exampleWalletUrl.com",
         Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText()),
         Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
     };
@@ -64,6 +64,12 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
             });
         });
     }
+
+    public IServiceScope ServiceScope() => Services.CreateScope();
+
+    public ApplicationDbContext GetDbContext() => Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext();
+
+    public IPublishEndpoint GetMassTransitBus() => Services.GetRequiredService<IPublishEndpoint>();
 
     // Accessing the Server property ensures that the server is running
     public void Start() => Server.Should().NotBeNull();

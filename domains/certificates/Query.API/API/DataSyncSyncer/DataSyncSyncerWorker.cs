@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
 using DataContext.Models;
+using Microsoft.Extensions.Options;
 
 namespace API.DataSyncSyncer;
 
@@ -20,21 +22,30 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
+    private readonly DatasyncOptions options;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
-        DataSyncService dataSyncService)
+        DataSyncService dataSyncService,
+        IOptions<DatasyncOptions> options)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
+        this.options = options.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (options.Disabled)
+        {
+            logger.LogInformation("DataSyncSyncer is disabled!");
+            return;
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var syncInfos = await GetSyncInfos(stoppingToken);

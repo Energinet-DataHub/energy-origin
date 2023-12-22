@@ -1,8 +1,7 @@
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace API.IntegrationTests.Testcontainers;
+namespace Testing.Testcontainers;
 
 public class PostgresContainer : IAsyncLifetime
 {

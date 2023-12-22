@@ -1,6 +1,6 @@
 using System;
 
-namespace API.GranularCertificateIssuer;
+namespace RegistryConnector.Worker.Exceptions;
 
 [Serializable]
 public class WalletException : Exception

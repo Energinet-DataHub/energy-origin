@@ -1,7 +1,6 @@
-using System;
 using System.Text;
 
-namespace API.IntegrationTests.Helpers;
+namespace Testing.Helpers;
 
 public static class GsrnHelper
 {
