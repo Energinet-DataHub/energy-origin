@@ -27,11 +27,14 @@ public class UserActivityLogsController(IUserActivityLogsRepository repository) 
         var user = new UserDescriptor(User);
         var actorId = user.Subject;
 
+        var startDate = requestDto.StartDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(requestDto.StartDate.Value) : (DateTimeOffset?)null;
+        var endDate = requestDto.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(requestDto.EndDate.Value) : (DateTimeOffset?)null;
+
         var result = await repository.GetUserActivityLogsAsync(
             actorId: actorId,
             entityTypes: requestDto.EntityTypes,
-            startDate: requestDto.StartDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(requestDto.StartDate.Value),
-            endDate: requestDto.EndDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(requestDto.EndDate.Value),
+            startDate: startDate,
+            endDate: endDate,
             pagination: new Pagination(requestDto.Offset, requestDto.Limit));
 
         var response = new UserActivityLogsResponse(
