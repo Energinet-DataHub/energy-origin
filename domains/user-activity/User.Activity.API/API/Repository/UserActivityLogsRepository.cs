@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
 using API.Repository.Dto;
+using API.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository;
 
-public class UserActivityLogsRepository(DbContext context) : IUserActivityLogsRepository
+public class UserActivityLogsRepository(ApplicationDbContext context) : IUserActivityLogsRepository
 {
     public async Task<UserActivityLogResult> GetUserActivityLogsAsync(Guid actorId, List<EntityType> entityTypes,
         DateTimeOffset? startDate, DateTimeOffset? endDate, Pagination pagination)

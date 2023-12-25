@@ -1,4 +1,5 @@
 using System.Linq;
+using API.Repository;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
@@ -20,6 +21,9 @@ using Serilog.Formatting.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IUserActivityLogsRepository, UserActivityLogsRepository>();
+
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
