@@ -82,7 +82,7 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
+app.UseSwagger(o => o.RouteTemplate = "api-docs/user-activity/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(
         options =>
@@ -90,7 +90,7 @@ if (app.Environment.IsDevelopment())
             foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
             {
                 options.SwaggerEndpoint(
-                    $"/api-docs/transfer/{description.GroupName}/swagger.json",
+                    $"/api-docs/user-activity/{description.GroupName}/swagger.json",
                     $"API v{description.GroupName}");
             }
         });

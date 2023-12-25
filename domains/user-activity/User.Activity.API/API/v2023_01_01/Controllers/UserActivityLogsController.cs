@@ -6,11 +6,13 @@ using API.Repository;
 using API.v2023_01_01.Dto.Requests;
 using API.v2023_01_01.Dto.Responses;
 using API.v2023_01_01.Extensions;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 
 namespace API.v2023_01_01.Controllers;
 
 [ApiController]
+[ApiVersion("20230101")]
 [Route("api/user-activity-logs")]
 public class UserActivityLogsController(IUserActivityLogsRepository repository) : ControllerBase
 {
@@ -18,7 +20,7 @@ public class UserActivityLogsController(IUserActivityLogsRepository repository) 
     public async Task<ActionResult<UserActivityLogsResponse>> GetUserActivityLogs([FromQuery] GetUserActivityLogsRequestDto requestDto)
     {
         var user = new UserDescriptor(User);
-        var actorId = user.Subject; // Replace with your actual method to get ActorId
+        var actorId = user.Subject;
 
         var result = await repository.GetUserActivityLogsAsync(
             actorId: actorId,
