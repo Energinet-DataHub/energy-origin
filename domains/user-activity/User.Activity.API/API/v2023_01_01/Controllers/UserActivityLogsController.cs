@@ -1,21 +1,36 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using API.Models;
-using API.Shared.Data;
+using System.Linq;
+using API.Repository;
+using API.v2023_01_01.Dto.Requests;
+using API.v2023_01_01.Dto.Responses;
+using API.v2023_01_01.Extensions;
+using EnergyOrigin.TokenValidation.Utilities;
 
-namespace API.v2023_01_01.Controllers
+namespace API.v2023_01_01.Controllers;
+
+[ApiController]
+[Route("api/user-activity-logs")]
+public class UserActivityLogsController(IUserActivityLogsRepository repository) : ControllerBase
 {
-    [Route("api/user-activity-logs")]
-    [ApiController]
-    public class UserActivityLogsController(ApplicationDbContext context) : ControllerBase
+    [HttpGet]
+    public async Task<ActionResult<UserActivityLogsResponse>> GetUserActivityLogs([FromQuery] GetUserActivityLogsRequestDto requestDto)
     {
-        // GET: api/UserActivityLogs
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserActivityLog>>> GetUserActivityLogs()
-        {
-            return await context.UserActivityLogs.ToListAsync();
-        }
+        var user = new UserDescriptor(User);
+        var actorId = user.Subject; // Replace with your actual method to get ActorId
+
+        var result = await repository.GetUserActivityLogsAsync(
+            actorId: actorId,
+            entityTypes: requestDto.EntityTypes,
+            startDate: requestDto.StartDate,
+            endDate: requestDto.EndDate,
+            pagination: new Pagination(requestDto.Offset, requestDto.Limit));
+
+        var response = new UserActivityLogsResponse(
+            TotalCount: result.TotalCount,
+            Items: result.Items.Select(log => log.ToDto()).ToList());
+
+        return Ok(response);
     }
 }

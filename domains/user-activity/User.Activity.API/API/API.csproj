@@ -52,7 +52,6 @@
     <ItemGroup>
       <Folder Include="Shared\Migrations\" />
       <Folder Include="v2023_01_01\Controllers\" />
-      <Folder Include="v2023_01_01\Dto\Responses\" />
     </ItemGroup>
 
 </Project>
