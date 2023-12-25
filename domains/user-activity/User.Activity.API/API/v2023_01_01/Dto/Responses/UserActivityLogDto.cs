@@ -7,8 +7,7 @@ public record UserActivityLogDto(
     Guid Id,
     Guid ActorId,
     EntityType EntityType,
-    DateTime ActivityDate,
+    long ActivityDate,
     Guid OrganizationId,
     int Tin,
-    string OrganizationName
-);
+    string OrganizationName);

@@ -8,11 +8,9 @@ namespace API.Repository;
 
 public interface IUserActivityLogsRepository
 {
-    Task<UserActivityLogResult> GetUserActivityLogsAsync(
-        Guid actorId,
+    Task<UserActivityLogResult> GetUserActivityLogsAsync(Guid actorId,
         List<EntityType> entityTypes,
-        DateTime? startDate,
-        DateTime? endDate,
-        Pagination pagination
-        );
+        DateTimeOffset? startDate,
+        DateTimeOffset? endDate,
+        Pagination pagination);
 }

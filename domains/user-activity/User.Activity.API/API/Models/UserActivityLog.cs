@@ -7,9 +7,8 @@ public record UserActivityLog
     Guid Id,
     Guid ActorId,
     EntityType EntityType,
-    DateTime ActivityDate,
+    DateTimeOffset ActivityDate,
     Guid OrganizationId,
     int Tin,
-    string OrganizationName
-);
+    string OrganizationName);
 

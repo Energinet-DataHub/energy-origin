@@ -10,7 +10,8 @@ namespace API.Repository;
 
 public class UserActivityLogsRepository(DbContext context) : IUserActivityLogsRepository
 {
-    public async Task<UserActivityLogResult> GetUserActivityLogsAsync(Guid actorId, List<EntityType> entityTypes, DateTime? startDate, DateTime? endDate, Pagination pagination)
+    public async Task<UserActivityLogResult> GetUserActivityLogsAsync(Guid actorId, List<EntityType> entityTypes,
+        DateTimeOffset? startDate, DateTimeOffset? endDate, Pagination pagination)
     {
         var dbQuery = context.Set<UserActivityLog>().AsQueryable();
 
@@ -34,12 +35,12 @@ public class UserActivityLogsRepository(DbContext context) : IUserActivityLogsRe
         return entityTypes.Count != 0 ? query.Where(log => entityTypes.Contains(log.EntityType)) : query;
     }
 
-    private IQueryable<UserActivityLog> FilterByStartDate(IQueryable<UserActivityLog> query, DateTime? startDate)
+    private IQueryable<UserActivityLog> FilterByStartDate(IQueryable<UserActivityLog> query, DateTimeOffset? startDate)
     {
         return startDate.HasValue ? query.Where(log => log.ActivityDate >= startDate.Value) : query;
     }
 
-    private IQueryable<UserActivityLog> FilterByEndDate(IQueryable<UserActivityLog> query, DateTime? endDate)
+    private IQueryable<UserActivityLog> FilterByEndDate(IQueryable<UserActivityLog> query, DateTimeOffset? endDate)
     {
         return endDate.HasValue ? query.Where(log => log.ActivityDate <= endDate.Value) : query;
     }

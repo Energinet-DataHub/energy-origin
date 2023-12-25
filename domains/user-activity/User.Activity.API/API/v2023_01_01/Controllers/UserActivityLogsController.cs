@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using API.Models;
@@ -8,6 +9,8 @@ using API.v2023_01_01.Dto.Responses;
 using API.v2023_01_01.Extensions;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.v2023_01_01.Controllers;
 
@@ -16,6 +19,8 @@ namespace API.v2023_01_01.Controllers;
 [Route("api/user-activity-logs")]
 public class UserActivityLogsController(IUserActivityLogsRepository repository) : ControllerBase
 {
+    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [ProducesResponseType(typeof(UserActivityLogsResponse), 200)]
     [HttpGet]
     public async Task<ActionResult<UserActivityLogsResponse>> GetUserActivityLogs([FromQuery] GetUserActivityLogsRequestDto requestDto)
     {
@@ -25,8 +30,8 @@ public class UserActivityLogsController(IUserActivityLogsRepository repository) 
         var result = await repository.GetUserActivityLogsAsync(
             actorId: actorId,
             entityTypes: requestDto.EntityTypes,
-            startDate: requestDto.StartDate,
-            endDate: requestDto.EndDate,
+            startDate: requestDto.StartDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(requestDto.StartDate.Value),
+            endDate: requestDto.EndDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(requestDto.EndDate.Value),
             pagination: new Pagination(requestDto.Offset, requestDto.Limit));
 
         var response = new UserActivityLogsResponse(

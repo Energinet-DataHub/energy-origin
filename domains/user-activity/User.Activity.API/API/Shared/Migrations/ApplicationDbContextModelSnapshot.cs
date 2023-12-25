@@ -3,20 +3,17 @@ using System;
 using API.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace API.Shared.Migrations
+namespace Shared.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231225145125_InitialCreate")]
-    partial class InitialCreate
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +28,7 @@ namespace API.Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("ActivityDate")
+                    b.Property<DateTimeOffset>("ActivityDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("ActorId")

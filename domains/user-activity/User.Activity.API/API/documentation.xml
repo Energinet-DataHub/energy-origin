@@ -4,17 +4,5 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="T:API.Shared.Migrations.InitialCreate">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Shared.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Shared.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Shared.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
     </members>
 </doc>

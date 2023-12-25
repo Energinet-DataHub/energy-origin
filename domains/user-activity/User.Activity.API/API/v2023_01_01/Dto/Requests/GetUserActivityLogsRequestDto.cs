@@ -19,8 +19,8 @@ public record GetUserActivityLogsRequestDto
     }
 
     public List<EntityType> EntityTypes { get; private set; } = [];
-    public DateTime? StartDate { get; init; }
-    public DateTime? EndDate { get; init; }
+    public long? StartDate { get; init; }
+    public long? EndDate { get; init; }
     public int Offset { get; init; } = 0;
     public int Limit { get; init; } = 10;
 

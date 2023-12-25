@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace API.Shared.Migrations
+namespace Shared.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -18,7 +18,7 @@ namespace API.Shared.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ActorId = table.Column<Guid>(type: "uuid", nullable: false),
                     EntityType = table.Column<int>(type: "integer", nullable: false),
-                    ActivityDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ActivityDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Tin = table.Column<int>(type: "integer", nullable: false),
                     OrganizationName = table.Column<string>(type: "text", nullable: false)

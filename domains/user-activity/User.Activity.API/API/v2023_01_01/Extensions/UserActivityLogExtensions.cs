@@ -11,7 +11,7 @@ public static class UserActivityLogExtensions
             Id: log.Id,
             ActorId: log.ActorId,
             EntityType: log.EntityType,
-            ActivityDate: log.ActivityDate,
+            ActivityDate: log.ActivityDate.ToUnixTimeSeconds(),
             OrganizationId: log.OrganizationId,
             Tin: log.Tin,
             OrganizationName: log.OrganizationName

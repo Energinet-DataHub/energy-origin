@@ -44,8 +44,8 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddLogging();
+
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
