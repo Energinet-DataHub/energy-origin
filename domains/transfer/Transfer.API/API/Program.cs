@@ -5,11 +5,13 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using API.Transfer;
+using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -51,6 +53,25 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IUserActivityEventPublisher, UserActivityEventPublisher>();
+
+// ... inside your Program class or Main method ...
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            // If you have a username and password for RabbitMQ, set them here
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        // Configure your endpoints, consumers, etc. here
+    });
+});
 
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
