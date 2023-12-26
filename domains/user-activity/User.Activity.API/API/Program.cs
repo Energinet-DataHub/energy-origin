@@ -1,11 +1,13 @@
 using System.Linq;
 using API.Repository;
+using API.Services.RabbitMQ;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -81,6 +83,25 @@ var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOpt
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(tokenValidationOptions);
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<UserActivityEventConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("user-activity-queue", e =>
+        {
+            e.ConfigureConsumer<UserActivityEventConsumer>(context);
+        });
+    });
+});
 
 var app = builder.Build();
 
