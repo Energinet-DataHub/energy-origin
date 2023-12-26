@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Shared.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231225153924_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20231226174341_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,8 +47,9 @@ namespace Shared.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Tin")
-                        .HasColumnType("integer");
+                    b.Property<string>("Tin")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

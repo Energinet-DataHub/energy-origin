@@ -9,7 +9,7 @@ public class UserActivityEvent
     public EntityType EntityType { get; set; }
     public DateTimeOffset ActivityDate { get; set; }
     public Guid OrganizationId { get; set; }
-    public int Tin { get; set; }
-    public string? OrganizationName { get; set; }
+    public string Tin { get; set; } = "";
+    public string OrganizationName { get; set; } = "";
 }
 

@@ -9,5 +9,5 @@ public record UserActivityLogDto(
     EntityType EntityType,
     long ActivityDate,
     Guid OrganizationId,
-    int Tin,
+    string? Tin,
     string OrganizationName);

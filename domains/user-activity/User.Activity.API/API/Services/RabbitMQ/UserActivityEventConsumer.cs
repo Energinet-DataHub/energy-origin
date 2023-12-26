@@ -19,7 +19,7 @@ public class UserActivityEventConsumer(ApplicationDbContext context) : IConsumer
             ActivityDate: message.ActivityDate,
             OrganizationId: message.OrganizationId,
             Tin: message.Tin,
-            OrganizationName: message.OrganizationName ?? ""
+            OrganizationName: message.OrganizationName
         );
 
         await context.UserActivityLogs.AddAsync(userActivityLog);

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Shared.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +20,8 @@ namespace Shared.Migrations
                     EntityType = table.Column<int>(type: "integer", nullable: false),
                     ActivityDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Tin = table.Column<int>(type: "integer", nullable: false),
-                    OrganizationName = table.Column<string>(type: "text", nullable: false)
+                    OrganizationName = table.Column<string>(type: "text", nullable: false),
+                    Tin = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

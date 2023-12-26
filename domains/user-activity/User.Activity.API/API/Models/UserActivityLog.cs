@@ -9,6 +9,6 @@ public record UserActivityLog
     EntityType EntityType,
     DateTimeOffset ActivityDate,
     Guid OrganizationId,
-    int Tin,
-    string OrganizationName
-);
+    string OrganizationName,
+    string Tin
+    );

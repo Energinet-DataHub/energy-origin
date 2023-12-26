@@ -44,8 +44,9 @@ namespace Shared.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Tin")
-                        .HasColumnType("integer");
+                    b.Property<string>("Tin")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
