@@ -8,9 +8,9 @@ namespace API.Services.RabbitMQ;
 
 public class UserActivityEventConsumer(ApplicationDbContext context) : IConsumer<UserActivityEvent>
 {
-    public async Task Consume(ConsumeContext<UserActivityEvent> context1)
+    public async Task Consume(ConsumeContext<UserActivityEvent> eventContext)
     {
-        var message = context1.Message;
+        var message = eventContext.Message;
 
         var userActivityLog = new UserActivityLog(
             Id: message.Id,
