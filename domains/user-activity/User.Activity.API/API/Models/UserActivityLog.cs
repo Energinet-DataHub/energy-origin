@@ -10,5 +10,5 @@ public record UserActivityLog
     DateTimeOffset ActivityDate,
     Guid OrganizationId,
     int Tin,
-    string OrganizationName);
-
+    string OrganizationName
+);
