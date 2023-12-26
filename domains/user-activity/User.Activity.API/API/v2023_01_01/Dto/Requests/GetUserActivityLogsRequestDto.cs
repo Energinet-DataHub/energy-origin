@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using API.Models;
+using MassTransitContracts.Contracts;
 
 namespace API.v2023_01_01.Dto.Requests;
 

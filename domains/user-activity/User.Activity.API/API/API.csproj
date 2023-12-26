@@ -60,4 +60,8 @@
       <Folder Include="v2023_01_01\Controllers\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\MassTransitContracts\MassTransitContracts.csproj" />
+    </ItemGroup>
+
 </Project>

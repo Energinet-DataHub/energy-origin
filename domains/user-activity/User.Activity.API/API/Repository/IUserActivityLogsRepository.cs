@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Models;
 using API.Repository.Dto;
+using MassTransitContracts.Contracts;
 
 namespace API.Repository;
 

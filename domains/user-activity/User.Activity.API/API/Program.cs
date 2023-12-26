@@ -1,6 +1,6 @@
 using System.Linq;
 using API.Repository;
-using API.Services.RabbitMQ;
+using API.Services;
 using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;

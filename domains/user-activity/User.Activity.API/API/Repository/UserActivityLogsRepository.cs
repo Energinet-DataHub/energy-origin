@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Models;
 using API.Repository.Dto;
 using API.Shared.Data;
+using MassTransitContracts.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository;

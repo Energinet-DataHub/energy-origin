@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace API.Models.RabbitMQ;
+﻿namespace MassTransitContracts.Contracts;
 
 public class UserActivityEvent
 {

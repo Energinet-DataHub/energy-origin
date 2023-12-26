@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using API.Models;
-using API.Models.RabbitMQ;
 using API.Shared.Data;
 using MassTransit;
+using MassTransitContracts.Contracts;
 
-namespace API.Services.RabbitMQ;
+namespace API.Services;
 
 public class UserActivityEventConsumer(ApplicationDbContext context) : IConsumer<UserActivityEvent>
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace API.Models;
+namespace MassTransitContracts.Contracts;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum EntityType

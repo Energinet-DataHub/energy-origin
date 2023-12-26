@@ -1,4 +1,5 @@
 ﻿using System;
+using MassTransitContracts.Contracts;
 
 namespace API.Models;
 
