@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using DataContext.ValueObjects;
+using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -55,30 +57,65 @@ public class DataSyncClient : IDataSyncClient
             .ReadFromJsonAsync<List<DataSyncDto>>(jsonSerializerOptions, cancellationToken: cancellationToken))!;
     }
 
+    // private static string GenerateToken(string meteringPointOwner)
+    // {
+    //     var now = DateTimeOffset.UtcNow;
+    //     var expires = now.AddMinutes(3);
+    //
+    //     var claims = new Claim[]
+    //     {
+    //         new("subject", meteringPointOwner),
+    //         new("actor", meteringPointOwner),
+    //         new("issued", now.ToString("o")),
+    //         new("expires", expires.ToString("o")),
+    //         new("scope", "meteringpoints.read"),
+    //         new("scope", "measurements.read"),
+    //     };
+    //
+    //     var tokenHandler = new JwtSecurityTokenHandler();
+    //     var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
+    //     var tokenDescriptor = new SecurityTokenDescriptor
+    //     {
+    //         Subject = new ClaimsIdentity(claims),
+    //         Expires = expires.DateTime,
+    //         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+    //     };
+    //     var token = tokenHandler.CreateToken(tokenDescriptor);
+    //     return tokenHandler.WriteToken(token);
+    // }
+
     private static string GenerateToken(string meteringPointOwner)
     {
-        var now = DateTimeOffset.UtcNow;
-        var expires = now.AddMinutes(3);
 
-        var claims = new Claim[]
+        var claims = new Dictionary<string, object>()
         {
-            new("subject", meteringPointOwner),
-            new("actor", meteringPointOwner),
-            new("issued", now.ToString("o")),
-            new("expires", expires.ToString("o")),
-            new("scope", "meteringpoints.read"),
-            new("scope", "measurements.read"),
+            { UserClaimName.Scope, "" },
+            { UserClaimName.ActorLegacy, "" },
+            { UserClaimName.Actor, meteringPointOwner },
+            { UserClaimName.Tin, "" },
+            { UserClaimName.OrganizationName, "" },
+            { JwtRegisteredClaimNames.Name, "" },
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
+            { UserClaimName.AllowCprLookup, "false"},
+            { UserClaimName.AccessToken, ""},
+            { UserClaimName.IdentityToken, ""},
+            { UserClaimName.ProviderKeys, ""},
+            { UserClaimName.OrganizationId, meteringPointOwner},
+            { UserClaimName.MatchedRoles, ""},
+            { UserClaimName.Roles, ""},
+            { UserClaimName.AssignedRoles, ""}
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = expires.DateTime,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        var signedJwtToken = new TokenSigner(RsaKeyGenerator.GenerateTestKey()).Sign(
+            meteringPointOwner,
+            "name",
+            "Us",
+            "Users",
+            null,
+            60,
+            claims
+        );
+
+        return signedJwtToken;
     }
 }
