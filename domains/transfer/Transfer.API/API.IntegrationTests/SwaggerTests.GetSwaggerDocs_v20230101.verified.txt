@@ -192,47 +192,6 @@
         }
       }
     },
-    "/api/transfer-automation/status": {
-      "get": {
-        "tags": [
-          "TransferAgreementAutomation"
-        ],
-        "parameters": [
-          {
-            "name": "EO_API_VERSION",
-            "in": "header",
-            "description": "The requested API version",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "20230101"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAutomationStatus"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/history/transfer-agreements/{transferAgreementId}": {
       "get": {
         "tags": [
@@ -1071,15 +1030,6 @@
             "items": {
               "$ref": "#/components/schemas/TransferAgreementDto"
             }
-          }
-        },
-        "additionalProperties": false
-      },
-      "TransferAutomationStatus": {
-        "type": "object",
-        "properties": {
-          "healthy": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false
