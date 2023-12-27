@@ -4,8 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -15,7 +13,6 @@ using DataContext.ValueObjects;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.DataSyncSyncer.Client;
 
@@ -56,33 +53,6 @@ public class DataSyncClient : IDataSyncClient
         return (await response.Content
             .ReadFromJsonAsync<List<DataSyncDto>>(jsonSerializerOptions, cancellationToken: cancellationToken))!;
     }
-
-    // private static string GenerateToken(string meteringPointOwner)
-    // {
-    //     var now = DateTimeOffset.UtcNow;
-    //     var expires = now.AddMinutes(3);
-    //
-    //     var claims = new Claim[]
-    //     {
-    //         new("subject", meteringPointOwner),
-    //         new("actor", meteringPointOwner),
-    //         new("issued", now.ToString("o")),
-    //         new("expires", expires.ToString("o")),
-    //         new("scope", "meteringpoints.read"),
-    //         new("scope", "measurements.read"),
-    //     };
-    //
-    //     var tokenHandler = new JwtSecurityTokenHandler();
-    //     var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
-    //     var tokenDescriptor = new SecurityTokenDescriptor
-    //     {
-    //         Subject = new ClaimsIdentity(claims),
-    //         Expires = expires.DateTime,
-    //         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-    //     };
-    //     var token = tokenHandler.CreateToken(tokenDescriptor);
-    //     return tokenHandler.WriteToken(token);
-    // }
 
     private static string GenerateToken(string meteringPointOwner)
     {
