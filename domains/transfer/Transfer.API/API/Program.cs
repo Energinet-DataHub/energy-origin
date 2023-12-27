@@ -5,7 +5,6 @@ using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using API.Transfer;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -18,7 +17,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -76,9 +74,6 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                .AddService(TransferAgreementAutomationMetrics.MetricName))
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()

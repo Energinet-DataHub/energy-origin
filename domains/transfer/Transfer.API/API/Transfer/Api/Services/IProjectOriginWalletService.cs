@@ -8,5 +8,4 @@ public interface IProjectOriginWalletService
 {
     Task<string> CreateWalletDepositEndpoint(AuthenticationHeaderValue bearerToken);
     Task<Guid> CreateReceiverDepositEndpoint(AuthenticationHeaderValue bearerToken, string base64EncodedWalletDepositEndpoint, string receiverTin);
-    Task TransferCertificates(TransferAgreement transferAgreement);
 }

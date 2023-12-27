@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 
-namespace API.Transfer.TransferAgreementsAutomation.Metrics;
+namespace TransferAgreementAutomation.Worker.Metrics;
 
 public class TransferAgreementAutomationMetrics : ITransferAgreementAutomationMetrics
 {
