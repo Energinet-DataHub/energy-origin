@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using API.Claiming.Api.Models;
-using API.IntegrationTests.Factories;
+using ClaimAutomation.Worker.Api.Models;
 using FluentAssertions;
 using Xunit;
 
-namespace API.IntegrationTests.Claiming.Api.v2023_01_01.Controllers;
+namespace Worker.IntegrationTests.Api.v2023_01_01.Controllers;
 
-public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class ClaimAutomationControllerTest : IClassFixture<ClaimAutomationApplicationFactory>
 {
-    private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly ClaimAutomationApplicationFactory factory;
 
-    public ClaimAutomationControllerTest(TransferAgreementsApiWebApplicationFactory factory)
+    public ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
     {
         this.factory = factory;
     }
@@ -22,12 +21,9 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     public async Task StopProcess_WhenClaimProcessExists_ReturnsNoContent()
     {
         var subject = Guid.NewGuid();
-        await factory.SeedClaims(new List<ClaimAutomationArgument>()
-        {
-            new(subject, DateTimeOffset.UtcNow)
-        });
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
 
+        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
+        await client.PostAsync("api/claim-automation/start", null);
         var result = await client.DeleteAsync("api/claim-automation/stop");
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -58,12 +54,8 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     {
         var subject = Guid.NewGuid();
 
-        await factory.SeedClaims(new List<ClaimAutomationArgument>()
-        {
-            new(subject, DateTimeOffset.UtcNow)
-        });
-
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
+        await client.PostAsync("api/claim-automation/start", null);
 
         var result = await client.PostAsync("api/claim-automation/start", null);
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -74,14 +66,9 @@ public class ClaimAutomationControllerTest : IClassFixture<TransferAgreementsApi
     {
         var subject = Guid.NewGuid();
 
-        var claimAutomationArgument = new ClaimAutomationArgument(subject, DateTimeOffset.UtcNow);
-
-        await factory.SeedClaims(new List<ClaimAutomationArgument>()
-        {
-            claimAutomationArgument
-        });
-
         var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
+        await client.PostAsync("api/claim-automation/start", null);
+
         var result = await client.GetAsync("api/claim-automation/");
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }

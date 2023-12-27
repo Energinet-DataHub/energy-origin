@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using API.Claiming.Api.Models;
-using API.Claiming.Api.Repositories;
-using API.Claiming.Automation;
-using API.Claiming.Automation.Services;
-using API.Shared.Helpers;
+using ClaimAutomation.Worker.Api.Models;
+using ClaimAutomation.Worker.Api.Repositories;
+using ClaimAutomation.Worker.Automation;
+using ClaimAutomation.Worker.Automation.Services;
 using FluentAssertions;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
@@ -16,7 +11,7 @@ using ProjectOrigin.WalletSystem.V1;
 using Xunit;
 using Attribute = ProjectOrigin.WalletSystem.V1.Attribute;
 
-namespace API.UnitTests.Claiming.Automation;
+namespace Worker.UnitTests.Automation;
 
 public class ClaimServiceTests
 {

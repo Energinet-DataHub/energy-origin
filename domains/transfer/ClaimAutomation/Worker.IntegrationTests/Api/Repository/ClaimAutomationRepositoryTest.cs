@@ -1,13 +1,13 @@
 using System;
 using System.Threading.Tasks;
-using API.Claiming.Api.Models;
-using API.IntegrationTests.Testcontainers;
-using API.Shared.Data;
+using ClaimAutomation.Worker;
+using ClaimAutomation.Worker.Api.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Worker.IntegrationTests.Testcontainers;
 using Xunit;
 
-namespace API.IntegrationTests.Claiming.Api.Repository;
+namespace Worker.IntegrationTests.Api.Repository;
 
 public class ClaimAutomationRepositoryTest : IClassFixture<PostgresContainer>
 {
