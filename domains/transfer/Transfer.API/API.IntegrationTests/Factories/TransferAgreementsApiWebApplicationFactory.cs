@@ -156,7 +156,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20230101");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
         return client;
     }
 
@@ -207,7 +207,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
             { UserClaimName.AllowCprLookup, "false"},
             { UserClaimName.AccessToken, ""},
             { UserClaimName.IdentityToken, ""},
