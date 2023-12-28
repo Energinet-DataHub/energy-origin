@@ -1,6 +1,5 @@
-using API.ContractService;
-using API.Data;
 using API.DataSyncSyncer.Client.Dto;
+using DataContext;
 using MassTransit;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
+using DataContext.Models;
+using Microsoft.Extensions.Options;
 
 namespace API.DataSyncSyncer;
 
@@ -20,23 +22,29 @@ internal class DataSyncSyncerWorker : BackgroundService
     private readonly ILogger<DataSyncSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
     private readonly DataSyncService dataSyncService;
+    private readonly DatasyncOptions options;
 
     public DataSyncSyncerWorker(
         ILogger<DataSyncSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
-        DataSyncService dataSyncService)
+        DataSyncService dataSyncService,
+        IOptions<DatasyncOptions> options)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
         this.dataSyncService = dataSyncService;
+        this.options = options.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var cleanupResult = await contextFactory.CleanupContracts(stoppingToken);
-        logger.LogInformation("Deleted {deletionCount} contracts for GSRN {gsrn}", cleanupResult.deletionCount, cleanupResult.gsrn);
+        if (options.Disabled)
+        {
+            logger.LogInformation("DataSyncSyncer is disabled!");
+            return;
+        }
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -126,33 +134,5 @@ internal class DataSyncSyncerWorker : BackgroundService
                 )
             )
             .ToList();
-}
 
-public static class ContractCleanup
-{
-    private const string BadMeteringPointInDemoEnvironment = "571313000000000200";
-
-    public static async Task<(string gsrn, int deletionCount)> CleanupContracts(this IDbContextFactory<ApplicationDbContext> contextFactory, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var contractsForBadMeteringPoint = await EntityFrameworkQueryableExtensions.ToListAsync(context.Contracts
-                .Where(c => c.GSRN == BadMeteringPointInDemoEnvironment), cancellationToken);
-
-        var owners = contractsForBadMeteringPoint.Select(c => c.MeteringPointOwner).Distinct();
-
-        if (owners.Count() == 1)
-            return (BadMeteringPointInDemoEnvironment, 0);
-
-        var deletionCount = contractsForBadMeteringPoint.Count;
-
-        foreach (var certificateIssuingContract in contractsForBadMeteringPoint)
-        {
-            context.Remove(certificateIssuingContract);
-        }
-
-        await context.SaveChangesAsync(cancellationToken);
-
-        return (BadMeteringPointInDemoEnvironment, deletionCount);
-    }
 }

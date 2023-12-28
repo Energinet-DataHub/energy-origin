@@ -47,6 +47,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
 
+builder.Services.AddLogging();
+
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => builder.Services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
@@ -61,7 +63,6 @@ if (builder.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-app.UseHttpLogging();
 app.MapControllers();
 app.MapHealthChecks("/health");
 

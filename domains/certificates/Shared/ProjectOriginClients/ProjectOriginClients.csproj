@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<WalletVersion>0.2.1</WalletVersion>
+		<WalletVersion>0.4.0</WalletVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="ProjectOriginClients.WalletVersionAttribute">

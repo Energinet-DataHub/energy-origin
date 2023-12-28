@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace API.ContractService.Clients;
@@ -45,12 +45,13 @@ public class MeteringPointsClient : IMeteringPointsClient
         if (httpContext == null)
             throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
 
-        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization);
+        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization!);
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)
     {
-        var subject = httpContextAccessor.HttpContext?.User.FindFirstValue("subject") ?? string.Empty;
+        var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
+        var subject = user.Subject.ToString();
         if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
             throw new HttpRequestException("Owner must match subject");
     }
@@ -58,9 +59,11 @@ public class MeteringPointsClient : IMeteringPointsClient
 
 public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address);
+public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address, Technology Technology);
 
 public enum MeterType { Consumption, Production, Child }
+
+public record Technology(string AibFuelCode, string AibTechCode);
 
 public record Address(string Address1, string? Address2, string? Locality, string City, string PostalCode,
     string Country);

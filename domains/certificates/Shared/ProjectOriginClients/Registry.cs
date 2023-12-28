@@ -19,6 +19,23 @@ public static class Registry
 
     public static IssuedEvent CreateIssuedEventForProduction(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, string techCode, string fuelCode, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
     {
+        var issuedEvent = BuildIssuedEvent(registryName, certificateId, period, gridArea, assetId, commitment,
+            ownerPublicKey, GranularCertificateType.Production);
+
+        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.TechCode, Value = techCode });
+        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.FuelCode, Value = fuelCode });
+
+        return issuedEvent;
+    }
+    public static IssuedEvent CreateIssuedEventForConsumption(string registryName, Guid certificateId, DateInterval period, string gridArea, string assetId, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey)
+    {
+        return BuildIssuedEvent(registryName, certificateId, period, gridArea, assetId, commitment, ownerPublicKey, GranularCertificateType.Consumption);
+    }
+
+    private static IssuedEvent BuildIssuedEvent(string registryName, Guid certificateId, DateInterval period,
+        string gridArea, string assetId, SecretCommitmentInfo commitment, IPublicKey ownerPublicKey,
+        GranularCertificateType type)
+    {
         var id = new ProjectOrigin.Common.V1.FederatedStreamId
         {
             Registry = registryName,
@@ -28,7 +45,7 @@ public static class Registry
         var issuedEvent = new IssuedEvent
         {
             CertificateId = id,
-            Type = GranularCertificateType.Production,
+            Type = type,
             Period = period,
             GridArea = gridArea,
             QuantityCommitment = new ProjectOrigin.Electricity.V1.Commitment
@@ -45,12 +62,11 @@ public static class Registry
         };
 
         issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.AssetId, Value = assetId });
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.TechCode, Value = techCode });
-        issuedEvent.Attributes.Add(new ProjectOrigin.Electricity.V1.Attribute { Key = Attributes.FuelCode, Value = fuelCode });
 
         return issuedEvent;
     }
 
+    // TODO: Can be deleted
     public static SendTransactionsRequest CreateSendTransactionRequest(this IssuedEvent issuedEvent, IPrivateKey issuerKey)
     {
         var header = new TransactionHeader
@@ -76,6 +92,32 @@ public static class Registry
         return request;
     }
 
+    public static Transaction CreateTransaction(this IssuedEvent issuedEvent, IPrivateKey issuerKey)
+    {
+        var header = new TransactionHeader
+        {
+            FederatedStreamId = issuedEvent.CertificateId,
+            PayloadType = IssuedEvent.Descriptor.FullName,
+            PayloadSha512 = ByteString.CopyFrom(SHA512.HashData(issuedEvent.ToByteArray())),
+            Nonce = Guid.NewGuid().ToString(),
+        };
+
+        var headerSignature = issuerKey.Sign(header.ToByteArray()).ToArray();
+
+        var transaction = new Transaction
+        {
+            Header = header,
+            HeaderSignature = ByteString.CopyFrom(headerSignature),
+            Payload = issuedEvent.ToByteString()
+        };
+
+        return transaction;
+    }
+
+    // TODO: Can be deleted
     public static GetTransactionStatusRequest CreateStatusRequest(this Transaction transaction) =>
         new() { Id = Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray())) };
+
+    public static string ToShaId(this Transaction transaction) =>
+         Convert.ToBase64String(SHA256.HashData(transaction.ToByteArray()));
 }

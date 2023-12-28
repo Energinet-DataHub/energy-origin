@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -15,7 +16,6 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
 
     public SwaggerTests(TransferAgreementsApiWebApplicationFactory factory)
     {
-        factory.WalletUrl = "WalletUrlNotUsedForTheseTests";
         this.factory = factory;
     }
 
@@ -38,43 +38,62 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     }
 
     [Fact]
-    public async Task GetSwaggerUI_AppEnvironmentIsProduction_ReturnsNotFound()
+    public async Task GetSwaggerUI_Production_ReturnsNotFound()
     {
         using var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        using var swaggerUiResponse = await client.GetAsync("swagger");
 
-        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var swaggerUiResponse = await client.GetAsync("swagger");
+        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
     }
 
     [Fact]
-    public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
+    public async Task GetSwaggerDocs_AllVersions_ReturnsOk()
     {
         using var client = factory.CreateUnauthenticatedClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/transfer/v1/swagger.json");
+        var provider = factory.GetApiVersionDescriptionProvider();
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible.");
+        }
     }
 
     [Fact]
-    public async Task GetSwaggerDoc_AppEnvironmentIsProduction_ReturnsOk()
+    public async Task GetSwaggerDocs_ForAllVersions_Production_ReturnsOk()
     {
         using var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/transfer/v1/swagger.json");
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible in production.");
+        }
     }
 
     [Fact]
-    public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
+    public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
-        using var client = factory.CreateUnauthenticatedClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/transfer/v1/swagger.json");
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
 
-        var json = await swaggerDocResponse.Content.ReadAsStringAsync();
-        await Verifier.Verify(json);
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            await Verifier.Verify(json)
+                .UseParameters(version)
+                .UseMethodName($"GetSwaggerDocs_v{version}");
+        }
     }
 }

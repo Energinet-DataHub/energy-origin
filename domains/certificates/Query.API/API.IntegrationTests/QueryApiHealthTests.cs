@@ -1,7 +1,7 @@
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using System.Net;
 using System.Threading.Tasks;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;

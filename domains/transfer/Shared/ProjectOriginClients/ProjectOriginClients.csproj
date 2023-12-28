@@ -1,8 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,16 +21,16 @@
 	</ItemGroup>
 
 	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
-		<Exec Command="dotnet tool restore"/>
-		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)"/>
+		<Exec Command="dotnet tool restore" />
+		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)" />
 	</Target>
 
 	<ItemGroup>
 		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.2.0-rc.17/src/Protos/common.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/common.proto</SourceUrl>
 		</Protobuf>
 		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.1.1/src/Protos/wallet.proto</SourceUrl>
+			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.2.1/src/Protos/wallet.proto</SourceUrl>
 		</Protobuf>
 	</ItemGroup>
 </Project>

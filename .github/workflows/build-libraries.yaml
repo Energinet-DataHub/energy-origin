@@ -35,8 +35,13 @@ jobs:
         env:
           PATTERN: ${{ steps.dotnet.outputs.pattern }}
         run: |
-          csprojects=$(find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | egrep "$PATTERN" | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
+          find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | egrep "$PATTERN" > /tmp/list || true
 
+          if [ ! -s /tmp/list ]; then
+            exit 0
+          fi
+
+          csprojects=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
           echo "csprojects=$csprojects" >> "$GITHUB_ENV"
 
           echo '::group::csprojects'
@@ -49,8 +54,13 @@ jobs:
         env:
           LIST: ${{ steps.docker.outputs.list }}
         run: |
-          dockerfiles=$(while read directory; do printf '{"path": "%s"}' "$directory"; done <<< $LIST | jq -sc '.')
+          while read directory; do [ -d "$directory" ] || continue; printf '{"path": "%s"}\n' "$directory"; done <<< $LIST > /tmp/json
 
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
+
+          dockerfiles=$(jq -sc '.' < /tmp/json)
           echo "dockerfiles=$dockerfiles" >> "$GITHUB_ENV"
 
           echo '::group::dockerfiles'
@@ -133,7 +143,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Push image
-        uses: ./.github/actions/build-and-push-container
+        uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}

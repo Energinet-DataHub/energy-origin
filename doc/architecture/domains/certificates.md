@@ -18,20 +18,21 @@ Note: `ContractService` is currently getting information about a metering point 
 ### Message flow: Issue certificate
 The sequence diagram below shows the flow of messages between the components when issuing a single certificate. All messages are published to the message broker; the message broker is not shown in the diagram. Before that flow is possible, a wallet deposit endpoint must be created in the user's wallet; that happens as part of creating the Contract.
 
+The RegistryConnector listens to EnergyMeasured events from the DataSyncSyncer. The RegistryConnector is responsible for anything related to issuence. It utilizes MassTransit RoutingSlips in order to handle the issuence flow, which builds activities that are executed in sequence. If anything goes wrong in that sequnce, we have a subscription to handle it, which rejects the certificate.
+
 ```mermaid
 sequenceDiagram
     participant dss as DataSyncSyncer
-    participant gci as GranularCertificateIssuer
-    participant reg as RegistryIssuer
-    participant wal as WalletSliceSender
+    participant rc as RegistryConnector
 
-    dss->>gci: EnergyMeasured
-    gci->>reg: ProductionCertificateCreated
-    alt Issued in Project Origin Registry
-        reg->>gci: CertificateIssuedInRegistry
-        reg->>wal: CertificateIssuedInRegistry
-    else Rejected in Project Origin Registry
-        reg->>gci: CertificateRejectedInRegistry
+    dss->>rc: EnergyMeasured
+    rc->>rc: IssueToRegistry
+    rc->>rc: WaitForComittedRegistryTransaction
+    rc->>rc: MarkCertificateAsIssued
+    rc->>rc: SendCertificateToWallet
+
+    alt If anything fails on the way
+        rc->>rc: RejectCertificate
     end
 ```
 

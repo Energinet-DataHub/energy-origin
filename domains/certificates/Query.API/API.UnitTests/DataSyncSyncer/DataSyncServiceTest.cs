@@ -6,7 +6,7 @@ using API.DataSyncSyncer;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using MeasurementEvents;
 using Microsoft.Extensions.Logging;
