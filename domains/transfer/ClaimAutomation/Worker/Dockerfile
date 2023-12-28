@@ -26,4 +26,4 @@ COPY migrations /migrations
 
 ENV ASPNETCORE_HTTP_PORTS=80
 
-ENTRYPOINT ["dotnet", "API.dll"]
+ENTRYPOINT ["dotnet", "ClaimAutomation.Worker.dll"]
