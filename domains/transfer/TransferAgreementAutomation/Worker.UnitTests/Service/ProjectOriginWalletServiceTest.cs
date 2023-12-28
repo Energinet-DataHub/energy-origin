@@ -1,24 +1,23 @@
-using System;
-using System.Threading.Tasks;
-using API.Transfer.Api.Models;
-using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
+using TransferAgreementAutomation.Worker;
+using TransferAgreementAutomation.Worker.Metrics;
+using TransferAgreementAutomation.Worker.Models;
+using TransferAgreementAutomation.Worker.Service;
 using Xunit;
 
-namespace API.UnitTests.Transfer.Api.Services;
+namespace Worker.UnitTests.Service;
 
 public class ProjectOriginWalletServiceTest
 {
     private readonly ProjectOriginWalletService service;
     private readonly WalletService.WalletServiceClient fakeWalletServiceClient;
     private readonly ITransferAgreementAutomationMetrics fakeMetrics;
+
 
     public ProjectOriginWalletServiceTest()
     {
@@ -33,14 +32,13 @@ public class ProjectOriginWalletServiceTest
     [Fact]
     public async Task TransferCertificates_CertificateNotTransfer_ShouldSetMetric()
     {
-        var transferAgreement = new TransferAgreement()
-        {
-            Id = Guid.NewGuid(),
-            StartDate = DateTimeOffset.UtcNow,
-            SenderName = "Producent A/S",
-            SenderTin = "32132112",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreement = new TransferAgreementDto(
+            EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+            ReceiverReference: Guid.NewGuid().ToString(),
+            ReceiverTin: "12345678",
+            SenderId: Guid.NewGuid().ToString(),
+            StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
 
         var certificate = new GranularCertificate
         {
@@ -68,14 +66,13 @@ public class ProjectOriginWalletServiceTest
     [Fact]
     public async Task TransferCertificates_TransferAgreementNoEndDate_ShouldCallWalletTransferCertificate()
     {
-        var transferAgreement = new TransferAgreement()
-        {
-            Id = Guid.NewGuid(),
-            StartDate = DateTimeOffset.UtcNow,
-            SenderName = "Producent A/S",
-            SenderTin = "32132112",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreement = new TransferAgreementDto(
+            EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+            ReceiverReference: Guid.NewGuid().ToString(),
+            ReceiverTin: "12345678",
+            SenderId: Guid.NewGuid().ToString(),
+            StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
             new QueryResponse
@@ -107,14 +104,13 @@ public class ProjectOriginWalletServiceTest
         TransferCertificates_CertificateStartDateBeforeTAStartDateAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
     {
         var now = DateTimeOffset.UtcNow;
-        var transferAgreement = new TransferAgreement()
-        {
-            Id = Guid.NewGuid(),
-            StartDate = now,
-            SenderName = "Producent A/S",
-            SenderTin = "32132112",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreement = new TransferAgreementDto(
+            EndDate: now.AddHours(3).ToUnixTimeSeconds(),
+            ReceiverReference: Guid.NewGuid().ToString(),
+            ReceiverTin: "12345678",
+            SenderId: Guid.NewGuid().ToString(),
+            StartDate: now.ToUnixTimeSeconds()
+        );
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
             new QueryResponse
@@ -142,15 +138,13 @@ public class ProjectOriginWalletServiceTest
         TransferCertificates_CertificateEndDateAfterTAStartDatCertificateStartDateIsBefore_ShouldNotCallWalletTransferCertificate()
     {
         var now = DateTimeOffset.UtcNow;
-        var transferAgreement = new TransferAgreement()
-        {
-            Id = Guid.NewGuid(),
-            StartDate = now,
-            EndDate = now.AddHours(3),
-            SenderName = "Producent A/S",
-            SenderTin = "32132112",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreement = new TransferAgreementDto(
+            EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+            ReceiverReference: Guid.NewGuid().ToString(),
+            ReceiverTin: "12345678",
+            SenderId: Guid.NewGuid().ToString(),
+            StartDate: now.ToUnixTimeSeconds()
+        );
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
             new QueryResponse
@@ -176,15 +170,13 @@ public class ProjectOriginWalletServiceTest
     [Fact]
     public async Task TransferCertificates_WhenCalled_ShouldCallWalletTransferCertificate()
     {
-        var transferAgreement = new TransferAgreement()
-        {
-            Id = Guid.NewGuid(),
-            StartDate = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow.AddDays(3),
-            SenderName = "Producent A/S",
-            SenderTin = "32132112",
-            ReceiverTin = "11223344"
-        };
+        var transferAgreement = new TransferAgreementDto(
+            EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+            ReceiverReference: Guid.NewGuid().ToString(),
+            ReceiverTin: "12345678",
+            SenderId: Guid.NewGuid().ToString(),
+            StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
 
         var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
             new QueryResponse

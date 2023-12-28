@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
 
-namespace API.Transfer.TransferAgreementsAutomation;
+namespace TransferAgreementAutomation.Worker;
 
 public class AutomationCache
 {
