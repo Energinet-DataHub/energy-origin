@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ClaimAutomation.Worker.Api.Models;
+using DataContext;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClaimAutomation.Worker.Api.Repositories;
@@ -20,14 +21,14 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        return await EntityFrameworkQueryableExtensions.ToListAsync<ClaimAutomationArgument>(context.ClaimAutomationArguments);
+        return await context.ClaimAutomationArguments.ToListAsync();
     }
 
     public async Task<ClaimAutomationArgument?> GetClaimAutomationArgument(Guid subject)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        return await Queryable.Where<ClaimAutomationArgument>(context.ClaimAutomationArguments, c => c.SubjectId == subject).FirstOrDefaultAsync();
+        return await context.ClaimAutomationArguments.Where(c => c.SubjectId == subject).FirstOrDefaultAsync();
     }
 
     public async Task<ClaimAutomationArgument> AddClaimAutomationArgument(ClaimAutomationArgument claimAutomationArgument)

@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using Audit.Core;
+using DataContext.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.WalletSystem.V1;

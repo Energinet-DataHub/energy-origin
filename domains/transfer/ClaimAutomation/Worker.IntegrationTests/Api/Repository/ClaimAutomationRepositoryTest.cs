@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using ClaimAutomation.Worker;
-using ClaimAutomation.Worker.Api.Models;
+using DataContext;
+using DataContext.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Worker.IntegrationTests.Testcontainers;

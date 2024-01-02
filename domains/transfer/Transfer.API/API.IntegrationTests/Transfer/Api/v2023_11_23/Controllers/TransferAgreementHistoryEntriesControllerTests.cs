@@ -6,7 +6,6 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Shared;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_11_23.Dto.Requests;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;

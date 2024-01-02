@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository.Dto;
+using DataContext;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;

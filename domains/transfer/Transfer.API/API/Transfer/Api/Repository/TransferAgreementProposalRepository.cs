@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
+using DataContext;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;

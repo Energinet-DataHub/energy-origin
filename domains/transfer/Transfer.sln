@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.IntegrationTests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.UnitTests", "ClaimAutomation\Worker.UnitTests\Worker.UnitTests.csproj", "{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{015D884A-DFDD-40B8-A162-A7C5E0C2BF8F} = {2A5406D2-F385-4D28-9EF9-EE6741ED0BCB}

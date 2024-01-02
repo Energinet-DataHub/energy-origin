@@ -1,7 +1,7 @@
-using ClaimAutomation.Worker.Api.Models;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Automation.Services;
+using DataContext.Models;
 using FluentAssertions;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;

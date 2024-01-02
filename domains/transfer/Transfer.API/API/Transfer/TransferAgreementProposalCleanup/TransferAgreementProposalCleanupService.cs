@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
-using API.Shared.Data;
+using DataContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.TransferAgreementProposalCleanup;

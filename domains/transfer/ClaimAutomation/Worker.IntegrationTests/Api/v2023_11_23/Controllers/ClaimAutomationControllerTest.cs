@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using ClaimAutomation.Worker.Api.Models;
 using FluentAssertions;
 using Xunit;
 
-namespace Worker.IntegrationTests.Api.v2023_01_01.Controllers;
+namespace Worker.IntegrationTests.Api.v2023_11_23.Controllers;
 
 public class ClaimAutomationControllerTest : IClassFixture<ClaimAutomationApplicationFactory>
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ClaimAutomation.Worker.Api.Models;
+using DataContext.Models;
 
 namespace ClaimAutomation.Worker.Api.Repositories;
 

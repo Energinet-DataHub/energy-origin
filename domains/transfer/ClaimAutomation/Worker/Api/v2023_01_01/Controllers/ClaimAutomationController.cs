@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Asp.Versioning;
-using ClaimAutomation.Worker.Api.Models;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Api.v2023_01_01.Dto.Response;
+using DataContext.Models;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
