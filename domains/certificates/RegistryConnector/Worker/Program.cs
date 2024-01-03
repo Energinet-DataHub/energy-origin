@@ -24,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
     .Enrich.WithSpan();
 
 var console = builder.Environment.IsDevelopment()
