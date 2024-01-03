@@ -50,5 +50,11 @@
 		<None Update="Cvr\Api\v2023_01_01\Controllers\CvrControllerTests.empty_cvr_response.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+        <None Update="Cvr\Api\v2024_01_03\Controllers\CvrControllerTests.cvr_response.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Cvr\Api\v2024_01_03\Controllers\CvrControllerTests.empty_cvr_response.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
 	</ItemGroup>
 </Project>
