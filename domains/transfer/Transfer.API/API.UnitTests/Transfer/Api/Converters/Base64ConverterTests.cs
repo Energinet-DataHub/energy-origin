@@ -30,7 +30,7 @@ public class Base64ConverterTests
     }
 
     [Theory]
-    [InlineData(null)]
+    [InlineData("")]
     [InlineData("Regular string in disguise as base64 wallet-deposit-endpoint")]
     [InlineData("W3sibmFtZSI6ICJKb2huIn0sIHsibmFtZSI6ICJKYW5lIn1d")]
     [InlineData("Jane Doe")]

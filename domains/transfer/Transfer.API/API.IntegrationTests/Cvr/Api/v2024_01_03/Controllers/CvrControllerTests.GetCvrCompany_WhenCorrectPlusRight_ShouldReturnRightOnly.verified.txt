@@ -1,0 +1,38 @@
+﻿{
+  Result: [
+    {
+      CompanyCvr: 28980671,
+      CompanyName: Energinet,
+      Address: {
+        Landekode: DK,
+        Vejkode: 4143,
+        Kommune: {
+          KommuneKode: 101,
+          KommuneNavn: FREDERICIA
+        },
+        HusnummerFra: 17,
+        AdresseId: 9ccc4f1d-2470-4f2f-a40e-17daacabd038,
+        Vejnavn: Langelinie Allé,
+        Postnummer: 7000,
+        Postdistrikt: Frederica
+      }
+    },
+    {
+      CompanyCvr: 10150817,
+      CompanyName: Erhvervsstyrelsen,
+      Address: {
+        Landekode: DK,
+        Vejkode: 4143,
+        Kommune: {
+          KommuneKode: 101,
+          KommuneNavn: KØBENHAVN
+        },
+        HusnummerFra: 17,
+        AdresseId: 9ccc4f1d-2470-4f2f-a40e-17daacabd038,
+        Vejnavn: Langelinie Allé,
+        Postnummer: 2100,
+        Postdistrikt: København Ø
+      }
+    }
+  ]
+}
