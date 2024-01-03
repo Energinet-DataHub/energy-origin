@@ -28,13 +28,13 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigration --project Transfer.API/API
+dotnet ef migrations add NameOfMigration --project Shared/DataContext
 ```
 
 Updating your local database can be done using this command:
 
 ```shell
-dotnet ef database update --project TransferAgreements.API/API
+dotnet ef database update --project Shared/DataContext
 ```
 
 The argument `--project TransferAgreements.API/API` can be omitted if the working directory is changed to TransferAgreements.API/API.

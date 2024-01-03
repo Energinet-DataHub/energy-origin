@@ -1,11 +1,10 @@
 using System.Linq;
-using API.Claiming;
 using API.Cvr;
-using API.Shared.Data;
 using API.Shared.Options;
 using API.Shared.Swagger;
 using API.Transfer;
 using Asp.Versioning;
+using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
@@ -53,7 +52,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddClaimServices();
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
@@ -70,7 +68,6 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
-
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
@@ -79,6 +76,7 @@ builder.Services.AddOpenTelemetry()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();

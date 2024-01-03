@@ -1,8 +1,8 @@
 using API.IntegrationTests.Testcontainers;
-using API.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using DataContext;
 
 namespace API.IntegrationTests.Shared.Migrations
 {
