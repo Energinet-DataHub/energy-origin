@@ -88,6 +88,7 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
+if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(
         options =>
         {
