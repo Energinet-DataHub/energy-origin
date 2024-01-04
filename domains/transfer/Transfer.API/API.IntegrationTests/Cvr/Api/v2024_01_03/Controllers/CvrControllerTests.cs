@@ -53,7 +53,6 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         await Verifier.Verify(jsonContent, settings);
     }
 
-
     [Fact]
     public async Task GetCvrCompany_WhenWrongCvrNumber_ShouldReturnEmptyOkResponse()
     {
@@ -78,32 +77,6 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
         settings.DontScrubGuids();
         await Verifier.Verify(jsonContent, settings);
     }
-
-    // [Fact]
-    // public async Task GetCvrCompany_WhenWrongPlusRight_ShouldReturnRightOnly()
-    // {
-    //     var wrongPlusRightCvr = new List<string> { "123", "28980671", "39315041" };
-    //     server.ResetMappings();
-    //     server
-    //         .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
-    //         .RespondWith(Response.Create()
-    //             .WithStatusCode(200)
-    //             .WithBodyFromFile("Cvr/Api/v2024_01_03/Controllers/CvrControllerTests.cvr_response2.json")
-    //         );
-    //
-    //     var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), apiVersion: "20240103");
-    //
-    //     var response = await client.PostAsJsonAsync("api/cvr", wrongPlusRightCvr);
-    //
-    //     response.StatusCode.Should().Be(HttpStatusCode.OK);
-    //
-    //     var jsonContent = await response.Content.ReadFromJsonAsync<CvrCompanyListResponse>();
-    //
-    //     var settings = new VerifySettings();
-    //     settings.DontScrubGuids();
-    //     await Verifier.Verify(jsonContent, settings);
-    // }
-
 
     [Fact]
     public async Task GetCvrCompany_WhenTransientError_ShouldRetry()
