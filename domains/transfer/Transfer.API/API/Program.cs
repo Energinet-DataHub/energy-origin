@@ -46,7 +46,6 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLogging();
@@ -62,7 +61,8 @@ builder.Services.AddApiVersioning(options =>
     .AddApiExplorer();
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen( options => options.OperationFilter<SwaggerDefaultValues>() );
+
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
@@ -88,7 +88,6 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(
         options =>
         {
