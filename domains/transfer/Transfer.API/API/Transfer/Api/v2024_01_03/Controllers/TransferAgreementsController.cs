@@ -22,7 +22,7 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20231231")]
+[ApiVersion("20240103")]
 [Route("api/transfer-agreements")]
 public class TransferAgreementsController : ControllerBase
 {
