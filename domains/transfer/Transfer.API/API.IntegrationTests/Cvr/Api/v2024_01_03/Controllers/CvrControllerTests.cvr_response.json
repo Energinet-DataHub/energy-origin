@@ -179,7 +179,7 @@
                         ],
                         "telefonNummer": [
                             {
-                                "kontaktoplysning": "33307700",
+                                "kontaktoplysning": "",
                                 "hemmelig": true,
                                 "periode": {
                                     "gyldigFra": "1964-04-01",
@@ -188,7 +188,7 @@
                                 "sidstOpdateret": "2013-11-22T22:14:39.000+01:00"
                             },
                             {
-                                "kontaktoplysning": "35291000",
+                                "kontaktoplysning": "",
                                 "hemmelig": false,
                                 "periode": {
                                     "gyldigFra": "2003-11-24",
@@ -197,7 +197,7 @@
                                 "sidstOpdateret": "2018-10-06T12:06:42.000+02:00"
                             },
                             {
-                                "kontaktoplysning": "35291000",
+                                "kontaktoplysning": "",
                                 "hemmelig": false,
                                 "periode": {
                                     "gyldigFra": "2018-10-06",
@@ -208,7 +208,7 @@
                         ],
                         "telefaxNummer": [
                             {
-                                "kontaktoplysning": "33307799",
+                                "kontaktoplysning": "",
                                 "hemmelig": true,
                                 "periode": {
                                     "gyldigFra": "1964-04-01",
@@ -221,7 +221,7 @@
                         "sekundaertTelefaxNummer": [],
                         "elektroniskPost": [
                             {
-                                "kontaktoplysning": "eogs@eogs.dk",
+                                "kontaktoplysning": "",
                                 "hemmelig": true,
                                 "periode": {
                                     "gyldigFra": "1964-04-01",
