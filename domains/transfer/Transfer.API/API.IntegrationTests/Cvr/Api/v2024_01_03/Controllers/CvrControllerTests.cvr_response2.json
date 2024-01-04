@@ -1,10 +1,20 @@
 {
+    "took": 5,
+    "timed_out": false,
+    "_shards": {
+        "total": 1,
+        "successful": 1,
+        "skipped": 0,
+        "failed": 0
+    },
     "hits": {
+        "total": 2,
+        "max_score": 12.518271,
         "hits": [
             {
-                "_index": "cvr-v-20220630",
+                "_index": "cvr-v-20220645",
                 "_type": "_doc",
-                "_id": "4001304412",
+                "_id": "4001304455",
                 "_score": 12.518271,
                 "_source": {
                     "Vrvirksomhed": {
@@ -78,7 +88,7 @@
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 65,
                                 "adresseId": null,
                                 "sidstValideret": null,
                                 "husnummerTil": null,
@@ -88,7 +98,7 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Tonne Kjærsvej",
                                 "bynavn": null,
                                 "postnummer": 7000,
                                 "postdistrikt": "Frederica",
@@ -146,7 +156,7 @@
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 65,
                                 "adresseId": "9ccc4f1d-2470-4f2f-a40e-17daacabd038",
                                 "sidstValideret": "2017-09-19T23:16:42.990+02:00",
                                 "husnummerTil": null,
@@ -156,7 +166,7 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Tonne Kjærsvej",
                                 "bynavn": null,
                                 "postnummer": 7000,
                                 "postdistrikt": "Frederica",
@@ -2204,7 +2214,7 @@
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 65,
                                 "adresseId": "9ccc4f1d-2470-4f2f-a40e-17daacabd038",
                                 "sidstValideret": "2017-09-19T23:16:42.990+02:00",
                                 "husnummerTil": null,
@@ -2214,7 +2224,7 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Tonne Kjærsvej",
                                 "bynavn": null,
                                 "postnummer": 7000,
                                 "postdistrikt": "Frederica",
@@ -2295,27 +2305,27 @@
                 }
             },
             {
-                "_index": "cvr-v-20220630",
+                "_index": "cvr-v-20258630",
                 "_type": "_doc",
-                "_id": "4001304412",
+                "_id": "4001304477",
                 "_score": 12.518271,
                 "_source": {
                     "Vrvirksomhed": {
-                        "cvrNummer": 10150817,
+                        "cvrNummer": 39315041,
                         "regNummer": [],
                         "brancheAnsvarskode": 0,
                         "reklamebeskyttet": false,
                         "navne": [
                             {
-                                "navn": "Erhvervs- og Selskabsstyrelsen",
+                                "navn": "Datahub A/S",
                                 "periode": {
-                                    "gyldigFra": "1964-04-01",
+                                    "gyldigFra": "1965-04-02",
                                     "gyldigTil": "2011-12-31"
                                 },
-                                "sidstOpdateret": "2013-11-22T22:09:56.000+01:00"
+                                "sidstOpdateret": "2014-11-22T22:09:56.000+01:00"
                             },
                             {
-                                "navn": "Erhvervsstyrelsen",
+                                "navn": "Datahub A/S",
                                 "periode": {
                                     "gyldigFra": "2012-01-01",
                                     "gyldigTil": null
@@ -2331,14 +2341,14 @@
                                 "vejkode": null,
                                 "kommune": {
                                     "kommuneKode": 101,
-                                    "kommuneNavn": "KØBENHAVN",
+                                    "kommuneNavn": "SNOGHØJ",
                                     "periode": {
                                         "gyldigFra": "2007-01-01",
                                         "gyldigTil": null
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 1,
+                                "husnummerFra": 4,
                                 "adresseId": null,
                                 "sidstValideret": null,
                                 "husnummerTil": null,
@@ -2348,10 +2358,10 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Kampmannsgade",
+                                "vejnavn": "Vesterballevej",
                                 "bynavn": null,
-                                "postnummer": 1780,
-                                "postdistrikt": "København V",
+                                "postnummer": 7000,
+                                "postdistrikt": "Snoghøj",
                                 "periode": {
                                     "gyldigFra": "1964-04-01",
                                     "gyldigTil": "2012-12-11"
@@ -2361,17 +2371,17 @@
                             {
                                 "landekode": "DK",
                                 "fritekst": null,
-                                "vejkode": 4143,
+                                "vejkode": 7121,
                                 "kommune": {
                                     "kommuneKode": 101,
-                                    "kommuneNavn": "KØBENHAVN",
+                                    "kommuneNavn": "SNOGHØJ",
                                     "periode": {
                                         "gyldigFra": "2007-01-01",
                                         "gyldigTil": null
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 4,
                                 "adresseId": null,
                                 "sidstValideret": null,
                                 "husnummerTil": null,
@@ -2381,10 +2391,10 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Vesterballevej",
                                 "bynavn": null,
                                 "postnummer": 2100,
-                                "postdistrikt": "København Ø",
+                                "postdistrikt": "Snoghøj",
                                 "periode": {
                                     "gyldigFra": "2012-12-12",
                                     "gyldigTil": "2016-03-14"
@@ -2399,7 +2409,7 @@
                                 "vejkode": 3540,
                                 "kommune": {
                                     "kommuneKode": 101,
-                                    "kommuneNavn": "KØBENHAVN",
+                                    "kommuneNavn": "SNOGHØJ",
                                     "periode": {
                                         "gyldigFra": "2007-01-01",
                                         "gyldigTil": null
@@ -2419,7 +2429,7 @@
                                 "vejnavn": "Kampmannsgade",
                                 "bynavn": null,
                                 "postnummer": 1604,
-                                "postdistrikt": "København V",
+                                "postdistrikt": "Snoghøj",
                                 "periode": {
                                     "gyldigFra": "1964-04-01",
                                     "gyldigTil": "2012-06-24"
@@ -2432,14 +2442,14 @@
                                 "vejkode": 4143,
                                 "kommune": {
                                     "kommuneKode": 101,
-                                    "kommuneNavn": "KØBENHAVN",
+                                    "kommuneNavn": "SNOGHØJ",
                                     "periode": {
                                         "gyldigFra": "2007-01-01",
                                         "gyldigTil": null
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 4,
                                 "adresseId": "9ccc4f1d-2470-4f2f-a40e-17daacabd038",
                                 "sidstValideret": "2017-09-19T23:16:42.990+02:00",
                                 "husnummerTil": null,
@@ -2449,10 +2459,10 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Vesterballevej",
                                 "bynavn": null,
                                 "postnummer": 2100,
-                                "postdistrikt": "København Ø",
+                                "postdistrikt": "Snoghøj",
                                 "periode": {
                                     "gyldigFra": "2012-06-25",
                                     "gyldigTil": null
@@ -4465,7 +4475,7 @@
                         "spaltninger": [],
                         "virksomhedMetadata": {
                             "nyesteNavn": {
-                                "navn": "Erhvervsstyrelsen",
+                                "navn": "Datahub",
                                 "periode": {
                                     "gyldigFra": "2012-01-01",
                                     "gyldigTil": null
@@ -4490,14 +4500,14 @@
                                 "vejkode": 4143,
                                 "kommune": {
                                     "kommuneKode": 101,
-                                    "kommuneNavn": "KØBENHAVN",
+                                    "kommuneNavn": "SNOGHØJ",
                                     "periode": {
                                         "gyldigFra": "2007-01-01",
                                         "gyldigTil": null
                                     },
                                     "sidstOpdateret": "2006-11-13T00:00:00.000+01:00"
                                 },
-                                "husnummerFra": 17,
+                                "husnummerFra": 4,
                                 "adresseId": "9ccc4f1d-2470-4f2f-a40e-17daacabd038",
                                 "sidstValideret": "2017-09-19T23:16:42.990+02:00",
                                 "husnummerTil": null,
@@ -4507,10 +4517,10 @@
                                 "sidedoer": null,
                                 "conavn": null,
                                 "postboks": null,
-                                "vejnavn": "Langelinie Allé",
+                                "vejnavn": "Vesterballevej",
                                 "bynavn": null,
                                 "postnummer": 2100,
-                                "postdistrikt": "København Ø",
+                                "postdistrikt": "Snoghøj",
                                 "periode": {
                                     "gyldigFra": "2012-06-25",
                                     "gyldigTil": null
