@@ -12,7 +12,7 @@ namespace API.Cvr.Api.v2024_01_03.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20240103")]
+[ApiVersion(20240103)]
 [Route("api/cvr")]
 public class CvrController(CvrClient client) : Controller
 {
