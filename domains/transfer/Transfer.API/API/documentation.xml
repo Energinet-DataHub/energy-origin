@@ -55,7 +55,6 @@
             Get CVR registered company information for multiple CVR numbers
             </summary>
             <response code="200">Successful operation</response>
-            <response code="404">CVR company not found</response>
         </member>
         <member name="P:API.Cvr.Api.v2024_01_03.Dto.Responses.CvrCompanyDto.CompanyCvr">
             <summary>
