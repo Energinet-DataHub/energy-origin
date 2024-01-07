@@ -72,9 +72,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "CVR company not found"
           }
         }
       }
