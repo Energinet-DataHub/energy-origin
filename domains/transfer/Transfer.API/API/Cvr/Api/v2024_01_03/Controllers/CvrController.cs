@@ -20,7 +20,9 @@ public class CvrController(CvrClient client) : Controller
     /// Get CVR registered company information for multiple CVR numbers
     /// </summary>
     /// <response code="200">Successful operation</response>
+    /// <response code="400">Request body cannot be null</response>
     [ProducesResponseType(typeof(CvrCompanyListResponse), 200)]
+    [ProducesResponseType(typeof(void), 400)]
     [HttpPost]
     public async Task<ActionResult<CvrCompanyListResponse>> GetCvrCompanies([FromBody] List<string> cvrNumbers)
     {
