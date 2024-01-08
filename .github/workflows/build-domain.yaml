@@ -132,6 +132,7 @@ jobs:
         run: |
           mkdir "${{ env.domain }}/migrations" || true
           mkdir "${{ env.domain }}/Shared" || true
+          mkdir "${{ env.domain }}/.config" || true
 
       - name: Set assembly name
         shell: bash
