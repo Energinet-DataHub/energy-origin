@@ -138,9 +138,9 @@ jobs:
         run: |
           grep -q "<AssemblyName>" "${{ env.path }}"
           if [ $? -eq 0 ]; then
-            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|" \;
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
           else
-            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|" \;
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
       - name: Build image
