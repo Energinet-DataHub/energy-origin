@@ -72,6 +72,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body cannot be null"
           }
         }
       }
