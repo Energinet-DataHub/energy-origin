@@ -101,7 +101,7 @@ jobs:
           projects=$(dirname "$PROJECT")
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
-
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
@@ -116,6 +116,7 @@ jobs:
             echo "migration=${migration}"
             echo "domain=${domain}"
             echo "name=${name}"
+            echo "path=${path}"
           } >> $GITHUB_ENV
 
       - name: Validate project
@@ -126,13 +127,20 @@ jobs:
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
 
-      - name: Ensure migrations folder exists
+      - name: Ensure folders exists
         shell: bash
-        run: mkdir "${{ env.domain }}/migrations" || true
+        run: |
+          mkdir "${{ env.domain }}/migrations" || true
+          mkdir "${{ env.domain }}/Shared" || true
 
       - name: Set assembly name
         shell: bash
-        run: find . -name "*.csproj" -exec sed -i {} -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|" \;
+        run: |
+          if [ grep -q "<AssemblyName>" "${{ env.path }}" ]; then
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|" \;
+          else
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|" \;
+          fi
 
       - name: Build image
         uses: ./.github/actions/docker-build-and-push

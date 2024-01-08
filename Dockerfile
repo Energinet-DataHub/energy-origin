@@ -4,8 +4,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-1-jammy AS build
 ARG PROJECT
-WORKDIR /src
-COPY ${PROJECT} .
+WORKDIR /src/code/
+COPY ${PROJECT} app
+COPY ${PROJECT}/../../Shared /src/Shared
+WORKDIR /src/code/app
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
 
