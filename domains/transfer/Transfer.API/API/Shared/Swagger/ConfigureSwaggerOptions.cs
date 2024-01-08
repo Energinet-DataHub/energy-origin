@@ -1,26 +1,15 @@
 using System;
 using System.IO;
 using Asp.Versioning.ApiExplorer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API.Shared.Swagger;
 
-public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
 {
-    private readonly IWebHostEnvironment environment;
-    private readonly IApiVersionDescriptionProvider provider;
-
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IWebHostEnvironment environment)
-    {
-        this.environment = environment;
-        this.provider = provider;
-    }
-
     public void Configure(SwaggerGenOptions options)
     {
         options.OperationFilter<SwaggerDefaultValues>();
@@ -28,7 +17,6 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         var xmlFilePath = Path.Combine(AppContext.BaseDirectory, "documentation.xml");
         options.IncludeXmlComments(xmlFilePath);
 
-        if (environment.IsDevelopment())
         {
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
