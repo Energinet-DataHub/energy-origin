@@ -20,4 +20,4 @@ COPY --from=build /app/publish /app
 EXPOSE 80
 ENV ASPNETCORE_HTTP_PORTS=80
 
-ENTRYPOINT ["dotnet", "main.dll"]
+ENTRYPOINT ["dotnet", "/app/main.dll"]
