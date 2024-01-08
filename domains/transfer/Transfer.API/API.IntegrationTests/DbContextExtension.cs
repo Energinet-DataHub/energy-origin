@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace API.IntegrationTests;
 
@@ -33,10 +34,13 @@ public static class DbContextExtension
 
     public static async Task TruncateTransferAgreementsTables(this ApplicationDbContext dbContext)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
+        var agreementName = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
+        var historyName = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+        FormattableString transferSql = $"TRUNCATE TABLE \"{agreementName}\" CASCADE";
+        FormattableString historySql = $"TRUNCATE TABLE \"{historyName}\"";
+
+        await dbContext.Database.ExecuteSqlAsync(transferSql);
+        await dbContext.Database.ExecuteSqlAsync(historySql);
     }
 }
