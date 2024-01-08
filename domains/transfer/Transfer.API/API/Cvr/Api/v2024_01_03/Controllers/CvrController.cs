@@ -20,7 +20,7 @@ public class CvrController(CvrClient client) : Controller
     /// Get CVR registered company information for multiple CVR numbers
     /// </summary>
     /// <response code="200">Successful operation</response>
-    /// <response code="400">Request body cannot be null</response>
+    /// <response code="400">A non-empty request body is required.</response>
     [ProducesResponseType(typeof(CvrCompanyListResponse), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [HttpPost]
@@ -32,15 +32,21 @@ public class CvrController(CvrClient client) : Controller
             return Ok(new CvrCompanyListResponse(new List<CvrCompanyDto>()));
 
         var searchResult = await client.CvrNumberSearch(parsedCvrNumbers);
+        return Ok(CreateCvrCompanyListResponse(searchResult));
+    }
+
+    private CvrCompanyListResponse CreateCvrCompanyListResponse(Root? searchResult)
+    {
         if (searchResult?.hits?.hits == null)
-            return Ok(new CvrCompanyListResponse(new List<CvrCompanyDto>()));
+            return new CvrCompanyListResponse(new List<CvrCompanyDto>());
 
         var companies = searchResult.hits.hits
             .Select(hit => ToDto(hit._source?.Vrvirksomhed))
             .Where(dto => dto != null)
+            .Cast<CvrCompanyDto>()
             .ToList();
 
-        return Ok(new CvrCompanyListResponse(companies.Cast<CvrCompanyDto>().ToList()));
+        return new CvrCompanyListResponse(companies);
     }
 
     private CvrCompanyDto? ToDto(Vrvirksomhed? vrvirksomhed)
