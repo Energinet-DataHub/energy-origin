@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace API.IntegrationTests;
 
