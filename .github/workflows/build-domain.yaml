@@ -136,7 +136,8 @@ jobs:
       - name: Set assembly name
         shell: bash
         run: |
-          if [ grep -q "<AssemblyName>" "${{ env.path }}" ]; then
+          grep -q "<AssemblyName>" "${{ env.path }}"
+          if [ $? -eq 0 ]; then
             sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|" \;
           else
             sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|" \;
