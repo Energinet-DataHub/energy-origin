@@ -1,8 +1,6 @@
-using System.Runtime.CompilerServices;
 using API.Transfer.Api.Converters;
 using FluentAssertions;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using ProjectOrigin.WalletSystem.V1;
 using Xunit;
 
