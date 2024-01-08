@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Cvr.Api.Clients.Cvr;
 using API.Cvr.Api.Models;
+using API.Cvr.Api.v2024_01_03.Dto.Requests;
 using API.Cvr.Api.v2024_01_03.Dto.Responses;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -20,13 +21,13 @@ public class CvrController(CvrClient client) : Controller
     /// Get CVR registered company information for multiple CVR numbers
     /// </summary>
     /// <response code="200">Successful operation</response>
-    /// <response code="400">A non-empty request body is required.</response>
+    /// <response code="400">Bad request</response>
     [ProducesResponseType(typeof(CvrCompanyListResponse), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [HttpPost]
-    public async Task<ActionResult<CvrCompanyListResponse>> GetCvrCompanies([FromBody] List<string> cvrNumbers)
+    public async Task<ActionResult<CvrCompanyListResponse>> GetCvrCompanies([FromBody] CvrRequestDto requestDto)
     {
-        var parsedCvrNumbers = cvrNumbers.Select(CvrNumber.TryParse).OfType<CvrNumber>().ToList();
+        var parsedCvrNumbers = requestDto.CvrNumbers.Select(CvrNumber.TryParse).OfType<CvrNumber>().ToList();
 
         if (!parsedCvrNumbers.Any())
             return Ok(new CvrCompanyListResponse(new List<CvrCompanyDto>()));

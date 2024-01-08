@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.Cvr.Api.v2024_01_03.Dto.Requests;
 using API.Cvr.Api.v2024_01_03.Dto.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
@@ -31,7 +32,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
     [Fact]
     public async Task GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo()
     {
-        var cvrNumbers = new List<string> { "10150817" };
+        var cvrNumbers = new CvrRequestDto(new List<string> { "10150817" });
         server.ResetMappings();
         server
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
@@ -56,7 +57,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
     [Fact]
     public async Task GetCvrCompany_WhenWrongCvrNumber_ShouldReturnEmptyOkResponse()
     {
-        var cvrNumbers = new List<string> { "123" };
+        var cvrNumbers = new CvrRequestDto(new List<string> { "123" });
         server.ResetMappings();
         server
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
@@ -81,7 +82,7 @@ public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicat
     [Fact]
     public async Task GetCvrCompany_WhenTransientError_ShouldRetry()
     {
-        var cvrNumbers = new List<string> { "10150817" };
+        var cvrNumbers = new CvrRequestDto(new List<string> { "10150817" });
         server.Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .InScenario("UnstableServer")
             .WillSetStateTo("FirstCallDone")

@@ -28,26 +28,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "#/components/schemas/CvrRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "#/components/schemas/CvrRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "#/components/schemas/CvrRequestDto"
               }
             }
           }
@@ -74,7 +65,7 @@
             }
           },
           "400": {
-            "description": "A non-empty request body is required."
+            "description": "Bad request"
           }
         }
       }
@@ -726,6 +717,18 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CvrCompanyDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CvrRequestDto": {
+        "type": "object",
+        "properties": {
+          "cvrNumbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },

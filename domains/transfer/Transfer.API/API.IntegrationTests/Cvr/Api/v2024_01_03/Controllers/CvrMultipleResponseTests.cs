@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using API.Cvr.Api.v2024_01_03.Dto.Requests;
 using API.Cvr.Api.v2024_01_03.Dto.Responses;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
@@ -31,7 +32,7 @@ public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebAp
     [Fact]
     public async Task GetCvrCompany_CorrectAndIncorrectCvr_ShouldReturnCorrectOnly()
     {
-        var wrongPlusRightCvr = new List<string> { "123", "28980671", "39315041" };
+        var wrongPlusRightCvr = new CvrRequestDto(new List<string> { "123", "28980671", "39315041" });
         server.ResetMappings();
         server
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
