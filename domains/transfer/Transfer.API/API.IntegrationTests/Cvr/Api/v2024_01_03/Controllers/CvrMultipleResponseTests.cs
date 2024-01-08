@@ -29,7 +29,7 @@ public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebAp
     }
 
     [Fact]
-    public async Task GetCvrCompany_WhenWrongPlusRight_ShouldReturnRightOnly()
+    public async Task GetCvrCompany_CorrectAndIncorrectCvr_ShouldReturnCorrectOnly()
     {
         var wrongPlusRightCvr = new List<string> { "123", "28980671", "39315041" };
         server.ResetMappings();
