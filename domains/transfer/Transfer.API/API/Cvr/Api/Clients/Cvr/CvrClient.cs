@@ -17,11 +17,6 @@ public class CvrClient
         this.client = client;
     }
 
-    public Task<Root?> CvrNumberSearch(CvrNumber cvr)
-    {
-        return CvrNumberSearch(new List<CvrNumber> { cvr });
-    }
-
     public async Task<Root?> CvrNumberSearch(IEnumerable<CvrNumber> cvrNumbers)
     {
         var cvrNumbersArray = JsonSerializer.Serialize(cvrNumbers);
