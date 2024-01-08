@@ -15,7 +15,8 @@ using WireMock.Server;
 using Xunit;
 
 namespace API.IntegrationTests.Cvr.Api.v2024_01_03.Controllers;
-//This should be in the same class as CvrControllerTests, but WireMock does not Co-operate with that.
+//WireMock has issues running parallel tests, where different response bodies from different json files have to be used.
+//In order to circumvent this, and make sure WireMock is not using resources from other tests,it has been put in a separate Class.
 [UsesVerify]
 public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
