@@ -132,7 +132,7 @@ jobs:
 
       - name: Set assembly name
         shell: bash
-        run: find . -name "*.csproj" -exec sed -i {} -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+        run: find . -name "*.csproj" -exec sed -i {} -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|" \;
 
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
