@@ -98,7 +98,6 @@ jobs:
           PROJECT: ${{ matrix.build.path }}
           CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
-          docker="$PROJECT/Dockerfile"
           projects=$(dirname "$PROJECT")
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
@@ -115,7 +114,6 @@ jobs:
             printf "%s\n" "$paths"
             printf "%s\n" "$EOF"
             echo "migration=${migration}"
-            echo "docker=${docker}"
             echo "domain=${domain}"
             echo "name=${name}"
           } >> $GITHUB_ENV
@@ -128,15 +126,25 @@ jobs:
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
 
+      - name: Ensure migrations folder exists
+        shell: bash
+        run: mkdir "${{ env.domain }}/migrations" || true
+
+      - name: Set assembly name
+        shell: bash
+        run: find . -name "*.csproj" -exec sed -i {} -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
         with:
-          dockerfile: ${{ env.docker }}
+          dockerfile: Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: ${{ env.domain }}
+          docker-context: .
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ matrix.build.path }}
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
