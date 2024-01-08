@@ -55,7 +55,7 @@
             Get CVR registered company information for multiple CVR numbers
             </summary>
             <response code="200">Successful operation</response>
-            <response code="400">Request body cannot be null</response>
+            <response code="400">A non-empty request body is required.</response>
         </member>
         <member name="P:API.Cvr.Api.v2024_01_03.Dto.Responses.CvrCompanyDto.CompanyCvr">
             <summary>

@@ -74,7 +74,7 @@
             }
           },
           "400": {
-            "description": "Request body cannot be null"
+            "description": "A non-empty request body is required."
           }
         }
       }
