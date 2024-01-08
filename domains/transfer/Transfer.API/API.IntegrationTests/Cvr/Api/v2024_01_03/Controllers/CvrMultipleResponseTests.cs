@@ -37,7 +37,7 @@ public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebAp
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
-                .WithBodyFromFile("Cvr/Api/v2024_01_03/Controllers/CvrControllerTests.cvr_response2.json")
+                .WithBodyFromFile("Cvr/Api/v2024_01_03/Controllers/CvrControllerTests.cvr_multiple_companies_response.json")
             );
 
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), apiVersion: "20240103");
