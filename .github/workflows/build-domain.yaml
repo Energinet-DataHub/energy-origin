@@ -101,11 +101,14 @@ jobs:
           projects=$(dirname "$PROJECT")
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
+          service=${PROJECT#"$domain"}
           path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
-          migration="$domain/migrations/$(basename "$PROJECT").sql"
+          sqlfile=$(basename "$PROJECT").sql
+          migration="$domain/migrations/$sqlfile"
           if [ ! -f "$migration" ]; then
             migration=""
+            sqlfile=.none
           fi
 
           EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
@@ -114,6 +117,8 @@ jobs:
             printf "%s\n" "$paths"
             printf "%s\n" "$EOF"
             echo "migration=${migration}"
+            echo "sqlfile=${sqlfile}"
+            echo "service=${service}"
             echo "domain=${domain}"
             echo "name=${name}"
             echo "path=${path}"
@@ -127,12 +132,11 @@ jobs:
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
 
-      - name: Ensure folders exists
+      - name: Ensure files and folders exists
         shell: bash
         run: |
           mkdir "${{ env.domain }}/migrations" || true
-          mkdir "${{ env.domain }}/Shared" || true
-          mkdir "${{ env.domain }}/.config" || true
+          touch "${{ env.domain }}/migrations/.none"
 
       - name: Set assembly name
         shell: bash
@@ -155,7 +159,8 @@ jobs:
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
             SUBSYSTEM=${{ env.domain }}
-            PROJECT=${{ matrix.build.path }}
+            PROJECT=${{ env.service }}
+            MIGRATION_FILE=${{ env.sqlfile }}
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
