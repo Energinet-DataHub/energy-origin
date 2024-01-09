@@ -83,11 +83,11 @@ public class TransferAgreementsAutomationWorkerTests
         var agreements = new List<TransferAgreementDto>
         {
             new(
-                EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.Now.AddHours(4).ToUnixTimeSeconds(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.Now.AddSeconds(2).ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds()
             )
         };
 
