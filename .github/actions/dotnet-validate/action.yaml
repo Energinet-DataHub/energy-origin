@@ -97,6 +97,8 @@ runs:
           argument="--version 6.0.25"
         elif [ "$version" = "7" ]; then
           argument="--version 7.0.14"
+        else
+          argument="--version 8.0.0" # FIXME: BAD BAD
         fi
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
         dotnet tool install --global $argument dotnet-ef >/dev/null
