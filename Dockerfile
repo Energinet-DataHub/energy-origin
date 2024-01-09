@@ -8,9 +8,9 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-RUN dotnet restore --runtime linux-x64
-RUN dotnet build -c Release --no-restore --runtime linux-x64
-RUN dotnet publish -c Release -o /app/publish --no-restore --self-contained true --runtime linux-x64 --no-build
+RUN dotnet restore
+RUN dotnet build -c Release --no-restore
+RUN dotnet publish -c Release -o /app/publish --no-restore --self-contained true --no-build
 
 FROM base AS final
 ARG SUBSYSTEM
