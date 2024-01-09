@@ -77,42 +77,38 @@ public class TransferAgreementsAutomationWorkerTests
         var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
         var httpFactoryMock = Substitute.For<IHttpClientFactory>();
-        using var mockHttpMessageHandler = new MockHttpMessageHandler();
+        var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
         var agreements = new List<TransferAgreementDto>
         {
             new(
-                EndDate: DateTimeOffset.Now.AddHours(4).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
                 ReceiverReference: Guid.NewGuid().ToString(),
-                ReceiverTin: "12345678",
+                ReceiverTin: "36923692",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             )
         };
 
-        mockHttpMessageHandler.Expect("/api/all-transfer-agreements").Respond("application/json",
-            JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
+        mockHttpMessageHandler.Expect("/api/all-transfer-agreements")
+            .Respond("application/json", JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
-        using var cts = new CancellationTokenSource();
+        var httpClient = new HttpClient(mockHttpMessageHandler);
+        httpClient.BaseAddress = new Uri("http://test");
+        httpFactoryMock.CreateClient().Returns(httpClient);
 
-        poWalletServiceMock
-            .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ => { cts.Cancel(); });
-
-        var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
-        httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
         var transferOptions = Options.Create(new TransferApiOptions
         {
-            Url = "http://localhost:8080",
+            Url = "http://test",
             Version = "20231123"
         });
 
-        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-            httpFactoryMock, transferOptions);
+        var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
+        var worker = new TransferAgreementsAutomationWorker(
+            loggerMock, metricsMock, memoryCache, serviceProviderMock, httpFactoryMock, transferOptions);
 
-        var act = async () => await worker.StartAsync(cts.Token);
-        await act.Invoke();
+        await worker.StartAsync(CancellationToken.None);
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
