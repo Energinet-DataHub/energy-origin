@@ -87,7 +87,7 @@ public class TransferAgreementsAutomationWorkerTests
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.Now.AddSeconds(2).ToUnixTimeSeconds()
             )
         };
 
