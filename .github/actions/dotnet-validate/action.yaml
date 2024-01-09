@@ -51,6 +51,18 @@ runs:
           dotnet sln add "$item"
         done
 
+    - name: Apply .config
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+      run: |
+        ROOT=$(pwd)
+        cd "$(echo "$PATHS" | head -n1)"
+        while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
+          cd ..
+        done
+        test -d .config && cp -r .config "$ROOT/.config"
+
     - name: Pin version
       shell: bash
       if: ${{ inputs.pin-version == 'true' }}
@@ -97,8 +109,6 @@ runs:
           argument="--version 6.0.25"
         elif [ "$version" = "7" ]; then
           argument="--version 7.0.14"
-        else
-          argument="--version 8.0.0" # FIXME: BAD BAD
         fi
         dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
         dotnet tool install --global $argument dotnet-ef >/dev/null
