@@ -56,13 +56,12 @@ runs:
       env:
         PATHS: ${{ inputs.paths }}
       run: |
-        ROOT=$(pwd)
+        WORKSPACE=$(pwd)
         cd "$(dirname "$(echo "$PATHS" | head -n1)")"
         while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
-          echo "Checking $(pwd)"
           cd ..
         done
-        test -d .config && cp -rv .config "$ROOT/.config"
+        test -d .config && cp -rv .config "$WORKSPACE/.config"
 
     - name: Pin version
       shell: bash
