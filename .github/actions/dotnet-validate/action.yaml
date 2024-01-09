@@ -57,7 +57,7 @@ runs:
         PATHS: ${{ inputs.paths }}
       run: |
         ROOT=$(pwd)
-        cd "$(echo "$PATHS" | head -n1)"
+        cd "$(dirname "$(echo "$PATHS" | head -n1)")"
         while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
           cd ..
         done
