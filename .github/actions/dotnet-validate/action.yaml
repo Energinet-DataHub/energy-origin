@@ -81,7 +81,9 @@ runs:
       shell: bash
       env:
         version: ""
-      run: dotnet restore
+      run: |
+        dotnet tool restore || true
+        dotnet restore
 
     - name: Lint
       shell: bash
