@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
