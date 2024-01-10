@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Options;
 using API.Services;
+using API.Shared.Swagger;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -19,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -51,6 +54,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceL
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddFluentValidationRulesToSwagger();
@@ -87,7 +91,16 @@ var app = builder.Build();
 app.UseSwagger(o => o.RouteTemplate = "api-docs/measurements/{documentName}/swagger.json");
 if (builder.Environment.IsDevelopment())
 {
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/measurements/v1/swagger.json", "API v1"));
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
+            {
+                options.SwaggerEndpoint(
+                    $"/api-docs/measurements/{description.GroupName}/swagger.json",
+                    $"API v{description.GroupName}");
+            }
+        });
 }
 
 app.UseAuthentication();

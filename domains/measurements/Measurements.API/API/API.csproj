@@ -6,7 +6,17 @@
     <ImplicitUsings>disabled</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <OutputType>Exe</OutputType>
+	<DocumentationFile>documentation.xml</DocumentationFile>
+	<NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
@@ -22,6 +32,12 @@
 		<PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="3.4.1" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Update="documentation.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataHubFacadeClients\DataHubFacadeClients.csproj" />
