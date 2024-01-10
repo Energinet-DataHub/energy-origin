@@ -1,13 +1,15 @@
-using API.Models;
-using API.Models.Enums;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+namespace API.MeteringPoints.Api.v2024_01_10.Controllers;
 
 [Authorize]
 [ApiController]
+[ApiVersion("20240110")]
 [Route("api/meteringpoints")]
 public class MeteringPointController : ControllerBase
 {
@@ -18,7 +20,7 @@ public class MeteringPointController : ControllerBase
         _client = client;
     }
 
-    public async Task<List<MeteringPoint>> GetMeteringPoints()
+    public async Task<GetMeteringPointsResponse> GetMeteringPoints()
     {
         var user = new UserDescriptor(User);
 
@@ -34,6 +36,6 @@ public class MeteringPointController : ControllerBase
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 
-        return meteringPoints;
+        return new GetMeteringPointsResponse(meteringPoints);
     }
 }

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.Models.Enums
+namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum MeterType

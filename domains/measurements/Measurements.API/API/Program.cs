@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Options;
 using API.Services;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
@@ -60,6 +61,14 @@ builder.Services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClien
     var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
     o.Address = new Uri(options.Url);
 });
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();

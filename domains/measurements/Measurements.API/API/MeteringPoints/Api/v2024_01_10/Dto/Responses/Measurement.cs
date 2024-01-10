@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using API.Models.Enums;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
-namespace API.Models
+namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses
 {
     public class Measurement
     {

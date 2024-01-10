@@ -1,4 +1,4 @@
-namespace API.Models.Constants;
+namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Constants;
 
 public static class AibFuelCodeConstants
 {

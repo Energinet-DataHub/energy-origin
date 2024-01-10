@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
-using API.Models.Constants;
-using API.Models.Enums;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Constants;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
-namespace API.Models;
+namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
 public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, AssetTypeEnum AssetType, Technology Technology)
 {
@@ -41,7 +41,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
             return "DK2";
         }
 
-        throw new System.NotSupportedException($"Postcode '{postcode}' is out of bounds.");
+        throw new NotSupportedException($"Postcode '{postcode}' is out of bounds.");
     }
 
     private static SubMeterType GetSubMeterType(string subTypeOfMp)
@@ -59,7 +59,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
             return SubMeterType.Calculated;
         }
 
-        throw new System.NotSupportedException($"SubTypeOfMP '{subTypeOfMp}' is not supported.");
+        throw new NotSupportedException($"SubTypeOfMP '{subTypeOfMp}' is not supported.");
     }
 
     public static MeterType GetMeterType(string typeOfMp)
@@ -77,7 +77,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
             return MeterType.child;
         }
 
-        throw new System.NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
+        throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
     }
 
     private static AssetTypeEnum GetAssetType(string assetType)
