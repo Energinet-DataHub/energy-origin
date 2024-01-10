@@ -8,10 +8,6 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-
-RUN apt update && apt install golang -y
-RUN GOPATH=/ go install github.com/hweidner/psync@60eef8c
-
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
@@ -22,7 +18,9 @@ ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/${MIGRATION_FILE} /migrations
-COPY --from=build /bin/psync /bin/psync
+COPY --from=busybox:uclibc /bin/cp /bin/cp
+COPY --from=busybox:uclibc /bin/cat /bin/cat
+COPY --from=busybox:uclibc /bin/ls /bin/ls
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
 
