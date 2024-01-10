@@ -102,7 +102,6 @@ jobs:
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
           service=${PROJECT#"$domain"}
-          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
@@ -118,7 +117,6 @@ jobs:
             echo "service=${service}"
             echo "domain=${domain}"
             echo "name=${name}"
-            echo "path=${path}"
           } >> $GITHUB_ENV
 
       - name: Validate project
