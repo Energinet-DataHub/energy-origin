@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Constants;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
+using API.MeteringPoints.Api.v2024_01_10.Models.Constants;
 
 namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
@@ -9,7 +9,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
-        Regex regex = new Regex("[ ]{2,}", RegexOptions.None); //Multiple whitespaces
+        Regex regex = new Regex("[ ]{2,}", RegexOptions.None); 
 
         return new MeteringPoint(
             result.MeteringPointId,
