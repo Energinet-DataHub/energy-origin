@@ -138,17 +138,6 @@ jobs:
           mkdir "${{ env.domain }}/migrations" || true
           touch "${{ env.domain }}/migrations/.none"
 
-      - name: Set assembly name
-        shell: bash
-        run: |
-          set +e
-          grep -q "<AssemblyName>" "${{ env.path }}"
-          if [ $? -eq 0 ]; then
-            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
-          else
-            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
-          fi
-
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
         with:
