@@ -1,0 +1,239 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Measurements API 1.0",
+    "description": "",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/measurements/consumption": {
+      "get": {
+        "tags": [
+          "Measurements"
+        ],
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Aggregation",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Aggregation"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/measurements/production": {
+      "get": {
+        "tags": [
+          "Measurements"
+        ],
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Aggregation",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Aggregation"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeasurementResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregatedMeasurement": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "value": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Aggregation": {
+        "enum": [
+          "Year",
+          "Month",
+          "Day",
+          "Hour",
+          "QuarterHour",
+          "Actual",
+          "Total"
+        ],
+        "type": "string"
+      },
+      "MeasurementResponse": {
+        "type": "object",
+        "properties": {
+          "measurements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregatedMeasurement"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MeasurementsRequest": {
+        "required": [
+          "dateFrom",
+          "dateTo"
+        ],
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateTo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "aggregation": {
+            "$ref": "#/components/schemas/Aggregation"
+          },
+          "timeZone": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

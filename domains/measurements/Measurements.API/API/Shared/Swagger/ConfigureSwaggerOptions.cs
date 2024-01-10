@@ -59,7 +59,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         {
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
             {
-                Title = $"Transfer API {description.ApiVersion}",
+                Title = $"Measurements API {description.ApiVersion}",
                 Version = description.ApiVersion.ToString(),
                 Description = description.IsDeprecated ? "This API version has been deprecated." : ""
             });
