@@ -17,7 +17,7 @@ FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY ${SUBSYSTEM}/migrations/${MIGRATION_FILE} /migrations
+COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls

@@ -104,11 +104,9 @@ jobs:
           service=${PROJECT#"$domain"}
           path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
-          sqlfile=$(basename "$PROJECT").sql
-          migration="$domain/migrations/$sqlfile"
+          migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
             migration=""
-            sqlfile=.none
           fi
 
           EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
@@ -117,7 +115,6 @@ jobs:
             printf "%s\n" "$paths"
             printf "%s\n" "$EOF"
             echo "migration=${migration}"
-            echo "sqlfile=${sqlfile}"
             echo "service=${service}"
             echo "domain=${domain}"
             echo "name=${name}"
@@ -134,9 +131,7 @@ jobs:
 
       - name: Ensure files and folders exists
         shell: bash
-        run: |
-          mkdir "${{ env.domain }}/migrations" || true
-          touch "${{ env.domain }}/migrations/.none"
+        run: mkdir "${{ env.domain }}/migrations" || true
 
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
@@ -149,7 +144,6 @@ jobs:
           build-args: |
             SUBSYSTEM=${{ env.domain }}
             PROJECT=${{ env.service }}
-            MIGRATION_FILE=${{ env.sqlfile }}
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
