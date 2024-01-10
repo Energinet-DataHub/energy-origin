@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using API.Models;
+using API.OldModels;
 using API.Services;
 using Tests.Helpers;
 using Xunit;

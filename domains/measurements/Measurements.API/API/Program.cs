@@ -6,7 +6,6 @@ using API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -52,6 +51,13 @@ builder.Services.AddLogging();
 builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => builder.Services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
+
+builder.Services.AddOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
+{
+    var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+    o.Address = new Uri(options.Url);
+});
 
 var app = builder.Build();
 

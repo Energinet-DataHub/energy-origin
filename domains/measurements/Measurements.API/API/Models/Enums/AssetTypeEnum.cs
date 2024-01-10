@@ -1,10 +1,11 @@
 using System.Text.Json.Serialization;
 
-namespace API.Models;
+namespace API.Models.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum MeterType
+public enum AssetTypeEnum
 {
-    Consumption,
-    Production,
+    Wind,
+    Solar,
+    Other
 }
