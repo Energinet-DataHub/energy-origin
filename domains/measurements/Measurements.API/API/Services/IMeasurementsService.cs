@@ -1,6 +1,5 @@
 using API.Models;
-using API.OldModels;
-using API.OldModels.Response;
+using API.Models.Response;
 using EnergyOriginAuthorization;
 
 namespace API.Services;

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using FluentValidation;
 
-namespace API.OldModels.Request;
+namespace API.Models.Request;
 
 public class MeasurementsRequest
 {

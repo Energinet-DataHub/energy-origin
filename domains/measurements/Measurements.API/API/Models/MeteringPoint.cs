@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
-using API.Models;
 
-namespace API.OldModels;
+namespace API.Models;
 
 public class MeteringPoint
 {

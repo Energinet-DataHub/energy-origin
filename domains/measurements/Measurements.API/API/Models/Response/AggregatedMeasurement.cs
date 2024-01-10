@@ -1,4 +1,4 @@
-namespace API.OldModels.Response;
+namespace API.Models.Response;
 
 public record AggregatedMeasurement(
     long DateFrom,

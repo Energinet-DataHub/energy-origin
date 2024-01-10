@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.OldModels;
+namespace API.Models;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Quality

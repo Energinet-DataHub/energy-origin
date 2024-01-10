@@ -1,7 +1,6 @@
 using API.Models;
-using API.OldModels;
-using API.OldModels.Request;
-using API.OldModels.Response;
+using API.Models.Request;
+using API.Models.Response;
 using API.Services;
 using EnergyOriginAuthorization;
 using FluentValidation;

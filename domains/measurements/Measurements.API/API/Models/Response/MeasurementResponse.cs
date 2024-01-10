@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.OldModels.Response
+namespace API.Models.Response
 {
     public class MeasurementResponse
     {

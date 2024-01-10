@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace API.OldModels;
+namespace API.Models;
 
 public enum Aggregation
 {

@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using API.OldModels;
+using API.Models;
 using API.Services;
 using EnergyOriginAuthorization;
 using Tests.Helpers;

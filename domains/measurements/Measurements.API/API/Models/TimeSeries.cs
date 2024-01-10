@@ -1,6 +1,4 @@
-using API.Models;
-
-namespace API.OldModels;
+namespace API.Models;
 
 public class TimeSeries
 {

@@ -1,4 +1,4 @@
-using API.OldModels;
+using API.Models;
 using EnergyOriginAuthorization;
 
 namespace API.Services;

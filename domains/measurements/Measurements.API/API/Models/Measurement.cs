@@ -1,6 +1,4 @@
-using API.Models;
-
-namespace API.OldModels;
+namespace API.Models;
 
 //NOTE: This DTO is a reflection of the output from the DataSync API.
 public record Measurement(
