@@ -4,6 +4,7 @@ using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,8 @@ public class MeteringPointController : ControllerBase
         _client = client;
     }
 
+    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [HttpGet]
     public async Task<GetMeteringPointsResponse> GetMeteringPoints()
     {
         var user = new UserDescriptor(User);
