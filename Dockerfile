@@ -19,8 +19,9 @@ RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
 FROM base AS final
 ARG SUBSYSTEM
+WORKDIR /app
+COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/${MIGRATION_FILE} /migrations
-COPY --from=build /app/publish /app
 COPY --from=build /bin/psync /bin/psync
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
