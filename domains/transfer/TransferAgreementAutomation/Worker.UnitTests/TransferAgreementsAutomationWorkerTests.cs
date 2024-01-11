@@ -91,7 +91,7 @@ public class TransferAgreementsAutomationWorkerTests
             )
         };
 
-        mockHttpMessageHandler.Expect("/api/all-transfer-agreements").Respond("application/json",
+        mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
         using var cts = new CancellationTokenSource();
@@ -113,7 +113,6 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
-        await Task.Delay(2000);
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
