@@ -62,8 +62,14 @@ public class TransferAgreementsAutomationWorkerTests
         var transferOptions = Options.Create(options);
 
 
-        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-            httpFactoryMock, transferOptions);
+        var worker = new TransferAgreementsAutomationWorker(
+            loggerMock,
+            metricsMock,
+            memoryCache,
+            serviceProviderMock,
+            httpFactoryMock,
+            transferOptions
+            );
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
@@ -110,8 +116,14 @@ public class TransferAgreementsAutomationWorkerTests
             Version = "20231123"
         });
 
-        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-            httpFactoryMock, transferOptions);
+        var worker = new TransferAgreementsAutomationWorker(
+            loggerMock,
+            metricsMock,
+            memoryCache,
+            serviceProviderMock,
+            httpFactoryMock,
+            transferOptions
+            );
 
         var cts = new CancellationTokenSource();
         var workerTask = worker.StartAsync(cts.Token);
