@@ -122,6 +122,7 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
+        await Task.Delay(100);
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
