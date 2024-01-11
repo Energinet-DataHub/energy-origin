@@ -98,7 +98,6 @@ public class TransferAgreementsAutomationWorkerTests
         mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
-        // Mock the TransferCertificates method to not cancel the token
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
             .Do(_ => { /* Simulate transfer without cancelling the token */ });
@@ -115,13 +114,8 @@ public class TransferAgreementsAutomationWorkerTests
             httpFactoryMock, transferOptions);
 
         var cts = new CancellationTokenSource();
-        // Run the worker in a separate task to avoid blocking the test thread
         var workerTask = worker.StartAsync(cts.Token);
-
-        // Wait for a reasonable amount of time to let the worker run
-        await Task.Delay(1000); // Adjust this delay as needed
-
-        // Optionally, cancel the worker task if you want to stop it after the test
+        await Task.Delay(1000);
         cts.Cancel();
         try
         {
