@@ -85,7 +85,7 @@ public class TransferAgreementsAutomationWorkerTests
         var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
         var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
         var httpFactoryMock = Substitute.For<IHttpClientFactory>();
-        using var mockHttpMessageHandler = new MockHttpMessageHandler();
+        var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
         var agreements = new List<TransferAgreementDto>
