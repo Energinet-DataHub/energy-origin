@@ -102,13 +102,13 @@ public class TransferAgreementsAutomationWorkerTests
         mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
-        using var cts = new CancellationTokenSource();
+        var cts = new CancellationTokenSource();
 
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
             .Do(_ =>
             {
-                cts.CancelAfter(5); cts.Dispose();
+                cts.Cancel(); cts.Dispose();
             });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
@@ -124,7 +124,7 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
-        await Task.Delay(100);
+        await Task.Delay(50);
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
