@@ -106,7 +106,7 @@ public class TransferAgreementsAutomationWorkerTests
 
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ => { cts.Cancel(); });
+            .Do(_ => { cts.CancelAfter(5); });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
         httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
@@ -121,7 +121,6 @@ public class TransferAgreementsAutomationWorkerTests
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
-        await Task.Delay(50);
 
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
