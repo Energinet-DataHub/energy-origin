@@ -27,6 +27,8 @@ public class TransferAgreementsAutomationWorkerTests
         var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
+        memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
+
         var agreements = new List<TransferAgreementDto>
         {
             new(
@@ -38,7 +40,7 @@ public class TransferAgreementsAutomationWorkerTests
             )
         };
 
-        mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
+        mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
         var cts = new CancellationTokenSource();
@@ -79,6 +81,8 @@ public class TransferAgreementsAutomationWorkerTests
         var httpFactoryMock = Substitute.For<IHttpClientFactory>();
         using var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
+
+        memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
 
         var agreements = new List<TransferAgreementDto>
         {
