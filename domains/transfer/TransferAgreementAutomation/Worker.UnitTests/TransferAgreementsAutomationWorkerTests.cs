@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -32,11 +33,11 @@ public class TransferAgreementsAutomationWorkerTests
         var agreements = new List<TransferAgreementDto>
         {
             new(
-                EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             )
         };
 
@@ -87,11 +88,11 @@ public class TransferAgreementsAutomationWorkerTests
         var agreements = new List<TransferAgreementDto>
         {
             new(
-                EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             )
         };
 
