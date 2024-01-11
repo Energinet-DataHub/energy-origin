@@ -72,19 +72,19 @@ public class TransferAgreementsAutomationWorkerTests
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Unhealthy);
     }
 
-[Fact]
-public async Task WhenCalled_CacheIsSetToHealthy()
-{
-    var loggerMock = Substitute.For<ILogger<TransferAgreementsAutomationWorker>>();
-    var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
-    var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-    var httpFactoryMock = Substitute.For<IHttpClientFactory>();
-    using var mockHttpMessageHandler = new MockHttpMessageHandler();
-    var memoryCache = new AutomationCache();
+    [Fact]
+    public async Task WhenCalled_CacheIsSetToHealthy()
+    {
+        var loggerMock = Substitute.For<ILogger<TransferAgreementsAutomationWorker>>();
+        var metricsMock = Substitute.For<ITransferAgreementAutomationMetrics>();
+        var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
+        var httpFactoryMock = Substitute.For<IHttpClientFactory>();
+        using var mockHttpMessageHandler = new MockHttpMessageHandler();
+        var memoryCache = new AutomationCache();
 
-    memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
+        memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
 
-    var agreements = new List<TransferAgreementDto>
+        var agreements = new List<TransferAgreementDto>
     {
         new(
             EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
@@ -95,45 +95,45 @@ public async Task WhenCalled_CacheIsSetToHealthy()
         )
     };
 
-    mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
-        JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
+        mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
+            JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
-    // Mock the TransferCertificates method to not cancel the token
-    poWalletServiceMock
-        .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-        .Do(_ => { /* Simulate transfer without cancelling the token */ });
+        // Mock the TransferCertificates method to not cancel the token
+        poWalletServiceMock
+            .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
+            .Do(_ => { /* Simulate transfer without cancelling the token */ });
 
-    var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
-    httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
-    var transferOptions = Options.Create(new TransferApiOptions
-    {
-        Url = "http://localhost:8080",
-        Version = "20231123"
-    });
+        var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
+        httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
+        var transferOptions = Options.Create(new TransferApiOptions
+        {
+            Url = "http://localhost:8080",
+            Version = "20231123"
+        });
 
-    var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
-        httpFactoryMock, transferOptions);
+        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
+            httpFactoryMock, transferOptions);
 
-    var cts = new CancellationTokenSource();
-    // Run the worker in a separate task to avoid blocking the test thread
-    var workerTask = worker.StartAsync(cts.Token);
+        var cts = new CancellationTokenSource();
+        // Run the worker in a separate task to avoid blocking the test thread
+        var workerTask = worker.StartAsync(cts.Token);
 
-    // Wait for a reasonable amount of time to let the worker run
-    await Task.Delay(1000); // Adjust this delay as needed
+        // Wait for a reasonable amount of time to let the worker run
+        await Task.Delay(1000); // Adjust this delay as needed
 
-    // Optionally, cancel the worker task if you want to stop it after the test
-    cts.Cancel();
-    try
-    {
-        await workerTask;
+        // Optionally, cancel the worker task if you want to stop it after the test
+        cts.Cancel();
+        try
+        {
+            await workerTask;
+        }
+        catch (TaskCanceledException)
+        {
+            // Expected due to cancellation
+        }
+
+        memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy, "Cache should be set to healthy after worker run");
     }
-    catch (TaskCanceledException)
-    {
-        // Expected due to cancellation
-    }
-
-    memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy, "Cache should be set to healthy after worker run");
-}
 
 
     private static IServiceProvider SetupIServiceProviderMock(IProjectOriginWalletService poWalletServiceMock)
