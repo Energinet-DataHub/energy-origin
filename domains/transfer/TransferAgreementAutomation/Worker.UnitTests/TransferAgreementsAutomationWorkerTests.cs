@@ -69,7 +69,7 @@ public class TransferAgreementsAutomationWorkerTests
             serviceProviderMock,
             httpFactoryMock,
             transferOptions
-            );
+        );
 
         var act = async () => await worker.StartAsync(cts.Token);
         await act.Invoke();
@@ -91,15 +91,15 @@ public class TransferAgreementsAutomationWorkerTests
         memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
 
         var agreements = new List<TransferAgreementDto>
-    {
-        new(
-            EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
-            ReceiverReference: Guid.NewGuid().ToString(),
-            ReceiverTin: "12345678",
-            SenderId: Guid.NewGuid().ToString(),
-            StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-        )
-    };
+        {
+            new(
+                EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+                ReceiverReference: Guid.NewGuid().ToString(),
+                ReceiverTin: "12345678",
+                SenderId: Guid.NewGuid().ToString(),
+                StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            )
+        };
 
         mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
@@ -123,7 +123,7 @@ public class TransferAgreementsAutomationWorkerTests
             serviceProviderMock,
             httpFactoryMock,
             transferOptions
-            );
+        );
 
         var cts = new CancellationTokenSource();
         var workerTask = worker.StartAsync(cts.Token);
