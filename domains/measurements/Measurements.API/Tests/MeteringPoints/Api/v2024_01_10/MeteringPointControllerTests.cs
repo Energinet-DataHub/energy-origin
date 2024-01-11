@@ -3,14 +3,12 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 using FluentAssertions;
-using Grpc.Core;
-using Grpc.Core.Testing;
 using NSubstitute;
-using NSubstitute.Core;
 using Tests.Factories;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using Tests.Extensions;
 
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
@@ -59,17 +57,5 @@ public class MeteringPointControllerTests : IClassFixture<MeasurementsWebApplica
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
-    }
-}
-
-
-public static class MockExtensions
-{
-    public static ConfiguredCall Returns<TResponse>(this AsyncUnaryCall<TResponse> value, TResponse response)
-        where TResponse : class
-    {
-        var call = TestCalls.AsyncUnaryCall(Task.FromResult(response), Task.FromResult(new Metadata()), () => Status.DefaultSuccess, () => new Metadata(), () => { });
-
-        return value.Returns(call);
     }
 }
