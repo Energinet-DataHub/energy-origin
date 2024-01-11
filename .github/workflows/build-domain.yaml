@@ -98,11 +98,11 @@ jobs:
           PROJECT: ${{ matrix.build.path }}
           CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
-          docker="$PROJECT/Dockerfile"
           projects=$(dirname "$PROJECT")
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
-
+          service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
@@ -115,9 +115,10 @@ jobs:
             printf "%s\n" "$paths"
             printf "%s\n" "$EOF"
             echo "migration=${migration}"
-            echo "docker=${docker}"
+            echo "service=${service}"
             echo "domain=${domain}"
             echo "name=${name}"
+            echo "path=${path}"
           } >> $GITHUB_ENV
 
       - name: Validate project
@@ -128,15 +129,32 @@ jobs:
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
 
+      - name: Ensure files and folders exists
+        shell: bash
+        run: mkdir "${{ env.domain }}/migrations" || true
+
+      - name: Enforce assembly name
+        shell: bash
+        run: |
+          set +e
+          grep -q "<AssemblyName>" "${{ env.path }}"
+          if [ $? -eq 0 ]; then
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
+
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
         with:
-          dockerfile: ${{ env.docker }}
+          dockerfile: Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: ${{ env.domain }}
+          docker-context: .
           dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
           build-args: |
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ env.service }}
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
