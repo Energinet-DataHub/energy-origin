@@ -102,6 +102,7 @@ jobs:
           domain=$(dirname "$projects")
           name=$(yq '.name' "$CONFIGURATION")
           service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
           paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
           migration="$domain/migrations/$(basename "$PROJECT").sql"
           if [ ! -f "$migration" ]; then
@@ -117,6 +118,7 @@ jobs:
             echo "service=${service}"
             echo "domain=${domain}"
             echo "name=${name}"
+            echo "path=${path}"
           } >> $GITHUB_ENV
 
       - name: Validate project
@@ -130,6 +132,17 @@ jobs:
       - name: Ensure files and folders exists
         shell: bash
         run: mkdir "${{ env.domain }}/migrations" || true
+
+      - name: Enforce assembly name
+        shell: bash
+        run: |
+          set +e
+          grep -q "<AssemblyName>" "${{ env.path }}"
+          if [ $? -eq 0 ]; then
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
 
       - name: Build image
         uses: ./.github/actions/docker-build-and-push
