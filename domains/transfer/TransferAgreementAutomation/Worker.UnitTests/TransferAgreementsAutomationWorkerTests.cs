@@ -129,7 +129,6 @@ public class TransferAgreementsAutomationWorkerTests
         memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy, "Cache should be set to healthy after worker run");
     }
 
-
     private static IServiceProvider SetupIServiceProviderMock(IProjectOriginWalletService poWalletServiceMock)
     {
         var serviceProviderMock = Substitute.For<IServiceProvider>();
