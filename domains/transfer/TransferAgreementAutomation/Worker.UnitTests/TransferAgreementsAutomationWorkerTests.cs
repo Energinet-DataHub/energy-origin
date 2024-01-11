@@ -106,7 +106,8 @@ public class TransferAgreementsAutomationWorkerTests
 
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ => { cts.CancelAfter(5); });
+            .Do(_ => { cts.CancelAfter(5); cts.Dispose();
+            });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
         httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
