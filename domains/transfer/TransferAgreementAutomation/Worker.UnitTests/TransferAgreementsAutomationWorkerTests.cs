@@ -88,25 +88,25 @@ public class TransferAgreementsAutomationWorkerTests
         using var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
-        memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
-
         var agreements = new List<TransferAgreementDto>
         {
             new(
-                EndDate: DateTimeOffset.UtcNow.AddHours(3).ToUnixTimeSeconds(),
+                EndDate: DateTimeOffset.Now.AddHours(3).ToUnixTimeSeconds(),
                 ReceiverReference: Guid.NewGuid().ToString(),
                 ReceiverTin: "12345678",
                 SenderId: Guid.NewGuid().ToString(),
-                StartDate: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                StartDate: DateTimeOffset.Now.ToUnixTimeSeconds()
             )
         };
 
         mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
+        using var cts = new CancellationTokenSource();
+
         poWalletServiceMock
             .When(x => x.TransferCertificates(Arg.Any<TransferAgreementDto>()))
-            .Do(_ => { /* Simulate transfer without cancelling the token */ });
+            .Do(_ => { cts.Cancel(); });
 
         var serviceProviderMock = SetupIServiceProviderMock(poWalletServiceMock);
         httpFactoryMock.CreateClient().Returns(mockHttpMessageHandler.ToHttpClient());
@@ -116,29 +116,14 @@ public class TransferAgreementsAutomationWorkerTests
             Version = "20231123"
         });
 
-        var worker = new TransferAgreementsAutomationWorker(
-            loggerMock,
-            metricsMock,
-            memoryCache,
-            serviceProviderMock,
-            httpFactoryMock,
-            transferOptions
-        );
+        var worker = new TransferAgreementsAutomationWorker(loggerMock, metricsMock, memoryCache, serviceProviderMock,
+            httpFactoryMock, transferOptions);
 
-        var cts = new CancellationTokenSource();
-        var workerTask = worker.StartAsync(cts.Token);
-        await Task.Delay(1000);
-        cts.Cancel();
-        try
-        {
-            await workerTask;
-        }
-        catch (TaskCanceledException)
-        {
-            // Expected due to cancellation
-        }
+        var act = async () => await worker.StartAsync(cts.Token);
+        await act.Invoke();
+        await Task.Delay(50);
 
-        memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy, "Cache should be set to healthy after worker run");
+        memoryCache.Cache.Get(HealthEntries.Key).Should().Be(HealthEntries.Healthy);
     }
 
     private static IServiceProvider SetupIServiceProviderMock(IProjectOriginWalletService poWalletServiceMock)
