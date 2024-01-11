@@ -91,7 +91,7 @@ public class TransferAgreementsAutomationWorkerTests
             )
         };
 
-        mockHttpMessageHandler.Expect("/api/transfer-agreements").Respond("application/json",
+        mockHttpMessageHandler.Expect("/api/internal-transfer-agreements/all").Respond("application/json",
             JsonSerializer.Serialize(new TransferAgreementsDto(agreements)));
 
         using var cts = new CancellationTokenSource();
