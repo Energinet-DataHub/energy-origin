@@ -71,6 +71,11 @@ builder.Services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClien
     var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
     o.Address = new Uri(options.Url);
 });
+builder.Services.AddGrpcClient<Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient>((sp, o) =>
+{
+    var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+    o.Address = new Uri(options.Url);
+});
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
@@ -84,6 +89,8 @@ var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOpt
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(tokenValidationOptions);
+
+builder.Services.AddGrpc();
 
 var app = builder.Build();
 
@@ -103,8 +110,12 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGrpcService<API.Measurements.gRPC.V1.Services.MeasurementsService>();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

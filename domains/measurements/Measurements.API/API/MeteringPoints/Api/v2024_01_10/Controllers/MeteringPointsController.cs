@@ -14,11 +14,11 @@ namespace API.MeteringPoints.Api.v2024_01_10.Controllers;
 [ApiController]
 [ApiVersion("20240110")]
 [Route("api/meteringpoints")]
-public class MeteringPointController : ControllerBase
+public class MeteringPointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
 
-    public MeteringPointController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
+    public MeteringPointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
     {
         _client = client;
     }

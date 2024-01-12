@@ -23,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos\meteringpoint.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\MeteringPoint\V1\meteringpoint.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\MeterTimeSeries\V1\metertimeseries.proto" GrpcServices="Client" />
 	</ItemGroup>
 </Project>

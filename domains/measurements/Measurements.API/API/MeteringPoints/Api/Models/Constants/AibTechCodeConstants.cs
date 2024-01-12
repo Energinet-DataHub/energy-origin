@@ -1,4 +1,4 @@
-namespace API.MeteringPoints.Api.v2024_01_10.Models.Constants;
+namespace API.MeteringPoints.Api.Models.Constants;
 
 public static class AibTechCodeConstants
 {

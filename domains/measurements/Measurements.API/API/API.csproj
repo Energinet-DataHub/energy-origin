@@ -18,21 +18,25 @@
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
-    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
-    <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.2" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
-    <PackageReference Include="EnergyOriginAuthorization" Version="1.1.2" />
+	<ItemGroup>
+		<Protobuf Include="Measurements\gRPC\V1\Protos\measurements.proto" GrpcServices="Both" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
+		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
+		<PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.2" />
+		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+		<PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
+		<PackageReference Include="EnergyOriginAuthorization" Version="1.1.2" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
 		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
-  </ItemGroup>
-
+	</ItemGroup>
 	<ItemGroup>
 		<None Update="documentation.xml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

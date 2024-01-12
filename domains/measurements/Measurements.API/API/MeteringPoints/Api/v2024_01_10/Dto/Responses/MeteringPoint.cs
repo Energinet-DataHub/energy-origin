@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
+using API.MeteringPoints.Api.Models.Constants;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
-using API.MeteringPoints.Api.v2024_01_10.Models.Constants;
 
 namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
