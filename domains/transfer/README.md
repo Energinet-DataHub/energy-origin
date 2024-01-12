@@ -34,9 +34,6 @@ dotnet ef migrations add NameOfMigration --project Shared/DataContext
 Updating your local database can be done using this command:
 
 ```shell
-dotnet ef database update --project Shared/DataContext
-
-// For JRY it didn't work out of the box and I had to run the following:
 dotnet ef database update --project Shared\DataContext\DataContext.csproj --startup-project Transfer.API\API\API.csproj --context DataContext.ApplicationDbContext
 ```
 
