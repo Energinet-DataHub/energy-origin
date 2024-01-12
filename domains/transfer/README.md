@@ -35,6 +35,9 @@ Updating your local database can be done using this command:
 
 ```shell
 dotnet ef database update --project Shared/DataContext
+
+// For JRY it didn't work out of the box and I had to run the following:
+dotnet ef database update --project Shared\DataContext\DataContext.csproj --startup-project Transfer.API\API\API.csproj --context DataContext.ApplicationDbContext
 ```
 
 The argument `--project TransferAgreements.API/API` can be omitted if the working directory is changed to TransferAgreements.API/API.

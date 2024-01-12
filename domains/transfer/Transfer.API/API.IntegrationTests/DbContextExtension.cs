@@ -36,7 +36,7 @@ public static class DbContextExtension
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+        await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
+        await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE \"{historyTable}\"");
     }
 }
