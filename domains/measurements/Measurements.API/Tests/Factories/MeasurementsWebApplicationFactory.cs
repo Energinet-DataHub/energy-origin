@@ -86,7 +86,6 @@ public class MeasurementsWebApplicationFactory : WebApplicationFactory<Program>
         return provider;
     }
 
-
     private string GenerateToken(
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
