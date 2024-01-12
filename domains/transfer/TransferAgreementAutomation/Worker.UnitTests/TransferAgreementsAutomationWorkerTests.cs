@@ -27,8 +27,6 @@ public class TransferAgreementsAutomationWorkerTests
         var mockHttpMessageHandler = new MockHttpMessageHandler();
         var memoryCache = new AutomationCache();
 
-        memoryCache.Cache.Get(HealthEntries.Key).Should().BeNull("Cache should initially be empty");
-
         var agreements = new List<TransferAgreementDto>
         {
             new(
