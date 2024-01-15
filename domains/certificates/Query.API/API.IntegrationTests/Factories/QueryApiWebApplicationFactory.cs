@@ -148,7 +148,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
             { UserClaimName.AllowCprLookup, "false"},
             { UserClaimName.AccessToken, ""},
             { UserClaimName.IdentityToken, ""},
