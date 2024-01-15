@@ -80,18 +80,10 @@ public class Startup
             .AddMvc()
             .AddApiExplorer();
 
-        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
         services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+        services.AddTokenValidation(tokenValidationOptions);
 
-        ValidationParameters validationParameters = new ValidationParameters(tokenValidationOptions.PublicKey);
-        validationParameters.ValidIssuer = tokenValidationOptions.Issuer;
-        validationParameters.ValidAudience = tokenValidationOptions.Audience;
-        services.AddAuthentication().AddJwtBearer((Action<JwtBearerOptions>)(options =>
-        {
-            options.MapInboundClaims = false;
-            options.TokenValidationParameters = (TokenValidationParameters)validationParameters;
-        }));
-        services.AddAuthorization((Action<AuthorizationOptions>)(options => options.AddPolicy("requires-company", (Action<AuthorizationPolicyBuilder>)(policy => policy.RequireClaim("tin")))));
         services.AddGrpc();
     }
 
