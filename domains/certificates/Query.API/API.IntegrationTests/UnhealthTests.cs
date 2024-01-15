@@ -2,27 +2,29 @@ using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<RegistryConnectorApplicationFactory>
+public class UnhealthTests :
+    TestBase,
+    IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<PostgresContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
-    private readonly RegistryConnectorApplicationFactory connectorFactory;
 
-    public UnhealthTests(QueryApiWebApplicationFactory factory, RegistryConnectorApplicationFactory connectorFactory)
+    public UnhealthTests(QueryApiWebApplicationFactory factory, PostgresContainer dbContainer)
     {
         this.factory = factory;
-        this.connectorFactory = connectorFactory;
-        this.connectorFactory.RabbitMqOptions = null;
-        this.connectorFactory.ConnectionString = "Server=foo;Port=5432;Database=bar;User Id=baz;Password=qux;";
+        this.factory.RabbitMqOptions = null;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
     }
 
     [Fact]
     public async Task Health_IsCalledWhenRabbitMqIsDown_ReturnsServiceUnavailable()
     {
-        using var client = connectorFactory.CreateClient();
+        using var client = factory.CreateClient();
         using var healthResponse = await client.GetAsync("health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
