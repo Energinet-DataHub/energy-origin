@@ -12,6 +12,7 @@ using API;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Fixtures;
 using System.Linq;
+using System.Net;
 
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
@@ -21,6 +22,16 @@ public class MeteringPointControllerTests : MeasurementsTestBase
     public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
     : base(serverFixture)
     {
+    }
+
+    [Fact]
+    public async Task Unauthorized()
+    {
+        var client = _serverFixture.CreateUnauthenticatedClient();
+
+        var response = await client.GetAsync("api/meteringpoints");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

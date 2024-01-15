@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
@@ -136,6 +137,7 @@ namespace Tests.Fixtures
             EnsureServer(environment);
 
             var client = _server!.CreateClient();
+            client.DefaultRequestHeaders.Add("EO_API_VERSION", "20240110");
             return client;
         }
 
