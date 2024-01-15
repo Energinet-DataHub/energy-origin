@@ -9,7 +9,7 @@
     "/api/meteringpoints": {
       "get": {
         "tags": [
-          "MeteringPoint"
+          "MeteringPoints"
         ],
         "parameters": [
           {

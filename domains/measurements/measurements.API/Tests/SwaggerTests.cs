@@ -1,29 +1,29 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using API;
+using Asp.Versioning.ApiExplorer;
 using FluentAssertions;
-using Microsoft.AspNetCore.Hosting;
-using Tests.Factories;
+using Tests.Fixtures;
 using VerifyXunit;
 using Xunit;
 
 namespace Tests;
 
 [UsesVerify]
-public class SwaggerTests : IClassFixture<MeasurementsWebApplicationFactory>
+public class SwaggerTests : MeasurementsTestBase
 {
-    private readonly MeasurementsWebApplicationFactory factory;
-
-    public SwaggerTests(MeasurementsWebApplicationFactory factory)
+    public SwaggerTests(TestServerFixture<Startup> serverFixture)
+        : base(serverFixture)
     {
-        this.factory = factory;
     }
 
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
     {
-        using var client = factory.CreateUnauthenticatedClient();
-        using var swaggerUiResponse = await client.GetAsync("swagger");
+        _serverFixture.RefreshHostOnNextClient();
+        using var client = _serverFixture.CreateUnauthenticatedClient();
+        using var swaggerUiResponse = await client.GetAsync("swagger/index.html");
 
         swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -31,8 +31,9 @@ public class SwaggerTests : IClassFixture<MeasurementsWebApplicationFactory>
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ContentTypeIsHtml()
     {
-        using var client = factory.CreateUnauthenticatedClient();
-        using var swaggerUiResponse = await client.GetAsync("swagger");
+        _serverFixture.RefreshHostOnNextClient();
+        using var client = _serverFixture.CreateUnauthenticatedClient();
+        using var swaggerUiResponse = await client.GetAsync("swagger/index.html");
 
         swaggerUiResponse.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
     }
@@ -40,23 +41,22 @@ public class SwaggerTests : IClassFixture<MeasurementsWebApplicationFactory>
     [Fact]
     public async Task GetSwaggerUI_Production_ReturnsNotFound()
     {
-        using var client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
-            .CreateClient();
+        _serverFixture.RefreshHostOnNextClient();
+        using var client =
+            _serverFixture.CreateUnauthenticatedClient(environment: "Production");
 
-        var swaggerUiResponse = await client.GetAsync("swagger");
+        var swaggerUiResponse = await client.GetAsync("swagger/index.html");
         swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
     }
-
 
     [Fact]
     public async Task GetSwaggerDocs_AllVersions_ReturnsOk()
     {
-        using var client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
-            .CreateClient();
+        _serverFixture.RefreshHostOnNextClient();
+        using var client =
+            _serverFixture.CreateUnauthenticatedClient();
 
-        var provider = factory.GetApiVersionDescriptionProvider();
+        var provider = _serverFixture.GetRequiredService<IApiVersionDescriptionProvider>();
 
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
@@ -68,11 +68,11 @@ public class SwaggerTests : IClassFixture<MeasurementsWebApplicationFactory>
     [Fact]
     public async Task GetSwaggerDocs_ForAllVersions_Production_ReturnsOk()
     {
-        using var client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
-            .CreateClient();
+        _serverFixture.RefreshHostOnNextClient();
+        using var client =
+            _serverFixture.CreateUnauthenticatedClient(environment: "Production");
 
-        var provider = factory.GetApiVersionDescriptionProvider();
+        var provider = _serverFixture.GetRequiredService<IApiVersionDescriptionProvider>();
 
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
@@ -84,8 +84,10 @@ public class SwaggerTests : IClassFixture<MeasurementsWebApplicationFactory>
     [Fact]
     public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
+        _serverFixture.RefreshHostOnNextClient();
+        using var client =
+            _serverFixture.CreateUnauthenticatedClient();
+        var provider = _serverFixture.GetRequiredService<IApiVersionDescriptionProvider>();
 
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {

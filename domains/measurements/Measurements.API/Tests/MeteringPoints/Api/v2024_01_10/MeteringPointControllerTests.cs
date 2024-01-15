@@ -4,22 +4,23 @@ using System.Threading.Tasks;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 using FluentAssertions;
 using NSubstitute;
-using Tests.Factories;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
 using Tests.Extensions;
+using API;
+using Microsoft.Extensions.DependencyInjection;
+using Tests.Fixtures;
+using System.Linq;
 
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
 [UsesVerify]
-public class MeteringPointControllerTests : IClassFixture<MeasurementsWebApplicationFactory>
+public class MeteringPointControllerTests : MeasurementsTestBase
 {
-    private readonly MeasurementsWebApplicationFactory factory;
-
-    public MeteringPointControllerTests(MeasurementsWebApplicationFactory factory)
+    public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
+    : base(serverFixture)
     {
-        this.factory = factory;
     }
 
     [Fact]
@@ -47,9 +48,14 @@ public class MeteringPointControllerTests : IClassFixture<MeasurementsWebApplica
                     }
                 }
             });
+        _serverFixture.ConfigureTestServices += services =>
+        {
+            var mpClient = services.Single(d => d.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient));
+            services.Remove(mpClient);
+            services.AddSingleton(clientMock);
+        };
 
-        var client = factory
-            .CreateAuthenticatedClient(clientMock,Guid.NewGuid().ToString());
+        var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/meteringpoints");
 

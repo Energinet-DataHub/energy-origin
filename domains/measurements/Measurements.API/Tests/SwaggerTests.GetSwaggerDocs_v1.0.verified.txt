@@ -15,7 +15,6 @@
           {
             "name": "DateFrom",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int64"
@@ -24,7 +23,6 @@
           {
             "name": "DateTo",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int64"
@@ -88,7 +86,6 @@
           {
             "name": "DateFrom",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int64"
@@ -97,7 +94,6 @@
           {
             "name": "DateTo",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "integer",
               "format": "int64"
@@ -193,30 +189,6 @@
             "items": {
               "$ref": "#/components/schemas/AggregatedMeasurement"
             }
-          }
-        },
-        "additionalProperties": false
-      },
-      "MeasurementsRequest": {
-        "required": [
-          "dateFrom",
-          "dateTo"
-        ],
-        "type": "object",
-        "properties": {
-          "dateFrom": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "dateTo": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "aggregation": {
-            "$ref": "#/components/schemas/Aggregation"
-          },
-          "timeZone": {
-            "type": "string"
           }
         },
         "additionalProperties": false

@@ -32,7 +32,7 @@ public class MeteringPointsController : ControllerBase
         var request = new Meteringpoint.V1.OwnedMeteringPointsRequest
         {
             Subject = user.Subject.ToString(),
-            Actor = user.Name //TODO maybe this is not correct
+            Actor = user.Id.ToString()
         };
         var response = await _client.GetOwnedMeteringPointsAsync(request);
 
