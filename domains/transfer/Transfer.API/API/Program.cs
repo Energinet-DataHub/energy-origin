@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Linq;
 using API.Cvr;
 using API.Shared.Options;
@@ -9,6 +11,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,7 +106,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.Map("/redoc", appBuilder =>
+{
+    appBuilder.Run(async context =>
+    {
+        await context.Response.SendFileAsync("wwwroot/redoc.html");
+    });
+});
 app.MapControllers();
 
 app.Run();
