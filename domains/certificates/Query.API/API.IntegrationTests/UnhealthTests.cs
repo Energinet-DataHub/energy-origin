@@ -14,6 +14,7 @@ public class UnhealthTests : TestBase, IClassFixture<QueryApiWebApplicationFacto
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = null;
+        this.factory.ConnectionString = "host=localhost;port=5432;database=postgres;username=postgres;password=postgres";
     }
 
     [Fact]
