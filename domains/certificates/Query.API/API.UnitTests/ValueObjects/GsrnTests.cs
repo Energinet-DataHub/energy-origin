@@ -27,9 +27,9 @@ public class GsrnTests
     [InlineData("not a number")]
     [InlineData("42")]
     [InlineData("Some18CharsLongStr")]
-    public void Ctor_Fail(string value)
+    public void Ctor_Fail(string? value)
     {
-        var createGsrn = () => new Gsrn(value);
+        var createGsrn = () => new Gsrn(value!);
 
         createGsrn.Should().Throw<ArgumentException>();
     }

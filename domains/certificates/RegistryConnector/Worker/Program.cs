@@ -54,7 +54,7 @@ builder.Services.AddProjectOriginOptions();
 builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
 builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
 {
@@ -89,11 +89,11 @@ builder.Services.AddMassTransit(o =>
 
         cfg.ConfigureEndpoints(context);
 
-        cfg.ConfigureJsonSerializerOptions(options =>
+        cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
-            options.Converters.Add(new TransactionConverter());
-            options.Converters.Add(new ReceiveRequestConverter());
-            return options;
+            jsonSerializerOptions.Converters.Add(new TransactionConverter());
+            jsonSerializerOptions.Converters.Add(new ReceiveRequestConverter());
+            return jsonSerializerOptions;
         });
     });
 

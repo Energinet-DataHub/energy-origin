@@ -60,12 +60,12 @@ public class RuleExtensionsTests
     [InlineData("1234567890 12345678")]
     [InlineData("123456789012345678 ")]
     [InlineData(" 123456789012345678")]
-    public async Task MustBeValidGsrn_InvalidGsrn_HaveValidationError(string invalidGsrn)
+    public async Task MustBeValidGsrn_InvalidGsrn_HaveValidationError(string? invalidGsrn)
     {
         var validator = new InlineValidator<TestClass>();
         validator.RuleFor(c => c.GSRN).MustBeValidGsrn();
 
-        var result = await validator.TestValidateAsync(new TestClass { GSRN = invalidGsrn });
+        var result = await validator.TestValidateAsync(new TestClass { GSRN = invalidGsrn! });
 
         result.ShouldHaveValidationErrorFor(cc => cc.GSRN);
     }

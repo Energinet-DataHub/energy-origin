@@ -45,7 +45,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success"
+            "description": "Created"
           },
           "400": {
             "description": "Bad Request",
