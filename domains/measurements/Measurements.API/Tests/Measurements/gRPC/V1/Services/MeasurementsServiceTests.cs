@@ -14,6 +14,7 @@ using VerifyXunit;
 using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 
@@ -117,7 +118,91 @@ public class MeasurementsServiceTests : MeasurementsTestBase
         last.DateTo.Should().Be(dateTo.ToUnixTimeSeconds());
     }
 
-    private static MeterTimeSeriesResponse GenerateMeterTimeSeriesResponse(IEnumerable<EnergyQuantityValue>? quantities = null, string dateOfReading = "2021-01-31",
+    [Fact]
+    public async Task GetMeasurements_WithDifferentMeterReadingOccurrences_ReturnsListOfMeteringPointData()
+    {
+        var occurenceOne = "PT1H";
+        var occurenceTwo = "PT15M";
+
+        var dateFrom = DateTimeOffset.Parse("2022-01-01T00:00:00+01:00");
+        var dateTo = DateTimeOffset.Parse("2022-01-03T00:00:00+01:00");
+
+        Random r = new Random();
+
+        var hourlyValues = Enumerable.Range(0, 24).Select(i => r.NextInt64(0, 1000)).ToArray();
+        var quarterlyValues = Enumerable.Range(0, 96).Select(i => r.NextInt64(0, 250)).ToArray();
+
+        var wantedResult = hourlyValues.ToList();
+        wantedResult.AddRange(Enumerable.Range(0, 24).Select(i => quarterlyValues[4 * i + 0] + quarterlyValues[4 * i + 1] + quarterlyValues[4 * i + 2] + quarterlyValues[4 * i + +3]));
+        wantedResult = wantedResult.Select(x => x * 1000).ToList(); // kwh -> wh
+
+        var hourlyQuantities = Enumerable.Range(0, 24).Select(i =>
+            new EnergyQuantityValue()
+            {
+                Position = (i + 1).ToString(),
+                EnergyQuantity = hourlyValues[i].ToString(),
+                EnergyTimeSeriesMeasureUnit = "KWH",
+                QuantityQuality = "E01",
+            });
+        var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading:dateFrom.ToString("yyyy-MM-dd"), meterReadingOccurrence:occurenceOne);
+
+        var quarterlyState = new MeteringPointState
+        {
+            MeterReadingOccurrence = occurenceTwo,
+            SettlementMethod = "E02",
+            ValidFromDate = "2020-01-01",
+            ValidToDate = "2021-01-31"
+        };
+        var eQuantity = new NonProfiledEnergyQuantity
+        {
+            Date = dateFrom.AddDays(1).ToString("yyyy-MM-dd")
+        };
+        var quarterlyQuantities = Enumerable.Range(0, 96).Select(i =>
+            new EnergyQuantityValue()
+            {
+                Position = (i + 1).ToString(),
+                EnergyQuantity = quarterlyValues[i].ToString(),
+                EnergyTimeSeriesMeasureUnit = "KWH",
+                QuantityQuality = "E01",
+            });
+        eQuantity.EnergyQuantityValues.AddRange(quarterlyQuantities);
+        quarterlyState.NonProfiledEnergyQuantities.Add(eQuantity);
+
+        mockedResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.First().MeteringPointStates.Add(quarterlyState);
+
+        var clientMock = Substitute.For<Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient>();
+
+        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>())
+            .Returns(mockedResponse);
+        _serverFixture.ConfigureTestServices += services =>
+        {
+            var mpClient = services.Single(d => d.ServiceType == typeof(Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient));
+            services.Remove(mpClient);
+            services.AddSingleton(clientMock);
+        };
+
+        var client = new global::Measurements.V1.Measurements.MeasurementsClient(_serverFixture.Channel);
+        var request = new GetMeasurementsRequest
+        {
+            Gsrn = mockedResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.First().MeteringPointId,
+            Actor = Guid.NewGuid().ToString(),
+            Subject = Guid.NewGuid().ToString(),
+            DateFrom = dateFrom.ToUnixTimeSeconds(),
+            DateTo = dateTo.ToUnixTimeSeconds(),
+        };
+
+        var response = await client.GetMeasurementsAsync(request);
+
+        response.Should().NotBeNull();
+        response.Measurements.Count.Should().Be(48);
+
+        response.Measurements.Select(m => m.Quantity).Should().BeEquivalentTo(wantedResult);
+        Enumerable.Range(0, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateFrom));
+        Enumerable.Range(1, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateTo));
+    }
+
+    private static MeterTimeSeriesResponse GenerateMeterTimeSeriesResponse(IEnumerable<EnergyQuantityValue>? quantities = null,
+        string dateOfReading = "2021-01-31",
         int position = 1,
         string meterReadingOccurrence = "PT1H",
         string gsrn = "1234567890123456",
