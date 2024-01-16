@@ -24,7 +24,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
         <PackageReference Include="Audit.EntityFramework.Core" Version="23.0.0" />
         <PackageReference Include="Audit.NET" Version="23.0.0" />
-        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.2" />
+        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.3" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="IdentityModel" Version="6.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
