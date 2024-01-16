@@ -23,9 +23,14 @@ public class MeteringPointsController : ControllerBase
         _client = client;
     }
 
+    /// <summary>
+    /// Get metering points from DataHub2.0
+    /// </summary>
+    /// <response code="200">Successful operation</response>
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpGet]
-    public async Task<GetMeteringPointsResponse> GetMeteringPoints()
+    [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
+    public async Task<ActionResult> GetMeteringPoints()
     {
         var user = new UserDescriptor(User);
 
@@ -41,6 +46,6 @@ public class MeteringPointsController : ControllerBase
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 
-        return new GetMeteringPointsResponse(meteringPoints);
+        return Ok(new GetMeteringPointsResponse(meteringPoints));
     }
 }

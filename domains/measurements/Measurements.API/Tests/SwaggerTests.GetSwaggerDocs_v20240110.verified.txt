@@ -11,6 +11,7 @@
         "tags": [
           "MeteringPoints"
         ],
+        "summary": "Get metering points from DataHub2.0",
         "parameters": [
           {
             "name": "EO_API_VERSION",
@@ -25,7 +26,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Successful operation",
             "content": {
               "text/plain": {
                 "schema": {
