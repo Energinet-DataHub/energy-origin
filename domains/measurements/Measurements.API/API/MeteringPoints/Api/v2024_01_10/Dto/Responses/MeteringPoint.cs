@@ -29,7 +29,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         );
     }
 
-    private static string GetGridArea(string postcode)
+    public static string GetGridArea(string postcode)
     {
         var postcodeInt = int.Parse(postcode);
 
@@ -45,7 +45,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         throw new NotSupportedException($"Postcode '{postcode}' is out of bounds.");
     }
 
-    private static SubMeterType GetSubMeterType(string subTypeOfMp)
+    public static SubMeterType GetSubMeterType(string subTypeOfMp)
     {
         if (subTypeOfMp == "D01")
         {
@@ -81,7 +81,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
     }
 
-    private static AssetTypeEnum GetAssetType(string assetType)
+    public static AssetTypeEnum GetAssetType(string assetType)
     {
         if (assetType == "D11")
         {
@@ -95,7 +95,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         return AssetTypeEnum.Other;
     }
 
-    private static Technology GetTechnology(string assetType)
+    public static Technology GetTechnology(string assetType)
     {
         if (assetType == "D11")
         {
