@@ -22,8 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using NSubstitute.Core;
-using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
 using static API.Options.RoleConfiguration;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
