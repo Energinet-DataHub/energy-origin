@@ -8,7 +8,7 @@ namespace API.Measurements.Helpers
     {
         private const string TimeZoneId = "Romance Standard Time";
 
-        private static DateTimeOffset ConvertDanishDateToDateTimeOffset(this string date)
+        public static DateTimeOffset ConvertDanishDateToDateTimeOffset(this string date)
         {
             DateTime dt = DateTime.Parse(date);
             return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId));
