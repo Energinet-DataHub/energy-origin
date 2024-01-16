@@ -54,7 +54,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
                         }
                     ) ?? Enumerable.Empty<Measurement>()
                 )
-                .GroupBy(measurement => measurement.DateFrom.ZeroedHour()) 
+                .GroupBy(measurement => measurement.DateFrom.ZeroedHour())
                     .Select(group => new Measurement
                     {
                         Gsrn = mp.MeteringPointId,

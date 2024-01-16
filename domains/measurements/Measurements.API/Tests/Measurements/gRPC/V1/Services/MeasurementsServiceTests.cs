@@ -148,7 +148,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
                 EnergyTimeSeriesMeasureUnit = "KWH",
                 QuantityQuality = "E01",
             });
-        var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading:dateFrom.ToString("yyyy-MM-dd"), meterReadingOccurrence:occurenceOne);
+        var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"), meterReadingOccurrence: occurenceOne);
 
         var quarterlyState = new MeteringPointState
         {

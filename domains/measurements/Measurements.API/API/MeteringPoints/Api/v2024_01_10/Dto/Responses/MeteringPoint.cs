@@ -9,7 +9,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
-        Regex regex = new Regex("[ ]{2,}", RegexOptions.None); 
+        Regex regex = new Regex("[ ]{2,}", RegexOptions.None);
 
         return new MeteringPoint(
             result.MeteringPointId,
