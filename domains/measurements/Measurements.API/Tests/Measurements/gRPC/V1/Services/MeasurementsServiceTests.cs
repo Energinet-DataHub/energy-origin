@@ -14,17 +14,21 @@ using VerifyXunit;
 using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 
 [UsesVerify]
-public class MeasurementsServiceTests : MeasurementsTestBase
+public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 {
     public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture)
         : base(serverFixture)
     {
 
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
     }
 
     [Fact]
@@ -199,6 +203,158 @@ public class MeasurementsServiceTests : MeasurementsTestBase
         response.Measurements.Select(m => m.Quantity).Should().BeEquivalentTo(wantedResult);
         Enumerable.Range(0, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateFrom));
         Enumerable.Range(1, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateTo));
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyTsResult_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult()
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyMPList_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult
+            {
+                MeterTimeSeriesMeteringPoint = { }
+            }
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyMeteringPoint_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult
+            {
+                MeterTimeSeriesMeteringPoint = { new MeterTimeSeriesMeteringPoint() }
+            }
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyStatesList_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult
+            {
+                MeterTimeSeriesMeteringPoint =
+                {
+                    new MeterTimeSeriesMeteringPoint
+                    {
+                        MeteringPointStates = { }
+                    }
+                }
+            }
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyQuantitiesList_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult
+            {
+                MeterTimeSeriesMeteringPoint =
+                {
+                    new MeterTimeSeriesMeteringPoint
+                    {
+                        MeteringPointStates =
+                        {
+                            new MeteringPointState
+                            {
+                                NonProfiledEnergyQuantities = { }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMeasurements_GivenEmptyValuesList_ReturnsEmptyList()
+    {
+        var response = await GetMeasurementsWithMockedResponse(new MeterTimeSeriesResponse
+        {
+            GetMeterTimeSeriesResult = new GetMeterTimeSeriesResult
+            {
+                MeterTimeSeriesMeteringPoint =
+                {
+                    new MeterTimeSeriesMeteringPoint
+                    {
+                        MeteringPointStates =
+                        {
+                            new MeteringPointState
+                            {
+                                NonProfiledEnergyQuantities =
+                                {
+                                    new NonProfiledEnergyQuantity
+                                    {
+                                        EnergyQuantityValues = { }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        response.Should().NotBeNull();
+        response.Measurements.Should().BeEmpty();
+    }
+
+    private async Task<GetMeasurementsResponse> GetMeasurementsWithMockedResponse(MeterTimeSeriesResponse mockedResponse)
+    {
+        var dateFrom = DateTimeOffset.Parse("2022-01-01T00:00:00+01:00");
+        var dateTo = DateTimeOffset.Parse("2022-01-01T02:00:00+01:00");
+
+        var clientMock = Substitute.For<Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient>();
+
+        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>())
+            .Returns(mockedResponse);
+        _serverFixture.ConfigureTestServices += services =>
+        {
+            var mpClient = services.Single(d => d.ServiceType == typeof(Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient));
+            services.Remove(mpClient);
+            services.AddSingleton(clientMock);
+        };
+
+        var client = new global::Measurements.V1.Measurements.MeasurementsClient(_serverFixture.Channel);
+        var request = new GetMeasurementsRequest
+        {
+            Gsrn = "1234567890123456",
+            Actor = Guid.NewGuid().ToString(),
+            Subject = Guid.NewGuid().ToString(),
+            DateFrom = dateFrom.ToUnixTimeSeconds(),
+            DateTo = dateTo.ToUnixTimeSeconds(),
+        };
+
+        return await client.GetMeasurementsAsync(request);
     }
 
     private static MeterTimeSeriesResponse GenerateMeterTimeSeriesResponse(IEnumerable<EnergyQuantityValue>? quantities = null,

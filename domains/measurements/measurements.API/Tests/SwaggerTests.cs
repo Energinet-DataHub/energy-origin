@@ -21,7 +21,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client = _serverFixture.CreateUnauthenticatedClient();
         using var swaggerUiResponse = await client.GetAsync("swagger/index.html");
 
@@ -31,7 +31,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ContentTypeIsHtml()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client = _serverFixture.CreateUnauthenticatedClient();
         using var swaggerUiResponse = await client.GetAsync("swagger/index.html");
 
@@ -41,7 +41,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task GetSwaggerUI_Production_ReturnsNotFound()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client =
             _serverFixture.CreateUnauthenticatedClient(environment: "Production");
 
@@ -52,7 +52,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task GetSwaggerDocs_AllVersions_ReturnsOk()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client =
             _serverFixture.CreateUnauthenticatedClient();
 
@@ -68,7 +68,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task GetSwaggerDocs_ForAllVersions_Production_ReturnsOk()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client =
             _serverFixture.CreateUnauthenticatedClient(environment: "Production");
 
@@ -84,7 +84,7 @@ public class SwaggerTests : MeasurementsTestBase
     [Fact]
     public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
-        _serverFixture.RefreshHostOnNextClient();
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
         using var client =
             _serverFixture.CreateUnauthenticatedClient();
         var provider = _serverFixture.GetRequiredService<IApiVersionDescriptionProvider>();

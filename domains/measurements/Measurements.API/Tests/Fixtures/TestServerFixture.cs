@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
@@ -73,9 +72,10 @@ namespace Tests.Fixtures
             _configurationDictionary = configuration;
         }
 
-        public void RefreshHostOnNextClient()
+        public void RefreshHostAndGrpcChannelOnNextClient()
         {
             _host = null;
+            _channel = null;
         }
 
         private void EnsureServer(string environment = "Development")

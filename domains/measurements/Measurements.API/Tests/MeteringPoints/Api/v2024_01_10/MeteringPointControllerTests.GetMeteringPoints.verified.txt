@@ -4,8 +4,8 @@
       GSRN: 1234567890123456,
       GridArea: DK2,
       Address: {
-        Address1: Street 1,
-        Address2: 1 1,
+        Address1: streetName buildingNo,
+        Address2: floor room,
         City: City,
         PostalCode: 1234,
         Country: DK
