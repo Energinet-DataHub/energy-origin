@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using API.Options;
-using API.Services;
 using API.Shared.Swagger;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
@@ -34,9 +33,6 @@ public class Startup
     {
         services.AddHealthChecks();
 
-        services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-        services.AddTransient(x => x.GetRequiredService<IOptions<DataSyncOptions>>().Value);
-
         services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -52,10 +48,6 @@ public class Startup
         services.AddSwaggerGen();
 
         services.AddLogging();
-
-        services.AddHttpClient<IDataSyncService, DataSyncService>(client => services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
-        services.AddScoped<IMeasurementsService, MeasurementsService>();
-        services.AddScoped<IAggregator, MeasurementAggregation>();
 
         services.AddOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
