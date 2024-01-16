@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;

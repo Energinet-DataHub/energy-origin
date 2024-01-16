@@ -52,7 +52,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
