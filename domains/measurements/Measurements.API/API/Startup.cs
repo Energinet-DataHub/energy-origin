@@ -1,26 +1,23 @@
+using System;
+using System.Linq;
 using API.Options;
 using API.Services;
 using API.Shared.Swagger;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using System;
-using System.Linq;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.Extensions.Hosting;
 using Asp.Versioning.ApiExplorer;
 using EnergyOrigin.TokenValidation.Utilities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace API;
 

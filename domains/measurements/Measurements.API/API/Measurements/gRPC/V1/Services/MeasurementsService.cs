@@ -30,7 +30,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
 
         var dhResponse = await _client.GetMeterTimeSeriesAsync(dhRequest);
 
-        if (dhResponse.GetMeterTimeSeriesRejection.Rejection.Count > 0)
+        if (dhResponse.GetMeterTimeSeriesRejection != null && dhResponse.GetMeterTimeSeriesRejection.Rejection.Count > 0)
         {
             var rejections = string.Join(
                 "\n",

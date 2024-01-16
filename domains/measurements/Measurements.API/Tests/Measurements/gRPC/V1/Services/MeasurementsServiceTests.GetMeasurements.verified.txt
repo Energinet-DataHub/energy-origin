@@ -1,0 +1,10 @@
+﻿{
+  Measurements: [
+    {
+      Gsrn: 1234567890123456,
+      DateFrom: 1609455600,
+      DateTo: 1609459200,
+      Quantity: 880
+    }
+  ]
+}
