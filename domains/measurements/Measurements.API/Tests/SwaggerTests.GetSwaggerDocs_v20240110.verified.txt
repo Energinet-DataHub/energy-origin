@@ -77,14 +77,6 @@
         },
         "additionalProperties": false
       },
-      "AssetTypeEnum": {
-        "enum": [
-          "Wind",
-          "Solar",
-          "Other"
-        ],
-        "type": "string"
-      },
       "GetMeteringPointsResponse": {
         "type": "object",
         "properties": {
@@ -122,9 +114,6 @@
           },
           "address": {
             "$ref": "#/components/schemas/Address"
-          },
-          "assetType": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
           },
           "technology": {
             "$ref": "#/components/schemas/Technology"

@@ -5,7 +5,7 @@ using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
 namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, AssetTypeEnum AssetType, Technology Technology)
+public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology)
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
@@ -24,7 +24,6 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
                 result.Postcode,
                 "DK"
             ),
-            GetAssetType(result.AssetType),
             GetTechnology(result.AssetType)
         );
     }
@@ -79,20 +78,6 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         }
 
         throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
-    }
-
-    public static AssetTypeEnum GetAssetType(string assetType)
-    {
-        if (assetType == "D11")
-        {
-            return AssetTypeEnum.Solar;
-        }
-        else if (assetType == "D12")
-        {
-            return AssetTypeEnum.Wind;
-        }
-
-        return AssetTypeEnum.Other;
     }
 
     public static Technology GetTechnology(string assetType)

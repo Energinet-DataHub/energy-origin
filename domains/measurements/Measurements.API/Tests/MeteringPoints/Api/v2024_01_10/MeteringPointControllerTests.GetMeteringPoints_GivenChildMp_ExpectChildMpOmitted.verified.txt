@@ -10,7 +10,6 @@
         PostalCode: 1234,
         Country: DK
       },
-      AssetType: Other,
       Technology: {
         AibTechCode: T070000,
         AibFuelCode: F00000000

@@ -4,9 +4,11 @@ using Measurements.V1;
 
 namespace API.Measurements.Helpers
 {
-    public static class TimeSeriesHelper
+    public static class MeterTimeSeriesHelper
     {
         private const string TimeZoneId = "Romance Standard Time";
+        private const string HourlyMeasurementsOccurrence = "PT1H";
+        private const string QuarterlyMeasurementsOccurrence = "PT15M";
 
         public static DateTimeOffset ConvertDanishDateToDateTimeOffset(this string date)
         {
@@ -25,11 +27,11 @@ namespace API.Measurements.Helpers
         {
             DateTimeOffset danishDate = date.ConvertDanishDateToDateTimeOffset();
 
-            if (meterReadingOccurrence == "PT1H")
+            if (meterReadingOccurrence == HourlyMeasurementsOccurrence)
             {
                 return danishDate.AddHours(timePosition).ToUnixTimeSeconds();
             }
-            else if (meterReadingOccurrence == "PT15M")
+            else if (meterReadingOccurrence == QuarterlyMeasurementsOccurrence)
             {
                 return danishDate.AddMinutes(timePosition * 15).ToUnixTimeSeconds();
             }

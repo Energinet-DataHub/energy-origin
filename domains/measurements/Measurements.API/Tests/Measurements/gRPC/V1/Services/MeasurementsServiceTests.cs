@@ -23,7 +23,6 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
     public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture)
         : base(serverFixture)
     {
-
     }
 
     public void Dispose()

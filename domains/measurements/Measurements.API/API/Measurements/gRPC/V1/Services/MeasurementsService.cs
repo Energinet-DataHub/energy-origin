@@ -47,10 +47,10 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
                         quantity => new Measurement
                         {
                             Gsrn = mp.MeteringPointId,
-                            DateFrom = TimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position) - 1, state.MeterReadingOccurrence),
-                            DateTo = TimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position), state.MeterReadingOccurrence),
-                            Quantity = TimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit, quantity.EnergyQuantity),
-                            Quality = TimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
+                            DateFrom = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position) - 1, state.MeterReadingOccurrence),
+                            DateTo = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position), state.MeterReadingOccurrence),
+                            Quantity = MeterTimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit, quantity.EnergyQuantity),
+                            Quality = MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
                         }
                     ) ?? Enumerable.Empty<Measurement>()
                 )

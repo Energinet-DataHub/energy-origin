@@ -7,7 +7,6 @@ using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
-using System.Text.Json;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Asp.Versioning.ApiExplorer;
@@ -20,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace API;
 
+//We startup this way so we can use the TestServerFixture class for integration testing gRPC services
 public class Startup
 {
     private readonly IConfiguration _configuration;
