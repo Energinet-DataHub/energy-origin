@@ -6,6 +6,35 @@
     "version": "20230101"
   },
   "paths": {
+    "/api/certificates/activity-log": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityLogEntryFilterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityLogListEntryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/certificates/contracts": {
       "post": {
         "tags": [
@@ -228,6 +257,98 @@
   },
   "components": {
     "schemas": {
+      "ActionTypeEnum": {
+        "enum": [
+          "Created",
+          "Accepted",
+          "Declined",
+          "Activated",
+          "Deactivated",
+          "ChangeEndDate"
+        ],
+        "type": "string"
+      },
+      "ActivityLogEntryFilterRequest": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "entityType": {
+            "$ref": "#/components/schemas/EntityTypeEnum"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActivityLogEntryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorType": {
+            "$ref": "#/components/schemas/ActorTypeEnum"
+          },
+          "actorName": {
+            "type": "string"
+          },
+          "organizationTin": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "entityType": {
+            "$ref": "#/components/schemas/EntityTypeEnum"
+          },
+          "actionType": {
+            "$ref": "#/components/schemas/ActionTypeEnum"
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActivityLogListEntryResponse": {
+        "type": "object",
+        "properties": {
+          "activityLogEntries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogEntryResponse"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActorTypeEnum": {
+        "enum": [
+          "User",
+          "System"
+        ],
+        "type": "string"
+      },
       "Contract": {
         "type": "object",
         "properties": {
@@ -308,6 +429,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "EntityTypeEnum": {
+        "enum": [
+          "TransferAgreement",
+          "MeteringPoint",
+          "TransferAgreementProposal"
+        ],
+        "type": "string"
       },
       "MeteringPointType": {
         "enum": [

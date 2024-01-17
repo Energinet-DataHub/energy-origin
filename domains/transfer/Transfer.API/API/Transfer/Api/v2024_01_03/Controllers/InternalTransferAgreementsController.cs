@@ -15,6 +15,7 @@ public class InternalTransferAgreementsController(ITransferAgreementRepository a
     : ControllerBase
 {
     [HttpGet("api/internal-transfer-agreements/all")]
+    [HttpGet("api/transfer/internal-transfer-agreements/all")]
     [AllowAnonymous]
     public async Task<ActionResult> GetAll()
     {
