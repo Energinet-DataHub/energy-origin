@@ -15,7 +15,7 @@ public class IdentityProviderOptionsTests
     [InlineData("openid ssn userinfo_token nemid mitid", "nemid mitid", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdPrivate, ProviderType.NemIdPrivate)]
     [InlineData("openid ssn userinfo_token nemid nemlogin", "nemid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdProfessional, ProviderType.NemIdProfessional)]
     [InlineData("openid ssn userinfo_token nemid private_to_business mitid nemlogin", "nemid mitid mitid_erhverv", """{"nemid": {"amr_values": "nemid.otp nemid.keyfile"}}""", ProviderType.MitIdPrivate, ProviderType.MitIdProfessional, ProviderType.NemIdPrivate, ProviderType.NemIdProfessional)]
-    public void GetIdentityProviderArguments_ShouldReturnCorrectValues_WhenInvokedWithNemIdProviderOptions(string expectedScope, string expectedValues, string expectedParams, params ProviderType[] providerTypes)
+    public void GetIdentityProviderArguments_ShouldReturnCorrectValues_WhenInvokedWithNemIdProviderOptions(string expectedScope, string expectedValues, string? expectedParams, params ProviderType[] providerTypes)
     {
         var providerOptions = new IdentityProviderOptions
         {

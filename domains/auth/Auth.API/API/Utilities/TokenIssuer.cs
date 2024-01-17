@@ -30,8 +30,6 @@ public class TokenIssuer : ITokenIssuer
 
     public string Issue(UserDescriptor descriptor, UserData data, bool versionBypass = false, DateTime? issueAt = default)
     {
-
-
         var state = ResolveState(termsOptions, data, versionBypass, companyTermsFeatureFlag);
 
         return CreateToken(tokenOptions, roleOptions, descriptor, data, state, issueAt ?? DateTime.UtcNow);
@@ -81,9 +79,9 @@ public class TokenIssuer : ITokenIssuer
             { UserClaimName.ProviderKeys, descriptor.EncryptedProviderKeys },
             { UserClaimName.ProviderType, descriptor.ProviderType.ToString() },
             { UserClaimName.AllowCprLookup, descriptor.AllowCprLookup },
-            { UserClaimName.Subject, descriptor.Subject },
-            { UserClaimName.Actor, descriptor.Id },
-            { UserClaimName.ActorLegacy, descriptor.Id }
+            { UserClaimName.Subject, descriptor.Subject.ToString() },
+            { UserClaimName.Actor, descriptor.Id.ToString() },
+            { UserClaimName.ActorLegacy, descriptor.Id.ToString() }
         };
 
         var validRoles = roleOptions.RoleConfigurations.Select(x => x.Key);
@@ -95,11 +93,11 @@ public class TokenIssuer : ITokenIssuer
             .Distinct()
             .Where(x => validRoles.Contains(x));
 
-        claims.Add(UserClaimName.Roles, roles);
+        claims.Add(UserClaimName.Roles, roles.ToList());
 
         if (descriptor.Organization is not null)
         {
-            claims.Add(UserClaimName.OrganizationId, descriptor.Organization.Id);
+            claims.Add(UserClaimName.OrganizationId, descriptor.Organization.Id.ToString());
             claims.Add(UserClaimName.Tin, descriptor.Organization.Tin);
             claims.Add(UserClaimName.OrganizationName, descriptor.Organization.Name);
         }
