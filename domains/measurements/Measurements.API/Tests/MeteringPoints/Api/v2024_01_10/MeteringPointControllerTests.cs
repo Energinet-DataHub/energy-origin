@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Tests.Fixtures;
 using System.Linq;
 using System.Net;
+using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
@@ -44,26 +45,28 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
     {
         var clientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
-            .Returns(new Meteringpoint.V1.MeteringPointsResponse
+        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
+        {
+            MeteringPoints =
             {
-                MeteringPoints =
+                new Meteringpoint.V1.MeteringPoint
                 {
-                    new Meteringpoint.V1.MeteringPoint
-                    {
-                        MeteringPointId = "1234567890123456",
-                        TypeOfMp = "E17",
-                        SubtypeOfMp = "D01",
-                        StreetName = "Street",
-                        BuildingNumber = "1",
-                        FloorId = "1",
-                        RoomId = "1",
-                        CityName = "City",
-                        Postcode = "1234",
-                        AssetType = "E17"
-                    }
+                    MeteringPointId = "1234567890123456",
+                    TypeOfMp = "E17",
+                    SubtypeOfMp = "D01",
+                    StreetName = "Street",
+                    BuildingNumber = "1",
+                    FloorId = "1",
+                    RoomId = "1",
+                    CityName = "City",
+                    Postcode = "1234",
+                    AssetType = "E17"
                 }
-            });
+            }
+        };
+
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+            .Returns(mockedResponse);
         _serverFixture.ConfigureTestServices += services =>
         {
             var mpClient = services.Single(d =>
@@ -80,6 +83,8 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
+        response!.Result.First().SubMeterType.Should().Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+        response.Result.First().Type.Should().Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Fact]
@@ -88,39 +93,41 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
         var childTypeOfMp = "D01";
         var clientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
-            .Returns(new Meteringpoint.V1.MeteringPointsResponse
+        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
+        {
+            MeteringPoints =
             {
-                MeteringPoints =
+                new Meteringpoint.V1.MeteringPoint
                 {
-                    new Meteringpoint.V1.MeteringPoint
-                    {
-                        MeteringPointId = "1234567890123456",
-                        TypeOfMp = "E17",
-                        SubtypeOfMp = "D01",
-                        StreetName = "Street",
-                        BuildingNumber = "1",
-                        FloorId = "1",
-                        RoomId = "1",
-                        CityName = "City",
-                        Postcode = "1234",
-                        AssetType = "E17"
-                    },
-                    new Meteringpoint.V1.MeteringPoint
-                    {
-                        MeteringPointId = "1234567890123457",
-                        TypeOfMp = childTypeOfMp,
-                        SubtypeOfMp = "D01",
-                        StreetName = "Street",
-                        BuildingNumber = "1",
-                        FloorId = "1",
-                        RoomId = "1",
-                        CityName = "City",
-                        Postcode = "1234",
-                        AssetType = "E17"
-                    }
+                    MeteringPointId = "1234567890123456",
+                    TypeOfMp = "E17",
+                    SubtypeOfMp = "D01",
+                    StreetName = "Street",
+                    BuildingNumber = "1",
+                    FloorId = "1",
+                    RoomId = "1",
+                    CityName = "City",
+                    Postcode = "1234",
+                    AssetType = "E17"
+                },
+                new Meteringpoint.V1.MeteringPoint
+                {
+                    MeteringPointId = "1234567890123457",
+                    TypeOfMp = childTypeOfMp,
+                    SubtypeOfMp = "D01",
+                    StreetName = "Street",
+                    BuildingNumber = "1",
+                    FloorId = "1",
+                    RoomId = "1",
+                    CityName = "City",
+                    Postcode = "1234",
+                    AssetType = "E17"
                 }
-            });
+            }
+        };
+
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+            .Returns(mockedResponse);
         _serverFixture.ConfigureTestServices += services =>
         {
             var mpClient = services.Single(d =>
@@ -137,6 +144,8 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
+        response!.Result.First().SubMeterType.Should().Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+        response.Result.First().Type.Should().Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Theory]

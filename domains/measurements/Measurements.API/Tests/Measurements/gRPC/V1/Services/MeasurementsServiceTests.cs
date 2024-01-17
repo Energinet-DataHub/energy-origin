@@ -14,6 +14,7 @@ using VerifyXunit;
 using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
+using API.Measurements.Helpers;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 
@@ -65,6 +66,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
+        var quality = mockedResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.First().MeteringPointStates.First().NonProfiledEnergyQuantities.First().EnergyQuantityValues.First().QuantityQuality;
+        response.Measurements.First().Quality.Should().Be(MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quality));
     }
 
     [Fact]
