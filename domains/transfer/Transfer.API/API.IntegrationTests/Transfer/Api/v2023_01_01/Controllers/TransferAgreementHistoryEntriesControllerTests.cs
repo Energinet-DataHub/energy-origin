@@ -19,7 +19,6 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
 
-[UsesVerify]
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
