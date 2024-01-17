@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="Google.Protobuf" Version="3.25.2" />
+	  <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.60.0" />
+	  <PackageReference Include="Grpc.Tools" Version="2.60.0">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Protos\MeteringPoint\V1\meteringpoint.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\MeterTimeSeries\V1\metertimeseries.proto" GrpcServices="Client" />
+	</ItemGroup>
+</Project>
