@@ -22,7 +22,6 @@ using TransferAgreementsResponse = API.Transfer.Api.v2023_01_01.Dto.Responses.Tr
 
 namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 
-[UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

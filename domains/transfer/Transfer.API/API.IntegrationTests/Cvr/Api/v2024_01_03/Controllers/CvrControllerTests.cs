@@ -16,7 +16,6 @@ using Xunit;
 
 namespace API.IntegrationTests.Cvr.Api.v2024_01_03.Controllers;
 
-[UsesVerify]
 public class CvrControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
