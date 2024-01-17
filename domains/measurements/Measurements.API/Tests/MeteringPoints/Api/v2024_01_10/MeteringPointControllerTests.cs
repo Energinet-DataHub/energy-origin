@@ -17,11 +17,16 @@ using System.Net;
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
 [UsesVerify]
-public class MeteringPointControllerTests : MeasurementsTestBase
+public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 {
     public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
         : base(serverFixture)
     {
+    }
+
+    public void Dispose()
+    {
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
     }
 
     [Fact]
