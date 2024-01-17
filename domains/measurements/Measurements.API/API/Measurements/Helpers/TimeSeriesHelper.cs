@@ -14,11 +14,6 @@ namespace API.Measurements.Helpers
             return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId));
         }
 
-        public static DateTimeOffset ConvertToDanishTimezone(this DateTimeOffset date)
-        {
-            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(date, TimeZoneId);
-        }
-
         public static DateTimeOffset ZeroedHour(this long dateSeconds)
         {
             var date = DateTimeOffset.FromUnixTimeSeconds(dateSeconds);

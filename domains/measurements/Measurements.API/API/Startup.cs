@@ -36,7 +36,6 @@ public class Startup
         services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         });
 
         services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
@@ -60,12 +59,13 @@ public class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
         });
-        services.AddApiVersioning(options =>
-        {
-            options.AssumeDefaultVersionWhenUnspecified = false;
-            options.ReportApiVersions = true;
-            options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
-        })
+        services
+            .AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = false;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+            })
             .AddMvc()
             .AddApiExplorer();
 

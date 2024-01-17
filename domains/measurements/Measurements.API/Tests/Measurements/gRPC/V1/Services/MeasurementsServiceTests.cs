@@ -26,7 +26,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 
     }
 
-    protected override void Dispose(bool disposing)
+    public void Dispose()
     {
         _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
     }

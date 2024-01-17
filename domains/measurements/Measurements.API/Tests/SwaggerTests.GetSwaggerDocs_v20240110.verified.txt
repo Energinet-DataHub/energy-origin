@@ -99,9 +99,9 @@
       },
       "MeterType": {
         "enum": [
-          "consumption",
-          "production",
-          "child"
+          "Consumption",
+          "Production",
+          "Child"
         ],
         "type": "string"
       },

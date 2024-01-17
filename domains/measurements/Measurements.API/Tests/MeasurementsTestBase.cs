@@ -8,12 +8,10 @@ using Xunit;
 
 namespace Tests;
 
-public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>, IDisposable
+public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 {
     protected readonly TestServerFixture<Startup> _serverFixture;
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
-
-    private bool _disposed = false;
 
     public MeasurementsTestBase(TestServerFixture<Startup> serverFixture)
     {
@@ -40,27 +38,5 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>, I
         };
 
         _serverFixture.ConfigureHostConfiguration(config);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-            }
-            _disposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~MeasurementsTestBase()
-    {
-        Dispose(false);
     }
 }

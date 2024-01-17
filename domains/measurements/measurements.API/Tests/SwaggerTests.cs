@@ -46,7 +46,7 @@ public class SwaggerTests : MeasurementsTestBase
             _serverFixture.CreateUnauthenticatedClient(environment: "Production");
 
         var swaggerUiResponse = await client.GetAsync("swagger/index.html");
-        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
+        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in Production.");
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class SwaggerTests : MeasurementsTestBase
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
             var swaggerDocResponse = await client.GetAsync($"api-docs/measurements/{version}/swagger.json");
-            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible in production.");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible in Production.");
         }
     }
 

@@ -67,15 +67,15 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
     {
         if (typeOfMp == "E17")
         {
-            return MeterType.consumption;
+            return MeterType.Consumption;
         }
         else if (typeOfMp == "E18")
         {
-            return MeterType.production;
+            return MeterType.Production;
         }
         else if (typeOfMp.StartsWith("D") && typeOfMp.Length == 3 && int.Parse(typeOfMp.Substring(1)) >= 1)
         {
-            return MeterType.child;
+            return MeterType.Child;
         }
 
         throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");

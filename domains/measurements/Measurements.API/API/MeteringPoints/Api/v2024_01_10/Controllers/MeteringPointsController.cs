@@ -42,7 +42,7 @@ public class MeteringPointsController : ControllerBase
         var response = await _client.GetOwnedMeteringPointsAsync(request);
 
         var meteringPoints = response.MeteringPoints
-            .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.child)
+            .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 

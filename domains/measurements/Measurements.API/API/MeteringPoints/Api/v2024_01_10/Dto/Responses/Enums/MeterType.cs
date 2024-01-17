@@ -5,8 +5,8 @@ namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum MeterType
     {
-        consumption,
-        production,
-        child,
+        Consumption,
+        Production,
+        Child,
     }
 }

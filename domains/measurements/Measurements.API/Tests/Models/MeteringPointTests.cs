@@ -9,10 +9,10 @@ namespace Tests.Models
     public class MeteringPointTests
     {
         [Theory]
-        [InlineData("E17", MeterType.consumption)]
-        [InlineData("E18", MeterType.production)]
-        [InlineData("D01", MeterType.child)]
-        [InlineData("D99", MeterType.child)]
+        [InlineData("E17", MeterType.Consumption)]
+        [InlineData("E18", MeterType.Production)]
+        [InlineData("D01", MeterType.Child)]
+        [InlineData("D99", MeterType.Child)]
         public void MeteringPoints_MeterType_Success(string stringType, MeterType targetType)
         {
             var mt = MeteringPoint.GetMeterType(stringType);
@@ -21,7 +21,7 @@ namespace Tests.Models
         }
 
         [Fact]
-        public void MeteringPoints_MeterTypeChildSeries_Success()
+        public void MeteringPoints_MapToChildMeterType_Success()
         {
             for (var i = 1; i < 100; i++)
             {
@@ -29,7 +29,7 @@ namespace Tests.Models
 
                 var mt = MeteringPoint.GetMeterType(mtStr);
 
-                Assert.Equal(MeterType.child, mt);
+                Assert.Equal(MeterType.Child, mt);
             }
         }
 

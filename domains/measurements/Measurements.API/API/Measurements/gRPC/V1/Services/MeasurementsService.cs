@@ -12,7 +12,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
 {
     private readonly MeterTimeSeries.MeterTimeSeriesClient _client;
 
-    public MeasurementsService(Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient client)
+    public MeasurementsService(MeterTimeSeries.MeterTimeSeriesClient client)
     {
         _client = client;
     }
