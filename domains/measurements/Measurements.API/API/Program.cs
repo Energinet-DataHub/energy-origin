@@ -1,16 +1,9 @@
 using API.Extensions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
 
-var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddJsonFile($"appsettings.{environment}.json", optional: true)
-    .AddEnvironmentVariables()
-    .AddCommandLine(args)
-    .Build();
+var configuration = WebApplication.CreateBuilder(args).Configuration;
 
 Log.Logger = configuration.GetSeriLogger();
 

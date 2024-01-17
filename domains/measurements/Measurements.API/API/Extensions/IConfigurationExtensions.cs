@@ -7,7 +7,7 @@ using Serilog.Formatting.Json;
 
 namespace API.Extensions;
 
-public static class IConfigurationExtensions
+public static class ConfigurationExtensions
 {
     public static WebApplication BuildApp(this IConfigurationRoot configuration)
     {
