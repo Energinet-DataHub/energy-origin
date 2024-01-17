@@ -4,12 +4,10 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
-using Worker.IntegrationTests;
 using Xunit;
 
-namespace Worker.IntegrationTest;
+namespace Worker.IntegrationTests;
 
-[UsesVerify]
 public class SwaggerTests : IClassFixture<ClaimAutomationApplicationFactory>
 {
     private readonly ClaimAutomationApplicationFactory factory;
