@@ -11,6 +11,7 @@ public class ActivityLogEntryRepository(DbContext dbContext)
 
         if(request.Start != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= request.Start);
         if(request.End != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
+        if (request.EntityType != null) activityLogQuery = activityLogQuery.Where(x => x.EntityType == request.EntityType.Value);
 
         var response = await activityLogQuery.Select(x => new ActivityLogResponse()).ToListAsync();
 

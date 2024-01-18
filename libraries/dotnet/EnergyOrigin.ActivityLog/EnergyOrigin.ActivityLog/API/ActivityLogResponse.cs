@@ -24,3 +24,9 @@ public class ActivityLogResponse
     public ActionTypeEnum ActionType { get; private set; }
     public Guid EntityId { get; private set; }
 }
+
+public class ResponseTest
+{
+    List<ActivityLogResponse> Data { get; set; } = new ();
+    bool HasMore { get; set; }
+}
