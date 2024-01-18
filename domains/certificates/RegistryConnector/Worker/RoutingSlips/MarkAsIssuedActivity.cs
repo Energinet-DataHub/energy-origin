@@ -54,23 +54,24 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
 public class MarkAsIssuedActivityDefinition : ExecuteActivityDefinition<MarkAsIssuedActivity, MarkAsIssuedArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<MarkAsIssuedActivity, MarkAsIssuedArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<MarkAsIssuedActivity, MarkAsIssuedArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
         endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }
