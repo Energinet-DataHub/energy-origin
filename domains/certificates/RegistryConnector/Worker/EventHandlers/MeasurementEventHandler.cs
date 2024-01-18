@@ -211,7 +211,8 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
     protected override void ConfigureConsumer(
         IReceiveEndpointConfigurator endpointConfigurator,
         IConsumerConfigurator<MeasurementEventHandler> consumerConfigurator,
-        IRegistrationContext context)
+        IRegistrationContext context
+        )
     {
         endpointConfigurator.UseDelayedRedelivery(r => r
             .Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1))
