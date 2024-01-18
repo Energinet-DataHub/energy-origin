@@ -1,0 +1,13 @@
+﻿type: object
+properties:
+  claimId:
+    type: string
+    format: uuid
+  quantity:
+    type: integer
+    format: int32
+  productionCertificate:
+    $ref: './ClaimedCertificate'
+  consumptionCertificate:
+    $ref: './ClaimedCertificate'
+additionalProperties: false

@@ -1,0 +1,7 @@
+﻿type: object
+properties:
+  fuelCode:
+    type: string
+  techCode:
+    type: string
+additionalProperties: false

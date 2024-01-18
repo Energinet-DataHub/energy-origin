@@ -1,0 +1,26 @@
+﻿type: object
+properties:
+  federatedStreamId:
+    $ref: './FederatedStreamId'
+  start:
+    type: integer
+    format: int64
+  end:
+    type: integer
+    format: int64
+  gridArea:
+    type: string
+  attributes:
+    type: object
+    additionalProperties:
+      type: string
+additionalProperties: false
+FederatedStreamId:
+  type: object
+  properties:
+    registry:
+      type: string
+    streamId:
+      type: string
+      format: uuid
+  additionalProperties: false

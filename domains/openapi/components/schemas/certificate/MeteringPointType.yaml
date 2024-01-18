@@ -1,0 +1,4 @@
+﻿enum:
+  - Production
+  - Consumption
+type: string

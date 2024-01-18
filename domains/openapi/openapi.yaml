@@ -1,0 +1,36 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: energioprindelse.dk
+  termsOfService: 'https://energioprindelse.dk/terms/'
+  contact:
+    email: contact@example.com
+    url: 'http://example.com/contact'
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Contracts
+    description: Operations about contracts
+  - name: Wallet
+    description: Operations about wallet
+servers:
+  - url: 'http://energioprindelse.dk'
+  - url: 'https://energioprindelse.dk'
+paths:
+  /api/certificates/contracts:
+    get:
+      $ref: './paths/contracts/get.yaml'
+    post:
+      $ref: './paths/contracts/post.yaml'
+  /api/certificates/contracts/{id}:
+    put:
+      $ref: './paths/contracts/put@{id}.yaml'
+    get:
+      $ref: './paths/contracts/get@{id}.yaml'
+security:
+  - JWT: [ ]
+components:
+  securitySchemes:
+    JWT:
+      $ref: components/securitySchemes/JWT.yaml
