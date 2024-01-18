@@ -5,6 +5,12 @@ namespace EnergyOrigin.ActivityLog.API;
 
 public class ActivityLogEntryRepository(DbContext dbContext)
 {
+    public async Task AddActivityLogEntryAsync(ActivityLogEntry activityLogEntry)
+    {
+        await dbContext.Set<ActivityLogEntry>().AddAsync(activityLogEntry);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task<List<ActivityLogEntryResponse>> GetActivityLogAsync(ActivityLogEntryFilterRequest request)
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsQueryable();
