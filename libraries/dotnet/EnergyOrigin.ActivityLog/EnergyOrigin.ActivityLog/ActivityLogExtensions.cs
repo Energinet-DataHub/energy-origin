@@ -23,9 +23,9 @@ public static class ActivityLogExtensions
         return builder.MapPost(
             "/activity-log",
             async (ActivityLogEntryFilterRequest request, ActivityLogEntryRepository activityLogEntryRepository)
-                => await activityLogEntryRepository.GetActivityLogAsync(request))
-            .ExcludeFromDescription()
-            .RequireAuthorization();
+                => await activityLogEntryRepository
+                    .GetActivityLogAsync(request))
+                    .RequireAuthorization();
     }
 
     public static void AddActivityLogEntry(this ModelBuilder modelBuilder)
