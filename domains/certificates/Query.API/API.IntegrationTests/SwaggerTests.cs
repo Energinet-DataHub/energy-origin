@@ -9,7 +9,6 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-[UsesVerify]
 public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
     private readonly QueryApiWebApplicationFactory factory;
