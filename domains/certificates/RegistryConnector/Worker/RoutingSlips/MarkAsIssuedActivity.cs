@@ -7,7 +7,6 @@ using DataContext.ValueObjects;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RegistryConnector.Worker.Exceptions;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -27,9 +26,9 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
     public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
     {
         Certificate? certificate = context.Arguments.MeteringPointType == MeteringPointType.Production
-            ? await dbContext.ProductionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
+            ? await dbContext.ProductionCertificates.FindAsync([context.Arguments.CertificateId],
                 context.CancellationToken)
-            : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
+            : await dbContext.ConsumptionCertificates.FindAsync([context.Arguments.CertificateId],
                 context.CancellationToken);
 
         if (certificate == null)
