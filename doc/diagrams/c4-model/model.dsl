@@ -3,7 +3,7 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-dataHubFacadeDomain = group "DataHubFacade Domain" {
+dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     dataHubFacadeApi = container "DataHubFacade" {
         description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DH certificate, SOAP parsing, pagination and Danish time zone convertion"
         technology ".NET"
@@ -13,7 +13,7 @@ dataHubFacadeDomain = group "DataHubFacade Domain" {
     }
 }
 
-authDomain = group "Auth Domain" {
+authSubsystem = group "Auth Subsystem" {
     authApi = container "Auth Web Api" {
         description "API For authentication and authorization"
 
@@ -31,7 +31,7 @@ authDomain = group "Auth Domain" {
     }
 }
 
-measurementsDomain = group "Measurements Domain" {
+measurementsSubsystem = group "Measurements Subsystem" {
     measurementApi = container "Measurements Web Api" {
         description "API for aggregated measurements split into production and consumption"
 
@@ -47,7 +47,7 @@ measurementsDomain = group "Measurements Domain" {
     }
 }
 
-certificatesDomain = group "Certificate Domain" {
+certificatesSubsystem = group "Certificate Subsystem" {
     certRabbitMq = container "Certificate Message Broker" {
         description ""
         technology "RabbitMQ"
@@ -58,14 +58,14 @@ certificatesDomain = group "Certificate Domain" {
         technology "Postgres"
     }
     certRegistryConnector = container "Registry Connector" {
-        description "Coordinates issurance between registry and wallet"
+        description "Handles the issuence flow"
 
         this -> poRegistry "Sends issued events to"
         this -> poWallet "Sends slices to"
-        this -> certRabbitMq "Produces and consumes messages using"
+        this -> certRabbitMq "Produces and consumes messages"
     }
     certApi = container "Certificate API" {
-        description "Contains background workers for fetching measurements and issuing a certificate and provides an API for queries related to certificates and contracts"
+        description "Contains background workers for fetching measurements and provides an API for queries related to contracts"
         technology ".NET Web Api"
 
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
@@ -80,11 +80,6 @@ certificatesDomain = group "Certificate Domain" {
             this -> contractService "Reads list of metering points to sync from"
             this -> measurementApi "Pulls measurements from"
         }
-        granularCertificateIssuer = component "GranularCertificateIssuer" "Based on a measurement point and metadata, creates a certificate event" "Message consumer" {
-            this -> contractService "Checks for a valid contract in"
-            this -> certRabbitMq "Subscribes to measurement event from"
-            this -> certStorage "Saves information about issued certificate in"
-        }
         certQueryAPI = component "Query API" "API for issuing contracts and proxies requests to Wallet" "ASP.NET Core WebAPI" {
             this -> contractService "Reads contracts from"
             this -> poWallet "Reads certificates from"
@@ -94,31 +89,36 @@ certificatesDomain = group "Certificate Domain" {
     }
 }
 
-transferDomain = group "Transfer Domain" {
-    tApi = container "Transfer API" "" ".NET Web Api" {
+transferSubsystem = group "Transfer Subsystem" {
+    transferApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> poWallet "Creates wallet deposit endpoint"
         }
-        deleteConnectionInvitationsWorker = component "Delete Connection Invitations Worker" "Deletes expired connection invitations" ".NET BackgroundService"
+        deleteTransferAgreementProposalsWorker = component "Delete Transfer Agreement Proposals Worker" "Deletes expired Transfer Agreement Proposals" ".NET BackgroundService"
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
             this -> poWallet "Transfers certificates"
         }
         cvrProxy = component "CVR proxy" "Gets CVR data" ".NET Web Api"
+        claimAutomation = component "Claim Automation" "Claims certificates" ".NET BackgroundService" {
+            this -> poWallet "Claims certificates"
+        }
+        claimAutomationApi = component "Claim Automation Api" "Allows users to start, stop and see status of claim automation for the company" ".NET Web Api"
     }
     tDb = container "Transfer Storage" {
         tags "Data Storage"
         description ""
         technology "Postgres SQL"
 
-        tApi -> this "Saves and reads transfer agreement and connections data"
+        transferApi -> this "Saves and reads transfer agreement data"
     }
-    apiGateway -> connectionsApi "Forwards requests to"
     apiGateway -> transferAgreementsApi "Forwards requests to"
     apiGateway -> cvrProxy "Forwards requests to"
-    connectionsApi -> tDb "Stores connections"
+    apiGateway -> claimAutomationApi "Forwards requests to"
     transferAgreementsApi -> tDb "Stores transfer agreements"
     transferAgreementAutomation -> tDb "Reads transfer agreements"
-    deleteConnectionInvitationsWorker -> tDb "Deletes connection invitations"
+    deleteTransferAgreementProposalsWorker -> tDb "Deletes transfer agreement proposals"
     cvrProxy -> cvr "Forwards requests to"
+    claimAutomation -> tDb "Reads owner ids"
+    claimAutomationApi -> tDb "Creates, deletes and reads owner ids"
 }

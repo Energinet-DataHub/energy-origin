@@ -13,7 +13,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains/*/ libraries/*/*/
+          paths: libraries/*/*/
 
       - name: Set default matrix
         shell: bash
@@ -29,8 +29,13 @@ jobs:
         env:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
-          matrix=$(find domains libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" | jq --raw-input -sc 'split("\n") | .[0:-1]')
+          find libraries/dotnet -name "configuration.yaml" | egrep "$PATTERN" > /tmp/list || true
 
+          if [ ! -s /tmp/list ]; then
+            exit 0
+          fi
+
+          matrix=$(jq --raw-input -sc 'split("\n") | .[0:-1]' < /tmp/list)
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
           echo '::group::Matrix'

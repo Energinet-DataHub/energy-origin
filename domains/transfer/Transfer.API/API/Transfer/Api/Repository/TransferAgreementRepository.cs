@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
+using DataContext;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -24,6 +24,27 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
         await context.SaveChangesAsync();
         return transferAgreement;
+    }
+
+    public async Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId)
+    {
+        var agreements = await context.TransferAgreements.Where(t =>
+                t.SenderId == newTransferAgreement.SenderId)
+            .ToListAsync();
+        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
+        newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
+
+        await context.TransferAgreements.AddAsync(newTransferAgreement);
+
+        var proposal = await context.TransferAgreementProposals.FindAsync(proposalId);
+        if (proposal != null)
+        {
+            context.TransferAgreementProposals.Remove(proposal);
+        }
+
+        await context.SaveChangesAsync();
+
+        return newTransferAgreement;
     }
 
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin) =>
@@ -57,4 +78,16 @@ public class TransferAgreementRepository : ITransferAgreementRepository
 
     private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate) =>
         !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
+
+    public async Task<bool> HasDateOverlap(TransferAgreementProposal proposal)
+    {
+        var overlappingAgreements = await context.TransferAgreements
+            .Where(t => t.SenderId == proposal.SenderCompanyId &&
+                        t.ReceiverTin == proposal.ReceiverCompanyTin)
+            .ToListAsync();
+
+        return overlappingAgreements.Any(a =>
+            IsOverlappingTransferAgreement(a, proposal.StartDate, proposal.EndDate)
+        );
+    }
 }

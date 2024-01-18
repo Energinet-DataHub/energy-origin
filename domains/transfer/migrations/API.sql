@@ -24,7 +24,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230515102933_InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230515102933_InitialCreate', '7.0.5');
+    VALUES ('20230515102933_InitialCreate', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -50,7 +50,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230526073317_AddTransferAgreementActorIdAndSenderId') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230526073317_AddTransferAgreementActorIdAndSenderId', '7.0.5');
+    VALUES ('20230526073317_AddTransferAgreementActorIdAndSenderId', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -69,7 +69,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230529134229_AlterColumnReceiverTin') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230529134229_AlterColumnReceiverTin', '7.0.5');
+    VALUES ('20230529134229_AlterColumnReceiverTin', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -95,7 +95,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230614101345_AddTransferAgreementsSenderNameAndSenderTin') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230614101345_AddTransferAgreementsSenderNameAndSenderTin', '7.0.5');
+    VALUES ('20230614101345_AddTransferAgreementsSenderNameAndSenderTin', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -114,7 +114,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230618103100_UpdateEndDateToNullable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230618103100_UpdateEndDateToNullable', '7.0.5');
+    VALUES ('20230618103100_UpdateEndDateToNullable', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -136,7 +136,7 @@ BEGIN
         "Id" uuid NOT NULL,
         "TransferAgreementId" uuid NOT NULL,
         "StartDate" timestamp with time zone NOT NULL,
-        "EndDate" timestamp with time zone NULL,
+        "EndDate" timestamp with time zone,
         "ActorId" text NOT NULL,
         "ActorName" text NOT NULL,
         "SenderId" uuid NOT NULL,
@@ -162,7 +162,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230704092115_AddTransferAgreementHistoryEntry') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230704092115_AddTransferAgreementHistoryEntry', '7.0.5');
+    VALUES ('20230704092115_AddTransferAgreementHistoryEntry', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -188,7 +188,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230807080407_AddTransferAgreementReceiverReference') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230807080407_AddTransferAgreementReceiverReference', '7.0.5');
+    VALUES ('20230807080407_AddTransferAgreementReceiverReference', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -222,7 +222,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829090644_AddInvitationsTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230829090644_AddInvitationsTable', '7.0.5');
+    VALUES ('20230829090644_AddInvitationsTable', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -248,7 +248,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829124003_AddUniqueIndexAndTransferAgreementNumber') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230829124003_AddUniqueIndexAndTransferAgreementNumber', '7.0.5');
+    VALUES ('20230829124003_AddUniqueIndexAndTransferAgreementNumber', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;
@@ -315,7 +315,73 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection', '7.0.5');
+    VALUES ('20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection', '8.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231102084120_AddClaimAutomationArgument') THEN
+    CREATE TABLE "ClaimAutomationArguments" (
+        "SubjectId" uuid NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL,
+        CONSTRAINT "PK_ClaimAutomationArguments" PRIMARY KEY ("SubjectId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231102084120_AddClaimAutomationArgument') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231102084120_AddClaimAutomationArgument', '8.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    DROP TABLE "ConnectionInvitations";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    DROP TABLE "Connections";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    CREATE TABLE "TransferAgreementProposals" (
+        "Id" uuid NOT NULL,
+        "SenderCompanyId" uuid NOT NULL,
+        "SenderCompanyTin" text NOT NULL,
+        "SenderCompanyName" text NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (current_timestamp at time zone 'UTC'),
+        "StartDate" timestamp with time zone NOT NULL,
+        "EndDate" timestamp with time zone,
+        "ReceiverCompanyTin" text,
+        CONSTRAINT "PK_TransferAgreementProposals" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20231123093303_AddTransferAgreementProposalsAndDeleteConnections', '8.0.1');
     END IF;
 END $EF$;
 COMMIT;

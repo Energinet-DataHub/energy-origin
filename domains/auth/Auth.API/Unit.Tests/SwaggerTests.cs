@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Unit.Tests;
 
-[UsesVerify]
 public class SwaggerTests
 {
     [Fact]

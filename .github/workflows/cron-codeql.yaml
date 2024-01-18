@@ -49,6 +49,9 @@ jobs:
         with:
           sparse-checkout: ${{ matrix.path }}
 
+      - name: Replace global.json
+        run: cp "${{ matrix.path }}/global.json" "./global.json" || true
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:

@@ -1,26 +1,23 @@
 using API.ContractService;
-using API.Data;
 using API.DataSyncSyncer;
-using API.GranularCertificateIssuer;
 using API.Query.API;
 using API.RabbitMq;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
+using DataContext;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,27 +52,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer();
-builder.Services.AddGranularCertificateIssuer();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
+builder.Services.AddApiVersioning(options =>
     {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = false,
-            ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            ValidateLifetime = false,
-            SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-    });
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
+
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
@@ -86,27 +82,20 @@ app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/certificates/v1/swagger.json", "API v1"));
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
+            {
+                options.SwaggerEndpoint(
+                    $"/api-docs/certificates/{description.GroupName}/swagger.json",
+                    $"API v{description.GroupName}");
+            }
+        });
+
 }
 
 app.UseHttpsRedirection();
-
-// Middleware to change authentication schema from "Bearer:" to "Bearer"
-// This is a hack/work-around to handle how the auth service sets the Authorization header
-app.Use(async (context, next) =>
-{
-    if (context.Request.Headers.ContainsKey("Authorization"))
-    {
-        var authorizationHeader = context.Request.Headers.Authorization;
-        var cleanedValues = authorizationHeader
-            .Select(s => s?.Replace("Bearer: ", "Bearer ", StringComparison.CurrentCultureIgnoreCase))
-            .ToArray();
-
-        context.Request.Headers.Authorization = new StringValues(cleanedValues);
-    }
-
-    await next();
-});
 
 app.UseAuthentication();
 app.UseAuthorization();

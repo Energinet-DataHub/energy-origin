@@ -1,3 +1,6 @@
+using System.Text;
+using System;
+
 namespace API.UnitTests;
 
 public static class Some

@@ -37,7 +37,7 @@ public class LoginController : ControllerBase
             RedirectionUri: overrideRedirectionUri,
             RedirectionPath: redirectionPath
         );
-        var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint);
+        var requestUrl = new RequestUrl(discoveryDocument.AuthorizeEndpoint!);
         var url = requestUrl.CreateAuthorizeUrl(
             clientId: oidcOptions.ClientId,
             responseType: "code",

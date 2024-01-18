@@ -41,10 +41,7 @@ runs:
       run: git fetch && git checkout ${{ inputs.branch }} 2>/dev/null || git checkout -b ${{ inputs.branch }}
 
     - name: Resolve version
-      uses: Energinet-DataHub/energy-origin/.github/actions/yaml-semver@main
-      with:
-        yaml-file: ${{ inputs.configuration }}
-        yaml-path: version
+      uses: Energinet-DataHub/energy-origin/.github/actions/docker-image-version@main
 
     - name: Update references
       shell: bash

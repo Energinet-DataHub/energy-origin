@@ -1,37 +1,43 @@
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementsAutomation;
-using API.Transfer.TransferAgreementsAutomation.Metrics;
-using API.Transfer.TransferAgreementsAutomation.Service;
+using API.Transfer.TransferAgreementProposalCleanup;
+using API.Transfer.TransferAgreementProposalCleanup.Options;
 using Audit.Core;
-using Microsoft.Extensions.Configuration;
+using DataContext.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Transfer;
 
 public static class Startup
 {
-    public static void AddTransfer(this IServiceCollection services, IConfiguration configuration)
+    public static void AddTransfer(this IServiceCollection services)
     {
-        services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin).ValidateDataAnnotations().ValidateOnStart();
-        services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
+            .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
+            .ValidateDataAnnotations().ValidateOnStart();
+
+        services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         Configuration.Setup()
             .UseEntityFramework(ef => ef
                 .AuditTypeExplicitMapper(config => config
                     .Map<TransferAgreement, TransferAgreementHistoryEntry>((evt, eventEntry, historyEntity) =>
                     {
-                        var actorId = evt.CustomFields.ContainsKey("ActorId") ? evt.CustomFields["ActorId"].ToString() : null;
-                        var actorName = evt.CustomFields.ContainsKey("ActorName") ? evt.CustomFields["ActorName"].ToString() : null;
+                        var actorId = evt.CustomFields.ContainsKey("ActorId")
+                            ? evt.CustomFields["ActorId"].ToString()
+                            : null;
+                        var actorName = evt.CustomFields.ContainsKey("ActorName")
+                            ? evt.CustomFields["ActorName"].ToString()
+                            : null;
 
                         historyEntity.Id = Guid.NewGuid();
                         historyEntity.CreatedAt = DateTimeOffset.UtcNow;
@@ -50,37 +56,22 @@ public static class Startup
                                     break;
                                 }
                         }
+
                         return true;
-                    })));
+                    })
+                ));
 
-        var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
-        var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
-
-        services.AddOpenTelemetry()
-            .WithMetrics(provider =>
-                provider
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(TransferAgreementAutomationMetrics.MetricName))
-                    .AddMeter(TransferAgreementAutomationMetrics.MetricName)
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation()
-                    .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
-        services.AddControllers(options => options.Filters.Add<AuditDotNetFilter>())
-            .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
         services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
+        services.AddScoped<ITransferAgreementProposalRepository, TransferAgreementProposalRepository>();
         services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             o.Address = new Uri(options.WalletUrl);
         });
-        services.AddScoped<ITransferAgreementsAutomationService, TransferAgreementsAutomationService>();
-        services.AddHostedService<TransferAgreementsAutomationWorker>();
-        services.AddSingleton<AutomationCache>();
-        services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
+        services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
+        services.AddHostedService<TransferAgreementProposalCleanupWorker>();
     }
 }

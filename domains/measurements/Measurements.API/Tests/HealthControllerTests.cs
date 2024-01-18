@@ -1,17 +1,22 @@
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
+using API;
+using Tests.Fixtures;
 using Xunit;
 
-namespace Integration.Tests.Controllers;
+namespace Tests;
 
-public class HealthControllerTests
+public class HealthControllerTests : MeasurementsTestBase
 {
+    public HealthControllerTests(TestServerFixture<Startup> serverFixture)
+        : base(serverFixture)
+    {
+    }
+
     [Fact]
     public async Task Health_ShouldReturnOk_WhenStarted()
     {
-        var factory = new WebApplicationFactory<Program>();
-        var response = await factory.CreateClient().GetAsync("/health");
+        var response = await _serverFixture.CreateUnauthenticatedClient().GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

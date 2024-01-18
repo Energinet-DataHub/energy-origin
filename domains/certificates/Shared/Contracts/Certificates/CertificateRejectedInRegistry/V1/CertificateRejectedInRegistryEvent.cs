@@ -1,5 +1,5 @@
 using System;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 
 namespace Contracts.Certificates.CertificateRejectedInRegistry.V1;
 

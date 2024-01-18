@@ -1,7 +1,9 @@
+using System;
 using System.Threading.Tasks;
-using API.Shared.Extensions;
 using Audit.Core;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
 
 namespace API.Transfer;
 
@@ -9,21 +11,26 @@ public class AuditDotNetFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var httpContext = context.HttpContext;
-        var claimsPrincipal = httpContext.User;
+        var actorId = Guid.Empty;
+        var actorName = "system";
+        var subjectId = Guid.Empty;
 
-        var actorId = claimsPrincipal.FindActorGuidClaim();
-        var actorName = claimsPrincipal.FindActorNameClaim();
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            var user = new UserDescriptor(context.HttpContext.User);
+            actorId = user.Id;
+            actorName = user.Name;
+            subjectId = user.Subject;
 
-        Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
+        }
+
+        Configuration.AddCustomAction(ActionType.OnScopeCreated, scope =>
         {
             scope.Event.CustomFields["ActorId"] = actorId;
             scope.Event.CustomFields["ActorName"] = actorName;
+            scope.Event.CustomFields["SubjectId"] = subjectId;
         });
 
         await next();
     }
 }
-
-
-

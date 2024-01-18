@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using API.DataSyncSyncer.Client;
 using API.DataSyncSyncer.Client.Dto;
 using API.DataSyncSyncer.Persistence;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace API.DataSyncSyncer;
@@ -67,7 +67,7 @@ public class DataSyncService
             }
             catch (Exception e)
             {
-                logger.LogInformation("An error occured: {error}, no measurements were fetched", e.Message);
+                logger.LogError("An error occured: {error}, no measurements were fetched", e.Message);
             }
         }
 

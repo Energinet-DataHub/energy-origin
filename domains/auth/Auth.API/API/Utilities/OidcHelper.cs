@@ -99,7 +99,7 @@ internal static class OidcHelper
 
             var parameters = new TokenValidationParameters
             {
-                IssuerSigningKeys = discoveryDocument.KeySet.Keys.Select(it => it.ToSecurityKey()),
+                IssuerSigningKeys = discoveryDocument.KeySet?.Keys.Select(it => it.ToSecurityKey()) ?? Enumerable.Empty<SecurityKey>(),
                 ValidIssuer = discoveryDocument.Issuer,
                 ValidAlgorithms = discoveryDocument.TryGetStringArray("request_object_signing_alg_values_supported"),
                 ValidAudience = oidcOptions.ClientId
@@ -141,14 +141,14 @@ internal static class OidcHelper
 
             var user = await FetchOrCreateUserAndUpdateUserProvidersAsync(userService, userProviderService, tokenUserProviders, oidcOptions, subject, identityType, userRecord.Name, userRecord.Tin, userRecord.CompanyName);
 
-            var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), response.AccessToken, response.IdentityToken);
+            var descriptor = user.MapDescriptor(cryptography, providerType, CalculateMatchedRoles(userInfo, roleOptions), accessToken!, identityToken!);
             return (descriptor, UserData.From(user));
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Failure occured after acquiring token.");
 
-            var url = new RequestUrl(discoveryDocument.EndSessionEndpoint).CreateEndSessionUrl(
+            var url = new RequestUrl(discoveryDocument.EndSessionEndpoint!).CreateEndSessionUrl(
                 response.IdentityToken,
                 QueryHelpers.AddQueryString(redirectionUri, ErrorCode.QueryString, ErrorCode.Authentication.InvalidTokens)
             );

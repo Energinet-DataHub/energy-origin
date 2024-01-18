@@ -1,68 +1,26 @@
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using API.Options;
-using API.Services;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
+using API.Extensions;
+using Microsoft.AspNetCore.Builder;
 using Serilog;
-using Serilog.Enrichers.Span;
-using Serilog.Formatting.Json;
+using System;
 
-[assembly: InternalsVisibleTo("Tests")]
+var configuration = WebApplication.CreateBuilder(args).Configuration;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = configuration.GetSeriLogger();
 
-var log = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
-
-var console = builder.Environment.IsDevelopment()
-    ? log.WriteTo.Console()
-    : log.WriteTo.Console(new JsonFormatter());
-
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(console.CreateLogger());
-
-builder.Services.AddHealthChecks();
-
-builder.Services.AddOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DataSyncOptions>>().Value);
-
-builder.Services.AddControllers().AddJsonOptions(options =>
+try
 {
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
+    Log.Information("Starting server.");
+    WebApplication app = configuration.BuildApp();
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
-builder.Services.AddFluentValidationAutoValidation();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddFluentValidationRulesToSwagger();
-
-builder.Services.AddHttpClient<IDataSyncService, DataSyncService>(client => builder.Services.Configure<DataSyncOptions>(x => client.BaseAddress = x.Endpoint));
-builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
-builder.Services.AddScoped<IAggregator, MeasurementAggregation>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-app.UseSwagger(o => o.RouteTemplate = "api-docs/measurements/{documentName}/swagger.json");
-if (builder.Environment.IsDevelopment())
-{
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/measurements/v1/swagger.json", "API v1"));
+    await app.RunAsync();
+    Log.Information("Server stopped.");
 }
-
-app.UseAuthorization();
-app.UseHttpLogging();
-app.MapControllers();
-app.MapHealthChecks("/health");
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Host terminated unexpectedly");
+    Environment.ExitCode = -1;
+}
+finally
+{
+    Log.CloseAndFlush();
+}

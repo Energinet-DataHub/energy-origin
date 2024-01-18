@@ -11,9 +11,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
-using CertificateValueObjects;
+using DataContext.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+
 
 namespace API.DataSyncSyncer.Client;
 
@@ -76,7 +77,8 @@ public class DataSyncClient : IDataSyncClient
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires.DateTime,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);

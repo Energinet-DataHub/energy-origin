@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using API.Data;
+using DataContext;
+using DataContext.Models;
 
 namespace API.DataSyncSyncer.Persistence;
 

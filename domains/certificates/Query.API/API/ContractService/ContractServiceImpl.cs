@@ -1,6 +1,7 @@
 using API.ContractService.Clients;
 using API.ContractService.Repositories;
-using CertificateValueObjects;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using ProjectOrigin.WalletSystem.V1;
 using System;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.ContractService;
 
@@ -63,7 +65,8 @@ internal class ContractServiceImpl : IContractService
             startDate,
             endDate,
             walletDepositEndpoint.Endpoint,
-            walletDepositEndpoint.PublicKey.ToByteArray());
+            walletDepositEndpoint.PublicKey.ToByteArray(),
+            Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
         try
         {
@@ -83,6 +86,16 @@ internal class ContractServiceImpl : IContractService
         if (type == MeterType.Consumption) return MeteringPointType.Consumption;
 
         throw new ArgumentException($"Unsupported MeterType {type}");
+    }
+
+    private static Technology? Map(MeterType meterType, Clients.Technology technology)
+    {
+        if (meterType == MeterType.Production)
+        {
+            return new Technology(technology.AibFuelCode, technology.AibTechCode);
+        }
+
+        return null;
     }
 
     public async Task<SetEndDateResult> SetEndDate(Guid id, string meteringPointOwner, DateTimeOffset? newEndDate, CancellationToken cancellationToken)

@@ -1,5 +1,4 @@
-# The 'views.dsl' file is intended as a mean for viewing and validating the model
-# in the domain repository. It should
+# The 'views.dsl' file is intended as a mean for viewing and validating the model. It should
 #   * Extend the base model and override the 'energyOrigin' software system
 
 # The `model.dsl` file must contain the actual model, and is the piece that must
@@ -15,9 +14,9 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         !ref energyOrigin {
 
             # IMPORTANT:
-            # The order by which models are included is important for how the domain-to-domain relationships are specified.
-            # A domain-to-domain relationship should be specified in the "client" of a "client->server" dependency, and
-            # hence domains that doesn't depend on others, should be listed first.
+            # The order by which models are included is important for how the system-to-system relationships are specified.
+            # A system-to-system relationship should be specified in the "client" of a "client->server" dependency, and
+            # hence systems that doesn't depend on others, should be listed first.
 
             !include model.dsl
         }
@@ -29,8 +28,8 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "ContainerContextEO" {
-            title "[Container Context] Energy Origin"
+        container energyOrigin "ContainerEO" {
+            title "[Container] Energy Origin"
             include *
             autoLayout
         }
@@ -38,17 +37,17 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         # Specific area container views
         container energyOrigin "DataHubFacade" {
             title "[Container Context] DataHubFacade"
-            include ->dataHubFacadeDomain->
+            include ->dataHubFacadeSubsystem->
             autoLayout
         }
         container energyOrigin "Auth" {
             title "[Container Context] Auth"
-            include ->authDomain-> dataHubFacadeApi->
+            include ->authSubsystem-> dataHubFacadeApi->
             autoLayout
         }
         container energyOrigin "Measurements" {
             title "[Container Context] Measurements"
-            include ->measurementsDomain-> dataHubFacadeApi->
+            include ->measurementsSubsystem-> dataHubFacadeApi->
             autolayout
         }
         component measurementApi "MeasurementApiComponents" {
@@ -58,21 +57,21 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
         }
         container energyOrigin "Certificate" {
             title "[Container Context] Certificates"
-            include ->certificatesDomain->
+            include ->certificatesSubsystem->
             autoLayout
         }
         component certApi "CertificateApiComponents" {
-            title "[Component Context] Certificate API"
+            title "[Component] Certificate API"
             include *
             autoLayout
         }
         container energyOrigin "Transfer" {
-            title "[Container Context] Transfer"
-            include ->transferDomain->
+            title "[Container] Transfer"
+            include ->transferSubsystem->
             autoLayout
         }
-        component tApi "TransferApiComponents" {
-            title "[Component Context] Transfer API"
+        component transferApi "TransferApiComponents" {
+            title "[Component] Transfer API"
             include *
             autoLayout
         }

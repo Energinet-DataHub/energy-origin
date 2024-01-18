@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using API.Shared.Data;
-using API.Transfer.Api.Models;
+using DataContext;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests;
@@ -33,10 +33,13 @@ public static class DbContextExtension
 
     public static async Task TruncateTransferAgreementsTables(this ApplicationDbContext dbContext)
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
+        var transfersTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
+        var historyEntriesTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{agreementsTable}\" CASCADE");
-        await dbContext.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{historyTable}\"");
+        var transfersSql = $"TRUNCATE TABLE \"{transfersTable}\" CASCADE";
+        var historyEntriesSql = $"TRUNCATE TABLE \"{historyEntriesTable}\"";
+
+        await dbContext.Database.ExecuteSqlRawAsync(transfersSql);
+        await dbContext.Database.ExecuteSqlRawAsync(historyEntriesSql);
     }
 }

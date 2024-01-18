@@ -30,8 +30,13 @@ jobs:
           PATTERN: ${{ steps.diff.outputs.pattern }}
         run: |
           # TODO: re-enable checking Tests projects
-          matrix=$(find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
+          find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' > /tmp/list || true
 
+          if [ ! -s /tmp/list ]; then
+            exit 0
+          fi
+
+          matrix=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
           echo '::group::Matrix'

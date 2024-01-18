@@ -9,10 +9,13 @@ For our specific use cases, see [restricting access](#restricting-access).
 1. Register token validation during start up:
 
 ```csharp
-builder.AddTokenValidation(new ValidationParameters(byteArrayOfPublicKeyPem) {
-    ValidAudience = audience,
-    ValidIssuer = issuer
-});
+var options = new TokenValidationOptions {
+    PublicKey = byteArrayOfPublicKeyPem,
+    Audience = audience,
+    Issuer = issuer
+}
+
+builder.AddTokenValidation(options);
 ```
 
 For more further configuration, see [configuring token validation](#configuring-token-validation).
@@ -65,9 +68,9 @@ public async IActionResult Get()
 
 The user descriptor can be consider to be mostly a simple object with the values readily available. The most common values being:
 
- - Id
- - Name
- - Organization (if present):
+- Id
+- Name
+- Organization (if present):
     - Id
     - Name
     - Tin
@@ -107,3 +110,39 @@ By default the audience encoded into a token should match this property.
 
 #### ValidIssuer
 By default the issuer encoded into a token should match this property.
+
+## Generating Tokens for Tests
+
+You can generate JWT tokens using the `TokenSigner` class. This class allows for the creation of signed JWT tokens.
+
+You have the option to either provide your own private key or use the `RsaKeyGenerator` to create a random private key.
+
+You can use `TokenSigner` with a randomly generated private key from `RsaKeyGenerator` as follows:
+
+```csharp
+var signer = new TokenSigner(RsaKeyGenerator.GenerateTestKey());
+```
+
+Once initialized you can use the `Sign` method to generate a token.
+
+### Example Usage with Additional Claims
+
+Here is an example of how to use the `Sign` method of `TokenSigner` to generate a JWT token with additional claims:
+
+```csharp
+var additionalClaims = new Dictionary<string, object>
+{
+    { JwtClaimNames.Tin, 12345678 },
+    { "foo", "fooValue" },
+    { "bar", "barValue" }
+};
+
+string token = signer.Sign(
+    subject: "TestSubject",
+    name: "TestName",
+    issuer: "TestIssuer",
+    audience: "TestAudience",
+    claims: additionalClaims
+);
+```
+

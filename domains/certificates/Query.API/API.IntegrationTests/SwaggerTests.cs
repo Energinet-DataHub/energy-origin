@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -51,9 +52,13 @@ public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactor
     public async Task GetSwaggerDoc_AppStarted_ReturnsOk()
     {
         using var client = factory.CreateClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
+        var provider = factory.GetApiVersionDescriptionProvider();
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            using var swaggerDocResponse = await client.GetAsync($"api-docs/certificates/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
     }
 
     [Fact]
@@ -62,18 +67,34 @@ public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactor
         using var client = factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
             .CreateClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
-        swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            using var swaggerDocResponse = await client.GetAsync($"api-docs/certificates/{version}/swagger.json");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
     }
 
     [Fact]
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
     {
         using var client = factory.CreateClient();
-        using var swaggerDocResponse = await client.GetAsync("api-docs/certificates/v1/swagger.json");
 
-        var json = await swaggerDocResponse.Content.ReadAsStringAsync();
-        await Verifier.Verify(json);
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocUrl = $"api-docs/certificates/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            await Verifier.Verify(json)
+                .UseParameters(version)
+                .UseMethodName($"GetSwaggerDocs_v{version}");
+        }
     }
 }

@@ -1,25 +1,25 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.IO;
-using API.Connections;
-using API.Connections.Automation.Options;
+using System.Linq;
 using API.Cvr;
-using API.Shared.Data;
 using API.Shared.Options;
+using API.Shared.Swagger;
 using API.Transfer;
+using Asp.Versioning;
+using DataContext;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 var loggerConfiguration = new LoggerConfiguration()
@@ -34,9 +34,12 @@ loggerConfiguration = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
-builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddOptions<ConnectionInvitationCleanupServiceOptions>().BindConfiguration(ConnectionInvitationCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()));
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddDbContext<ApplicationDbContext>(
+    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
@@ -45,73 +48,59 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSwaggerGen(o =>
-{
-    o.SupportNonNullableReferenceTypes();
-    o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "documentation.xml"));
-    o.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "Transfer API"
-    });
-
-    if (builder.Environment.IsDevelopment())
-    {
-        o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
-        });
-        o.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                new string[] { }
-            }
-        });
-    }
-});
 
 builder.Services.AddLogging();
-
-builder.Services.AddTransfer(builder.Configuration);
+builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddConnection();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
+builder.Services.AddApiVersioning(options =>
     {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = false,
-            ValidateAudience = false,
-            // Validate life time disabled as the JWT token generated from the auth service wrongly names the claim for expiration
-            ValidateLifetime = false,
-            SignatureValidator = (token, _) => new JwtSecurityToken(token)
-        };
-    });
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+    })
+    .AddMvc()
+    .AddApiExplorer();
+
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+builder.Services.AddSwaggerGen();
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
+
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
 app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment()) app.UseSwaggerUI(o => o.SwaggerEndpoint("/api-docs/transfer/v1/swagger.json", "API v1"));
+if (app.Environment.IsDevelopment())
+    app.UseSwaggerUI(
+        options =>
+        {
+            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
+            {
+                options.SwaggerEndpoint(
+                    $"/api-docs/transfer/{description.GroupName}/swagger.json",
+                    $"API v{description.GroupName}");
+            }
+        });
 
 app.UseHttpsRedirection();
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 app.UseAuthentication();
 app.UseAuthorization();
 
