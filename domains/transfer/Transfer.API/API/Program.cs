@@ -5,6 +5,7 @@ using API.Shared.Swagger;
 using API.Transfer;
 using Asp.Versioning;
 using DataContext;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
@@ -45,6 +46,8 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+builder.Services.AddActivityLog();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
@@ -105,6 +108,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseActivityLog();
 
 app.Run();
 

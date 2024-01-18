@@ -22,4 +22,8 @@
     <Folder Include="Models\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\libraries\dotnet\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
+  </ItemGroup>
+
 </Project>
