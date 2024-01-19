@@ -117,6 +117,9 @@
           },
           "technology": {
             "$ref": "#/components/schemas/Technology"
+          },
+          "canBeUsedForIssuingCertificates": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
