@@ -7,7 +7,6 @@ using DataContext.ValueObjects;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RegistryConnector.Worker.Exceptions;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -27,9 +26,9 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
     public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
     {
         Certificate? certificate = context.Arguments.MeteringPointType == MeteringPointType.Production
-            ? await dbContext.ProductionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
+            ? await dbContext.ProductionCertificates.FindAsync([context.Arguments.CertificateId],
                 context.CancellationToken)
-            : await dbContext.ConsumptionCertificates.FindAsync(new object?[] { context.Arguments.CertificateId },
+            : await dbContext.ConsumptionCertificates.FindAsync([context.Arguments.CertificateId],
                 context.CancellationToken);
 
         if (certificate == null)
@@ -54,23 +53,24 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
 public class MarkAsIssuedActivityDefinition : ExecuteActivityDefinition<MarkAsIssuedActivity, MarkAsIssuedArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<MarkAsIssuedActivity, MarkAsIssuedArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<MarkAsIssuedActivity, MarkAsIssuedArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
         endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }

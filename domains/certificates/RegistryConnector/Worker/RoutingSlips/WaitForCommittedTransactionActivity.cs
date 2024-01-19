@@ -67,17 +67,18 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
 
 public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefinition<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public WaitForCommittedTransactionActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public WaitForCommittedTransactionActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
         endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
@@ -89,7 +90,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Ignore(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }
 
