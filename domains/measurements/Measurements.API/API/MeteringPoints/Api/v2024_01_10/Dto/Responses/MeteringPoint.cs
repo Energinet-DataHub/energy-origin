@@ -5,7 +5,7 @@ using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
 namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology)
+public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates)
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
@@ -24,8 +24,26 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
                 result.Postcode,
                 "DK"
             ),
-            GetTechnology(result.AssetType)
+            GetTechnology(result.AssetType),
+            GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType)
         );
+    }
+
+    public static bool GetCanBeUsedForIssuingCertificates(string typeOfMp, string assetType)
+    {
+        if (GetMeterType(typeOfMp) == MeterType.Production)
+        {
+            if (GetAssetType(assetType) != AssetTypeEnum.Other)
+            {
+                return true;
+            }
+        }
+        else if (GetMeterType(typeOfMp) == MeterType.Consumption)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static string GetGridArea(string postcode)
@@ -92,5 +110,19 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         }
 
         return new Technology(AibTechCodeConstants.OtherTechnology, AibFuelCodeConstants.Other);
+    }
+
+    public static AssetTypeEnum GetAssetType(string assetType)
+    {
+        if (assetType == "D11")
+        {
+            return AssetTypeEnum.Solar;
+        }
+        else if (assetType == "D12")
+        {
+            return AssetTypeEnum.Wind;
+        }
+
+        return AssetTypeEnum.Other;
     }
 }

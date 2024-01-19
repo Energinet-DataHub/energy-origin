@@ -13,7 +13,8 @@
       Technology: {
         AibTechCode: T070000,
         AibFuelCode: F00000000
-      }
+      },
+      CanBeUsedForIssuingCertificates: true
     }
   ]
 }
