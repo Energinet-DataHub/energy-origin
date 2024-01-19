@@ -10,6 +10,8 @@ using API.Transfer.Api.v2024_01_03.Dto.Requests;
 using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentValidation.AspNetCore;
@@ -30,17 +32,20 @@ public class TransferAgreementsController : ControllerBase
     private readonly IProjectOriginWalletService projectOriginWalletService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ITransferAgreementProposalRepository transferAgreementProposalRepository;
+    private readonly IActivityLogEntryRepository activityLogEntryRepository;
 
     public TransferAgreementsController(
         ITransferAgreementRepository transferAgreementRepository,
         IProjectOriginWalletService projectOriginWalletService,
         IHttpContextAccessor httpContextAccessor,
-        ITransferAgreementProposalRepository transferAgreementProposalRepository)
+        ITransferAgreementProposalRepository transferAgreementProposalRepository,
+        IActivityLogEntryRepository activityLogEntryRepository)
     {
         this.transferAgreementRepository = transferAgreementRepository;
         this.projectOriginWalletService = projectOriginWalletService;
         this.httpContextAccessor = httpContextAccessor;
         this.transferAgreementProposalRepository = transferAgreementProposalRepository;
+        this.activityLogEntryRepository = activityLogEntryRepository;
     }
 
     /// <summary>
@@ -63,7 +68,8 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
-        var proposal = await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+        var proposal =
+            await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();
@@ -86,7 +92,8 @@ public class TransferAgreementsController : ControllerBase
         var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
         if (hasConflict)
         {
-            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range", statusCode: 409);
+            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
+                statusCode: 409);
         }
 
         var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
@@ -112,7 +119,10 @@ public class TransferAgreementsController : ControllerBase
 
         try
         {
-            var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement, request.TransferAgreementProposalId);
+            var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement,
+                request.TransferAgreementProposalId);
+
+            await AppendToActivityLog(user, result);
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -120,6 +130,19 @@ public class TransferAgreementsController : ControllerBase
         {
             return ValidationProblem(statusCode: 409);
         }
+    }
+
+    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreement result)
+    {
+        // Receiver tin entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
+
+        // Sender tin entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -194,13 +217,13 @@ public class TransferAgreementsController : ControllerBase
             return ValidationProblem("Transfer agreement has expired");
 
         if (await transferAgreementRepository.HasDateOverlap(new TransferAgreement
-        {
-            Id = transferAgreement.Id,
-            StartDate = transferAgreement.StartDate,
-            EndDate = endDate,
-            SenderId = transferAgreement.SenderId,
-            ReceiverTin = transferAgreement.ReceiverTin
-        }))
+            {
+                Id = transferAgreement.Id,
+                StartDate = transferAgreement.StartDate,
+                EndDate = endDate,
+                SenderId = transferAgreement.SenderId,
+                ReceiverTin = transferAgreement.ReceiverTin
+            }))
         {
             return ValidationProblem("Transfer agreement date overlap", statusCode: 409);
         }
