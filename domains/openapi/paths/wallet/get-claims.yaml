@@ -1,6 +1,7 @@
 ﻿tags:
   - Wallet
 summary: Gets all claims in the wallet
+operationId: getClaims
 parameters:
   - name: start
     in: query
@@ -20,12 +21,13 @@ responses:
     content:
       application/json:
         schema:
-          ClaimResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/Claim.yaml'
+          properties:
+            ClaimResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/Claim.yaml'
   '401':
     description: If the user is not authenticated.

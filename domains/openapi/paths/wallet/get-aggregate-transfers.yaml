@@ -1,6 +1,7 @@
 tags:
   - Wallet
 summary: Returns a list of aggregates transfers, for all certificates transferred to another wallet for the authenticated user based.
+operationId: getAggregateTransfers
 parameters:
   - name: timeAggregate
     in: query
@@ -30,13 +31,14 @@ responses:
     content:
       application/json:
         schema:
-          AggregatedTransfersResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/AggregatedTransfers.yaml'
+          properties:
+            AggregatedTransfersResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/AggregatedTransfers.yaml'
   '400':
     description: If the time zone is invalid.
   '401':

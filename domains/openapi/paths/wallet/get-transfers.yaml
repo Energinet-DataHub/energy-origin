@@ -1,6 +1,7 @@
 ﻿tags:
   - Wallet
 summary: Gets detailed list of all of the transfers that have been made to other wallets.
+operationId: getTransfers
 parameters:
   - name: start
     in: query
@@ -20,12 +21,13 @@ responses:
     content:
       application/json:
         schema:
-          TransferResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/Transfer.yaml'
+          properties:
+            TransferResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/Transfer.yaml'
   '401':
     description: If the user is not authenticated.

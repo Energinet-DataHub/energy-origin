@@ -1,6 +1,7 @@
 ﻿tags:
   - Wallet
 summary: Gets all certificates in the wallet that are <b>available</b> for use.
+operationId: getCertificates
 parameters:
   - name: start
     in: query
@@ -20,12 +21,13 @@ responses:
     content:
       application/json:
         schema:
-          GranularCertificateResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/GranularCertificate.yaml'
+          properties:
+            GranularCertificateResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/GranularCertificate.yaml'
   '401':
     description: If the user is not authenticated.

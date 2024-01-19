@@ -1,6 +1,7 @@
 tags:
   - Wallet
 summary: Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
+operationId: getAggregateClaims
 parameters:
   - name: timeAggregate
     in: query
@@ -30,13 +31,14 @@ responses:
     content:
       application/json:
         schema:
-          AggregatedClaimsResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/AggregatedClaims.yaml'
+          properties:
+            GranularCertificateResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/GranularCertificate.yaml'
   '400':
     description: If the time zone is invalid.
   '401':

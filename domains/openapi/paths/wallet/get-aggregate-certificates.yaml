@@ -1,6 +1,7 @@
 ﻿tags:
   - Wallet
 summary: Returns aggregates certificates that are <b>available</b> to use, based on the specified time zone and time range.
+operationId: getAggregateCertificates
 parameters:
   - name: timeAggregate
     in: query
@@ -35,13 +36,14 @@ responses:
     content:
       application/json:
         schema:
-          AggregatedCertificatesResultList:
-            type: object
-            properties:
-              result:
-                type: array
-                items:
-                  $ref: '../../components/schemas/wallet/AggregatedCertificates.yaml'
+          properties:
+            AggregatedCertificatesResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/AggregatedCertificates.yaml'
   '400':
     description: If the time zone is invalid.
   '401':

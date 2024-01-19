@@ -15,12 +15,3 @@ properties:
     additionalProperties:
       type: string
 additionalProperties: false
-FederatedStreamId:
-  type: object
-  properties:
-    registry:
-      type: string
-    streamId:
-      type: string
-      format: uuid
-  additionalProperties: false
