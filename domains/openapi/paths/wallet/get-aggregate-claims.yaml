@@ -1,0 +1,43 @@
+tags:
+  - Wallet
+summary: Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
+parameters:
+  - name: timeAggregate
+    in: query
+    description: The size of each bucket in the aggregation
+    schema:
+      $ref: '../../components/schemas/wallet/TimeAggregate.yaml'
+  - name: timeZone
+    in: query
+    description: The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
+    schema:
+      type: string
+  - name: start
+    in: query
+    description: The start of the time range in Unix time in seconds.
+    schema:
+      type: integer
+      format: int64
+  - name: end
+    in: query
+    description: The end of the time range in Unix time in seconds.
+    schema:
+      type: integer
+      format: int64
+responses:
+  '200':
+    description: Returns the aggregated claims.
+    content:
+      application/json:
+        schema:
+          AggregatedClaimsResultList:
+            type: object
+            properties:
+              result:
+                type: array
+                items:
+                  $ref: '../../components/schemas/wallet/AggregatedClaims.yaml'
+  '400':
+    description: If the time zone is invalid.
+  '401':
+    description: If the user is not authenticated.

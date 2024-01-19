@@ -1,7 +1,7 @@
 ﻿type: object
 properties:
   federatedStreamId:
-    $ref: './FederatedStreamId'
+    $ref: './FederatedStreamId.yaml'
   start:
     type: integer
     format: int64

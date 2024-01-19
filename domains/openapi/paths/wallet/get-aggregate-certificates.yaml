@@ -6,7 +6,7 @@ parameters:
     in: query
     description: The size of each bucket in the aggregation
     schema:
-      $ref: '#/components/schemas/TimeAggregate'
+      $ref: '../../components/schemas/wallet/TimeAggregate.yaml'
   - name: timeZone
     in: query
     description: The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
@@ -35,13 +35,13 @@ responses:
     content:
       application/json:
         schema:
-        AggregatedCertificatesResultList:
-          type: object
-          properties:
-            result:
-              type: array
-              items:
-                $ref: '../../components/schemas/wallet/AggregatedCertificates.yaml'
+          AggregatedCertificatesResultList:
+            type: object
+            properties:
+              result:
+                type: array
+                items:
+                  $ref: '../../components/schemas/wallet/AggregatedCertificates.yaml'
   '400':
     description: If the time zone is invalid.
   '401':

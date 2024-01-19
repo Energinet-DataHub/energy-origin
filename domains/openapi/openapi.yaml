@@ -15,7 +15,6 @@ tags:
   - name: Wallet
     description: Operations about wallet
 servers:
-  - url: 'http://energioprindelse.dk'
   - url: 'https://energioprindelse.dk'
 paths:
   /api/certificates/contracts:
@@ -28,6 +27,24 @@ paths:
       $ref: './paths/contracts/put@{id}.yaml'
     get:
       $ref: './paths/contracts/get@{id}.yaml'
+  /api/v1/certificates:
+    get:
+      $ref: './paths/wallet/get-certificates.yaml'
+  /api/v1/claims:
+    get:
+      $ref: './paths/wallet/get-claims.yaml'
+  /api/v1/transfers:
+    get:
+      $ref: './paths/wallet/get-transfers.yaml'
+  /api/v1/aggregate-certificates:
+    get:
+      $ref: './paths/wallet/get-aggregate-certificates.yaml'
+  /api/v1/aggregate-claims:
+    get:
+      $ref: './paths/wallet/get-aggregate-claims.yaml'
+  /api/v1/aggregate-transfers:
+    get:
+      $ref: './paths/wallet/get-aggregate-transfers.yaml'
 security:
   - JWT: [ ]
 components:

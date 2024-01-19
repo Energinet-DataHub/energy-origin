@@ -7,7 +7,7 @@ properties:
     type: integer
     format: int32
   productionCertificate:
-    $ref: './ClaimedCertificate'
+    $ref: './ClaimedCertificate.yaml'
   consumptionCertificate:
-    $ref: './ClaimedCertificate'
+    $ref: './ClaimedCertificate.yaml'
 additionalProperties: false
