@@ -16,12 +16,7 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
     public DbSet<UserTerms> UserTerms { get; set; } = null!;
     public DbSet<CompanyTerms> CompanyTerms { get; set; } = null!;
 
-    public DataContext(DbContextOptions options, NpgsqlDataSourceBuilder dataSourceBuilder) : base(options)
-    {
-        dataSourceBuilder.MapEnum<ProviderKeyType>();
-        dataSourceBuilder.MapEnum<UserTermsType>();
-        dataSourceBuilder.MapEnum<CompanyTermsType>();
-    }
+    public DataContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,5 +25,14 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
         modelBuilder.HasPostgresEnum<ProviderKeyType>();
         modelBuilder.HasPostgresEnum<CompanyTermsType>();
         modelBuilder.HasPostgresEnum<UserTermsType>();
+    }
+
+    public static NpgsqlDataSource GenerateNpgsqlDataSource(string connectionString)
+    {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.MapEnum<UserTermsType>();
+        dataSourceBuilder.MapEnum<CompanyTermsType>();
+        dataSourceBuilder.MapEnum<ProviderKeyType>();
+        return dataSourceBuilder.Build();
     }
 }
