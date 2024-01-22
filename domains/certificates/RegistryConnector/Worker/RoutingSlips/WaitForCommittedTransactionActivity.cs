@@ -47,7 +47,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
                 });
             }
 
-            const string message = "Transaction is still processing on registry.";
+            string message = $"Transaction {context.Arguments.ShaId} is still processing on registry for certificateId: {context.Arguments.CertificateId}.";
             logger.LogDebug(message);
             return context.Faulted(new RegistryTransactionStillProcessingException(message));
         }
