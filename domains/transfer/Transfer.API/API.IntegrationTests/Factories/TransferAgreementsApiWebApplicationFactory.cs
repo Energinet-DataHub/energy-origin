@@ -178,7 +178,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Issuer",
+        string issuer = "demo.energioprindelse.dk",
         string audience = "Audience")
     {
 

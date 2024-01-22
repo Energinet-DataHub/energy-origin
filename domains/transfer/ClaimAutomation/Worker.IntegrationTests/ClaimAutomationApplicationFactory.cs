@@ -108,7 +108,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Us",
+        string issuer = "demo.energioprindelse.dk",
         string audience = "Users")
     {
         var claims = new Dictionary<string, object>()
