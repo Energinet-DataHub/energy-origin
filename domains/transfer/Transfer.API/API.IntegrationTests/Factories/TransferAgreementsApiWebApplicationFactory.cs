@@ -72,7 +72,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Issuer");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Audience");
 
         builder.ConfigureTestServices(s =>

@@ -72,7 +72,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
         builder.UseSetting("ProjectOrigin:WalletUrl", "http://localhost:5000");
         builder.UseSetting("Otlp:ReceiverEndpoint", "http://foobar");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Us");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(s =>

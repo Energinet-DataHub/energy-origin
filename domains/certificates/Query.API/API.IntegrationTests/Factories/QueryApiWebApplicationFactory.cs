@@ -64,7 +64,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Issuer");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Audience");
 
         builder.ConfigureTestServices(services =>
