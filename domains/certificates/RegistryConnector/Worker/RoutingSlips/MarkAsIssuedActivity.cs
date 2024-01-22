@@ -47,6 +47,8 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
         await dbContext.SaveChangesAsync(context.CancellationToken);
 
+        logger.LogInformation("Certificate with certificateId {context.Arguments.CertificateId} and meteringPointType {context.Arguments.MeteringPointType} issued.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+
         return context.Completed();
     }
 }
