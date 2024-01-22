@@ -47,12 +47,12 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 .UseNpgsql(DataContext.GenerateNpgsqlDataSource(testContainer.GetConnectionString()))
                 .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
             services.AddScoped<IUserDataContext, DataContext>();
-            services.Configure<HealthCheckServiceOptions>(x =>
+            services.Configure<HealthCheckServiceOptions>(healthCheckOptions =>
             {
-                var registration = x.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
+                var registration = healthCheckOptions.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
                 if (registration != null)
                 {
-                    x.Registrations.Remove(registration);
+                    healthCheckOptions.Registrations.Remove(registration);
                 }
             });
             services.AddHealthChecks().AddNpgSql(testContainer.GetConnectionString());
