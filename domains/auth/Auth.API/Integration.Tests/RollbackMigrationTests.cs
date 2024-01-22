@@ -1,9 +1,7 @@
-using Integration.Tests;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace API.IntegrationTests;
+namespace Integration.Tests;
 
 public class RollbackMigrationTests : IClassFixture<AuthWebApplicationFactory>
 {
