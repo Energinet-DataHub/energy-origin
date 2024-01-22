@@ -59,6 +59,7 @@ When running in k8s migrations are applied in an initContainer before the actual
 
 ### Important! You must remember this!<a id="important"></a>
 
+
 You must manually remember to generate the complete SQL migration script after adding a migration. The complete SQL migration script is used to migrate the database when running in k8s.
 
 This is the commands for generating the migration SQL script for the API project and Worker project:
