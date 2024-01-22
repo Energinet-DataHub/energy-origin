@@ -32,13 +32,13 @@ responses:
       application/json:
         schema:
           properties:
-            GranularCertificateResultList:
+            AggregatedClaimsResultList:
               type: object
               properties:
                 result:
                   type: array
                   items:
-                    $ref: '../../components/schemas/wallet/GranularCertificate.yaml'
+                    $ref: '../../components/schemas/wallet/AggregatedClaims.yaml'
   '400':
     description: If the time zone is invalid.
   '401':

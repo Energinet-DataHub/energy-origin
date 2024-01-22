@@ -5,8 +5,7 @@ properties:
     type: string
     format: uuid
   gsrn:
-    type: string
-    description: Global Service Relation Number (GSRN) for the metering point
+    $ref: '../valueObjects/Gsrn.yaml'
   startDate:
     type: integer
     description: Starting date for generation of certificates in Unix time seconds
@@ -21,8 +20,8 @@ properties:
     description: Creation date for the contract
     format: int64
   meteringPointType:
-    $ref: './MeteringPointType.yaml'
+    $ref: '../valueObjects/MeteringPointType.yaml'
   technology:
-    $ref: './Technology.yaml'
+    $ref: '../valueObjects/Technology.yaml'
 additionalProperties: false
 

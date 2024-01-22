@@ -1,9 +1,9 @@
 # See https://redoc.ly/docs/cli/configuration/ for more information.
 apis:
-  main: openapi/openapi.yaml
-styleguide:
-  rules:
-    no-unused-components: warning
+  core:
+    root: openapi.yaml
+    rules:
+      no-unused-components: warn
 theme.openapi:
   pagination: section
   showConsole: true

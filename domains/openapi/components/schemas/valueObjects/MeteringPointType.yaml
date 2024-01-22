@@ -1,4 +1,4 @@
 ﻿enum:
   - Production
   - Consumption
-type: string
+type: Type of Metering Point

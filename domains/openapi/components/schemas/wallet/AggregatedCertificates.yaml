@@ -10,5 +10,5 @@ properties:
     type: integer
     format: int64
   type:
-    $ref: './CertificateType.yaml'
+    $ref: '../valueObjects/CertificateType.yaml'
 additionalProperties: false

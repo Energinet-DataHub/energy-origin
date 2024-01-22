@@ -14,7 +14,7 @@ properties:
   gridArea:
     type: string
   certificateType:
-    $ref: './CertificateType.yaml'
+    $ref: '../valueObjects/CertificateType.yaml'
   attributes:
     type: object
     additionalProperties:

@@ -29,7 +29,7 @@ parameters:
     in: query
     description: Filter the type of certificates to return.
     schema:
-      $ref: '../../components/schemas/wallet/CertificateType.yaml'
+      $ref: '../../components/schemas/valueObjects/CertificateType.yaml'
 responses:
   '200':
     description: Returns the aggregated claims.
