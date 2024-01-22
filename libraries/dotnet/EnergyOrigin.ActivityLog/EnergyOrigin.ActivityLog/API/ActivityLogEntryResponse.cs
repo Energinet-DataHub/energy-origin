@@ -1,4 +1,4 @@
-﻿namespace EnergyOrigin.ActivityLog.API;
+namespace EnergyOrigin.ActivityLog.API;
 
 public class ActivityLogEntryResponse
 {
