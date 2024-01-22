@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,8 +13,7 @@ public static class ActivityLogExtensions
 {
     public static IServiceCollection AddActivityLog(this IServiceCollection services)
     {
-        services.AddScoped<ActivityLogEntryRepository>();
-
+        services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository>();
         return services;
     }
 
@@ -22,10 +21,13 @@ public static class ActivityLogExtensions
     {
         return builder.MapPost(
             "/activity-log",
-            async (ActivityLogEntryFilterRequest request, ActivityLogEntryRepository activityLogEntryRepository)
-                => await activityLogEntryRepository
-                    .GetActivityLogAsync(request))
-                    .RequireAuthorization();
+            async (HttpContext HttpContext, ActivityLogEntryFilterRequest request, IActivityLogEntryRepository activityLogEntryRepository)
+                =>
+            {
+                var user = new UserDescriptor(HttpContext.User);
+                return await activityLogEntryRepository
+                    .GetActivityLogAsync(user.Organization!.Tin, request);
+            }).RequireAuthorization();
     }
 
     public static void AddActivityLogEntry(this ModelBuilder modelBuilder)

@@ -3,7 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EnergyOrigin.ActivityLog.API;
 
-public class ActivityLogEntryRepository(DbContext dbContext)
+public interface IActivityLogEntryRepository
+{
+    Task AddActivityLogEntryAsync(ActivityLogEntry activityLogEntry);
+    Task<List<ActivityLogEntryResponse>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request);
+}
+
+public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntryRepository
 {
     public async Task AddActivityLogEntryAsync(ActivityLogEntry activityLogEntry)
     {
@@ -11,7 +17,7 @@ public class ActivityLogEntryRepository(DbContext dbContext)
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<ActivityLogEntryResponse>> GetActivityLogAsync(ActivityLogEntryFilterRequest request)
+    public async Task<List<ActivityLogEntryResponse>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request)
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsQueryable();
 
@@ -19,7 +25,9 @@ public class ActivityLogEntryRepository(DbContext dbContext)
         if(request.End != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
         if (request.EntityType != null) activityLogQuery = activityLogQuery.Where(x => x.EntityType == default); // TODO MAP
 
-        var response = await activityLogQuery.Select(x =>
+        var response = await activityLogQuery.Where(l => l.OrganizationTin == tin).ToListAsync();
+
+        return response.Select(x =>
             new ActivityLogEntryResponse
             {
                 Id = x.Id,
@@ -33,9 +41,7 @@ public class ActivityLogEntryRepository(DbContext dbContext)
                 ActorType = ActorTypeMapper(x.ActorType),
                 ActionType = ActionTypeMapper(x.ActionType)
             }
-        ).ToListAsync();
-
-        return response;
+        ).ToList();
     }
 
     private ActivityLogEntryResponse.ActionTypeEnum ActionTypeMapper(ActivityLogEntry.ActionTypeEnum actionType) =>

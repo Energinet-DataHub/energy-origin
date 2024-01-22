@@ -1,12 +1,55 @@
-using EnergyOrigin.ActivityLog.API;
-
 namespace EnergyOrigin.ActivityLog.DataContext;
 
 public class ActivityLogEntry
 {
-    public enum ActorTypeEnum { User, System }
-    public enum EntityTypeEnum { TransferAgreement, MeteringPoint }
-    public enum ActionTypeEnum { Created, Accepted, Declined, Activated, Deactivated, ChangeEndDate }
+    private ActivityLogEntry()
+    {
+    }
+
+    private ActivityLogEntry(Guid id, DateTimeOffset timestamp, Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin,
+        string organizationName, EntityTypeEnum entityType, ActionTypeEnum actionType, Guid entityId)
+    {
+        Id = id;
+        Timestamp = timestamp;
+        ActorId = actorId;
+        ActorType = actorType;
+        ActorName = actorName;
+        OrganizationTin = organizationTin;
+        OrganizationName = organizationName;
+        EntityType = entityType;
+        ActionType = actionType;
+        EntityId = entityId;
+    }
+
+    public static ActivityLogEntry Create(Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin, string organizationName,
+        EntityTypeEnum entityType, ActionTypeEnum actionType, Guid entityId)
+    {
+        var id = Guid.NewGuid();
+        var timestamp = DateTimeOffset.UtcNow;
+        return new ActivityLogEntry(id, timestamp, actorId, actorType, actorName, organizationTin, organizationName, entityType, actionType, entityId);
+    }
+
+    public enum ActorTypeEnum
+    {
+        User,
+        System
+    }
+
+    public enum EntityTypeEnum
+    {
+        TransferAgreement,
+        MeteringPoint
+    }
+
+    public enum ActionTypeEnum
+    {
+        Created,
+        Accepted,
+        Declined,
+        Activated,
+        Deactivated,
+        ChangeEndDate
+    }
 
     // General
     public Guid Id { get; init; }
