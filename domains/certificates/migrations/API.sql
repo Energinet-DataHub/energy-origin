@@ -343,3 +343,22 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240122103441_UpdateToOutbox') THEN
+    ALTER TABLE "OutboxMessage" ADD "MessageType" text NOT NULL DEFAULT '';
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240122103441_UpdateToOutbox') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240122103441_UpdateToOutbox', '8.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
