@@ -71,11 +71,6 @@ builder.Services.AddMassTransit(o =>
 
     o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
 
-    o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
-    o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
-
-    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
-
     o.UsingRabbitMq((context, cfg) =>
     {
         var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
