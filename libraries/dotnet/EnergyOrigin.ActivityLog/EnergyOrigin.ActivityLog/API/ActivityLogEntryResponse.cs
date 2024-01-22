@@ -1,6 +1,4 @@
-﻿namespace EnergyOrigin.ActivityLog.API;
-
-public class ActivityLogEntryResponse
+﻿namespace EnergyOrigin.ActivityLog.API; public class ActivityLogEntryResponse
 {
     public enum ActorTypeEnum { User, System }
     public enum EntityTypeEnum { TransferAgreement, MeteringPoint }
