@@ -21,9 +21,9 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsQueryable();
 
-        if(request.Start != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= request.Start);
-        if(request.End != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
-        if (request.EntityType != null) activityLogQuery = activityLogQuery.Where(x => x.EntityType == default); // TODO MAP
+        if (request.Start != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= request.Start);
+        if (request.End != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
+        if (request.EntityType != null) activityLogQuery = activityLogQuery.Where(x => x.EntityType == default);
 
         var response = await activityLogQuery.Where(l => l.OrganizationTin == tin).ToListAsync();
 
