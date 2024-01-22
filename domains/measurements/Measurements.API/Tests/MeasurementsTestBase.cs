@@ -32,7 +32,7 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
         {
             {"TokenValidation:PublicKey", publicKeyBase64},
             {"TokenValidation:Issuer", "demo.energioprindelse.dk"},
-            {"TokenValidation:Audience", "Audience"},
+            {"TokenValidation:Audience", "Users"},
             {"DataHubFacade:Url", DataHubFacadeUrl},
             {"DataSync:Endpoint", "https://example.com"}
         };
