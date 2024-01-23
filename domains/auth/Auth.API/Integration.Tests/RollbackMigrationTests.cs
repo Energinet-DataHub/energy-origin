@@ -3,12 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Integration.Tests;
 
-public class RollbackMigrationTests : IClassFixture<AuthWebApplicationFactory>
+public class RollbackMigrationTests(AuthWebApplicationFactory factory) : IClassFixture<AuthWebApplicationFactory>
 {
-    private readonly AuthWebApplicationFactory factory;
-
-    public RollbackMigrationTests(AuthWebApplicationFactory factory) => this.factory = factory;
-
     [Fact]
     public async void Migrate_ShouldRollbackMigrationsAndThenApplyMigrations_WhenInvokedWithZeroAndThenNoArguments()
     {
