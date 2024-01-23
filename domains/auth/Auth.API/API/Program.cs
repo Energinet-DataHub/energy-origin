@@ -13,6 +13,7 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
@@ -107,7 +108,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseNpgsql(DataContext.GenerateNpgsqlDataSource(databaseOptions.ConnectionString)));
+    options.UseNpgsql(DataContext.GenerateNpgsqlDataSource(databaseOptions.ConnectionString))
+        .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
