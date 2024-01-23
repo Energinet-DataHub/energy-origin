@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.v2024_01_03.Dto.Requests;
