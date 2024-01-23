@@ -216,7 +216,7 @@ public class TransferAgreementsController : ControllerBase
         if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
             return ValidationProblem("Transfer agreement has expired");
 
-        var transferAgreement = new TransferAgreement
+        var overlapQuery = new TransferAgreement
         {
             Id = transferAgreement.Id,
             StartDate = transferAgreement.StartDate,
@@ -225,7 +225,7 @@ public class TransferAgreementsController : ControllerBase
             ReceiverTin = transferAgreement.ReceiverTin
         };
 
-        if (await transferAgreementRepository.HasDateOverlap(transferAgreement))
+        if (await transferAgreementRepository.HasDateOverlap(overlapQuery))
         {
             return ValidationProblem("Transfer agreement date overlap", statusCode: 409);
         }
