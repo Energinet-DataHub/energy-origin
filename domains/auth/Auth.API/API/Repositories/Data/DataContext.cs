@@ -7,7 +7,8 @@ using Npgsql;
 
 namespace API.Repositories.Data;
 
-public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUserProviderDataContext
+public class DataContext(DbContextOptions options)
+    : DbContext(options), IUserDataContext, ICompanyDataContext, IUserProviderDataContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;
@@ -15,8 +16,6 @@ public class DataContext : DbContext, IUserDataContext, ICompanyDataContext, IUs
     public DbSet<UserRole> UserRoles { get; set; } = null!;
     public DbSet<UserTerms> UserTerms { get; set; } = null!;
     public DbSet<CompanyTerms> CompanyTerms { get; set; } = null!;
-
-    public DataContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
