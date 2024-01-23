@@ -73,7 +73,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
         builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
-        builder.UseSetting("TokenValidation:Audience", "Audience");
+        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(s =>
         {
@@ -179,7 +179,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string cpn = "Producent A/S",
         string name = "Peter Producent",
         string issuer = "demo.energioprindelse.dk",
-        string audience = "Audience")
+        string audience = "Users")
     {
 
         var claims = new Dictionary<string, object>()
