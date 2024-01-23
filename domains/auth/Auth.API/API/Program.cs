@@ -173,7 +173,7 @@ try
 }
 catch (Exception e)
 {
-    app.Logger.LogError(e, "An exception has occurred while starting up.");
+    app.Logger.LogError(e, "An exception has occurred while starting up");
     throw;
 }
 
