@@ -58,7 +58,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         builder.UseSetting("ProjectOrigin:WalletUrl", "http://localhost:5000");
         builder.UseSetting("Otlp:ReceiverEndpoint", "http://foobar");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Us");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
         builder.UseSetting("TransferApi:Url", "localhost:5001");
         builder.UseSetting("TransferApi:Version", "20231123");
@@ -71,7 +71,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Us",
+        string issuer = "demo.energioprindelse.dk",
         string audience = "Users")
     {
         var claims = new Dictionary<string, object>()
