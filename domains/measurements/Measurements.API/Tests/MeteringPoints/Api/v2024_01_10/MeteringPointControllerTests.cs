@@ -17,7 +17,6 @@ using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
 namespace Tests.MeteringPoints.Api.v2024_01_10;
 
-[UsesVerify]
 public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 {
     public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)

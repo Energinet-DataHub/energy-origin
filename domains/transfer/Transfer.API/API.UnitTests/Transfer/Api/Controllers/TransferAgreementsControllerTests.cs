@@ -96,6 +96,7 @@ public class TransferAgreementsControllerTests
             SenderCompanyName = "SomeCompany",
             SenderCompanyTin = "32132132"
         };
+
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
             .Returns(taProposal);
         mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)

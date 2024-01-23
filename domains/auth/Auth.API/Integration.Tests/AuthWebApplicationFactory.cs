@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Npgsql;
 using Testcontainers.PostgreSql;
 using static API.Utilities.TokenIssuer;
 
@@ -43,16 +43,16 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
             services.Remove(services.First(x => x.ServiceType == typeof(DataContext)));
-            services.Remove(services.First(x => x.ServiceType == typeof(NpgsqlDataSourceBuilder)));
-            services.AddSingleton(new NpgsqlDataSourceBuilder(testContainer.GetConnectionString()));
-            services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
+            services.AddDbContext<DataContext>(options => options
+                .UseNpgsql(DataContext.GenerateNpgsqlDataSource(testContainer.GetConnectionString()))
+                .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
             services.AddScoped<IUserDataContext, DataContext>();
-            services.Configure<HealthCheckServiceOptions>(x =>
+            services.Configure<HealthCheckServiceOptions>(healthCheckOptions =>
             {
-                var registration = x.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
+                var registration = healthCheckOptions.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
                 if (registration != null)
                 {
-                    x.Registrations.Remove(registration);
+                    healthCheckOptions.Registrations.Remove(registration);
                 }
             });
             services.AddHealthChecks().AddNpgSql(testContainer.GetConnectionString());

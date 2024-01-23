@@ -15,7 +15,6 @@ using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
-using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -107,8 +106,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton(new NpgsqlDataSourceBuilder(databaseOptions.ConnectionString));
-builder.Services.AddDbContext<DataContext>((serviceProvider, options) => options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSourceBuilder>().Build()));
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseNpgsql(DataContext.GenerateNpgsqlDataSource(databaseOptions.ConnectionString)));
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -174,7 +173,7 @@ try
 }
 catch (Exception e)
 {
-    app.Logger.LogError(e, "An exception has occurred while starting up.");
+    app.Logger.LogError(e, "An exception has occurred while starting up");
     throw;
 }
 

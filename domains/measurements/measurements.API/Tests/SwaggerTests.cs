@@ -10,7 +10,6 @@ using Xunit;
 
 namespace Tests;
 
-[UsesVerify]
 public class SwaggerTests : MeasurementsTestBase
 {
     public SwaggerTests(TestServerFixture<Startup> serverFixture)
