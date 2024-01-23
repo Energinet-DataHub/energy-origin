@@ -1,12 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using DataContext;
-using Grpc.Core;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
-using RegistryConnector.Worker.Exceptions;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
