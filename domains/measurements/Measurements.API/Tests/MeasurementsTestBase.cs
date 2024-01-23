@@ -31,8 +31,8 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
         var config = new Dictionary<string, string?>()
         {
             {"TokenValidation:PublicKey", publicKeyBase64},
-            {"TokenValidation:Issuer", "Issuer"},
-            {"TokenValidation:Audience", "Audience"},
+            {"TokenValidation:Issuer", "demo.energioprindelse.dk"},
+            {"TokenValidation:Audience", "Users"},
             {"DataHubFacade:Url", DataHubFacadeUrl},
             {"DataSync:Endpoint", "https://example.com"}
         };
