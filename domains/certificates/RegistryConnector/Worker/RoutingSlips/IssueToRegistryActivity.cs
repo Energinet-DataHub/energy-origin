@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using DataContext;
+using Grpc.Core;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.Registry.V1;
+using RegistryConnector.Worker.Exceptions;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -52,7 +54,7 @@ public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<Issue
         IRegistrationContext context
         )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromSeconds(10)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));

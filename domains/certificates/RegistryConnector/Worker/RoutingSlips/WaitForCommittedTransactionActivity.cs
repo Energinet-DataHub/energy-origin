@@ -53,7 +53,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
         }
         catch (RpcException ex)
         {
-            var transientException = new TransientException("Registry communication error", ex);
+            var transientException = new TransientException("Registry communication error");
             logger.LogWarning("Registry communication error. Exception: {ex}", ex);
             return context.Faulted(transientException);
         }
@@ -80,7 +80,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
         IRegistrationContext context
         )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Interval(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1))
