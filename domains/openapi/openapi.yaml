@@ -11,9 +11,13 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
   - name: Contracts
-    description: Operations about contracts
+    description: "Contracts are key in Energy Origin. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both
+  production and consumption metering points. However, the production metering points must be either Wind or Solar – otherwise it is not possible to generate GCs.
+  When a contract is inactive Granular Certificates will no longer be generated."
   - name: Wallet
-    description: Operations about wallet
+    description: "The Wallet is essential for Energy Origin since it keeps track of all the user’s Granular Certificates – both the ones generated from the user’s own metering points,
+    but also the ones transferred from other users. In other words, the Wallet will hold all available certificates for the user.
+    Moreover, it will show all transfers that may have been made to other users’ wallets as well."
 servers:
   - url: 'https://energioprindelse.dk'
 paths:
