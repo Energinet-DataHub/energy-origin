@@ -94,7 +94,7 @@ public sealed class CertificateIssuingFailingTests :
         {
             var entities = await dbContext.ProductionCertificates.Where(c => c.IssuedState == IssuedState.Rejected).ToListAsync();
 
-            if (entities.Count() == count)
+            if (entities.Count == count)
                 return entities;
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
