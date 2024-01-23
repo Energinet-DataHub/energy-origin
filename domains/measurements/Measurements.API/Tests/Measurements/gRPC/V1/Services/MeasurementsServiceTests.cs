@@ -18,7 +18,6 @@ using API.Measurements.Helpers;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 
-[UsesVerify]
 public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 {
     public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture)
