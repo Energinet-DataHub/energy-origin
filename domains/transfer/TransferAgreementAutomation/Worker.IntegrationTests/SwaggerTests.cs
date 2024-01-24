@@ -8,7 +8,6 @@ using Xunit;
 
 namespace Worker.IntegrationTest;
 
-[UsesVerify]
 public class SwaggerTests : IClassFixture<TransferAutomationApplicationFactory>
 {
     private readonly TransferAutomationApplicationFactory factory;

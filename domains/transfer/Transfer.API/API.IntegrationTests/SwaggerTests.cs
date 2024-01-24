@@ -9,7 +9,6 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-[UsesVerify]
 public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

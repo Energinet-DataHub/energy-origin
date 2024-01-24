@@ -18,7 +18,6 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 
-[UsesVerify]
 public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
@@ -72,7 +71,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         await senderClient.PatchAsync($"api/transfer-agreements/{createdTransferAgreement!.Id}", JsonContent.Create(editRequest));
 
         var auditsResponse = await receiverClient.GetFromJsonAsync<TransferAgreementHistoryEntriesResponse>
-            ($"api/transfer-agreements/{createdTransferAgreement!.Id}/history?offset=0&limit=1", JsonDefault.Options);
+            ($"api/transfer-agreements/{createdTransferAgreement.Id}/history?offset=0&limit=1", JsonDefault.Options);
 
         var settings = new VerifySettings();
         settings.ScrubMember("CreatedAt");

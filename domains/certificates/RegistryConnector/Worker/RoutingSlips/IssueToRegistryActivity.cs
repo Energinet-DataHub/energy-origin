@@ -40,22 +40,23 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
 
 public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<IssueToRegistryActivity, IssueToRegistryArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
-    public IssueToRegistryActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public IssueToRegistryActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<IssueToRegistryActivity, IssueToRegistryArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<IssueToRegistryActivity, IssueToRegistryArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromSeconds(10)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }

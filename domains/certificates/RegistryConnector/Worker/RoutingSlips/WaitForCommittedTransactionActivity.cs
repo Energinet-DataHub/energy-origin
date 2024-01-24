@@ -47,13 +47,13 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
                 });
             }
 
-            const string message = "Transaction is still processing on registry.";
+            string message = $"Transaction {context.Arguments.ShaId} is still processing on registry for certificateId: {context.Arguments.CertificateId}.";
             logger.LogDebug(message);
             return context.Faulted(new RegistryTransactionStillProcessingException(message));
         }
         catch (RpcException ex)
         {
-            var transientException = new TransientException("Registry communication error", ex);
+            var transientException = new TransientException("Registry communication error");
             logger.LogWarning("Registry communication error. Exception: {ex}", ex);
             return context.Faulted(transientException);
         }
@@ -67,19 +67,20 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
 
 public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefinition<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public WaitForCommittedTransactionActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public WaitForCommittedTransactionActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Interval(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1))
@@ -89,7 +90,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Ignore(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }
 

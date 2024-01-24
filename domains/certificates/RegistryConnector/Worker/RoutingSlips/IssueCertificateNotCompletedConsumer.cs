@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.ValueObjects;
@@ -99,22 +98,24 @@ public class IssueCertificateNotCompletedConsumer :
 
 public class IssueCertificateNotCompletedConsumerDefinition : ConsumerDefinition<IssueCertificateNotCompletedConsumer>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public IssueCertificateNotCompletedConsumerDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public IssueCertificateNotCompletedConsumerDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<IssueCertificateNotCompletedConsumer> consumerConfigurator)
+    protected override void ConfigureConsumer(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IConsumerConfigurator<IssueCertificateNotCompletedConsumer> consumerConfigurator,
+        IRegistrationContext context
+        )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }

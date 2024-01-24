@@ -22,8 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using NSubstitute.Core;
-using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
 using static API.Options.RoleConfiguration;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
@@ -583,7 +581,7 @@ public class OidcControllerTests
     public void ExtractUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity identity, ProviderType providerType, string identityType, Type expectedException) => Assert.Throws(expectedException, () => OidcHelper.ExtractUserInfo(new ClaimsPrincipal(identity), providerType, identityType));
 
     [Fact]
-    public void FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
+    public async Task FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
@@ -598,9 +596,9 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
+        var result = await OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "");
 
-        service.Received(1).UpsertUserAsync(Arg.Any<User>());
+        await service.Received(1).UpsertUserAsync(Arg.Any<User>());
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);

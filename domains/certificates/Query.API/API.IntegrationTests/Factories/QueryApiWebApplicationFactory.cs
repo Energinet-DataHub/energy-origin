@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,8 +64,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Issuer");
-        builder.UseSetting("TokenValidation:Audience", "Audience");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
+        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(services =>
         {
@@ -135,8 +136,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Issuer",
-        string audience = "Audience")
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users")
     {
 
         var claims = new Dictionary<string, object>()
@@ -147,7 +148,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
             { UserClaimName.AllowCprLookup, "false"},
             { UserClaimName.AccessToken, ""},
             { UserClaimName.IdentityToken, ""},
