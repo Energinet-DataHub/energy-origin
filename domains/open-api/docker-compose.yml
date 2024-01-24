@@ -1,0 +1,22 @@
+﻿version: '3.8'
+
+services:
+  redoc:
+    image: redocly/redoc:v2.1.3
+    container_name: redoc
+    volumes:
+      - ./openapi_bundle.yaml:/usr/share/nginx/html/openapi_bundle.yaml
+    environment:
+      SPEC_URL: openapi_bundle.yaml
+    ports:
+      - 8080:80
+
+  my_dotnet_app:
+    build: .
+    container_name: my_dotnet_app
+    volumes:
+      - .:/app
+      - ./paths:/app/paths
+      - ./components:/app/components
+    depends_on:
+      - redoc

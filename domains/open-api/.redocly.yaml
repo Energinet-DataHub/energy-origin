@@ -1,0 +1,17 @@
+# See https://redoc.ly/docs/cli/configuration/ for more information.
+apis:
+  core:
+    root: openapi.yaml
+    rules:
+      no-unused-components: warn
+theme:
+  openapi:
+    theme:
+      sidebar:
+        backgroundColor: 'ivory'
+      rightPanel:
+        textColor: 'ivory'
+        backgroundColor: '#001036'
+      typography:
+        links:
+          color: '#0090cc'
