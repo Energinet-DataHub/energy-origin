@@ -11,3 +11,13 @@ Here are some sections to pay attention to:
 * [Paths](paths/README.md): this defines each endpoint.  A path can have one operation per http method.
 * Tags: it's a good idea to organize each operation.  Each tag can have a description.  The description is used as a section description within the reference docs.
 * Servers: a list of your servers, each with a URL.
+## Redoc CLI tool
+The redoc CLI tool needs to be installed
+
+`npm i -g @redocly/cli@latest`
+
+## Generate bundle
+`redocly bundle -o openapi_bundle.yaml`
+
+The bundle needs to be copy pasted into eo-base
+

@@ -3,12 +3,6 @@ info:
   version: 1.0.0
   title: energioprindelse.dk
   termsOfService: 'https://energioprindelse.dk/terms/'
-  contact:
-    email: contact@example.com
-    url: 'http://example.com/contact'
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
   - name: Contracts
     description: "Contracts are key in Energy Origin. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both

@@ -8,13 +8,4 @@
         SPEC_URL: openapi_bundle.yaml
     ports:
         - 8080:80
-  swagger:
-    image: swaggerapi/swagger-ui:v4.17.0
-    container_name: swagger
-    volumes:
-      - ./openapi_bundle.json:/openapi_bundle.json
-    environment:
-      SWAGGER_JSON: /openapi_bundle.json
-    ports:
-      - 8081:8080
 
