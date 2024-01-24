@@ -1,0 +1,23 @@
+{
+    "name": "Github - Linux",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
+    },
+    "postCreateCommand": "",
+    "remoteUser": "vscode",
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "redhat.vscode-yaml",
+                "me-dutour-mathieu.vscode-github-actions",
+                "systemticks.c4-dsl-extension"
+            ],
+            "settings": {
+                "editor.formatOnSave": true
+            }
+        }
+    }
+}
