@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Linq;
 using API.Cvr;
 using API.Shared.Options;
@@ -105,13 +103,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.Map("/redoc", appBuilder =>
-{
-    appBuilder.Run(async context =>
-    {
-        await context.Response.SendFileAsync("wwwroot/redoc.html");
-    });
-});
+
 app.MapControllers();
 
 app.Run();
