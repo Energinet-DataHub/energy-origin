@@ -1,0 +1,7 @@
+Todays todo's:
+
+* Make review of team during onboarding and send to Anders.
+* Try to convince that estimation is actually a good idea.
+* Activity Log.
+* Try to introduce best practices.
+* Søvnklinik nyt udstyr.
