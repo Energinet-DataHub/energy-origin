@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "open-api", "open-api.csproj", "{4459374C-1DA8-4CDD-876E-C7B76657520C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openapi", "openapi.csproj", "{4459374C-1DA8-4CDD-876E-C7B76657520C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
