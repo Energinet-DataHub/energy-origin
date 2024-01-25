@@ -6,6 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
+RUN apt-get update && apt-get -y install nodejs
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN dotnet tool restore || true
