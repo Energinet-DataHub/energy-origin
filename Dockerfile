@@ -6,9 +6,9 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-bookworm-slim AS build
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
-RUN apt-get update && apt-get -y install nodejs
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
+RUN apt-get update && apt-get install -y grpc
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
