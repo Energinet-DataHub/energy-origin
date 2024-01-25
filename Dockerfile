@@ -8,11 +8,6 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-
-ENV PROTOBUF_PROTOC=/usr/bin/protoc
-ENV GRPC_PROTOC_PLUGIN=/usr/bin/grpc_csharp_plugin
-RUN apk add protobuf protobuf-dev grpc grpc-plugins
-
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
