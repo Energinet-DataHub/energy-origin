@@ -42,6 +42,7 @@ public class TransferAgreementsAutomationWorker(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+
             logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
             metrics.ResetTransferErrors();
