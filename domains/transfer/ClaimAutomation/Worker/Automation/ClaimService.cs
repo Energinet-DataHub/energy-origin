@@ -5,31 +5,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation.Services;
+using ClaimAutomation.Worker.Metrics;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using ProjectOrigin.WalletSystem.V1;
 
 namespace ClaimAutomation.Worker.Automation;
 
-public class ClaimService : IClaimService
+public class ClaimService(
+    ILogger<ClaimService> logger,
+    IClaimAutomationRepository claimAutomationRepository,
+    IProjectOriginWalletService walletService,
+    IShuffler shuffle,
+    IClaimAutomationMetrics metrics,
+    AutomationCache cache)
+    : IClaimService
 {
-    private readonly ILogger<ClaimService> logger;
-    private readonly IClaimAutomationRepository claimAutomationRepository;
-    private readonly IProjectOriginWalletService walletService;
-    private readonly IShuffler shuffle;
-
-    public ClaimService(ILogger<ClaimService> logger, IClaimAutomationRepository claimAutomationRepository, IProjectOriginWalletService walletService, IShuffler shuffle)
-    {
-        this.logger = logger;
-        this.claimAutomationRepository = claimAutomationRepository;
-        this.walletService = walletService;
-        this.shuffle = shuffle;
-    }
-
     public async Task Run(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
+            metrics.ResetCertificatesClaimed();
+            metrics.ResetClaimErrors();
+            metrics.ResetNumberOfClaims();
             try
             {
                 var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
@@ -48,6 +47,7 @@ public class ClaimService : IClaimService
 
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
+                    metrics.SetNumberOfCertificatesClaimed(certificates.Count);
                 }
             }
             catch (Exception e)
@@ -69,9 +69,25 @@ public class ClaimService : IClaimService
             var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
 
             await walletService.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
+            SetClaimAttempt(consumptionCert.FederatedId.StreamId.ToString());
+            SetClaimAttempt(productionCert.FederatedId.StreamId.ToString());
+            metrics.AddClaim();
 
             productionCert.Quantity -= quantity;
             consumptionCert.Quantity -= quantity;
+        }
+    }
+
+    private void SetClaimAttempt(string certificateId)
+    {
+        var attempt = cache.Cache.Get(certificateId);
+        if (attempt == null)
+        {
+            cache.Cache.Set(certificateId, 1, TimeSpan.FromHours(2));
+        }
+        else
+        {
+            metrics.AddClaimError();
         }
     }
 
