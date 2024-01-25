@@ -167,8 +167,9 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
                 {
-                    b.Property<string>("OrganizationTin")
-                        .HasColumnType("text");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<int>("ActionType")
                         .HasColumnType("integer");
@@ -189,17 +190,20 @@ namespace DataContext.Migrations
                     b.Property<int>("EntityType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrganizationTin")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("OrganizationTin")
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationTin")
                         .HasAnnotation("SqlServer:Clustered", false);
 
                     b.ToTable("ActivityLogs");

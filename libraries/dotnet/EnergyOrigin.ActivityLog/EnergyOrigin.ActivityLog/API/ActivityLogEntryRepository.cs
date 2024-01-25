@@ -68,6 +68,7 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
         entityType switch
         {
             ActivityLogEntry.EntityTypeEnum.TransferAgreement => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal,
             ActivityLogEntry.EntityTypeEnum.MeteringPoint => ActivityLogEntryResponse.EntityTypeEnum.MeteringPoint,
             _ => throw new NotImplementedException()
         };

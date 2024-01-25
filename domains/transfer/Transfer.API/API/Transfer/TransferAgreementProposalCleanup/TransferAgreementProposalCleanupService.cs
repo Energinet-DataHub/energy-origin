@@ -59,6 +59,8 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
 
         context.TransferAgreementProposals.RemoveRange(oldProposals);
 
+        // TODO: append activity log
+
         await context.SaveChangesAsync(cancellationToken);
     }
 

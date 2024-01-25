@@ -36,7 +36,7 @@ public class TransferAgreementsControllerTest : IClassFixture<TransferAgreements
         // Assert activity was logged
         var senderLog = await api.GetActivityLog(new ActivityLogEntryFilterRequest(null, null, null));
         var receiverLog = await api.GetActivityLog(receiverTin, new ActivityLogEntryFilterRequest(null, null, null));
-        Assert.Single(senderLog);
+        Assert.Equal(2, senderLog.Count);
         Assert.Single(receiverLog);
     }
 }

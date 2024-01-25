@@ -38,6 +38,7 @@ public class ActivityLogEntry
     public enum EntityTypeEnum
     {
         TransferAgreement,
+        TransferAgreementProposal,
         MeteringPoint
     }
 

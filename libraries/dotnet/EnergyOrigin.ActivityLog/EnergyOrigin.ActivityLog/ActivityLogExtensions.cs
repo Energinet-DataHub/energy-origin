@@ -36,6 +36,6 @@ public static class ActivityLogExtensions
             .HasKey(x => x.Id);
 
         modelBuilder.Entity<ActivityLogEntry>()
-            .HasKey(x => x.OrganizationTin).IsClustered(clustered: false);
+            .HasIndex(x => x.OrganizationTin).IsClustered(clustered: false);
     }
 }
