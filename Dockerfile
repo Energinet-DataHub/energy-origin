@@ -9,6 +9,10 @@ WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 
+ENV PROTOBUF_PROTOC=/usr/bin/protoc
+ENV GRPC_PROTOC_PLUGIN=/usr/bin/grpc_csharp_plugin
+RUN apt-get update && apt-get install -y protobuf protobuf-compiler grpc libgrpc++-dev
+
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
@@ -22,7 +26,6 @@ COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
-COPY --from=busybox:uclibc /bin/sh /bin/sh
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
 
