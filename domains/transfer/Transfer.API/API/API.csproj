@@ -5,7 +5,6 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DocumentationFile>documentation.xml</DocumentationFile>
         <NoWarn>1701;1702;1591</NoWarn>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>

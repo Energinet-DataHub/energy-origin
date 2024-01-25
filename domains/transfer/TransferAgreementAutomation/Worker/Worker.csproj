@@ -9,7 +9,6 @@
     <DocumentationFile>documentation.xml</DocumentationFile>
     <RootNamespace>TransferAgreementAutomation.Worker</RootNamespace>
     <AssemblyName>TransferAgreementAutomation.Worker</AssemblyName>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 

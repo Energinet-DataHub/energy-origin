@@ -9,7 +9,6 @@
     <DocumentationFile>documentation.xml</DocumentationFile>
     <RootNamespace>ClaimAutomation.Worker</RootNamespace>
     <AssemblyName>ClaimAutomation.Worker</AssemblyName>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
