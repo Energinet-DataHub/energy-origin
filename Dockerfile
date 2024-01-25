@@ -15,7 +15,7 @@ RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
 FROM base AS final
 ARG SUBSYSTEM
-RUN apt-get -y update && apt-get -y install wget && apt-get clean && apt-get -y install nodejs
+RUN apt-get -y update && apt-get -y install wget && apt-get clean
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
