@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
+    <ProjectReference Include="../../Shared/ProjectOriginClients/ProjectOriginClients.csproj" />
   </ItemGroup>
 
   <ItemGroup>
