@@ -6,7 +6,7 @@ namespace EnergyOrigin.ActivityLog.API;
 public interface IActivityLogEntryRepository
 {
     Task AddActivityLogEntryAsync(ActivityLogEntry activityLogEntry);
-    Task<List<ActivityLogEntry>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request);
+    Task<IList<ActivityLogEntry>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request);
 }
 
 public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntryRepository
@@ -17,7 +17,7 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<ActivityLogEntry>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request)
+    public async Task<IList<ActivityLogEntry>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request)
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsNoTracking().AsQueryable();
 
