@@ -1,6 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
@@ -22,7 +22,6 @@ COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
-COPY --from=busybox:uclibc /bin/sh /bin/sh
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
 
