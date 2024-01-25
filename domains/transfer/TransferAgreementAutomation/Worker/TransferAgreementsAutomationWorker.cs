@@ -63,7 +63,7 @@ public class TransferAgreementsAutomationWorker(
             catch (Exception ex)
             {
                 cache.Cache.Set(HealthEntries.Key, HealthEntries.Unhealthy, cacheOptions);
-                logger.LogWarning("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
+                logger.LogError("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
             await SleepToNearestHour(stoppingToken);
