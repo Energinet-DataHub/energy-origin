@@ -11,7 +11,6 @@ WORKDIR /src/${PROJECT}
 
 ENV PROTOBUF_PROTOC=/usr/bin/protoc
 ENV GRPC_PROTOC_PLUGIN=/usr/bin/grpc_csharp_plugin
-RUN apt-get update && apt-get install -y protobuf protobuf-compiler grpc libgrpc++-dev
 
 RUN dotnet tool restore || true
 RUN dotnet restore
