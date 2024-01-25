@@ -77,7 +77,6 @@ builder.Services.AddOpenTelemetry()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
@@ -111,3 +110,5 @@ app.Run();
 public partial class Program
 {
 }
+
+//force it to build
