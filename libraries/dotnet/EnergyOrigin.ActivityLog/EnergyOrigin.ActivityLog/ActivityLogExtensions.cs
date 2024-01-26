@@ -19,6 +19,8 @@ public static class ActivityLogExtensions
 
     public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder, string serviceName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(serviceName);
+
         return builder.MapPost(
             $"api/{serviceName}/activity-log",
             async (HttpContext HttpContext, ActivityLogEntryFilterRequest request, IActivityLogEntryRepository activityLogEntryRepository)
