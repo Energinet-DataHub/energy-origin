@@ -58,7 +58,7 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddLogging();
+builder.Services.AddLogging(); // TEST
 
 builder.Services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
