@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
-import "common.proto";
+import "Protos/common.proto";
 
 package project_origin.wallet_system.v1;
 
