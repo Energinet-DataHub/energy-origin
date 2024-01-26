@@ -20,9 +20,12 @@
 
     <ItemGroup>
         <PackageReference Include="Grpc.Tools" Version="2.54.0" />
-        <Target Name="GenerateProtos" AfterTargets="Compile">
-            <Exec Command="$(ProtocPath) -I$(ProtocFolder) --csharp_out $(OutDir) --grpc_out $(OutDir) --plugin=protoc-gen-grpc=$(GrpcPluginPath) $(ProtocFile)" />
-        </Target>
+    </ItemGroup>
+
+    <Target Name="GenerateProtos" AfterTargets="Compile">
+        <Exec Command="protoc -I./protos --csharp_out ./Generated --grpc_out ./Generated --plugin=protoc-gen-grpc=./grpc_csharp_plugin.exe ./protos/your_service.proto" />
+    </Target>
+    <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
