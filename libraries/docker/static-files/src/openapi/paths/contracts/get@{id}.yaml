@@ -1,0 +1,24 @@
+﻿tags:
+  - Contracts
+summary: Returns contract based on the id
+operationId: GetContract
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+  - $ref: '../../components/headers/version.yaml'
+responses:
+  '200':
+    description: Success
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/certificate/Contract.yaml'
+      text/json:
+        schema:
+          $ref: '../../components/schemas/certificate/Contract.yaml'
+  '404':
+    description: Not Found
