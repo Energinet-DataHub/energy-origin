@@ -41,8 +41,10 @@ public class MeasurementEventHandlerTests :
         dbContext.Database.EnsureCreated();
     }
 
-    [Fact]
-    public async Task ShouldOnlyProcessMessagesOnSaveChanges()
+    [Theory]
+    [InlineData(MeasurementQuality.Calculated)]
+    [InlineData(MeasurementQuality.Measured)]
+    public async Task ShouldOnlyProcessMessagesOnSaveChanges(MeasurementQuality quality)
     {
         var privateKey = new Secp256k1Algorithm().GenerateNewPrivateKey();
         var hdPublicKey = privateKey.Derive(1).Neuter();
@@ -56,7 +58,7 @@ public class MeasurementEventHandlerTests :
             DateFrom: utcMidnight.ToUnixTimeSeconds(),
             DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
-            Quality: MeasurementQuality.Measured);
+            Quality: quality);
 
         using (var scope = factory.ServiceScope())
         {
