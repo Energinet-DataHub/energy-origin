@@ -2,6 +2,7 @@ using System;
 using Contracts;
 using DataContext;
 using MassTransit;
+using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +42,7 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
+            .AddMeter(InstrumentationOptions.MeterName)
             .AddPrometheusExporter());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
