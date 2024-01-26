@@ -1,6 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
