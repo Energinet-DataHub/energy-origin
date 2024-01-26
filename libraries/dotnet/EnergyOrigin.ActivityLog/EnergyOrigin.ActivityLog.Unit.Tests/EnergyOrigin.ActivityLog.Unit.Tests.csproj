@@ -30,4 +30,8 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
+    </ItemGroup>
+
 </Project>
