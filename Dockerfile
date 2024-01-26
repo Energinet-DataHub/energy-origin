@@ -1,12 +1,11 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-bookworm-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
-RUN apt-get update && apt-get -y install nodejs
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN dotnet tool restore || true
