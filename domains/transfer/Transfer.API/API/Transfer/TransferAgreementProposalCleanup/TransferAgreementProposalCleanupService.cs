@@ -43,7 +43,7 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
             }
             catch (Exception e)
             {
-                logger.LogWarning("Something went wrong with the TransferAgreementProposalCleanupService: {Exception}", e);
+                logger.LogError("Something went wrong with the TransferAgreementProposalCleanupService: {Exception}", e);
             }
 
             await Sleep(stoppingToken);
