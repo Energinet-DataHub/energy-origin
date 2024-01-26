@@ -6,10 +6,13 @@ using API.Query.API.v2023_01_01.ApiModels.Responses;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Argon;
+using EnergyOrigin.ActivityLog.API;
 using Testing.Helpers;
 using Testing.Testcontainers;
 using Xunit;
@@ -561,4 +564,54 @@ public sealed class ContractTests :
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
+    {
+        // Create contract
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate };
+        using var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        // Assert activity log entry
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLogResponseBody = await activityLogResponse.Content.ReadAsStringAsync();
+        var log = JsonConvert.DeserializeObject<IList<ActivityLogEntryResponse>>(activityLogResponseBody);
+        Assert.Single(log);
+    }
+
+    [Fact]
+    public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
+    {
+        // Create contract
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        // Update end date
+        var createdContractUri = response.Headers.Location;
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var putBody = new { endDate };
+        await client.PutAsJsonAsync(createdContractUri, putBody);
+
+        // Assert activity log entries (created, updated)
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLogResponseBody = await activityLogResponse.Content.ReadAsStringAsync();
+        var log = JsonConvert.DeserializeObject<IList<ActivityLogEntryResponse>>(activityLogResponseBody);
+        Assert.Equal(2, log.Count);
+    }
+
 }

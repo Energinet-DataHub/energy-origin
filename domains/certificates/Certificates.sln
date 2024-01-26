@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectOriginClients", "Sha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.ActivityLog", "..\..\libraries\dotnet\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj", "{2941A0B9-2CA6-4899-86FC-AE86B130F34B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Shared\Testing\Testing.csproj", "{057A53B3-330F-43B2-99BF-94E2D3043F92}"
 EndProject
 Global
@@ -75,6 +77,10 @@ Global
 		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{057A53B3-330F-43B2-99BF-94E2D3043F92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2941A0B9-2CA6-4899-86FC-AE86B130F34B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2941A0B9-2CA6-4899-86FC-AE86B130F34B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2941A0B9-2CA6-4899-86FC-AE86B130F34B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2941A0B9-2CA6-4899-86FC-AE86B130F34B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using DataContext;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 
@@ -46,7 +47,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddDbContext<ApplicationDbContext>(
+builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
@@ -54,6 +55,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
+builder.Services.AddActivityLog();
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
@@ -101,6 +103,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseActivityLog();
 
 app.Run();
 

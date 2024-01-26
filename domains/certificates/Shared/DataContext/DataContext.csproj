@@ -21,6 +21,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\libraries\dotnet\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Models\" />
