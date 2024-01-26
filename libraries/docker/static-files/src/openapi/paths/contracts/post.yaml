@@ -1,0 +1,28 @@
+﻿tags:
+  - Contracts
+summary: Create a contract that activates granular certificate generation for a metering point
+operationId: createContract
+parameters:
+  - $ref: '../../components/headers/version.yaml'
+requestBody:
+  content:
+    application/json:
+      schema:
+        $ref: '../../components/schemas/certificate/CreateContract.yaml'
+    application/*+json:
+      schema:
+        $ref: '../../components/schemas/certificate/CreateContract.yaml'
+responses:
+  '201':
+    description: Created
+  '400':
+    description: Bad Request
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/ValidationProblemDetails.yaml'
+      text/json:
+        schema:
+          $ref: '../../components/schemas/ValidationProblemDetails.yaml'
+  '409':
+    description: Conflict
