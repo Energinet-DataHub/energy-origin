@@ -20,10 +20,10 @@
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.0.3" />
 	</ItemGroup>
 
-	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
+	<!-- <Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
 		<Exec Command="dotnet tool restore" />
-		<!-- <Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)" /> -->
-	</Target>
+		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)" />
+	</Target> -->
 
 	<ItemGroup>
 		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None">
