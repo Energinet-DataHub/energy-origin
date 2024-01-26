@@ -29,11 +29,8 @@
 	</Target>
 
     <ItemGroup>
-        <Protobuf Include="..\Protos\common.proto" GrpcServices="None" Link="Protos\common.proto">
-            <SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/common.proto</SourceUrl>
-        </Protobuf>
-        <Protobuf Include="..\Protos\wallet.proto" GrpcServices="Client" Link="Protos\wallet.proto">
-            <SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v0.2.1/src/Protos/wallet.proto</SourceUrl>
-        </Protobuf>
+      <Folder Include="..\Protos\">
+        <Link>Protos</Link>
+      </Folder>
     </ItemGroup>
 </Project>
