@@ -8,12 +8,6 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "-y", "protobuf-compiler"]
-
-# Set environment variables
-ENV PROTOBUF_PROTOC=/usr/bin/protoc
-ENV GRPC_PROTOC_PLUGIN=/usr/local/lib/grpc_csharp_plugin
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
@@ -21,6 +15,7 @@ RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
 FROM base AS final
 ARG SUBSYSTEM
+COPY . /app
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
