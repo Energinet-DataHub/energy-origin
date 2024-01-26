@@ -8,7 +8,6 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-RUN rm -rf /tmp/*
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
