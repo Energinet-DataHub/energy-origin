@@ -17,10 +17,10 @@ public static class ActivityLogExtensions
         return services;
     }
 
-    public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder)
+    public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder, string serviceName)
     {
         return builder.MapPost(
-            "api/activity-log",
+            $"api/{serviceName}/activity-log",
             async (HttpContext HttpContext, ActivityLogEntryFilterRequest request, IActivityLogEntryRepository activityLogEntryRepository)
                 =>
             {
