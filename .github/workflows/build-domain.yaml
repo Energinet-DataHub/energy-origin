@@ -6,7 +6,7 @@ on:
 jobs:
   setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ env.matrix }}
 
@@ -80,7 +80,7 @@ jobs:
 
   build-projects:
     name: Build projects
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: setup
     if: ${{ needs.setup.outputs.matrix != '[]' }}
     strategy:
