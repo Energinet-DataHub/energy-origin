@@ -1,0 +1,51 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: energioprindelse.dk
+  termsOfService: 'https://energioprindelse.dk/terms/'
+tags:
+  - name: Contracts
+    description: "Contracts are key in Energy Origin. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both
+  production and consumption metering points. However, the production metering points must be either Wind or Solar – otherwise it is not possible to generate GCs.
+  When a contract is inactive Granular Certificates will no longer be generated."
+  - name: Wallet
+    description: "The Wallet is essential for Energy Origin since it keeps track of all the user’s Granular Certificates – both the ones generated from the user’s own metering points,
+    but also the ones transferred from other users. In other words, the Wallet will hold all available certificates for the user.
+    Moreover, it will show all transfers that may have been made to other users’ wallets as well."
+servers:
+  - url: 'https://energioprindelse.dk'
+paths:
+  /api/certificates/contracts:
+    get:
+      $ref: './paths/contracts/get.yaml'
+    post:
+      $ref: './paths/contracts/post.yaml'
+  /api/certificates/contracts/{id}:
+    put:
+      $ref: './paths/contracts/put@{id}.yaml'
+    get:
+      $ref: './paths/contracts/get@{id}.yaml'
+  /api/v1/certificates:
+    get:
+      $ref: './paths/wallet/get-certificates.yaml'
+  /api/v1/claims:
+    get:
+      $ref: './paths/wallet/get-claims.yaml'
+  /api/v1/transfers:
+    get:
+      $ref: './paths/wallet/get-transfers.yaml'
+  /api/v1/aggregate-certificates:
+    get:
+      $ref: './paths/wallet/get-aggregate-certificates.yaml'
+  /api/v1/aggregate-claims:
+    get:
+      $ref: './paths/wallet/get-aggregate-claims.yaml'
+  /api/v1/aggregate-transfers:
+    get:
+      $ref: './paths/wallet/get-aggregate-transfers.yaml'
+security:
+  - JWT: [ ]
+components:
+  securitySchemes:
+    JWT:
+      $ref: components/securitySchemes/JWT.yaml

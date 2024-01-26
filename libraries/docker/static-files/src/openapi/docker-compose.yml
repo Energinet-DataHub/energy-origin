@@ -1,0 +1,11 @@
+﻿services:
+  redoc:
+    image: redocly/redoc:v2.1.3
+    container_name: redoc
+    volumes:
+        - ./openapi_bundle.yaml:/usr/share/nginx/html/openapi_bundle.yaml
+    environment:
+        SPEC_URL: openapi_bundle.yaml
+    ports:
+        - 8080:80
+
