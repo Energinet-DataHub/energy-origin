@@ -50,7 +50,7 @@ public class ClaimService : IClaimService
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) // TEST
             {
                 logger.LogWarning("Something went wrong with the ClaimService: {exception}", e);
             }
