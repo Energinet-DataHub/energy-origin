@@ -90,6 +90,14 @@ runs:
         version: ""
       run: dotnet format --verify-no-changes -v diag
 
+    - name: PWD
+      shell: bash
+      run: |
+        echo "The current working directory is:"
+        pwd
+        echo "Searching for 'ProjectOriginClients' directory:"
+        find . -type d -name ProjectOriginClients
+
     - name: Test
       shell: bash
       env:
