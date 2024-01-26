@@ -1,0 +1,5 @@
+﻿enum:
+  - consumption
+  - production
+type: string
+description: Type of certificate
