@@ -52,7 +52,7 @@ public class ClaimService : IClaimService
             }
             catch (Exception e)
             {
-                logger.LogWarning("Something went wrong with the ClaimService: {exception}", e);
+                logger.LogError("Something went wrong with the ClaimService: {exception}", e);
             }
 
             await SleepAnHour(stoppingToken);

@@ -63,6 +63,8 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         if (matchingContract.MeteringPointType == MeteringPointType.Production)
         {
+            logger.LogInformation("Creating production certificate for {Message}", message);
+
             var technology = matchingContract.Technology!;
 
             var productionCertificate = new ProductionCertificate(
@@ -98,6 +100,8 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         }
         else if (matchingContract.MeteringPointType == MeteringPointType.Consumption)
         {
+            logger.LogInformation("Creating consumption certificate for {Message}", message);
+
             var consumptionCertificate = new ConsumptionCertificate(
                 matchingContract.GridArea,
                 period,
@@ -136,9 +140,12 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
-    private static bool ShouldEventBeProduced(CertificateIssuingContract contract,
+    private bool ShouldEventBeProduced(CertificateIssuingContract contract,
         EnergyMeasuredIntegrationEvent energyMeasuredIntegrationEvent)
     {
+        logger.LogInformation("Checking if measurement {Measurement} should be produced for contract {Contract}",
+            energyMeasuredIntegrationEvent, contract);
+
         if (!contract.Contains(energyMeasuredIntegrationEvent.DateFrom, energyMeasuredIntegrationEvent.DateTo))
             return false;
 
