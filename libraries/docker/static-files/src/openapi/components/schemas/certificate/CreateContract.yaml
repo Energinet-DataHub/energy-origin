@@ -1,0 +1,14 @@
+﻿type: object
+properties:
+  gsrn:
+    $ref: '../valueObjects/Gsrn.yaml'
+  startDate:
+    type: integer
+    description: Starting date for generation of certificates in Unix time seconds
+    format: int64
+  endDate:
+    type: integer
+    description: End date for generation of certificates in Unix time seconds. Set to null for no end date
+    format: int64
+    nullable: true
+additionalProperties: false

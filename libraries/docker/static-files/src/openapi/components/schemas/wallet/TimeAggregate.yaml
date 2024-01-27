@@ -1,0 +1,10 @@
+﻿enum:
+  - actual
+  - total
+  - year
+  - month
+  - week
+  - day
+  - hour
+  - quarterHour
+type: string

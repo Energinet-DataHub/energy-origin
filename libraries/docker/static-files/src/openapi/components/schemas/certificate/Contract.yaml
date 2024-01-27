@@ -1,0 +1,27 @@
+﻿type: object
+description: A contract is a binding agreement between a supplier and a metering point
+properties:
+  id:
+    type: string
+    format: uuid
+  gsrn:
+    $ref: '../valueObjects/Gsrn.yaml'
+  startDate:
+    type: integer
+    description: Starting date for generation of certificates in Unix time seconds
+    format: int64
+  endDate:
+    type: integer
+    description: End date for generation of certificates in Unix time seconds. The value null indicates no end date
+    format: int64
+    nullable: true
+  created:
+    type: integer
+    description: Creation date for the contract
+    format: int64
+  meteringPointType:
+    $ref: '../valueObjects/MeteringPointType.yaml'
+  technology:
+    $ref: '../valueObjects/Technology.yaml'
+additionalProperties: false
+
