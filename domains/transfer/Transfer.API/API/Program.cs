@@ -35,7 +35,7 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 loggerConfiguration
     .WriteTo.OpenTelemetry(options =>
     {
-        options.Endpoint =  otlpOptions.ReceiverEndpoint.ToString();
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
         options.IncludedData = IncludedData.TraceIdField | IncludedData.SpanIdField;
         options.ResourceAttributes = new Dictionary<string, object>
         {
@@ -90,7 +90,7 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
-        .AddService(serviceName:"transfer-api"))
+        .AddService(serviceName: "transfer-api"))
     .WithMetrics(metrics => metrics
         .AddHttpClientInstrumentation()
         .AddAspNetCoreInstrumentation()
