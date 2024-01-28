@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using API.Cvr;
 using API.Shared.Options;
@@ -15,24 +16,45 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.OpenTelemetry;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
-var loggerConfiguration = new LoggerConfiguration()
+var loggerConfiguration = new LoggerConfiguration();
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
+loggerConfiguration
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint =  otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.TraceIdField | IncludedData.SpanIdField;
+        options.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = "transfer-api"
+        };
+    });
+
+loggerConfiguration = builder.Environment.IsDevelopment() ? loggerConfiguration.WriteTo.Console()
+    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+
+loggerConfiguration
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
     .Enrich.WithSpan();
 
-loggerConfiguration = builder.Environment.IsDevelopment()
-    ? loggerConfiguration.WriteTo.Console()
-    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+Log.Logger = loggerConfiguration.CreateLogger();
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+builder.Logging.AddSerilog();
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -66,17 +88,21 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
-
+    .ConfigureResource(resource => resource
+        .AddService(serviceName:"transfer-api"))
+    .WithMetrics(metrics => metrics
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddProcessInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(provider =>
+    provider
+        .AddHttpClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddNpgsql()
+        .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
@@ -107,6 +133,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 public partial class Program
 {

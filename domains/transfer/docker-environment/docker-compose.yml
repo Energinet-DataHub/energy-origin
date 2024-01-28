@@ -40,15 +40,10 @@ services:
     container_name: jaeger
     environment:
       - COLLECTOR_OTLP_ENABLED=true
-      - SPAN_STORAGE_TYPE=badger
-      - BADGER_EPHEMERAL=false
-      - BADGER_DIRECTORY_VALUE=/data
-      - BADGER_DIRECTORY_KEY=/data
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
     ports:
       - "16686:16686" # Jaeger UI port
       - "4317" # OTLP gRPC default port
-    volumes:
-      - jaeger:/data
 
   collector:
     image: otel/opentelemetry-collector:latest
