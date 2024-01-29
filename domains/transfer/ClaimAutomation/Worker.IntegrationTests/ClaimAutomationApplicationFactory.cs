@@ -72,7 +72,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
         builder.UseSetting("ProjectOrigin:WalletUrl", "http://localhost:5000");
         builder.UseSetting("Otlp:ReceiverEndpoint", "http://foobar");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Us");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(s =>
@@ -108,7 +108,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Us",
+        string issuer = "demo.energioprindelse.dk",
         string audience = "Users")
     {
         var claims = new Dictionary<string, object>()

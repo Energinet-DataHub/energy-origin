@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Testcontainers" Version="3.0.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="3.0.0" />
-    <PackageReference Include="Testcontainers.RabbitMq" Version="3.0.0" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.5.0" />
+    <PackageReference Include="Testcontainers" Version="3.7.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.7.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="3.7.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.6.6" />
   </ItemGroup>
 
   <ItemGroup>

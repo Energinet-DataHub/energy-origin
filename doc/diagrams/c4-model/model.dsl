@@ -3,12 +3,13 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-dataSyncSubsystem = group "Data Sync" {
-    dataSyncApi = container "Data Sync" {
-        description "Facade for DataHub 2.0"
+dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
+    dataHubFacadeApi = container "DataHubFacade" {
+        description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DataHub certificate, SOAP parsing, pagination and Danish time zone convertion"
         technology ".NET"
 
         this -> dh2 "Forwards requests to"
+        this -> dh3 "Forwards requests to"
     }
 }
 
@@ -16,9 +17,9 @@ authSubsystem = group "Auth Subsystem" {
     authApi = container "Auth Web Api" {
         description "API For authentication and authorization"
 
-        this -> mitId "Executes UIDC callbacks"
+        this -> mitId "Executes OIDC callbacks"
         apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Creates relations for metering points in"
+        this -> dataHubFacadeApi "Creates relations for metering points in"
     }
 
     authDb = container "Database" {
@@ -27,6 +28,22 @@ authSubsystem = group "Auth Subsystem" {
         technology "PostgreSQL"
 
         authApi -> this "Reads projected user data from"
+    }
+}
+
+measurementsSubsystem = group "Measurements Subsystem" {
+    measurementApi = container "Measurements Web Api" {
+        description "API for aggregated measurements split into production and consumption"
+
+        apiGateway -> this "Forwards requests to"
+
+        simpleMeasurementService = component "SimpleMeasurementService" "Handles representation of measurements within Energy Origin" {
+            this -> dataHubFacadeApi "Get measurements from"
+        }
+        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Origin" {
+            apiGateway -> this "Forwards requests to"
+            this -> dataHubFacadeApi "Get metering point info from"
+        }
     }
 }
 
@@ -52,7 +69,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
         technology ".NET Web Api"
 
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
-            this -> dataSyncApi "Get metering point info from"
+            this -> measurementApi "Get metering point info from"
             this -> certStorage "Stores contracts in"
             this -> poWallet "Creates Wallet Deposit Endpoints"
         }
@@ -61,7 +78,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
 
             this -> certRabbitMq "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
-            this -> dataSyncApi "Pulls measurements from"
+            this -> measurementApi "Pulls measurements from"
         }
         certQueryAPI = component "Query API" "API for issuing contracts and proxies requests to Wallet" "ASP.NET Core WebAPI" {
             this -> contractService "Reads contracts from"
@@ -72,17 +89,9 @@ certificatesSubsystem = group "Certificate Subsystem" {
     }
 }
 
-measurementsSubsystem = group "Measurements Subsystem" {
-    measurementApi = container "Measurements Web Api" {
-        description "API for aggregated measurements split into production and consumption"
-
-        apiGateway -> this "Forwards requests to"
-        this -> dataSyncApi "Get measurements from"
-    }
-}
-
 transferSubsystem = group "Transfer Subsystem" {
     transferApi = container "Transfer API" "" ".NET Web Api" {
+        connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
             this -> poWallet "Creates wallet deposit endpoint"
         }
@@ -113,5 +122,3 @@ transferSubsystem = group "Transfer Subsystem" {
     claimAutomation -> tDb "Reads owner ids"
     claimAutomationApi -> tDb "Creates, deletes and reads owner ids"
 }
-
-apiGateway -> dataSyncApi "Forwards requests for metering point info to"
