@@ -18,7 +18,6 @@ using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
-using MassTransit.Monitoring;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +36,6 @@ builder.Logging.AddSerilog(console.CreateLogger());
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
-            .AddMeter(InstrumentationOptions.MeterName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
