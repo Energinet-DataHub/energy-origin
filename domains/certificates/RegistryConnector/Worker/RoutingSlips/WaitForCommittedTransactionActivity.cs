@@ -59,7 +59,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to get status from registry");
+            logger.LogError(ex, "Failed to get status from registry");
             return context.Faulted(ex);
         }
     }
