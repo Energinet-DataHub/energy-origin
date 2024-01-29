@@ -121,11 +121,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # - name: Resolve version
+      #   uses: ./.github/actions/yaml-semver
+      #   with:
+      #     yaml-file: ${{ matrix.item.path }}/configuration.yaml
+      #     yaml-path: version
+
       - name: Resolve version
-        uses: ./.github/actions/yaml-semver
-        with:
-          yaml-file: ${{ matrix.item.path }}/configuration.yaml
-          yaml-path: version
+        uses: ./.github/actions/docker-image-version
 
       - name: Prepare variables
         shell: bash
