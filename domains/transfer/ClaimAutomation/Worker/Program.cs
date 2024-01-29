@@ -2,9 +2,11 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Automation.Services;
+using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using ClaimAutomation.Worker.Swagger;
 using DataContext;
@@ -18,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -65,6 +68,8 @@ builder.Services.AddScoped<IClaimService, ClaimService>();
 builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
+builder.Services.AddSingleton<AutomationCache>();
+builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
@@ -90,6 +95,9 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddOpenTelemetry()
     .WithMetrics(provider =>
         provider
+            .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService(ClaimAutomationMetrics.MetricName))
+            .AddMeter(ClaimAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
