@@ -5,7 +5,7 @@ apis:
     rules:
       no-unused-components: warn
 theme.openapi:
-  pagination: section #Test
+  pagination: section
   showConsole: true
   theme:
     colors:

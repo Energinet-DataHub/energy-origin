@@ -123,10 +123,6 @@ jobs:
 
       - name: Resolve version
         uses: ./.github/actions/docker-image-version
-      #   uses: ./.github/actions/yaml-semver
-      #   with:
-      #     yaml-file: ${{ matrix.item.path }}/configuration.yaml
-      #     yaml-path: version
 
       - name: Prepare variables
         shell: bash
