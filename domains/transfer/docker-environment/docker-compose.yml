@@ -67,7 +67,7 @@ services:
       - jaeger
 
   loki:
-    image: grafana/loki:2.9.3
+    image: grafana/loki:latest
     command: -config.file=/mnt/config/loki-config.yml
     volumes:
       - ./loki.yml:/mnt/config/loki-config.yml
@@ -95,3 +95,4 @@ volumes:
   prometheus:
   jaeger:
   grafana:
+  loki:

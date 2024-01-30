@@ -6,6 +6,7 @@
     isDefault: true
   - name: Jaeger
     access: proxy
+    uid: jaeger
     type: jaeger
     url: http://jaeger:16686
     isDefault: false
@@ -14,3 +15,13 @@
     access: proxy
     uid: P8E80F9AEF21F6940
     url: http://loki:3100
+    isDefault: false
+    jsonData:
+      derivedFields:
+        - datasourceUid: jaeger
+        - matcherRegex: '\"TraceId\":\"([^"]+)\"'
+          name: TraceID
+          # url will be interpreted as query for the datasource
+          url: 'http://localhost:16686/trace/$${__value.raw}'
+          # optional for URL Label to set a custom display label for the link.
+          urlDisplayLabel: 'View Trace'
