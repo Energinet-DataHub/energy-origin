@@ -16,6 +16,7 @@ using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
 using RegistryConnector.Worker.RoutingSlips;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +24,8 @@ var builder = WebApplication.CreateBuilder(args);
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
+    .Enrich.WithSpan();
 
 var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
