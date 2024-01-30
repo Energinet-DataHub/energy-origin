@@ -13,6 +13,7 @@ using Serilog;
 using Serilog.Formatting.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Configurations;
 using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.TokenValidation.Options;
@@ -43,6 +44,9 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
