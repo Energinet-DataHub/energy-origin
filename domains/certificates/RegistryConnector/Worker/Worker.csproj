@@ -22,6 +22,7 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.7.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+		<PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="2.0.0-dev-00270" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.2.0" />
 	</ItemGroup>
 	<ItemGroup>
