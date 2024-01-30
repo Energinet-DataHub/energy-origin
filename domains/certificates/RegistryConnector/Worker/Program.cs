@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
@@ -35,7 +36,15 @@ var console = builder.Environment.IsDevelopment()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
+void ConfigureResource(ResourceBuilder r)
+{
+    r.AddService("RegistryConnector",
+        serviceInstanceId: Environment.MachineName);
+}
+
+
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(ConfigureResource)
     .WithMetrics(provider =>
         provider
             .AddHttpClientInstrumentation()
