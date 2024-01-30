@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Metrics;
 using Serilog;
-using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -23,8 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
+    .Filter.ByExcluding("RequestPath like '/metrics%'");
 
 var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
