@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 namespace ClaimAutomation.Worker.Metrics;
 public class ClaimAutomationMetrics : IClaimAutomationMetrics
 {
-    private readonly ILogger<ClaimAutomationMetrics> logger;
     public const string MetricName = "ClaimAutomation";
 
     private int numberOfClaimsOnLastRun = 0;
@@ -14,9 +13,8 @@ public class ClaimAutomationMetrics : IClaimAutomationMetrics
     private ObservableGauge<int> TotalClaimedCertificatesOnLastRun { get; }
     private ObservableGauge<int> NumberOfCertificatesWithClaimErrors { get; }
 
-    public ClaimAutomationMetrics(ILogger<ClaimAutomationMetrics> logger)
+    public ClaimAutomationMetrics()
     {
-        this.logger = logger;
         var meter = new Meter(MetricName);
 
         NumberOfClaimsOnLastRun = meter.CreateObservableGauge<int>("claims-on-last-run", () => numberOfClaimsOnLastRun);
@@ -35,11 +33,8 @@ public class ClaimAutomationMetrics : IClaimAutomationMetrics
     public void ResetClaimErrors() =>
         numberOfCertificatesWithClaimErrors = 0;
 
-    public void ResetCertificatesClaimed()
-    {
+    public void ResetCertificatesClaimed() =>
         totalClaimedCertificatesOnLastRun = 0;
-        logger.LogInformation("Reset certificates claimed on last run to {totalClaimedCertificatesOnLastRun}", totalClaimedCertificatesOnLastRun);
-    }
 
     public void ResetNumberOfClaims() =>
         numberOfClaimsOnLastRun = 0;
