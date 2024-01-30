@@ -3,7 +3,7 @@ namespace ClaimAutomation.Worker.Metrics;
 public interface IClaimAutomationMetrics
 {
     public void AddClaim();
-    public void SetNumberOfCertificatesClaimed(int certificatesClaimed);
+    void AddCertificateClaimedThisRun();
     public void AddClaimError();
     public void ResetClaimErrors();
     public void ResetCertificatesClaimed();

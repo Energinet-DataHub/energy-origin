@@ -27,11 +27,9 @@ public class ClaimAutomationMetrics : IClaimAutomationMetrics
     public void AddClaim() =>
         numberOfClaimsOnLastRun++;
 
-    public void SetNumberOfCertificatesClaimed(int certificatesClaimed)
-    {
-        totalClaimedCertificatesOnLastRun += certificatesClaimed;
-        logger.LogInformation("Added certificates claimed on last run: {certificatesClaimed}", certificatesClaimed);
-    }
+    public void AddCertificateClaimedThisRun() =>
+        totalClaimedCertificatesOnLastRun++;
+
     public void AddClaimError() =>
         numberOfCertificatesWithClaimErrors++;
     public void ResetClaimErrors() =>

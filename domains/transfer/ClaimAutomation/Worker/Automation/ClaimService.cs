@@ -47,7 +47,6 @@ public class ClaimService(
 
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
-                    metrics.SetNumberOfCertificatesClaimed(certificates.Count);
                 }
             }
             catch (Exception e)
@@ -75,6 +74,11 @@ public class ClaimService(
 
             productionCert.Quantity -= quantity;
             consumptionCert.Quantity -= quantity;
+
+            if(productionCert.Quantity == 0)
+                metrics.AddCertificateClaimedThisRun();
+            if (consumptionCert.Quantity == 0)
+                metrics.AddCertificateClaimedThisRun();
         }
     }
 
