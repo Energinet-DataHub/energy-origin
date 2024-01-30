@@ -46,8 +46,8 @@ builder.Logging.AddSerilog(console.CreateLogger());
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddService(serviceName: "Query.API"))
-    .WithMetrics(metrics =>
-        metrics
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
