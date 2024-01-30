@@ -19,6 +19,7 @@ using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +53,11 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddControllers()
