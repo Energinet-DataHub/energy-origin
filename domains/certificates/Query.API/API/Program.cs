@@ -18,6 +18,7 @@ using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,13 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'");
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                               IncludedData.TraceIdField | IncludedData.SpanIdField;
+    });
 
 var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
