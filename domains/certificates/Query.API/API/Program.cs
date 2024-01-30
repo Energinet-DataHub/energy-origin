@@ -18,6 +18,7 @@ using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using OpenTelemetry.Resources;
 using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: "Query.API"))
     .WithMetrics(provider =>
         provider
             .AddHttpClientInstrumentation()
