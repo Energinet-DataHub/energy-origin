@@ -21,6 +21,9 @@ using EnergyOrigin.TokenValidation.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'");
