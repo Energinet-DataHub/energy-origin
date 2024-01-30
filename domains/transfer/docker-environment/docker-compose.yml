@@ -38,20 +38,22 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
+    user: root
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - SPAN_STORAGE_TYPE=badger
       - BADGER_EPHEMERAL=false
-      - BADGER_DIRECTORY_VALUE=/data
-      - BADGER_DIRECTORY_KEY=/data
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
     ports:
       - "16686:16686" # Jaeger UI port
       - "4317" # OTLP gRPC default port
     volumes:
-      - jaeger:/data
+      - jaeger:/badger
+
 
   collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:0.91.0
     container_name: collector
     command: ["--config=/conf/collector-config.yaml"]
     volumes:
@@ -63,6 +65,14 @@ services:
 #      - "13133:13133" # Health-Check extension port
     depends_on:
       - jaeger
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/mnt/config/loki-config.yml
+    volumes:
+      - ./loki.yml:/mnt/config/loki-config.yml
+    ports:
+      - "3100:3100"
 
   grafana:
     image: grafana/grafana:latest
@@ -85,3 +95,4 @@ volumes:
   prometheus:
   jaeger:
   grafana:
+  loki:
