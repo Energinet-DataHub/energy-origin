@@ -116,7 +116,6 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.MapPrometheusScrapingEndpoint();
-app.UseOpenTelemetryPrometheusScrapingEndpoint(); // Map prometheus metrics endpoint
 
 app.Run();
 
