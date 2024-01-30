@@ -18,6 +18,7 @@ using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog.Sinks.OpenTelemetry;
@@ -58,6 +59,7 @@ builder.Services.AddOpenTelemetry()
         tracerProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddControllers()
