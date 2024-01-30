@@ -33,7 +33,7 @@ services:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
       - prometheus:/prometheus
     ports:
-      - "9090:9090" # Prometheus UI port
+      - "9090:9090"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
