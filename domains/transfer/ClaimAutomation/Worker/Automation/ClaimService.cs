@@ -75,7 +75,7 @@ public class ClaimService(
             productionCert.Quantity -= quantity;
             consumptionCert.Quantity -= quantity;
 
-            if(productionCert.Quantity == 0)
+            if (productionCert.Quantity == 0)
                 metrics.AddCertificateClaimedThisRun();
             if (consumptionCert.Quantity == 0)
                 metrics.AddCertificateClaimedThisRun();
