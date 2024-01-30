@@ -52,7 +52,7 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddPrometheusExporter());
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
