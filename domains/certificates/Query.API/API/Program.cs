@@ -113,7 +113,6 @@ if (app.Environment.IsDevelopment())
                     $"API v{description.GroupName}");
             }
         });
-
 }
 
 app.UseHttpsRedirection();
