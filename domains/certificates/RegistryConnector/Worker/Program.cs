@@ -113,6 +113,7 @@ builder.Services.AddOpenTelemetry()
         tracerProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
