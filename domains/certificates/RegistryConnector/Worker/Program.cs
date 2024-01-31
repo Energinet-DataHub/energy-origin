@@ -120,13 +120,11 @@ builder.Services.AddOpenTelemetry()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddMeter(InstrumentationOptions.MeterName)
-            .AddPrometheusExporter());
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 
