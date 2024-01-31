@@ -27,7 +27,6 @@ public class MeteringPointsController : ControllerBase
     /// Get metering points from DataHub2.0
     /// </summary>
     /// <response code="200">Successful operation</response>
-    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpGet]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
     public async Task<ActionResult> GetMeteringPoints()
