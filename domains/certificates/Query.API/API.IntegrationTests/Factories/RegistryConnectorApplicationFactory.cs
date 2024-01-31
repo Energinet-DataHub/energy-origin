@@ -18,6 +18,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 {
     public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
+    public string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
     {
         RegistryName = "foo",
@@ -37,6 +38,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
+        builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("Retry:DefaultFirstLevelRetryCount", RetryOptions.DefaultFirstLevelRetryCount.ToString());
         builder.UseSetting("Retry:DefaultSecondLevelRetryCount", RetryOptions.DefaultSecondLevelRetryCount.ToString());
         builder.UseSetting("Retry:RegistryTransactionStillProcessingRetryCount", RetryOptions.RegistryTransactionStillProcessingRetryCount.ToString());
