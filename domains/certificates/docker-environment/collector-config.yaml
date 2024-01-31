@@ -1,0 +1,44 @@
+﻿receivers:
+  otlp:
+    protocols:
+      grpc: # Default port 4317
+      http: # Default port 4318
+
+exporters:
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "collector:9464" # /metrics will be exposed here.
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+processors:
+  batch:
+  resource:
+    attributes:
+      - action: insert
+        key: service_name
+        from_attribute: service.name
+      - action: insert
+        key: loki.resource.labels
+        value: service_name
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+    logs:
+      receivers: [ otlp ]
+      processors: [ resource ]
+      exporters: [ loki ]
+  telemetry:
+    logs:
+      level: "debug"

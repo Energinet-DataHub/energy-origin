@@ -3,12 +3,9 @@ global:
   evaluation_interval: 10s
 
 scrape_configs:
-  - job_name: "certificates-api"
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true
+  - job_name: 'collector'
     static_configs:
-    - targets: ["host.docker.internal:7277"]
+      - targets: [ 'collector:9464' ]
 
   - job_name: "certificates-registryconnector"
     scheme: https
