@@ -2,6 +2,7 @@ using System;
 using Contracts;
 using DataContext;
 using MassTransit;
+using MassTransit.Logging;
 using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
@@ -113,20 +116,25 @@ void ConfigureResource(ResourceBuilder r)
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(ConfigureResource)
-    .WithMetrics(provider =>
-        provider
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddMeter(InstrumentationOptions.MeterName)
-            .AddPrometheusExporter());
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
+            .AddSource(DiagnosticHeaders.DefaultListenerName)
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 
