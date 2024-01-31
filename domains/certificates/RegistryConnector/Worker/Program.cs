@@ -19,13 +19,23 @@ using RegistryConnector.Worker.EventHandlers;
 using RegistryConnector.Worker.RoutingSlips;
 using Serilog;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                               IncludedData.TraceIdField | IncludedData.SpanIdField;
+    });
 
 var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
@@ -33,6 +43,9 @@ var console = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
+
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
