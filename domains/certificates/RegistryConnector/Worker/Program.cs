@@ -2,6 +2,7 @@ using System;
 using Contracts;
 using DataContext;
 using MassTransit;
+using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
@@ -33,15 +35,6 @@ var console = builder.Environment.IsDevelopment()
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
-
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddPrometheusExporter());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
@@ -99,6 +92,24 @@ builder.Services.AddMassTransit(o =>
         outboxConfigurator.UseBusOutbox();
     });
 });
+
+void ConfigureResource(ResourceBuilder r)
+{
+    r.AddService("RegistryConnector",
+        serviceInstanceId: Environment.MachineName);
+}
+
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(ConfigureResource)
+    .WithMetrics(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddMeter(InstrumentationOptions.MeterName)
+            .AddPrometheusExporter());
 
 var app = builder.Build();
 

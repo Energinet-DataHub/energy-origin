@@ -1,6 +1,8 @@
+using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Automation.Services;
+using ClaimAutomation.Worker.Metrics;
 using DataContext.Models;
 using FluentAssertions;
 using Google.Protobuf.WellKnownTypes;
@@ -22,6 +24,8 @@ public class ClaimServiceTests
         var logger = Substitute.For<ILogger<ClaimService>>();
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
+        var metricsMock = Substitute.For<IClaimAutomationMetrics>();
+        var cacheMock = Substitute.For<AutomationCache>();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
@@ -40,7 +44,7 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1));
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1), metricsMock, cacheMock);
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
@@ -54,6 +58,8 @@ public class ClaimServiceTests
         var logger = Substitute.For<ILogger<ClaimService>>();
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
         var poWalletService = Substitute.For<IProjectOriginWalletService>();
+        var metricsMock = Substitute.For<IClaimAutomationMetrics>();
+        var cacheMock = Substitute.For<AutomationCache>();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
@@ -73,7 +79,7 @@ public class ClaimServiceTests
             productionCertificate
         }).AndDoes(_ => cts.Cancel());
 
-        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1));
+        var claimService = new ClaimService(logger, claimRepository, poWalletService, new Shuffler(1), metricsMock, cacheMock);
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
