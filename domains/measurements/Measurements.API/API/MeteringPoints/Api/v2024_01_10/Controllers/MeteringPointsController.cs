@@ -13,7 +13,7 @@ namespace API.MeteringPoints.Api.v2024_01_10.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion("20240110")]
-[Route("api/meteringpoints")]
+[Route("api/new-meteringpoints")]
 public class MeteringPointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
