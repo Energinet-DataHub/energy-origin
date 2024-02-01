@@ -21,7 +21,7 @@ COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
-EXPOSE 8080
-ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 80
+ENV ASPNETCORE_HTTP_PORTS=80
 
 ENTRYPOINT ["/app/main"]
