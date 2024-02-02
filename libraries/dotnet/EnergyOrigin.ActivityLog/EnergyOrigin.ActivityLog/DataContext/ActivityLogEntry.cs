@@ -49,7 +49,8 @@ public class ActivityLogEntry
         Declined,
         Activated,
         Deactivated,
-        ChangeEndDate
+        EndDateChanged,
+        Expired
     }
 
     // General
