@@ -22,8 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using NSubstitute.Core;
-using NSubstitute.ReceivedExtensions;
 using RichardSzalay.MockHttp;
 using static API.Options.RoleConfiguration;
 using JsonWebKeySet = IdentityModel.Jwk.JsonWebKeySet;
@@ -165,6 +163,7 @@ public class OidcControllerTests
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
         var tokenEndpoint = new Uri($"http://{oidcOptions.AuthorityUri.Host}/connect/token");
+        var issuer = "issuer";
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
                 new("token_endpoint", tokenEndpoint.AbsoluteUri),
@@ -173,12 +172,12 @@ public class OidcControllerTests
         );
 
         var subject = Guid.NewGuid().ToString();
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+        var identityToken = TokenUsing(tokenOptions, issuer, testOptions.ClientId, subject: subject);
+        var accessToken = TokenUsing(tokenOptions, issuer, testOptions.ClientId, subject: subject, claims: new() {
             { "scope", "some_scope" },
         });
         var name = Guid.NewGuid().ToString();
-        var userInfoToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+        var userInfoToken = TokenUsing(tokenOptions, issuer, testOptions.ClientId, subject: subject, claims: new() {
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", name },
             { "idp", ProviderName.MitId },
@@ -582,7 +581,7 @@ public class OidcControllerTests
     public void ExtractUserInfo_ShouldThrow_WhenProvidedWithWrongParams(ClaimsIdentity identity, ProviderType providerType, string identityType, Type expectedException) => Assert.Throws(expectedException, () => OidcHelper.ExtractUserInfo(new ClaimsPrincipal(identity), providerType, identityType));
 
     [Fact]
-    public void FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
+    public async Task FetchOrCreateUserAndUpdateUserProvidersAsync_ShouldUpsertUser_WhenUserIsAlreadyKnown()
     {
         var id = Guid.NewGuid();
         var name = Guid.NewGuid().ToString();
@@ -597,9 +596,9 @@ public class OidcControllerTests
 
         var userProviders = new List<UserProvider>();
 
-        var result = OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "").Result;
+        var result = await OidcHelper.FetchOrCreateUserAndUpdateUserProvidersAsync(service, userProviderService, userProviders, oidcOptions, "", "", "", "", "");
 
-        service.Received(1).UpsertUserAsync(Arg.Any<User>());
+        await service.Received(1).UpsertUserAsync(Arg.Any<User>());
 
         Assert.NotNull(result);
         Assert.IsType<User>(result);
@@ -775,7 +774,6 @@ public class OidcControllerTests
     public async Task BuildUserDescriptor_ReturnsCorrectValuesBasedOnTokens_WhenOperationIsASuccess()
     {
         var testOptions = TestOptions.Oidc(oidcOptions, reuseSubject: true);
-
         var document = DiscoveryDocument.Load(
             new List<KeyValuePair<string, string>>() {
                 new("issuer", $"https://{testOptions.AuthorityUri.Host}/op"),
@@ -786,13 +784,13 @@ public class OidcControllerTests
 
         var subject = Guid.NewGuid().ToString();
 
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+        var identityToken = TokenUsing(tokenOptions, document.Issuer!, testOptions.ClientId, subject: subject);
+        var accessToken = TokenUsing(tokenOptions, document.Issuer!, testOptions.ClientId, subject: subject, claims: new() {
             { "scope", "some_scope" },
         });
         var name = Guid.NewGuid().ToString();
         var userInfoToken = TokenUsing(tokenOptions,
-        document.Issuer, testOptions.ClientId, subject: subject, claims: new() {
+        document.Issuer!, testOptions.ClientId, subject: subject, claims: new() {
             { "mitid.uuid", Guid.NewGuid().ToString() },
             { "mitid.identity_name", name },
             { "idp", ProviderName.MitId },
@@ -915,9 +913,9 @@ public class OidcControllerTests
             KeySetUsing(tokenOptions.PublicKeyPem)
         );
 
-        var identityToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: identitySubject);
-        var accessToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: accessSubject, claims: accessTokenClaims);
-        var userInfoToken = TokenUsing(tokenOptions, document.Issuer, testOptions.ClientId, subject: userInfoSubject, claims: userInfoTokenClaims);
+        var identityToken = TokenUsing(tokenOptions, document.Issuer!, testOptions.ClientId, subject: identitySubject);
+        var accessToken = TokenUsing(tokenOptions, document.Issuer!, testOptions.ClientId, subject: accessSubject, claims: accessTokenClaims);
+        var userInfoToken = TokenUsing(tokenOptions, document.Issuer!, testOptions.ClientId, subject: userInfoSubject, claims: userInfoTokenClaims);
 
         var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -956,8 +954,8 @@ public class OidcControllerTests
         rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
         var parameters = rsa.ExportParameters(false);
 
-        var exponent = Base64Url.Encode(parameters.Exponent);
-        var modulus = Base64Url.Encode(parameters.Modulus);
+        var exponent = Base64Url.Encode(parameters.Exponent!);
+        var modulus = Base64Url.Encode(parameters.Modulus!);
         var kid = SHA256.HashData(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new Dictionary<string, string>() {
             {"e", exponent},
             {"kty", "RSA"},

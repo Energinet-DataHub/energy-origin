@@ -37,7 +37,7 @@ public class CvrController : Controller
         if (cvr == null)
             return NotFound();
 
-        var raw = await client.CvrNumberSearch(cvr);
+        var raw = await client.CvrNumberSearch(new[] { cvr });
         if (raw == null)
         {
             return NotFound();

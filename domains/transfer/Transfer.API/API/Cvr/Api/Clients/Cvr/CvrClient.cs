@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using API.Cvr.Api.Models;
 
@@ -15,21 +17,23 @@ public class CvrClient
         this.client = client;
     }
 
-    public async Task<Root?> CvrNumberSearch(CvrNumber cvr)
+    public async Task<Root?> CvrNumberSearch(IEnumerable<CvrNumber> cvrNumbers)
     {
-        var postBody = @"{
-                            ""query"": {
-                                ""bool"": {
+        var cvrNumbersArray = JsonSerializer.Serialize(cvrNumbers);
+
+        var postBody = $@"{{
+                            ""query"": {{
+                                ""bool"": {{
                                     ""must"": [
-                                        {
-                                            ""term"": {
-                                                ""Vrvirksomhed.cvrNummer"":" + cvr + @"
-                                            }
-                                        }
+                                        {{
+                                            ""terms"": {{
+                                                ""Vrvirksomhed.cvrNummer"": {cvrNumbersArray}
+                                            }}
+                                        }}
                                     ]
-                                }
-                            }
-                        }";
+                                }}
+                            }}
+                        }}";
 
         var content = new StringContent(postBody, Encoding.UTF8, "application/json");
 

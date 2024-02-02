@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
+
+    private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
@@ -54,6 +57,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
 
+        builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Datasync:Disabled", "false");
@@ -63,8 +67,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Issuer");
-        builder.UseSetting("TokenValidation:Audience", "Audience");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
+        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(services =>
         {
@@ -135,8 +139,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Issuer",
-        string audience = "Audience")
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users")
     {
 
         var claims = new Dictionary<string, object>()
@@ -147,7 +151,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional},
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
             { UserClaimName.AllowCprLookup, "false"},
             { UserClaimName.AccessToken, ""},
             { UserClaimName.IdentityToken, ""},

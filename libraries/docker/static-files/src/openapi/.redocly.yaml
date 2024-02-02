@@ -1,0 +1,13 @@
+# See https://redoc.ly/docs/cli/configuration/ for more information.
+apis:
+  core:
+    root: openapi.yaml
+    rules:
+      no-unused-components: warn
+theme.openapi:
+  pagination: section
+  showConsole: true
+  theme:
+    colors:
+      primary:
+        main: "#32329f"

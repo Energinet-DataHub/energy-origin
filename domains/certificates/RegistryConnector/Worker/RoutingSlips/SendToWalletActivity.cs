@@ -38,23 +38,24 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
 
 public class SendToWalletActivityDefinition : ExecuteActivityDefinition<SendToWalletActivity, SendToWalletArguments>
 {
-    private readonly IServiceProvider provider;
     private readonly RetryOptions retryOptions;
 
-    public SendToWalletActivityDefinition(IOptions<RetryOptions> options, IServiceProvider provider)
+    public SendToWalletActivityDefinition(IOptions<RetryOptions> options)
     {
-        this.provider = provider;
         retryOptions = options.Value;
     }
 
-    protected override void ConfigureExecuteActivity(IReceiveEndpointConfigurator endpointConfigurator,
-        IExecuteActivityConfigurator<SendToWalletActivity, SendToWalletArguments> executeActivityConfigurator)
+    protected override void ConfigureExecuteActivity(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IExecuteActivityConfigurator<SendToWalletActivity, SendToWalletArguments> executeActivityConfigurator,
+        IRegistrationContext context
+        )
     {
-        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
+        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(provider);
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }

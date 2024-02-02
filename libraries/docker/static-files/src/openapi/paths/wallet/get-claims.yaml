@@ -1,0 +1,33 @@
+﻿tags:
+  - Wallet
+summary: Gets all claims in the wallet
+operationId: getClaims
+parameters:
+  - name: start
+    in: query
+    description: The start of the time range in Unix time in seconds.
+    schema:
+      type: integer
+      format: int64
+  - name: end
+    in: query
+    description: The end of the time range in Unix time in seconds.
+    schema:
+      type: integer
+      format: int64
+responses:
+  '200':
+    description: Returns all the indiviual claims.
+    content:
+      application/json:
+        schema:
+          properties:
+            ClaimResultList:
+              type: object
+              properties:
+                result:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/wallet/Claim.yaml'
+  '401':
+    description: If the user is not authenticated.

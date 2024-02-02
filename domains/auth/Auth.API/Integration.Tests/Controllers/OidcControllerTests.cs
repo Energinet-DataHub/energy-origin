@@ -354,8 +354,8 @@ public class OidcControllerTests : IClassFixture<AuthWebApplicationFactory>
         rsa.ImportFromPem(Encoding.UTF8.GetString(pem));
         var parameters = rsa.ExportParameters(false);
 
-        var exponent = Base64Url.Encode(parameters.Exponent);
-        var modulus = Base64Url.Encode(parameters.Modulus);
+        var exponent = Base64Url.Encode(parameters.Exponent!);
+        var modulus = Base64Url.Encode(parameters.Modulus!);
         var kid = SHA256.HashData(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new Dictionary<string, string>() {
             {"e", exponent},
             {"kty", "RSA"},

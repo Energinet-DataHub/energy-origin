@@ -4,15 +4,17 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.DataSyncSyncer.Client.Dto;
 using DataContext.ValueObjects;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+
 
 namespace API.DataSyncSyncer.Client;
 
@@ -56,36 +58,29 @@ public class DataSyncClient : IDataSyncClient
 
     private static string GenerateToken(string meteringPointOwner)
     {
+        var now = DateTimeOffset.UtcNow;
+        var expires = now.AddMinutes(3);
 
-        var claims = new Dictionary<string, object>()
+        var claims = new Claim[]
         {
-            { UserClaimName.Scope, "" },
-            { UserClaimName.ActorLegacy, "" },
-            { UserClaimName.Actor, meteringPointOwner },
-            { UserClaimName.Tin, "" },
-            { UserClaimName.OrganizationName, "" },
-            { JwtRegisteredClaimNames.Name, "" },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-            { UserClaimName.AllowCprLookup, "false"},
-            { UserClaimName.AccessToken, ""},
-            { UserClaimName.IdentityToken, ""},
-            { UserClaimName.ProviderKeys, ""},
-            { UserClaimName.OrganizationId, meteringPointOwner},
-            { UserClaimName.MatchedRoles, ""},
-            { UserClaimName.Roles, ""},
-            { UserClaimName.AssignedRoles, ""}
+            new("subject", meteringPointOwner),
+            new("actor", meteringPointOwner),
+            new("issued", now.ToString("o")),
+            new("expires", expires.ToString("o")),
+            new("scope", "meteringpoints.read"),
+            new("scope", "measurements.read"),
         };
 
-        var signedJwtToken = new TokenSigner(RsaKeyGenerator.GenerateTestKey()).Sign(
-            meteringPointOwner,
-            "name",
-            "Us",
-            "Users",
-            null,
-            60,
-            claims
-        );
-
-        return signedJwtToken;
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes("TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST");
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires.DateTime,
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

@@ -6,44 +6,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Protobuf" Version="3.23.3" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
-		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.54.0" />
-		<PackageReference Include="Grpc.Tools" Version="2.56.0" PrivateAssets="All" />
-		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.2.0-rc.17" />
-		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="0.2.0-rc.17" />
+		<PackageReference Include="Google.Protobuf" Version="3.25.2" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.60.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.60.0" PrivateAssets="All" />
+		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.4.0" />
+		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="API.IntegrationTests" />
 	</ItemGroup>
 
-	<Target Name="Updating grpc references" BeforeTargets="PreBuildEvent">
-		<Exec Command="dotnet tool restore"/>
-		<Exec Command="dotnet dotnet-grpc refresh -p $(ProjectDir)"/>
-	</Target>
-
 	<ItemGroup>
-		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/common.proto</SourceUrl>
-		</Protobuf>
-		<Protobuf Include="Protos/electricity.proto" ProtoRoot="Protos" GrpcServices="None">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/electricity.proto</SourceUrl>
-		</Protobuf>
-		<Protobuf Include="Protos/registry.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/registry/v0.3.0/src/Protos/registry.proto</SourceUrl>
-		</Protobuf>
-		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client">
-			<SourceUrl>https://raw.githubusercontent.com/project-origin/wallet/v$(WalletVersion)/src/Protos/wallet.proto</SourceUrl>
-		</Protobuf>
-	</ItemGroup>
-
-	<PropertyGroup>
-		<WalletVersion>0.4.0</WalletVersion>
-	</PropertyGroup>
-	<ItemGroup>
-		<AssemblyAttribute Include="ProjectOriginClients.WalletVersionAttribute">
-			<_Parameter1>"$(WalletVersion)"</_Parameter1>
-		</AssemblyAttribute>
+		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None"/>
+		<Protobuf Include="Protos/electricity.proto" ProtoRoot="Protos" GrpcServices="None"/>
+		<Protobuf Include="Protos/registry.proto" ProtoRoot="Protos" GrpcServices="Client"/>
+		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client"/>
 	</ItemGroup>
 </Project>

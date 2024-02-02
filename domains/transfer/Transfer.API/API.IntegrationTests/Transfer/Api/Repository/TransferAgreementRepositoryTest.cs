@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.Models;
+using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

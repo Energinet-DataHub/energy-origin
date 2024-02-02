@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.Transfer.Api.Models;
+using DataContext.Models;
 
 namespace API.Transfer.Api.Repository;
 

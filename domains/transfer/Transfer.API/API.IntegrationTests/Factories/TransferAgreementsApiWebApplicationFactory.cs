@@ -8,12 +8,11 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API.Claiming.Api.Models;
-using API.Shared.Data;
 using API.Shared.Options;
-using API.Transfer.Api.Models;
 using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
+using DataContext;
+using DataContext.Models;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
@@ -73,8 +72,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "Issuer");
-        builder.UseSetting("TokenValidation:Audience", "Audience");
+        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
+        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(s =>
         {
@@ -115,21 +114,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             await InsertTransferAgreementHistoryEntry(dbContext, agreement);
         }
     }
-
-    public async Task SeedClaims(IEnumerable<ClaimAutomationArgument> claimAutomationArguments)
-    {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateClaimAutomationArgumentsTables();
-
-        foreach (var claimAutomationArgument in claimAutomationArguments)
-        {
-            dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
-        }
-
-        await dbContext.SaveChangesAsync();
-    }
-
 
     public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
     {
@@ -194,8 +178,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string tin = "11223344",
         string cpn = "Producent A/S",
         string name = "Peter Producent",
-        string issuer = "Issuer",
-        string audience = "Audience")
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users")
     {
 
         var claims = new Dictionary<string, object>()

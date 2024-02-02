@@ -1,11 +1,11 @@
-using API.Shared.Data;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using System;
 using System.Threading.Tasks;
+using DataContext;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;

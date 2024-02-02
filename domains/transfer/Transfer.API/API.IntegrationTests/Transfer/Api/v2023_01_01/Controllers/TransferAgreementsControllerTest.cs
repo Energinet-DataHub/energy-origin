@@ -6,10 +6,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
@@ -20,7 +20,6 @@ using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
 
-[UsesVerify]
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

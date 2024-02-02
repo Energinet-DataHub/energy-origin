@@ -4,16 +4,14 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.v2023_11_23.Dto.Responses;
-using FluentAssertions;
+using DataContext.Models;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 
-[UsesVerify]
 public class InternalTransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;

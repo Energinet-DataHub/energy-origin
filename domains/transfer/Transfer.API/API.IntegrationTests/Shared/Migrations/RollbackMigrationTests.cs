@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using API.IntegrationTests.Testcontainers;
-using API.Shared.Data;
+using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

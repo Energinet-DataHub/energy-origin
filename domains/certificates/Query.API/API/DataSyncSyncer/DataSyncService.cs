@@ -67,7 +67,7 @@ public class DataSyncService
             }
             catch (Exception e)
             {
-                logger.LogInformation("An error occured: {error}, no measurements were fetched", e.Message);
+                logger.LogError("An error occured: {error}, no measurements were fetched", e.Message);
             }
         }
 

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Transfer.Api.Models;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.Api.v2023_01_01.Controllers;
 using API.Transfer.Api.v2023_01_01.Dto.Requests;
 using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using DataContext.Models;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -96,6 +96,7 @@ public class TransferAgreementsControllerTests
             SenderCompanyName = "SomeCompany",
             SenderCompanyTin = "32132132"
         };
+
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
             .Returns(taProposal);
         mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)

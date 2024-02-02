@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using API.Transfer.Api.Models;
+using DataContext.Models;
 
 namespace API.Transfer.Api.Repository.Dto;
 

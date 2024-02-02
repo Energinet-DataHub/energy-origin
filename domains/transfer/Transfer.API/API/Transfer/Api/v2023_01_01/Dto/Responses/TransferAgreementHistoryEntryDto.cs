@@ -1,6 +1,6 @@
 using System;
 using API.Shared;
-using API.Transfer.Api.Models;
+using DataContext.Models;
 
 namespace API.Transfer.Api.v2023_01_01.Dto.Responses;
 
