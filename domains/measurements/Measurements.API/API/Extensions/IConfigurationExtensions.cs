@@ -1,10 +1,12 @@
 using API.Options;
+using Google.Protobuf;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
+using JsonFormatter = Serilog.Formatting.Json.JsonFormatter;
 
 namespace API.Extensions;
 
@@ -37,16 +39,18 @@ public static class ConfigurationExtensions
     {
         var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
         var otlpOptions = otlpConfiguration.Get<OtlpOptions>();
+
         var loggerConfiguration = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
-            .Filter.ByExcluding("RequestPath like '/metrics%'");
+            .Filter.ByExcluding("RequestPath like '/metrics%'")
+            .WriteTo.OpenTelemetry(options =>
+            {
+                options.Endpoint = otlpOptions!.ReceiverEndpoint.ToString();
+                options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                                       IncludedData.TraceIdField | IncludedData.SpanIdField;
+            });
 
-        loggerConfiguration = loggerConfiguration.WriteTo.OpenTelemetry(options =>
-        {
-            options.Endpoint = otlpOptions!.ReceiverEndpoint.ToString();
-            options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                                   IncludedData.TraceIdField | IncludedData.SpanIdField;
-        });
+        loggerConfiguration = loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
         return loggerConfiguration.CreateLogger();
     }
