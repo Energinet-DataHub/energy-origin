@@ -32,11 +32,18 @@ public class ClaimService(
             try
             {
                 var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
-                logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}", claimAutomationArguments.Count);
+                logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}",
+                    claimAutomationArguments.Count);
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
-                    logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", certificates.Count, subjectId);
+                    var numberOfProductionCerts = certificates.Count(x => x.Type == GranularCertificateType.Production);
+                    var numberOfConsumptionCerts = certificates.Count(x => x.Type == GranularCertificateType.Consumption);
+
+                    logger.LogInformation(
+                        "Trying to claim {ProductionCertificates} production certificates and {ConsumptionCertificates} consumption certificates for {subjectId}",
+                        numberOfProductionCerts, numberOfConsumptionCerts, subjectId);
+
                     certificates = certificates.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
 
                     var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
@@ -45,7 +52,7 @@ public class ClaimService(
                     {
                         var productionCerts = cert.Where(x => x.Type == GranularCertificateType.Production).ToList();
                         var consumptionCerts = cert.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
-                        logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}", productionCerts.Count, consumptionCerts.Count, subjectId);
+
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
                 }
@@ -59,7 +66,8 @@ public class ClaimService(
         }
     }
 
-    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates)
+    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates,
+        List<GranularCertificate> productionCertificates)
     {
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
