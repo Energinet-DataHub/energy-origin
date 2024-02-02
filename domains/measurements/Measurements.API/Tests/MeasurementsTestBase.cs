@@ -12,6 +12,7 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 {
     protected readonly TestServerFixture<Startup> _serverFixture;
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
+    public string otlpEndpoint { get; set; } = "http://someurl";
 
     public MeasurementsTestBase(TestServerFixture<Startup> serverFixture)
     {
@@ -30,6 +31,7 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 
         var config = new Dictionary<string, string?>()
         {
+            {"Otlp:ReceiverEndpoint", otlpEndpoint},
             {"TokenValidation:PublicKey", publicKeyBase64},
             {"TokenValidation:Issuer", "demo.energioprindelse.dk"},
             {"TokenValidation:Audience", "Users"},
