@@ -5,6 +5,7 @@ using System;
 
 var configuration = WebApplication.CreateBuilder(args).Configuration;
 
+
 Log.Logger = configuration.GetSeriLogger();
 
 try
