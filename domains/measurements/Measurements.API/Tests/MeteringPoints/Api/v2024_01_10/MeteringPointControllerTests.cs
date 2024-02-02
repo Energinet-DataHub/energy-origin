@@ -34,7 +34,7 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
     {
         var client = _serverFixture.CreateUnauthenticatedClient();
 
-        var response = await client.GetAsync("api/meteringpoints");
+        var response = await client.GetAsync("api/measurements/meteringpoints");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -76,7 +76,7 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 
         var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/meteringpoints");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -137,7 +137,7 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 
         var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/meteringpoints");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -202,7 +202,7 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 
         var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/meteringpoints");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
         response.Should().NotBeNull();
 
