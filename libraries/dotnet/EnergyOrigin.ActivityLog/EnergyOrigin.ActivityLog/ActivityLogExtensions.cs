@@ -67,7 +67,8 @@ public static class ActivityLogExtensions
             ActivityLogEntry.ActionTypeEnum.Declined => ActivityLogEntryResponse.ActionTypeEnum.Declined,
             ActivityLogEntry.ActionTypeEnum.Activated => ActivityLogEntryResponse.ActionTypeEnum.Activated,
             ActivityLogEntry.ActionTypeEnum.Deactivated => ActivityLogEntryResponse.ActionTypeEnum.Deactivated,
-            ActivityLogEntry.ActionTypeEnum.ChangeEndDate => ActivityLogEntryResponse.ActionTypeEnum.ChangeEndDate,
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged => ActivityLogEntryResponse.ActionTypeEnum.EndDateChanged,
+            ActivityLogEntry.ActionTypeEnum.Expired => ActivityLogEntryResponse.ActionTypeEnum.Expired,
             _ => throw new NotImplementedException()
         };
 

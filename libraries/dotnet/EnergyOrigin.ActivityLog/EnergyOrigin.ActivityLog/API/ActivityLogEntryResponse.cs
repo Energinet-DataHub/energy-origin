@@ -4,7 +4,7 @@ public class ActivityLogEntryResponse
 {
     public enum ActorTypeEnum { User, System }
     public enum EntityTypeEnum { TransferAgreement, MeteringPoint, TransferAgreementProposal }
-    public enum ActionTypeEnum { Created, Accepted, Declined, Activated, Deactivated, ChangeEndDate }
+    public enum ActionTypeEnum { Created, Accepted, Declined, Activated, Deactivated, EndDateChanged, Expired }
 
     // General
     public Guid Id { get; init; }
