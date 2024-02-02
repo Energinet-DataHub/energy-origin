@@ -11,7 +11,8 @@ public class ActivityLogExtensionsMapperTests
     [InlineData(ActivityLogEntry.ActionTypeEnum.Declined, ActivityLogEntryResponse.ActionTypeEnum.Declined)]
     [InlineData(ActivityLogEntry.ActionTypeEnum.Activated, ActivityLogEntryResponse.ActionTypeEnum.Activated)]
     [InlineData(ActivityLogEntry.ActionTypeEnum.Deactivated, ActivityLogEntryResponse.ActionTypeEnum.Deactivated)]
-    [InlineData(ActivityLogEntry.ActionTypeEnum.ChangeEndDate, ActivityLogEntryResponse.ActionTypeEnum.ChangeEndDate)]
+    [InlineData(ActivityLogEntry.ActionTypeEnum.EndDateChanged, ActivityLogEntryResponse.ActionTypeEnum.EndDateChanged)]
+    [InlineData(ActivityLogEntry.ActionTypeEnum.Expired, ActivityLogEntryResponse.ActionTypeEnum.Expired)]
     public void ActionTypeMapper_ShouldReturnCorrectEnum(ActivityLogEntry.ActionTypeEnum input, ActivityLogEntryResponse.ActionTypeEnum expected)
     {
         var result = ActivityLogExtensions.ActionTypeMapper(input);
