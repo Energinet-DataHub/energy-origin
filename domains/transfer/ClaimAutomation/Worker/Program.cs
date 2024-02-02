@@ -103,16 +103,16 @@ builder.AddTokenValidation(tokenValidationOptions);
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddService(serviceName: "ClaimAutomation.Worker"))
-    .WithMetrics(provider =>
-        provider
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
             .AddMeter(ClaimAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(provider =>
-        provider
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
