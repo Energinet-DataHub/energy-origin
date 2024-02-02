@@ -19,19 +19,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
-using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.OpenTelemetry;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                               IncludedData.TraceIdField | IncludedData.SpanIdField;
+    });
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
@@ -89,19 +100,22 @@ var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOpt
 
 builder.AddTokenValidation(tokenValidationOptions);
 
-var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
-
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: "ClaimAutomation.Worker"))
     .WithMetrics(provider =>
         provider
-            .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                .AddService(ClaimAutomationMetrics.MetricName))
             .AddMeter(ClaimAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(provider =>
+        provider
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
