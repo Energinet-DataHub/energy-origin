@@ -2,7 +2,6 @@ using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
 using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace API.MeteringPoints.Api.v2024_01_10.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion("20240110")]
-[Route("api/meteringpoints")]
+[Route("api/measurements/meteringpoints")]
 public class MeteringPointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
@@ -27,7 +26,6 @@ public class MeteringPointsController : ControllerBase
     /// Get metering points from DataHub2.0
     /// </summary>
     /// <response code="200">Successful operation</response>
-    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpGet]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
     public async Task<ActionResult> GetMeteringPoints()
