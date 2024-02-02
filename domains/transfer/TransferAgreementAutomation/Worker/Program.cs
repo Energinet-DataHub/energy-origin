@@ -58,16 +58,16 @@ builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOri
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddService(serviceName: "TransferAgreementAutomation.Worker"))
-    .WithMetrics(provider =>
-        provider
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
             .AddMeter(TransferAgreementAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(provider =>
-        provider
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
