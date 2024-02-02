@@ -32,10 +32,11 @@ public class ClaimService(
             try
             {
                 var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
+                logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}", claimAutomationArguments.Count);
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
                     var certificates = await walletService.GetGranularCertificates(subjectId);
-
+                    logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", certificates.Count, subjectId);
                     certificates = certificates.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
 
                     var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
@@ -44,7 +45,7 @@ public class ClaimService(
                     {
                         var productionCerts = cert.Where(x => x.Type == GranularCertificateType.Production).ToList();
                         var consumptionCerts = cert.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
-
+                        logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}", productionCerts.Count, consumptionCerts.Count, subjectId);
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
                 }

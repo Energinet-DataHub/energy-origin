@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.0.1",
   "info": {
     "title": "Measurements API 20240110",
@@ -6,7 +6,7 @@
     "version": "20240110"
   },
   "paths": {
-    "/api/meteringpoints": {
+    "/api/measurements/meteringpoints": {
       "get": {
         "tags": [
           "MeteringPoints"
