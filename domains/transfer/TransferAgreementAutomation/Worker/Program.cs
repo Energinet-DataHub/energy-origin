@@ -68,6 +68,7 @@ builder.Services.AddOpenTelemetry()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithTracing(provider =>
         provider
+            .AddGrpcClientInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
