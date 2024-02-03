@@ -111,8 +111,16 @@ builder.Services.AddOpenTelemetry()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(tracerProviderBuilder =>
-        tracerProviderBuilder
+    .WithTracing(provider =>
+        provider
+            .AddGrpcClientInstrumentation(grpcOptions =>
+            {
+                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                    activity.SetTag("requestVersion", httpRequestMessage.Version);
+                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                    activity.SetTag("responseVersion", httpResponseMessage.Version);
+                grpcOptions.SuppressDownstreamInstrumentation = true;
+            })
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
