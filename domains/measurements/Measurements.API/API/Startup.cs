@@ -42,11 +42,6 @@ public class Startup
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
-        services.AddOptions<OtlpOptions>()
-            .BindConfiguration(OtlpOptions.Prefix)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
         services.AddFluentValidationAutoValidation();
 
@@ -57,18 +52,25 @@ public class Startup
 
         services.AddLogging();
 
+        services.AddOptions<OtlpOptions>()
+            .BindConfiguration(OtlpOptions.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
+        var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
         services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 .AddService(serviceName: "Measurements.API"))
-            .WithMetrics(metrics => metrics
+            .WithMetrics(meterProviderBuilder => meterProviderBuilder
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
                 .AddProcessInstrumentation()
-                .AddOtlpExporter(o =>
-                    o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint))
-            .WithTracing(provider =>
-                provider
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+            .WithTracing(tracerProviderBuilder =>
+                tracerProviderBuilder
                     .AddGrpcClientInstrumentation(grpcOptions =>
                     {
                         grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
@@ -80,8 +82,7 @@ public class Startup
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter(o =>
-                        o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint));
+                    .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
         services.AddOptions<DataHubFacadeOptions>()
             .BindConfiguration(DataHubFacadeOptions.Prefix)
