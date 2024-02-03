@@ -1,10 +1,6 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -14,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Models;
 using TransferAgreementAutomation.Worker.Options;
