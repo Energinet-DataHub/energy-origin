@@ -25,7 +25,6 @@ using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 using TransferAgreementAutomation.Worker.Swagger;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
