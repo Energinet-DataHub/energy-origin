@@ -73,11 +73,11 @@ public class Startup
                 tracerProviderBuilder
                     .AddGrpcClientInstrumentation(grpcOptions =>
                     {
+                        grpcOptions.SuppressDownstreamInstrumentation = true;
                         grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
                             activity.SetTag("requestVersion", httpRequestMessage.Version);
                         grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
                             activity.SetTag("responseVersion", httpResponseMessage.Version);
-                        grpcOptions.SuppressDownstreamInstrumentation = true;
                     })
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
