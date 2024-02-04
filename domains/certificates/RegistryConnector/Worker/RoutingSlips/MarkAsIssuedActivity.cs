@@ -32,7 +32,7 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
         if (certificate == null)
         {
-            logger.LogWarning("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} not found.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            logger.LogWarning("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} not found", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
             return context.Terminate(new List<KeyValuePair<string, object>>
             {
                 new("Reason", "Certificate not found")
@@ -50,11 +50,11 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
             CertificateMetrics.CertificateIssued();
 
-            logger.LogInformation("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} issued.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            logger.LogInformation("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} issued", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to save changes for certificateId {CertificateId} and meteringPointType {MeteringPointType}.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            logger.LogError(ex, "Failed to save changes for certificateId {CertificateId} and meteringPointType {MeteringPointType}", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
             return context.Terminate(new List<KeyValuePair<string, object>>
             {
                 new("Reason", "Failed to issue certificate due to database save error")
