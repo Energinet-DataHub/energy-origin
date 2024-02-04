@@ -40,7 +40,7 @@ public class MarkAsIssuedActivity(ApplicationDbContext dbContext, ILogger<MarkAs
         {
             await dbContext.SaveChangesAsync(context.CancellationToken);
 
-            CertificateMetrics.CertificateIssued();
+            IssuanceMetrics.CertificateIssued();
 
             logger.LogInformation("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} issued", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
         }

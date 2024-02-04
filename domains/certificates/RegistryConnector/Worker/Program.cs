@@ -19,6 +19,7 @@ using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
+using RegistryConnector.Worker.Metrics;
 using RegistryConnector.Worker.RoutingSlips;
 using Serilog;
 using Serilog.Formatting.Json;
@@ -118,7 +119,7 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(ConfigureResource)
     .WithMetrics(meterProviderBuilder =>
         meterProviderBuilder
-            .AddMeter("CertificatesMeter")
+            .AddMeter(IssuanceMetrics.Name)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
