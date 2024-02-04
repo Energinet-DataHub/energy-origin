@@ -102,7 +102,6 @@ builder.Services.AddMassTransit(o =>
     o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
     {
         outboxConfigurator.UsePostgres();
-
         outboxConfigurator.UseBusOutbox();
     });
 });
@@ -112,7 +111,6 @@ void ConfigureResource(ResourceBuilder r)
     r.AddService("RegistryConnector",
         serviceInstanceId: Environment.MachineName);
 }
-
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(ConfigureResource)
