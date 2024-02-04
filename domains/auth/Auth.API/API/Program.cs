@@ -149,7 +149,6 @@ builder.Services.AddOpenTelemetry()
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
-            .AddEntityFrameworkCoreInstrumentation()
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
