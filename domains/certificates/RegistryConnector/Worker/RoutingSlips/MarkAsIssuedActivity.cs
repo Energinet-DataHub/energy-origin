@@ -7,6 +7,7 @@ using DataContext.ValueObjects;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RegistryConnector.Worker.Metrics;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -44,6 +45,8 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
             return context.Completed();
 
         certificate.Issue();
+
+        CertificateMetrics.CertificateIssued();
 
         await dbContext.SaveChangesAsync(context.CancellationToken);
 
