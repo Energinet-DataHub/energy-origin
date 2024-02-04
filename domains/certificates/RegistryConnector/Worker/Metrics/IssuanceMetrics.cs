@@ -2,7 +2,7 @@
 
 namespace RegistryConnector.Worker.Metrics;
 
-public class IssuanceMetrics
+public static class IssuanceMetrics
 {
     public const string Name = "IssuanceMeter";
     private static readonly Meter Meter = new(Name, "1.0");
