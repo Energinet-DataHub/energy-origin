@@ -118,6 +118,7 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(ConfigureResource)
     .WithMetrics(meterProviderBuilder =>
         meterProviderBuilder
+            .AddMeter("CertificatesMeter")
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
