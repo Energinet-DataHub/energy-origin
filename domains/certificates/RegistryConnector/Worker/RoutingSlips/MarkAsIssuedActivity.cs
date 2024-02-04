@@ -13,17 +13,9 @@ namespace RegistryConnector.Worker.RoutingSlips;
 
 public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType MeteringPointType);
 
-public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
+public class MarkAsIssuedActivity(ApplicationDbContext dbContext, ILogger<MarkAsIssuedActivity> logger)
+    : IExecuteActivity<MarkAsIssuedArguments>
 {
-    private readonly ApplicationDbContext dbContext;
-    private readonly ILogger<MarkAsIssuedActivity> logger;
-
-    public MarkAsIssuedActivity(ApplicationDbContext dbContext, ILogger<MarkAsIssuedActivity> logger)
-    {
-        this.dbContext = dbContext;
-        this.logger = logger;
-    }
-
     public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
     {
         Certificate? certificate = context.Arguments.MeteringPointType == MeteringPointType.Production
@@ -65,14 +57,10 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
     }
 }
 
-public class MarkAsIssuedActivityDefinition : ExecuteActivityDefinition<MarkAsIssuedActivity, MarkAsIssuedArguments>
+public class MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options)
+    : ExecuteActivityDefinition<MarkAsIssuedActivity, MarkAsIssuedArguments>
 {
-    private readonly RetryOptions retryOptions;
-
-    public MarkAsIssuedActivityDefinition(IOptions<RetryOptions> options)
-    {
-        retryOptions = options.Value;
-    }
+    private readonly RetryOptions retryOptions = options.Value;
 
     protected override void ConfigureExecuteActivity(
         IReceiveEndpointConfigurator endpointConfigurator,
