@@ -86,6 +86,7 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     o.Address = new Uri(options.WalletUrl);
 });
+
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
@@ -94,10 +95,11 @@ builder.Services.AddApiVersioning(options =>
     })
     .AddMvc()
     .AddApiExplorer();
+
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.AddTokenValidation(tokenValidationOptions);
 
 builder.Services.AddOpenTelemetry()
