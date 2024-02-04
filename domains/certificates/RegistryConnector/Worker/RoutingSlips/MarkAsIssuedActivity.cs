@@ -27,14 +27,12 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
     public async Task<ExecutionResult> Execute(ExecuteContext<MarkAsIssuedArguments> context)
     {
         Certificate? certificate = context.Arguments.MeteringPointType == MeteringPointType.Production
-            ? await dbContext.ProductionCertificates.FindAsync([context.Arguments.CertificateId],
-                context.CancellationToken)
-            : await dbContext.ConsumptionCertificates.FindAsync([context.Arguments.CertificateId],
-                context.CancellationToken);
+            ? await dbContext.ProductionCertificates.FindAsync(context.Arguments.CertificateId, context.CancellationToken)
+            : await dbContext.ConsumptionCertificates.FindAsync(context.Arguments.CertificateId, context.CancellationToken);
 
         if (certificate == null)
         {
-            logger.LogWarning("Certificate with certificateId {context.Arguments.CertificateId} and meteringPointType {context.Arguments.MeteringPointType} not found.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            logger.LogWarning("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} not found.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
             return context.Terminate(new List<KeyValuePair<string, object>>
             {
                 new("Reason", "Certificate not found")
@@ -46,11 +44,22 @@ public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 
         certificate.Issue();
 
-        CertificateMetrics.CertificateIssued();
+        try
+        {
+            await dbContext.SaveChangesAsync(context.CancellationToken);
 
-        await dbContext.SaveChangesAsync(context.CancellationToken);
+            CertificateMetrics.CertificateIssued();
 
-        logger.LogInformation("Certificate with certificateId {context.Arguments.CertificateId} and meteringPointType {context.Arguments.MeteringPointType} issued.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            logger.LogInformation("Certificate with certificateId {CertificateId} and meteringPointType {MeteringPointType} issued.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to save changes for certificateId {CertificateId} and meteringPointType {MeteringPointType}.", context.Arguments.CertificateId, context.Arguments.MeteringPointType);
+            return context.Terminate(new List<KeyValuePair<string, object>>
+            {
+                new("Reason", "Failed to issue certificate due to database save error")
+            });
+        }
 
         return context.Completed();
     }
