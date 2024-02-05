@@ -54,31 +54,35 @@ builder.Services.AddOptions<TransferApiOptions>().BindConfiguration(TransferApiO
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
     .ValidateDataAnnotations().ValidateOnStart();
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: "TransferAgreementAutomation.Worker"))
-    .WithMetrics(meterProviderBuilder =>
-        meterProviderBuilder
-            .AddMeter(TransferAgreementAutomationMetrics.MetricName)
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(tracerProviderBuilder =>
-        tracerProviderBuilder
-            .AddGrpcClientInstrumentation(grpcOptions =>
-            {
-                grpcOptions.SuppressDownstreamInstrumentation = true;
-                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                    activity.SetTag("requestVersion", httpRequestMessage.Version);
-                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                    activity.SetTag("responseVersion", httpResponseMessage.Version);
-            })
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddNpgsql()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
+if (otlpOptions.Enabled)
+{
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource
+            .AddService(serviceName: "TransferAgreementAutomation.Worker"))
+        .WithMetrics(meterProviderBuilder =>
+            meterProviderBuilder
+                .AddMeter(TransferAgreementAutomationMetrics.MetricName)
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddProcessInstrumentation()
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+        .WithTracing(tracerProviderBuilder =>
+            tracerProviderBuilder
+                .AddGrpcClientInstrumentation(grpcOptions =>
+                {
+                    grpcOptions.SuppressDownstreamInstrumentation = true;
+                    grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                        activity.SetTag("requestVersion", httpRequestMessage.Version);
+                    grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                        activity.SetTag("responseVersion", httpResponseMessage.Version);
+                })
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddNpgsql()
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+}
 
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

@@ -9,4 +9,7 @@ public class OtlpOptions
 
     [Required]
     public Uri ReceiverEndpoint { get; set; } = null!;
+
+    [Required]
+    public bool Enabled { get; set; }
 }

@@ -102,31 +102,34 @@ builder.Services.AddSwaggerGen();
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.AddTokenValidation(tokenValidationOptions);
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: "ClaimAutomation.Worker"))
-    .WithMetrics(meterProviderBuilder =>
-        meterProviderBuilder
-            .AddMeter(ClaimAutomationMetrics.MetricName)
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(tracerProviderBuilder =>
-        tracerProviderBuilder
-            .AddGrpcClientInstrumentation(grpcOptions =>
-            {
-                grpcOptions.SuppressDownstreamInstrumentation = true;
-                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                    activity.SetTag("requestVersion", httpRequestMessage.Version);
-                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                    activity.SetTag("responseVersion", httpResponseMessage.Version);
-            })
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddNpgsql()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+if (otlpOptions.Enabled)
+{
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource
+            .AddService(serviceName: "ClaimAutomation.Worker"))
+        .WithMetrics(meterProviderBuilder =>
+            meterProviderBuilder
+                .AddMeter(ClaimAutomationMetrics.MetricName)
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddProcessInstrumentation()
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+        .WithTracing(tracerProviderBuilder =>
+            tracerProviderBuilder
+                .AddGrpcClientInstrumentation(grpcOptions =>
+                {
+                    grpcOptions.SuppressDownstreamInstrumentation = true;
+                    grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                        activity.SetTag("requestVersion", httpRequestMessage.Version);
+                    grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                        activity.SetTag("responseVersion", httpResponseMessage.Version);
+                })
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddNpgsql()
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+}
 
 var app = builder.Build();
 app.MapHealthChecks("/health");
