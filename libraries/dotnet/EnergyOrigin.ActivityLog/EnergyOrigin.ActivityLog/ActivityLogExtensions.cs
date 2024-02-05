@@ -47,7 +47,7 @@ public static class ActivityLogExtensions
                             }).Take(100),
                     HasMore = activityLogEntries.Count > 100
                 };
-            }).RequireAuthorization();
+            }).WithTags("Activity log").RequireAuthorization();
     }
 
     public static void AddActivityLogEntry(this ModelBuilder modelBuilder)
