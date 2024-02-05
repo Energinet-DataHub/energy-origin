@@ -1,5 +1,7 @@
 using Audit.EntityFramework;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog;
+using EnergyOrigin.ActivityLog.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -17,6 +19,7 @@ public class ApplicationDbContext : AuditDbContext
     public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
     public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
+    public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,5 +33,7 @@ public class ApplicationDbContext : AuditDbContext
         modelBuilder.Entity<TransferAgreementProposal>()
             .Property(b => b.CreatedAt)
             .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
+        modelBuilder.AddActivityLogEntry();
     }
 }

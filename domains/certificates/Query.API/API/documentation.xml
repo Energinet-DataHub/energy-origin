@@ -49,7 +49,7 @@
             Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
-        <member name="M:API.Query.API.v2023_01_01.Controllers.ContractsController.CreateContract(API.Query.API.v2023_01_01.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.v2023_01_01.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.v2023_01_01.Controllers.ContractsController.CreateContract(API.Query.API.v2023_01_01.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.v2023_01_01.ApiModels.Requests.CreateContract},API.ContractService.IContractService,EnergyOrigin.ActivityLog.API.IActivityLogEntryRepository,System.Threading.CancellationToken)">
             <summary>
             Create a contract that activates granular certificate generation for a metering point
             </summary>
@@ -64,7 +64,7 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.v2023_01_01.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.v2023_01_01.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.v2023_01_01.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.v2023_01_01.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.v2023_01_01.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.v2023_01_01.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,EnergyOrigin.ActivityLog.API.IActivityLogEntryRepository,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for contract
             </summary>

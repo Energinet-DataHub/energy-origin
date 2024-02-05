@@ -16,6 +16,7 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 [ApiController]
 [ApiVersion("20240103")]
 [Route("api/transfer-agreements")]
+[Route("api/transfer/transfer-agreements")]
 public class TransferAgreementHistoryEntriesController : ControllerBase
 {
     private readonly ITransferAgreementHistoryEntryRepository historyEntryRepository;

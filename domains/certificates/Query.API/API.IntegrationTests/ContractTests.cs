@@ -1,15 +1,16 @@
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using API.Query.API.v2023_01_01.ApiModels.Responses;
 using DataContext.ValueObjects;
+using EnergyOrigin.ActivityLog.API;
 using FluentAssertions;
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 using Testing.Helpers;
 using Testing.Testcontainers;
 using Xunit;
@@ -561,4 +562,54 @@ public sealed class ContractTests :
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
+    {
+        // Create contract
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate };
+        using var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Assert activity log entry
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLog = await activityLogResponse.Content.ReadFromJsonAsync<ActivityLogListEntryResponse>();
+        Assert.Single(activityLog!.ActivityLogEntries.Where(x => x.ActorId.ToString() == subject));
+    }
+
+    [Fact]
+    public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
+    {
+        // Create contract
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+        using var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Update end date
+        var createdContractUri = contractResponse.Headers.Location;
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var putBody = new { endDate };
+        await client.PutAsJsonAsync(createdContractUri, putBody);
+
+        // Assert activity log entries (created, updated)
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLog = await activityLogResponse.Content.ReadFromJsonAsync<ActivityLogListEntryResponse>();
+        Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject));
+    }
+
 }
