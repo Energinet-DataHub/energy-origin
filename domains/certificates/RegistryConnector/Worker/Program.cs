@@ -102,7 +102,6 @@ builder.Services.AddMassTransit(o =>
     o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
     {
         outboxConfigurator.UsePostgres();
-
         outboxConfigurator.UseBusOutbox();
     });
 });
@@ -112,7 +111,6 @@ void ConfigureResource(ResourceBuilder r)
     r.AddService("RegistryConnector",
         serviceInstanceId: Environment.MachineName);
 }
-
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(ConfigureResource)
@@ -126,6 +124,14 @@ builder.Services.AddOpenTelemetry()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
     .WithTracing(tracerProviderBuilder =>
         tracerProviderBuilder
+            .AddGrpcClientInstrumentation(grpcOptions =>
+            {
+                grpcOptions.SuppressDownstreamInstrumentation = true;
+                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                    activity.SetTag("requestVersion", httpRequestMessage.Version);
+                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                    activity.SetTag("responseVersion", httpResponseMessage.Version);
+            })
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddNpgsql()
