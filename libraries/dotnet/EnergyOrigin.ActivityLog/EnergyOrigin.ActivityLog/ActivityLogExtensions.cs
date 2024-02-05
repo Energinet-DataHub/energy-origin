@@ -56,7 +56,7 @@ public static class ActivityLogExtensions
             .HasKey(x => x.Id);
 
         modelBuilder.Entity<ActivityLogEntry>()
-            .HasKey(x => x.OrganizationTin).IsClustered(clustered: false);
+            .HasIndex(x => x.OrganizationTin).IsClustered(clustered: false);
     }
 
     public static ActivityLogEntryResponse.ActionTypeEnum ActionTypeMapper(ActivityLogEntry.ActionTypeEnum actionType) =>

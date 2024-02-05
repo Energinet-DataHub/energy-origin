@@ -5,6 +5,8 @@ using API.Transfer.Api.v2024_01_03.Dto.Requests;
 using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentValidation;
@@ -18,19 +20,23 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 [ApiController]
 [ApiVersion("20240103")]
 [Route("api/transfer-agreement-proposals")]
+[Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController : ControllerBase
 {
     private readonly ITransferAgreementProposalRepository repository;
     private readonly IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator;
     private readonly ITransferAgreementRepository transferAgreementRepository;
+    private readonly IActivityLogEntryRepository activityLogEntryRepository;
 
     public TransferAgreementProposalController(ITransferAgreementProposalRepository repository,
         IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
-        ITransferAgreementRepository transferAgreementRepository)
+        ITransferAgreementRepository transferAgreementRepository,
+        IActivityLogEntryRepository activityLogEntryRepository)
     {
         this.repository = repository;
         this.createTransferAgreementProposalValidator = createTransferAgreementProposalValidator;
         this.transferAgreementRepository = transferAgreementRepository;
+        this.activityLogEntryRepository = activityLogEntryRepository;
     }
 
     /// <summary>
@@ -80,6 +86,8 @@ public class TransferAgreementProposalController : ControllerBase
         }
 
         await repository.AddTransferAgreementProposal(newProposal);
+
+        await AppendToActivityLog(user, newProposal, ActivityLogEntry.ActionTypeEnum.Created);
 
         var response = new TransferAgreementProposalResponse(
             newProposal.Id,
@@ -155,8 +163,22 @@ public class TransferAgreementProposalController : ControllerBase
             return NotFound();
         }
 
+        var user = new UserDescriptor(User);
+        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
+        {
+            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
+        }
+
         await repository.DeleteTransferAgreementProposal(id);
+        await AppendToActivityLog(user, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
 
         return NoContent();
+    }
+
+    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreementProposal proposal, ActivityLogEntry.ActionTypeEnum actionType)
+    {
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, user.Organization!.Tin, user.Organization!.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
+            actionType, proposal.Id));
     }
 }
