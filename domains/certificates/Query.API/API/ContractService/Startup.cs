@@ -23,7 +23,7 @@ public static class Startup
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {
-            var options = sp.GetRequiredService<IOptions<DatasyncOptions>>().Value;
+            var options = sp.GetRequiredService<IOptions<MeasurementsOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
         });
 

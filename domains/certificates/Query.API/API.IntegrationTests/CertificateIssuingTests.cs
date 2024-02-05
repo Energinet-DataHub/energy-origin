@@ -23,25 +23,25 @@ public sealed class CertificateIssuingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
-    IClassFixture<DataSyncWireMock>,
+    IClassFixture<MeasurementsWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
     IClassFixture<ProjectOriginStack>
 {
     private readonly QueryApiWebApplicationFactory factory;
-    private readonly DataSyncWireMock dataSyncWireMock;
+    private readonly MeasurementsWireMock measurementsWireMock;
 
     public CertificateIssuingTests(
         QueryApiWebApplicationFactory factory,
         PostgresContainer dbContainer,
         RabbitMqContainer rabbitMqContainer,
-        DataSyncWireMock dataSyncWireMock,
+        MeasurementsWireMock measurementsWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
         ProjectOriginStack projectOriginStack)
     {
-        this.dataSyncWireMock = dataSyncWireMock;
+        this.measurementsWireMock = measurementsWireMock;
         this.factory = factory;
         this.factory.ConnectionString = dbContainer.ConnectionString;
-        this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.MeasurementsUrl = measurementsWireMock.Url;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
@@ -71,7 +71,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
@@ -123,7 +123,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, measurementsWireMock);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,
@@ -165,7 +165,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
 
         var dateFrom = utcMidnight.ToUnixTimeSeconds();
         var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
@@ -227,7 +227,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, measurementsWireMock);
 
         var dateFrom = utcMidnight.ToUnixTimeSeconds();
         var dateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds();
@@ -279,7 +279,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
 
         const int measurementCount = 5;
 
@@ -371,7 +371,7 @@ public sealed class CertificateIssuingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Consumption, measurementsWireMock);
 
         const int measurementCount = 5;
 

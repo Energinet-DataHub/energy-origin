@@ -23,25 +23,25 @@ public sealed class CertificateIssuingFailingTests :
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
-    IClassFixture<DataSyncWireMock>,
+    IClassFixture<MeasurementsWireMock>,
     IClassFixture<RegistryConnectorApplicationFactory>,
     IClassFixture<ProjectOriginStack>
 {
     private readonly QueryApiWebApplicationFactory factory;
-    private readonly DataSyncWireMock dataSyncWireMock;
+    private readonly MeasurementsWireMock measurementsWireMock;
 
     public CertificateIssuingFailingTests(
         QueryApiWebApplicationFactory factory,
         PostgresContainer dbContainer,
         RabbitMqContainer rabbitMqContainer,
-        DataSyncWireMock dataSyncWireMock,
+        MeasurementsWireMock measurementsWireMock,
         RegistryConnectorApplicationFactory registryConnectorFactory,
         ProjectOriginStack projectOriginStack)
     {
-        this.dataSyncWireMock = dataSyncWireMock;
+        this.measurementsWireMock = measurementsWireMock;
         this.factory = factory;
         this.factory.ConnectionString = dbContainer.ConnectionString;
-        this.factory.DataSyncUrl = dataSyncWireMock.Url;
+        this.factory.MeasurementsUrl = measurementsWireMock.Url;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.RetryOptions.RegistryTransactionStillProcessingRetryCount = 1;
@@ -63,7 +63,7 @@ public sealed class CertificateIssuingFailingTests :
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, dataSyncWireMock);
+        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
 
         var measurement = new EnergyMeasuredIntegrationEvent(
             GSRN: gsrn,

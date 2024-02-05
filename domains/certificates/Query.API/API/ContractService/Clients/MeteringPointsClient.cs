@@ -35,7 +35,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 
         ValidateOwnerAndSubjectMatch(owner);
 
-        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("meteringPoints",
+        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("/api/measurements/meteringpoints",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
     }
 
@@ -57,9 +57,9 @@ public class MeteringPointsClient : IMeteringPointsClient
     }
 }
 
-public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);
+public record MeteringPointsResponse(List<MeteringPoint> Result);
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address, Technology Technology);
+public record MeteringPoint(string Gsrn, string GridArea, MeterType Type, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates);
 
 public enum MeterType { Consumption, Production, Child }
 

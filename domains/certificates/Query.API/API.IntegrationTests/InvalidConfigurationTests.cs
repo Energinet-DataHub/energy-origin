@@ -31,7 +31,7 @@ public class InvalidConfigurationTests : TestBase, IClassFixture<RegistryConnect
     {
         apiFactory.RabbitMqOptions = null;
         apiFactory.WalletUrl = string.Empty;
-        apiFactory.DataSyncUrl = string.Empty;
+        apiFactory.MeasurementsUrl = string.Empty;
 
         var startServer = () => apiFactory.Start();
         startServer.Should().Throw<OptionsValidationException>();
