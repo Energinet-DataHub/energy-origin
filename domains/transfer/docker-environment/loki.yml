@@ -15,7 +15,6 @@ ingester:
   chunk_retain_period: 30s
   wal:
     enabled: false
-
 schema_config:
   configs:
     - from: 2022-01-01
