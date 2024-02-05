@@ -14,7 +14,7 @@ ingester:
   chunk_idle_period: 5m
   chunk_retain_period: 30s
   wal:
-    enabled: false
+    enabled: falseee
 schema_config:
   configs:
     - from: 2022-01-01
