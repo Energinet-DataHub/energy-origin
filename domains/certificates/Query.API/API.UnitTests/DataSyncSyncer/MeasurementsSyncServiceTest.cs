@@ -75,7 +75,7 @@ public class MeasurementsSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class MeasurementsSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class MeasurementsSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
