@@ -10,21 +10,34 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Metrics;
 using Serilog;
-using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
+using API.Configurations;
 using Asp.Versioning;
 using DataContext;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using Npgsql;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 var log = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                               IncludedData.TraceIdField | IncludedData.SpanIdField;
+    });
 
 var console = builder.Environment.IsDevelopment()
     ? log.WriteTo.Console()
@@ -34,19 +47,30 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(console.CreateLogger());
 
 builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: "Query.API"))
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
-            .AddPrometheusExporter());
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddDbContext<ApplicationDbContext>(
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
@@ -54,6 +78,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
+builder.Services.AddActivityLog();
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
@@ -77,8 +102,6 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
-
 app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
@@ -92,7 +115,6 @@ if (app.Environment.IsDevelopment())
                     $"API v{description.GroupName}");
             }
         });
-
 }
 
 app.UseHttpsRedirection();
@@ -101,6 +123,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseActivityLog("certificates");
 
 app.Run();
 

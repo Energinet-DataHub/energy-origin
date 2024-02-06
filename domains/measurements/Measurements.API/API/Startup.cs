@@ -16,6 +16,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace API;
 
@@ -38,6 +42,11 @@ public class Startup
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
+        services.AddOptions<OtlpOptions>()
+            .BindConfiguration(OtlpOptions.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
         services.AddFluentValidationAutoValidation();
 
@@ -48,7 +57,36 @@ public class Startup
 
         services.AddLogging();
 
-        services.AddOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource
+                .AddService(serviceName: "Measurements.API"))
+            .WithMetrics(metrics => metrics
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddProcessInstrumentation()
+                .AddOtlpExporter(o =>
+                    o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint))
+            .WithTracing(provider =>
+                provider
+                    .AddGrpcClientInstrumentation(grpcOptions =>
+                    {
+                        grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                            activity.SetTag("requestVersion", httpRequestMessage.Version);
+                        grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                            activity.SetTag("responseVersion", httpResponseMessage.Version);
+                        grpcOptions.SuppressDownstreamInstrumentation = true;
+                    })
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddNpgsql()
+                    .AddOtlpExporter(o =>
+                        o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint));
+
+        services.AddOptions<DataHubFacadeOptions>()
+            .BindConfiguration(DataHubFacadeOptions.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;

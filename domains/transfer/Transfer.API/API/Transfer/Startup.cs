@@ -56,11 +56,9 @@ public static class Startup
                                     break;
                                 }
                         }
-
                         return true;
                     })
                 ));
-
 
         services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();

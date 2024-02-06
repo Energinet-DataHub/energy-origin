@@ -6,6 +6,9 @@ using API.ContractService;
 using API.Query.API.v2023_01_01.ApiModels.Requests;
 using API.Query.API.v2023_01_01.ApiModels.Responses;
 using Asp.Versioning;
+using DataContext.Models;
+using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -33,6 +36,7 @@ public class ContractsController : ControllerBase
         [FromBody] CreateContract createContract,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
+        [FromServices] IActivityLogEntryRepository activityLogEntryRepository,
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
@@ -59,12 +63,22 @@ public class ContractsController : ControllerBase
         {
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContract) => CreatedAtRoute(
-                "GetContract",
-                new { id = createdContract.Id },
-                Contract.CreateFrom(createdContract)),
+            CreateContractResult.Success(var createdContract) => await LogCreatedAndReturnCreated(activityLogEntryRepository, user, createdContract),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
+    }
+
+    private async Task<CreatedAtRouteResult> LogCreatedAndReturnCreated(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
+        CertificateIssuingContract createdContract)
+    {
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            ActivityLogEntry.ActionTypeEnum.Activated, createdContract.Id));
+
+        return CreatedAtRoute(
+            "GetContract",
+            new { id = createdContract.Id },
+            Contract.CreateFrom(createdContract));
     }
 
     /// <summary>
@@ -122,6 +136,7 @@ public class ContractsController : ControllerBase
         [FromBody] EditContractEndDate editContractEndDate,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
+        [FromServices] IActivityLogEntryRepository activityLogEntryRepository,
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
@@ -147,8 +162,18 @@ public class ContractsController : ControllerBase
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
-            SetEndDateResult.Success => Ok(),
+            SetEndDateResult.Success => await LogChangedEndDateAndReturnOk(activityLogEntryRepository, user, id),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
+    }
+
+    private async Task<OkResult> LogChangedEndDateAndReturnOk(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
+        Guid contractId)
+    {
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            ActivityLogEntry.ActionTypeEnum.ChangeEndDate, contractId));
+
+        return Ok();
     }
 }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using DataContext;
+using EnergyOrigin.ActivityLog.DataContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.TransferAgreementProposalCleanup;
@@ -43,7 +44,7 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
             }
             catch (Exception e)
             {
-                logger.LogWarning("Something went wrong with the TransferAgreementProposalCleanupService: {Exception}", e);
+                logger.LogError("Something went wrong with the TransferAgreementProposalCleanupService: {Exception}", e);
             }
 
             await Sleep(stoppingToken);
@@ -58,6 +59,11 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
             .Where(i => i.CreatedAt < olderThan);
 
         context.TransferAgreementProposals.RemoveRange(oldProposals);
+
+        var activityLogEntries = oldProposals.Select(proposal => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
+            string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
+            ActivityLogEntry.ActionTypeEnum.Expired, proposal.Id));
+        await context.ActivityLogs.AddRangeAsync(activityLogEntries, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
     }

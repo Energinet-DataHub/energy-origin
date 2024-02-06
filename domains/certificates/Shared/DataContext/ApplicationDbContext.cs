@@ -1,4 +1,6 @@
 using DataContext.Models;
+using EnergyOrigin.ActivityLog;
+using EnergyOrigin.ActivityLog.DataContext;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -26,12 +28,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
         modelBuilder.AddOutboxStateEntity();
+
+        modelBuilder.AddActivityLogEntry();
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ProductionCertificate> ProductionCertificates { get; set; }
     public DbSet<SynchronizationPosition> SynchronizationPositions { get; set; }
     public DbSet<ConsumptionCertificate> ConsumptionCertificates { get; set; }
+    public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
 }
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time

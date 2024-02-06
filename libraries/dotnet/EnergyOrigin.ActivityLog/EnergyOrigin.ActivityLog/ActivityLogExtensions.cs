@@ -56,7 +56,7 @@ public static class ActivityLogExtensions
                         }).Take(100),
                     HasMore = activityLogEntries.Count > 100
                 };
-            }).RequireAuthorization();
+            }).WithTags("Activity log").RequireAuthorization();
     }
 
     public static void AddActivityLogEntry(this ModelBuilder modelBuilder)
@@ -65,7 +65,7 @@ public static class ActivityLogExtensions
             .HasKey(x => x.Id);
 
         modelBuilder.Entity<ActivityLogEntry>()
-            .HasKey(x => x.OrganizationTin).IsClustered(clustered: false);
+            .HasIndex(x => x.OrganizationTin).IsClustered(clustered: false);
     }
 
     public static ActivityLogEntryResponse.ActionTypeEnum ActionTypeMapper(ActivityLogEntry.ActionTypeEnum actionType) =>
@@ -76,7 +76,8 @@ public static class ActivityLogExtensions
             ActivityLogEntry.ActionTypeEnum.Declined => ActivityLogEntryResponse.ActionTypeEnum.Declined,
             ActivityLogEntry.ActionTypeEnum.Activated => ActivityLogEntryResponse.ActionTypeEnum.Activated,
             ActivityLogEntry.ActionTypeEnum.Deactivated => ActivityLogEntryResponse.ActionTypeEnum.Deactivated,
-            ActivityLogEntry.ActionTypeEnum.ChangeEndDate => ActivityLogEntryResponse.ActionTypeEnum.ChangeEndDate,
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged => ActivityLogEntryResponse.ActionTypeEnum.EndDateChanged,
+            ActivityLogEntry.ActionTypeEnum.Expired => ActivityLogEntryResponse.ActionTypeEnum.Expired,
             _ => throw new NotImplementedException()
         };
 

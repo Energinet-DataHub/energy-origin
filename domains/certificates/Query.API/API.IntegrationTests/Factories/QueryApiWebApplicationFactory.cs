@@ -39,6 +39,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string ConnectionString { get; set; } = "";
     public string DataSyncUrl { get; set; } = "foo";
     public string WalletUrl { get; set; } = "bar";
+
+    private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
@@ -55,6 +57,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
 
+        builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Datasync:Url", DataSyncUrl);
         builder.UseSetting("Datasync:Disabled", "false");

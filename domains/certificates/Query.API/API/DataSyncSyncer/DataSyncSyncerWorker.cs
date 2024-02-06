@@ -95,7 +95,7 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
         catch (Exception e)
         {
-            logger.LogWarning("Failed fetching contracts. Exception: {e}", e);
+            logger.LogError("Failed fetching contracts. Exception: {e}", e);
             return new List<MeteringPointSyncInfo>();
         }
     }

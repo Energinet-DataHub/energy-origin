@@ -2,9 +2,11 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Automation.Services;
+using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using ClaimAutomation.Worker.Swagger;
 using DataContext;
@@ -17,18 +19,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using ProjectOrigin.WalletSystem.V1;
 using Serilog;
-using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.OpenTelemetry;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
 var loggerConfiguration = new LoggerConfiguration()
     .Filter.ByExcluding("RequestPath like '/health%'")
     .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                               IncludedData.TraceIdField | IncludedData.SpanIdField;
+    });
 
 loggerConfiguration = builder.Environment.IsDevelopment()
     ? loggerConfiguration.WriteTo.Console()
@@ -65,11 +79,14 @@ builder.Services.AddScoped<IClaimService, ClaimService>();
 builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
+builder.Services.AddSingleton<AutomationCache>();
+builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
 builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     o.Address = new Uri(options.WalletUrl);
 });
+
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
@@ -78,22 +95,37 @@ builder.Services.AddApiVersioning(options =>
     })
     .AddMvc()
     .AddApiExplorer();
+
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.AddTokenValidation(tokenValidationOptions);
 
-var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
-
 builder.Services.AddOpenTelemetry()
-    .WithMetrics(provider =>
-        provider
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: "ClaimAutomation.Worker"))
+    .WithMetrics(meterProviderBuilder =>
+        meterProviderBuilder
+            .AddMeter(ClaimAutomationMetrics.MetricName)
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
+            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+    .WithTracing(tracerProviderBuilder =>
+        tracerProviderBuilder
+            .AddGrpcClientInstrumentation(grpcOptions =>
+            {
+                grpcOptions.SuppressDownstreamInstrumentation = true;
+                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                    activity.SetTag("requestVersion", httpRequestMessage.Version);
+                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                    activity.SetTag("responseVersion", httpResponseMessage.Version);
+            })
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
 var app = builder.Build();
