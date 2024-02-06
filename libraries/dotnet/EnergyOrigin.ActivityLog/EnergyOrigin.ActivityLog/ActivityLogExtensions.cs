@@ -1,24 +1,33 @@
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace EnergyOrigin.ActivityLog;
 
 public static class ActivityLogExtensions
 {
-    public static IServiceCollection AddActivityLog(this IServiceCollection services)
+    public static IServiceCollection AddActivityLog(this IServiceCollection services, Action<ActivityLogOptions> options)
     {
         services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository>();
+        services.AddHostedService<CleanupActivityLogsHostedService>();
+
+        services.Configure(options);
+
         return services;
     }
 
-    public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder, string serviceName)
+    public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder)
     {
+        var options = builder.ServiceProvider.GetRequiredService<IOptions<ActivityLogOptions>>();
+        var serviceName = options.Value.ServiceName;
+
         ArgumentException.ThrowIfNullOrEmpty(serviceName);
 
         return builder.MapPost(
@@ -32,19 +41,19 @@ public static class ActivityLogExtensions
                 return new ActivityLogListEntryResponse
                 {
                     ActivityLogEntries = activityLogEntries.Select(x =>
-                            new ActivityLogEntryResponse
-                            {
-                                Id = x.Id,
-                                OrganizationTin = x.OrganizationTin,
-                                EntityId = x.EntityId,
-                                Timestamp = x.Timestamp,
-                                ActorName = x.ActorName,
-                                ActorId = x.ActorId,
-                                OrganizationName = x.OrganizationName,
-                                EntityType = EntityTypeMapper(x.EntityType),
-                                ActorType = ActorTypeMapper(x.ActorType),
-                                ActionType = ActionTypeMapper(x.ActionType)
-                            }).Take(100),
+                        new ActivityLogEntryResponse
+                        {
+                            Id = x.Id,
+                            OrganizationTin = x.OrganizationTin,
+                            EntityId = x.EntityId,
+                            Timestamp = x.Timestamp,
+                            ActorName = x.ActorName,
+                            ActorId = x.ActorId,
+                            OrganizationName = x.OrganizationName,
+                            EntityType = EntityTypeMapper(x.EntityType),
+                            ActorType = ActorTypeMapper(x.ActorType),
+                            ActionType = ActionTypeMapper(x.ActionType)
+                        }).Take(100),
                     HasMore = activityLogEntries.Count > 100
                 };
             }).WithTags("Activity log").RequireAuthorization();
