@@ -362,3 +362,41 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240125131645_AddActivityLog') THEN
+    CREATE TABLE "ActivityLogs" (
+        "Id" uuid NOT NULL,
+        "Timestamp" timestamp with time zone NOT NULL,
+        "ActorId" uuid NOT NULL,
+        "ActorType" integer NOT NULL,
+        "ActorName" text NOT NULL,
+        "OrganizationTin" text NOT NULL,
+        "OrganizationName" text NOT NULL,
+        "EntityType" integer NOT NULL,
+        "ActionType" integer NOT NULL,
+        "EntityId" uuid NOT NULL,
+        CONSTRAINT "PK_ActivityLogs" PRIMARY KEY ("Id")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240125131645_AddActivityLog') THEN
+    CREATE INDEX "IX_ActivityLogs_OrganizationTin" ON "ActivityLogs" ("OrganizationTin");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240125131645_AddActivityLog') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240125131645_AddActivityLog', '8.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
