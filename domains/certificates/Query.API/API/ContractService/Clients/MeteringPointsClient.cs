@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 
@@ -46,6 +47,7 @@ public class MeteringPointsClient : IMeteringPointsClient
             throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
 
         httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization!);
+        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", "20240110");
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)
