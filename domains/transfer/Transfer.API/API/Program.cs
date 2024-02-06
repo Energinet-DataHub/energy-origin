@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Shared.Options;
 using API.Shared.Swagger;
@@ -59,7 +60,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddActivityLog();
+builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
@@ -125,7 +126,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog("transfer");
+app.UseActivityLog();
 
 app.Run();
 
