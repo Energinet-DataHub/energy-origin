@@ -40,7 +40,7 @@ public class CleanupActivityLogsHostedService(
 
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
         var deleted = await dbContext.Set<ActivityLogEntry>()
-            .Where(x => x.Timestamp < DateTimeOffset.UtcNow.AddDays(-1*activityLogOptions.Value.CleanupActivityLogsOlderThanInDays))
+            .Where(x => x.Timestamp < DateTimeOffset.UtcNow.AddDays(-1 * activityLogOptions.Value.CleanupActivityLogsOlderThanInDays))
             .ExecuteDeleteAsync();
 
         logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} cleaned up: {deleted} activity log entries", deleted);
