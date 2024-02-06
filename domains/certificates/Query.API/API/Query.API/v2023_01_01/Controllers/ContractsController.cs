@@ -172,7 +172,7 @@ public class ContractsController : ControllerBase
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.ChangeEndDate, contractId));
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged, contractId));
 
         return Ok();
     }

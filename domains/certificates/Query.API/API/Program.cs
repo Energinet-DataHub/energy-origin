@@ -78,7 +78,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
-builder.Services.AddActivityLog();
+builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
@@ -124,7 +124,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog("certificates");
+app.UseActivityLog();
 
 app.Run();
 
