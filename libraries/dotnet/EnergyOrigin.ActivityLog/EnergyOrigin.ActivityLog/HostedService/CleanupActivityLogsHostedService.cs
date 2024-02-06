@@ -16,16 +16,14 @@ public class CleanupActivityLogsHostedService(
     {
         logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} running.");
 
-        // On startup, delete all activity logs older than 6 months
-        await DeleteActivityLogsOlderThan6Months();
-
         using PeriodicTimer timer = new(TimeSpan.FromMinutes(activityLogOptions.Value.CleanupIntervalInMinutes));
 
         try
         {
-            while (await timer.WaitForNextTickAsync(stoppingToken))
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await DeleteActivityLogsOlderThan6Months();
+                await DeleteActivityLogs();
+                await timer.WaitForNextTickAsync(stoppingToken);
             }
         }
         catch (OperationCanceledException)
@@ -34,7 +32,7 @@ public class CleanupActivityLogsHostedService(
         }
     }
 
-    private async Task DeleteActivityLogsOlderThan6Months()
+    private async Task DeleteActivityLogs()
     {
         using var scope = services.CreateScope();
 
