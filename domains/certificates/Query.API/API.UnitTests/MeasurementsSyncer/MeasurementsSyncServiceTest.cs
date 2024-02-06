@@ -7,10 +7,10 @@ using FluentAssertions;
 using Measurements.V1;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Xunit;
 using Testing.Extensions;
+using Xunit;
 
-namespace API.UnitTests.DataSyncSyncer;
+namespace API.UnitTests.MeasurementsSyncer;
 
 public class MeasurementsSyncServiceTest
 {
