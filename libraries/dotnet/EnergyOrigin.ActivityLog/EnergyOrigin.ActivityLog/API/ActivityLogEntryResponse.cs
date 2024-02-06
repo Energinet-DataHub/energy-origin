@@ -8,7 +8,7 @@ public class ActivityLogEntryResponse
 
     // General
     public Guid Id { get; init; }
-    public DateTimeOffset Timestamp { get; init; }
+    public long Timestamp { get; init; }
 
     // User/Machine initiating the request
     public Guid ActorId { get; init; } // Eks. Granular's id or Charlotte's id
