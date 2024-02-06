@@ -48,7 +48,7 @@ public class MeasurementsSyncService
                     Subject = syncInfo.MeteringPointOwner,
                     Actor = Guid.NewGuid().ToString()
                 };
-                var res = await measurementsClient.GetMeasurementsAsync(request);
+                var res = await measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
 
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
