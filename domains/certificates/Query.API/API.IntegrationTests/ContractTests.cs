@@ -568,7 +568,7 @@ public sealed class ContractTests :
     {
         // Create contract
         var gsrn = GsrnHelper.GenerateRandom();
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -590,7 +590,7 @@ public sealed class ContractTests :
     {
         // Create contract
         var gsrn = GsrnHelper.GenerateRandom();
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var subject = Guid.NewGuid().ToString();
         using var client = factory.CreateAuthenticatedClient(subject);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
