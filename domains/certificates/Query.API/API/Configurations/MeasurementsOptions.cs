@@ -9,6 +9,8 @@ public class MeasurementsOptions
 
     [Required]
     public string Url { get; set; } = "";
+    [Required]
+    public string GrpcUrl { get; set; } = "";
 }
 
 public static partial class OptionsExtensions

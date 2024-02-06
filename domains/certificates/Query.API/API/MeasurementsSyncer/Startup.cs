@@ -21,7 +21,7 @@ public static class Startup
         services.AddGrpcClient<Measurements.V1.Measurements.MeasurementsClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<MeasurementsOptions>>().Value;
-            o.Address = new Uri(options.Url);
+            o.Address = new Uri(options.GrpcUrl);
         });
     }
 }

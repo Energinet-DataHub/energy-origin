@@ -60,6 +60,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
+        builder.UseSetting("Measurements:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
