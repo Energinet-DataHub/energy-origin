@@ -11,6 +11,7 @@
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
         {
+            <p>@user.IsSelectable</p>
             <button name="name" value="@user.Name" type="submit" class="peopleButton">
                 <div class="image">
                     <img src="@user.ImageUrl"/>
