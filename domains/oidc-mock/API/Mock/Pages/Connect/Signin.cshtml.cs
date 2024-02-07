@@ -37,7 +37,7 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost()
     {
-        logger.LogInformation("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}", ClientId, Name, RedirectUri);
+        logger.LogInformation("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}, State={State}", ClientId, Name, RedirectUri, State);
 
         var (isValid, validationError) = client.Validate(ClientId, RedirectUri);
         if (!isValid)
