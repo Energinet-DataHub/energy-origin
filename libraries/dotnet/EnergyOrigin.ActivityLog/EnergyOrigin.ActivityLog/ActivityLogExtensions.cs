@@ -16,7 +16,7 @@ public static class ActivityLogExtensions
     public static IServiceCollection AddActivityLog(this IServiceCollection services, Action<ActivityLogOptions> options)
     {
         services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository>();
-        services.AddHostedService<CleanupActivityLogsHostedService>();
+        //services.AddHostedService<CleanupActivityLogsHostedService>();
 
         services.Configure(options);
 
@@ -46,7 +46,7 @@ public static class ActivityLogExtensions
                             Id = x.Id,
                             OrganizationTin = x.OrganizationTin,
                             EntityId = x.EntityId,
-                            Timestamp = x.Timestamp,
+                            Timestamp = x.Timestamp.ToUnixTimeSeconds(),
                             ActorName = x.ActorName,
                             ActorId = x.ActorId,
                             OrganizationName = x.OrganizationName,
@@ -95,6 +95,15 @@ public static class ActivityLogExtensions
             ActivityLogEntry.EntityTypeEnum.TransferAgreement => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.EntityTypeEnum.MeteringPoint => ActivityLogEntryResponse.EntityTypeEnum.MeteringPoint,
             ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal,
+            _ => throw new NotImplementedException()
+        };
+
+    public static ActivityLogEntry.EntityTypeEnum EntityTypeMapper(ActivityLogEntryResponse.EntityTypeEnum requestEntityType) =>
+        requestEntityType switch
+        {
+            ActivityLogEntryResponse.EntityTypeEnum.TransferAgreement => ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntryResponse.EntityTypeEnum.MeteringPoint => ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
             _ => throw new NotImplementedException()
         };
 }

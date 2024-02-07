@@ -1,3 +1,3 @@
 namespace EnergyOrigin.ActivityLog.API;
 
-public record ActivityLogEntryFilterRequest(DateTimeOffset? Start, DateTimeOffset? End, ActivityLogEntryResponse.EntityTypeEnum? EntityType);
+public record ActivityLogEntryFilterRequest(long? Start, long? End, ActivityLogEntryResponse.EntityTypeEnum? EntityType);

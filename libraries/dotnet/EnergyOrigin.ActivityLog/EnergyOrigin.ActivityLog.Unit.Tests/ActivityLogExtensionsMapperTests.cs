@@ -36,5 +36,7 @@ public class ActivityLogExtensionsMapperTests
     {
         var result = ActivityLogExtensions.EntityTypeMapper(input);
         Assert.Equal(expected, result);
+
+        Assert.Equal(input, ActivityLogExtensions.EntityTypeMapper(ActivityLogExtensions.EntityTypeMapper(input)));
     }
 }

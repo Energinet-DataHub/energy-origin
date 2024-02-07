@@ -21,9 +21,23 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsNoTracking().AsQueryable();
 
-        if (request.Start != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= request.Start);
-        if (request.End != null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
-        if (request.EntityType != null) activityLogQuery = activityLogQuery.Where(x => x.EntityType == default);
+        if (request.Start is not null)
+        {
+            var mappedStart = DateTimeOffset.FromUnixTimeSeconds(request.Start.Value);
+            activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= mappedStart);
+        }
+
+        if (request.End is not null)
+        {
+            var mappedEnd = DateTimeOffset.FromUnixTimeSeconds(request.End.Value);
+            activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= mappedEnd);
+        }
+
+        if (request.EntityType is not null)
+        {
+            var mappedEntityType = ActivityLogExtensions.EntityTypeMapper(request.EntityType.Value);
+            activityLogQuery = activityLogQuery.Where(x => x.EntityType == mappedEntityType);
+        }
 
         return await activityLogQuery.Where(l => l.OrganizationTin == tin)
             .OrderBy(x => x.Timestamp)
