@@ -70,6 +70,21 @@ builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Pref
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
+if (builder.Environment.IsDevelopment() || builder.Environment.IsTest())
+{
+    builder.Services.Configure<DataHubFacadeOptions>(o =>
+    {
+        o.CallRelationService = false;
+    });
+}
+else
+{
+    builder.Services.Configure<DataHubFacadeOptions>(o =>
+    {
+        o.CallRelationService = true;
+    });
+}
+
 builder.Services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
 {
     var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;

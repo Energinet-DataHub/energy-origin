@@ -8,4 +8,6 @@ public class DataHubFacadeOptions
 
     [Required]
     public string Url { get; set; } = "";
+
+    public bool CallRelationService { get; set; } = false;
 }
