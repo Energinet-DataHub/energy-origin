@@ -24,18 +24,21 @@
         "isSelectable": true,
         "description": "Privat person og er glad for sin hund. Indtil...",
         "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=bar",
+        "accessToken": {
+            "sub": "64cf9c0f-c634-41c0-9cba-4394024b915f"
+        },
         "idToken": {
             "sub": "95D7BE81-0CFB-4B52-9C92-33A45747FCEF",
-            "idp": "nemid",
-            "foo": "bla",
-            "num": 42
+            "idp": "nemid"
         },
         "userinfoToken": {
             "sub": "95D7BE81-0CFB-4B52-9C92-33A45747FCEF",
-            "identity_type": "private",
-            "dk.cpr": "010110-2200",
-            "bar": "bla",
-            "num": 24
+            "idp": "nemid",
+            "identity_type": "professional",
+            "nemid.cvr": "11223344",
+            "nemid.ssn": "CVR:11223344-RID:987654321",
+            "nemid.common_name": "Peter Producent",
+            "nemid.company_name": "Producent A/S"
         }
     }
 ]
