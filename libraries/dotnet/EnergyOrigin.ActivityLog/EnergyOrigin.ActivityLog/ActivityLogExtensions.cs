@@ -16,7 +16,7 @@ public static class ActivityLogExtensions
     public static IServiceCollection AddActivityLog(this IServiceCollection services, Action<ActivityLogOptions> options)
     {
         services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository>();
-        //services.AddHostedService<CleanupActivityLogsHostedService>();
+        services.AddHostedService<CleanupActivityLogsHostedService>();
 
         services.Configure(options);
 
