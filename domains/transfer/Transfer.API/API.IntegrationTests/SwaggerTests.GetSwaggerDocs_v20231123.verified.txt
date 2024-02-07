@@ -612,13 +612,13 @@
         "type": "object",
         "properties": {
           "start": {
-            "type": "string",
-            "format": "date-time",
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "entityType": {
