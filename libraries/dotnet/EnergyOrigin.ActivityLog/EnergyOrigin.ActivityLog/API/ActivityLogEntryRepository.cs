@@ -21,8 +21,18 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
     {
         var activityLogQuery = dbContext.Set<ActivityLogEntry>().AsNoTracking().AsQueryable();
 
-        if (request.Start is not null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= request.Start);
-        if (request.End is not null) activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= request.End);
+        if (request.Start is not null)
+        {
+            var mappedStart = DateTimeOffset.FromUnixTimeSeconds(request.Start.Value);
+            activityLogQuery = activityLogQuery.Where(x => x.Timestamp >= mappedStart);
+        }
+
+        if (request.End is not null)
+        {
+            var mappedEnd = DateTimeOffset.FromUnixTimeSeconds(request.End.Value);
+            activityLogQuery = activityLogQuery.Where(x => x.Timestamp <= mappedEnd);
+        }
+
         if (request.EntityType is not null)
         {
             var mappedEntityType = ActivityLogExtensions.EntityTypeMapper(request.EntityType.Value);
