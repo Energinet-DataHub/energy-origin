@@ -14,6 +14,7 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using Npgsql;
@@ -67,15 +68,13 @@ builder.Services.AttachOptions<OidcOptions>().BindConfiguration(OidcOptions.Pref
 builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-if (builder.Environment.IsDevelopment() || builder.Environment.IsTest())
+builder.Services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
 {
-    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix);
-}
-else
-{
-    builder.Services.AttachOptions<DataSyncOptions>().BindConfiguration(DataSyncOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-}
+    var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+    o.Address = new Uri(options.Url);
+});
 
 builder.AddTokenValidation(new TokenValidationOptions
 {

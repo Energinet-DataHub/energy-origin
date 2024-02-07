@@ -6,7 +6,10 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
+using Relation.V1;
 using WireMock.Server;
+using Integration.Tests.Extensions;
 
 namespace Integration.Tests.Controllers;
 
@@ -43,17 +46,40 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     public async Task AcceptUserTermsAsync_ShouldReturnOkAndOnlyUpdateAcceptedUserTermsVersion_WhenUserExists(int acceptedVersion)
     {
         var server = WireMockServer.Start();
-        var options = new DataSyncOptions
+        var options = new DataHubFacadeOptions()
         {
-            Uri = new Uri($"http://localhost:{server.Port}/")
+            Url = $"http://localhost:{server.Port}/"
         };
+        var companyId = Guid.NewGuid();
         var user = await factory.AddUserToDatabaseAsync(new User
         {
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
+            Company = new Company
+            {
+                Id = companyId,
+                Tin = Guid.NewGuid().ToString(),
+                Name = "Some Company"
+            },
+            CompanyId = companyId,
             UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1 } }
         });
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services => services.AddScoped(_ => options)));
+
+        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
+        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
+            .Returns(new CreateRelationResponse
+            {
+                ErrorMessage = "",
+                Success = true
+            });
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton(_ => relationClient);
+                services.AddScoped(_ => options);
+            });
+        });
 
         server.MockRelationsEndpoint();
 
@@ -73,20 +99,21 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     {
         var providerKey = Guid.NewGuid().ToString();
         var providerKeyType = ProviderKeyType.MitIdUuid;
+        var companyId = Guid.NewGuid();
         var user = new User
         {
             Id = null,
             Name = Guid.NewGuid().ToString(),
             AllowCprLookup = false,
-            Company = null,
-            CompanyId = null,
+            Company = new Company { Tin = "12345678", Id = companyId },
+            CompanyId = companyId,
             UserProviders = new List<UserProvider> { new() { ProviderKeyType = providerKeyType, UserProviderKey = providerKey } }
         };
 
         var server = WireMockServer.Start();
-        var datasyncOptions = new DataSyncOptions
+        var options = new DataHubFacadeOptions()
         {
-            Uri = new Uri($"http://localhost:{server.Port}/")
+            Url = $"http://localhost:{server.Port}/"
         };
 
         var role = "default";
@@ -95,9 +122,18 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
         };
 
+        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
+        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
+            .Returns(new CreateRelationResponse
+            {
+                ErrorMessage = "",
+                Success = true
+            });
+
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
         {
-            services.AddScoped(_ => datasyncOptions);
+            services.AddSingleton(_ => relationClient);
+            services.AddScoped(_ => options);
             services.AddScoped(_ => roleOptions);
         }));
 
@@ -146,7 +182,23 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             await dbContext.SaveChangesAsync();
         }
 
-        var client = factory.CreateAuthenticatedClient(user, config: builder => builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}", nameof(OidcOptions.Generation.Predictable)));
+        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
+        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
+            .Returns(new CreateRelationResponse
+            {
+                ErrorMessage = "",
+                Success = true
+            });
+
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton(_ => relationClient);
+            });
+            builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}",
+                nameof(OidcOptions.Generation.Predictable));
+        });
 
         var result = await client.PutAsync("terms/user/accept/2", null);
         var dbCompany = factory.DataContext.Companies.SingleOrDefault(x => x.Id == companyId);
@@ -163,9 +215,31 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldReturnOk_ForSimplestTestCase()
     {
-        var user = await factory.AddUserToDatabaseAsync();
+        var user = await factory.AddUserToDatabaseAsync(new User
+        {
+            Name = Guid.NewGuid().ToString(),
+            Company = new Company
+            {
+                Id = Guid.NewGuid(),
+                Name = "TestCompany",
+                Tin = Guid.NewGuid().ToString()
+            }
+        });
 
-        var client = factory.CreateAuthenticatedClient(user);
+        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
+        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
+            .Returns(new CreateRelationResponse
+            {
+                ErrorMessage = "",
+                Success = true
+            });
+        var client = factory.CreateAuthenticatedClient(user, config: builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton(_ => relationClient);
+            });
+        });
 
         var response = await client.PutAsync("terms/user/accept/2", null);
 
