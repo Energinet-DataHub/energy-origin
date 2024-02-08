@@ -108,12 +108,19 @@ public class TermsController : ControllerBase
                 Ssn = "",
                 Tin = descriptor.Organization?.Tin
             };
-            var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
-
-            if (res.Success == false)
+            try
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}. Error: {ErrorMessage}",
-                    descriptor.Subject, res.ErrorMessage);
+                var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
+                if (res.Success == false)
+                {
+                    logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}. Error: {ErrorMessage}",
+                        descriptor.Subject, res.ErrorMessage);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError("AcceptTerms: Unable to create relations for {Subject}. Exception: {e}",
+                                       descriptor.Subject, e);
             }
         }
 
