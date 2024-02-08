@@ -108,6 +108,7 @@ public class TermsController : ControllerBase
                 Ssn = "",
                 Tin = descriptor.Organization?.Tin
             };
+            logger.LogInformation("TIN: " + descriptor.Organization?.Tin);
             var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
 
             if (res.Success == false)
