@@ -16,14 +16,13 @@ public class CleanupActivityLogsHostedService(
     {
         logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} running.");
 
-        using PeriodicTimer timer = new(TimeSpan.FromMinutes(activityLogOptions.Value.CleanupIntervalInMinutes));
+        using PeriodicTimer timer = new(TimeSpan.FromSeconds(activityLogOptions.Value.CleanupIntervalInSeconds));
 
         try
         {
-            while (!stoppingToken.IsCancellationRequested)
+            while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 await DeleteActivityLogs();
-                await timer.WaitForNextTickAsync(stoppingToken);
             }
         }
         catch (OperationCanceledException)

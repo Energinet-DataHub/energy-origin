@@ -57,20 +57,23 @@ public class Startup
 
         services.AddLogging();
 
+        var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
+        var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
         services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 .AddService(serviceName: "Measurements.API"))
-            .WithMetrics(metrics => metrics
+            .WithMetrics(meterProviderBuilder => meterProviderBuilder
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
                 .AddProcessInstrumentation()
-                .AddOtlpExporter(o =>
-                    o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint))
-            .WithTracing(provider =>
-                provider
+                .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
+            .WithTracing(tracerProviderBuilder =>
+                tracerProviderBuilder
                     .AddGrpcClientInstrumentation(grpcOptions =>
                     {
+                        grpcOptions.SuppressDownstreamInstrumentation = true;
                         grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
                             activity.SetTag("requestVersion", httpRequestMessage.Version);
                         grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
@@ -80,8 +83,7 @@ public class Startup
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter(o =>
-                        o.Endpoint = _configuration.GetValue<OtlpOptions>(OtlpOptions.Prefix)?.ReceiverEndpoint));
+                    .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
         services.AddOptions<DataHubFacadeOptions>()
             .BindConfiguration(DataHubFacadeOptions.Prefix)
